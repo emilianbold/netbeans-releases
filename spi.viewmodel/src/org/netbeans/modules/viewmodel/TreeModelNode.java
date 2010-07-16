@@ -803,6 +803,7 @@ public class TreeModelNode extends AbstractNode {
         synchronized (properties) {
             properties.remove(column);
             properties.remove(column + "#html");
+            properties.remove(column + "#canWrite");
         }
         firePropertyChange(column, null, null);
     }
@@ -1630,22 +1631,36 @@ public class TreeModelNode extends AbstractNode {
         */
         @Override
         public boolean canWrite () {
-            try {
-                boolean canEdit = model.canEditCell(object, columnModel.getID());
-                if (canEdit) {
-                    return canEdit;
+            synchronized (properties) {
+                Boolean canWrite = (Boolean) properties.get(id + "#canWrite");
+                if (canWrite != null) {
+                    return canWrite;
                 }
+            }
+            boolean canEdit;
+            try {
+                canEdit = model.canEditCell(object, columnModel.getID());
             } catch (UnknownTypeException ex) {
+                canEdit = false;
             }
-            if (nodeColumn) return false;
-            try {
-                return !model.isReadOnly (object, columnModel.getID ());
-            } catch (UnknownTypeException e) {
-                if (!(object instanceof String)) {
-                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
+            if (!canEdit) {
+                if (nodeColumn) {
+                    canEdit = false;
+                } else {
+                    try {
+                        canEdit = !model.isReadOnly (object, columnModel.getID ());
+                    } catch (UnknownTypeException e) {
+                        if (!(object instanceof String)) {
+                            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
+                        }
+                        canEdit = false;
+                    }
                 }
-                return false;
             }
+            synchronized (properties) {
+                properties.put(id + "#canWrite", canEdit);
+            }
+            return canEdit;
         }
         
         public void run() {
