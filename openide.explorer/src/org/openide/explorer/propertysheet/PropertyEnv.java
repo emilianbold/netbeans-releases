@@ -49,6 +49,8 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -159,6 +161,7 @@ public class PropertyEnv {
     private boolean changeImmediate = true;
     InplaceEditor.Factory factory = null;
     boolean editable = true;
+    private static final Logger LOG = Logger.getLogger(PropertyEnv.class.getName());
 
     /** Default constructor has package access -
      * we do not want the instances to be created outside
@@ -257,7 +260,7 @@ public class PropertyEnv {
             getChange().firePropertyChange(PROP_STATE, null, newState);
         } catch (PropertyVetoException pve) {
             // and notify the user that the change cannot happen
-            pve.printStackTrace();
+            LOG.log(Level.INFO, "Cannot change property: " + pve.getPropertyChangeEvent().getPropertyName(), pve);
 
             String name = (getFeatureDescriptor() == null) ? null : getFeatureDescriptor().getDisplayName();
 
@@ -381,8 +384,9 @@ public class PropertyEnv {
         return editable;
     }
 
+    @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(getClass().getName());
         sb.append("@"); //NOI18N
         sb.append(System.identityHashCode(this));
@@ -394,7 +398,7 @@ public class PropertyEnv {
         sb.append(", "); //NOI18N
 
         if (factory != null) {
-            sb.append("InplaceEditorFactory=" + factory.getClass().getName()); //NOI18N
+            sb.append("InplaceEditorFactory=").append(factory.getClass().getName()); //NOI18N
             sb.append(", "); //NOI18N
         }
 
