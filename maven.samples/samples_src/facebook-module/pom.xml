@@ -65,22 +65,22 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util</artifactId>
-            <version>RELEASE69-BETA</version>
+            <version>RELEASE691</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-windows</artifactId>
-            <version>RELEASE69-BETA</version>
+            <version>RELEASE691</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
-            <version>RELEASE69-BETA</version>
+            <version>RELEASE691</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-awt</artifactId>
-            <version>RELEASE69-BETA</version>
+            <version>RELEASE691</version>
         </dependency>
         <!--<dependency>
             <groupId>org.netbeans.api</groupId>
@@ -90,22 +90,22 @@
         <dependency>
             <artifactId>org-netbeans-api-progress</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>RELEASE69-BETA</version>
+            <version>RELEASE691</version>
         </dependency>
         <dependency>
             <artifactId>org-netbeans-modules-settings</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>RELEASE69-BETA</version>
+            <version>RELEASE691</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-dialogs</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>RELEASE69-BETA</version>
+            <version>RELEASE691</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-filesystems</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>RELEASE69-BETA</version>
+            <version>RELEASE691</version>
         </dependency>
     </dependencies>
     <build>

@@ -193,19 +193,19 @@ public class ArchetypeWizardUtils {
 
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.3"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.4"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
         NB_MODULE_ARCH.setRepository("http://repository.codehaus.org/");
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.3.1"); //NOI18N
+        NB_APP_ARCH.setVersion("1.5"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
         NB_APP_ARCH.setRepository("http://repository.codehaus.org/");
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.0"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.1"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
         NB_SUITE_ARCH.setRepository("http://repository.codehaus.org/");
 
