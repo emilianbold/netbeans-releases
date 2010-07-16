@@ -65,9 +65,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.openide.explorer.PropertyPanelBridge;
 
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
 
@@ -303,6 +306,8 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         //involves an API change (some package private methods of PropertyEnv need to be accessible to
         //the editor classes), this will have to wait for after 4.0 - Tim
         getActionMap().put("invokeCustomEditor", new CustomEditorProxyAction()); //NOI18N
+
+        PropertyPanelBridge.register(this, new BridgeAccessor(this));
     }
 
     public void setBackground(Color c) {
@@ -1050,19 +1055,6 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         return result;
     }
 
-    /**
-     * Provide the current in-place editor, or <code>null</code>.
-     * @return in-place editor or or <code>null</code>.
-     *
-    public InplaceEditor getInplaceEditor() {
-        PropertyDisplayer pd = getPropertyDisplayer();
-        if (pd instanceof InplaceEditor.Factory) {
-            return ((InplaceEditor.Factory) pd).getInplaceEditor();
-        } else {
-            return null;
-        }
-    }*/
-
     /** Sets whether or not this component is enabled.
      *
      * all panel components gets disabled when enabled parameter is set false
@@ -1298,5 +1290,25 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
                 }
             }
         }
+    }
+
+    private static final class BridgeAccessor implements PropertyPanelBridge.Accessor {
+
+        private final Reference<PropertyPanel> panelRef;
+
+        public BridgeAccessor(PropertyPanel panel) {
+            this.panelRef = new WeakReference<PropertyPanel>(panel);
+        }
+
+        @Override
+        public boolean commit() {
+            PropertyPanel panel = panelRef.get();
+            if (panel != null) {
+                return panel.commit();
+            } else {
+                return false;
+            }
+        }
+
     }
 }
