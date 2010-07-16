@@ -158,12 +158,13 @@ final class MetaInfServicesLookup extends AbstractLookup {
     }
     
     private Set<Class<?>> allSuper(Class<?> clazz, Set<Class<?>> all) {
-        if (clazz != null && clazz != Object.class) {
-            all.add(clazz);
-            allSuper(clazz.getSuperclass(), all);
-            for (Class<?> c : clazz.getInterfaces()) {
-                allSuper(c, all);
-            }
+        all.add(clazz);
+        Class<?> sup = clazz.getSuperclass();
+        if (sup != null && sup != Object.class) {
+            all.add(sup);
+        }
+        for (Class<?> c : clazz.getInterfaces()) {
+            allSuper(c, all);
         }
         return all;
     }
