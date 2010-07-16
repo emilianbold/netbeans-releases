@@ -85,5 +85,5 @@ public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
     public @Override void testSuperTypes() throws Exception {}
     public @Override void testSubTypes() throws Exception {}
     public @Override void testWrongOrderAsInIssue100320() throws Exception {}
-    
+    public @Override void testLookupObject() throws Exception {}
 }

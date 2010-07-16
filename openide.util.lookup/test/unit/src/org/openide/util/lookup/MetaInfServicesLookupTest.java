@@ -528,6 +528,33 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         assertNotNull("result found", result);
         assertTrue("Right class", impl.isInstance(result));
     }
+    public void testLookupObject() throws Exception {
+        assertNotNull("Object.class can be looked up", createLookup(new ClassLoader() {
+            @Override
+            protected Enumeration<URL> findResources(String name) throws IOException {
+                if (name.equals("META-INF/services/java.lang.Object")) {
+                    return singleton(new URL(null, "dummy:stuff", new URLStreamHandler() {
+                        @Override
+                        protected URLConnection openConnection(URL u) throws IOException {
+                            return new URLConnection(u) {
+
+                                @Override
+                                public void connect() throws IOException {
+                                }
+
+                                @Override
+                                public InputStream getInputStream() throws IOException {
+                                    return new ByteArrayInputStream("java.lang.Object\n".getBytes("UTF-8"));
+                                }
+                            };
+                        }
+                    }));
+                } else {
+                    return Collections.enumeration(Collections.<URL>emptyList());
+                }
+            }
+        }).lookup(Object.class));
+    }
 
     public void testInitializerRobustness() throws Exception { // #174055
         check(Broken1.class.getName());
