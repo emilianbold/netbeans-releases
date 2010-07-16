@@ -270,7 +270,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 try {
                     ByteArrayOutputStream wr = new ByteArrayOutputStream();
                     XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
-                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString("UTF-"));
+                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString("UTF-8"));
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
