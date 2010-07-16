@@ -58,6 +58,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -141,7 +142,10 @@ final class MetaInfServicesLookup extends AbstractLookup {
             }
         }
         if (toAdd != null) {
-            search(c, toAdd);
+            Set<Class<?>> all = new HashSet<Class<?>>();
+            for (Class type : allSuper(c, all)) {
+                search(type, toAdd);
+            }
         }
         synchronized (this) {
             if (classes.put(c, "") == null) { // NOI18N
@@ -151,6 +155,17 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 setPairs(arr, RP);
             }
         }
+    }
+    
+    private Set<Class<?>> allSuper(Class<?> clazz, Set<Class<?>> all) {
+        if (clazz != null && clazz != Object.class) {
+            all.add(clazz);
+            allSuper(clazz.getSuperclass(), all);
+            for (Class<?> c : clazz.getInterfaces()) {
+                allSuper(c, all);
+            }
+        }
+        return all;
     }
 
     /** Finds all pairs and adds them to the collection.

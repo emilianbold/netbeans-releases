@@ -52,10 +52,10 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.libs.aguiswinglayout.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/cdc-agui-swing-layout.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.aguiswinglayout/modules/ext/cdc-agui-swing-layout.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst:///sources/cdc-agui-swing-layout-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.aguiswinglayout/sources/cdc-agui-swing-layout-src.zip!/</resource>
     </volume>    
 </library>
