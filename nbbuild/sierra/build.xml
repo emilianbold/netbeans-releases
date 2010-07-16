@@ -45,8 +45,8 @@
 <project name="main" basedir="." default="main">
     <import file="build.tst"/>
 
-    <target name="main"      depends="init,netbeans,clean,build,javadoc,unit-test,zip"/>
-    <target name="main-test" depends="get-daily-test,sierra"/>
+    <target name="main" depends="init,netbeans,clean,build,javadoc,unit-test,zip"/>
+    <target name="test" depends="get-daily-test,sierra"/>
 
     <target name="init">
         <property name="env.BUILD_NUMBER" value=""/>
@@ -81,9 +81,6 @@
         <echo file="${build.number}" message="repository: ${repository}" append="true"/>
         
         <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
-
-        <delete dir="${cache}/nbm"/>
-        <mkdir dir="${cache}/nbm"/>
     </target>
 
     <!-- sierra -->
@@ -98,10 +95,12 @@
     <!-- unit test -->
     <target name="unit-test">
         <ant target="test" dir="${home}/print"/>
+        <ant target="test" dir="${home}/xml.xam"/>
+        <ant target="test" dir="${home}/xml.xdm"/>
         <ant target="test" dir="${home}/xml.search"/>
         <ant target="test" dir="${home}/xml.wsdl.model"/>
         <ant target="test" dir="${home}/soa.ui"/>
-        <ant target="test" dir="${home}/bpel.model"/>
+        <!--ant target="test" dir="${home}/bpel.model"/-->
         <ant target="test" dir="${home}/bpel.mapper"/>
     </target>
 
@@ -122,7 +121,7 @@
     </target>
 
     <!-- daily -->
-    <target name="get-daily-test" depends="check-daily,do-daily"/>
+    <target name="get-daily-test" depends="check-daily,get-test"/>
     
     <target name="check-daily">
         <mkdir dir="${cache}/test/lock"/>
@@ -134,7 +133,7 @@
         <available property="lock.available" file="${cache}/test/lock/${daily}"/>
     </target>
 
-    <target name="do-daily" unless="lock.available">
+    <target name="get-test" unless="lock.available">
         <delete>
             <fileset dir="${cache}/test/lock" includes="*"/>
         </delete>
@@ -152,26 +151,23 @@
     <target name="do-module">
         <echo message="============= ${module} ============="/>
         <ant dir="${home}/${module}" target="${action}"/>
-
-        <copy todir="${cache}/nbm" flatten="true">
-            <fileset dir="${home}/${module}/">
-                <include name="build/*.nbm"/>
-            </fileset>
-        </copy>
     </target>
 
-    <!-- clean, build, nbm -->
-    <target name="clean" depends="clean-01, clean-02, clean-03"/>
-    <target name="build" depends="build-01, build-02, build-03"/>
+    <!-- clean, build -->
+    <target name="clean" depends="clean-01, clean-02, clean-03, clean-04, clean-kit"/>
+    <target name="build" depends="build-01, build-02, build-03, build-04, build-kit"/>
 
     <target name="clean-01" depends="clean-platform, clean-ide"/>
     <target name="build-01" depends="build-platform, build-ide"/>
 
-    <target name="clean-02" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel, clean-xslt, clean-wlm"/>
-    <target name="build-02" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel, build-xslt, build-wlm"/>
+    <target name="clean-02" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel"/>
+    <target name="build-02" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel"/>
 
-    <target name="clean-03" depends="clean-iep, clean-sql, clean-dm, clean-edm, clean-etl, clean-wsdlextensions"/>
-    <target name="build-03" depends="build-iep, build-sql, build-dm, build-edm, build-etl, build-wsdlextensions"/>
+    <target name="clean-03" depends="clean-xslt, clean-wlm, clean-iep, clean-sql, clean-dm"/>
+    <target name="build-03" depends="build-xslt, build-wlm, build-iep, build-sql, build-dm"/>
+
+    <target name="clean-04" depends="clean-edm, clean-etl, clean-encoder, clean-wsdlextensions"/>
+    <target name="build-04" depends="build-edm, build-etl, build-encoder, build-wsdlextensions"/>
 
     <!-- platform -->
     <target name="build-platform"><antcall target="do-platform"><param name="action" value="netbeans"/></antcall></target>
@@ -205,14 +201,12 @@
     </target>
 
     <!-- xml -->
-    <target name="build-xml"><antcall target="do-xml"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-xml"><antcall target="do-xml"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-xml"><antcall target="do-xml"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-xml">
-        <antcall target="do-module"><param name="module" value="libs.jxpath"/></antcall>
-        <antcall target="do-module"><param name="module" value="visdev.prefuse"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.xml.libs.jxpath"/></antcall>
+        <antcall target="do-module"><param name="module" value="xml.libs.jxpath"/></antcall>
+        <antcall target="do-module"><param name="module" value="xml.libs.prefuse"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.catalogsupport"/></antcall>
-        <antcall target="do-module"><param name="module" value="xml.xpath"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.xpath.ext"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.misc"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.xam.ui"/></antcall>
@@ -232,22 +226,22 @@
     </target>
 
     <!-- libs -->
-    <target name="build-libs"><antcall target="do-libs"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-libs"><antcall target="do-libs"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-libs"><antcall target="do-libs"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-libs">
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.httpunit"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.jbiadmincommon"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.jgo"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.mail"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.pojo"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.sap"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.wsdl4j"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.xmlbeans"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.soa.libs.xslt"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.httpunit"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.jbiadmincommon"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.jgo"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.mail"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.pojo"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.sap"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.wsdl4j"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.xmlbeans"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.libs.xslt"/></antcall>
     </target>
         
     <!-- soa -->
-    <target name="build-soa"><antcall target="do-soa"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-soa"><antcall target="do-soa"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-soa"><antcall target="do-soa"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-soa">
         <antcall target="do-module"><param name="module" value="soa.wsdlui.api"/></antcall>
@@ -266,7 +260,7 @@
     </target>
 
     <!-- compapp -->
-    <target name="build-compapp"><antcall target="do-compapp"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-compapp"><antcall target="do-compapp"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-compapp"><antcall target="do-compapp"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-compapp">
         <antcall target="do-module"><param name="module" value="compapp.help"/></antcall>
@@ -280,7 +274,7 @@
     </target>
 
     <!-- bpel -->
-    <target name="build-bpel"><antcall target="do-bpel"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-bpel"><antcall target="do-bpel"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-bpel"><antcall target="do-bpel"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-bpel">
         <antcall target="do-module"><param name="module" value="bpel.help"/></antcall>
@@ -300,7 +294,7 @@
     </target>
 
     <!-- xslt -->
-    <target name="build-xslt"><antcall target="do-xslt"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-xslt"><antcall target="do-xslt"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-xslt"><antcall target="do-xslt"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-xslt">
         <antcall target="do-module"><param name="module" value="xslt.help"/></antcall>
@@ -313,7 +307,7 @@
     </target>
 
     <!-- wlm -->
-    <target name="build-wlm"><antcall target="do-wlm"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-wlm"><antcall target="do-wlm"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-wlm"><antcall target="do-wlm"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-wlm">
         <antcall target="do-module"><param name="module" value="wlm.model"/></antcall>
@@ -325,7 +319,7 @@
     </target>
     
     <!-- iep -->
-    <target name="build-iep"><antcall target="do-iep"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-iep"><antcall target="do-iep"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-iep"><antcall target="do-iep"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-iep">
         <antcall target="do-module"><param name="module" value="iep.help"/></antcall>
@@ -335,7 +329,7 @@
     </target>
 
     <!-- sql -->
-    <target name="build-sql"><antcall target="do-sql"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-sql"><antcall target="do-sql"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-sql"><antcall target="do-sql"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-sql">
         <antcall target="do-module"><param name="module" value="sql.help"/></antcall>
@@ -344,7 +338,7 @@
     </target>
 
     <!-- dm -->
-    <target name="build-dm"><antcall target="do-dm"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-dm"><antcall target="do-dm"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-dm"><antcall target="do-dm"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-dm">
         <antcall target="do-module"><param name="module" value="dm.virtual.db"/></antcall>
@@ -352,7 +346,7 @@
     </target>
 
     <!-- edm -->
-    <target name="build-edm"><antcall target="do-edm"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-edm"><antcall target="do-edm"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-edm"><antcall target="do-edm"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-edm">
         <antcall target="do-module"><param name="module" value="edm.editor"/></antcall>
@@ -360,31 +354,44 @@
     </target>
 
     <!-- etl -->
-    <target name="build-etl"><antcall target="do-etl"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-etl"><antcall target="do-etl"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-etl"><antcall target="do-etl"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-etl">
         <antcall target="do-module"><param name="module" value="etl.editor"/></antcall>
         <antcall target="do-module"><param name="module" value="etl.project"/></antcall>
     </target>
 
+    <!-- encoder -->
+    <target name="build-encoder"><antcall target="do-encoder"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-encoder"><antcall target="do-encoder"><param name="action" value="clean"/></antcall></target>
+    <target name=   "do-encoder">
+        <antcall target="do-module"><param name="module" value="encoder"/></antcall>
+        <antcall target="do-module"><param name="module" value="encoder.custom"/></antcall>
+        <antcall target="do-module"><param name="module" value="encoder.ui.basic"/></antcall>
+        <antcall target="do-module"><param name="module" value="encoder.custom.aip"/></antcall>
+        <antcall target="do-module"><param name="module" value="encoder.ui.tester"/></antcall>
+    </target>
+
     <!-- wsdlextensions -->
-    <target name="build-wsdlextensions"><antcall target="do-wsdlextensions"><param name="action" value="nbm"/></antcall></target>
+    <target name="build-wsdlextensions"><antcall target="do-wsdlextensions"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-wsdlextensions"><antcall target="do-wsdlextensions"><param name="action" value="clean"/></antcall></target>
     <target name=   "do-wsdlextensions">
         <antcall target="do-module"><param name="module" value="wsdlextensions.email"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.file"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.ftp"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.hl7"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.ims"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.jdbc"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.jms"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.ldap"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.mq"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.rest"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.sap"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.scheduler"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.smtp"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.snmp"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.swift"/></antcall>
+    </target>
+
+    <!-- kit -->
+    <target name="build-kit"><antcall target="do-kit"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-kit"><antcall target="do-kit"><param name="action" value="clean"/></antcall></target>
+    <target name=   "do-kit">
+        <antcall target="do-module"><param name="module" value="xml.kit"/></antcall>
+        <antcall target="do-module"><param name="module" value="soa.kit"/></antcall>
     </target>
 </project>

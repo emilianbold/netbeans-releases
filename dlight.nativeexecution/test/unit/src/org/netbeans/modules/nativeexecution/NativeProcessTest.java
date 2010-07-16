@@ -41,18 +41,23 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import java.util.concurrent.TimeoutException;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
@@ -62,10 +67,12 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import static org.junit.Assert.*;
 
 /**
@@ -73,6 +80,7 @@ import static org.junit.Assert.*;
  * @author ak119685
  */
 public class NativeProcessTest extends NativeExecutionBaseTestCase {
+    private static RequestProcessor rp = new RequestProcessor("NativeProcessTest RP");
 
     public NativeProcessTest(String name) {
         super(name);
@@ -92,6 +100,9 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
+        if (rp != null) {
+            rp.shutdown();
+        }
     }
 
     @Override
@@ -133,6 +144,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
     }
 
     public void doTestDestroyInfiniteTasks(final ExecutionEnvironment execEnv) throws Exception {
+        ConnectionManager.getInstance().connectTo(execEnv);
         final BlockingQueue<NativeProcess> processQueue = new LinkedBlockingQueue<NativeProcess>();
         final Counters counters = new Counters();
         int count = 20;
@@ -148,11 +160,10 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
         performDestroyTest(execEnv, count, infiniteTaskFactory, counters, processQueue);
 
         counters.dump(System.err);
-
-        assertEquals(count, counters.getCounter("Done").get()); // NOI18N
-        assertEquals(counters.getCounter("Started").get(), counters.getCounter("Finished").get()); // NOI18N
-        assertEquals(counters.getCounter("Started").get(), counters.getCounter("Killed").get()); // NOI18N
-        assertEquals(count, counters.getCounter("IOException").get() + counters.getCounter("InterruptedException").get() + counters.getCounter("Finished").get()); // NOI18N
+        assertEquals(count, counters.getCounter("Started").get()); // NOI18N
+        assertEquals(count, counters.getCounter("Killed").get()); // NOI18N
+        assertEquals(count, counters.getCounter("Finished").get()); // NOI18N
+        assertEquals(count, counters.getCounter("State == " + State.CANCELLED.name()).get());
     }
 
     public void doTestExecAndWaitTasks(final ExecutionEnvironment execEnv) throws Exception {
@@ -208,7 +219,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
                     public void run() {
                         try {
                             Thread.sleep(r.nextInt(5000));
-                            NativeProcess p = processQueue.take();
+                            final NativeProcess p = processQueue.take();
                             int pid = -1;
 
                             try {
@@ -217,7 +228,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
                                 Exceptions.printStackTrace(ex);
                             }
 
-                            assertTrue(pid > 0);
+                            assertTrue("PID must be > 0", pid > 0);
 
                             // Make sure process exists...
                             // Do not perform this test on Windows...
@@ -246,6 +257,30 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
                             System.out.println("Kill process " + pid); // NOI18N
                             p.destroy();
 
+                            int maxSecondsToWait = 10;
+
+                            // Will wait for maximum secondsToWait seconds for
+                            // the destroyed process...
+
+                            FutureTask<Integer> waitTask = new FutureTask<Integer>(new Callable<Integer>() {
+
+                                @Override
+                                public Integer call() throws Exception {
+                                    return Integer.valueOf(p.waitFor());
+                                }
+                            });
+
+                            rp.post(waitTask);
+
+                            try {
+                                waitTask.get(maxSecondsToWait, TimeUnit.SECONDS);
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (TimeoutException ex) {
+                                waitTask.cancel(true);
+                                fail("Process must be killed at this point!");
+                            }
+
                             // Make sure process doesn't exist...
                             // Again, skip Windows
 
@@ -257,7 +292,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
                                     Exceptions.printStackTrace(ex);
                                     fail();
                                 }
-                                assertTrue(result != 0);
+                                assertTrue("Process must be killed! Sending signal 0 to it must fail", result != 0);
                             }
 
                             counters.getCounter("Killed").incrementAndGet(); // NOI18N
@@ -385,7 +420,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
             if (info == null || info.getOSFamily() != HostInfo.OSFamily.WINDOWS) {
                 npb.setExecutable("sleep").setArguments("10000"); // NOI18N
             } else {
-                npb.setExecutable("cmd").setArguments("/C", "pause"); // NOI18N
+                npb.setExecutable("cmd"); // NOI18N
             }
         }
 
@@ -398,6 +433,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
                 counters.getCounter("Started").incrementAndGet(); // NOI18N
                 System.out.println("Process done. Result is: " + p.waitFor()); // NOI18N
                 counters.getCounter("Finished").incrementAndGet(); // NOI18N
+                counters.getCounter("State == " + p.getState().name()).incrementAndGet(); // NOI18N
             } catch (InterruptedException ex) {
                 counters.getCounter("InterruptedException").incrementAndGet(); // NOI18N
             } catch (InterruptedIOException ex) {

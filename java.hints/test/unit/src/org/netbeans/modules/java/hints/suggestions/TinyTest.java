@@ -95,6 +95,50 @@ public class TinyTest extends TestBase {
                         "     }\n" +
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
+    
+    public void testConvertBase1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private final int I = 1|8;\n" +
+                       "}\n",
+                       "2:27-2:29:hint:ERR_convertToDifferentBase",
+                       "FIX_convertToDifferentBase_16",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "     private final int I = 0x12;\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+    
+    public void testConvertBase2() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private final int I = 1|8;\n" +
+                       "}\n",
+                       "2:27-2:29:hint:ERR_convertToDifferentBase",
+                       "FIX_convertToDifferentBase_2",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "     private final int I = 0b10010;\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+    
+    public void testConvertBaseLong() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private final long I = 42|94967296L;\n" +
+                       "}\n",
+                       "2:28-2:39:hint:ERR_convertToDifferentBase",
+                       "FIX_convertToDifferentBase_16",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "     private final long I = 0x100000000L;\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
 
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {

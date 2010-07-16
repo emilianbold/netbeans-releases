@@ -79,6 +79,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
@@ -181,7 +182,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
      */
-    public MultiDiffPanel(File file, String rev1, String rev2, boolean forceNonEditable) {
+    public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, boolean forceNonEditable) {
         context = null;
         contextName = file.getName();
         initComponents();
@@ -666,6 +667,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
+                dividerSet = false;
                 displayStatuses = localDisplayStatuses;
                 setSetups(localSetups, cookies);
                 boolean propertyColumnVisible = false;
@@ -809,7 +811,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                                 setDiffIndex(currentIndex, 0, false);
                             }
                             if (splitPane != null) {
-                                dividerSet = false;
                                 updateSplitLocation();
                             }
                         }

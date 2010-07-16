@@ -43,11 +43,11 @@
 package org.netbeans.modules.php.project.ui;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
@@ -56,6 +56,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -69,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -81,10 +83,17 @@ public final class Utils {
 
     // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
     public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?(/[^?# ]*(\\?[^#]*)?(#\\w*)?)?$"; // NOI18N
+    public static final URL PLACEHOLDER_BADGE = Utils.class.getResource("/org/netbeans/modules/php/project/ui/resources/placeholder-badge.png"); // NOI18N
+
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
     private Utils() {
+    }
+
+    public static Image getIncludePathIcon(boolean opened) {
+        Image badge = ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/libraries-badge.png", false); // NOI18N
+        return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
     public static boolean validatePhpUnitForProject(PhpUnit phpUnit, PhpProject project) {
@@ -234,7 +243,7 @@ public final class Utils {
         } else if (FileUtil.isParentOf(nbproject, testSourcesFo)
                 || nbproject.equals(testSourcesFo)) {
             return NbBundle.getMessage(Utils.class, "MSG_TestUnderneathNBMetadata");
-        } else if (!Utils.isFolderWritable(testSourcesFile)) {
+        } else if (!FileUtils.isDirectoryWritable(testSourcesFile)) {
             return NbBundle.getMessage(Utils.class, "MSG_TestNotWritable");
         }
         return null;
@@ -356,7 +365,7 @@ public final class Utils {
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
-        if (projLoc == null || !isFolderWritable(projLoc)) {
+        if (projLoc == null || !FileUtils.isDirectoryWritable(projLoc)) {
             return NbBundle.getMessage(Utils.class, "MSG_" + type + "FolderReadOnly");
         }
 
@@ -446,42 +455,6 @@ public final class Utils {
      */
     public static boolean isAsciiPrintable(char ch) {
         return ch >= 32 && ch < 127;
-    }
-
-    // #144928, #157417
-    /**
-     * Handles correctly 'feature' of Windows (read-only flag, "Program Files" directory on Windows Vista).
-     * @param folder folder to check.
-     * @return <code>true</code> if folder is writable.
-     */
-    public static boolean isFolderWritable(File folder) {
-        if (!folder.isDirectory()) {
-            // #157591
-            LOGGER.fine(String.format("%s is not a folder", folder));
-            return false;
-        }
-        boolean windows = Utilities.isWindows();
-        LOGGER.fine("On Windows: " + windows);
-
-        boolean canWrite = folder.canWrite();
-        LOGGER.fine(String.format("Folder %s is writable: %s", folder, canWrite));
-        if (!windows) {
-            // we are not on windows => result is ok
-            return canWrite;
-        }
-
-        // on windows
-        LOGGER.fine("Trying to create temp file");
-        try {
-            File tmpFile = File.createTempFile("netbeans", null, folder);
-            LOGGER.fine(String.format("Temp file %s created", tmpFile));
-            tmpFile.delete();
-            LOGGER.fine(String.format("Temp file %s deleted", tmpFile));
-        } catch (IOException exc) {
-            LOGGER.log(Level.FINE, "Temp file NOT created", exc);
-            return false;
-        }
-        return true;
     }
 
     /**

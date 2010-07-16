@@ -58,6 +58,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -88,14 +89,18 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
         return null;
     }
 
+    @Override
     protected void addJaxWs20Library() throws Exception{
         SourceGroup[] sgs = SourceGroups.getJavaSourceGroups(project);
         if (sgs.length > 0) {
             FileObject srcRoot = sgs[0].getRootFolder();
-            ClassPath classPath = ClassPath.getClassPath(srcRoot,ClassPath.COMPILE);
-            FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
 
-            if (wsimportFO == null) {
+            ClassPath compileClassPath = ClassPath.getClassPath(srcRoot,ClassPath.COMPILE);
+            ClassPath bootClassPath = ClassPath.getClassPath(srcRoot,ClassPath.BOOT);
+            ClassPath classPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{compileClassPath, bootClassPath});
+            FileObject jaxWsClass = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
+
+            if (jaxWsClass == null) {
                 //Add the jaxws21 library to the project to be packed with the archive
                 Library MetroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
                 if (MetroLib != null) {

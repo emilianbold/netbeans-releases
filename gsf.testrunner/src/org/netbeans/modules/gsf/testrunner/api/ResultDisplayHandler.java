@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -135,7 +136,8 @@ final class ResultDisplayHandler {
 
     private JSplitPane createDisplayComp(Component left, Component right, int orientation, final int location) {
 
-        final JSplitPane splitPane = new JSplitPane(orientation, left, right);
+        final JSplitPane splitPane = new JSplitPane(orientation, true, left, right);
+        splitPane.setBorder(BorderFactory.createEmptyBorder());
         splitPane.setDividerLocation(location);
         splitPane.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResultPanelTree"));
         splitPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResultPanelTree"));
@@ -153,6 +155,7 @@ final class ResultDisplayHandler {
                 TestRunnerSettings.getDefault().setDividerSettings(dividerSettings);
             }
         });
+        splitPane.setToolTipText(session.getName());
         return splitPane;
     }
 
@@ -220,7 +223,7 @@ final class ResultDisplayHandler {
     private String runningSuite;
     private final List<Report> reports = new ArrayList<Report>();
     private String message;
-    private boolean sessionFinished;
+    boolean sessionFinished;
 
     /**
      *
@@ -302,10 +305,10 @@ final class ResultDisplayHandler {
 
         synchronized (this) {
             if (treePanel == null) {
-                sessionFinished = true;
                 message = msg;
                 return;
             }
+            sessionFinished = true;
         }
 
         displayInDispatchThread(prepareMethod("displayMsgSessionFinished", String.class), msg);        //NOI18N

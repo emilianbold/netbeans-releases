@@ -69,7 +69,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.openide.explorer.UIException;
-import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -134,20 +133,6 @@ public class EditorDisplayerTest extends NbTestCase {
 //        new EditorDisplayerTest("goo").setUp();
         } catch (Exception e){}
      
-    }
-     
-    public static Test suite() {
-        return new EditorDisplayerSuite ();
-    }
-     
-    private static class EditorDisplayerSuite extends NbTestSuite {
-        public EditorDisplayerSuite () {
-            super (EditorDisplayerTest.class);
-        }
-     
-        public void run (final TestResult tr) {
-            super.run (tr);
-        }
     }
      */
     

@@ -57,7 +57,9 @@ public abstract class BaseAction extends AbstractAction implements HelpCtx.Provi
 
     protected BaseAction() {
         putValue("noIconInMenu", true); // NOI18N
-        putValue(NAME, getFullName());
+        String fullName = getFullName();
+        putValue(NAME, fullName);
+        putValue(SHORT_DESCRIPTION, fullName);
         putValue("menuText", getPureName()); // NOI18N
     }
 

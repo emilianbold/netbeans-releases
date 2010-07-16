@@ -45,9 +45,7 @@
 package org.netbeans.modules.tasklist.trampoline;
 
 import java.util.List;
-import junit.framework.*;
 import org.netbeans.junit.*;
-import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 
 
 
@@ -77,24 +75,6 @@ public class TaskGroupFactoryTest extends NbTestCase {
 
     public TaskGroupFactoryTest (String name) {
         super (name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TaskGroupFactoryTest.class);
-        
-        return suite;
     }
 
     public void testGetGroup() {

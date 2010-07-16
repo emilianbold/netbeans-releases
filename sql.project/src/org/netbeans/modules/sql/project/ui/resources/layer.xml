@@ -88,7 +88,7 @@
     </folder>
     <folder name="Templates">
         <folder name="SOA_SQL">
-            <attr name="position" intvalue="400"/>
+            <attr name="position" intvalue="404"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.resources.Bundle"/>
             <file name="SQL.sql" url="SQLTemplate.sql">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.resources.Bundle"/>

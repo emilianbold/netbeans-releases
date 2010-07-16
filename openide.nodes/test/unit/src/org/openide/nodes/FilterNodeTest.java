@@ -74,10 +74,6 @@ public class FilterNodeTest extends NbTestCase {
         super(name);
     }
     
-//    public static FilterNodeTest suite() {
-//        return new FilterNodeTest("testRemoveNotifyIsCalledLazy");
-//    }
-
     /** Demonstrates a bug in FilterNode.changeOriginal.
      */
     public void testChangeOriginalLeafToArray () {

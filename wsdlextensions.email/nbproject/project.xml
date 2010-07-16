@@ -72,8 +72,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -90,7 +89,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -103,11 +102,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.mail</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.libs.mail</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

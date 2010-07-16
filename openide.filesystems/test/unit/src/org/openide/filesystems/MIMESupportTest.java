@@ -508,6 +508,29 @@ public class MIMESupportTest extends NbTestCase {
         assertEquals("text/x-foo2", foo.getMIMEType());
     }
 
+    public void testFAttrs() throws Exception {
+        FileObject resolver = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MIMEResolver/r.xml");
+        resolver.setAttribute("position", 2);
+        OutputStream os = resolver.getOutputStream();
+        PrintStream ps = new PrintStream(os);
+        ps.println("<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.0//EN' 'http://www.netbeans.org/dtds/mime-resolver-1_0.dtd'>");
+        ps.println("<MIME-resolver>");
+        ps.println(" <file>");
+        ps.println("  <fattr name='foo' text='yes'/>");
+        ps.println("  <resolver mime='text/x-boo'/>");
+        ps.println(" </file>");
+        ps.println("</MIME-resolver>");
+        os.close();
+        FileObject foo = FileUtil.createMemoryFileSystem().getRoot().createData("somefile");
+        assertEquals("content/unknown", foo.getMIMEType());
+        foo.setAttribute("foo", Boolean.FALSE);
+        assertEquals("content/unknown", foo.getMIMEType());
+        foo.setAttribute("foo", "no");
+        assertEquals("content/unknown", foo.getMIMEType());
+        foo.setAttribute("foo", "yes");
+        assertEquals("text/x-boo", foo.getMIMEType());
+    }
+
     public static class TestLookup extends ProxyLookup {
         public TestLookup() {
             super();

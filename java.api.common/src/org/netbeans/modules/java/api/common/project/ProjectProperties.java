@@ -126,4 +126,27 @@ public final class ProjectProperties {
     public static final String INCLUDES = "includes"; // NOI18N
     public static final String EXCLUDES = "excludes"; // NOI18N
 
+    public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
+    public static final String RUNTIME_ENCODING="runtime.encoding"; //NOI18N
+    public static final String BUILD_DIR = "build.dir"; // NOI18N
+    public static final String MAIN_CLASS = "main.class"; // NOI18N
+    public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
+
+    public static final String SYSTEM_PROPERTIES_RUN_PREFIX = "run-sys-prop."; // NOI18N
+    public static final String SYSTEM_PROPERTIES_TEST_PREFIX = "test-sys-prop."; // NOI18N
+
+    public static final String PROP_PROJECT_CONFIGURATION_CONFIG = "config"; // NOI18N
+
+    /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
+    public static final String DO_DEPEND = "do.depend"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
+    public static final String DO_JAR = "do.jar"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.21 */
+    public static final String COMPILE_ON_SAVE = "compile.on.save"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.19 */
+    public static final String COMPILE_ON_SAVE_UNSUPPORTED_PREFIX = "compile.on.save.unsupported"; // NOI18N
+
+    //NB 6.1 tracking of files modifications
+    public static final String TRACK_FILE_CHANGES="track.file.changes"; //NOI18N
 }

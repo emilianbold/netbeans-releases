@@ -48,6 +48,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.microchip.mplab.nbide.embedded</friend>
+                <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.tools.debugger.common</friend>

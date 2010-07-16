@@ -48,11 +48,9 @@ import org.netbeans.core.startup.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
-import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  * Do we correctly call the BundleActivators?
@@ -68,15 +66,6 @@ public class NetigsoActivationTest extends SetupHid {
         super(name);
     }
 
-    public static Test suite() {
-        Test t = null;
-//        t = new NetigsoTest("testOSGiCanRequireBundleOnNetBeans");
-        if (t == null) {
-            t = new NbTestSuite(NetigsoActivationTest.class);
-        }
-        return t;
-    }
-
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         clearWorkDir();
@@ -85,7 +74,7 @@ public class NetigsoActivationTest extends SetupHid {
         System.setProperty("netbeans.user", ud.getPath());
         
         data = new File(getDataDir(), "jars");
-        jars = new File(getWorkDir(), "jars");
+        jars = new File(getWorkDir(), "space in path");
         jars.mkdirs();
         File simpleModule = createTestJAR("activate", null);
     }

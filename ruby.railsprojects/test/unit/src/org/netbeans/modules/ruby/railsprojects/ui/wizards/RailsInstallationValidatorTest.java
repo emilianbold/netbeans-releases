@@ -80,7 +80,7 @@ public class RailsInstallationValidatorTest extends RubyTestBase {
 
         RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(jruby);
         assertTrue("RailsInstallationInfo '" + railsInfo.getMessage() + "' is valid", railsInfo.isValid());
-        assertEquals("2.3.4", railsInfo.getVersion());
+        assertEquals("2.3.8", railsInfo.getVersion());
         assertEquals(NbBundle.getMessage(RailsInstallationValidator.class, "RailsOk"), railsInfo.getMessage());
     }
 

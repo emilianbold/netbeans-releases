@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
 
 public interface SunApplication extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
 
+        public static final String VERSION_6_0_1 = "6.01"; //NOI18N
         public static final String VERSION_6_0_0 = "6.00"; //NOI18N
         public static final String VERSION_5_0_0 = "5.00"; //NOI18N
         public static final String VERSION_1_4_0 = "1.40"; //NOI18N

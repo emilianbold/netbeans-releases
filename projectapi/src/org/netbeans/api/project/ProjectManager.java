@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -162,19 +163,19 @@ public final class ProjectManager {
      * Cache of loaded projects (modified or not).
      * Also caches a dir which is <em>not</em> a project.
      */
-    private final Map<FileObject,Union2<Reference<Project>,LoadStatus>> dir2Proj = new WeakHashMap<FileObject,Union2<Reference<Project>,LoadStatus>>();
+    private final Map<FileObject,Union2<Reference<Project>,LoadStatus>> dir2Proj = Collections.synchronizedMap(new WeakHashMap<FileObject,Union2<Reference<Project>,LoadStatus>>());
     
     /**
      * Set of modified projects (subset of loaded projects).
      */
     private final Set<Project> modifiedProjects = new HashSet<Project>();
     
-    private final Set<Project> removedProjects = new WeakSet<Project>();
+    private final Set<Project> removedProjects = Collections.synchronizedSet(new WeakSet<Project>());
     
     /**
      * Mapping from projects to the factories that created them.
      */
-    private final Map<Project,ProjectFactory> proj2Factory = new WeakHashMap<Project,ProjectFactory>();
+    private final Map<Project,ProjectFactory> proj2Factory = Collections.synchronizedMap(new WeakHashMap<Project,ProjectFactory>());
     
     /**
      * Checks for deleted projects.
@@ -721,16 +722,12 @@ public final class ProjectManager {
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            synchronized (dir2Proj) {
-                dir2Proj.remove(fe.getFile());
-            }
+            dir2Proj.remove(fe.getFile());
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            synchronized (dir2Proj) {
-                dir2Proj.remove(fe.getFile());
-            }
+            dir2Proj.remove(fe.getFile());
         }
         
     }

@@ -426,22 +426,24 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     boolean needsLocalHistory(String methodName) {
         boolean ret = false;
         try {
-            if(localHistory == null) {
-                return ret;
-}
-            Set<String> s = interceptedMethods.get(localHistory.getClass().getName());
-            if(s == null) {
-                s = new HashSet<String>();
-                Method[] m = localHistory.getVCSInterceptor().getClass().getDeclaredMethods();
-                for (Method method : m) {
-                    if((method.getModifiers() & Modifier.PUBLIC) != 0) {
-                        s.add(method.getName());
-                    }
+            synchronized(versioningSystems) {
+                if(localHistory == null) {
+                    return ret;
                 }
-                interceptedMethods.put(localHistory.getClass().getName(), s);
+                Set<String> s = interceptedMethods.get(localHistory.getClass().getName());
+                if(s == null) {
+                    s = new HashSet<String>();
+                    Method[] m = localHistory.getVCSInterceptor().getClass().getDeclaredMethods();
+                    for (Method method : m) {
+                        if((method.getModifiers() & Modifier.PUBLIC) != 0) {
+                            s.add(method.getName());
+                        }
+                    }
+                    interceptedMethods.put(localHistory.getClass().getName(), s);
+                }
+                ret = s.contains(methodName);
+                return ret;
             }
-            ret = s.contains(methodName);
-            return ret;
         } finally {
             LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
         }

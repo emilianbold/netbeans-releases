@@ -54,8 +54,8 @@ import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.JTextField;
+import junit.framework.Test;
 
-import junit.framework.*;
 
 import org.netbeans.junit.*;
 import org.openide.cookies.*;

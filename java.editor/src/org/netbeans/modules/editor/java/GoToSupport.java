@@ -167,17 +167,12 @@ public class GoToSupport {
     }
     
     private static void performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean javadoc) {
-        if (!javadoc) {
-            final AtomicBoolean cancel = new AtomicBoolean();
-            
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                public void run() {
-                    performGoToImpl(doc, offset, goToSource, javadoc, cancel);
-                }
-            }, NbBundle.getMessage(GoToSupport.class, goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel, false);
-        } else {
-            performGoToImpl(doc, offset, goToSource, javadoc, null);
-        }
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            public void run() {
+                performGoToImpl(doc, offset, goToSource, javadoc, cancel);
+            }
+        }, NbBundle.getMessage(GoToSupport.class, javadoc ? "LBL_GoToJavadoc" : goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel, false);
     }
 
     private static void performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean javadoc, final AtomicBoolean cancel) {
@@ -765,7 +760,7 @@ public class GoToSupport {
         public Void visitVariable(VariableElement e, Boolean highlightName) {
             modifier(e.getModifiers());
             
-            result.append(getTypeName(e.asType(), true));
+            result.append(getTypeName(info, e.asType(), true));
             
             result.append(' ');
             
@@ -787,7 +782,7 @@ public class GoToSupport {
                     result.append(" in ");
 
                     //short typename:
-                    result.append(getTypeName(enclosing.asType(), true));
+                    result.append(getTypeName(info, enclosing.asType(), true));
                 }
             }
             
@@ -818,7 +813,7 @@ public class GoToSupport {
                 case METHOD:
                     modifier(e.getModifiers());
                     dumpTypeArguments(e.getTypeParameters());
-                    result.append(getTypeName(e.getReturnType(), true));
+                    result.append(getTypeName(info, e.getReturnType(), true));
                     result.append(' ');
                     boldStartCheck(highlightName);
                     result.append(e.getSimpleName());
@@ -868,7 +863,7 @@ public class GoToSupport {
                     result.append(", ");
                 }
                 
-                result.append(getTypeName(e.asType(), true));
+                result.append(getTypeName(info, e.asType(), true));
                 
                 addSpace = true;
             }
@@ -889,7 +884,7 @@ public class GoToSupport {
                     result.append(", ");
                 }
 
-                result.append(getTypeName(t, true));
+                result.append(getTypeName(info, t, true));
 
                 addSpace = true;
             }
@@ -913,7 +908,7 @@ public class GoToSupport {
                 VariableElement ve = listIt.next();
                 TypeMirror      type = typesIt != null ? typesIt.next() : ve.asType();
 
-                result.append(getTypeName(type, true));
+                result.append(getTypeName(info, type, true));
                 result.append(" ");
                 result.append(ve.getSimpleName());
 
@@ -936,7 +931,7 @@ public class GoToSupport {
                     result.append(", ");
                 }
                 
-                result.append(getTypeName(t, true));
+                result.append(getTypeName(info, t, true));
                 
                 addSpace = true;
             }
@@ -944,8 +939,8 @@ public class GoToSupport {
             
     }
     
-    private static String getTypeName(TypeMirror t, boolean fqn) {
-        return translate(Utilities.getTypeName(t, fqn).toString());
+    private static String getTypeName(CompilationInfo info, TypeMirror t, boolean fqn) {
+        return translate(Utilities.getTypeName(info, t, fqn).toString());
     }
     
     private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N

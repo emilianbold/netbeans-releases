@@ -46,10 +46,10 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 final class RefreshSlow extends AtomicBoolean implements Runnable {
     private ActionEvent ref;
-    private boolean ignoreIO;
     private BaseFileObj preferrable;
     private int size;
     private int index;
@@ -61,15 +61,35 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
 
     @Override
     public void run() {
-        if (!ignoreIO) {
-            ignoreIO = true;
-            ActionEvent r = this.ref;
-            Runnable goingIdle = r instanceof Runnable ? (Runnable) r : null;
-            FileChangedManager.idleIO(50, this, goingIdle, this);
-        } else {
-            RootObj.invokeRefreshFor(this, File.listRoots());
-            ignoreIO = false;
+        RootObj.invokeRefreshFor(this, File.listRoots());
+    }
+
+    boolean refreshFileObject(final BaseFileObj fo, final boolean expected, final int add) {
+        final boolean[] b = { true };
+        ActionEvent r = this.ref;
+        final Runnable goingIdle = r instanceof Runnable ? (Runnable) r : null;
+        Runnable refresh = new Runnable() {
+            boolean second;
+            @Override
+            public void run() {
+                if (second) {
+                    before();
+                    fo.refresh(expected);
+                    if (!after()) {
+                        b[0] = false;
+                        return;
+                    }
+                } else {
+                    second = true;
+                    FileChangedManager.idleIO(50, this, goingIdle, RefreshSlow.this);
+                }
+            }
+        };
+        FileUtil.runAtomicAction(refresh);
+        if (b[0]) {
+            progress(add, fo);
         }
+        return b[0];
     }
 
     void progress(int add, FileObject obj) {

@@ -84,12 +84,12 @@ made subject to such option by the copyright holder.
                     <target>localtest</target>
                 </action>
                 <action name="test.single">
-                    <target>localtest</target>
+                    <target>localtest-single</target>
                     <context>
-                        <property>includes</property>
+                        <property>test.class</property>
                         <folder>test/unit/src</folder>
                         <pattern>\.java$</pattern>
-                        <format>relative-path-noext</format>
+                        <format>java-name</format>
                         <arity>
                             <one-file-only/>
                         </arity>
@@ -98,10 +98,34 @@ made subject to such option by the copyright holder.
                 <action name="debug.test.single">
                     <target>localtest-single-nb-debug</target>
                     <context>
-                        <property>includes</property>
+                        <property>test.class</property>
                         <folder>test/unit/src</folder>
                         <pattern>\.java$</pattern>
-                        <format>relative-path-noext</format>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+                <action name="run.single.method">
+                    <target>localtest-single</target>
+                    <context>
+                        <property>test.class</property>
+                        <folder>test/unit/src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+                <action name="debug.single.method">
+                    <target>localtest-single-nb-debug</target>
+                    <context>
+                        <property>test.class</property>
+                        <folder>test/unit/src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
                         <arity>
                             <one-file-only/>
                         </arity>

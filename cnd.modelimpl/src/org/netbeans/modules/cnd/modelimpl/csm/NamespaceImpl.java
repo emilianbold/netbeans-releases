@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  * CsmNamespace implementation
@@ -204,6 +203,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
     }
     
+    @Override
     public void dispose() {
         onDispose();
         notify(this, NotifyEvent.NAMESPACE_REMOVED);
@@ -249,10 +249,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return unnamedNrs.size();
     }
     
+    @Override
     public CsmNamespace getParent() {
         return _getParentNamespace();
     }
     
+    @Override
     public Collection<CsmNamespace> getNestedNamespaces() {
         Collection<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList<CsmUID<CsmNamespace>>(nestedNamespaces.values()));
         return out;
@@ -286,6 +288,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return dc != null ? dc : DeclarationContainer.empty();
     }
     
+    @Override
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         DeclarationContainer declStorage = getDeclarationsSorage();
         // add all declarations
@@ -336,14 +339,17 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return uids;
     }
 
+    @Override
     public boolean isGlobal() {
         return global;
     }
     
+    @Override
     public CharSequence getQualifiedName() {
         return qualifiedName;
     }
     
+    @Override
     public CharSequence getName() {
         return name;
     }
@@ -423,10 +429,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return true;
     }
 
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void addDeclaration(CsmOffsetableDeclaration declaration) {
         boolean unnamed = !Utils.canRegisterDeclaration(declaration);
         // allow to register any enum
@@ -458,6 +466,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         CsmUID<CsmOffsetableDeclaration> declarationUid;
         if (declaration.getName().length() == 0) {
@@ -473,6 +482,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         notify(declaration, NotifyEvent.DECLARATION_REMOVED);
     }
     
+    @Override
     public Collection<CsmNamespaceDefinition> getDefinitions()  {
         List<CsmUID<CsmNamespaceDefinition>> uids = new ArrayList<CsmUID<CsmNamespaceDefinition>>();
         try {
@@ -553,15 +563,18 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return (List) getDeclarations();
     }
     
+    @Override
     public CsmProject getProject() {
         return _getProject();
     }
     
     private CsmUID<CsmNamespace> uid = null;
+    @Override
     public final CsmUID<CsmNamespace> getUID() {
         CsmUID<CsmNamespace> out = uid;
         if (out == null) {
@@ -631,6 +644,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         output.writeBoolean(this.global);
         
@@ -703,23 +717,25 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public static final Comparator<FileNameSortedKey> defenitionComparator = new Comparator<FileNameSortedKey>() {
+        @Override
         public int compare(FileNameSortedKey o1, FileNameSortedKey o2) {
             return o1.compareTo(o2);
         }
     };
 
     public static class FileNameSortedKey implements Comparable<FileNameSortedKey>, Persistent, SelfPersistent {
-        private int start = 0;
-        private CharSequence name;
+        private final int start;
+        private final int fileIndex;
         private FileNameSortedKey(CsmNamespaceDefinition def) {
-            this(def.getContainingFile().getAbsolutePath(), def.getStartOffset());
+            this(UIDUtilities.getFileID(((FileImpl)def.getContainingFile()).getUID()), def.getStartOffset());
         }
-        private FileNameSortedKey(CharSequence name, int start) {
+        private FileNameSortedKey(int fileIndex, int start) {
             this.start = start;
-            this.name = NameCache.getManager().getString(name);
+            this.fileIndex = fileIndex;
         }
+        @Override
         public int compareTo(FileNameSortedKey o) {
-            int res = CharSequences.comparator().compare(name, o.name);
+            int res = fileIndex - o.fileIndex;
             if (res == 0) {
                 res = start - o.start;
             }
@@ -735,25 +751,20 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         @Override public int hashCode() {
             int hash = 7;
             hash = 37 * hash + this.start;
-            hash = 37 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 37 * hash + this.fileIndex;
             return hash;
         }
         @Override public String toString() {
-            return "FileNameSortedKey: " + this.name + "[" + this.start; // NOI18N
+            return "FileNameSortedKey: " + this.fileIndex + "[" + this.start; // NOI18N
         }
-        public static FileNameSortedKey getStartKey(CharSequence name) {
-            return new FileNameSortedKey(name, 0);
-        }
-        public static FileNameSortedKey getEndKey(CharSequence name) {
-            return new FileNameSortedKey(name, Integer.MAX_VALUE);
-        }
+        @Override
         public void write(DataOutput output) throws IOException {
             output.writeInt(start);
-            PersistentUtils.writeUTF(name, output);
+            output.writeInt(fileIndex);
         }
         public FileNameSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = PersistentUtils.readUTF(input, FilePathCache.getManager());
+            fileIndex = input.readInt();
         }
     }
 }

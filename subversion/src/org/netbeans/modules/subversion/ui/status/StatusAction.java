@@ -70,14 +70,17 @@ public class StatusAction  extends ContextAction {
     
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;
     
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_ShowChanges"; // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return enabledForStatus;
     }
 
+    @Override
     public void performContextAction(Node[] nodes) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -96,9 +99,9 @@ public class StatusAction  extends ContextAction {
     /**
      * Connects to repository and gets recent status.
      */
-    public static void executeStatus(final Context context, SvnProgressSupport support) {
+    public static void executeStatus(final Context context, SvnProgressSupport support, boolean contactServer) {
 
-        if (context == null || context.getRoots().size() == 0) {
+        if (context == null || context.getRoots().isEmpty()) {
             return;
         }
             
@@ -113,7 +116,7 @@ public class StatusAction  extends ContextAction {
             Subversion.getInstance().getStatusCache().refreshCached(context);
             File[] roots = context.getRootFiles();
             for (int i = 0; i < roots.length; i++) {
-                executeStatus(roots[i], client, support);
+                executeStatus(roots[i], client, support, contactServer);
                 if (support.isCanceled()) {
                     return;
                 }
@@ -127,15 +130,15 @@ public class StatusAction  extends ContextAction {
         }
     }
 
-    public static void executeStatus(File root, SvnClient client, SvnProgressSupport support) throws SVNClientException {
+    public static void executeStatus(File root, SvnClient client, SvnProgressSupport support, boolean contactServer) throws SVNClientException {
         if (support != null && support.isCanceled()) {
             return;
         }
         ISVNStatus[] statuses;
         try {
-            statuses = client.getStatus(root, true, false, true); // cache refires events
+            statuses = client.getStatus(root, true, false, contactServer); // cache refires events
         } catch (SVNClientException ex) {
-            if (SvnClientExceptionHandler.isNotUnderVersionControl(ex.getMessage())) {
+            if (contactServer && SvnClientExceptionHandler.isNotUnderVersionControl(ex.getMessage())) {
                 Subversion.LOG.log(Level.INFO, "StatusAction.executeStatus: file under {0} not under version control, trying offline", root.getAbsolutePath()); //NOI8N
                 statuses = client.getStatus(root, true, false, false); // cache refires events
             } else {

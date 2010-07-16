@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.17
+#Version 1.19
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -31,6 +31,7 @@ supr java.lang.Object
 hfds implementations
 
 CLSS public abstract interface static org.netbeans.api.queries.FileBuiltQuery$Status
+ outer org.netbeans.api.queries.FileBuiltQuery
 meth public abstract boolean isBuilt()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
@@ -70,7 +71,7 @@ CLSS public abstract interface org.netbeans.spi.queries.FileBuiltQueryImplementa
 meth public abstract org.netbeans.api.queries.FileBuiltQuery$Status getStatus(org.openide.filesystems.FileObject)
 
 CLSS public abstract org.netbeans.spi.queries.FileEncodingQueryImplementation
-cons public FileEncodingQueryImplementation()
+cons public init()
 meth protected static void throwUnknownEncoding()
 meth public abstract java.nio.charset.Charset getEncoding(org.openide.filesystems.FileObject)
 supr java.lang.Object

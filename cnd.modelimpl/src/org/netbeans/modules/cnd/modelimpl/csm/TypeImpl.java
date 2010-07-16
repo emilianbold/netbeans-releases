@@ -134,6 +134,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
+        instantiationParams.trimToSize();
     }
 
     // package-local - for factory only
@@ -545,9 +546,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             StringBuilder sb = new StringBuilder(qname[last]);
             sb.append(Instantiation.getInstantiationCanonicalText(this.instantiationParams));
             specializationQname[last] = sb.toString();
-            for (int i = 0; i < last; i++) {
-                specializationQname[i] = qname[i];
-            }
+            System.arraycopy(qname, 0, specializationQname, 0, last);
             CsmObject o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
             if( CsmKindUtilities.isClassifier(o) ) {
                 result = (CsmClassifier) o;

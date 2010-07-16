@@ -235,14 +235,14 @@ public class DelegateMethodGenerator implements CodeGenerator {
                         descriptions = new ArrayList<ElementNode.Description>();
                         map.put(field.getEnclosingElement(), descriptions);
                     }
-                    descriptions.add(ElementNode.Description.create(field, null, false, false));
+                    descriptions.add(ElementNode.Description.create(info, field, null, false, false));
                 }
             }
             scope = scope.getEnclosingScope();
         }
         List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
         for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
-            descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+            descriptions.add(ElementNode.Description.create(info, entry.getKey(), entry.getValue(), false, false));
         }
         
         return descriptions;
@@ -263,12 +263,12 @@ public class DelegateMethodGenerator implements CodeGenerator {
                         descriptions = new ArrayList<ElementNode.Description>();
                         map.put(method.getEnclosingElement(), descriptions);
                     }
-                    descriptions.add(ElementNode.Description.create(method, null, true, false));
+                    descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
                 }
             }
             List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
             for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
-                descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(),
+                descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(),
                         false, false));
             }
             if (!descriptions.isEmpty()) {

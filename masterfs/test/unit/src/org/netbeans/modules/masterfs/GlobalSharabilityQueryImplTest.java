@@ -48,7 +48,6 @@ import java.io.File;
 import junit.framework.*;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -72,10 +71,6 @@ public class GlobalSharabilityQueryImplTest extends TestCase {
     
     public GlobalSharabilityQueryImplTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        return new TestSuite(GlobalSharabilityQueryImplTest.class);
     }
     
     /**

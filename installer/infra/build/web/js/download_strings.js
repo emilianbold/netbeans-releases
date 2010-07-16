@@ -70,11 +70,12 @@ var MODULE_CLUSTERS_FILES_LIST_NAME = "Module Clusters";
 var NOTE_SOLARIS = "Note: Java ME is only available for Windows, Linux and Mac OS X.";
 var NOTE_MACOSX  = "Note: Java ME is only available for Windows, Linux and Mac OS X.";
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
+var NOTE_ALL     = "Note: Greyed out technologies are not supported for this platform.";
 
 var MORE_LANGUAGES    = "More Languages...";
 var COMMUNITY_MESSAGE = "The NetBeans Community has fully contributed to the language(s) that can be downloaded from this page. To get more insight about localization volume downloaded check the <a href=\"http://wiki.netbeans.org/TFL10nCommunityStatus\">community status page</a>. To download latest community contribution, visit the <a href=\"http://wiki.netbeans.org/TFLocalizationDevelopmentUC\">localization plugin page</a>.";
 var COMMUNITY_CONTRIBUTED_SEP    = " -- Community Contributed -- " ;
-var SUN_SUPPORTED_SEP            = " -- Sun Supported -- " ;
+var SUN_SUPPORTED_SEP            = " -- Oracle Supported -- " ;
 
 var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
 var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";

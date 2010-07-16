@@ -65,7 +65,7 @@ public class RubyInstallation {
     private static final Logger LOGGER = Logger.getLogger(RubyInstallation.class.getName());
     
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
-    private static final String JRUBY_RELEASE = "1.5.0"; // NOI18N
+    private static final String JRUBY_RELEASE = "1.5.1"; // NOI18N
 
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
     private static final String JRUBY_RELEASEDIR = "jruby-" + JRUBY_RELEASE; // NOI18N
@@ -133,7 +133,7 @@ public class RubyInstallation {
         if (jrubyHome == null) {
             File jrubyDir =
                 InstalledFileLocator.getDefault()
-                                    .locate(JRUBY_RELEASEDIR, "org.netbeans.modules.ruby.project", // NOI18N
+                                    .locate(JRUBY_RELEASEDIR, "org.jruby.distro", // NOI18N
                     false); // NOI18N
 
             if ((jrubyDir == null) || !jrubyDir.isDirectory()) {

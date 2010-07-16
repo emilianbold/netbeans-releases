@@ -101,20 +101,10 @@ public class DictionaryProviderImpl implements DictionaryProvider {
     }
     
     public static synchronized Locale[] getInstalledDictionariesLocales() {
-        // XXX #36701: IFL should return multiple results, which would mean only dirs[2] here would be needed
-        File[] dirs = new File[] {
-            new File(System.getProperty("netbeans.home"), "modules" + File.separatorChar + "dict"), // NOI18N
-            new File(System.getProperty("netbeans.user"), "modules" + File.separatorChar + "dict"), // NOI18N
-            InstalledFileLocator.getDefault().locate("modules/dict", null, false),
-        };
-        
         Collection<Locale> locales = new HashSet<Locale>();
         
-        for (int dirCntr = 0; dirCntr < dirs.length; dirCntr++) {
-            if (dirs[dirCntr] == null)
-                continue;
-            
-            File[] children = dirs[dirCntr].listFiles(new FileFilter() {
+        for (File dictDir : InstalledFileLocator.getDefault().locateAll("modules/dict", null, false)) {
+            File[] children = dictDir.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
                     return pathname.isFile() && pathname.getName().startsWith("dictionary_");
                 }

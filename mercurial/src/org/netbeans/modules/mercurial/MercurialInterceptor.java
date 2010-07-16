@@ -451,17 +451,17 @@ public class MercurialInterceptor extends VCSInterceptor {
             return retval;
         }
 
-        private boolean addSeenRoot (File repositoryRoot, File rootToAdd) {
-            boolean alreadyAdded = true;
+        private File addSeenRoot (File repositoryRoot, File rootToAdd) {
+            File addedRoot = null;
             Set<File> seenRootsForRepository = getSeenRootsForRepository(repositoryRoot);
             synchronized (seenRootsForRepository) {
                 if (!seenRootsForRepository.contains(repositoryRoot)) {
                     // try to add the file only when the repository root is not yet registered
                     rootToAdd = FileUtil.normalizeFile(rootToAdd);
-                    alreadyAdded = HgUtils.prepareRootFiles(repositoryRoot, seenRootsForRepository, rootToAdd);
+                    addedRoot = HgUtils.prepareRootFiles(repositoryRoot, seenRootsForRepository, rootToAdd);
                 }
             }
-            return alreadyAdded;
+            return addedRoot;
         }
 
         private Set<File> getSeenRootsForRepository (File repositoryRoot) {
@@ -499,11 +499,12 @@ public class MercurialInterceptor extends VCSInterceptor {
                 File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
                 if (repositoryRoot != null) {
                     File hgFolder = FileUtil.normalizeFile(HgUtils.getHgFolderForRoot(repositoryRoot));
-                    if (!addSeenRoot(repositoryRoot, file)) {
+                    File newlyAddedRoot = addSeenRoot(repositoryRoot, file);
+                    if (newlyAddedRoot != null) {
                         synchronized (hgFolders) {
                             // this means the repository has not yet been scanned, so scan it
                             Mercurial.STATUS_LOG.fine("pingRepositoryRootFor: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath()); //NOI18N
-                            reScheduleRefresh(4000, file);
+                            reScheduleRefresh(4000, newlyAddedRoot);
                             if (!hgFolders.containsKey(hgFolder)) {
                                 if (hgFolder.isDirectory()) {
                                     // however there might be NO .hg folder, especially for just initialized repositories

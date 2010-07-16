@@ -1,9 +1,9 @@
-NETBEANS IDE 6.9 Beta ("Product")
+NETBEANS IDE 6.9 ("Product")
 
 Please review the complete list of open-source licenses
 governing software  included in the Product. They can be
-found in the THIRDPARTYLICENSE.txt file. Oracle elects to use
-only the GNU Lesser General Public License version 2.1
+found in the THIRDPARTYLICENSE.txt file. Oracle elects to
+use only the GNU Lesser General Public License version 2.1
 (LGPL)/GNU General Public License version 2 (GPL) for any
 software where a choice of LGPL/GPL license versions are
 made available with the language indicating that
@@ -41,9 +41,6 @@ Entitlement.
 LICENSE #6: The use of the JavaFX Software Development Kit
 (SDK) is subject to this Software License Agreement and
 Entitlement.
-
-LICENSE #7: The use of the NetBeans JavaFX Composer  Plugin
-is subject to this Software Evaluation License Agreement
 
 ************************************************************
 
@@ -430,13 +427,13 @@ Public License instead of this License.
 
 "CLASSPATH" EXCEPTION TO THE GPL VERSION 2
 
-Certain source files distributed by Oracle Corp.
-are subject to  the following clarification and special
-exception to the GPL Version 2, but only where Oracle has
-expressly included in the particular source file's header
-the words  "Oracle designates this particular file as subject
-to the "Classpath" exception as provided by Oracle in the
-License file that accompanied this code." 
+Certain source files distributed by Oracle Corp. are subject
+to  the following clarification and special exception to the
+GPL Version 2, but only where Oracle has expressly included
+in the particular source file's header the words  "Oracle
+designates this particular file as subject to the
+"Classpath" exception as provided by Oracle in the License
+file that accompanied this code." 
 
 Linking this library statically or dynamically with other
 modules is making a combined work based on this library.
@@ -683,12 +680,11 @@ are fulfilled for the Covered Software.
 
 4.1. New Versions.
 
-Oracle Corp. is the initial license steward and
-may publish revised and/or new versions of this License from
-time to time. Each version will be given a distinguishing
-version number. Except as provided in Section 4.3, no one
-other than the license steward has the right to modify this
-License. 
+Oracle Corp. is the initial license steward and may publish
+revised and/or new versions of this License from time to
+time. Each version will be given a distinguishing version
+number. Except as provided in Section 4.3, no one other than
+the license steward has the right to modify this License. 
 
 4.2. Effect of New Versions.
 
@@ -2236,279 +2232,3 @@ representative of each party.
 Please contact Oracle Corporation, 500 Oracle Parkway,
 Redwood Shores, California 94065 if you have questions.
 
-
-************************************************************
-
-LICENSE #7:
-Software Evaluation License Agreement
-
-READ THE TERMS OF THIS SOFTWARE EVALUATION LICENSE
-AGREEMENT, INCLUDING EXHIBIT A ("AGREEMENT"), CAREFULLY
-BEFORE DOWNLOADING SUN TECHNOLOGY OR OPENING SUN TECHNOLOGY
-MEDIA PACKAGE. BY OPENING SUN TECHNOLOGY MEDIA PACKAGE, YOU
-AGREE TO THE TERMS OF THIS AGREEMENT. IF YOU ARE ACCESSING
-SUN TECHNOLOGY ELECTRONICALLY, INDICATE YOUR ACCEPTANCE OF
-THESE TERMS BY SELECTING THE "ACCEPT" (OR EQUIVALENT) BUTTON
-AT THE END OF THIS AGREEMENT. IF YOU DO NOT AGREE TO ALL OF
-THE TERMS, PROMPTLY RETURN THE UNUSED SUN TECHNOLOGY TO SUN
-OR, IF SUN TECHNOLOGY IS ACCESSED ELECTRONICALLY, SELECT THE
-"DECLINE" (OR EQUIVALENT) BUTTON AT THE END OF THIS
-AGREEMENT.
-
-This Agreement is entered into by and between Sun
-Microsystems, Inc., a Delaware corporation having its
-principal place of business at 4150 Network Circle, Santa
-Clara, CA 95054 and its affiliates ("Sun"), and  the
-individual, corporation, partnership or other legal entity
-receiving the Sun Technology ("Licensee"). The parties agree
-as follows: 
-
-I. EXHIBIT A:
-
-Purpose: Internal evaluation and/or testing only. 
-
-Effective Date: The date upon which Licensee receives the
-Sun Technology.
-
-Sun Technology:  NetBeans JavaFX Composer Plugin.
-
-Version:  1.0.
-
-The Sun Technology is Pre-Release.
-
-Term:  90 days.
-
-Feedback Frequency: Licensee will provide feedback at the
-frequency requested by Sun.
-
-Feedback Alias (if any): Licensee will provide feedback to
-the individual or alias specified by Sun.
-
-II. Software Evaluation License Agreement
-
-1. Use And Location of Sun Technology Licensee shall use 
-the Sun Technology listed on Exhibit A of this Agreement 
-solely for the Purpose listed in Exhibit A, and only until
-expiration of the term of this Agreement listed on Exhibit
-A, unless terminated earlier in accordance with Section 2
-herein. Licensee shall be solely responsible for
-installation of the Sun Technology.
-
-2. Term and Termination 2.1 This Agreement shall remain in
-force for the term listed on Exhibit A, unless terminated
-earlier in accordance with this Section 2. Either party may
-terminate this Agreement at any time for any reason. 
-Licensee's right to use the Sun Technology shall terminate
-immediately and without notice if Licensee breaches Sections
-1("Use and Location of Sun Technology"), 3 ("Software
-License"), 4 ("Restrictions"), 5 ("Feedback"), 6
-("Confidential Information"), 10 ("Import and Export Laws"),
-or 11 ("Miscellaneous"). 2.2 Upon the termination or
-expiration of this Agreement for any reason, Licensee shall
-immediately terminate use of the Sun Technology, and destroy
-the Sun Technology and any copies thereof (unless otherwise
-requested by Sun), and, upon written request by Sun, provide
-Sun with a written statement certifying that Licensee has
-complied with the preceding obligations. 
-
-3. SOFTWARE LICENSE 3.1 If Sun provides to Licensee software
-Sun Technology, whether loaded on hardware Sun Technology or
-as a standalone item, Sun hereby grants to Licensee a
-nontransferable, nonexclusive, limited license to use the
-software Sun Technology solely for the Purpose, except as
-further limited in Exhibit A. Sun retains all right, title,
-and interest in all copies of the software Sun Technology.
-3.2 Portions of software Sun Technology may be provided with
-notices and open source licenses from communities and third
-parties that govern the use of those portions, and any
-licenses granted hereunder do not alter any rights and
-obligations Licensee may have under such open source
-licenses, however, the disclaimer of warranty and limitation
-of liability provisions in this Agreement will apply to all
-software Sun Technology. Such notices and licenses are
-available upon Licensee's request to Sun, in the event
-Licensee is unable to locate them in or accompanying the Sun
-Technology.
-
-4. RESTRICTIONS 4.1 Licensee shall not modify, create
-derivative works, decompile, disassemble, decrypt, extract,
-or otherwise reverse engineer Sun Technology, except to the
-extent any of the preceding limitations are unenforceable
-under applicable law.  Licensee is not authorized to: a)
-disclose, distribute, or transfer the Sun Technology; b) use
-the Sun Technology in development activities (except to the
-extent necessary to enable the interoperability of
-Licensee's products with the Sun Technology for evaluation
-purposes), for commercial uses or in a production
-environment, or c) make public any benchmarking or results
-of evaluating the Sun Technology. 
-
-5. FEEDBACK "Feedback" means all test results, data,
-comments, enhancements, and any other form of feedback that
-Licensee may provide to Sun relating to the Sun Technology.
-If any of the components of the Sun Technology is in
-pre-release phase, as designated on Exhibit A, then Licensee
-shall supply Sun with Feedback regarding its evaluation of
-the Sun Technology as reasonably requested by Sun, but no
-more frequently than weekly unless otherwise agreed by the
-parties. Feedback becomes the exclusive property of Sun and
-is Sun Confidential Information. Any Licensee materials
-included with the Feedback, in the form of software code or
-documents separately marked as "Licensee Confidential &
-Proprietary," shall not be considered Feedback for purposes
-of this Agreement, and shall remain the property of Licensee
-(or its licensors), unless Licensee has agreed in writing to
-treat them as Feedback.
-
-6. CONFIDENTIAL INFORMATION 6.1 "Confidential Information"
-means: (a) all information disclosed in tangible form during
-the term of this Agreement, pertaining to the Purpose, and
-clearly labeled as confidential or proprietary at the time
-of disclosure; (b) all information pertaining to the Purpose
-that is disclosed in non-tangible form during the term of
-this Agreement, identified as confidential or proprietary at
-the time of disclosure, and summarized in writing,
-designated as confidential or proprietary, and delivered to
-the other party within thirty (30) days after disclosure;
-(c) the Sun Technology;  (d) Feedback; and (e) the terms of
-this Agreement. 6.2  A party receiving Confidential
-Information (the "Recipient") must keep it confidential
-using the same degree of care that it exercises with respect
-to its own  information of like importance but in no event
-less than reasonable care, and may use it only for the
-purposes for which it was provided under this Agreement.
-Confidential Information may be disclosed only to employees
-and individual subcontractors in furtherance of this
-Agreement, that are obligated to the Recipient under similar 
-restrictions and only for the purposes for which it was
-provided under this Agreement.  Recipient's obligations
-under this Section will expire five (5) years from the date
-of receipt of the Confidential Information, except for Sun
-source code which will be protected in perpetuity. The
-parties agree that the Sun Technology contains trade secrets
-of Sun. Recipient may disclose Confidential Information
-pursuant to statute, regulation, or the order of a court of
-competent jurisdiction, provided that Recipient provides the
-other party with prior notice and cooperates with the other
-party in taking appropriate protective measures. These
-obligations do not apply to information which: (i) was in
-the possession of, or was known by, the Recipient prior to
-its receipt from the other party, without an obligation to
-maintain its confidentiality, (ii) is rightfully obtained by
-the Recipient without breach of any obligation to maintain
-its confidentiality; (iii) is or becomes known to the public
-through no act or omission of the Recipient; or (iv) the
-Recipient develops independently without using Confidential
-Information of the other party.  
-
-7. NO SUPPORT Sun is under no obligation to provide support
-for the Sun Technology or to provide any error corrections
-or updates to the Sun Technology under this Agreement.
-
-8. DISCLAIMER OF WARRANTIES 8.1 THE SUN TECHNOLOGY IS
-PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND.  ALL
-EXPRESS AND IMPLIED CONDITIONS, REPRESENTATIONS, AND
-WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF 
-MERCHANTABILITY, SATISFACTORY QUALITY, FITNESS FOR A
-PARTICULAR PURPOSE, AND  NON-INFRINGEMENT, ARE DISCLAIMED,
-TO THE FULLEST EXTENT PERMITTED BY LAW. 8.2 Licensee
-acknowledges that the Sun Technology may be experimental.
-Licensee further acknowledges that the Sun Technology may
-have defects or deficiencies that cannot or will not be
-corrected by Sun. Licensee acknowledges that the Sun
-Technology may not have been approved by the United States
-Federal Communications Commission, any other governmental
-agency, or any test laboratory (for example without
-limitation, Underwriter's Laboratories, and TUV). Neither
-Sun nor its licensors are under any obligation to release a
-commercial version of any of the Sun Technology.
-
-9.  LIMITATION OF LIABILITY TO THE EXTENT ALLOWED BY LAW:
-EXCEPT FOR MISAPPROPRIATION OR INFRINGEMENT OF INTELLECTUAL
-PROPERTY RIGHTS OR BREACHES OF LICENSE GRANTS, (a) NEITHER
-PARTY WILL BE LIABLE UNDER ANY LEGAL THEORY FOR ANY SPECIAL,
-INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES
-RELATED TO THIS AGREEMENT OR THE USE OF THE SUN TECHNOLOGY,
-EVEN IF THAT PARTY HAS PREVIOUSLY BEEN ADVISED OF OR
-OTHERWISE HAS REASON TO KNOW OF THE POSSIBILITY OF SUCH
-DAMAGES AND (b) NEITHER PARTY WILL BE LIABLE FOR ANY DIRECT
-DAMAGES RELATED TO THIS AGREEMENT OR THE USE OF THE SUN
-TECHNOLOGY, EXCEPT FOR LICENSEE'S LIABILITY FOR LOSS OF OR
-DAMAGE TO THE SUN TECHNOLOGY OR FAILURE TO RETURN THE SUN
-TECHNOLOGY TO SUN, NOT TO EXCEED THE GREATER OF THE MARKET
-VALUE OF SUCH SUN TECHNOLOGY OR USD$10,000.  (c) THE
-PRECEDING LIMITATIONS IN THIS ENTIRE ARTICLE WILL APPLY EVEN
-IF A PARTY KNEW OR SHOULD HAVE KNOWN OF THE POSSIBILITY OF
-SUCH LIABILITY, LOSSES OR DAMAGES, AND REGARDLESS  OF
-WHETHER THE LIABILITY, LOSS, OR DAMAGE ARISES IN TORT,
-CONTRACT, NEGLIGENCE OR BREACH OF WARRANTY OR OTHERWISE, AND
-EVEN IF ANY EXCLUSIVE REMEDY FAILS OF ITS ESSENTIAL PURPOSE.
-
-10. IMPORT AND EXPORT LAWS The Sun Technology and technical
-data (including technical data released through access to
-Sun Technology) delivered under the Agreement are subject to
-U.S. export laws and applicable laws of other countries.
-Licensee shall strictly comply with all such laws and assume
-responsibility to obtain licenses and to provide all
-appropriate documentation or information to export,
-re-export, or import as may be required. Licensee agrees not
-to export or re-export to entities on the most current U.S.
-export exclusion lists or to any country subject to U.S.
-embargo or terrorist controls as specified in the U.S.
-export laws. Licensee warrants that it is not identified on
-any U.S. Government export exclusions list. Licensee will
-not use or provide the Sun Technology, materials, tools, and
-technical data for nuclear, missile, or chemical and
-biological weaponry end uses. Licensee agrees not to
-transfer any technical data that is controlled by the
-International Traffic in Arms Regulations (ITAR) of the U.S.
-Department of State (22 CFR Subchapter M Parts 120-130) to
-Sun without prior written notice. These obligations shall
-survive expiration or termination of this Agreement.
-
-11. MISCELLANEOUS 11.1 Licensee may not assign or transfer
-its rights or obligations hereunder without the prior
-written consent of Sun, not to be unreasonably withheld. Sun
-may assign or transfer its rights and obligations under this
-Agreement without consent in the event of a merger,
-acquisition, combination or sale of substantially all of the
-assets of Sun or a Sun business unit.   11.2 If any term or
-provision of this Agreement is found to be invalid under any
-applicable statute or rule of law, then, that provision will
-be enforced to the maximum extent possible to effect the
-intent of the parties, and the remaining provisions of this
-Agreement shall remain in full force and effect. 11.3 Any
-action related to this Agreement will be governed by
-California law and controlling federal law.  No choice of
-law rules of any jurisdiction will apply. 11.4 In addition
-to any other relief, the prevailing party in any action
-arising out of this Agreement shall be entitled to
-reasonable attorneys' fees and costs. 11.5 Licensee is
-granted no rights to use any of Sun's trademarks under this
-Agreement. Sun's trademarks include company names, product
-or service names, marks, logos, designs and trade dress.
-Licensee may not remove, alter, or add to any of Sun's
-trademarks that appear on the Sun Technology. 11.6 U.S.
-GOVERNMENT RIGHTS IN SOFTWARE SUN TECHNOLOGY AND
-DOCUMENTATION. In accordance with FAR 12.212(a) and DFARS
-227.7202-3(a), use, duplication, and disclosure of software
-Sun Technology and related documentation by or for the U.S.
-Government are subject to the license terms set forth in
-this Agreement. No other rights are granted to the U.S.
-Government. 11.7 Rights and obligations under the Agreement
-that by their nature should survive will remain in effect
-after termination or expiration of this Agreement. 11.8 This
-Agreement is the parties' entire agreement relating to the
-license of the Sun Technology and supersedes all prior and
-contemporaneous oral and written communications, proposals,
-conditions, representations, and warranties, and prevails
-over any conflicting or additional terms of any quote,
-order, purchase order, acknowledgment, or other
-communication between the parties relating to the license of
-the Sun Technology during the term of this Agreement.  No
-modification to this Agreement will be binding, unless in
-writing and signed by an authorized representative of each
-party. 
-
-Rev. 3.2_1Oct09.SO-BK
-************************************************************

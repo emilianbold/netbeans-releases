@@ -84,6 +84,14 @@ public abstract class VCSKenaiAccessor {
     }
 
     /**
+     * Kenai repository's access rights
+     */
+    public enum RepositoryActivity {
+        READ,
+        WRITE
+    }
+
+    /**
      * Returns an instance of PasswordAuthentication holding the actuall
      * Kenai credentials or null if user not logged in.
      *
@@ -170,6 +178,14 @@ public abstract class VCSKenaiAccessor {
      * @param repositoryUrl repository URL
      */
     public abstract void logVcsUsage(String vcs, String repositoryUrl);
+
+    /**
+     * Returns <code>false</code> if currently logged user is not authorized to perform a given activity on a given kenai repository.
+     * @param repositoryURL repository url
+     * @param activity requested activity
+     * @return
+     */
+    public abstract boolean isAuthorized (String repositoryURL, RepositoryActivity activity);
 
     /**
      * Repesents a Kenai user

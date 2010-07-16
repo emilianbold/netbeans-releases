@@ -53,12 +53,12 @@
     <property name="sierra.path" value="hudson/job/main/ws/cache/latest"/>
     <property name="sierra.file" value="main.zip"/>
     <property name="sierra.name" value="main"/>
-    <property name="sierra.user" value=".netbeans/sierra"/>
+    <property name="sierra.user" value=".netbeans/dev"/>
 
     <!-- NetBeans latest nightly -->
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
     <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
-    <property name="netbeans.zip"  value="netbeans-6.9.zip"/>
+    <property name="netbeans.zip"  value="netbeans.zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
 
     <!-- cvs -->

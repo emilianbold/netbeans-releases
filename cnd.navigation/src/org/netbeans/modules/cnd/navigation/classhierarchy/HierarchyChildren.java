@@ -45,10 +45,10 @@
 package org.netbeans.modules.cnd.navigation.classhierarchy;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
 import org.openide.nodes.Children;
@@ -81,7 +81,7 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
     
     private synchronized void resetKeys(){
         if (object.isValid()) {
-            Set<CsmClass> set = model.getModel().get(object);
+            Collection<CsmClass> set = model.getHierarchy(object);
             if (set != null && set.size() > 0) {
                 List<CsmClass> list = new ArrayList<CsmClass>(set);
                 Collections.sort(list, COMARATOR);
@@ -92,10 +92,11 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
         setKeys(new CsmClass[0]);
     }
     
+    @Override
     protected Node[] createNodes(CsmClass cls) {
         Node node = null;
-        Set<CsmClass> set = model.getModel().get(cls);
-        if (set == null || set.size() == 0) {
+        Collection<CsmClass> set = model.getHierarchy(cls);
+        if (set == null || set.isEmpty()) {
             node = new HierarchyNode(cls, Children.LEAF, model, false);
         } else {
             if (checkRecursion(cls)) {
@@ -135,6 +136,7 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
     }
     
     private static class MyComparator implements Comparator<CsmClass> {
+        @Override
         public int compare(CsmClass o1, CsmClass o2) {
             String n1 = o1.getName().toString();
             String n2 = o2.getName().toString();

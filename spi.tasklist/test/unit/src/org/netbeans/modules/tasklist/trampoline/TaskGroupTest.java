@@ -46,11 +46,7 @@ package org.netbeans.modules.tasklist.trampoline;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import junit.framework.*;
 import org.netbeans.junit.*;
-import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 
 
 
@@ -63,24 +59,6 @@ public class TaskGroupTest extends NbTestCase {
 
     public TaskGroupTest (String name) {
         super (name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TaskGroupTest.class);
-        
-        return suite;
     }
 
     public void testGetters() {

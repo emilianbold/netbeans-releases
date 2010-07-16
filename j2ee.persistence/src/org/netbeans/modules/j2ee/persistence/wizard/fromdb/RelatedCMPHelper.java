@@ -52,11 +52,9 @@ import org.netbeans.modules.j2ee.persistence.entitygenerator.DbSchemaEjbGenerato
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.GeneratedTables;
-import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.*;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.dbschema.SchemaElement;
-import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 
@@ -86,7 +84,9 @@ public class RelatedCMPHelper {
     
     private boolean cmpFieldsInInterface;
     private boolean generateFinderMethods;
-    
+    private boolean useColumnNamesInRelationships;
+
+
     private DbSchemaEjbGenerator generator;
     
     private TableSource tableSource;
@@ -250,6 +250,14 @@ public class RelatedCMPHelper {
         this.cmpFieldsInInterface = cmpFieldsInInterface;
     }
     
+    public boolean isUseColumnNamesInRelationships() {
+        return useColumnNamesInRelationships;
+    }
+
+    public void setUseColumnNamesInRelationships(boolean useColumnNamesInRelationships) {
+        this.useColumnNamesInRelationships = useColumnNamesInRelationships;
+    }
+
     public boolean isGenerateFinderMethods() {
         return this.generateFinderMethods;
     }
@@ -301,8 +309,23 @@ public class RelatedCMPHelper {
         String pkgName = getPackageName();
 
         for (Table table : selectedTables.getTables()) {
-            genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), rootFolder, pkgName, 
-                    selectedTables.getClassName(table), selectedTables.getUpdateType(table), table.getUniqueConstraints());
+            String pkg = pkgName;
+            UpdateType ut = selectedTables.getUpdateType(table);
+            if( ut == UpdateType.UPDATE){
+                String fqn = persistenceGen.getFQClassName(table.getName());
+                if(fqn != null){
+                    int ind = fqn.lastIndexOf(".");
+                    if(ind>-1){
+                        pkg = fqn.substring(0, ind);
+                    } else {
+                        pkg = "";
+                    }
+                } else {
+                    assert false:"Entity for " + table.getName() + " isn't resolved";
+                }
+            }
+            genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), rootFolder, pkg, 
+                    selectedTables.getClassName(table), ut, table.getUniqueConstraints());
         }
 
         // add the (possibly related) disabled tables, so that the relationships are created correctly
@@ -321,7 +344,7 @@ public class RelatedCMPHelper {
             }
         }
 */
-        generator = new DbSchemaEjbGenerator(genTables, schemaElement, collectionType);
+        generator = new DbSchemaEjbGenerator(genTables, schemaElement, collectionType, useColumnNamesInRelationships);
     }
     
     public EntityClass[] getBeans() {
@@ -343,6 +366,7 @@ public class RelatedCMPHelper {
         private final Map<String, UpdateType> updateTypes = new HashMap<String, UpdateType>();
         private final Map<String, Set<List<String>>> allUniqueConstraints = new HashMap<String, Set<List<String>>>();
         
+        @Override
         public Set<String> getTableNames() {
             return Collections.unmodifiableSet(tableNames);
         }
@@ -360,30 +384,37 @@ public class RelatedCMPHelper {
             allUniqueConstraints.put(tableName, uniqueConstraints);
         }
         
+        @Override
         public String getCatalog() {
             return catalog;
         }
          
+        @Override
         public String getSchema() {
             return schema;
         }
         
+        @Override
         public FileObject getRootFolder(String tableName) {
             return rootFolders.get(tableName);
         }
 
+        @Override
         public String getPackageName(String tableName) {
             return packageNames.get(tableName);
         }
         
+        @Override
         public String getClassName(String tableName) {
             return classNames.get(tableName);
         }
 
+        @Override
         public UpdateType getUpdateType(String tableName){
             return updateTypes.get(tableName);
         }
 
+        @Override
         public Set<List<String>> getUniqueConstraints(String tableName) {
             return this.allUniqueConstraints.get(tableName);
         }

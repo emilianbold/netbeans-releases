@@ -75,7 +75,7 @@ public final class FileCommandAction extends ProjectAction {
     }
     
     @Override
-    protected void refresh( Lookup context ) {
+    protected void refresh(Lookup context, boolean immediate) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, getCommand() );
 
         if ( projects.length != 1 ) {

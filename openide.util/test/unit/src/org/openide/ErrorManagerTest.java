@@ -44,7 +44,6 @@
 
 package org.openide;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
 
 /** Test for general ErrorManager functionality.
@@ -55,12 +54,6 @@ public class ErrorManagerTest extends NbTestCase {
 
     public ErrorManagerTest(java.lang.String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ErrorManagerTest.class);
-
-        return suite;
     }
 
     protected void setUp () {

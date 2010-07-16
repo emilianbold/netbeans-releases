@@ -199,7 +199,7 @@ public class LayerIndex extends Task {
         getProject().getReferences().put(resourceId, resources);
     }
 
-    private String shortenCNB(String cnb) {
+    static String shortenCNB(String cnb) {
         if (cnb != null) {
             return cnb.replaceFirst("^org\\.netbeans\\.", "o.n.").replaceFirst("^org\\.openide\\.", "o.o.").replaceFirst("\\.modules\\.", ".m.");
         } else {

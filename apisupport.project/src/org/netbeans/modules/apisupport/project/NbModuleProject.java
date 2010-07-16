@@ -287,8 +287,7 @@ public final class NbModuleProject implements Project {
         ic.add(new AccessibilityQueryImpl(this));
         ic.add(new SourceLevelQueryImpl(this));
         ic.add(helper.createSharabilityQuery(evaluator(), new String[0], new String[]{
-                    // currently these are hardcoded
-                    "build", // NOI18N
+                    "${build.dir}", // NOI18N
                 }));
         ic.add(srcs);
         ic.add(sourcesHelper.createSourceGroupModifierImplementation());    // XXX only for unit tests, will need custom impl for qa-functional

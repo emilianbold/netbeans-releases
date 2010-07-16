@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.28
+#Version 1.31
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -84,7 +84,8 @@ hfds DEFAULT,LOG,MUTEX,TIMERS,dir2Proj,factories,loadingThread,modifiedProjects,
 hcls LoadStatus,ProjectDeletionListener,ProjectStateImpl
 
 CLSS public final static org.netbeans.api.project.ProjectManager$Result
-cons public Result(javax.swing.Icon)
+ outer org.netbeans.api.project.ProjectManager
+cons public init(javax.swing.Icon)
 meth public javax.swing.Icon getIcon()
 supr java.lang.Object
 hfds icon
@@ -97,6 +98,7 @@ meth public static org.netbeans.api.project.Sources getSources(org.netbeans.api.
 meth public static org.netbeans.spi.project.AuxiliaryConfiguration getAuxiliaryConfiguration(org.netbeans.api.project.Project)
 meth public static org.openide.filesystems.FileObject getCacheDirectory(org.netbeans.api.project.Project,java.lang.Class<?>) throws java.io.IOException
 supr java.lang.Object
+hfds LOG
 hcls BasicInformation
 
 CLSS public abstract interface org.netbeans.api.project.SourceGroup
@@ -116,6 +118,7 @@ meth public final static org.netbeans.api.project.SourceGroupModifier$Future cre
 supr java.lang.Object
 
 CLSS public final static org.netbeans.api.project.SourceGroupModifier$Future
+ outer org.netbeans.api.project.SourceGroupModifier
 meth public final org.netbeans.api.project.SourceGroup createSourceGroup()
 meth public java.lang.String getHint()
 meth public java.lang.String getType()
@@ -186,6 +189,7 @@ meth public abstract java.lang.Class<{org.netbeans.spi.project.LookupMerger%0}> 
 meth public abstract {org.netbeans.spi.project.LookupMerger%0} merge(org.openide.util.Lookup)
 
 CLSS public abstract interface static !annotation org.netbeans.spi.project.LookupMerger$Registration
+ outer org.netbeans.spi.project.LookupMerger
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 intf java.lang.annotation.Annotation
@@ -197,6 +201,7 @@ innr public abstract interface static !annotation Registration
 meth public abstract org.openide.util.Lookup createAdditionalLookup(org.openide.util.Lookup)
 
 CLSS public abstract interface static !annotation org.netbeans.spi.project.LookupProvider$Registration
+ outer org.netbeans.spi.project.LookupProvider
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 innr public abstract interface static !annotation ProjectType
@@ -205,6 +210,7 @@ meth public abstract !hasdefault java.lang.String[] projectType()
 meth public abstract !hasdefault org.netbeans.spi.project.LookupProvider$Registration$ProjectType[] projectTypes()
 
 CLSS public abstract interface static !annotation org.netbeans.spi.project.LookupProvider$Registration$ProjectType
+ outer org.netbeans.spi.project.LookupProvider$Registration
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[])
 intf java.lang.annotation.Annotation
@@ -215,6 +221,11 @@ CLSS public abstract interface org.netbeans.spi.project.MoveOperationImplementat
 intf org.netbeans.spi.project.DataFilesProviderImplementation
 meth public abstract void notifyMoved(org.netbeans.api.project.Project,java.io.File,java.lang.String) throws java.io.IOException
 meth public abstract void notifyMoving() throws java.io.IOException
+
+CLSS public abstract interface org.netbeans.spi.project.MoveOrRenameOperationImplementation
+intf org.netbeans.spi.project.MoveOperationImplementation
+meth public abstract void notifyRenamed(java.lang.String) throws java.io.IOException
+meth public abstract void notifyRenaming() throws java.io.IOException
 
 CLSS public abstract interface org.netbeans.spi.project.ProjectConfiguration
 meth public abstract java.lang.String getDisplayName()
@@ -253,7 +264,7 @@ meth public abstract void markModified()
 meth public abstract void notifyDeleted()
 
 CLSS public final org.netbeans.spi.project.SingleMethod
-cons public SingleMethod(org.openide.filesystems.FileObject,java.lang.String)
+cons public init(org.openide.filesystems.FileObject,java.lang.String)
 fld public final static java.lang.String COMMAND_DEBUG_SINGLE_METHOD = "debug.single.method"
 fld public final static java.lang.String COMMAND_RUN_SINGLE_METHOD = "run.single.method"
 meth public boolean equals(java.lang.Object)
@@ -282,6 +293,7 @@ CLSS public final org.netbeans.spi.project.support.LookupProviderSupport
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.api.project.Sources> createSourcesMerger()
 meth public static org.openide.util.Lookup createCompositeLookup(org.openide.util.Lookup,java.lang.String)
 supr java.lang.Object
+hfds LOG
 hcls DelegatingLookupImpl,SourcesImpl,SourcesMerger
 
 CLSS public final org.netbeans.spi.project.support.ProjectOperations
@@ -299,7 +311,7 @@ meth public static void notifyMoving(org.netbeans.api.project.Project) throws ja
 supr java.lang.Object
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -316,5 +328,6 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 

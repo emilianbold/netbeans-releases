@@ -85,8 +85,8 @@ public class KenaiLoginTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        menu = "Team|Kenai|Login To Kenai";
-        loginDialog = Bundle.getStringTrimmed("org.netbeans.modules.kenai.ui.Bundle", "CTL_LoginToKenai");
+        menu = "Team|Team Server|Login";
+        loginDialog = "Login to Team Server";
     }
     
     public void prepare(){

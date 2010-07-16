@@ -51,6 +51,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
@@ -342,10 +343,20 @@ public class WorkingCopy extends CompilationController {
         boolean fillImports = true;
         
         Map<Integer, String> userInfo = new HashMap<Integer, String>();
+        final Set<Tree> oldTrees = new HashSet<Tree>();
+
+        if (CasualDiff.OLD_TREES_VERBATIM) {
+            new TreeScanner<Void, Void>() {
+                @Override
+                public Void scan(Tree node, Void p) {
+                    oldTrees.add(node);
+                    return super.scan(node, p);
+                }
+            }.scan(getCompilationUnit(), null);
+        }
         
         if (!REWRITE_WHOLE_FILE) {
             new TreePathScanner<Void, Void>() {
-
                 private TreePath currentParent;
                 private Map<Tree, TreePath> tree2Path = new IdentityHashMap<Tree, TreePath>();
 
@@ -444,14 +455,14 @@ public class WorkingCopy extends CompilationController {
                 fillImports = false;
             }
 
-            diffs.addAll(CasualDiff.diff(getContext(), this, path, (JCTree) brandNew, userInfo, tree2Tag, tag2Span));
+            diffs.addAll(CasualDiff.diff(getContext(), this, path, (JCTree) brandNew, userInfo, tree2Tag, tag2Span, oldTrees));
         }
 
         if (fillImports) {
             List<? extends ImportTree> nueImports = ia.getImports();
 
             if (nueImports != null) { //may happen if no changes, etc.
-                diffs.addAll(CasualDiff.diff(getContext(), this, getCompilationUnit().getImports(), nueImports, userInfo, tree2Tag, tag2Span));
+                diffs.addAll(CasualDiff.diff(getContext(), this, getCompilationUnit().getImports(), nueImports, userInfo, tree2Tag, tag2Span, oldTrees));
             }
         }
         

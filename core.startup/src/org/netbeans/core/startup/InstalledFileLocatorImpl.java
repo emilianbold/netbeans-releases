@@ -44,7 +44,11 @@
 
 package org.netbeans.core.startup;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +59,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.Util;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -68,6 +76,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=InstalledFileLocator.class)
 public final class InstalledFileLocatorImpl extends InstalledFileLocator {
+    
+    private static final Logger LOG = Logger.getLogger(InstalledFileLocatorImpl.class.getName());
     
     private final File[] dirs;
     public InstalledFileLocatorImpl() {
@@ -128,16 +138,16 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     /**
      * Searches user dir and install dir(s).
      */
-    public File locate(String relativePath, String codeNameBase, boolean localized) {
-        Set<File> files = doLocate(relativePath, localized, true);
+    public @Override File locate(String relativePath, String codeNameBase, boolean localized) {
+        Set<File> files = doLocate(relativePath, localized, true, codeNameBase);
         return files.isEmpty() ? null : files.iterator().next();
     }
     
     public @Override Set<File> locateAll(String relativePath, String codeNameBase, boolean localized) {
-        return doLocate(relativePath, localized, false);
+        return doLocate(relativePath, localized, false, codeNameBase);
     }
 
-    private Set<File> doLocate(String relativePath, boolean localized, boolean single) {
+    private Set<File> doLocate(String relativePath, boolean localized, boolean single, String codeNameBase) {
         String[] prefixAndName = prefixAndName(relativePath);
         String prefix = prefixAndName[0];
         String name = prefixAndName[1];
@@ -155,7 +165,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 Set<File> files = null;
                 for (String suffix : org.netbeans.Util.getLocalizingSuffixesFast()) {
                     String locName = baseName + suffix + ext;
-                    Set<File> f = locateExactPath(prefix, locName, single);
+                    Set<File> f = locateExactPath(prefix, locName, single, codeNameBase);
                     if (!f.isEmpty()) {
                         if (single) {
                             return f;
@@ -169,13 +179,13 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 }
                 return files != null ? files : Collections.<File>emptySet();
             } else {
-                return locateExactPath(prefix, name, single);
+                return locateExactPath(prefix, name, single, codeNameBase);
             }
         }
     }
 
     /** Search all top dirs for a file. */
-    private Set<File> locateExactPath(String prefix, String name, boolean single) {
+    private Set<File> locateExactPath(String prefix, String name, boolean single, String codeNameBase) {
         assert Thread.holdsLock(InstalledFileLocatorImpl.class);
         Set<File> files = null;
         if (fileCache != null) {
@@ -183,6 +193,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             for (int i = 0; i < dirs.length; i++) {
                 Set<String> names = fileCachePerPrefix.get(dirs[i]);
                 if (names != null && names.contains(name)) {
+                    assert owned(codeNameBase, dirs[i], prefix, name);
                     File f = makeFile(dirs[i], prefix, name);
                     if (single) {
                         return Collections.singleton(f);
@@ -198,6 +209,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             for (int i = 0; i < dirs.length; i++) {
                 File f = makeFile(dirs[i], prefix, name);
                 if (f.exists()) {
+                    assert owned(codeNameBase, dirs[i], prefix, name);
                     if (single) {
                         return Collections.singleton(f);
                     } else if (files == null) {
@@ -255,7 +267,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                     if (kids != null) {
                         fileCachePerPrefix.put(root, new HashSet<String>(Arrays.asList(kids)));
                     } else {
-                        Util.err.warning("could not read files in " + d);
+                        Util.err.log(Level.WARNING, "could not read files in {0}", d);
                     }
                 }
             }
@@ -267,5 +279,82 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     private static File makeFile(File dir, String prefix, String name) {
         return new File(dir, prefix.replace('/', File.separatorChar) + name);
     }
+    
+    private static synchronized boolean owned(String codeNameBase, File dir, String prefix, String name) {
+        String path = prefix + name;
+        if (codeNameBase == null) {
+            LOG.log(Level.WARNING, "no code name base passed when looking up {0}", path);
+            return true;
+        }
+        if (name.indexOf('_') != -1) {
+            // Probably a locale variant. Permit these to be owned by any module -
+            // otherwise it would be difficult to contribute branding.
+            return true;
+        }
+        String codeNameBaseDashes = codeNameBase.replace('.', '-');
+        if (path.equals("modules/" + codeNameBaseDashes + ".jar")) { // NOI18N
+            // Very common case, no need to waste time checking this.
+            return true;
+        }
+        Map<String,Set<String>> ownershipByModule = ownershipByModuleByCluster.get(dir);
+        File updateDir = new File(dir, "update_tracking");
+        if (ownershipByModule == null) {
+            if (!updateDir.isDirectory()) {
+                LOG.log(Level.FINE, "No update tracking found in {0}", dir);
+                return true;
+            }
+            ownershipByModule = new HashMap<String,Set<String>>();
+            ownershipByModuleByCluster.put(dir, ownershipByModule);
+        }
+        Set<String> ownership = ownershipByModule.get(codeNameBase);
+        if (ownership == null) {
+            File list = new File(updateDir, codeNameBaseDashes + ".xml"); // NOI18N
+            if (!list.isFile()) {
+                LOG.log(Level.WARNING, "no such module {0}", list);
+                return true;
+            }
+            ownership = new HashSet<String>();
+            try {
+                // Could do a proper XML parse but likely too slow.
+                Reader r = new FileReader(list);
+                try {
+                    BufferedReader br = new BufferedReader(r);
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        Matcher m = FILE_PATTERN.matcher(line);
+                        if (m.matches()) {
+                            ownership.add(m.group(1));
+                        }
+                    }
+                    br.close();
+                } finally {
+                    r.close();
+                }
+            } catch (IOException x) {
+                LOG.log(Level.INFO, "could not parse " + list, x);
+                return true;
+            }
+            LOG.log(Level.FINE, "parsed {0} -> {1}", new Object[] {list, ownership});
+            ownershipByModule.put(codeNameBase, ownership);
+        }
+        if (!ownership.contains(path)) {
+            boolean found = false;
+            if (makeFile(dir, prefix, name).isDirectory()) {
+                String pathSlash = path + "/"; // NOI18N
+                for (String owned : ownership) {
+                    if (owned.startsWith(pathSlash)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                LOG.log(Level.WARNING, "module {0} in {1} does not own {2}", new Object[] {codeNameBase, dir, path});
+            }
+        }
+        return true;
+    }
+    private static final Pattern FILE_PATTERN = Pattern.compile("\\s*<file.+name=\"([^\"]+)\".*/>");
+    private static final Map<File,Map<String,Set<String>>> ownershipByModuleByCluster = new HashMap<File,Map<String,Set<String>>>();
     
 }

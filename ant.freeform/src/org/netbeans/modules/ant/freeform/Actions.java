@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -70,9 +71,9 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.ant.freeform.ui.TargetMappingPanel;
 import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -186,7 +187,8 @@ public final class Actions implements ActionProvider {
                 if (contextEl != null) {
                     // Check whether the context contains files all in this folder,
                     // matching the pattern if any, and matching the arity (single/multiple).
-                    Map<String,FileObject> selection = findSelection(contextEl, context, project);
+                    Map<String,FileObject> selection = findSelection(contextEl, context, project,
+                            command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD) ? new AtomicReference<String>() : null);
                     LOG.log(Level.FINE, "detected selection {0} for command {1} in {2}", new Object[] {selection, command, project});
                     if (selection.size() == 1) {
                         // Definitely enabled.
@@ -245,7 +247,7 @@ public final class Actions implements ActionProvider {
         for (Element actionEl : XMLUtil.findSubElements(actionsEl)) {
             if (actionEl.getAttribute("name").equals(command)) { // NOI18N
                 foundAction = true;
-                runConfiguredAction(project, actionEl, context);
+                runConfiguredAction(command, project, actionEl, context);
             }
         }
         if (!foundAction) {
@@ -266,17 +268,28 @@ public final class Actions implements ActionProvider {
      * If all DataObject's (or FileObject's) in the lookup match the folder named in the declaration,
      * and match any optional pattern declaration, then they are returned as a map from relative
      * path to actual file object. Otherwise an empty map is returned.
+     * @param methodName if not null, look for {@link SingleMethod} rather than {@link DataObject}, and set the method name here
      */
-    private static Map<String,FileObject> findSelection(Element contextEl, Lookup context, FreeformProject project) {
-        Collection<? extends DataObject> filesDO = context.lookupAll(DataObject.class);
-        if (filesDO.isEmpty()) {
-             return Collections.emptyMap();
+    private static Map<String,FileObject> findSelection(Element contextEl, Lookup context, FreeformProject project, AtomicReference<String> methodName) {
+        Collection<? extends FileObject> files;
+        if (methodName == null) {
+            Collection<? extends DataObject> filesDO = context.lookupAll(DataObject.class);
+            if (filesDO.isEmpty()) {
+                 return Collections.emptyMap();
+            }
+            Collection<FileObject> _files = new ArrayList<FileObject>(filesDO.size());
+            for (DataObject d : filesDO) {
+                _files.add(d.getPrimaryFile());
+            }
+            files = _files;
+        } else {
+            SingleMethod meth = context.lookup(SingleMethod.class);
+            if (meth == null) {
+                return Collections.emptyMap();
+            }
+            methodName.set(meth.getMethodName());
+            files = Collections.singleton(meth.getFile());
         }
-        Collection<FileObject> _files = new ArrayList<FileObject>(filesDO.size());
-        for (DataObject d : filesDO) {
-            _files.add(d.getPrimaryFile());
-        }
-        Collection<? extends FileObject> files = _files;
         Element folderEl = XMLUtil.findElement(contextEl, "folder", FreeformProjectType.NS_GENERAL); // NOI18N
         assert folderEl != null : "Must have <folder> in <context>";
         String rawtext = XMLUtil.findText(folderEl);
@@ -319,7 +332,7 @@ public final class Actions implements ActionProvider {
     /**
      * Run a project action as described by subelements <script> and <target>.
      */
-    private static void runConfiguredAction(FreeformProject project, Element actionEl, Lookup context) {
+    private static void runConfiguredAction(String command, FreeformProject project, Element actionEl, Lookup context) {
         String script;
         Element scriptEl = XMLUtil.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
         if (scriptEl != null) {
@@ -357,9 +370,14 @@ public final class Actions implements ActionProvider {
         Properties props = new Properties();
         Element contextEl = XMLUtil.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
         if (contextEl != null) {
-            Map<String,FileObject> selection = findSelection(contextEl, context, project);
+            AtomicReference<String> methodName = SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command) ?
+                new AtomicReference<String>() : null;
+            Map<String,FileObject> selection = findSelection(contextEl, context, project, methodName);
             if (selection.isEmpty()) {
                 return;
+            }
+            if (methodName != null && methodName.get() != null) {
+                props.setProperty("method", methodName.get());
             }
             String separator = null;
             if (selection.size() > 1) {
@@ -541,7 +559,7 @@ public final class Actions implements ActionProvider {
         }
         
         public void actionPerformed(ActionEvent e) {
-            runConfiguredAction(p, actionEl, Lookup.EMPTY);
+            runConfiguredAction(null, p, actionEl, Lookup.EMPTY);
         }
         
         public boolean isEnabled() {

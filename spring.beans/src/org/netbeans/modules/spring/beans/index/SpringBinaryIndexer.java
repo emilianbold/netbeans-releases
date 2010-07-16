@@ -88,10 +88,14 @@ public class SpringBinaryIndexer extends BinaryIndexer {
     protected void index(Context context) {
         LOGGER.log(Level.FINE, "indexing " + context.getRoot()); //NOI18N
 
-        if (context.getRoot() == null) {
+        FileObject root = context.getRoot();
+        if (root == null) {
             return;
         }
-        version = findVersion(context.getRoot());
+        if (root.getFileObject("org/springframework") == null) {   //NOI18N
+            return;
+        }
+        version = findVersion(root);
         if (version !=null) {
             processXsds(context);
         }
