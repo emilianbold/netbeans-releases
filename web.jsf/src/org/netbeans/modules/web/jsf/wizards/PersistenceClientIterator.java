@@ -111,7 +111,11 @@ import org.netbeans.modules.web.jsf.palette.items.FromEntityBase;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -562,8 +566,26 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         } finally {
             model.endTransaction();
             model.sync();
+            saveFacesConfig(fo);
         }
 
+    }
+
+    private static void saveFacesConfig(FileObject fo) {
+        DataObject facesDO;
+        try {
+            facesDO = DataObject.find(fo);
+            if (facesDO !=null) {
+                SaveCookie save = facesDO.getCookie(SaveCookie.class);
+                if (save != null) {
+                    save.save();
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private static ResourceBundle findBundle(JSFConfigModel model, ResourceBundle rb) {
