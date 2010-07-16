@@ -775,14 +775,14 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
 
         @Override
         public boolean stopCellEditing() {
-            InplaceEditor inplaceEditor = editor.getInplaceEditor();
+            /*InplaceEditor inplaceEditor = editor.getInplaceEditor();
             if (inplaceEditor != null) {
                 //JTable with client property terminateEditOnFocusLost will try to
                 //update the value.  That's not what we want, as it means you can
                 //have a partial value, open a custom editor and get an error because
                 //the table tried to write the partial value, when it lost focus
                 //to a custom editor.
-                if (!/*PropUtils.*/psCommitOnFocusLoss) {
+                if (!/*PropUtils.*//*psCommitOnFocusLoss) {
                     Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
                     if (
                         (!(c instanceof JTable)) && (!inplaceEditor.isKnownComponent(c)) &&
@@ -793,7 +793,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                     }
                 }
                 editor.commit();
-            }
+            }*/
 
             PropertiesRowModel prm = null;
             if (outline instanceof OutlineView.OutlineViewOutline) {
