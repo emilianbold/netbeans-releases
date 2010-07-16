@@ -546,30 +546,30 @@ question and/or the attribute name, if you wish).</p>
 <p>So as an example to install a template:
 
 <pre>
-&lt;?<font class="keyword">xml</font> <font class="variable-name">version</font>=<font class="constant">"1.0"</font>?&gt;
-&lt;!<font class="keyword">DOCTYPE</font> <font class="type">filesystem</font> <font class="keyword">PUBLIC</font>
-    <font class="constant">"-//NetBeans//DTD Filesystem 1.0//EN"</font>
-    <font class="constant">"http://www.netbeans.org/dtds/filesystem-1_0.dtd"</font>&gt;
-&lt;<font class="type">filesystem</font>&gt;
-    &lt;<font class="type">folder</font> <font class="variable-name">name</font>=<font class="constant">"Templates"</font>&gt;
-        &lt;<font class="type">folder</font> <font class="variable-name">name</font>=<font class="constant">"Other"</font>&gt;
-            &lt;<font class="type">file</font> <font class="variable-name">name</font>=<font class="constant">"foo.txt"</font> <font class="variable-name">url</font>=<font class="constant">"actual-contents.txt"</font>&gt;
-                <font class="comment">&lt;!-- Make it a template: --&gt;</font>
-                &lt;<font class="type">attr</font> <font class="variable-name">name</font>=<font class="constant">"template"</font> <font class="variable-name">boolvalue</font>=<font class="constant">"true"</font>/&gt;
-                <font class="comment">&lt;!-- Localized display name of data node: --&gt;</font>
-                &lt;<font class="type">attr</font> <font class="variable-name">name</font>=<font class="constant">"SystemFileSystem.localizingBundle"</font>
-                      <font class="variable-name">stringvalue</font>=<font class="constant">"com.foo.module.Bundle"</font>/&gt;
-                <font class="comment">&lt;!-- HTML description of template for wizard to display: --&gt;</font>
-                &lt;<font class="type">attr</font> <font class="variable-name">name</font>=<font class="constant">"templateWizardURL"</font>
-                      <font class="variable-name">urlvalue</font>=<font class="constant">"nbresloc:/com/foo/module/foo-template-help.html"</font>/&gt;
-                <font class="comment">&lt;!-- Set an iterator; complex object, so --&gt;</font>
-                <font class="comment">&lt;!-- easiest to create thus: --&gt;</font>
-                &lt;<font class="type">attr</font> <font class="variable-name">name</font>=<font class="constant">"templateWizardIterator"</font>
-                      <font class="variable-name">newvalue</font>=<font class="constant">"com.foo.module.FooTemplateIterator"</font>/&gt;
-            &lt;/<font class="type">file</font>&gt;
-        &lt;/<font class="type">folder</font>&gt;
-    &lt;/<font class="type">folder</font>&gt;
-&lt;/<font class="type">filesystem</font>&gt;
+&lt;?<span class="keyword">xml</span> <span class="variable-name">version</span>=<span class="constant">"1.0"</span>?&gt;
+&lt;!<span class="keyword">DOCTYPE</span> <span class="type">filesystem</span> <span class="keyword">PUBLIC</span>
+    <span class="constant">"-//NetBeans//DTD Filesystem 1.0//EN"</span>
+    <span class="constant">"http://www.netbeans.org/dtds/filesystem-1_0.dtd"</span>&gt;
+&lt;<span class="type">filesystem</span>&gt;
+    &lt;<span class="type">folder</span> <span class="variable-name">name</span>=<span class="constant">"Templates"</span>&gt;
+        &lt;<span class="type">folder</span> <span class="variable-name">name</span>=<span class="constant">"Other"</span>&gt;
+            &lt;<span class="type">file</span> <span class="variable-name">name</span>=<span class="constant">"foo.txt"</span> <span class="variable-name">url</span>=<span class="constant">"actual-contents.txt"</span>&gt;
+                <span class="comment">&lt;!-- Make it a template: --&gt;</span>
+                &lt;<span class="type">attr</span> <span class="variable-name">name</span>=<span class="constant">"template"</span> <span class="variable-name">boolvalue</span>=<span class="constant">"true"</span>/&gt;
+                <span class="comment">&lt;!-- Localized display name of data node: --&gt;</span>
+                &lt;<span class="type">attr</span> <span class="variable-name">name</span>=<span class="constant">"SystemFileSystem.localizingBundle"</span>
+                      <span class="variable-name">stringvalue</span>=<span class="constant">"com.foo.module.Bundle"</span>/&gt;
+                <span class="comment">&lt;!-- HTML description of template for wizard to display: --&gt;</span>
+                &lt;<span class="type">attr</span> <span class="variable-name">name</span>=<span class="constant">"templateWizardURL"</span>
+                      <span class="variable-name">urlvalue</span>=<span class="constant">"nbresloc:/com/foo/module/foo-template-help.html"</span>/&gt;
+                <span class="comment">&lt;!-- Set an iterator; complex object, so --&gt;</span>
+                <span class="comment">&lt;!-- easiest to create thus: --&gt;</span>
+                &lt;<span class="type">attr</span> <span class="variable-name">name</span>=<span class="constant">"templateWizardIterator"</span>
+                      <span class="variable-name">newvalue</span>=<span class="constant">"com.foo.module.FooTemplateIterator"</span>/&gt;
+            &lt;/<span class="type">file</span>&gt;
+        &lt;/<span class="type">folder</span>&gt;
+    &lt;/<span class="type">folder</span>&gt;
+&lt;/<span class="type">filesystem</span>&gt;
 </pre>
 
 <p>where <code>FooTemplateIterator</code> contains a public constructor
@@ -644,14 +644,14 @@ than the corresponding attribute on <samp>bfile</samp>, then the folder will att
 place A before B in its ordering. For example, the XML:
 
 <pre>
-&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"SomeFolder"</font>&gt;
-    &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"first.txt"</font> <font class="variable-name">url</font>=<font class="string">"first.txt"</font>&gt;
-        &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"position"</font> <font class="variable-name">intvalue</font>=<font class="string">"100"</font>/&gt;
-    &lt;/<font class="function-name">file</font>&gt;
-    &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"second.txt"</font> <font class="variable-name">url</font>=<font class="string">"second.txt"</font>&gt;
-        &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"position"</font> <font class="variable-name">intvalue</font>=<font class="string">"200"</font>/&gt;
-    &lt;/<font class="function-name">file</font>&gt;
-&lt;/<font class="function-name">folder</font>&gt;
+&lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"SomeFolder"</span>&gt;
+    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"first.txt"</span> <span class="variable-name">url</span>=<span class="string">"first.txt"</span>&gt;
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"position"</span> <span class="variable-name">intvalue</span>=<span class="string">"100"</span>/&gt;
+    &lt;/<span class="function-name">file</span>&gt;
+    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"second.txt"</span> <span class="variable-name">url</span>=<span class="string">"second.txt"</span>&gt;
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"position"</span> <span class="variable-name">intvalue</span>=<span class="string">"200"</span>/&gt;
+    &lt;/<span class="function-name">file</span>&gt;
+&lt;/<span class="function-name">folder</span>&gt;
 </pre>
 
 will cause NetBeans to try to keep <samp>first.txt</samp> before
@@ -1053,11 +1053,11 @@ just not from a module classloader.</p>
 <p>Additionally, sometimes a module with an API in public packages wishes to
 provide access only to certain "friend" modules. This is
 possible if the module declares public packages together with a list
-of code base names of "friend" modules that can access them:
+of code base names of "friend" modules that can access them:</p>
 <pre>
 OpenIDE-Module-Friends: org.foo, org.boo
 </pre>
-Only enumerated modules can access the public packages;
+<p>Only enumerated modules can access the public packages;
 access from others is forbidden.</p>
 
 <p>Additionally, sometimes a module wishes to get unrestricted access
@@ -1135,7 +1135,7 @@ further customization.
 
 <h3><a name="sec-action">Action</a></h3>
 
-Old and deprecated class <code>Action</code>
+<p>The old and deprecated class <code>Action</code>
 installs a system action into NetBeans. Since NetBeans 6.9 prefer
 registration via layers (folder <code>UI/ToolActions</code>) to make
 your action available as
@@ -1495,12 +1495,12 @@ nested subdirectories for each supported operating system. The directory names
 must match <code>System.getProperty ("os.arch")</code> and
 <code>System.getProperty ("os.name").toLowerCase ()</code> respectively.
 The <code>System.loadLibrary</code> call originating from the module code
-will try to locate the library file in the following order of directories:<ul>
+will try to locate the library file in the following order of directories:</p><ul>
     <li><samp>modules/lib/</samp></li>
     <li><samp>modules/lib/&lt;arch&gt;/</samp></li>
     <li><samp>modules/lib/&lt;arch&gt;/&lt;os&gt;/</samp></li>
 </ul>
-so you may place e.g. 64bit linux version of a <samp>foo</samp> library in a file
+<p>so you may place e.g. 64bit linux version of a <samp>foo</samp> library in a file
 <samp>modules/lib/amd64/linux/libfoo.so</samp>.
 The module may distinguish additional library variants itself or even override
 the platform selection logic by naming the library <em>file</em> appropriately
