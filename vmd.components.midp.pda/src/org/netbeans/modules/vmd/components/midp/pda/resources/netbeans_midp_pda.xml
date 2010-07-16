@@ -52,14 +52,14 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.vmd.components.midp.pda.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/netbeans_midp_components_pda.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.midp.pda/modules/ext/netbeans_midp_components_pda.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst:///sources/netbeans_midp_components_pda-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.midp.pda/sources/netbeans_midp_components_pda-src.zip!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///modules/docs/netbeans_midp_components_pda-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.midp.pda/modules/docs/netbeans_midp_components_pda-api.zip!/</resource>
     </volume>
 </library>

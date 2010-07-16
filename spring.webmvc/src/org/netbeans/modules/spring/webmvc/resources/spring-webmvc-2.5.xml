@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.spring.webmvc.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/spring-webmvc-2.5.6.SEC01.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.spring.webmvc/modules/ext/spring/spring-webmvc-2.5.6.SEC01.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>

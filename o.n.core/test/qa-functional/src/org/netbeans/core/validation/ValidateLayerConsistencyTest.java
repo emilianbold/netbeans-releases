@@ -932,7 +932,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
     }
     
-    public void DISABLEtestNbinstHost() throws Exception {
+    public void testNbinstHost() throws Exception {
         TestHandler handler = new TestHandler();
         Logger.getLogger("org.netbeans.core.startup.InstalledFileLocatorImpl").addHandler(handler);
         FileObject libs = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
@@ -967,10 +967,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 int len = errors.size();
                 u.openStream().close();
                 if (errors.size() == len + 1) {
-                    errors.set(len, errors.get(len) + " from " + f.getPath());
+                    errors.set(len, f.getPath() + ": " + errors.get(len));
                 }
             } catch (IOException x) {
-                errors.add("Cannot open " + u + " from " + f.getPath() + ": " + x);
+                errors.add(f.getPath() + ": cannot open " + u + ": " + x);
             }
         }
     }
