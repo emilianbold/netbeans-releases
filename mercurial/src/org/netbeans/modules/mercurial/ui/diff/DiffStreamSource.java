@@ -78,7 +78,7 @@ public class DiffStreamSource extends StreamSource {
      * Null is a valid value if base file does not exist in this revision. 
      */ 
     private File            remoteFile;
-    private boolean canWriteBaseFile;
+    private Boolean         canWriteBaseFile;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -155,7 +155,15 @@ public class DiffStreamSource extends StreamSource {
 
     @Override
     public boolean isEditable() {
-        return HgRevision.CURRENT.equals(revision) && isPrimary() && canWriteBaseFile;
+        return HgRevision.CURRENT.equals(revision) && isPrimary() && isBaseFileWritable();
+    }
+
+    private boolean isBaseFileWritable () {
+        if (canWriteBaseFile == null) {
+            FileObject fo = FileUtil.toFileObject(baseFile);
+            canWriteBaseFile = fo != null && fo.canWrite();
+        }
+        return canWriteBaseFile;
     }
 
     private boolean isPrimary() {
@@ -233,7 +241,5 @@ public class DiffStreamSource extends StreamSource {
         } catch (Exception e) {
             throw new IOException("Can not load remote file for " + baseFile, e);
         }
-        FileObject fo = FileUtil.toFileObject(baseFile);
-        canWriteBaseFile = fo != null && fo.canWrite();
     }
 }
