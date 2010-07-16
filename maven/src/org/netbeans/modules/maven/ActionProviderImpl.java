@@ -275,11 +275,8 @@ public class ActionProviderImpl implements ActionProvider {
         // fire project change on when finishing maven execution, to update the classpath etc. -MEVENIDE-83
         task.addTaskListener(new TaskListener() {
 
-<<<<<<< local
-=======
             @SuppressWarnings("unchecked")
             @Override
->>>>>>> other
             public void taskFinished(Task task2) {
 //reload is done in executors
 //                NbMavenProject.fireMavenProjectReload(project);

@@ -41,12 +41,7 @@
  */
 package org.netbeans.modules.maven.pom;
 
-<<<<<<< local
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringOutputStream;
-=======
-import hidden.org.codehaus.plexus.util.StringOutputStream;
->>>>>>> other
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

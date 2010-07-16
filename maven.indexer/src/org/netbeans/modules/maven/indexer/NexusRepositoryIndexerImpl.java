@@ -1,11 +1,7 @@
  /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
-<<<<<<< local
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
-=======
  * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
->>>>>>> other
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -1175,32 +1171,19 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
             try {
-<<<<<<< local
-                ArtifactFactory artifactFactory = online.getPlexusContainer().lookup(ArtifactFactory.class);
-=======
-                ArtifactFactory artifactFactory = (ArtifactFactory) getEmbedder().getPlexusContainer().lookup(ArtifactFactory.class);
->>>>>>> other
+                ArtifactFactory artifactFactory = getEmbedder().getPlexusContainer().lookup(ArtifactFactory.class);
                 Artifact projectArtifact = artifactFactory.createProjectArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
                         null);
-<<<<<<< local
                 DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
-                dpbr.setLocalRepository(online.getLocalRepository());
+                dpbr.setLocalRepository(getEmbedder().getLocalRepository());
                 dpbr.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
-                ProjectBuildingResult res =  online.buildProject(projectArtifact, dpbr);
+                ProjectBuildingResult res = getEmbedder().buildProject(projectArtifact, dpbr);
                 if (res.getProject() != null) {
                     return res.getProject();
                 }
-=======
-
-                MavenProjectBuilder builder = (MavenProjectBuilder) getEmbedder().getPlexusContainer().lookup(MavenProjectBuilder.class);
-                return builder.buildFromRepository(projectArtifact, new ArrayList(), repository);
-            } catch (InvalidProjectModelException ex) {
-                //ignore nexus is falling ???
-                LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
->>>>>>> other
             } catch (ProjectBuildingException ex) {
                 LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
             } catch (Exception exception) {
