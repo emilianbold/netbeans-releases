@@ -175,6 +175,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         private final Map<CharSequence, Integer> recurseIncludes;
         private final LinkedList<IncludeInfo> inclStack;
+        private int hashCode = 0;
         
         protected StateImpl(APTIncludeHandlerImpl handler) {
             this.systemIncludePaths = handler.systemIncludePaths;
@@ -386,9 +387,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
 
         @Override
         public int hashCode() {
-            int hash = 5;
-            hash = 67 * hash + (this.startFile != null ? this.startFile.hashCode() : 0);
-            hash = 67 * hash + (this.inclStack != null ? this.inclStack.hashCode() : 0);
+            int hash = hashCode;
+            if (hash == 0) {
+                hash = 5;
+                hash = 67 * hash + (this.startFile != null ? this.startFile.hashCode() : 0);
+                hash = 67 * hash + (this.inclStack != null ? this.inclStack.hashCode() : 0);
+                hashCode = hash;
+            }
             return hash;
         }
         

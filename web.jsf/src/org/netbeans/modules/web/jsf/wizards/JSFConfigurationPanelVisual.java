@@ -420,10 +420,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         lVersion = new javax.swing.JLabel();
         jtNewLibraryName = new javax.swing.JTextField();
         serverLibraries = new javax.swing.JComboBox();
+        cbPackageJars = new javax.swing.JCheckBox();
         confPanel = new javax.swing.JPanel();
         lURLPattern = new javax.swing.JLabel();
         tURLPattern = new javax.swing.JTextField();
-        cbPackageJars = new javax.swing.JCheckBox();
         cbPreferredLang = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
 
@@ -485,7 +485,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         });
 
         jbBrowse.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_Browse").charAt(0));
-        jbBrowse.setText(bundle.getString("LBL_Browse")); // NOI18N
         jbBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jbBrowseActionPerformed(evt);
@@ -510,6 +509,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         });
 
+        cbPackageJars.setSelected(true);
+        cbPackageJars.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Package_JARs")); // NOI18N
+
         org.jdesktop.layout.GroupLayout libPanelLayout = new org.jdesktop.layout.GroupLayout(libPanel);
         libPanel.setLayout(libPanelLayout);
         libPanelLayout.setHorizontalGroup(
@@ -517,26 +519,27 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             .add(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
                     .add(libPanelLayout.createSequentialGroup()
                         .add(22, 22, 22)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
-                            .add(lDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                            .add(lDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                            .add(cbPackageJars)))
                     .add(libPanelLayout.createSequentialGroup()
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, rbServerLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, rbRegisteredLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbLibraries, 0, 283, Short.MAX_VALUE)
+                            .add(cbLibraries, 0, 295, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, libPanelLayout.createSequentialGroup()
                                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
-                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE))
+                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
+                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jbBrowse))
-                            .add(serverLibraries, 0, 283, Short.MAX_VALUE))))
+                            .add(serverLibraries, 0, 295, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         libPanelLayout.setVerticalGroup(
@@ -559,8 +562,12 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lVersion))
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbPackageJars)
+                .addContainerGap(20, Short.MAX_VALUE))
         );
+
+        cbPackageJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_PackageJarToWar")); // NOI18N
 
         jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Libraries"), libPanel); // NOI18N
 
@@ -569,9 +576,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         lURLPattern.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_URL_Pattern")); // NOI18N
 
         tURLPattern.setText(panel.getFacesMapping());
-
-        cbPackageJars.setSelected(true);
-        cbPackageJars.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Package_JARs")); // NOI18N
 
         cbPreferredLang.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbPreferredLang.addActionListener(new java.awt.event.ActionListener() {
@@ -593,12 +597,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     .add(confPanelLayout.createSequentialGroup()
                         .add(lURLPattern)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                        .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
                     .add(confPanelLayout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbPreferredLang, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(cbPackageJars))
+                        .add(cbPreferredLang, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         confPanelLayout.setVerticalGroup(
@@ -608,9 +611,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lURLPattern)
                     .add(tURLPattern, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbPackageJars)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(33, 33, 33)
                 .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(cbPreferredLang, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -618,7 +619,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         );
 
         tURLPattern.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_Mapping")); // NOI18N
-        cbPackageJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_PackageJarToWar")); // NOI18N
 
         jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Configuration"), confPanel); // NOI18N
 
@@ -849,6 +849,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         Boolean isMaven = (Boolean) properties.getProperty("maven");
         if (isMaven != null && isMaven.booleanValue()) {
             setNewLibraryOptionVisible(false);
+            if (!isServerRegistered(serverInstanceID)) {
+                cbPackageJars.setVisible(true);
+            }
         }
         initLibSettings(prof, serverInstanceID);
     }
