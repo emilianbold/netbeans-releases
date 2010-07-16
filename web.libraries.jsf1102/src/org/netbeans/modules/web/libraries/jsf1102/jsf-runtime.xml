@@ -51,11 +51,11 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/web/libraries/jsf1102/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/jsf-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/jsf-impl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/commons-beanutils.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/commons-collections.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/commons-digester.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/commons-logging.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.libraries.jsf1102/modules/ext/jsf-1_1_02/jsf-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.libraries.jsf1102/modules/ext/jsf-1_1_02/jsf-impl.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.libraries.jsf1102/modules/ext/jsf-1_1_02/commons-beanutils.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.libraries.jsf1102/modules/ext/jsf-1_1_02/commons-collections.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.libraries.jsf1102/modules/ext/jsf-1_1_02/commons-digester.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.libraries.jsf1102/modules/ext/jsf-1_1_02/commons-logging.jar!/</resource>
     </volume>
 </library>

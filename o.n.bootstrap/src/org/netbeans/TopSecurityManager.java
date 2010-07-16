@@ -286,7 +286,8 @@ public class TopSecurityManager extends SecurityManager {
     static {
         warnedClassesNH.add("org.netbeans.MainImpl"); // NOI18N
         warnedClassesNH.add("org.netbeans.Stamps"); // NOI18N
-        warnedClassesNH.add ("org.netbeans.updater.UpdateTracking"); // NOI18N
+        warnedClassesNH.add("org.netbeans.core.startup.InstalledFileLocatorImpl"); // NOI18N
+        warnedClassesNH.add("org.netbeans.updater.UpdateTracking"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
         warnedClassesNH.add("org.netbeans.lib.uihandler.LogFormatter");
         warnedClassesNH.add("org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties"); // AS bundle is not in any cluster

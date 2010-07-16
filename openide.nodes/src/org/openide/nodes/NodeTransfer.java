@@ -124,12 +124,16 @@ public abstract class NodeTransfer extends Object {
     * @param actions any mask of dnd constants DND_* and CLIPBOARD_*
     */
     private static DataFlavor createDndFlavor(int actions) {
+        Exception ex;
         try {
             return new DataFlavor(dndMimeType.format(new Object[] { new Integer(actions) }),
                     null, Node.class.getClassLoader());
+        } catch (IllegalArgumentException iae) {
+            ex = iae;
         } catch (ClassNotFoundException cnfE) {
-            throw (IllegalStateException) new IllegalStateException().initCause(cnfE);
+            ex = cnfE;
         }
+        throw new IllegalStateException("Cannot createDndFlavor(" + actions + ")", ex); // NOI18N
     }
 
     /** Creates transferable that represents a node operation, such as cut-to-clipboard.

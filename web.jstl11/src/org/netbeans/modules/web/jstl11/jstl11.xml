@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/javaee6-doc-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.platform/docs/javaee6-doc-api.zip!/</resource>
     </volume>
     <volume>
         <type>maven-pom</type>
