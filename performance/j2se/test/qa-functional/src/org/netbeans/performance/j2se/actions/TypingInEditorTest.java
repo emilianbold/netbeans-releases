@@ -129,7 +129,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     
     public ComponentOperator open(){
         //epo.pressKey(KeyEvent.VK_A);//typeKey('a'/*KeyEvent.VK_A*/);
-        r.keyPress(KeyEvent.VK_A);  
+        r.keyPress(KeyEvent.VK_SPACE);  
         return null;
     }
     
