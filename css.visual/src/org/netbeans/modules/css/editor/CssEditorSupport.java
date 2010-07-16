@@ -63,6 +63,9 @@ import org.netbeans.modules.css.visual.ui.preview.CssPreviewTopComponent;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable.Listener;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -139,7 +142,7 @@ public class CssEditorSupport {
                             } else if (oldRule == null && newRule != null) {
                                 //add the new rule at the end of the rule block:
                                 List<CssRuleItem> items = myRule.items();
-                                final int INDENT = doc.getFormatter().getShiftWidth();
+                                final int INDENT = IndentUtils.indentLevelSize(document);
                                 int insertOffset = myRule.getRuleCloseBracketOffset();
 
                                 boolean initialNewLine = false;
@@ -189,6 +192,10 @@ public class CssEditorSupport {
         }
     };
 
+    // XXX: This is most likely wrong! Unless CSS only allows spaces for indentation.
+    // But even then the same should be achieved by correctly setting the indentation
+    // settings. Otherwise a simple Reformat.get(doc).reformat(...) call on a CSS document
+    // could break its structure.
     private String makeIndentString(int level) {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < level; i++) {

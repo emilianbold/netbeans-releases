@@ -68,8 +68,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.PreviewPreferencesModel.Filter;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -602,55 +601,23 @@ public class EditorPropertySheet extends javax.swing.JPanel
                 System.err.println("  indentLevelSize=" + IndentUtils.indentLevelSize(bd)+"/"+codeStyle.indentSize()); // NOI18N
                 System.err.println("  doc=" + bd); //NOI18N
             }
-            new Reformatter(bd, codeStyle).reformat();
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private void setEditorProperties(Preferences p) {
-        Preferences def = null;
-        switch (language){
-            case C:
-                def = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case HEADER:
-                def = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case CPP:
-            default:
-                def = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
-                break;
-        }
-        if (def != null) {
-            def.putInt(SimpleValueNames.TAB_SIZE, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
-            def.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
-            def.putBoolean(SimpleValueNames.EXPAND_TABS, p.getBoolean(EditorOptions.expandTabToSpaces, EditorOptions.expandTabToSpacesDefault));
-            def.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
-        }
-    }
-
-    private Object[] preserveEditorProperties() {
-        Preferences def = null;
-        Object oldValues[] = null;
-        switch (language){
-            case C:
-                def = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case HEADER:
-                def = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case CPP:
-            default:
-                def = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
-                break;
-        }
-        if (def != null) {
-            oldValues = new Object[]{null, null, null, null};
-            if (null != def.get(SimpleValueNames.TAB_SIZE, null)) {
-                oldValues[0] = def.getInt(SimpleValueNames.TAB_SIZE, EditorOptions.tabSizeDefault);
+        } else {
+            // XXX: this code is most likely broken and should probably be removed;
+            // it's not used anyway
+            CodeStyle codeStyle = CodeStyle.getDefault(language);
+            Preferences oldPreferences = EditorOptions.getPreferences(codeStyle);
+            EditorOptions.setPreferences(codeStyle, p);
+            Reformat f = Reformat.get(bd);
+            f.lock();
+            try {
+                f.reformat(0, bd.getLength());
+                String x = bd.getText(0, bd.getLength());
+                pane.setText(x);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                f.unlock();
+                EditorOptions.setPreferences(codeStyle, oldPreferences);
             }
             if (null != def.get(SimpleValueNames.SPACES_PER_TAB, null)) {
                 oldValues[1] = def.getInt(SimpleValueNames.SPACES_PER_TAB, EditorOptions.tabSizeDefault);

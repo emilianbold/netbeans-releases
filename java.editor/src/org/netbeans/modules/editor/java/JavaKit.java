@@ -75,6 +75,7 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.java.editor.codegen.InsertSemicolonAction;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
@@ -647,7 +648,7 @@ public class JavaKit extends NbEditorKit {
                         int end = BraceCompletion.getRowOrBlockEnd(doc, dotPos, insert);
                         if (insert[0]) {
                             doc.insertString(end, "}", null); // NOI18N
-                            doc.getFormatter().indentNewLine(doc, end);
+                            Indent.get(doc).indentNewLine(end);
                         }
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
@@ -688,7 +689,7 @@ public class JavaKit extends NbEditorKit {
                         // complete open javadoc
                         // note that the formater will add one line of javadoc
                         doc.insertString(dotPosition, "*/", null); // NOI18N
-                        doc.getFormatter().indentNewLine(doc, dotPosition);
+                        Indent.get(doc).indentNewLine(dotPosition);
                         target.setCaretPosition(dotPosition);
 
                         isJavadocTouched = true;
