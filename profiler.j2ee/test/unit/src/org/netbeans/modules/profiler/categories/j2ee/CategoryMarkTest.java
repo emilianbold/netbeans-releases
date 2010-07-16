@@ -807,7 +807,7 @@ public class CategoryMarkTest extends CategoryMarkTestBase {
 
     @Override
     protected String getProjectName() {
-        return "WebApp";
+        return BaseMarkTest.APP_NAME;
     }
 
 }

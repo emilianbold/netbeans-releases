@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.profiler.categories.j2se;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -1109,7 +1110,7 @@ public class FlatProfileTest extends TestBase {
                 "method", "()V");
         builder.methodEntry( 11 , 1, 1, 0, 0);
         uiIds.add(11);
-        listenersIds.add(9);
+        listenersIds.add(11);
         
         builder.methodExit( 11 , 1, 1, 0, 0);
         
@@ -1271,10 +1272,18 @@ public class FlatProfileTest extends TestBase {
             int methodId = flatProfile.getMethodIdAtRow(i);
             methodIds.add( methodId );
         }
+        List<Integer> copyIds = new ArrayList<Integer>(ids);
         for (Integer id : methodIds) {
             assertTrue( "Category "+categoryName+" should contain method '"+
-                    status.getInstrMethodClasses()+
-                "."+status.getInstrMethodNames()+"'",methodIds.contains(id));
+                    status.getInstrMethodClasses()[id]+
+                "."+status.getInstrMethodNames()[id]+"'",copyIds.contains(id));
+            copyIds.remove(id);
+        }
+        if ( copyIds.size()>0){
+            Integer id = copyIds.iterator().next();
+            assertEquals( "Method "+status.getInstrMethodClasses()[id]+
+                    "."+status.getInstrMethodNames()[id]+" is not found in category"
+                    +categoryName,copyIds.size(), 0 );
         }
     }
     

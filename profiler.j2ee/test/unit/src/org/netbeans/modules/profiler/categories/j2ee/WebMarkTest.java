@@ -82,6 +82,6 @@ public class WebMarkTest extends TestBase {
 
     @Override
     protected String getProjectName() {
-        return  "WebApp";//BaseMarkTest.APP_NAME;
+        return  BaseMarkTest.APP_NAME;
     }
 }
