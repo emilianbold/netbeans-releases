@@ -108,9 +108,14 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         String clazz = type.getQualifiedName().toString();
         FacesManagedBean managedBean = findManagedBeanByClass(clazz);
         ELIndex index = ELIndex.get(handle.getFileObject());
-        Collection<? extends IndexResult> identifiers = index.findManagedBeanReferences(managedBean.getManagedBeanName());
-        for (WhereUsedQueryElement elem : createElements(identifiers, managedBean.getManagedBeanName())) {
-            refactoringElementsBag.add(whereUsedQuery, elem);
+        Collection<? extends IndexResult> result = index.findManagedBeanReferences(managedBean.getManagedBeanName());
+        String managedBeanName = managedBean.getManagedBeanName();
+        for (ELElement elem : getMatchingElements(result)) {
+            for (Node identifier : findMatchingIdentifierNodes(elem.getNode(), managedBeanName)) {
+                WhereUsedQueryElement wuqe =
+                        new WhereUsedQueryElement(elem.getParserResult().getFileObject(), managedBeanName, elem, identifier, getParserResult(elem.getParserResult().getFileObject()));
+                refactoringElementsBag.add(whereUsedQuery, wuqe);
+            }
         }
         return null;
     }
@@ -121,20 +126,18 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         final Set<IndexResult> result = new HashSet<IndexResult>();
         result.addAll(index.findPropertyReferences(propertyName));
 
-        for (ELElement e : getMatchingElements(result)) {
-            Node node = findMatchingNode(e.getNode(), propertyName, element.getEnclosingElement());
-            if (node != null) {
+        for (ELElement elem : getMatchingElements(result)) {
+            for (Node property : findMatchingPropertyNodes(elem.getNode(), propertyName, element.getEnclosingElement())) {
                 WhereUsedQueryElement wuqe =
-                        new WhereUsedQueryElement(e.getParserResult().getFileObject(), propertyName, e, node, getParserResult(e.getParserResult().getFileObject()));
+                        new WhereUsedQueryElement(elem.getParserResult().getFileObject(), propertyName, elem, property, getParserResult(elem.getParserResult().getFileObject()));
                 refactoringElementsBag.add(whereUsedQuery, wuqe);
             }
-
         }
         return null;
     }
 
-    private Node findMatchingNode(Node root, final String targetName, final Element targetType) {
-        final Node[] result = new Node[1];
+    private List<Node> findMatchingPropertyNodes(Node root, final String targetName, final Element targetType) {
+        final List<Node> result = new ArrayList<Node>();
         root.accept(new NodeVisitor() {
 
             @Override
@@ -153,8 +156,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
                             if (targetName.equals(child.getImage()) && enclosing.equals(targetType)) {
                                 Element matching = getElementForProperty(child.getImage(), enclosing);
                                 if (matching != null) {
-                                    result[0] = child;
-                                    return;
+                                    result.add(child);
                                 }
                             } else {
                                 enclosing = getElementForProperty(child.getImage(), enclosing);
@@ -165,8 +167,23 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
                 }
             }
         });
-        return result[0];
+        return result;
+    }
 
+    private List<Node> findMatchingIdentifierNodes(Node root, final String managedBeanName) {
+        final List<Node> result = new ArrayList<Node>();
+        root.accept(new NodeVisitor() {
+
+            @Override
+            public void visit(Node node) throws ELException {
+                if (node instanceof AstIdentifier) {
+                    if (managedBeanName.equals(node.getImage())) {
+                        result.add(node);
+                    }
+                }
+            }
+        });
+        return result;
     }
 
     /**
@@ -192,6 +209,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
     }
 
     private List<ELElement> getMatchingElements(Collection<? extends IndexResult> indexResult)  {
+        // probably should store offsets rather than doing full expression comparison
         List<ELElement> result = new ArrayList<ELElement>();
         for (IndexResult ir : indexResult) {
             FileObject file = ir.getFile();
@@ -210,31 +228,4 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
 
     }
 
-    private static List<WhereUsedQueryElement> createElements(Collection<? extends IndexResult> results, String reference) {
-
-        if (results.isEmpty()) {
-            return Collections.emptyList();
-        }
-        
-        List<WhereUsedQueryElement> result = new ArrayList<WhereUsedQueryElement>(results.size());
-        for (IndexResult ir : results) {
-            FileObject file = ir.getFile();
-            ParserResultHolder parserResultHolder = getParserResult(file);
-            if (parserResultHolder.parserResult == null) {
-                continue;
-            }
-            String expression = ir.getValue(Fields.EXPRESSION);
-            List<ELElement> elements = new ArrayList(parserResultHolder.parserResult.getElements());
-            for (Iterator<ELElement> it = elements.iterator(); it.hasNext();) {
-                ELElement eLElement = it.next();
-                if (expression.equals(eLElement.getExpression())) {
-                    WhereUsedQueryElement wuqe =
-                            new WhereUsedQueryElement(file, reference, eLElement, eLElement.getNode(), parserResultHolder);
-                    result.add(wuqe);
-                    it.remove();
-                }
-            }
-        }
-        return result;
-    }
 }

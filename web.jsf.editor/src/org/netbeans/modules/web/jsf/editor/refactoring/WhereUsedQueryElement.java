@@ -43,9 +43,10 @@ final class WhereUsedQueryElement extends SimpleRefactoringElementImplementation
             CharSequence text = parserResult.topLevelSnapshot.getText();
             OffsetRange orig = eLElement.getOriginalOffset();
             int astLineStart = GsfUtilities.getRowStart(text, orig.getStart());
-            int astLineEnd = GsfUtilities.getRowEnd(text, orig.getStart());
-            // TODO: this is not accurate, need to do highlighning based on AST offsets
-            return RefactoringUtil.encodeAndHighlight(reference, text.subSequence(astLineStart, astLineEnd).toString()).trim();
+            int astLineEnd = GsfUtilities.getRowEnd(text, orig.getEnd());
+
+            OffsetRange nodeOffset = new OffsetRange(targetNode.startOffset(), targetNode.endOffset());
+            return RefactoringUtil.encodeAndHighlight(text.subSequence(astLineStart, astLineEnd).toString(), eLElement.getExpression(), nodeOffset).trim();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
             return eLElement.getExpression();

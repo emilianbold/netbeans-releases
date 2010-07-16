@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -91,12 +92,37 @@ public final class RefactoringUtil {
         return refactoring.getContext().lookup(CompilationInfo.class);
     }
 
+
+    /**
+     * Encodes angle brackets and highlights the {@code offsetRange} within
+     * in the given {@code expression}.
+     * @param text
+     * @param expression
+     * @param offsetRange the range within {@code expression} to highlight.
+     * @return
+     */
+    static String encodeAndHighlight(String text, String expression, OffsetRange offsetRange) {
+        StringBuilder result = new StringBuilder(text.length() + 7);
+        int expressionStart = text.indexOf(expression);
+        int expressionEnd = expressionStart + expression.length();
+        result.append(encodeAngleBrackets(text.substring(0, expressionStart)));
+        result.append(highlight(expression, offsetRange));
+        result.append(encodeAngleBrackets(text.substring(expressionEnd, text.length())));
+        return result.toString();
+    }
+
     private static String encodeAngleBrackets(String str) {
         return str.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); //NOI18N
     }
 
-    static String encodeAndHighlight(String toHighlight, String text) {
-        return encodeAngleBrackets(text).replaceAll(toHighlight, "<b>" + toHighlight + "</b>"); //NOI18N
+    private static String highlight(String text, OffsetRange offsetRange) {
+        StringBuilder result = new StringBuilder(text.length() + 7);
+        result.append(text.substring(0, offsetRange.getStart()));
+        result.append("<b>");
+        result.append(encodeAngleBrackets(text.subSequence(offsetRange.getStart(), offsetRange.getEnd()).toString()));
+        result.append("</b>");
+        result.append(text.substring(offsetRange.getEnd(), text.length() - 1));
+        return result.toString();
     }
 
     /**
