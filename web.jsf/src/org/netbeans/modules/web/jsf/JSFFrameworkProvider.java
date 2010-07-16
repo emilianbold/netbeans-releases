@@ -227,52 +227,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT, Boolean.TRUE.toString());
                     }
                 }
-            } else if (serverLibrary==null && jsfLibrary!=null && (jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_2_0_NAME)||
-                                                                    jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_1_2_NAME))) {
-                //XXX: Trying to get server library with same version as provided registered
-                Project prj = FileOwnerQuery.getOwner(webInf);
-                J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
-                if (provider != null) {
-                    String serverInstanceId = provider.getServerInstanceID();
-                    if ( serverInstanceId != null && !"".equals(serverInstanceId) && !"DEV-NULL".equals(serverInstanceId)) {    //NOI18N
-                        try {
-                            ServerInstance.LibraryManager libraryManager = Deployment.getDefault().getServerInstance(serverInstanceId).getLibraryManager();
-                            if (libraryManager != null) {
-                                Set<ServerLibrary> libs = new HashSet<ServerLibrary>();
-                                libs.addAll(libraryManager.getDeployableLibraries());
-                                libs.addAll(libraryManager.getDeployedLibraries());
-                                if (!libs.isEmpty()) {
-                                    String version = jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_2_0_NAME)?"2.0":"1.2";    //NOI18N
-                                    for (ServerLibrary lib: libs) {
-                                        if ("JavaServer Faces".equals(lib.getSpecificationTitle())) {   //NOI18N
-                                            if (Version.fromJsr277NotationWithFallback(version).equals(lib.getSpecificationVersion())) { // NOI18N
-                                                provider.getConfigSupport().configureLibrary(
-                                                    ServerLibraryDependency.minimalVersion(lib.getName(),
-                                                        lib.getSpecificationVersion(),
-                                                        lib.getImplementationVersion()));
-                                                break;
-                                            }
-                                        }
-                                    }
-                                } 
-                            } else {
-                                //library manager is null, so add jsf-impl to the project for tomcat server
-                                String shortName = Deployment.getDefault().getServerInstance(serverInstanceId).getServerID();
-                                if (shortName.toLowerCase().startsWith("tomcat")) { //NOI18N
-                                    String name = jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_2_0_NAME) ?
-                                                                            JSFUtils.DEFAULT_JSF_2_0_RI_NAME :
-                                                                            JSFUtils.DEFAULT_JSF_1_2_RI_NAME;
-                                    Library jsfRILibrary = LibraryManager.getDefault().getLibrary(name);
-                                    if (jsfRILibrary !=null) {
-                                        ProjectClassPathModifier.addLibraries(new Library[]{jsfRILibrary}, javaSources[0], ClassPath.COMPILE);
-                                    }
-                                }
-                            }
-                        } catch (InstanceRemovedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
             }
 
             FileSystem fileSystem = webInf.getFileSystem();
