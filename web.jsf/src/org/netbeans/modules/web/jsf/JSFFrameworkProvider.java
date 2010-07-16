@@ -188,8 +188,27 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     libraries = new Library[]{jsfLibrary};
                 }
                 // This is a way how to add libraries to the project classpath and
-                // packed them to the war file by default.
-                ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
+                // packed them to the war file by default.  classpath/compile_only (for scope provided)
+                boolean modified = false;
+                Boolean isMaven = (Boolean)panel.getController().getProperties().getProperty("maven");  //NOI18N
+                if (isMaven!=null && isMaven.booleanValue()) {
+                    Project prj = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                    J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+                    if (provider != null) {
+                        String serverInstanceId = provider.getServerInstanceID();
+                        if ( serverInstanceId == null || "".equals(serverInstanceId) || "DEV-NULL".equals(serverInstanceId)) {    //NOI18N
+                            if (!panel.packageJars()) {
+                                //Add to pom with scope provided
+                                ProjectClassPathModifier.addLibraries(libraries, javaSources[0], "classpath/compile_only"); //NOI18N
+                                modified = true;
+                            }
+                        }
+                    }
+
+                }
+                if (!modified) {
+                    ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
+                }
             }
 
             boolean isMyFaces;
