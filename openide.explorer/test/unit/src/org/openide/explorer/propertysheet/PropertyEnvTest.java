@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,53 +34,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.masterfs;
+package org.openide.explorer.propertysheet;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * @author Radek Matous
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class URLMapperTest extends NbTestCase {
-    private static FileSystem mfs;
-    public URLMapperTest(String name) {
-        super(name);
-        mfs = FileBasedFileSystem.getInstance();
+public class PropertyEnvTest {
+
+    public PropertyEnvTest() {
     }
 
-    public void testURLMapperCallingFromMetaInfLookup() {
-        Lookup lkp = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
-        Object obj = lkp.lookup(Object.class);
-        assertNotNull(obj);
-        assertEquals(MyInstance2.class, obj.getClass());
-    }
-
-    @ServiceProvider(service=Object.class)
-    public static class MyInstance2 {
-        public MyInstance2() {
-            super();
-            testURLMapper();
-        }
-
-        private static void testURLMapper() {            
-            assertNotNull(mfs);
-            FileObject[] children = mfs.getRoot().getChildren();
-            for (int i = 0; i < children.length; i++) {
-                java.io.File file = FileUtil.toFile(children[i]);
-                assertNotNull(file);
-                assertNotNull(FileUtil.toFileObject(file));
-            }
-        }
-
+    @Test
+    public void testToString() {
+        assertNotNull("Some string computed", new PropertyEnv().toString());
     }
 
 }

@@ -52,16 +52,16 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/websvc/metro/lib/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/jaxb/activation.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/metro/webservices-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/metro/webservices-extra-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/metro/webservices-extra.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/metro/webservices-rt.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/metro/webservices-tools.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.metro.lib/modules/ext/metro/webservices-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.metro.lib/modules/ext/metro/webservices-extra-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.metro.lib/modules/ext/metro/webservices-extra.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.metro.lib/modules/ext/metro/webservices-rt.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.metro.lib/modules/ext/metro/webservices-tools.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/metro-1.4-doc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.metro.lib/docs/metro-1.4-doc.zip!/</resource>
     </volume>
     <volume>
         <type>maven-pom</type>
