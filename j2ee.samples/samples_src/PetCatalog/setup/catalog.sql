@@ -1,5 +1,5 @@
 
-    
+
 DROP TABLE item;
 DROP TABLE id_gen;
 
@@ -51,4 +51,4 @@ INSERT INTO item VALUES('27', 'feline02', 'Wild Cat', 'This wild tiger loves to 
 INSERT INTO item VALUES('28', 'feline02', 'Saber Cat', 'Buy me', 'cat11.gif', 'cat11.gif', 237);
 INSERT INTO item VALUES('29', 'feline02', 'Snappy Cat', 'Buy Me.', 'cat12.gif', 'cat12.gif', 337);
 
-INSERT INTO id_gen VALUES('ITEM_ID',419); 
+INSERT INTO id_gen VALUES('ITEM_ID',419);
