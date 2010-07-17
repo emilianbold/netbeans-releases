@@ -532,7 +532,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         assertNotNull("Object.class can be looked up", createLookup(new ClassLoader() {
             @Override
             protected Enumeration<URL> findResources(String name) throws IOException {
-                if (name.equals("META-INF/services/java.lang.Object")) {
+                if (name.equals(prefix() + "java.lang.Object")) {
                     return singleton(new URL(null, "dummy:stuff", new URLStreamHandler() {
                         @Override
                         protected URLConnection openConnection(URL u) throws IOException {
