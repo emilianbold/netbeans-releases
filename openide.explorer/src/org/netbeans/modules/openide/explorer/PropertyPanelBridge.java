@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,31 +42,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.spi.viewmodel;
+package org.netbeans.modules.openide.explorer;
+
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.openide.explorer.propertysheet.PropertyPanel;
 
 /**
- * Used by various data models if data model is asked to resolve node
- * of unknown type.
- *
- * @author   Jan Jancura
+ * Provides access to non-public methods on PropertyPanel
+ * 
+ * @author Martin Entlicher
  */
-public class UnknownTypeException extends Exception {
+public class PropertyPanelBridge {
 
-    private Object node;
+    private static final Map<PropertyPanel, Accessor> accessors = new WeakHashMap<PropertyPanel, Accessor>();
 
-    /**
-     * Creates a new instance of exception for given node.
-     *
-     * @param node a node of unknown type
-     */
-    public UnknownTypeException (Object node) {
-        this.node = node;
+    public static void register(PropertyPanel panel, Accessor accessor) {
+        synchronized (accessors) {
+            accessors.put(panel, accessor);
+        }
     }
 
-    @Override
-    public String getMessage() {
-        return node.toString() + " [" + node.getClass() + ']'; // NOI18N
+    public static boolean commit(PropertyPanel panel) {
+        Accessor a;
+        synchronized (accessors) {
+            a = accessors.get(panel);
+        }
+        if (a == null) {
+            return false;
+        } else {
+            return a.commit();
+        }
     }
-    
+
+    public interface Accessor {
+
+        boolean commit();
+
+    }
 }
-

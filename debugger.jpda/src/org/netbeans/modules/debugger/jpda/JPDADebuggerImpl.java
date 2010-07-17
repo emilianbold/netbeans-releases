@@ -796,6 +796,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         lock.lock();
         Variable vr;
         try {
+            if (!frameThread.isSuspended() && !((JPDAThreadImpl) frameThread).isSuspendedNoFire()) {
+                // Thread not suspended => Can not start evaluation
+                throw new InvalidExpressionException
+                    (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContextStackFrame"));
+            }
             ObjectReference v = null;
             if (var instanceof JDIVariable) {
                 v = (ObjectReference) ((JDIVariable) var).getJDIValue();
