@@ -62,6 +62,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Parameters;
 
 /**
  * JButton with a small arrow that displays popup menu when clicked.
@@ -92,6 +93,7 @@ class DropDownButton extends JButton {
     
     /** Creates a new instance of MenuToggleButton */
     public DropDownButton( Icon icon, JPopupMenu popup ) {
+        Parameters.notNull("icon", icon); //NOI18N
         assert null != icon;
         
         putClientProperty( DropDownButtonFactory.PROP_DROP_DOWN_MENU, popup );
