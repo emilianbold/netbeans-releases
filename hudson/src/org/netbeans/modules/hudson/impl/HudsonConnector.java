@@ -242,7 +242,7 @@ public class HudsonConnector {
                     name = o.getFirstChild().getTextContent();
                     isPrimary = name.equals(primaryViewName);
                 } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                    url = normalizeUrl(o.getFirstChild().getTextContent(), isPrimary ? "/" : "view/[^/]+/"); // NOI18N
+                    url = normalizeUrl(o.getFirstChild().getTextContent(), isPrimary ? "" : "view/[^/]+/"); // NOI18N
                 }
             }
             
