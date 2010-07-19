@@ -87,6 +87,7 @@ public class AntLoggerTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         AntBridge.NO_MODULE_SYSTEM = true;
+        System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
         MockServices.setServices(IFL.class, TestLogger.class);
         LOGGER = Lookup.getDefault().lookup(TestLogger.class);
         LOGGER.reset();
