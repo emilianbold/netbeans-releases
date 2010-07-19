@@ -51,8 +51,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -76,6 +78,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.api.components.JsfComponents;
+import org.netbeans.modules.web.jsf.api.components.JsfComponentsProvider;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
@@ -97,8 +101,15 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private boolean customizer;
     
     private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
+    //    private final List<JsfComponentsProvider> componentsLibraries = new ArrayList<JsfComponentsProvider>();
+    private final Map<JSFVersion, List<JsfComponentsProvider>> componentsMap = new HashMap<JSFVersion, List<JsfComponentsProvider>>();
+    /**
+     * Do not modify it directly, use setJsfVersion method
+     */
+    private JSFVersion currentJSFVersion = null;
     private final Set<ServerLibraryItem> serverJsfLibraries = new TreeSet<ServerLibraryItem>();
     private volatile boolean libsInitialized;
+    private volatile boolean jsfComponentsInitialized;
     private String serverInstanceID;
     private final List<String> preferredLanguages = new ArrayList<String>();
     private String currentServerInstanceID;
@@ -119,6 +130,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     public void addNotify() {
         super.addNotify();
         initLibraries();
+        initJsfComponentsLibraries();
         
         if (customizer) {
             enableComponents(false);
@@ -182,6 +194,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         public void run() {
                             setRegisteredLibraryModel(registeredItems);
                             updatePreferredLanguages();
+                            updateJsfComponents();
                         }
                     });
                     LOG.finest("Time spent in initLibraries in Runnable = "+(System.currentTimeMillis()-time) +" ms");  //NOI18N
@@ -195,6 +208,23 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         LOG.finest("Time spent in "+this.getClass().getName() +" initLibraries = "+(System.currentTimeMillis()-time) +" ms");   //NOI18N
     }
 
+    private void initJsfComponentsLibraries() {
+        if (jsfComponentsInitialized)
+            return;
+        for (JsfComponentsProvider components : JsfComponents.getJsfComponents()) {
+            List<JsfComponentsProvider> list = componentsMap.get(components.getJsfVersion());
+            if (list == null) {
+                list = new ArrayList<JsfComponentsProvider>();
+            }
+            list.add(components);
+            componentsMap.put(components.getJsfVersion(), list);
+        }
+        jsfComponentsInitialized = true;
+        if (currentJSFVersion !=null) {
+            updateJsfComponentsModel(currentJSFVersion);
+        }
+    }
+    
     private void initServerLibraries(boolean updateUI) {
         serverJsfLibraries.clear();
 
@@ -312,6 +342,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             rbRegisteredLibrary.setSelected(true);
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()).getLibrary());
+                setJsfVersion(jsfLibraries.get(cbLibraries.getSelectedIndex()).getVersion());
             }
         }
 
@@ -337,6 +368,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
                 if (item != null) {
                     panel.setServerLibrary(item.getLibrary());
+                    setJsfVersion(item.getVersion());
                 }
             }
         }
@@ -426,6 +458,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         tURLPattern = new javax.swing.JTextField();
         cbPreferredLang = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
+        componentsPanel = new javax.swing.JPanel();
+        cbJsfComponents = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
 
         setLayout(new java.awt.CardLayout());
 
@@ -622,6 +658,46 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Configuration"), confPanel); // NOI18N
 
+        cbJsfComponents.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "None" }));
+        cbJsfComponents.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbJsfComponentsActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setLabelFor(cbJsfComponents);
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JSF_Components")); // NOI18N
+
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JSF_Components_Desc")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout componentsPanelLayout = new org.jdesktop.layout.GroupLayout(componentsPanel);
+        componentsPanel.setLayout(componentsPanelLayout);
+        componentsPanelLayout.setHorizontalGroup(
+            componentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(componentsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(componentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(componentsPanelLayout.createSequentialGroup()
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cbJsfComponents, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel3))
+                .addContainerGap(59, Short.MAX_VALUE))
+        );
+        componentsPanelLayout.setVerticalGroup(
+            componentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(componentsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(componentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(cbJsfComponents, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(120, Short.MAX_VALUE))
+        );
+
+        jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Components"), componentsPanel); // NOI18N
+
         add(jsfTabbedPane, "card10");
         jsfTabbedPane.getAccessibleContext().setAccessibleName("");
     }// </editor-fold>//GEN-END:initComponents
@@ -646,6 +722,7 @@ private void rbNewLibraryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-F
 
 private void cbLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbLibrariesActionPerformed
     panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()).getLibrary());
+    setJsfVersion(jsfLibraries.get(cbLibraries.getSelectedIndex()).getVersion());
     updatePreferredLanguages();
 }//GEN-LAST:event_cbLibrariesActionPerformed
 
@@ -688,15 +765,24 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
     updatePreferredLanguages();
 }//GEN-LAST:event_serverLibrariesActionPerformed
+
+private void cbJsfComponentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbJsfComponentsActionPerformed
+    // TODO add your handling code here:
+    panel.setJsfComponentsLibrary(((ComponentsLibraryItem)cbJsfComponents.getSelectedItem()).getLibrary());
+}//GEN-LAST:event_cbJsfComponentsActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox cbJsfComponents;
     private javax.swing.JComboBox cbLibraries;
     private javax.swing.JCheckBox cbPackageJars;
     private javax.swing.JComboBox cbPreferredLang;
+    private javax.swing.JPanel componentsPanel;
     private javax.swing.JPanel confPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JButton jbBrowse;
     private javax.swing.JTabbedPane jsfTabbedPane;
     private javax.swing.JTextField jtFolder;
@@ -921,7 +1007,13 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         }
     }
-
+    
+    void setJsfVersion(JSFVersion version) {
+        if (version != currentJSFVersion) {
+            currentJSFVersion = version;
+            updateJsfComponentsModel(version);
+        }
+    }
     private boolean isServerInstanceChanged() {
         if ((serverInstanceID==null && currentServerInstanceID !=null) ||
                 (serverInstanceID != null &&  !serverInstanceID.equals(currentServerInstanceID))) {
@@ -1001,6 +1093,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
                 if (item != null) {
                     panel.setServerLibrary(item.getLibrary());
+                    setJsfVersion(item.getVersion());
                 }
             }
             panel.getController().setErrorMessage(null);
@@ -1012,6 +1105,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()).getLibrary());
                 panel.setServerLibrary(null);
+                setJsfVersion(jsfLibraries.get(cbLibraries.getSelectedIndex()).getVersion());
             }
             panel.getController().setErrorMessage(null);
         } else if (rbNewLibrary.isSelected()){
@@ -1024,7 +1118,23 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
         updatePreferredLanguages();
     }
-    
+    private void updateJsfComponentsModel(JSFVersion version) {
+        List<ComponentsLibraryItem> componentsList = new ArrayList<ComponentsLibraryItem>();
+        //Add empty default component
+        componentsList.add(new ComponentsLibraryItem(null));
+        List<JsfComponentsProvider> providers = componentsMap.get(version);
+        if (providers != null) {
+            for (JsfComponentsProvider provider : providers) {
+                componentsList.add(new ComponentsLibraryItem(provider));
+            }
+        }
+        cbJsfComponents.setModel(new DefaultComboBoxModel(componentsList.toArray(new ComponentsLibraryItem[componentsList.size()])));
+    }
+
+    private void updateJsfComponents() {
+        panel.setJsfComponentsLibrary(((ComponentsLibraryItem)cbJsfComponents.getSelectedItem()).getLibrary());
+    }
+
     private void enableDefinedLibraryComponent(boolean enabled){
         cbLibraries.setEnabled(enabled);
     }
@@ -1182,5 +1292,27 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             return -this.toString().compareTo(o.toString());
         }
 
+    }
+
+    private static class ComponentsLibraryItem {
+        private JsfComponentsProvider jsfComponentsProvider;
+        private String defaultName = "None";
+
+        public ComponentsLibraryItem(JsfComponentsProvider jsfComponentsProvider) {
+            this.jsfComponentsProvider = jsfComponentsProvider;
+        }
+
+        public Library getLibrary() {
+            return jsfComponentsProvider!= null ? jsfComponentsProvider.getLibrary() : null;
+        }
+
+        public String getName() {
+            return jsfComponentsProvider!= null ? jsfComponentsProvider.getName() : defaultName;
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
     }
 }
