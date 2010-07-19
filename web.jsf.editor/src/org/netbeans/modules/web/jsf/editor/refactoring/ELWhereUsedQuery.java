@@ -42,24 +42,22 @@
 package org.netbeans.modules.web.jsf.editor.refactoring;
 
 import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -128,6 +126,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         ELIndex index = ELIndex.get(handle.getFileObject());
         final Set<IndexResult> result = new HashSet<IndexResult>();
         result.addAll(index.findPropertyReferences(propertyName));
+        result.addAll(index.findMethodReferences(propertyName));
 
         for (ELElement elem : getMatchingElements(result)) {
             for (Node property : findMatchingPropertyNodes(elem.getNode(), propertyName, element.getEnclosingElement().asType())) {
@@ -155,14 +154,14 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
                     TypeMirror enclosing = fmbType.asType();
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
-                        if (child instanceof AstPropertySuffix) {
+                        if (child instanceof AstPropertySuffix || child instanceof AstMethodSuffix) {
                             if (targetName.equals(child.getImage()) && info.getTypes().isSameType(targetType, enclosing)) {
-                                TypeMirror matching = getTypeForProperty(child.getImage(), enclosing);
+                                TypeMirror matching = getTypeForProperty(child, enclosing);
                                 if (matching != null) {
                                     result.add(child);
                                 }
                             } else {
-                                enclosing = getTypeForProperty(child.getImage(), enclosing);
+                                enclosing = getTypeForProperty(child, enclosing);
                             }
 
                         }
@@ -195,25 +194,42 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
      * @param enclosing
      * @return
      */
-    private TypeMirror getTypeForProperty(String name, TypeMirror enclosing) {
+    private TypeMirror getTypeForProperty(Node property, TypeMirror enclosing) {
+        String name = property.getImage();
         for (Element each : info.getTypes().asElement(enclosing).getEnclosedElements()) {
             // we're only interested in public methods
             // XXX: should probably include public fields too
             if (each.getKind() != ElementKind.METHOD || !each.getModifiers().contains(Modifier.PUBLIC)) {
                 continue;
             }
-            String methodName = each.getSimpleName().toString();
-            if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
-                ExecutableType method = (ExecutableType) each.asType();
-                TypeKind returnTypeKind = method.getReturnType().getKind();
-                if (returnTypeKind.isPrimitive()) {
-                    return info.getTypes().getPrimitiveType(returnTypeKind);
-                } else {
-                    return method.getReturnType();
-                }
+            ExecutableElement methodElem = (ExecutableElement) each;
+            String methodName = methodElem.getSimpleName().toString();
+
+            if (property instanceof AstMethodSuffix
+                    && methodName.equals(name)
+                    && haveSameParameters((AstMethodSuffix) property, methodElem)) {
+
+                return getReturnType(methodElem);
+
+            } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
+                return getReturnType(methodElem);
             }
         }
         return null;
+    }
+
+    private TypeMirror getReturnType(ExecutableElement method) {
+        TypeKind returnTypeKind = method.getReturnType().getKind();
+        if (returnTypeKind.isPrimitive()) {
+            return info.getTypes().getPrimitiveType(returnTypeKind);
+        } else {
+            return method.getReturnType();
+        }
+    }
+
+    private static boolean haveSameParameters(AstMethodSuffix methodNode, ExecutableElement method) {
+        //XXX: need to do type matching here
+        return method.getParameters().size() == methodNode.jjtGetNumChildren();
     }
 
     private List<ELElement> getMatchingElements(Collection<? extends IndexResult> indexResult)  {
