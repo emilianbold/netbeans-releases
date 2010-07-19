@@ -45,8 +45,7 @@
 package org.netbeans.core.startup.preferences;
 
 import java.util.prefs.Preferences;
-import org.openide.modules.ModuleInfo;
-import org.openide.modules.Modules;
+import org.netbeans.Util;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -56,9 +55,14 @@ import org.openide.util.lookup.ServiceProvider;
 public class PreferencesProviderImpl implements org.openide.util.NbPreferences.Provider {
     public Preferences preferencesForModule(Class cls) {
         String absolutePath = null;
-        ModuleInfo owner = Modules.getDefault().ownerOf(cls);
-        if (owner != null) {
-            absolutePath = owner.getCodeNameBase();
+        // Could use Modules.getDefault().ownerOf(cls) but this would initialize
+        // module system which may be undesirable in general. Fix might be to
+        // register Modules global impl from o.n.bootstrap using Util.ModuleProvider,
+        // though this needs to be overridden by ModuleManager impl since that has
+        // specific behavior in case of JNLP.
+        ClassLoader cl = cls.getClassLoader();
+        if (cl instanceof Util.ModuleProvider) {
+            absolutePath = ((Util.ModuleProvider) cl).getModule().getCodeNameBase();
         } else {
             absolutePath = cls.getName().replaceFirst("(^|\\.)[^.]+$", "");//NOI18N
         }
