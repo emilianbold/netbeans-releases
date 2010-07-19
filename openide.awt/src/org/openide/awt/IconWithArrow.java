@@ -48,10 +48,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import org.openide.util.Parameters;
 
 /**
  * An icon that paints a small arrow to the right of the provided icon.
@@ -71,10 +70,12 @@ class IconWithArrow implements Icon {
     
     /** Creates a new instance of IconWithArrow */
     public IconWithArrow(  Icon orig, boolean paintRollOver ) {
+        Parameters.notNull("original icon", orig); //NOI18N
         this.orig = orig;
         this.paintRollOver = paintRollOver;
     }
 
+    @Override
     public void paintIcon( Component c, Graphics g, int x, int y ) {
         int height = getIconHeight();
         orig.paintIcon( c, g, x, y+(height-orig.getIconHeight())/2 );
@@ -99,10 +100,12 @@ class IconWithArrow implements Icon {
         }
     }
 
+    @Override
     public int getIconWidth() {
         return orig.getIconWidth() + GAP + arrow.getIconWidth();
     }
 
+    @Override
     public int getIconHeight() {
         return Math.max( orig.getIconHeight(), arrow.getIconHeight() );
     }
