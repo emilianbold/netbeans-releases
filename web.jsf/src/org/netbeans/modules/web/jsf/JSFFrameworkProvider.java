@@ -211,6 +211,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
 
+            if (panel.getJsfComponentsLibrary() != null ) {
+                ProjectClassPathModifier.addLibraries(new Library[]{panel.getJsfComponentsLibrary()}, javaSources[0], ClassPath.COMPILE);
+            }
+
             boolean isMyFaces;
             if (jsfLibrary != null) {
                 // find out whether the added library is myfaces jsf implementation
