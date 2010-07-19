@@ -238,6 +238,8 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         } else {
             if( isAqua ) {
                 Color defBk = UIManager.getColor("NbExplorerView.background");
+                if( null == defBk )
+                    defBk = Color.gray;
                 return new Color( defBk.getRed()-10, defBk.getGreen()-10, defBk.getBlue()-10);
             }
             if( isGTK || isNimbus ) {
