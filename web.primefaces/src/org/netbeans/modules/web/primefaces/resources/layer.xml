@@ -10,7 +10,9 @@
     </folder>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="primefaces.xml" url="primefaces.xml"/>
+            <file name="primefaces.xml" url="primefaces.xml">
+                <attr name="displayName" bundlevalue="org/netbeans/modules/web/primefaces/resources/Bundle#primefaces"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
