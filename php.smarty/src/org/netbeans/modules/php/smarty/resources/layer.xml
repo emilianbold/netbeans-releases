@@ -118,6 +118,11 @@
                     <attr methodvalue="org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create" name="instanceCreate"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/></file>
 
+                <!-- associating platte with the mime type -->
+                <file name="PaletteFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.spi.palette.PaletteController"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.palette.PHPPaletteFactory.getPalette"/>
+                </file>
             </folder>
         </folder>
     </folder>
