@@ -59,6 +59,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -127,7 +130,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         result.addAll(index.findPropertyReferences(propertyName));
 
         for (ELElement elem : getMatchingElements(result)) {
-            for (Node property : findMatchingPropertyNodes(elem.getNode(), propertyName, element.getEnclosingElement())) {
+            for (Node property : findMatchingPropertyNodes(elem.getNode(), propertyName, element.getEnclosingElement().asType())) {
                 WhereUsedQueryElement wuqe =
                         new WhereUsedQueryElement(elem.getParserResult().getFileObject(), propertyName, elem, property, getParserResult(elem.getParserResult().getFileObject()));
                 refactoringElementsBag.add(whereUsedQuery, wuqe);
@@ -136,7 +139,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         return null;
     }
 
-    private List<Node> findMatchingPropertyNodes(Node root, final String targetName, final Element targetType) {
+    private List<Node> findMatchingPropertyNodes(Node root, final String targetName, final TypeMirror targetType) {
         final List<Node> result = new ArrayList<Node>();
         root.accept(new NodeVisitor() {
 
@@ -149,17 +152,17 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
                         return;
                     }
                     TypeElement fmbType = info.getElements().getTypeElement(fmb.getManagedBeanClass());
-                    Element enclosing = fmbType;
+                    TypeMirror enclosing = fmbType.asType();
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
                         if (child instanceof AstPropertySuffix) {
-                            if (targetName.equals(child.getImage()) && enclosing.equals(targetType)) {
-                                Element matching = getElementForProperty(child.getImage(), enclosing);
+                            if (targetName.equals(child.getImage()) && info.getTypes().isSameType(targetType, enclosing)) {
+                                TypeMirror matching = getTypeForProperty(child.getImage(), enclosing);
                                 if (matching != null) {
                                     result.add(child);
                                 }
                             } else {
-                                enclosing = getElementForProperty(child.getImage(), enclosing);
+                                enclosing = getTypeForProperty(child.getImage(), enclosing);
                             }
 
                         }
@@ -192,8 +195,8 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
      * @param enclosing
      * @return
      */
-    private Element getElementForProperty(String name, Element enclosing) {
-        for (Element each : enclosing.getEnclosedElements()) {
+    private TypeMirror getTypeForProperty(String name, TypeMirror enclosing) {
+        for (Element each : info.getTypes().asElement(enclosing).getEnclosedElements()) {
             // we're only interested in public methods
             // XXX: should probably include public fields too
             if (each.getKind() != ElementKind.METHOD || !each.getModifiers().contains(Modifier.PUBLIC)) {
@@ -201,8 +204,13 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
             }
             String methodName = each.getSimpleName().toString();
             if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
-                ExecutableType returnType = (ExecutableType) each.asType();
-                return info.getTypes().asElement(returnType.getReturnType());
+                ExecutableType method = (ExecutableType) each.asType();
+                TypeKind returnTypeKind = method.getReturnType().getKind();
+                if (returnTypeKind.isPrimitive()) {
+                    return info.getTypes().getPrimitiveType(returnTypeKind);
+                } else {
+                    return method.getReturnType();
+                }
             }
         }
         return null;
