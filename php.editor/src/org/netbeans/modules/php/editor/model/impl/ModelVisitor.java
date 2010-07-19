@@ -227,6 +227,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ReturnStatement node) {
+        super.visit(node);
         final ScopeImpl currentScope = modelBuilder.getCurrentScope();
         markerBuilder.prepare(node,currentScope);        
         String typeName = null;
@@ -273,8 +274,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     functionScope.returnType += "|" + tp;//NOI18N
                 }
             }
-        }
-        super.visit(node);
+        }        
     }
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
