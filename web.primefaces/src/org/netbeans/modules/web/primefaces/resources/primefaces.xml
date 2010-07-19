@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org/netbeans/modules/web/primefaces/resources/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/primefaces/primefaces-2.1.RC1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.primefaces/modules/ext/primefaces/primefaces-2.1.RC1.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
