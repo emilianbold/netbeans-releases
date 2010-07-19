@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.net.URL;
 import java.net.URI;
 import java.util.List;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -59,6 +60,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 
@@ -72,11 +74,11 @@ public class Customizer extends JTabbedPane {
     private static final String CLASSPATH = J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH;
     private static final String SOURCES = J2eeLibraryTypeProvider.VOLUME_TYPE_SRC;
     private static final String JAVADOC = J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC;
+    
+    private DeploymentManager manager;
 
-    private J2eePlatformImpl platform;
-
-    public Customizer(J2eePlatformImpl platform) {
-        this.platform = platform;
+    public Customizer(DeploymentManager manager ) {
+        this.manager = manager;
         initComponents ();
     }
 
@@ -98,6 +100,8 @@ public class Customizer extends JTabbedPane {
                 putClientProperty("HelpID", helpID); // NOI18N
             }
         });
+        /*addTab(NbBundle.getMessage(Customizer.class,"TXT_Classes"), 
+                new CustomizerGeneral( manager ));*/
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Classes"), createPathTab(CLASSPATH)); // NOI18N
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Sources"), createPathTab(SOURCES)); // NOI18N
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Javadoc"), createPathTab(JAVADOC)); // NOI18N
@@ -105,7 +109,7 @@ public class Customizer extends JTabbedPane {
 
 
     private JComponent createPathTab(String type) {
-        return new PathView(platform, type);
+        return new PathView(new WLJ2eePlatformFactory().getJ2eePlatformImpl(manager), type);
     }
 
 
