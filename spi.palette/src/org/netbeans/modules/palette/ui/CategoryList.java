@@ -294,11 +294,6 @@ public class CategoryList extends JList implements Autoscroll {
             if (button == null) {
                 button = new JToggleButton ();
                 button.setMargin (new Insets (1, 1, 1, 0));
-                if( CategoryButton.isAqua ) {
-                    //force button font on mac l&f
-                    button.setFont( new Font(null, Font.PLAIN, 
-                            new JLabel().getFont().getSize() ) );
-                }
                 
                 if (!CategoryButton.isGTK) {
                     toolbar = new JToolBar ();
