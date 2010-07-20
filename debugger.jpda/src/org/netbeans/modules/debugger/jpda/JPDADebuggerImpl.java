@@ -132,7 +132,7 @@ import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.util.Operator;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.api.debugger.jpda.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;

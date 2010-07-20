@@ -97,7 +97,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.api.debugger.jpda.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
