@@ -522,7 +522,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                                 context = SSLContext.getInstance("SSL");
                                 context.init(null, tm, null);
                                 ((HttpsURLConnection)hconn).setSSLSocketFactory(context.getSocketFactory());
-                                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                                ((HttpsURLConnection)hconn).setHostnameVerifier(new HostnameVerifier() {
 
                                     @Override
                                     public boolean verify(String string, SSLSession ssls) {
