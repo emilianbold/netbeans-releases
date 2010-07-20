@@ -41,6 +41,7 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;

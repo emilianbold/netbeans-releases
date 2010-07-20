@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,7 +58,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerElements;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration;
+import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.HtmlParserFactory;
 import org.netbeans.editor.ext.html.parser.api.HtmlSourceVersionQuery;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
@@ -96,8 +99,8 @@ public class SyntaxAnalyzerResult {
         this.analyzer = source;
     }
 
-    public CharSequence getSourceCode() {
-        return analyzer.source().getSourceCode();
+    public HtmlSource getSource() {
+        return analyzer.source();
     }
 
     public SyntaxAnalyzerElements getElements() {
@@ -198,7 +201,7 @@ public class SyntaxAnalyzerResult {
             }
         });
 
-        CharSequence clearedSource = clearIgnoredAreas(getSourceCode(), context.getIgnoredAreas());
+        CharSequence clearedSource = clearIgnoredAreas(getSource().getSourceCode(), context.getIgnoredAreas());
         List<SyntaxElement> filtered = context.getFiltered();
 
         //create a new html source with the cleared areas
@@ -206,7 +209,7 @@ public class SyntaxAnalyzerResult {
 
         //add the syntax elements to the lookup since the old html4 parser needs them
         InstanceContent content = new InstanceContent();
-        content.add(filtered);
+        content.add(new SyntaxAnalyzerElements(filtered));
         Lookup lookup = new AbstractLookup(content);
 
         return parser.parse(source, getHtmlVersion(), lookup);
@@ -239,7 +242,7 @@ public class SyntaxAnalyzerResult {
             }
         });
 
-        CharSequence clearedSource = clearIgnoredAreas(getSourceCode(), context.getIgnoredAreas());
+        CharSequence clearedSource = clearIgnoredAreas(getSource().getSourceCode(), context.getIgnoredAreas());
 
         //create a new html source with the cleared areas
         HtmlSource source = new HtmlSource(clearedSource, analyzer.source().getSnapshot() , analyzer.source().getSourceFileObject());
@@ -267,7 +270,7 @@ public class SyntaxAnalyzerResult {
             }
         });
 
-        CharSequence clearedSource = clearIgnoredAreas(getSourceCode(), context.getIgnoredAreas());
+        CharSequence clearedSource = clearIgnoredAreas(getSource().getSourceCode(), context.getIgnoredAreas());
 
         //create a new html source with the cleared areas
         HtmlSource source = new HtmlSource(clearedSource, analyzer.source().getSnapshot() , analyzer.source().getSourceFileObject());
@@ -458,7 +461,7 @@ public class SyntaxAnalyzerResult {
 
     public synchronized Set<String> getAllDeclaredPrefixes() {
         if(allPrefixes == null) {
-            allPrefixes = getAllDeclaredPrefixes();
+            allPrefixes = findAllDeclaredPrefixes();
         }
         return allPrefixes;
     }

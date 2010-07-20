@@ -41,8 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import java.util.List;
 import java.util.logging.Logger;
 import java.io.IOException;
@@ -53,6 +54,7 @@ import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.junit.MockServices;

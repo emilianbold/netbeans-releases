@@ -267,7 +267,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <package>org.netbeans.editor.ext.html.dtd</package>
                 <package>org.netbeans.editor.ext.html.dtd.spi</package>
-                <package>org.netbeans.editor.ext.html.parser</package>
+                <package>org.netbeans.editor.ext.html.parser.api</package>
                 <package>org.netbeans.editor.ext.html.parser.spi</package>
             </friend-packages>
         </data>

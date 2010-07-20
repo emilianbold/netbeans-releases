@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 
 public abstract class HtmlParserResultAccessor {
@@ -67,5 +66,5 @@ public abstract class HtmlParserResultAccessor {
         INSTANCE = instance;
     }
 
-    public abstract HtmlParserResult createInstance(Snapshot snapshot, SyntaxAnalyzerResult result);
+    public abstract HtmlParserResult createInstance(SyntaxAnalyzerResult result);
 }

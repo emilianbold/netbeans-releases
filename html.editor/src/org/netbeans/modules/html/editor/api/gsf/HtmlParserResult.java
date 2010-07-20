@@ -50,22 +50,20 @@ import java.util.Map;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,9 +83,13 @@ public class HtmlParserResult extends ParserResult {
     private List<Error> errors;
     private boolean isValid = true;
 
-    private HtmlParserResult(Snapshot snapshot, SyntaxAnalyzerResult result) {
-        super(snapshot);
+    private HtmlParserResult(SyntaxAnalyzerResult result) {
+        super(result.getSource().getSnapshot());
         this.result = result;
+    }
+
+    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
+        return result;
     }
 
     /** The parser result may be invalidated by the parsing infrastructure.
@@ -110,11 +112,6 @@ public class HtmlParserResult extends ParserResult {
         return result.getHtmlVersion();
     }
 
-    /** @return an instance of DTD for the parser input. */
-    public DTD dtd() {
-        return result.getDTD();
-    }
-
     /** @return a root node of the hierarchical parse tree of the document.
      * basically the tree structure is done by postprocessing the flat parse tree
      * you can get by calling elementsList() method.
@@ -122,18 +119,31 @@ public class HtmlParserResult extends ParserResult {
      * the postprocessing takes some time and is done lazily.
      */
     public AstNode root() {
-        return root(getHtmlVersion().getDefaultNamespace());
+        try {
+            return result.parseHtml().root();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    public AstNode rootOfUndeclaredTagsParseTree() {
+        try {
+            return result.parseUndeclaredEmbeddedCode().root();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     /** returns a parse tree for non-html content */
     public AstNode root(String namespace) {
-        DTD dtd = null;
-        if(namespace == null || namespace != null && namespace.equals(getHtmlVersion().getDefaultNamespace())) {
-            //html content, use fallback dtd
-            dtd = getFallbackDTD(getHtmlVersion());
+        try {
+            return result.parseEmbeddedCode(namespace).root();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        return result.getASTRoot(namespace, dtd);
+        return null;
     }
 
     
@@ -212,12 +222,6 @@ public class HtmlParserResult extends ParserResult {
             }
         }
         return mostLeaf;
-    }
-
-    /** @return a list of SyntaxElement-s representing parse elements of the html source. */
-    @Deprecated
-    public List<SyntaxElement> elementsList() {
-        return result.getElements();
     }
 
     @Override
@@ -302,7 +306,7 @@ public class HtmlParserResult extends ParserResult {
 
         Collection<AstNode> roots = new ArrayList<AstNode>();
         roots.addAll(roots().values());
-        roots.add(root(SyntaxAnalyzerResult.UNDECLARED_TAGS_NAMESPACE));
+        roots.add(rootOfUndeclaredTagsParseTree());
         for(AstNode root : roots) {
             AstNodeUtils.visitChildren(root, errorsCollector);
         }
@@ -328,8 +332,8 @@ public class HtmlParserResult extends ParserResult {
     private static class Accessor extends HtmlParserResultAccessor {
 
         @Override
-        public HtmlParserResult createInstance(Snapshot snapshot, SyntaxAnalyzerResult result) {
-            return new HtmlParserResult(snapshot, result);
+        public HtmlParserResult createInstance(SyntaxAnalyzerResult result) {
+            return new HtmlParserResult(result);
         }
     }
 }

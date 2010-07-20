@@ -102,7 +102,7 @@ public abstract class SyntaxElement {
         return "Element(" +TYPE_NAMES[type()]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + "\""; // NOI18N
     }
 
-    static class SharedTextElement extends SyntaxElement {
+    public static class SharedTextElement extends SyntaxElement {
 
         private static final String TO_STRING = "<n/a>"; //NOI18N
 
@@ -134,7 +134,7 @@ public abstract class SyntaxElement {
 
     }
 
-    static class Error extends SyntaxElement {
+    public static class Error extends SyntaxElement {
 
         public Error(CharSequence doc, int offset, int length) {
             super(doc, offset, length);
@@ -148,7 +148,7 @@ public abstract class SyntaxElement {
 
     }
 
-    static class EntityReference extends SyntaxElement {
+    public static class EntityReference extends SyntaxElement {
 
         public EntityReference(CharSequence doc, int offset, int length) {
             super(doc, offset, length);
@@ -162,7 +162,7 @@ public abstract class SyntaxElement {
 
     }
 
-    static class Comment extends SyntaxElement {
+    public static class Comment extends SyntaxElement {
 
         public Comment(CharSequence doc, int offset, int length) {
             super(doc, offset, length);
@@ -329,7 +329,7 @@ public abstract class SyntaxElement {
         private String name, value;
         private int nameOffset, valueOffset, valueLength;
         
-        TagAttribute(String name, String value, int nameOffset, int valueOffset, int valueLength) {
+        public TagAttribute(String name, String value, int nameOffset, int valueOffset, int valueLength) {
             this.name = name;
             this.value = value;
             this.nameOffset = nameOffset;

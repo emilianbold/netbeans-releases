@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import java.io.IOException;
 import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -52,19 +51,16 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
-import org.netbeans.editor.ext.html.parser.SyntaxParserContext;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.parser.Html5Parser;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.util.Exceptions;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -120,14 +116,16 @@ public class HtmlGSFParser extends Parser {
         Document sourceDocument = snapshot.getSource().getDocument(false);
         DTD fallbackDTD = sourceDocument != null ? (DTD)sourceDocument.getProperty(HtmlParserResult.FALLBACK_DTD_PROPERTY_NAME) : null;
         
-        SyntaxParserContext context = SyntaxParserContext.createContext(snapshot.getText()).setDTD(fallbackDTD);
+        HtmlSource source = new HtmlSource(snapshot);
+
         //disable html structure checks for embedded html code
         if(embedded) {
-            context.setProperty(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name(), Boolean.TRUE); //NOI18N
+            //XXX FIX THIS!!!!
+//            context.setProperty(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name(), Boolean.TRUE); //NOI18N
         }
-        SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(context);
+        SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(source).analyze();
         
-        HtmlParserResult result = HtmlParserResultAccessor.get().createInstance(snapshot, spresult);
+        HtmlParserResult result = HtmlParserResultAccessor.get().createInstance(spresult);
 
         if (TIMERS.isLoggable(Level.FINE)) {
             LogRecord rec = new LogRecord(Level.FINE, "HTML parse result"); // NOI18N

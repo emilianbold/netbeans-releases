@@ -60,7 +60,7 @@ import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -152,7 +152,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         };
 
         AstNodeUtils.visitChildren(root, namespacesCollector, AstNode.NodeType.OPEN_TAG);
-        AstNode undeclaredComponentsTreeRoot = result.root(SyntaxAnalyzerResult.UNDECLARED_TAGS_NAMESPACE);
+        AstNode undeclaredComponentsTreeRoot = result.rootOfUndeclaredTagsParseTree();
         if(undeclaredComponentsTreeRoot != null) {
             AstNodeUtils.visitChildren(undeclaredComponentsTreeRoot, namespacesCollector, AstNode.NodeType.OPEN_TAG);
 

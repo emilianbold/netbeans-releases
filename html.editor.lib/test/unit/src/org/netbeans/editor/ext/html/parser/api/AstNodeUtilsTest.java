@@ -51,8 +51,6 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerResult;
 import org.netbeans.editor.ext.html.parser.api.AstNode.NodeType;
 import org.netbeans.editor.ext.html.test.TestBase;
 

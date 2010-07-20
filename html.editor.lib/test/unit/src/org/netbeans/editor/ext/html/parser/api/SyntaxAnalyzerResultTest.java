@@ -40,11 +40,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import java.util.Map;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
@@ -69,7 +72,7 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
 
         assertNotNull(result);
-        assertNotNull(result.getSourceCode());
+        assertNotNull(result.getSource().getSourceCode());
         assertNotNull(result.getElements());
 
         assertNull(result.getPublicID()); //not specified

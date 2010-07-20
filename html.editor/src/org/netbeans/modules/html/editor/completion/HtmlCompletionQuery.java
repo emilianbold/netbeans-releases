@@ -58,7 +58,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerResult;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.html.editor.HtmlPreferences;
@@ -196,13 +195,10 @@ public class HtmlCompletionQuery extends UserTask {
         return null;
     }
 
-    private CompletionResult query(HtmlParserResult result) {
-        return query(result, result.dtd());
-    }
 
     //for unit tests, allows to use different DTD than specified in the parser result
-    CompletionResult query(HtmlParserResult parserResult, DTD dtd) {
-
+    CompletionResult query(HtmlParserResult parserResult) {
+        DTD dtd = parserResult.getSyntaxAnalyzerResult().getHtmlVersion().getDTD();
         Snapshot snapshot = parserResult.getSnapshot();
         String sourceMimetype = snapshot.getSource().getMimeType();
         int astOffset = snapshot.getEmbeddedOffset(offset);
@@ -275,7 +271,7 @@ public class HtmlCompletionQuery extends UserTask {
         }
 
         //find a leaf node for undeclared tags
-        AstNode undeclaredTagsParseTreeRoot = parserResult.root(SyntaxAnalyzerResult.UNDECLARED_TAGS_NAMESPACE);
+        AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();
         assert undeclaredTagsParseTreeRoot != null;
         AstNode undeclaredTagsLeafNode = AstNodeUtils.findDescendant(undeclaredTagsParseTreeRoot, searchAstOffset, backward);
 
