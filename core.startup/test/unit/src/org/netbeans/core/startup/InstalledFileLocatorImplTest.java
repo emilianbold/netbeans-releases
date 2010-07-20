@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -205,5 +206,19 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         assertEquals(x2, ifl.locate("x", "mod.b", false));
         assertEquals(x1, ifl.locate("x", null, false));
     }
+
+    public void testWarnings() throws Exception {
+        CharSequence cs = Log.enable(InstalledFileLocatorImpl.class.getName(), Level.WARNING);
+        File x = new File(nbdir1, "x");
+        touch(x);
+        File y = new File(nbdir1, "y");
+        touch(y);
+        TestFileUtils.writeFile(new File(nbdir1, "update_tracking/mod-a.xml"), "<module codename='mod.a'>\n<file name='x'/>\n</module>\n");
+        assertEquals(x, ifl.locate("x", "mod.a", false));
+        assertEquals(y, ifl.locate("y", "mod.a", false));
+        String log = cs.toString();
+        assertTrue(log, log.contains("does not own y"));
+        assertFalse(log, log.contains("does not own x"));
+    }    
     
 }

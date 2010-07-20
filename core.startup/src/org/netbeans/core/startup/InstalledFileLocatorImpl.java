@@ -406,7 +406,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
         }
         return true;
     }
-    private static final Pattern FILE_PATTERN = Pattern.compile("\\s*<file.+name=\"([^\"]+)\".*/>");
+    private static final Pattern FILE_PATTERN = Pattern.compile("\\s*<file.+name=[\"']([^\"']+)[\"'].*/>");
     private static final Map<File,Map<String,Set<String>>> ownershipByModuleByCluster = new HashMap<File,Map<String,Set<String>>>();
     
 }
