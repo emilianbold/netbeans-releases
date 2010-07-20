@@ -144,12 +144,13 @@ public class CommandRunner extends BasicTask<OperationState> {
      *
      */
     public Future<OperationState> restartServer(int debugPort) {
-        if (-1 == debugPort) {
+        final String restartQuery = cf.getRestartQuery(debugPort);
+        if (-1 == debugPort || "".equals(restartQuery) ) {
             return execute(new ServerCommand("restart-domain") {
 
                 @Override
                 public String getQuery() {
-                    return "debug=false";
+                    return restartQuery;
                 }
             }, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
         }
