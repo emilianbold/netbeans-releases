@@ -108,12 +108,21 @@ public class HudsonConnector {
         this.instance = instance;
     }
     
+    private boolean canUseTree() {
+        return getHudsonVersion().compareTo(new HudsonVersion("1.367")) >= 0; // NOI18N
+    }
+    
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//assignedLabel&exclude=//primaryView/job" +
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + (canUseTree() ?
+                "?tree=primaryView[name],views[name,url,jobs[name]]," +
+                "jobs[name,url,color,displayName,buildable,inQueue," +
+                "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
+                "module[name,displayName,url,color]]" :
+                "?depth=1&xpath=/&exclude=//assignedLabel&exclude=//primaryView/job" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
                 "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild" +
-                "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild"); // NOI18N
+                "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild")); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -146,8 +155,9 @@ public class HudsonConnector {
      * The changelog ({@code <changeSet>}) can be interpreted separately by {@link HudsonJobBuild#getChanges}.
      */
     Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
-        Document docBuild = getDocument(job.getUrl() + XML_API_URL +
-                "?xpath=/*/build&wrapper=root&exclude=//url");
+        Document docBuild = getDocument(job.getUrl() + XML_API_URL + (canUseTree() ?
+            "?tree=builds[number,result,building]" :
+            "?xpath=/*/build&wrapper=root&exclude=//url"));
         if (docBuild == null) {
             return Collections.emptySet();
         }
@@ -156,6 +166,8 @@ public class HudsonConnector {
         for (int i = 0; i < buildNodes.getLength(); i++) {
             Node build = buildNodes.item(i);
             int number = 0;
+            boolean building = false;
+            Result result = null;
             NodeList details = build.getChildNodes();
             for (int j = 0; j < details.getLength(); j++) {
                 Node detail = details.item(j);
@@ -171,11 +183,15 @@ public class HudsonConnector {
                 String text = firstChild.getTextContent();
                 if (nodeName.equals("number")) { // NOI18N
                     number = Integer.parseInt(text);
+                } else if (nodeName.equals("building")) { // NOI18N
+                    building = Boolean.valueOf(text);
+                } else if (nodeName.equals("result")) { // NOI18N
+                    result = Result.valueOf(text);
                 } else {
                     LOG.warning("unexpected <build> child: " + nodeName);
                 }
             }
-            builds.add(new HudsonJobBuildImpl(this, job, number));
+            builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
         }
         return builds;
     }
