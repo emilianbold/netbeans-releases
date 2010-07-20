@@ -55,6 +55,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -286,6 +287,25 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         if (isCancelled())
             return null;
 
+        if (node.getBoolean(MarkOccurencesSettings.EXCEPTIONS, true)) {
+            //detect caret inside catch:
+            if (typePath != null && typePath.getParentPath().getLeaf().getKind() == Kind.VARIABLE
+                    && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH) {
+                    MethodExitDetector med = new MethodExitDetector();
+
+                    setExitDetector(med);
+
+                    try {
+                        return med.process(info, doc, ((TryTree)typePath.getParentPath().getParentPath().getParentPath().getLeaf()).getBlock(), Collections.singletonList(typePath.getLeaf()));
+                    } finally {
+                        setExitDetector(null);
+                    }
+            }
+        }
+
+        if (isCancelled())
+            return null;
+        
         if (node.getBoolean(MarkOccurencesSettings.IMPLEMENTS, true)) {
             //detect caret inside the extends/implements clause:
             if (typePath != null && typePath.getParentPath().getLeaf().getKind() == Kind.CLASS) {

@@ -47,13 +47,11 @@ package org.openide.text;
 
 import java.io.IOException;
 import javax.swing.JEditorPane;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.UserCancelException;
 import org.openide.util.lookup.*;
 import org.openide.windows.CloneableTopComponent;
 
@@ -85,16 +83,6 @@ public class CloneableEditorSupportPaneAsyncTest extends NbTestCase implements C
     
     public CloneableEditorSupportPaneAsyncTest(java.lang.String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(CloneableEditorSupportPaneAsyncTest.class);
-        
-        return suite;
     }
     
     @Override

@@ -45,7 +45,6 @@
 package org.openide.util.actions;
 
 import java.io.IOException;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.AbstractNode;
@@ -54,7 +53,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.lookup.Lookups;
 
 /** Tests if NodeAction initializes its listener list and resposes
@@ -64,15 +62,6 @@ public class Issue71764Test extends NbTestCase {
     
     public Issue71764Test(java.lang.String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(Issue71764Test.class);
-        return suite;
     }
     
     public void test71764() {

@@ -358,7 +358,12 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 if (closeCookie != null) {
                     closeCookie.close();
                 }
-                FileUtil.moveFile(jnlpBuildFile, projDir.getFileObject("nbproject"), "jnlp-impl_backup");
+                final FileObject nbproject = projDir.getFileObject("nbproject");                    //NOI18N
+                final FileObject backupFile = nbproject.getFileObject("jnlp-impl_backup", "xml");   //NOI18N
+                if (backupFile != null) {
+                    backupFile.delete();
+                }
+                FileUtil.moveFile(jnlpBuildFile, nbproject, "jnlp-impl_backup");                    //NOI18N
                 jnlpBuildFile = null;
             }
 

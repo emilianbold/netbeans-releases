@@ -63,9 +63,11 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.openide.explorer.PropertyPanelBridge;
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.outline.Outline;
+import org.netbeans.swing.outline.OutlineModel;
 
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -369,7 +371,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
         return nullPanel;
     }
 
-    private PropertyPanel editor=null;
+    protected PropertyPanel editor=null;
     private PropertyPanel getEditor(Property p, Node n) {
         int prefs = PropertyPanel.PREF_TABLEUI;
 
@@ -766,6 +768,32 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                         outline.tableChanged(new TableModelEvent(outline.getModel(), 0, outline.getRowCount()));
                     }
                 });
+            }
+        }
+        
+        @Override
+        public boolean stopCellEditing() {
+
+            PropertyPanelBridge.commit(editor);
+
+            PropertiesRowModel prm = null;
+            if (outline instanceof OutlineView.OutlineViewOutline) {
+                OutlineView.OutlineViewOutline ovo = (OutlineView.OutlineViewOutline) outline;
+                prm = ovo.getRowModel();
+            }
+            if (prm != null) {
+                // See PropertiesRowModel.setValueFor()
+                // Intentionally do nothing when the cell editor components are
+                // PropertyPanels that will propagate the change into the target
+                // property object - no need to do anything in the set value method.
+                prm.setIgnoreSetValue(true);
+            }
+            try {
+                return super.stopCellEditing();
+            } finally {
+                if (prm != null) {
+                    prm.setIgnoreSetValue(false);
+                }
             }
         }
         @Override

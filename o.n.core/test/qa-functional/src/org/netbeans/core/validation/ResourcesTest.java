@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import junit.framework.*;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -64,9 +63,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import org.netbeans.*;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /** Tests for resources contained in modules.
  *
@@ -82,12 +79,6 @@ public class ResourcesTest extends NbTestCase {
         super(testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ResourcesTest.class);
-        
-        return suite;
-    }
-    
     @Override
     protected Level logLevel() {
         return Level.INFO;

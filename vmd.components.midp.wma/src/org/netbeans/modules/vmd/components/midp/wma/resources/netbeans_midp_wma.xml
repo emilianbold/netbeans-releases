@@ -52,14 +52,14 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.vmd.components.midp.wma.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/netbeans_midp_components_wma.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.midp.wma/modules/ext/netbeans_midp_components_wma.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst:///sources/netbeans_midp_components_wma-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.midp.wma/sources/netbeans_midp_components_wma-src.zip!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///modules/docs/netbeans_midp_components_wma-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.midp.wma/modules/docs/netbeans_midp_components_wma-api.zip!/</resource>
     </volume>
 </library>

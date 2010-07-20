@@ -334,7 +334,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             //return name.indexOf('.') < 0;
             try{
                 //Since 1.6
-                return file.canExecute();
+                return name.indexOf('.') < 0 && file.canExecute();
             } catch (SecurityException ex) {
             }
         }

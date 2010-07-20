@@ -680,22 +680,25 @@ implements ChangeListener {
                 List<Item> arr = DataObjectPool.POOL.children.get(fo.getParent());
                 if (arr != null) {
                     return new ArrayList<Item>(arr);
-                } else {
-                    return Collections.emptyList();
                 }
-                /*List<Item> toNotify = new LinkedList<Item>();
+                List<Item> toNotify = new LinkedList<Item>();
                 FileObject parent = fo.getParent();
                 if (parent != null) { // the fo is not root
                     FileObject[] siblings = parent.getChildren();
                     // notify all in folder
                     for (int i = 0; i < siblings.length; i++) {
                         itm = (Item) DataObjectPool.POOL.map.get(siblings[i]);
-                        if (itm != null) {
-                            toNotify.add(itm);
+                        if (itm == null) {
+                            continue;
                         }
+                        DataObject obj = itm.getDataObjectOrNull();
+                        if (obj == null) {
+                            continue;
+                        }
+                        toNotify.add(itm);
                     }
                 }
-                return toNotify;*/
+                return toNotify;
             }
         }
     }

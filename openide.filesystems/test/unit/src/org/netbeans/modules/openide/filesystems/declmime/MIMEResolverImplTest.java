@@ -52,9 +52,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MIMEResolver;
@@ -68,15 +66,6 @@ public class MIMEResolverImplTest extends NbTestCase {
            
     public MIMEResolverImplTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        Test suite = null;
-        //suite = new MIMEResolverImplTest("testPatternElement");
-        if (suite == null) {
-            suite = new NbTestSuite(MIMEResolverImplTest.class);
-        }
-        return suite;
     }
 
     @Override

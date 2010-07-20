@@ -66,6 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JViewport;
 import javax.swing.text.BadLocationException;
+import org.openide.util.Parameters;
 
 
 /**
@@ -354,55 +355,45 @@ public class PopupManager {
      *  @param viewHeight height of the visible view area.
      *  @param cursorBounds the bounds of the caret or mouse cursor
      *    relative to the upper-left corner of the visible view
-     *  @param placement where to place the popup panel according to
+     *  @param originalPlacement where to place the popup panel according to
      *    the cursor position
      *  @return bounds of popup panel relative to the upper-left corner
      *    of the underlying view.
      *    <CODE>null</CODE> if there is no place to display popup.
      */
-    protected static Rectangle computeBounds(JComponent popup,
-    int viewWidth, int viewHeight, Rectangle cursorBounds, Placement placement, HorizontalBounds horizontalBounds) {
-        
-        if (placement == null) {
-            throw new NullPointerException("placement cannot be null"); // NOI18N
-        }
+    protected static Rectangle computeBounds(
+        JComponent popup,
+        int viewWidth, 
+        int viewHeight, 
+        Rectangle cursorBounds, 
+        Placement originalPlacement, 
+        HorizontalBounds horizontalBounds)
+    {
+        Parameters.notNull("popup", popup); //NOI18N
+        Parameters.notNull("cursorBounds", cursorBounds); //NOI18N
+        Parameters.notNull("originalPlacement", originalPlacement); //NOI18N
         
         // Compute available height above the cursor
         int aboveCursorHeight = cursorBounds.y;
         int belowCursorY = cursorBounds.y + cursorBounds.height;
         int belowCursorHeight = viewHeight - belowCursorY;
         
-        // Resolve *Preferred placements first
         Dimension prefSize = popup.getPreferredSize();
-        if (placement == AbovePreferred || placement == BelowPreferred) {
-            if (placement == AbovePreferred) {
-                placement = (prefSize.height <= aboveCursorHeight) ? Above : Largest;
-            } else { // BelowPreferred
-                placement = (prefSize.height <= belowCursorHeight) ? Below : Largest;
-            }
-        }
+        final int width = Math.min(viewWidth, prefSize.width);
         
-        // Resolve Largest placement
-        if (placement == Largest) {
-            placement = (aboveCursorHeight < belowCursorHeight)
-                ? Below
-                : Above;
-        }
+        popup.setSize(width, Integer.MAX_VALUE);
+        prefSize = popup.getPreferredSize();
+        Placement placement = determinePlacement(originalPlacement, prefSize, aboveCursorHeight, belowCursorHeight);
         
         Rectangle popupBounds = null;
         
-        while (true) { // do one or two passes
+        for(;;) { // do one or two passes
             popup.putClientProperty(Placement.class, placement);
 
-            int height = (placement == Above || placement == AbovePreferred)
-                ? aboveCursorHeight
-                : belowCursorHeight;
-            height = Math.min(height, prefSize.height);
-            int width = Math.min(viewWidth, prefSize.width);
-
+            int height = (placement == Above || placement == AbovePreferred) ? aboveCursorHeight : belowCursorHeight;
             popup.setSize(width, height);
             popupBounds = popup.getBounds();
-
+            
             Placement updatedPlacement = (Placement)popup.getClientProperty(Placement.class);
 
             if (updatedPlacement != placement) { // popup does not fit with the orig placement
@@ -435,11 +426,32 @@ public class PopupManager {
         return popupBounds;
     }
 
-    protected static Rectangle computeBounds(JComponent popup,
-    int viewWidth, int viewHeight, Rectangle cursorBounds, Placement placement) {
+    protected static Rectangle computeBounds(
+        JComponent popup,
+        int viewWidth, 
+        int viewHeight, 
+        Rectangle cursorBounds, 
+        Placement placement) 
+    {
         return computeBounds(popup, viewWidth, viewHeight, cursorBounds, placement, ViewPortBounds);
     }    
 
+    private static Placement determinePlacement(Placement placement, Dimension prefSize, int aboveCursorHeight, int belowCursorHeight) {
+        // Resolve *Preferred placements first
+        if (placement == AbovePreferred) {
+            placement = (prefSize.height <= aboveCursorHeight) ? Above : Largest;
+        } else if (placement == BelowPreferred) {
+            placement = (prefSize.height <= belowCursorHeight) ? Below : Largest;
+        }
+        
+        // Resolve Largest placement
+        if (placement == Largest) {
+            placement = (aboveCursorHeight < belowCursorHeight) ? Below : Above;
+        }
+        
+        return placement;
+    }
+    
     /** Popup's key filter */
     private final class PopupKeyListener implements KeyListener{
         

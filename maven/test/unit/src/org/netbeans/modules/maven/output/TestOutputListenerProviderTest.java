@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.output;
 
-import org.netbeans.modules.maven.output.TestOutputListenerProvider;
 import junit.framework.*;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 
@@ -55,16 +54,8 @@ public class TestOutputListenerProviderTest extends TestCase {
         super(testName);
     }
    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(TestOutputListenerProviderTest.class);
-        return suite;
-    }
-
     protected void setUp() throws java.lang.Exception {
         provider = new TestOutputListenerProvider();
-    }
-
-    protected void tearDown() throws java.lang.Exception {
     }
 
     public void testSeparateTestOuput() {

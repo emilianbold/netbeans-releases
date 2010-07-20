@@ -50,10 +50,10 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.j2me.cdc.project.bdj.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/org-netbeans-modules-j2me-cdc-project-bdj.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/security.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/bdjo.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/bcprov-jdk15-139.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.bdj/modules/ext/org-netbeans-modules-j2me-cdc-project-bdj.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.bdj/modules/ext/security.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.bdj/modules/ext/bdjo.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.bdj/modules/ext/bcprov-jdk15-139.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>        

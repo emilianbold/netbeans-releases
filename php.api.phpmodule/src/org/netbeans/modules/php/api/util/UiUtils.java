@@ -42,13 +42,17 @@
 
 package org.netbeans.modules.php.api.util;
 
+import java.awt.Image;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.api.ui.SearchPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -61,6 +65,18 @@ public final class UiUtils {
      * SFS path where all the PHP options can be found.
      */
     public static final String OPTIONS_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
+    /**
+     * SFS path where all the PHP customizer panels can be found.
+     * @since 1.38
+     */
+    public static final String CUSTOMIZER_PATH = "org-netbeans-modules-php-project"; // NOI18N
+
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
+    private static final String ICON_PATH = "org/netbeans/modules/php/api/ui/resources/defaultFolder.gif"; // NOI18N
+    private static final String OPENED_ICON_PATH = "org/netbeans/modules/php/api/ui/resources/defaultFolderOpen.gif"; // NOI18N
 
     private UiUtils() {
     }
@@ -139,6 +155,24 @@ public final class UiUtils {
             path += "/" + optionsSubcategory; // NOI18N
         }
         OptionsDisplayer.getDefault().open(path);
+    }
+
+    /**
+     * Returns default folder icon as {@link Image}. Never returns {@code null}.
+     * @param opened whether closed or opened icon should be returned
+     * @since 1.40
+     */
+    public static Image getTreeFolderIcon(boolean opened) {
+        Image base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+        if (base == null) {
+            Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
+            if (baseIcon != null) {
+                base = ImageUtilities.icon2Image(baseIcon);
+            } else { // fallback to our owns
+                base = ImageUtilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, false);
+            }
+        }
+        return base;
     }
 
     private static void informAndOpenOptions(NotifyDescriptor descriptor, String optionsSubcategory) {

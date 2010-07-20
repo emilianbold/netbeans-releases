@@ -103,7 +103,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                 try {
                     java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                     CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
-                    Decorator decorator = DecoratorManager.findDecorator(childtype, null);
+                    Decorator decorator = DecoratorManager.findDecorator(childtype, null,true);
                     List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
                     for (ResourceDesc resource : reslourcesList) {
                         keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(childtype)));
@@ -165,7 +165,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                         try {
                             java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                             CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
-                            Decorator decorator = DecoratorManager.findDecorator(type, null);
+                            Decorator decorator = DecoratorManager.findDecorator(type, null,true);
                             if (decorator == null) {
                                 if (type.equals(GlassfishModule.JDBC_RESOURCE)) {
                                     decorator = Hk2ItemNode.JDBC_MANAGED_DATASOURCES;

@@ -45,11 +45,8 @@
 package org.openide.text;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Date;
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import junit.framework.*;
 
 import org.netbeans.junit.*;
 
@@ -86,17 +83,6 @@ implements CloneableEditorSupport.Env {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(NetworkConnectionLostTest.class);
-        
-        return suite;
-    }
-    
-
     protected void setUp () {
         System.setProperty ("org.openide.util.Lookup", "org.openide.text.NetworkConnectionLostTest$Lkp");
         

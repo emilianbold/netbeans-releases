@@ -137,7 +137,9 @@ class IndexedStorageFile extends FileStorage {
         final ChunkInfo chunkInfo = index.get(key);
         if (chunkInfo != null) {
             object = fileRWAccess.read(key.getPersistentFactory(), chunkInfo.getOffset(), chunkInfo.getSize());
-            fileStatistics.incrementReadCount(key);
+            if (Stats.fileStatisticsLevel > 0) {
+                fileStatistics.incrementReadCount(key);
+            }
         }
 
         return object;
@@ -156,13 +158,17 @@ class IndexedStorageFile extends FileStorage {
             fileRWAccessSize.addAndGet(size);
             oldSize = index.put(key, offset, size);
             usedSize += (size - oldSize);
-            fileStatistics.incrementWriteCount(key, oldSize, size);
+            if (Stats.fileStatisticsLevel > 0) {
+                fileStatistics.incrementWriteCount(key, oldSize, size);
+            }
         }
     }
 
     @Override
     public void remove(final Key key) throws IOException {
-        fileStatistics.removeNotify(key);
+        if (Stats.fileStatisticsLevel > 0) {
+            fileStatistics.removeNotify(key);
+        }
 
         final int oldSize = index.remove(key);
 

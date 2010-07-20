@@ -72,6 +72,7 @@ public class StopTask extends BasicTask<OperationState> {
     /**
      * 
      */
+    @Override
     public OperationState call() {
         // save the current time so that we can deduct that the startup
         // failed due to timeout
@@ -105,6 +106,7 @@ public class StopTask extends BasicTask<OperationState> {
             // if the http command is successful, we are not done yet...
             // The server still has to stop. If we signal success to the 'stateListener'
             // for the task, it may be premature.
+            @Override
             public void operationStateChanged(OperationState newState, String message) {
                 if (newState == OperationState.FAILED) {
                     fireOperationStateChanged(newState, message, instanceName);

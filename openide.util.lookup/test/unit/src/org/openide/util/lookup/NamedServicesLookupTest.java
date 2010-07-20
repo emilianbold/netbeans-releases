@@ -83,6 +83,7 @@ public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
     public @Override void testOrdering() throws Exception {}
     public @Override void testNoCallToGetResourceForObjectIssue65124() throws Exception {}
     public @Override void testSuperTypes() throws Exception {}
+    public @Override void testSubTypes() throws Exception {}
     public @Override void testWrongOrderAsInIssue100320() throws Exception {}
-    
+    public @Override void testLookupObject() throws Exception {}
 }

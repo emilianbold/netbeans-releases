@@ -136,7 +136,7 @@ public class FoldView extends EditorView implements TextLayoutView {
     }
 
     @Override
-    public boolean setLength(int length) {
+    public boolean setLength(int length, int modOffset, int modLength) {
         return false; // Recreate upon modification
     }
 

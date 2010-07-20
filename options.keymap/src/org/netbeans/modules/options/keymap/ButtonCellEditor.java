@@ -83,8 +83,10 @@ public class ButtonCellEditor extends DefaultCellEditor {
 
         @Override
         public void focusLost (FocusEvent e) {
-            if (!SwingUtilities.isDescendingFrom (e.getOppositeComponent (), cell))
-                cancelCellEditing ();
+            Component oppositeComponent = e.getOppositeComponent();
+            if (oppositeComponent == null || !SwingUtilities.isDescendingFrom(oppositeComponent, cell)) {
+                cancelCellEditing();
+            }
         }
     };
 
@@ -100,7 +102,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
         }
     };
 
-    private static ShortcutCellPanel cell = new ShortcutCellPanel();
+    private static final ShortcutCellPanel cell = new ShortcutCellPanel();
 
 
     public ButtonCellEditor (KeymapViewModel model) {

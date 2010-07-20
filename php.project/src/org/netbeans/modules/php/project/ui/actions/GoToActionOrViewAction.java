@@ -78,6 +78,7 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
         // copied from BaseAction from php.api module
         putValue("noIconInMenu", true); // NOI18N
         putValue(NAME, getFullName());
+        putValue(SHORT_DESCRIPTION, getFullName());
         putValue("menuText", getPureName()); // NOI18N
     }
 

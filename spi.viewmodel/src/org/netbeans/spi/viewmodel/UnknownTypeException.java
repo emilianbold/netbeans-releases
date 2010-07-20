@@ -52,13 +52,20 @@ package org.netbeans.spi.viewmodel;
  */
 public class UnknownTypeException extends Exception {
 
+    private Object node;
+
     /**
      * Creates a new instance of exception for given node.
      *
      * @param node a node of unknown type
      */
     public UnknownTypeException (Object node) {
-        super (node.toString() + " [" + node.getClass() + ']'); // NOI18N
+        this.node = node;
+    }
+
+    @Override
+    public String getMessage() {
+        return node.toString() + " [" + node.getClass() + ']'; // NOI18N
     }
     
 }

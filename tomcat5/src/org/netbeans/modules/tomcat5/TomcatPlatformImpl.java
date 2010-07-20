@@ -47,9 +47,11 @@ package org.netbeans.modules.tomcat5;
 import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -61,7 +63,6 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -447,27 +448,31 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
         
         return false;
     }
-        
-    public Set/*<Object>*/ getSupportedModuleTypes() {
-        Set moduleTypes = new HashSet(1);
-        moduleTypes.add(J2eeModule.WAR);
-        return moduleTypes;
+
+    @Override
+    public Set<J2eeModule.Type> getSupportedTypes() {
+        return Collections.singleton(J2eeModule.Type.WAR);
     }
-    
-    public Set/*<String>*/ getSupportedSpecVersions() {
-        Set specVersions = new HashSet(3);
-        specVersions.add(J2eeModule.J2EE_13);
-        specVersions.add(J2eeModule.J2EE_14);
+
+    @Override
+    public Set<Profile> getSupportedProfiles() {
+        Set<Profile> profiles = new HashSet<Profile>(5);
+        profiles.add(Profile.J2EE_13);
+        profiles.add(Profile.J2EE_14);
         if (manager.isTomcat60()) {
-            specVersions.add(J2eeModule.JAVA_EE_5);
+            profiles.add(Profile.JAVA_EE_5);
         }
-        return specVersions;
+        if (manager.isTomcat70()) {
+            profiles.add(Profile.JAVA_EE_6_WEB);
+        }
+        return profiles;
     }
     
     public Set/*<String>*/ getSupportedJavaPlatformVersions() {
         Set versions = new HashSet();
         versions.add("1.4"); // NOI18N
         versions.add("1.5"); // NOI18N
+        versions.add("1.6"); // NOI18N
         return versions;
     }
     

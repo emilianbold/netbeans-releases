@@ -121,6 +121,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         this.support = support;
         this.handledExceptions = handledExceptions;
         this.cancellable = new Cancellable() {
+            @Override
             public boolean cancel() {
                 try {
                     SvnClientInvocationHandler.this.adapter.cancelOperation();
@@ -156,17 +157,19 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     /**
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
+    @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
                 
         boolean fsReadOnlyAction = isFSWrittingCommand(method);
 
         try {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("~~~ SVN: invoking '" + method.getName() + "' with " + print(args)); //NOI18N
+                LOG.log(Level.FINE, "~~~ SVN: invoking ''{0}'' with {1}", new Object[]{method.getName(), print(args)}); //NOI18N
                 //new Throwable("~~~ SVN: invoking '" + method.getName() + "'").printStackTrace();
             }
 
             Callable<Object> c = new Callable<Object>() {
+                @Override
                 public Object call() throws Exception {
                     if(parallelizable(method, args)) {
                         return invokeMethod(method, args);
@@ -258,9 +261,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     files.add((File) arg);
                 } else if (arg instanceof File[]) {
                     File[] fs = (File[]) arg;
-                    for (File file : fs) {
-                        files.add(file);
-                    }
+                    files.addAll(Arrays.asList(fs));
                 }
             }
         }

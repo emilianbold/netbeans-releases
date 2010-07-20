@@ -50,9 +50,7 @@ import java.util.Collections;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -60,22 +58,8 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class StackLayoutTest extends NbTestCase {
 
-    /** Creates a new instance of StackLayoutTest */
-    public StackLayoutTest() {
-        super("");
-    }
-    
     public StackLayoutTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(StackLayoutTest.class);
-        return suite;
     }
     
     public void test_100486 () throws Exception {

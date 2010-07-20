@@ -73,6 +73,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Parameters;
 import org.xml.sax.SAXException;
 
 /**
@@ -103,6 +104,7 @@ public final class LayerHandle {
 
     public LayerHandle(Project project, FileObject layerXML) {
         //System.err.println("new LayerHandle for " + project);
+        Parameters.notNull("project", project);
         this.project = project;
         this.layerXML = layerXML;
     }

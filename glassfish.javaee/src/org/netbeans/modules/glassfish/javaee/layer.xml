@@ -191,4 +191,18 @@
         </folder>
     </folder>
 
+    <folder name="Templates">
+        <folder name="WebLogicResources">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.glassfish.javaee.templates.Bundle"/>
+            <attr name="position" intvalue="1850"/>
+            <file name="weblogicDD">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/glassfish/javaee/resources/ConfigFile.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.glassfish.javaee.templates.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.glassfish.javaee.templates.WebLogicDDWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="j2ee-types,ear-types,sunresource-types,deployment-descriptor,web-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/glassfish/javaee/templates/weblogicDD.html"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

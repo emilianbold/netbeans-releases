@@ -50,8 +50,6 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 
 import java.io.File;
 import java.util.*;
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
 
@@ -73,15 +71,6 @@ public class ChildrenSupportTest extends NbTestCase {
 
     public ChildrenSupportTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        Test suite = null;
-        //suite = new ChildrenSupportTest("testRefresh150009");
-        if (suite == null) {
-            suite = new NbTestSuite(ChildrenSupportTest.class);
-        }
-        return suite;
     }
 
     public static void assertNoLock() {

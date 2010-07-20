@@ -53,12 +53,13 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=org.openide.util.NbPreferences.Provider.class)
 public class PreferencesProviderImpl implements org.openide.util.NbPreferences.Provider {
-    /** Creates a new instance of PreferencesProviderImpl */
-    public PreferencesProviderImpl() {
-    }
-    
     public Preferences preferencesForModule(Class cls) {
         String absolutePath = null;
+        // Could use Modules.getDefault().ownerOf(cls) but this would initialize
+        // module system which may be undesirable in general. Fix might be to
+        // register Modules global impl from o.n.bootstrap using Util.ModuleProvider,
+        // though this needs to be overridden by ModuleManager impl since that has
+        // specific behavior in case of JNLP.
         ClassLoader cl = cls.getClassLoader();
         if (cl instanceof Util.ModuleProvider) {
             absolutePath = ((Util.ModuleProvider) cl).getModule().getCodeNameBase();

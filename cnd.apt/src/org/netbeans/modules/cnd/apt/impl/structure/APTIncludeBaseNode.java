@@ -174,21 +174,21 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
     }
 
     public String getFileName(APTMacroCallback callback) {
-        String file = getIncludeString(callback);
+        CharSequence file = getIncludeString(callback);
         String out = ""; // NOI18N
         if (file != null) {
             if (file.length() > 2) {
-                if (file.startsWith("<")) { // NOI18N
+                if (file.charAt(0) == '<') { // NOI18N
                     for (int i = 2; i < file.length(); i++) {
                         if (file.charAt(i) == '>') { // NOI18N
-                            out = file.substring(1, i);
+                            out = file.subSequence(1, i).toString();
                             break;
                         }
                     }
-                } else if (file.startsWith("\"")) { // NOI18N
+                } else if (file.charAt(0) == '"') { // NOI18N
                     for (int i = 2; i < file.length(); i++) {
                         if (file.charAt(i) == '\"') { // NOI18N
-                            out = file.substring(1, i);
+                            out = file.subSequence(1, i).toString();
                             break;
                         }
                     }
@@ -199,17 +199,17 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
     }
 
     public boolean isSystem(APTMacroCallback callback) {
-        String file = getIncludeString(callback);
+        CharSequence file = getIncludeString(callback);
         return file.length() > 0 ? file.charAt(0) == '<' : false; // NOI18N
     }
 
-    private String getIncludeString(APTMacroCallback callback) {
+    private CharSequence getIncludeString(APTMacroCallback callback) {
         assert (includeFileToken != null);
-        String file;
+        CharSequence file;
         if (!isSimpleIncludeToken()) {
             file = stringize(((MultiTokenInclude) includeFileToken).getTokenList(), callback);
         } else {
-            file = includeFileToken.getText();
+            file = includeFileToken.getTextID();
         }
         return file;
     }

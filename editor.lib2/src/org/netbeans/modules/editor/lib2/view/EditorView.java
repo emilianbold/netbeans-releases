@@ -129,9 +129,12 @@ public abstract class EditorView extends View {
      * Set textual length of the view.
      *
      * @param length &gt;=0 new textual length of the view.
+     * @param modOffset &gt;=0 modification offset of insert/remove that caused this length change.
+     * @param modLength modification length (negative for removals) or 0 for length change
+     *  not caused by insert/remove.
      * @return true if length change is supported or false if the view must be recreated.
      */
-    public boolean setLength(int length) {
+    public boolean setLength(int length, int modOffset, int modLength) {
         return false;
     }
 

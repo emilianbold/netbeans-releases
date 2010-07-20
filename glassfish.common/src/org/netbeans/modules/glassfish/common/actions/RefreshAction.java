@@ -60,6 +60,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class RefreshAction extends NodeAction {
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         for(Node node : activatedNodes) {
             Collection<? extends RefreshModulesCookie> cookies =
@@ -77,6 +78,7 @@ public class RefreshAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean result = false;
         if(activatedNodes != null && activatedNodes.length > 0) {
@@ -106,10 +108,12 @@ public class RefreshAction extends NodeAction {
         return false; 
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(RefreshAction.class, "LBL_Refresh"); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -127,6 +131,7 @@ public class RefreshAction extends NodeAction {
                     ICON);
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             performActionImpl(commonSupport);
         }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public final class MemoryCache {
             DEFAULT_SLICE_CAPACITY = 128;
         }
     }
-    
+
     private static class SoftValue<T> extends SoftReference<T> {
         private final Key key;
         private SoftValue(T k, Key key, ReferenceQueue<T> q) {
@@ -162,8 +163,8 @@ public final class MemoryCache {
         try {
             // do not override existed value if any
             Object old = s.storage.get(key);
-            if (old instanceof SoftReference) {
-                prevPersistent = (Persistent) ((SoftReference) old).get();
+            if (old instanceof Reference) {
+                prevPersistent = (Persistent) ((Reference) old).get();
             } else if (old instanceof Persistent) {
                 prevPersistent = (Persistent) old;
             } else if (old != null) {
@@ -195,8 +196,8 @@ public final class MemoryCache {
         if (value instanceof Persistent) {
             if (STATISTIC) {readHitCnt++;}
             return (Persistent) value;
-        } else if (value instanceof SoftReference) {
-            Persistent result = (Persistent) ((SoftReference) value).get();
+        } else if (value instanceof Reference) {
+            Persistent result = (Persistent) ((Reference) value).get();
             if( STATISTIC && result != null ) {
                 readHitCnt++;
             }
@@ -256,7 +257,7 @@ public final class MemoryCache {
                             value = s.storage.get(key);
                             // check if the object has already been added by another thread
                             // it is more efficient than blocking puts from the disk
-                            if ((value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null)) {
+                            if ((value != null) && (value instanceof Reference) && (((Reference) value).get() == null)) {
                                 Object removed = s.storage.remove(key);
                                 assert (value == removed);
                             }
@@ -324,9 +325,9 @@ public final class MemoryCache {
                     Key key = entry.getKey();
                     Object value = entry.getValue();
                     boolean isSoft = false;
-                    if ((value != null) && (value instanceof SoftReference)){
+                    if ((value != null) && (value instanceof Reference)){
                         isSoft = true;
-                        value = ((SoftReference) value).get();
+                        value = ((Reference) value).get();
                     }
                     String res = key.getClass().getName();
                     if (value == null) {

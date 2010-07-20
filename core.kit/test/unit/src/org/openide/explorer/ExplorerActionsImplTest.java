@@ -45,28 +45,15 @@
 
 package org.openide.explorer;
 
-import java.util.Arrays;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.JMenu;
 import javax.swing.text.DefaultEditorKit;
 
-import org.openide.actions.CopyAction;
-import org.openide.actions.CutAction;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-import org.openide.util.datatransfer.PasteType;
 
 
 /**
@@ -82,15 +69,6 @@ public class ExplorerActionsImplTest extends ExplorerPanelTest {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ExplorerActionsImplTest.class);
-        return suite;
-    }
-
     /** Creates a manager to operate on.
      */
     protected Object[] createManagerAndContext (boolean confirm) {

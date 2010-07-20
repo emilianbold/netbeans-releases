@@ -49,12 +49,15 @@ import org.netbeans.modules.php.spi.doc.PhpDocProvider;
 import org.openide.util.NbBundle;
 
 public final class PhpDocumentorProvider extends PhpDocProvider {
+    public static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc.dir"; // NOI18N
+
     private static final PhpDocumentorProvider INSTANCE = new PhpDocumentorProvider();
 
     private PhpDocumentorProvider() {
         super("phpDocumentor", NbBundle.getMessage(PhpDocumentorProvider.class, "LBL_Name")); // NOI18N
     }
 
+    @PhpDocProvider.Registration(position=100)
     public static PhpDocumentorProvider getInstance() {
         return INSTANCE;
     }

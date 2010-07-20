@@ -216,7 +216,7 @@ public class TestSession {
         return testcases.isEmpty() ? null : testcases.get(testcases.size() - 1);
      }
 
-    private List<Testcase> getAllTestCases() {
+    List<Testcase> getAllTestCases() {
         List<Testcase> all = new ArrayList<Testcase>();
         for (TestSuite suite : testSuites) {
             all.addAll(suite.getTestcases());
@@ -291,7 +291,9 @@ public class TestSession {
         for (Testcase testcase : getCurrentSuite().getTestcases()) {
             report.reportTest(testcase);
             report.setTotalTests(report.getTotalTests() + 1);
-            if (testcase.getStatus() == Status.ERROR) {
+            if (testcase.getStatus() == Status.PASSED) {
+                report.setPassed(report.getPassed() + 1);
+            } else if (testcase.getStatus() == Status.ERROR) {
                 report.setErrors(report.getErrors() + 1);
             } else if (testcase.getStatus() == Status.FAILED) {
                 report.setFailures(report.getFailures() + 1);

@@ -43,9 +43,9 @@
 package org.netbeans.modules.junit.output;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
@@ -82,36 +82,21 @@ public class JUnitTestMethodNode extends TestMethodNode{
 //        FileObject suiteFile = ((JUnitTestcase)testcase).getTestSuite().getSuiteFile();
         FileObject testFO = ((JUnitTestcase)testcase).getClassFileObject();
         if (testFO != null){
-            ActionProvider actionProvider = getActionProvider(testFO);
+            ActionProvider actionProvider = OutputUtils.getActionProvider(testFO);
             if (actionProvider != null){
-                boolean runSupported = false;
-                boolean debugSupported = false;
-                for (String action : actionProvider.getSupportedActions()) {
-                    if (!runSupported && action.equals(COMMAND_RUN_SINGLE_METHOD)) {
-                        runSupported = true;
-                        if (debugSupported) {
-                            break;
-                        }
-                    }
-                    if (!debugSupported && action.equals(COMMAND_DEBUG_SINGLE_METHOD)) {
-                        debugSupported = true;
-                        if (runSupported) {
-                            break;
-                        }
-                    }
-                }
+                List supportedActions = Arrays.asList(actionProvider.getSupportedActions());
 
                 SingleMethod methodSpec = new SingleMethod(testFO, testcase.getName());
                 Lookup nodeContext = Lookups.singleton(methodSpec);
-                if (runSupported && actionProvider.isActionEnabled(COMMAND_RUN_SINGLE_METHOD,
-                                                                   nodeContext)) {
+                if (supportedActions.contains(COMMAND_RUN_SINGLE_METHOD) &&
+                        actionProvider.isActionEnabled(COMMAND_RUN_SINGLE_METHOD, nodeContext)) {
                     actions.add(new TestMethodNodeAction(actionProvider,
                                                          nodeContext,
                                                          COMMAND_RUN_SINGLE_METHOD,
                                                          "LBL_RerunTest"));     //NOI18N
                 }
-                if (debugSupported && actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD,
-                                                                     nodeContext)) {
+                if (supportedActions.contains(COMMAND_DEBUG_SINGLE_METHOD) &&
+                        actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD, nodeContext)) {
                     actions.add(new TestMethodNodeAction(actionProvider,
                                                          nodeContext,
                                                          COMMAND_DEBUG_SINGLE_METHOD,
@@ -135,22 +120,4 @@ public class JUnitTestMethodNode extends TestMethodNode{
         return (JUnitTestcase)testcase;
     }
 
-    /**
-     * Returns {@code ActionProvider} that is associated with a project
-     * containing the specified {@code fileObject}.
-     *
-     * @param fileObject the file object.
-     * @return an {@code ActionProvider}, or {@code null} if there is no
-     *         known project containing the {@code fileObject}.
-     *
-     * @see ActionProvider
-     * @see FileOwnerQuery#getOwner(org.openide.filesystems.FileObject)
-     */
-    private static ActionProvider getActionProvider(FileObject fileObject) {
-        Project owner = FileOwnerQuery.getOwner(fileObject);
-        if(owner == null) { // #183586
-            return null;
-        }
-        return owner.getLookup().lookup(ActionProvider.class);
-    }
 }

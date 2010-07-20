@@ -624,6 +624,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 selected = ((RemoteConfiguration) model.getElementAt(0)).getName();
             }
             selectRemoteConnection(selected);
+            updateRemoteConnectionHint();
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 

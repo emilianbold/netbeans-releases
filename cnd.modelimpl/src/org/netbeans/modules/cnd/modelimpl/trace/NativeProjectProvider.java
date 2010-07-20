@@ -46,10 +46,12 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
@@ -149,6 +151,7 @@ public final class NativeProjectProvider {
 	private boolean pathsRelCurFile;
 	
 	private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
+
         private static final class Lock {}
         private final Object listenersLock = new Lock();
 
@@ -216,6 +219,16 @@ public final class NativeProjectProvider {
         @Override
         public List<NativeFileItem> getAllFiles() {
             return Collections.unmodifiableList(files);
+        }
+
+        @Override
+        public NativeFileSearch getNativeFileSearch() {
+            return new NativeFileSearch() {
+                @Override
+                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                    return Collections.<CharSequence>emptyList();
+                }
+            };
         }
 
         @Override

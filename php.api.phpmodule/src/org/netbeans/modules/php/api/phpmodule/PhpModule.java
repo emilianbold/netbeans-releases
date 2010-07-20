@@ -49,6 +49,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -110,7 +111,11 @@ public abstract class PhpModule {
      * @since 1.16
      */
     public static PhpModule forFileObject(FileObject fo) {
-        return lookupPhpModule(FileOwnerQuery.getOwner(fo));
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return null;
+        }
+        return lookupPhpModule(project);
     }
 
     /**
@@ -144,9 +149,12 @@ public abstract class PhpModule {
 
         // next try main project
         OpenProjects projects = OpenProjects.getDefault();
-        result = lookupPhpModule(projects.getMainProject());
-        if (result != null) {
-            return result;
+        Project mainProject = projects.getMainProject();
+        if (mainProject != null) {
+            result = lookupPhpModule(mainProject);
+            if (result != null) {
+                return result;
+            }
         }
 
         // next try other opened projects
@@ -159,14 +167,27 @@ public abstract class PhpModule {
         return null;
     }
 
-    private static PhpModule lookupPhpModule(Project project) {
-        if (project != null) {
-            return lookupPhpModule(project.getLookup());
-        }
-        return null;
+    /**
+     * Get {@link PhpModule PHP module} from the given project.
+     * @param project a PHP project where to look for a PHP module for
+     * @return PHP module or {@code null} if not found
+     * @see 1.38
+     */
+    public static PhpModule lookupPhpModule(Project project) {
+        Parameters.notNull("project", project);
+
+        return lookupPhpModule(project.getLookup());
     }
 
-    private static PhpModule lookupPhpModule(Lookup lookup) {
+    /**
+     * Get {@link PhpModule PHP module} from the given lookup.
+     * @param project a PHP project where to look for a PHP module for
+     * @return PHP module or {@code null} if not found
+     * @see 1.38
+     */
+    public static PhpModule lookupPhpModule(Lookup lookup) {
+        Parameters.notNull("lookup", lookup);
+
         // try directly
         PhpModule result = lookup.lookup(PhpModule.class);
         if (result != null) {

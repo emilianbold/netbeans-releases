@@ -69,10 +69,6 @@ public class GlobalVisibilityQueryImplTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() {
-        return new TestSuite(GlobalVisibilityQueryImplTest .class);
-    }
-        
     public void testVisibility() {        
         assertFalse(vq.isVisible(".#telnetrc"));
         assertFalse(vq.isVisible("._telnetrc"));
