@@ -64,10 +64,10 @@ public class DependencyTreeFactory {
     public static DependencyNode createDependencyTree(MavenProject project, MavenEmbedder embedder, String scope) {
         try {
             PlexusContainer container = embedder.getPlexusContainer();
-            DependencyTreeBuilder builder = (DependencyTreeBuilder) container.lookup(DependencyTreeBuilder.ROLE);
-            ArtifactFactory factory = (ArtifactFactory)container.lookup(ArtifactFactory.ROLE);
-            ArtifactMetadataSource source = (ArtifactMetadataSource)container.lookup("org.apache.maven.artifact.metadata.ArtifactMetadataSource");
-            ArtifactCollector collector = (ArtifactCollector)container.lookup("org.apache.maven.artifact.resolver.ArtifactCollector");
+            DependencyTreeBuilder builder = container.lookup(DependencyTreeBuilder.class);
+            ArtifactFactory factory = container.lookup(ArtifactFactory.class);
+            ArtifactMetadataSource source = container.lookup(ArtifactMetadataSource.class);
+            ArtifactCollector collector = container.lookup(ArtifactCollector.class);
             return createDependencyTree(project, builder, embedder.getLocalRepository(), factory, source, collector, scope);
         } catch (ComponentLookupException ex) {
             Exceptions.printStackTrace(ex);

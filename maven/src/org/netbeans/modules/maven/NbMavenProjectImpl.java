@@ -102,7 +102,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -615,7 +614,7 @@ public final class NbMavenProjectImpl implements Project {
             return null;
         }
         try {
-            ArtifactHandlerManager artifactHandlerManager = (ArtifactHandlerManager) getEmbedder().getPlexusContainer().lookup( ArtifactHandlerManager.ROLE );
+            ArtifactHandlerManager artifactHandlerManager = getEmbedder().getPlexusContainer().lookup(ArtifactHandlerManager.class);
             Artifact test = new DefaultArtifact(main.getGroupId(), main.getArtifactId(), main.getVersionRange(),
                             Artifact.SCOPE_TEST, "test-jar", "tests", artifactHandlerManager.getArtifactHandler("test-jar"));
             return getArtifactRelativeRepositoryPath(test);

@@ -510,7 +510,7 @@ public final class EmbedderFactory {
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
         try {
-            ArtifactRepositoryFactory fact = (ArtifactRepositoryFactory) embedder.getPlexusContainer().lookup(ArtifactRepositoryFactory.ROLE);
+            ArtifactRepositoryFactory fact = embedder.getPlexusContainer().lookup(ArtifactRepositoryFactory.class);
             ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
             ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
             return fact.createArtifactRepository(id, url, ArtifactRepositoryFactory.DEFAULT_LAYOUT_ID, snapshotsPolicy, releasesPolicy);
