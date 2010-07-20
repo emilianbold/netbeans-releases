@@ -1631,13 +1631,23 @@ public class TreeModelNode extends AbstractNode {
         */
         @Override
         public boolean canWrite () {
+<<<<<<< local
             synchronized (properties) {
                 Boolean canWrite = (Boolean) properties.get(id + "#canWrite");
                 if (canWrite != null) {
                     return canWrite;
                 }
+=======
+            try {
+                return model.canEditCell(object, columnModel.getID());
+            } catch (UnknownTypeException ex) {
+>>>>>>> other
             }
+<<<<<<< local
             boolean canEdit;
+=======
+            if (nodeColumn) return false;
+>>>>>>> other
             try {
                 canEdit = model.canEditCell(object, columnModel.getID());
             } catch (UnknownTypeException ex) {
