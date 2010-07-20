@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.el;
+package org.netbeans.modules.web.el;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,12 +50,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.web.jsf.editor.el.ELIndexer.Fields;
+import org.netbeans.modules.web.el.ELIndexer.Fields;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * Index for Expresion Language
+ * Index for Expression Language
  *
  * @author Erno Mononen
  */

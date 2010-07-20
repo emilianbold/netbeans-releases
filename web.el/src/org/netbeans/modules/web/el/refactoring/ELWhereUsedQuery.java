@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.refactoring;
+package org.netbeans.modules.web.el.refactoring;
 
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstMethodSuffix;
@@ -63,13 +63,13 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
-import org.netbeans.modules.web.jsf.editor.el.ELElement;
-import org.netbeans.modules.web.jsf.editor.el.ELIndex;
-import org.netbeans.modules.web.jsf.editor.el.ELIndexer.Fields;
+import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELIndex;
+import org.netbeans.modules.web.el.ELIndexer.Fields;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -77,14 +77,14 @@ import org.openide.filesystems.FileObject;
  *
  * @author Erno Mononen
  */
-public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
+public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
-    private final WhereUsedQuery whereUsedQuery;
+//    private final WhereUsedQuery whereUsedQuery;
     private CompilationInfo info;
 
-    ELWhereUsedQuery(WhereUsedQuery whereUsedQuery) {
+    ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
-        this.whereUsedQuery = whereUsedQuery;
+//        this.whereUsedQuery = whereUsedQuery;
     }
 
     @Override
@@ -93,7 +93,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         if (handle == null) {
             return null;
         }
-        this.info = RefactoringUtil.getCompilationInfo(handle, whereUsedQuery);
+        this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
         Element element = handle.resolveElement(info);
         if (Kind.METHOD == handle.getKind()) {
             return handleProperty(refactoringElementsBag, handle, element);
@@ -104,7 +104,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         return null;
     }
 
-    private Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
+    protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
         TypeElement type = (TypeElement) element;
         String clazz = type.getQualifiedName().toString();
         FacesManagedBean managedBean = findManagedBeanByClass(clazz);
@@ -115,13 +115,13 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
             for (Node identifier : findMatchingIdentifierNodes(elem.getNode(), managedBeanName)) {
                 WhereUsedQueryElement wuqe =
                         new WhereUsedQueryElement(elem.getParserResult().getFileObject(), managedBeanName, elem, identifier, getParserResult(elem.getParserResult().getFileObject()));
-                refactoringElementsBag.add(whereUsedQuery, wuqe);
+                refactoringElementsBag.add(refactoring, wuqe);
             }
         }
         return null;
     }
 
-    private Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
+    protected Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
         String propertyName = RefactoringUtil.getPropertyName(element.getSimpleName().toString());
         ELIndex index = ELIndex.get(handle.getFileObject());
         final Set<IndexResult> result = new HashSet<IndexResult>();
@@ -129,13 +129,18 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         result.addAll(index.findMethodReferences(propertyName));
 
         for (ELElement elem : getMatchingElements(result)) {
-            for (Node property : findMatchingPropertyNodes(elem.getNode(), propertyName, element.getEnclosingElement().asType())) {
-                WhereUsedQueryElement wuqe =
-                        new WhereUsedQueryElement(elem.getParserResult().getFileObject(), propertyName, elem, property, getParserResult(elem.getParserResult().getFileObject()));
-                refactoringElementsBag.add(whereUsedQuery, wuqe);
-            }
+            List<Node> matchingNodes = findMatchingPropertyNodes(elem.getNode(), propertyName, element.getEnclosingElement().asType());
+            addElements(elem, matchingNodes, refactoringElementsBag);
         }
         return null;
+    }
+
+    protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
+        for (Node property : matchingNodes) {
+            WhereUsedQueryElement wuqe =
+                    new WhereUsedQueryElement(elem.getParserResult().getFileObject(), property.getImage(), elem, property, getParserResult(elem.getParserResult().getFileObject()));
+            refactoringElementsBag.add(refactoring, wuqe);
+        }
     }
 
     private List<Node> findMatchingPropertyNodes(Node root, final String targetName, final TypeMirror targetType) {
@@ -232,7 +237,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         return method.getParameters().size() == methodNode.jjtGetNumChildren();
     }
 
-    private List<ELElement> getMatchingElements(Collection<? extends IndexResult> indexResult)  {
+    private List<ELElement> getMatchingElements(Collection<? extends IndexResult> indexResult) {
         // probably should store offsets rather than doing full expression comparison
         List<ELElement> result = new ArrayList<ELElement>();
         for (IndexResult ir : indexResult) {
@@ -251,5 +256,4 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         return result;
 
     }
-
 }

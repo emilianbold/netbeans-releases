@@ -40,35 +40,33 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.el;
+package org.netbeans.modules.web.el;
 
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.web.jsf.editor.el.ELIndexer.Fields;
+import org.openide.filesystems.FileObject;
 
 /**
+ * Base class for indexed EL elements
  *
  * @author Erno Mononen
  */
-public final class IndexedProperty extends IndexedIdentifier {
+abstract class IndexedElement {
 
-    private final String property;
+    private final String expression;
+    private final IndexResult indexResult;
 
-    private IndexedProperty(String property, String identifier, String expression, IndexResult indexResult) {
-        super(identifier, expression, indexResult);
-        this.property = property;
+    protected IndexedElement(String expression, IndexResult indexResult) {
+        assert expression != null && indexResult != null;
+        this.indexResult = indexResult;
+        this.expression = expression;
     }
 
-    static IndexedProperty decode(String value, IndexResult indexResult) {
-        String[] values = Fields.split(value);
-        return new IndexedProperty(values[0], values[1], values[2], indexResult);
+    public String getExpression() {
+        return expression;
     }
 
-    static String encode(String property, String identifier, String expression) {
-        return Fields.encode(property, identifier, expression);
-    }
-
-    public String getProperty() {
-        return property;
+    public FileObject getFile() {
+        return indexResult.getFile();
     }
 
 }

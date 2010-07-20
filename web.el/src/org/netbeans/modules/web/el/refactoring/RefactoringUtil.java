@@ -41,10 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.el.refactoring;
 
-package org.netbeans.modules.web.jsf.editor.refactoring;
-
+import com.sun.el.parser.Node;
 import java.io.IOException;
+import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -52,8 +53,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.web.el.ELElement;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -65,33 +70,31 @@ public final class RefactoringUtil {
 
     private RefactoringUtil() {
     }
-    
-    public static CompilationInfo getCompilationInfo(TreePathHandle handle, final AbstractRefactoring refactoring){
-        
+
+    public static CompilationInfo getCompilationInfo(TreePathHandle handle, final AbstractRefactoring refactoring) {
+
         CompilationInfo existing = refactoring.getRefactoringSource().lookup(CompilationInfo.class);
-        if (existing != null){
+        if (existing != null) {
             return existing;
         }
         final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
-        try{
+        try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
+
                 public void run(CompilationController co) throws Exception {
                     co.toPhase(JavaSource.Phase.RESOLVED);
                     refactoring.getContext().add(co);
                 }
-                
+
                 public void cancel() {
                 }
-                
             }, false);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return refactoring.getContext().lookup(CompilationInfo.class);
     }
-
 
     /**
      * Encodes angle brackets and highlights the {@code offsetRange} within
@@ -137,31 +140,40 @@ public final class RefactoringUtil {
      * if the given arg was <code>getProperty</code>, this method will return
      * <code>property</code>.
      */
-    public static String getPropertyName(String accessor){
+    public static String getPropertyName(String accessor) {
         Parameters.notEmpty("accessor", accessor); //NO18N
 
         int prefixLength = getPrefixLength(accessor);
         String withoutPrefix = accessor.substring(prefixLength);
         char firstChar = withoutPrefix.charAt(0);
 
-        if (!Character.isUpperCase(firstChar)){
+        if (!Character.isUpperCase(firstChar)) {
             return accessor;
         }
 
         return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
     }
 
-    private static int getPrefixLength(String accessor){
+    private static int getPrefixLength(String accessor) {
         //XXX: leaving out 'set' for now, need more clever AST analysis to be able to
         // tell apart getters and setters in EL
         String[] accessorPrefixes = new String[]{"get", /*"set",*/ "is"};
-        for (String prefix : accessorPrefixes){
-            if (accessor.startsWith(prefix)){
+        for (String prefix : accessorPrefixes) {
+            if (accessor.startsWith(prefix)) {
                 return prefix.length();
             }
         }
         return 0;
     }
 
-    
+    static PositionRef[] getPostionRefs(ELElement elem, Node targetNode) {
+        int startOffset = elem.getOriginalOffset().getStart() + targetNode.startOffset();
+        int endOffset = startOffset + targetNode.getImage().length();
+
+        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(elem.getParserResult().getFileObject());
+        PositionRef start = editor.createPositionRef(startOffset, Bias.Forward);
+        PositionRef end = editor.createPositionRef(endOffset, Bias.Backward);
+
+        return new PositionRef[]{start, end};
+    }
 }

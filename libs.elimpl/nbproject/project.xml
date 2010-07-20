@@ -60,6 +60,7 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <package>com.sun.el</package>
                 <package>com.sun.el.lang</package>

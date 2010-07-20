@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.el;
+package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.AstCompositeExpression;
 import com.sun.el.parser.AstIdentifier;

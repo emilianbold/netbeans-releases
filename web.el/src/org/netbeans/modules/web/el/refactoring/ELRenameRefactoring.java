@@ -39,48 +39,62 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.hints;
+package org.netbeans.modules.web.el.refactoring;
 
+import com.sun.el.parser.Node;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.web.jsf.editor.el.JsfElParser;
-import org.netbeans.modules.web.jsf.editor.el.ELElement;
-import org.netbeans.modules.web.jsf.editor.el.ELParserResult;
+import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.el.ELElement;
+import org.openide.filesystems.FileObject;
+import org.openide.text.PositionRef;
 
 /**
- * Hints provider for checking syntax of EL expressions.
+ * Rename refactoring plugin for Expression Language.
  *
  * @author Erno Mononen
  */
-final class ELSyntaxChecker extends HintsProvider {
+public class ELRenameRefactoring extends ELWhereUsedQuery {
+
+    private final RenameRefactoring rename;
+
+    public ELRenameRefactoring(RenameRefactoring rename) {
+        super(rename);
+        this.rename = rename;
+    }
 
     @Override
-    public List<Hint> compute(RuleContext context) {
+    protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
+        // not supported yet
+        return null;
+    }
 
-        ELParserResult parserResult = JsfElParser.create(context.doc).parse();
+    @Override
+    protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
+        FileObject file = elem.getParserResult().getFileObject();
+        ModificationResult modificationResult = new ModificationResult();
+        List<Difference> differences = new ArrayList<Difference>();
 
-        if (parserResult.isValid()) {
-            return Collections.emptyList();
+        for (Node targetNode : matchingNodes) {
+            PositionRef[] position = RefactoringUtil.getPostionRefs(elem, targetNode);
+            differences.add(new Difference(Difference.Kind.CHANGE, 
+                    position[0], position[1], targetNode.getImage(),
+                    RefactoringUtil.getPropertyName(rename.getNewName())));
+        }
+        modificationResult.addDifferences(file, differences);
+
+        refactoringElementsBag.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+        for (Difference diff : modificationResult.getDifferences(file)) {
+            DiffElement diffElem = DiffElement.create(diff, file, modificationResult);
+            refactoringElementsBag.add(refactoring, diffElem);
         }
 
-        List<Hint> result = new ArrayList<Hint>();
-        for (ELElement each : parserResult.getElements()) {
-            if (each.isValid()) {
-                continue;
-            }
-            Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
-                    each.getError().getLocalizedMessage(),
-                    parserResult.getFileObject(),
-                    each.getEmbeddedOffset(),
-                    Collections.<HintFix>emptyList(),
-                    HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
-            result.add(hint);
-        }
-
-        return result;
     }
 }

@@ -40,45 +40,32 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.el;
+package org.netbeans.modules.web.el.refactoring;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 /**
- * CSL language for Expression Language
  *
- * @author Erno Mononen
  */
-@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
-@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
-public class ELLanguage extends DefaultLanguageConfig {
-
-    public static final String MIME_TYPE = "text/x-el"; //NOI18N
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=177)
+public class ELRefactoringFactory implements RefactoringPluginFactory {
 
     @Override
-    public Language getLexerLanguage() {
-        return ELTokenId.language();
-    }
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        if (refactoring instanceof WhereUsedQuery &&
+                ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQuery.FIND_REFERENCES)) {
+            return new ELWhereUsedQuery((WhereUsedQuery) refactoring);
+        }
+        if (refactoring instanceof RenameRefactoring) {
+            RenameRefactoring rename = (RenameRefactoring) refactoring;
+            return new ELRenameRefactoring(rename);
 
-    @Override
-    public String getDisplayName() {
-        return "EL";
-    }
-
-    @Override
-    public Parser getParser() {
-        return new JsfElParser();
-    }
-
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new ELIndexer.Factory();
+        }
+        return null;
     }
 
 }

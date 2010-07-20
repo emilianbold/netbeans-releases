@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.refactoring;
+package org.netbeans.modules.web.el.refactoring;
 
 import java.util.Collections;
 import java.util.List;
@@ -60,19 +60,19 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
-import org.netbeans.modules.web.jsf.editor.el.ELLanguage;
-import org.netbeans.modules.web.jsf.editor.el.ELParserResult;
+import org.netbeans.modules.web.el.ELLanguage;
+import org.netbeans.modules.web.el.ELParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
  *
  */
-public class JsfELRefactoringPlugin implements RefactoringPlugin {
+public class ELRefactoringPlugin implements RefactoringPlugin {
 
-    private final AbstractRefactoring refactoring;
+    protected final AbstractRefactoring refactoring;
 
-    public JsfELRefactoringPlugin(AbstractRefactoring refactoring) {
+    public ELRefactoringPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
     }
 

@@ -40,26 +40,45 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.refactoring;
+package org.netbeans.modules.web.el;
 
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 
 /**
+ * CSL language for Expression Language
  *
+ * @author Erno Mononen
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=177)
-public class JsfELRefactoringFactory implements RefactoringPluginFactory {
+@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
+@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
+public class ELLanguage extends DefaultLanguageConfig {
+
+    public static final String MIME_TYPE = "text/x-el"; //NOI18N
 
     @Override
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        if (refactoring instanceof WhereUsedQuery &&
-                ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQuery.FIND_REFERENCES)) {
-            return new ELWhereUsedQuery((WhereUsedQuery) refactoring);
-        }
-        return null;
+    public Language getLexerLanguage() {
+        return ELTokenId.language();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "EL";
+    }
+
+    @Override
+    public Parser getParser() {
+        return new ELParser();
+    }
+
+    @Override
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new ELIndexer.Factory();
     }
 
 }

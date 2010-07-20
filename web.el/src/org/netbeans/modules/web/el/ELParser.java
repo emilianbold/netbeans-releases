@@ -39,9 +39,8 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.el;
+package org.netbeans.modules.web.el;
 
-import com.sun.el.parser.ELParser;
 import com.sun.el.parser.Node;
 import java.util.logging.Logger;
 import javax.el.ELException;
@@ -63,22 +62,22 @@ import org.openide.filesystems.FileObject;
 /**
  *
  */
-public final class JsfElParser extends Parser {
+public final class ELParser extends Parser {
 
-    private static final Logger LOGGER = Logger.getLogger(JsfElParser.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ELParser.class.getName());
     private final Document document;
     private ELParserResult result;
 
-    private JsfElParser(Document document) {
+    private ELParser(Document document) {
         this.document = document;
     }
 
-    public JsfElParser() {
+    public ELParser() {
         this(null);
     }
 
-    public static JsfElParser create(final Document document) {
-        return new JsfElParser(document);
+    public static ELParser create(final Document document) {
+        return new ELParser(document);
     }
     
     /**
@@ -89,7 +88,7 @@ public final class JsfElParser extends Parser {
      * @throws ELException if the given expression is not valid EL.
      */
     public static Node parse(String expr) {
-        return ELParser.parse(expr);
+        return com.sun.el.parser.ELParser.parse(expr);
     }
 
     /**

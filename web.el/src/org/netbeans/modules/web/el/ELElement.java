@@ -1,4 +1,4 @@
-package org.netbeans.modules.web.jsf.editor.el;
+package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.Node;
 import javax.el.ELException;

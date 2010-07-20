@@ -40,36 +40,35 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.el;
+package org.netbeans.modules.web.el;
 
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.web.jsf.editor.el.ELIndexer.Fields;
+import org.netbeans.modules.web.el.ELIndexer.Fields;
 
 /**
  *
  * @author Erno Mononen
  */
-public class IndexedIdentifier extends IndexedElement {
+public final class IndexedProperty extends IndexedIdentifier {
 
-    private final String identifier;
+    private final String property;
 
-    protected IndexedIdentifier(String identifier, String expression, IndexResult indexResult) {
-        super(expression, indexResult);
-        assert identifier != null;
-        this.identifier = identifier;
+    private IndexedProperty(String property, String identifier, String expression, IndexResult indexResult) {
+        super(identifier, expression, indexResult);
+        this.property = property;
     }
 
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    static IndexedIdentifier decode(String value, IndexResult indexResult) {
+    static IndexedProperty decode(String value, IndexResult indexResult) {
         String[] values = Fields.split(value);
-        return new IndexedIdentifier(values[0], values[1], indexResult);
+        return new IndexedProperty(values[0], values[1], values[2], indexResult);
     }
 
-    static String encode(String identifier, String expression) {
-        return Fields.encode(identifier, expression);
+    static String encode(String property, String identifier, String expression) {
+        return Fields.encode(property, identifier, expression);
+    }
+
+    public String getProperty() {
+        return property;
     }
 
 }
