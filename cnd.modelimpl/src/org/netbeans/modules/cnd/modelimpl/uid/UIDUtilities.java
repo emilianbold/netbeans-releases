@@ -204,6 +204,13 @@ public class UIDUtilities {
         return isSameFile(uid1.getObject(), uid2.getObject());
     }
 
+    public static int getFileID(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            return KeyUtilities.getProjectFileIndex(((KeyBasedUID<?>) uid).getKey());
+        }
+        return -1;
+    }
+
     private static boolean isSameFile(CsmOffsetableDeclaration decl1, CsmOffsetableDeclaration decl2) {
         if (decl1 != null && decl2 != null) {
             CsmFile file1 = decl1.getContainingFile();
@@ -733,8 +740,10 @@ public class UIDUtilities {
             projectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
         }
 
+        @Override
         public abstract T getObject();
 
+        @Override
         public void write(DataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(projectUID, output);
         }
@@ -778,6 +787,7 @@ public class UIDUtilities {
             this.name = NameCache.getManager().getString(name);
         }
 
+        @Override
         public CsmClass getObject() {
             return getProject().getDummyForUnresolved(name);
         }
@@ -824,6 +834,7 @@ public class UIDUtilities {
             super(input);
         }
 
+        @Override
         public CsmNamespace getObject() {
             return getProject().getUnresolvedNamespace();
         }
@@ -840,6 +851,7 @@ public class UIDUtilities {
             super(input);
         }
 
+        @Override
         public CsmFile getObject() {
             return getProject().getUnresolvedFile();
         }
@@ -853,6 +865,7 @@ public class UIDUtilities {
             return prj;
         }
 
+        @Override
         public void dispose() {
             prjRef = getProject();
         }

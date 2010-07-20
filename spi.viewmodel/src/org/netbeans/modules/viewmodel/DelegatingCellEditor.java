@@ -135,8 +135,8 @@ class DelegatingCellEditor implements TableCellEditor {
                 if (canEdit) {
                     TableCellEditor tce = trm.getCellEditor(tmn.getObject(), columnID);
                     canEdit = tce.isCellEditable(event);
+                    return canEdit;
                 }
-                return canEdit;
             } catch (UnknownTypeException ex) {
             }
         }

@@ -309,7 +309,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
-            QuerySupport.createSourceLevelQuery(evaluator()),
+            QuerySupport.createSourceLevelQuery2(evaluator()),
             QuerySupport.createSources(this, helper, evaluator(),
                     getSourceRoots(),
                     getTestSourceRoots(),

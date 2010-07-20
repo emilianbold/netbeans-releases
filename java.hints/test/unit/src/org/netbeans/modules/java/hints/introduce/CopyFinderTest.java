@@ -725,6 +725,10 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
 
+    public void testDotClassForSameClass() throws Exception {
+        performTest("package test; public class Test { {Class c = |Test.class|; c = |Test.class|; c = String.class; } }");
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

@@ -803,6 +803,7 @@ public class TreeModelNode extends AbstractNode {
         synchronized (properties) {
             properties.remove(column);
             properties.remove(column + "#html");
+            properties.remove(column + "#canWrite");
         }
         firePropertyChange(column, null, null);
     }
@@ -1179,7 +1180,7 @@ public class TreeModelNode extends AbstractNode {
         private final ColumnModel[]   columns;
         protected final TreeModelRoot      treeModelRoot;
         protected Object            object;
-        protected WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
+        protected final WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
         private final int[]         evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         private RefreshingInfo      evaluatingRefreshingInfo;
         private Object[]            children_evaluated;
@@ -1384,13 +1385,15 @@ public class TreeModelNode extends AbstractNode {
             //System.err.println(this.hashCode()+" applyChildren("+refreshSubNodes+")");
             //System.err.println("applyChildren("+Arrays.toString(ch)+", "+doSetObject+")");
             int i, k = ch.length; 
-            WeakHashMap<Object, WeakReference<TreeModelNode>> newObjectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
             for (i = 0; i < k; i++) {
                 if (ch [i] == null) {
                     throw new NullPointerException("Null child at index "+i+", parent: "+object+", model: "+model);
                 }
                 if (doSetObject) {
-                    WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
+                    WeakReference<TreeModelNode> wr;
+                    synchronized (objectToNode) {
+                        wr = objectToNode.get(ch [i]);
+                    }
                     if (wr == null) continue;
                     TreeModelNode tmn = wr.get ();
                     if (tmn == null) continue;
@@ -1399,11 +1402,7 @@ public class TreeModelNode extends AbstractNode {
                     } else {
                         tmn.setObjectNoRefresh(ch[i]);
                     }
-                    newObjectToNode.put (ch [i], wr);
                 }
-            }
-            if (doSetObject) {
-                objectToNode = newObjectToNode;
             }
             setKeys (ch);
 
@@ -1483,8 +1482,22 @@ public class TreeModelNode extends AbstractNode {
                 object
             );
             //System.err.println("created node for ("+object+") = "+tmn);
-            objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
+            synchronized (objectToNode) {
+                objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
+            }
             return new Node[] {tmn};
+        }
+
+        @Override
+        protected void destroyNodes(Node[] nodes) {
+            super.destroyNodes(nodes);
+            for (Node n : nodes) {
+                if (n instanceof TreeModelNode) {
+                    TreeModelNode tmn = (TreeModelNode) n;
+                    treeModelRoot.unregisterNode (tmn.object, tmn);
+                    destroyNodes(tmn.getChildren().getNodes());
+                }
+            }
         }
 
         public static class RefreshingInfo {
@@ -1618,19 +1631,36 @@ public class TreeModelNode extends AbstractNode {
         */
         @Override
         public boolean canWrite () {
-            try {
-                return model.canEditCell(object, columnModel.getID());
-            } catch (UnknownTypeException ex) {
-            }
-            if (nodeColumn) return false;
-            try {
-                return !model.isReadOnly (object, columnModel.getID ());
-            } catch (UnknownTypeException e) {
-                if (!(object instanceof String)) {
-                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
+            synchronized (properties) {
+                Boolean canWrite = (Boolean) properties.get(id + "#canWrite");
+                if (canWrite != null) {
+                    return canWrite;
                 }
-                return false;
             }
+            boolean canEdit;
+            try {
+                canEdit = model.canEditCell(object, columnModel.getID());
+            } catch (UnknownTypeException ex) {
+                canEdit = false;
+            }
+            if (!canEdit) {
+                if (nodeColumn) {
+                    canEdit = false;
+                } else {
+                    try {
+                        canEdit = !model.isReadOnly (object, columnModel.getID ());
+                    } catch (UnknownTypeException e) {
+                        if (!(object instanceof String)) {
+                            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
+                        }
+                        canEdit = false;
+                    }
+                }
+            }
+            synchronized (properties) {
+                properties.put(id + "#canWrite", canEdit);
+            }
+            return canEdit;
         }
         
         public void run() {
@@ -1870,7 +1900,13 @@ public class TreeModelNode extends AbstractNode {
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
             Executor exec = asynchronous(model, CALL.VALUE, object);
             if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
-                setTheValue(value);
+                try {
+                    setTheValue(value);
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
+                    throw new InvocationTargetException(t);
+                }
             } else {
                 exec.execute(new Runnable() {
                     public void run() {

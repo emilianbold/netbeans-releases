@@ -43,14 +43,23 @@
 package org.netbeans.modules.java.hints.suggestions;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
@@ -116,5 +125,74 @@ public class Tiny {
         Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), fixPattern);
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
+    }
+    
+    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @TriggerTreeKind({Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL})
+    public static ErrorDescription convertToDifferentBase(HintContext ctx) {
+        int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), ctx.getPath().getLeaf());
+        int end   = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getInfo().getCompilationUnit(), ctx.getPath().getLeaf());
+        String code = ctx.getInfo().getText().substring(start, end);
+        int currentRadix = 10;
+        
+        if (code.startsWith("0x") || code.startsWith("0X")) currentRadix = 16;
+        else if (code.startsWith("0b") || code.startsWith("0B")) currentRadix = 2;
+        else if (code.startsWith("0") || code.startsWith("0")) currentRadix = 8;
+        
+        List<Fix> fixes = new LinkedList<Fix>();
+        
+        if (currentRadix != 16) {
+            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0x", 16)));
+        }
+        if (currentRadix != 10) {
+            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "", 10)));
+        }
+        if (currentRadix != 8) {
+            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0", 8)));
+        }
+        if (currentRadix != 2 && ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0) {
+            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0b", 2)));
+        }
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(Tiny.class, "ERR_convertToDifferentBase"), fixes.toArray(new Fix[0]));
+    }
+    
+    private static final class ToDifferentRadixFixImpl extends JavaFix {
+        private final String prefix;
+
+        private final int radix;
+
+        public ToDifferentRadixFixImpl(CompilationInfo info, TreePath tp, String prefix, int radix) {
+            super(info, tp);
+            this.prefix = prefix;
+            this.radix = radix;
+        }
+        
+        @Override
+        protected String getText() {
+            return NbBundle.getMessage(Tiny.class, "FIX_convertToDifferentBase_" + radix);
+        }
+
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
+            LiteralTree leaf = (LiteralTree) tp.getLeaf();
+            String target;
+            
+            if (leaf.getKind() == Tree.Kind.INT_LITERAL) {
+                int value = (Integer) leaf.getValue();
+                
+                target = prefix + Integer.toString(value, radix);
+            } else if (leaf.getKind() == Tree.Kind.LONG_LITERAL) {
+                long value = (Long) leaf.getValue();
+                int  end = (int) wc.getTrees().getSourcePositions().getEndPosition(wc.getCompilationUnit(), leaf);
+                
+                target = prefix + Long.toString(value, radix) + wc.getText().substring(end - 1, end);
+            } else {
+                throw new IllegalStateException();
+            }
+
+            wc.rewrite(leaf, wc.getTreeMaker().Identifier(target));
+        }
+        
     }
 }

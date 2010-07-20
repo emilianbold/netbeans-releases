@@ -472,6 +472,10 @@ public final class JavaSource {
             final Snapshot snapshot = resultIterator.getSnapshot();
             if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
                 Parser.Result result = resultIterator.getParserResult();
+                if (result == null) {
+                    //Deleted file of other parser critical issue
+                    return;
+                }
                 final CompilationController cc = CompilationController.get(result);
                 assert cc != null;
                 cc.setJavaSource(this.js);

@@ -50,8 +50,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -60,12 +58,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -87,15 +83,6 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
 
     public NetigsoServicesTest(String name) {
         super(name);
-    }
-
-    public static Test suite() {
-        Test t = null;
-//        t = new NetigsoTest("testOSGiCanRequireBundleOnNetBeans");
-        if (t == null) {
-            t = new NbTestSuite(NetigsoServicesTest.class);
-        }
-        return t;
     }
 
     protected @Override void setUp() throws Exception {

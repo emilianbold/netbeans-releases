@@ -418,7 +418,7 @@ public final class DerbyDatabasesImpl {
      */
      public synchronized void extractSampleDatabase(String databaseName) throws IOException{
         File systemHomeFile = ensureSystemHome();
-        File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false); // NOI18N
+        File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", "org.netbeans.modules.derby", false); // NOI18N
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
         FileObject sampleFO = systemHomeFO.getFileObject(databaseName);
         if (sampleFO == null) {

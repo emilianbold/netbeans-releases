@@ -130,6 +130,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     private boolean customizer;
     
+    @Override
     public JSFConfigurationPanelVisual getComponent() {
         if (component == null)
             component = new JSFConfigurationPanelVisual(this, customizer);
@@ -137,6 +138,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(JSFConfigurationPanel.class);
     }
@@ -153,10 +155,12 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         this.facesMapping = facesMapping;
     }
 
+    @Override
     public void update() {
         component.update();
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         if (component.valid()) {
@@ -166,6 +170,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return false;
     }
     
+    @Override
     public Set extend(WebModule webModule) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
         preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
@@ -176,7 +181,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         }
         return framework.extendImpl(webModule);
     }
-    
+
     public ExtenderController getController() {
         return controller;
     }

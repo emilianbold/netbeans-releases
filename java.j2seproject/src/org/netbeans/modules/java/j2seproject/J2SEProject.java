@@ -61,6 +61,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,6 +80,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -129,6 +132,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -155,6 +159,7 @@ public final class J2SEProject implements Project {
 
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(J2SEProject.class.getName(), 1);
 
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -351,7 +356,7 @@ public final class J2SEProject implements Project {
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createSourceLevelQuery(evaluator()),
+            QuerySupport.createSourceLevelQuery2(evaluator()),
             QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, J2SEProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
@@ -624,10 +629,6 @@ public final class J2SEProject implements Project {
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
-            J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
-            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert();
-            }
             String prop = evaluator().getProperty(J2SEProjectProperties.SOURCE_ENCODING);
             if (prop != null) {
                 try {
@@ -641,6 +642,23 @@ public final class J2SEProject implements Project {
                     LOG.log(Level.WARNING, "Unsupported charset: {0} in project: {1}", new Object[]{prop, FileUtil.getFileDisplayName(getProjectDirectory())}); //NOI18N
                 }
             }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    final Future<Project[]> projects = OpenProjects.getDefault().openProjects();
+                    try {
+                        projects.get();
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InterruptedException ie) {
+                        Exceptions.printStackTrace(ie);
+                    }
+                    J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
+                    if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
+                        BrokenReferencesSupport.showAlert();
+                    }
+                }
+            });
         }
 
         @Override

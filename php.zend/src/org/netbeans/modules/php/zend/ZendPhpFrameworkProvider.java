@@ -43,6 +43,11 @@
 package org.netbeans.modules.php.zend;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -53,20 +58,34 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.editor.ZendEditorExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
 public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
+    private static final String ICON_PATH = "org/netbeans/modules/php/zend/ui/resources/zend_badge_8.png"; // NOI18N
     private static final ZendPhpFrameworkProvider INSTANCE = new ZendPhpFrameworkProvider();
 
+    private final BadgeIcon badgeIcon;
+
+    @PhpFrameworkProvider.Registration(position=200)
     public static ZendPhpFrameworkProvider getInstance() {
         return INSTANCE;
     }
 
     private ZendPhpFrameworkProvider() {
         super(NbBundle.getMessage(ZendPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(ZendPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
+        badgeIcon = new BadgeIcon(
+                ImageUtilities.loadImage(ICON_PATH),
+                ZendPhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
+    }
+
+    @Override
+    public BadgeIcon getBadgeIcon() {
+        return badgeIcon;
     }
 
     @Override
@@ -77,7 +96,21 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
-        return new File[0];
+        List<File> files = new LinkedList<File>();
+        FileObject appConfig = phpModule.getSourceDirectory().getFileObject("application/configs"); // NOI18N
+        if (appConfig != null) {
+            for (FileObject child : appConfig.getChildren()) {
+                if (child.isData()) {
+                    files.add(FileUtil.toFile(child));
+                }
+            }
+            Collections.sort(files);
+        }
+        FileObject bootstrap = phpModule.getSourceDirectory().getFileObject("application/Bootstrap.php"); // NOI18N
+        if (bootstrap != null) {
+            files.add(FileUtil.toFile(bootstrap));
+        }
+        return files.toArray(new File[files.size()]);
     }
 
     @Override

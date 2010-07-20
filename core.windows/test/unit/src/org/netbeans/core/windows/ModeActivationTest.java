@@ -44,12 +44,8 @@
 
 package org.netbeans.core.windows;
 
-import java.util.Set;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.windows.Mode;
@@ -67,12 +63,6 @@ public class ModeActivationTest extends NbTestCase {
         super (name);
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ModeActivationTest.class);
-        
-        return suite;
-    }
-
     protected boolean runInEQ () {
         return true;
     }

@@ -4,11 +4,13 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import com.jcraft.jsch.JSchException;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelParams;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.openide.util.Exceptions;
 
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
@@ -96,8 +98,12 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
             return exitValue;
         } finally {
-            if (streams != null && streams.channel != null && streams.channel.isConnected()) {
-                streams.channel.disconnect();
+            if (streams != null) {
+                try {
+                    ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(getExecutionEnvironment(), streams.channel);
+                } catch (JSchException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }

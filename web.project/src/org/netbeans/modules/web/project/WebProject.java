@@ -55,6 +55,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -142,6 +143,7 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -540,7 +542,7 @@ public final class WebProject implements Project {
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createSourceLevelQuery(evaluator()),
+            QuerySupport.createSourceLevelQuery2(evaluator()),
             QuerySupport.createSources(this, helper, evaluator(),
                     getSourceRoots(),
                     getTestSourceRoots(),
@@ -931,6 +933,19 @@ public final class WebProject implements Project {
                     }
                 }
             });
+
+            if (BrokenServerLibrarySupport.isBroken(WebProject.this)) {
+                BrokenServerLibrarySupport.fixOrShowAlert(WebProject.this, new Runnable() {
+                    @Override
+                    public void run() {
+                        WebLogicalViewProvider viewProvider = WebProject.this.getLookup().lookup(
+                                WebLogicalViewProvider.class);
+                        if (viewProvider != null) {
+                            viewProvider.testBroken();
+                        }
+                    }
+                });
+            }
             
             // register project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));

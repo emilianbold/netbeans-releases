@@ -610,6 +610,11 @@ private.properties:
 
     build.compiler.deprecation=false
 
+build.dir - "build", location of all module build products not placed into
+${suite.build.dir}. May be overridden on a suitewide basis if placed in
+platform.properties, e.g.: build.dir=${suite.build.dir}/${ant.project.name}
+[since 6.10]
+
 build.test.unit.classes.dir - "build/test/unit/classes", where unit tests are
 compiled to.
 
@@ -1137,6 +1142,10 @@ branding.dir (default "${suite.dir}/branding") - directory containing branding
 overrides.
 
 branding.token - optional token defining an application branding.
+
+suite.build.dir - "build", location of suitewide build products including the
+cluster. If overridden, should be placed in platform.properties, e.g.:
+suite.build.dir=${suite.dir}/../build [since 6.10]
 
 enabled.clusters - comma-separated list of cluster names in the target platform
 (e.g. "platform") which should be included in the application. Should be stored

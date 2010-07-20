@@ -93,6 +93,10 @@ public class J2SESourcesTest extends NbTestCase {
     private ProjectManager pm;
     private Project project;
     private AntProjectHelper helper;
+   
+    protected @Override int timeOut() {
+        return 300000;
+    }
 
     protected void setUp() throws Exception {
         super.setUp();

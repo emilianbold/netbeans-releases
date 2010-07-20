@@ -79,7 +79,7 @@ public final class RemoteConnections {
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
     private final ConfigManager configManager;
-    private final ConfigManager.ConfigProvider configProvider = new DefaultConfigProvider();
+    private final DefaultConfigProvider configProvider = new DefaultConfigProvider();
     RemoteConnectionsPanel panel = null;
 
     public static RemoteConnections get() {
@@ -124,10 +124,11 @@ public final class RemoteConnections {
         boolean changed = panel.open(remoteConfiguration);
         if (changed) {
             saveRemoteConnections(remoteConfigurations);
-        } else {
-            // reset config manager (configs are kept in memory)
-            configManager.reset();
         }
+        // reset & reread config provider & manager (configs are kept in memory)
+        configProvider.resetConfigs();
+        configManager.reset();
+
         return changed;
     }
 
@@ -257,43 +258,42 @@ public final class RemoteConnections {
 
     private void saveRemoteConnections(List<RemoteConfiguration> originalRemoteConfigurations) {
         Preferences remoteConnections = getPreferences();
-        for (Map.Entry<String, Map<String, String>> entry : configProvider.getConfigs().entrySet()) {
-            String config = entry.getKey();
-            if (config == null) {
-                // no default config
+        for (String name : configManager.configurationNames()) {
+            if (name == null) {
+                // default config
                 continue;
             }
-
-            Map<String, String> cfg = entry.getValue();
-            if (cfg == null) {
-                // config was deleted
+            if (!configManager.exists(name)) {
+                // deleted
                 try {
-                    remoteConnections.node(config).removeNode();
+                    remoteConnections.node(name).removeNode();
                     // remove password from keyring
                     for (RemoteConfiguration remoteConfiguration : originalRemoteConfigurations) {
-                        if (remoteConfiguration.getName().equals(config)) {
+                        if (remoteConfiguration.getName().equals(name)) {
                             remoteConfiguration.notifyDeleted();
                             break;
                         }
                     }
                 } catch (BackingStoreException bse) {
-                    LOGGER.log(Level.INFO, "Error while removing unused remote connection: " + config, bse);
+                    LOGGER.log(Level.INFO, "Error while removing unused remote connection: " + name, bse);
                 }
             } else {
                 // add/update
-                Configuration configuration = configManager.configurationFor(config);
-                assert configuration != null;
+                Configuration configuration = configManager.configurationFor(name);
                 RemoteConfiguration remoteConfiguration = getRemoteConfiguration(configuration);
-                assert remoteConfiguration != null;
+                assert remoteConfiguration != null : configuration.getName();
 
-                Preferences node = remoteConnections.node(config);
-                for (Map.Entry<String, String> cfgEntry : cfg.entrySet()) {
-                    String key = cfgEntry.getKey();
-                    String value = cfgEntry.getValue();
-                    if (remoteConfiguration.saveProperty(key, value)) {
-                        node.remove(key);
+                Preferences node = remoteConnections.node(name);
+                for (String propertyName : configuration.getPropertyNames()) {
+                    String value = configuration.getValue(propertyName);
+                    if (value == null) {
+                        // e.g. display name
+                        continue;
+                    }
+                    if (remoteConfiguration.saveProperty(propertyName, value)) {
+                        node.remove(propertyName);
                     } else {
-                        node.put(key, value);
+                        node.put(propertyName, value);
                     }
                 }
             }
@@ -301,6 +301,12 @@ public final class RemoteConnections {
     }
 
     private class DefaultConfigProvider implements ConfigManager.ConfigProvider {
+        final Map<String, Map<String, String>> configs;
+
+        public DefaultConfigProvider() {
+            configs = ConfigManager.createEmptyConfigs();
+            readConfigs();
+        }
 
         @Override
         public String[] getConfigProperties() {
@@ -311,23 +317,19 @@ public final class RemoteConnections {
             return properties.toArray(new String[properties.size()]);
         }
 
+        // changes a map in config manager as well! it holds just a reference, not a copy
+        public void resetConfigs() {
+            configs.clear();
+            configs.putAll(ConfigManager.createEmptyConfigs());
+            readConfigs();
+        }
+
         @Override
         public Map<String, Map<String, String>> getConfigs() {
-            // ALWAYS read the configs from disk, do not cache them
-            return readConfigs();
+            return configs;
         }
 
-        @Override
-        public String getActiveConfig() {
-            return null;
-        }
-
-        @Override
-        public void setActiveConfig(String configName) {
-        }
-
-        private Map<String, Map<String, String>> readConfigs() {
-            Map<String, Map<String, String>> configs = ConfigManager.createEmptyConfigs();
+        private void readConfigs() {
             Preferences remoteConnections = getPreferences();
             try {
                 for (String name : remoteConnections.childrenNames()) {
@@ -341,7 +343,6 @@ public final class RemoteConnections {
             } catch (BackingStoreException bse) {
                 LOGGER.log(Level.INFO, "Error while reading existing remote connections", bse);
             }
-            return configs;
         }
     }
 }

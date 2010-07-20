@@ -75,10 +75,18 @@ public final class ConfigManager {
     private final String[] propertyNames;
     private final ChangeSupport changeSupport;
 
+    private volatile String currentConfig;
+
     public ConfigManager(ConfigProvider configProvider) {
+        this(configProvider, null);
+    }
+
+    public ConfigManager(ConfigProvider configProvider, String currentConfig) {
         this.configProvider = configProvider;
         changeSupport = new ChangeSupport(this);
-        configs = configProvider.getConfigs();
+        configs = createEmptyConfigs();
+        configs.putAll(configProvider.getConfigs());
+        this.currentConfig = currentConfig;
 
         List<String> tmp = new ArrayList<String>(Arrays.asList(configProvider.getConfigProperties()));
         tmp.add(PROP_DISPLAY_NAME);
@@ -153,13 +161,12 @@ public final class ConfigManager {
     }
 
     public synchronized Configuration currentConfiguration() {
-        String activeConfig = configProvider.getActiveConfig();
-        if (exists(activeConfig)) {
-            return new Configuration(activeConfig);
+        if (exists(currentConfig)) {
+            return new Configuration(currentConfig);
         }
         // #176670
-        LOGGER.log(Level.WARNING, "Missing configuration \"{0}\" found - perhaps deleted?", activeConfig);
-        return createNew(activeConfig, activeConfig);
+        LOGGER.log(Level.WARNING, "Missing configuration \"{0}\" found - perhaps deleted?", currentConfig);
+        return createNew(currentConfig, currentConfig);
     }
 
     public Configuration defaultConfiguration() {
@@ -172,7 +179,7 @@ public final class ConfigManager {
 
     public synchronized void markAsCurrentConfiguration(String currentConfig) {
         assert configs.keySet().contains(currentConfig);
-        configProvider.setActiveConfig(currentConfig);
+        this.currentConfig = currentConfig;
         changeSupport.fireChange();
     }
 
@@ -327,20 +334,5 @@ public final class ConfigManager {
          * @return all the configurations.
          */
         Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> getConfigs();
-
-        /**
-         * Get the currently active configuration name.
-         * <p>
-         * This property is outside of {@link ConfigManager} to allow its persistence etc.
-         * @return the currently active configuration name.
-         */
-        String getActiveConfig();
-
-        /**
-         * Set the currently active configuration name.
-         * @param configName the currently active configuration name.
-         * @see #getActiveConfig()
-         */
-        void setActiveConfig(String configName);
     }
 }

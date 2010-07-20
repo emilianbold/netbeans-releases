@@ -53,8 +53,13 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+
+import java.awt.event.KeyEvent;
+import java.awt.Robot;
+import java.awt.AWTException;
 
 /**
  * Test of typing in opened source editor.
@@ -67,6 +72,8 @@ public class TypingInEditorTest extends PerformanceTestCase {
     protected String fileName;
     protected int caretPositionX, caretPositionY;
     Node fileToBeOpened;
+    JEditorPaneOperator epo;
+    Robot r;
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditorTest(String testName) {
@@ -91,7 +98,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
   
     public void testTxtEditor() {
         fileName = "textfile.txt";
-        caretPositionX = 2;
+        caretPositionX = 9;
         caretPositionY = 1;
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
@@ -99,8 +106,8 @@ public class TypingInEditorTest extends PerformanceTestCase {
     
     public void testJavaEditor() {
         fileName = "Main.java";
-        caretPositionX = 38;
-        caretPositionY = 19;
+        caretPositionX = 9;
+        caretPositionY = 1;
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
     }
@@ -114,10 +121,15 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
     
     public void prepare() {
+        epo=new JEditorPaneOperator(editorOperator);     
+        try {
+             r=new Robot();
+        } catch (AWTException e) {};
     }
     
     public ComponentOperator open(){
-        editorOperator.typeKey('a');
+        //epo.pressKey(KeyEvent.VK_A);//typeKey('a'/*KeyEvent.VK_A*/);
+        r.keyPress(KeyEvent.VK_SPACE);  
         return null;
     }
     

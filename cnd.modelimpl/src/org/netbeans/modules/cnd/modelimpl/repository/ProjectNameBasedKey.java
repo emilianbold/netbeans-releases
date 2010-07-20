@@ -54,11 +54,11 @@ import java.io.IOException;
 /*package*/
 abstract class ProjectNameBasedKey extends AbstractKey {
 
-    private final int unitIndex;
+    private final short unitIndex;
 
     protected ProjectNameBasedKey(CharSequence project) {
         assert project != null;
-        this.unitIndex = KeyUtilities.getUnitId(project);
+        this.unitIndex = (short)KeyUtilities.getUnitId(project);
     }
 
     @Override
@@ -92,11 +92,11 @@ abstract class ProjectNameBasedKey extends AbstractKey {
 
     @Override
     public void write(DataOutput aStream) throws IOException {
-        aStream.writeInt(this.unitIndex);
+        aStream.writeShort(this.unitIndex);
     }
 
     protected ProjectNameBasedKey(DataInput aStream) throws IOException {
-        this.unitIndex = aStream.readInt();
+        this.unitIndex = aStream.readShort();
     }
 
     @Override

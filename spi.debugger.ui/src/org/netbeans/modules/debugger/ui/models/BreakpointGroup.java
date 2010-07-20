@@ -172,6 +172,9 @@ public class BreakpointGroup {
             sessionProjects = null;
         }
         
+        Set<Project> openedProjectsCache = new HashSet<Project>(); // projects opened or subprojects of opened
+        Set<Project> closedProjectsCache = new HashSet<Project>(); // projects closed and not subprojects of opened
+        Map<Project, Set<? extends Project>> subProjects = new HashMap<Project, Set<? extends Project>>();
         for (int bi = 0; bi < bs.length; bi++) {
             Breakpoint b = bs[bi];
             Breakpoint.GroupProperties bprops = b.getGroupProperties();
@@ -179,7 +182,7 @@ public class BreakpointGroup {
                 if (bprops.isHidden()) {
                     continue;
                 }
-                if (openProjectsOnly && !isOpened(bprops.getProjects())) {
+                if (openProjectsOnly && !isOpened(bprops.getProjects(), openedProjectsCache, closedProjectsCache, subProjects)) {
                     continue;
                 }
                 if (sessionProjects != null && !contains(sessionProjects, bprops.getProjects())) {
@@ -372,10 +375,20 @@ public class BreakpointGroup {
         return groupsAndBreakpoints.toArray();
     }
 
-    private static boolean isOpened(Project[] projects) {
+    private static boolean isOpened(Project[] projects,
+                                    Set<Project> openedProjectsCache,
+                                    Set<Project> closedProjectsCache,
+                                    Map<Project, Set<? extends Project>> subProjects) {
         if (projects != null && projects.length > 0) {
             for (Project p : projects) {
-                if (OpenProjects.getDefault().isProjectOpen(p) || isDependentOnAnOpened(p)) {
+                if (openedProjectsCache.contains(p)) {
+                    return true;
+                }
+                if (closedProjectsCache.contains(p)) {
+                    return false;
+                }
+                if (OpenProjects.getDefault().isProjectOpen(p) ||
+                    isDependentOnAnOpened(p, openedProjectsCache, closedProjectsCache, subProjects)) {
                     return true;
                 }
             }
@@ -385,22 +398,38 @@ public class BreakpointGroup {
         }
     }
 
-    private static boolean isDependentOnAnOpened(Project p) {
+    private static boolean isDependentOnAnOpened(Project p,
+                                                 Set<Project> openedProjectsCache,
+                                                 Set<Project> closedProjectsCache,
+                                                 Map<Project, Set<? extends Project>> subProjects) {
         for (Project op : OpenProjects.getDefault().getOpenProjects()) {
-            if (isSubProjectOf(p, op)) {
+            if (isSubProjectOf(p, op, subProjects, new HashSet<Project>())) {
+                openedProjectsCache.add(p);
                 return true;
             }
         }
+        closedProjectsCache.add(p);
         return false;
     }
 
-    private static boolean isSubProjectOf(Project p, Project op) {
-        SubprojectProvider spp = op.getLookup().lookup(SubprojectProvider.class);
-        if (spp == null) {
-            return false;
+    private static boolean isSubProjectOf(Project p, Project op,
+                                          Map<Project, Set<? extends Project>> subProjects, // cache of sub-projects
+                                          Set<Project> allSubProjects) {                    // all inspected sub-projects
+        Set<? extends Project> sps = subProjects.get(op);
+        if (sps == null) {
+            SubprojectProvider spp = op.getLookup().lookup(SubprojectProvider.class);
+            if (spp == null) {
+                return false;
+            }
+            sps = spp.getSubprojects();
+            subProjects.put(op, sps);
         }
-        for (Project sp : spp.getSubprojects()) {
-            if (p.equals(sp) || isSubProjectOf(p, sp)) {
+        for (Project sp : sps) {
+            if (allSubProjects.contains(sp)) {
+                continue;
+            }
+            allSubProjects.add(sp);
+            if (p.equals(sp) || isSubProjectOf(p, sp, subProjects, allSubProjects)) {
                 return true;
             }
         }

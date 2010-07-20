@@ -106,6 +106,7 @@ import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -1321,7 +1322,7 @@ itor tabs #66700).
         return remotePath;
     }
 
-    public static void openInRevision (final File originalFile, final String revision, boolean showAnnotations) throws IOException {
+    public static void openInRevision (final File originalFile, final HgRevision revision, boolean showAnnotations) throws IOException {
         File file = org.netbeans.modules.mercurial.VersionsCache.getInstance().getFileRevision(originalFile, revision);
 
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
@@ -1343,7 +1344,7 @@ itor tabs #66700).
         if (ec == null && oc != null) {
             oc.open();
         } else {
-            ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
+            ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, revision.getRevisionNumber());
         }
         if (showAnnotations) {
             if (ces == null) {
@@ -1355,7 +1356,7 @@ itor tabs #66700).
                     public void run() {
                         javax.swing.JEditorPane[] panes = support.getOpenedPanes();
                         if (panes != null) {
-                            org.netbeans.modules.mercurial.ui.annotate.AnnotateAction.showAnnotations(panes[0], originalFile, revision);
+                            org.netbeans.modules.mercurial.ui.annotate.AnnotateAction.showAnnotations(panes[0], originalFile, revision.getRevisionNumber());
                         }
                     }
                 });
@@ -1467,7 +1468,7 @@ itor tabs #66700).
         }
         StringBuilder sb = new StringBuilder();
         sb.append(formatlabel(lbChangeset, l));
-        sb.append(log.getRevision());
+        sb.append(log.getRevisionNumber());
         sb.append(":"); // NOI18N
         sb.append(log.getCSetShortID());
         sb.append('\n'); // NOI18N
@@ -1589,11 +1590,11 @@ itor tabs #66700).
      * @param repository repository root
      * @param filesUnderRoot set of repository roots
      * @param file file to add
-     * @return true if the file or any of it's ancestors was originally in the set
+     * @return newly added root or null if the to be added file is already contained in seen roots
      */
-    public static boolean prepareRootFiles(File repository, Set<File> filesUnderRoot, File file) {
-        boolean alreadyAdded = false;
+    public static File prepareRootFiles(File repository, Set<File> filesUnderRoot, File file) {
         boolean added = false;
+        File addedRoot = null;
         for (File fileUnderRoot : filesUnderRoot) {
             // try to find a common parent for planned files
             File childCandidate = file;
@@ -1601,7 +1602,6 @@ itor tabs #66700).
             added = true;
             if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
                 // file has already been inserted or scan is planned for the whole repository root
-                alreadyAdded = true;
                 break;
             }
             if (childCandidate.equals(repository)) {
@@ -1619,7 +1619,6 @@ itor tabs #66700).
             }
             if (ancestorCandidate == fileUnderRoot) {
                 // already added
-                alreadyAdded = true;
                 break;
             } else if (!FileStatusCache.FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
                 // common ancestor is the repo root and neither one of the candidates was originally the repo root
@@ -1633,7 +1632,7 @@ itor tabs #66700).
                 } else {
                     filesUnderRoot.remove(fileUnderRoot);
                 }
-                filesUnderRoot.add(ancestorCandidate);
+                filesUnderRoot.add(addedRoot = ancestorCandidate);
                 break;
             } else {
                 added = false;
@@ -1641,9 +1640,9 @@ itor tabs #66700).
         }
         if (!added) {
             // not added yet
-            filesUnderRoot.add(file);
+            filesUnderRoot.add(addedRoot = file);
         }
-        return alreadyAdded;
+        return addedRoot;
     }
 
     /**

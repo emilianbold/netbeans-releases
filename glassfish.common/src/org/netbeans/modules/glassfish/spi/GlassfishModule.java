@@ -112,6 +112,7 @@ public interface GlassfishModule {
     public static final String JAVAMAIL_RESOURCE = "javamail-resource"; // NOI18N
 
     public CommandFactory getCommandFactory();
+
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */
@@ -310,6 +311,30 @@ public interface GlassfishModule {
     public Future<OperationState> undeploy(OperationStateListener stateListener, 
             String name);
     
+    /**
+     * Enable the named application.
+     *
+     * @param stateListener listener to listen message describing the enable
+     *   process as it progresses.  Can be null.
+     * @param name name of application to enable.
+     *
+     * @return Future instance that finishes when the deploy command has been
+     *   completed.
+     */
+    public Future<OperationState> enable(OperationStateListener stateListener,
+            String name);
+    /**
+     * Disable the named application.
+     *
+     * @param stateListener listener to listen message describing the disable
+     *   process as it progresses.  Can be null.
+     * @param name name of application to disable.
+     *
+     * @return Future instance that finishes when the deploy command has been
+     *   completed.
+     */
+    public Future<OperationState> disable(OperationStateListener stateListener,
+            String name);
     /**
      * Execute the specified server command.
      * 

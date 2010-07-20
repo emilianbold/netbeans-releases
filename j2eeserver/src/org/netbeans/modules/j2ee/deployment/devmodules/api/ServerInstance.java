@@ -44,8 +44,10 @@ package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 
 /**
@@ -299,6 +301,22 @@ public final class ServerInstance {
         @NonNull
         public Set<ServerLibrary> getDeployedLibraries() throws InstanceRemovedException {
             return getInstanceFromRegistry(ServerRegistry.getInstance()).getDeployedLibraries();
+        }
+
+        @NonNull
+        public Set<ServerLibraryDependency> getMissingDependencies(
+                @NonNull Set<ServerLibraryDependency> libraries) throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getMissingDependencies(libraries);
+        }
+
+        @NonNull
+        public Set<ServerLibraryDependency> getDeployableDependencies(
+                @NonNull Set<ServerLibraryDependency> libraries) throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getDeployableDependencies(libraries);
+        }
+
+        public void deployLibraries(@NonNull Set<ServerLibraryDependency> libraries) throws InstanceRemovedException, ConfigurationException {
+            getInstanceFromRegistry(ServerRegistry.getInstance()).deployLibraries(libraries);
         }
     }
 }

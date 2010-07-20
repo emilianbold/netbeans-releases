@@ -211,27 +211,21 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             return Collections.emptyList();
         }
         List<Field> staticFields = new ArrayList<Field>();
+        String parentID = getName();
         for (int i = 0; i < allFieldsOrig.size(); i++) {
             Value value = null;
             com.sun.jdi.Field origField = allFieldsOrig.get(i);
             try {
                 if (TypeComponentWrapper.isStatic(origField)) {
-                    if (loggerValue.isLoggable(Level.FINE)) {
-                        loggerValue.fine("STARTED : " + classType + ".getValue(" + origField + ")");
-                    }
-                    value = ReferenceTypeWrapper.getValue(classType, origField);
-                    if (loggerValue.isLoggable(Level.FINE)) {
-                        loggerValue.fine("FINISHED: " + classType + ".getValue(" + origField + ") = " + value);
-                    }
-                    if (value instanceof PrimitiveValue) {
-                        staticFields.add(new FieldVariable(debugger, (PrimitiveValue) value, origField, "", (ObjectReference) null));
+                    if (origField.signature().length() == 1) {
+                        // Must be a primitive type or the void type
+                        staticFields.add(new FieldVariable(debugger, origField, parentID, null));
                     } else {
-                        staticFields.add(new ObjectFieldVariable(debugger, (ObjectReference) value, origField, "", (ObjectReference) null));
+                        staticFields.add(new ObjectFieldVariable(debugger, origField, parentID,
+                                JPDADebuggerImpl.getGenericSignature(origField), null));
                     }
                 }
             } catch (InternalExceptionWrapper ex) {
-            } catch (ObjectCollectedExceptionWrapper ex) {
-                return Collections.emptyList();
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return Collections.emptyList();
             }

@@ -103,11 +103,11 @@ public class MercurialApi extends AbstractHgTest {
         Mercurial.commit(new File[] {workDir}, "repo1 commit");
         HgLogMessage repo1Tip2 = HgCommand.doTip(workDir, NULL_LOGGER);
         HgLogMessage repo2Tip2 = HgCommand.doTip(repo2, NULL_LOGGER);
-        assertEquals((Integer)(Integer.valueOf(repo1Tip1.getRevision()) + 1), Integer.valueOf(repo1Tip2.getRevision()));
-        assertEquals(Integer.valueOf(repo2Tip1.getRevision()), Integer.valueOf(repo2Tip2.getRevision()));
+        assertEquals((Integer)(Integer.valueOf(repo1Tip1.getRevisionNumber()) + 1), Integer.valueOf(repo1Tip2.getRevisionNumber()));
+        assertEquals(Integer.valueOf(repo2Tip1.getRevisionNumber()), Integer.valueOf(repo2Tip2.getRevisionNumber()));
 
         Mercurial.commit(new File[] {repo2}, "repo2 commit");
         repo2Tip2 = HgCommand.doTip(repo2, NULL_LOGGER);
-        assertEquals((Integer)(Integer.valueOf(repo2Tip1.getRevision()) + 1), Integer.valueOf(repo2Tip2.getRevision()));
+        assertEquals((Integer)(Integer.valueOf(repo2Tip1.getRevisionNumber()) + 1), Integer.valueOf(repo2Tip2.getRevisionNumber()));
     }
 }

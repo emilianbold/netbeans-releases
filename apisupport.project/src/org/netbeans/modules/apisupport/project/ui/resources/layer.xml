@@ -344,6 +344,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.apisupport.project.layers.LayerNode.createProvider"/>
                 </file>
+                <file name="DTD_Filesystem_1_2.instance">
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.apisupport.project.layers.LayerNode.createProvider"/>
+                </file>
             </folder>
         </folder>
     </folder>

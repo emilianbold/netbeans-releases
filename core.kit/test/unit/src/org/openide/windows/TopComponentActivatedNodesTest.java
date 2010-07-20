@@ -51,12 +51,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
@@ -81,16 +77,6 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
     
     public TopComponentActivatedNodesTest(java.lang.String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TopComponentActivatedNodesTest.class);
-        
-        return suite;
     }
     
     protected boolean runInEQ() {

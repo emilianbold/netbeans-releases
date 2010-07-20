@@ -121,8 +121,8 @@ final class LocaleVariants implements Stamps.Updater {
     /**
      * Find existing locale variants of f, in search order.
      */
-    static List<File> findLocaleVariantsOf(File f) {
-        List<FileWithSuffix> result = findLocaleVariantsWithSuffixesOf(f);
+    static List<File> findLocaleVariantsOf(File f, String codeNameBase) {
+        List<FileWithSuffix> result = findLocaleVariantsWithSuffixesOf(f, codeNameBase);
         List<File> l = new ArrayList<File>(result.size());
         for (FileWithSuffix fws : result) {
             l.add(fws.file);
@@ -155,7 +155,7 @@ final class LocaleVariants implements Stamps.Updater {
     /**
      * Find existing locale variants of f, in search order.
      */
-    static List<FileWithSuffix> findLocaleVariantsWithSuffixesOf(File f) {
+    static List<FileWithSuffix> findLocaleVariantsWithSuffixesOf(File f, String codeNameBase) {
         List<FileWithSuffix> res;
         synchronized (map) {
             if (mapLocale != Locale.getDefault()) {
@@ -176,7 +176,7 @@ final class LocaleVariants implements Stamps.Updater {
                 // #34069: we have to consider that e.g. modules/locale/foo_branding.jar might be
                 // located in a different root of ${netbeans.dirs}, so need to use IFL. Here the
                 // logical path would be "modules/foo.jar" for the base module.
-                String logicalPath = findLogicalPath(f);
+                String logicalPath = findLogicalPath(f, codeNameBase);
                 if (logicalPath != null) {
                     int slash = logicalPath.lastIndexOf('/');
                     if (slash != -1) {
@@ -200,7 +200,7 @@ final class LocaleVariants implements Stamps.Updater {
             if (logicalDir != null) {
                 for (String suffix : getLocalizingSuffixesFast()) {
                     String path = logicalDir + name + suffix + ext;
-                    File v = InstalledFileLocator.getDefault().locate(path, null, false);
+                    File v = InstalledFileLocator.getDefault().locate(path, codeNameBase, false);
                     if (v != null) {
                         l.add(new FileWithSuffix(v, suffix));
                     }
@@ -260,12 +260,12 @@ final class LocaleVariants implements Stamps.Updater {
      * @return the inverse of locate(...), or null if there is no such path
      * @see "#34069"
      */
-    private static String findLogicalPath(File f) {
+    private static String findLogicalPath(File f, String codeNameBase) {
         InstalledFileLocator l = InstalledFileLocator.getDefault();
         String path = f.getName();
         File parent = f.getParentFile();
         while (parent != null) {
-            File probe = l.locate(path, null, false);
+            File probe = l.locate(path, codeNameBase, false);
             //System.err.println("Util.fLP: f=" + f + " parent=" + parent + " probe=" + probe + " f.equals(probe)=" + f.equals(probe));
             if (f.equals(probe)) {
                 return path;

@@ -140,7 +140,7 @@ public class FileMagic {
 
         private static final int BUF_SIZE = Integer.getInteger("cnd.dwarfdump.random_access_file_buffer_size", 8 * 1024); // NOI18N
         private static final int BUF_ALIGNMENT = 1024;
-        private static final int BUF_CACHE_SIZE = 4;
+        private static final int BUF_CACHE_SIZE = 8;
         private String fileName;
         private BufferCache currentCache;
         private LinkedList<BufferCache> bufferList = new LinkedList<BufferCache>();

@@ -66,6 +66,7 @@ public final class Report {
      * number of recognized (by the parser) passed test reports
      */
     private int totalTests;
+    private int passed;
     private int failures;
     private int errors;
     private int pending;
@@ -106,7 +107,7 @@ public final class Report {
         //PENDING - should be synchronized
         tests.add(test);
         
-        if (!Status.isFailure(test.getStatus())) {
+        if (!Status.isFailureOrError(test.getStatus())) {
             detectedPassedTests++;
         }
     }
@@ -117,6 +118,7 @@ public final class Report {
         synchronized(this){
             this.suiteClassName = report.suiteClassName;
             this.totalTests = report.totalTests;
+            this.passed = report.passed;
             this.failures = report.failures;
             this.errors = report.errors;
             this.pending = report.pending;
@@ -168,9 +170,9 @@ public final class Report {
      */
     public boolean containsFailed() {
         assert EventQueue.isDispatchThread();
-        
+
         /* Called from the EventDispatch thread */
-        
+
         return (failures + errors) != 0;
     }
 
@@ -200,6 +202,20 @@ public final class Report {
      */
     public void setTotalTests(int totalTests) {
         this.totalTests = totalTests;
+    }
+
+    /**
+     * @return the passed
+     */
+    public int getPassed() {
+        return passed;
+    }
+
+    /**
+     * @param passed the passed to set
+     */
+    public void setPassed(int passed) {
+        this.passed = passed;
     }
 
     /**
@@ -307,5 +323,13 @@ public final class Report {
 
     public void setSkipped(boolean skipped) {
         this.skipped = skipped;
+    }
+
+    int getStatusMask(){
+        int statusMask = 0;
+        statusMask |= getPassed() > 0 ? Status.PASSED.getBitMask() : 0;
+        statusMask |= getFailures() > 0 ? Status.FAILED.getBitMask() : 0;
+        statusMask |= getErrors() > 0 ? Status.ERROR.getBitMask() : 0;
+        return statusMask;
     }
 }

@@ -129,7 +129,8 @@ public class SuiteOperationsTest extends TestBase {
         
         // build project
         ap.invokeActionImpl(ActionProvider.COMMAND_BUILD, suite.getLookup()).waitFinished();
-        assertNotNull("suite was build", prjDir.getFileObject("build"));
+        prjDir.refresh();
+        assertNotNull("suite was built", prjDir.getFileObject("build"));
         
         FileObject[] expectedMetadataFiles = new FileObject[] {
             prjDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH),

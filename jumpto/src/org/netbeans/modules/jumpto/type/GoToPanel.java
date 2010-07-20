@@ -50,6 +50,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -87,7 +90,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private ContentProvider contentProvider;
     private boolean containsScrollPane;
     JLabel messageLabel;
-    private TypeDescriptor selectedType;
+    private Iterable<? extends TypeDescriptor> selectedTypes = Collections.emptyList();
     
     private String oldText;
     
@@ -97,12 +100,12 @@ public class GoToPanel extends javax.swing.JPanel {
     private final SearchHistory searchHistory;
     
     /** Creates new form GoToPanel */
-    public GoToPanel( ContentProvider contentProvider ) throws IOException {
+    public GoToPanel( ContentProvider contentProvider, boolean multiSelection ) throws IOException {
         this.contentProvider = contentProvider;
         initComponents();
         containsScrollPane = true;
                 
-        matchesList.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+        matchesList.setSelectionMode( multiSelection ? ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : ListSelectionModel.SINGLE_SELECTION);
         //matchesList.setPrototypeCellValue("12345678901234567890123456789012345678901234567890123456789012345678901234567890");        
         matchesList.addListSelectionListener(null);
         
@@ -177,12 +180,16 @@ public class GoToPanel extends javax.swing.JPanel {
         });
     }
     
-    public void setSelectedType() {
-        selectedType = ((TypeDescriptor) matchesList.getSelectedValue());
+    public void setSelectedTypes() {
+        final List<TypeDescriptor> types = new LinkedList<TypeDescriptor>();
+        for (Object td : matchesList.getSelectedValues()) {
+            types.add((TypeDescriptor)td);
+        }
+        selectedTypes = Collections.unmodifiableCollection(types);
     }
     
-    public TypeDescriptor getSelectedType() {
-        return selectedType;
+    public Iterable<? extends TypeDescriptor> getSelectedTypes() {
+        return selectedTypes;
     }
 
     void setWarning(String warningMessage) {
@@ -348,7 +355,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         if (contentProvider.hasValidContent()) {
             contentProvider.closeDialog();
-            setSelectedType();        
+            setSelectedTypes();
         }
     }//GEN-LAST:event_nameFieldActionPerformed
     

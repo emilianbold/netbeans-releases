@@ -229,7 +229,7 @@ final class JavadocCompletionItem implements CompletionItem {
         
         CompletionItem delegate = JavaCompletionItem.createTypeItem(
                 info, elem, (DeclaredType) elem.asType(), startOffset,
-                displayPkgName, isDeprecated, false, false, false);
+                displayPkgName, isDeprecated, false, false, false, false);
         return new JavadocTypeItem(delegate, startOffset);
     }
     

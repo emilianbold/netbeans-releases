@@ -440,7 +440,7 @@ public class ModeStructureSnapshot {
         /** Indicates whether component represented by this node is visible or not. */
         public boolean isVisibleInSplit() {
             if(Constants.SWITCH_HIDE_EMPTY_DOCUMENT_AREA) {
-                return editorAreaSnapshot.isVisibleInSplit();
+                return null != editorAreaSnapshot && editorAreaSnapshot.isVisibleInSplit();
             } else {
                 return true;
             }

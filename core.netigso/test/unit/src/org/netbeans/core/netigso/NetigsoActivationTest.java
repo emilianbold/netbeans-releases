@@ -48,11 +48,9 @@ import org.netbeans.core.startup.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
-import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  * Do we correctly call the BundleActivators?
@@ -66,15 +64,6 @@ public class NetigsoActivationTest extends SetupHid {
 
     public NetigsoActivationTest(String name) {
         super(name);
-    }
-
-    public static Test suite() {
-        Test t = null;
-//        t = new NetigsoTest("testOSGiCanRequireBundleOnNetBeans");
-        if (t == null) {
-            t = new NbTestSuite(NetigsoActivationTest.class);
-        }
-        return t;
     }
 
     protected @Override void setUp() throws Exception {

@@ -133,7 +133,7 @@ public class RubyInstallation {
         if (jrubyHome == null) {
             File jrubyDir =
                 InstalledFileLocator.getDefault()
-                                    .locate(JRUBY_RELEASEDIR, "org.netbeans.modules.ruby.project", // NOI18N
+                                    .locate(JRUBY_RELEASEDIR, "org.jruby.distro", // NOI18N
                     false); // NOI18N
 
             if ((jrubyDir == null) || !jrubyDir.isDirectory()) {

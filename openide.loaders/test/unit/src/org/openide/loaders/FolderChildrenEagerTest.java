@@ -44,23 +44,12 @@
 
 package org.openide.loaders;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.nodes.Children;
 
 public class FolderChildrenEagerTest extends FolderChildrenTest {
     public FolderChildrenEagerTest(java.lang.String testName) {
         super(testName);
     }
-    public static Test suite() {
-        Test t = null;
-//        t = new FolderChildrenEagerTest("testChildrenCanGC");
-        if (t == null) {
-            t = new NbTestSuite(FolderChildrenEagerTest.class);
-        }
-        return t;
-    }
-
     @Override
     protected void assertChildrenType(Children ch) {
         assertEquals("Eager", FolderChildrenEager.class, ch.getClass());

@@ -448,6 +448,13 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         } else {
             index = 0;
         }
+        //Issue #163334
+        if (index < 0 || index >= compUnitsKeys.size()) {
+            throw new IndexOutOfBoundsException(String.format("Index: %d Size: %d IsSeparateClassPath: %b",
+                    index,
+                    compUnitsKeys.size(),
+                    isSeparateClasspath));
+        }
         ProjectModel.CompilationUnitKey key = compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateJListOutput(cu.output);

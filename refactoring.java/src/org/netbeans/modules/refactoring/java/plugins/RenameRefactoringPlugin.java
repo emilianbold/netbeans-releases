@@ -88,9 +88,11 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             JavaSource source = JavaSource.forFileObject(rename.getRefactoringSource().lookup(FileObject.class));
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                     public void cancel() {
                     }
                     
+                    @Override
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(JavaSource.Phase.RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
@@ -112,6 +114,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         if (treePathHandle == null) {
             return null;
@@ -135,7 +138,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     protected Problem preCheck(CompilationController info) throws IOException {
         Problem preCheckProblem = null;
-        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
+        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
         info.toPhase(JavaSource.Phase.RESOLVED);
         Element el = treePathHandle.resolveElement(info);
         preCheckProblem = isElementAvail(treePathHandle, info);
@@ -322,7 +325,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         if (overridesMethods != null)
             steps += overridesMethods.size();
         
-        fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
+        fireProgressListenerStart(RenameRefactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
         info.toPhase(JavaSource.Phase.RESOLVED);
         Element element = treePathHandle.resolveElement(info);
@@ -361,7 +364,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             return problem;
         }
     
-    private Set<ElementHandle<ExecutableElement>> allMethods;
+    private Set<ElementHandle<ExecutableElement>> allMethods = new HashSet<ElementHandle<ExecutableElement>>();
     
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
@@ -371,10 +374,12 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 
+                @Override
                 public void cancel() {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
                 
+                @Override
                 public void run(CompilationController info) throws Exception {
                     final ClassIndex idx = info.getClasspathInfo().getClassIndex();
                     info.toPhase(JavaSource.Phase.RESOLVED);
@@ -390,7 +395,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     if (el.getModifiers().contains(Modifier.PRIVATE)) {
                         if (kind == ElementKind.METHOD) {
                             //add all references of overriding methods
-                            allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                             allMethods.add(ElementHandle.create((ExecutableElement)el));
                         }
                     } else {
@@ -400,7 +404,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                             set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                         } else if (kind == ElementKind.METHOD) {
                             //add all references of overriding methods
-                            allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                             allMethods.add(ElementHandle.create((ExecutableElement)el));
                             for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
                                 addMethods(e, set, info, idx);
@@ -418,7 +421,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 }
             }, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException (ioe);
         }
         return set;
     }
@@ -431,6 +434,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         if (treePathHandle == null)
             return null;
@@ -593,7 +597,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     
-    private static final String getString(String key) {
+    private static String getString(String key) {
         return NbBundle.getMessage(RenameRefactoringPlugin.class, key);
     }
 }

@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org/netbeans/modules/web/facelets010114/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/facelets-1.1.14/lib/el-api-1.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.facelets010114/modules/ext/facelets-1.1.14/lib/el-api-1.0.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>

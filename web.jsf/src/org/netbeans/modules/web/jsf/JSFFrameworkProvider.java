@@ -82,10 +82,12 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
@@ -99,6 +101,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -185,8 +188,27 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     libraries = new Library[]{jsfLibrary};
                 }
                 // This is a way how to add libraries to the project classpath and
-                // packed them to the war file by default.
-                ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
+                // packed them to the war file by default.  classpath/compile_only (for scope provided)
+                boolean modified = false;
+                Boolean isMaven = (Boolean)panel.getController().getProperties().getProperty("maven");  //NOI18N
+                if (isMaven!=null && isMaven.booleanValue()) {
+                    Project prj = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                    J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+                    if (provider != null) {
+                        String serverInstanceId = provider.getServerInstanceID();
+                        if ( serverInstanceId == null || "".equals(serverInstanceId) || "DEV-NULL".equals(serverInstanceId)) {    //NOI18N
+                            if (!panel.packageJars()) {
+                                //Add to pom with scope provided
+                                ProjectClassPathModifier.addLibraries(libraries, javaSources[0], "classpath/compile_only"); //NOI18N
+                                modified = true;
+                            }
+                        }
+                    }
+
+                }
+                if (!modified) {
+                    ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
+                }
             }
 
             boolean isMyFaces;
@@ -219,6 +241,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 ServerLibraryDependency.minimalVersion(serverLibrary.getName(),
                                     serverLibrary.getSpecificationVersion(),
                                     serverLibrary.getImplementationVersion()));
+
+                        Preferences prefs = ProjectUtils.getPreferences(prj, ProjectUtils.class, true);
+                        prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT, Boolean.TRUE.toString());
                     }
                 }
             }
@@ -275,13 +300,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        if (webModule != null) {
-            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+        if (webModule != null && webModule.getDocumentBase() != null) {
+            FileObject docBase = webModule.getDocumentBase();
+            Project project = FileOwnerQuery.getOwner(docBase);
             Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
             if (preferences.get(PREFERRED_LANGUAGE, "").equals("")) { //NOI18N
-                ClassPath cp  = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                boolean faceletsPresent = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null || //NOI18N
-                                          cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
+                ClassPath cp  = ClassPath.getClassPath(docBase, ClassPath.COMPILE);
+                boolean faceletsPresent = cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
                                           cp.findResource("com/sun/faces/facelets/Facelet.class") !=null; //NOI18N
                 if (faceletsPresent) {
                     preferences.put(PREFERRED_LANGUAGE, "Facelets");    //NOI18N
@@ -289,6 +314,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences);
         } else {
+            if (webModule!=null && webModule.getDocumentBase() == null) {
+                controller.getProperties().setProperty("NoDocBase", true);  //NOI18N
+            }
             panel = new JSFConfigurationPanel(this, controller, !defaultValue);
         }
         panel.setCreateExamples(createWelcome);

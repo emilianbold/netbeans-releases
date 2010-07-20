@@ -262,7 +262,8 @@ public class PHPFormatterTest extends PHPTestBase {
     }
     
     public void test159339_161408() throws Exception {
-        reformatFileContents("testfiles/formatting/issues_159339_161408.php");
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issues_159339_161408.php", options);
     }
 
     public void test164219() throws Exception {
@@ -1475,6 +1476,31 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/issue181624_01.php", options);
     }
 
+    public void testWrapMethodCallArg01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/wrapping/methodCallArg01.php", options);
+    }
+
+    public void testWrapMethodCallArg02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/wrapping/methodCallArg02.php", options);
+    }
+
+    public void testWrapMethodCallArg03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/wrapping/methodCallArg03.php", options);
+    }
+
+    public void testWrapMethodCallArg04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/wrapping/methodCallArg04.php", options);
+    }
+
+    public void testWrapMethodCallArg05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/wrapping/methodCallArg05.php", options);
+    }
+
     public void testWrapMethodParams01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	options.put(FmtOptions.wrapMethodParams, CodeStyle.WrapStyle.WRAP_ALWAYS);
@@ -2016,6 +2042,16 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue187665_02() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/spaces/issue187665_02.php", options);
+    }
+
+    public void testIssue187888_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/issue187888_01.php", options);
+    }
+
+    public void testIssue187888_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/issue187888_02.php", options);
     }
 
     private void reformatFileContents(String file) throws Exception {

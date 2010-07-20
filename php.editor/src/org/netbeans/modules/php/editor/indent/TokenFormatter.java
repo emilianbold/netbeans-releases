@@ -682,6 +682,34 @@ public class TokenFormatter {
                                                 break;
                                         }
                                         break;
+                                   case WHITESPACE_IN_ARGUMENT_LIST:
+                                        indentRule = true;
+                                        switch (docOptions.wrapMethodCallArgs) {
+                                            case WRAP_ALWAYS:
+                                                newLines = 1;
+                                                countSpaces = docOptions.alignMultilineCallArgs ? lastAnchor.getAnchorColumn() : indent;
+                                                break;
+                                            case WRAP_NEVER:
+                                                if (isAfterLineComment(formatTokens, index)) {
+                                                    newLines = 1;
+                                                    countSpaces = docOptions.alignMultilineCallArgs ? lastAnchor.getAnchorColumn() : indent;
+                                                } else {
+                                                    newLines = 0;
+                                                    countSpaces = docOptions.spaceAfterComma ? 1 : 0;
+                                                }
+                                                break;
+                                            case WRAP_IF_LONG:
+                                                if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                    newLines = 1;
+                                                    countSpaces = docOptions.alignMultilineCallArgs ? lastAnchor.getAnchorColumn() : indent;
+                                                }
+                                                else {
+                                                    newLines = 0;
+                                                    countSpaces = 1;
+                                                }
+                                                break;
+                                        }
+                                        break;
                                     case WHITESPACE_AROUND_OBJECT_OP:
                                         countSpaces = docOptions.spaceAroundObjectOp ? 1 : 0;
                                         break;
@@ -1136,7 +1164,8 @@ public class TokenFormatter {
                                     if (realOffset <= caretPosition && caretPosition <= realOffset + oldText.length() + 1) {
                                         int positionOldText = caretPosition - realOffset - 1;
                                         if (positionOldText > -1 && positionOldText < oldText.length()
-                                                && oldText.charAt(positionOldText) == ' ') {
+                                                && oldText.charAt(positionOldText) == ' '
+                                                && newText.charAt(0) != ' ') {
                                             newText = ' ' + newText;   // templates like public, return ...
                                         }
                                         caretInTemplateSolved = true;
@@ -1703,12 +1732,17 @@ public class TokenFormatter {
 		    index++;
 		    token = formatTokens.get(index);
 
+                    int balance = 0;
 		    while (index < formatTokens.size()
-			    && token.getId() != FormatToken.Kind.UNBREAKABLE_SEQUENCE_END) {
+			    && !(token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
+                            && balance == 0)) {
 			if (token.getId() == FormatToken.Kind.WHITESPACE) {
 			    length += 1;
-			}
-			else {
+			} else if (token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_START) {
+                            balance++;
+                        } else if (token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END) {
+                            balance--;
+                        } else {
 			    if (token.getOldText() != null) {
 				length += token.getOldText().length();
 			    }

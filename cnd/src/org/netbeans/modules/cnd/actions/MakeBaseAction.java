@@ -52,8 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -69,6 +67,9 @@ import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,7 +104,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                                  final List<String> additionalEnvironment, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
-                private ExecutionService es;
+                private NativeExecutionService es;
                 @Override
                 public void doWork() {
                     es = MakeBaseAction.this.prepare(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
@@ -120,7 +121,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             String msg = getString("MSG_TITLE_Prepare", "make"); // NOI18N
             ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            ExecutionService es = prepare(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
+            NativeExecutionService es = prepare(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
             if (es != null) {
                 return es.run();
             }
@@ -128,7 +129,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         return null;
     }
 
-    private ExecutionService prepare(Node node, String target, final ExecutionListener listener, final Writer outputListener,
+    private NativeExecutionService prepare(Node node, String target, final ExecutionListener listener, final Writer outputListener,
                                 Project project, List<String> additionalEnvironment, InputOutput inputOutput) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
@@ -176,28 +177,32 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
+        
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
-                new CompilerLineConvertor(getCompilerSet(project), execEnv, fileObject.getParent()), inputOutput, "Make", syncWorker); // NOI18N
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setExecutable(executable)
-        .setWorkingDirectory(buildDir)
-        .setArguments(args)
-        .unbufferOutput(false)
-        .addNativeProcessListener(processChangeListener);
+                new CompilerLineConvertor(getCompilerSet(project), execEnv, fileObject.getParent()), syncWorker); // NOI18N
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
+                setExecutable(executable).
+                setWorkingDirectory(buildDir).
+                setArguments(args).
+                unbufferOutput(false).
+                addNativeProcessListener(processChangeListener);
+
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
         
-        ExecutionDescriptor descr = new ExecutionDescriptor()
-        .controllable(true)
-        .frontWindow(true)
-        .inputVisible(true)
-        .showProgress(true)
-        .inputOutput(inputOutput)
-        .outLineBased(true)
-        .postExecution(processChangeListener)
-        .errConvertorFactory(processChangeListener)
-        .outConvertorFactory(processChangeListener);
-        return ExecutionService.newService(npb, descr, "make"); // NOI18N
+        NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
+                frontWindow(true).
+                inputVisible(true).
+                showProgress(true).
+                inputOutput(inputOutput).
+                outLineBased(true).
+                postExecution(processChangeListener).
+                postMessageDisplayer(new PostMessageDisplayer.Default("Make")). // NOI18N
+                errConvertorFactory(processChangeListener).
+                outConvertorFactory(processChangeListener);
+        
+        return NativeExecutionService.newService(npb, descr, "make"); // NOI18N
     }
 
     private CompilerSet getCompilerSet(Project project) {

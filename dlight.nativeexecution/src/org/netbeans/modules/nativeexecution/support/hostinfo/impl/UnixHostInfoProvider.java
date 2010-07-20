@@ -59,12 +59,12 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -78,7 +78,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
-        hostinfoScript = fl.locate("bin/nativeexecution/hostinfo.sh", null, false); // NOI18N
+        hostinfoScript = fl.locate("bin/nativeexecution/hostinfo.sh", "org.netbeans.modules.dlight.nativeexecution", false); // NOI18N
 
         if (hostinfoScript == null) {
             log.severe("Unable to find hostinfo.sh script!"); // NOI18N
@@ -158,15 +158,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         return hostInfo;
     }
 
-    // synchronized = attempt to workaround bug #184421 - random connection failures in jsch
-    private synchronized Properties getRemoteHostInfo(ExecutionEnvironment execEnv, Map<String, String> environmentToFill) throws IOException {
-        final ConnectionManager cm = ConnectionManager.getInstance();
-
-        if (!cm.isConnectedTo(execEnv)) {
-            ConnectionManagerAccessor access = ConnectionManagerAccessor.getDefault();
-            access.doConnect(execEnv, false);
-        }
-
+    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv, Map<String, String> environmentToFill) throws IOException {
         Properties hostInfo = new Properties();
         ChannelStreams sh_channels = null;
 
@@ -199,10 +191,16 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             hostInfo.put("LOCALTIME", Long.valueOf((localStartTime + localEndTime) / 2)); // NOI18N
         } catch (JSchException ex) {
             throw new IOException("Exception while receiving HostInfo for " + execEnv.toString() + ": " + ex); // NOI18N
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         } finally {
             if (sh_channels != null) {
                 if (sh_channels.channel != null) {
-                    sh_channels.channel.disconnect();
+                    try {
+                        ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(execEnv, sh_channels.channel);
+                    } catch (JSchException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }
@@ -221,7 +219,11 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         } finally {
             if (login_shell_channels != null) {
                 if (login_shell_channels.channel != null) {
-                    login_shell_channels.channel.disconnect();
+                    try {
+                        ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(execEnv, login_shell_channels.channel);
+                    } catch (JSchException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }

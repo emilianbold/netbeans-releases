@@ -78,21 +78,6 @@ public class NavigatorControllerTest extends TestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(NavigatorControllerTest.class);
-        return suite;
-    }
-
     /**
      * Tests correct retrieving ans instantiating of NavigatorPanel instances 
      * for various scenarios.

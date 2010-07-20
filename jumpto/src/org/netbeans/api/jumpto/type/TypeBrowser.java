@@ -68,8 +68,9 @@ public final class TypeBrowser {
      * @return selected type or null if dialog was canceled
      */
     public static TypeDescriptor browse(String title, Filter filter, TypeProvider... typeProviders) {
-        GoToTypeAction goToTypeAction = new GoToTypeAction(title, filter, typeProviders);
-        return goToTypeAction.getSelectedType();
+        GoToTypeAction goToTypeAction = new GoToTypeAction(title, filter, false, typeProviders);
+        final Iterable<? extends TypeDescriptor> tds = goToTypeAction.getSelectedTypes();
+        return tds.iterator().hasNext() ? tds.iterator().next() : null;
     }
 
     /**

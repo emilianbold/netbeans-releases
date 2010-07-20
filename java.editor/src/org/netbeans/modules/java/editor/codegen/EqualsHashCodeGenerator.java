@@ -176,13 +176,13 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
         for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
             if (!ERROR.contentEquals(variableElement.getSimpleName()) && !variableElement.getModifiers().contains(Modifier.STATIC))
-                descriptions.add(ElementNode.Description.create(variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
+                descriptions.add(ElementNode.Description.create(cc, variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
         }
         if (descriptions.isEmpty() || (equalsHashCode[0] != null && equalsHashCode[1] != null))
             return null;
         return new EqualsHashCodeGenerator(
             component,
-            ElementNode.Description.create(typeElement, descriptions, false, false),
+            ElementNode.Description.create(cc, typeElement, descriptions, false, false),
             equalsHashCode[0] == null,
             equalsHashCode[1] == null
         );
@@ -410,7 +410,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     private static MethodTree createEqualsMethod(WorkingCopy wc, Iterable<? extends VariableElement> equalsFields, DeclaredType type, Scope scope) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
-        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "obj", make.Type(wc.getElements().getTypeElement("java.lang.Object").asType()), null)); //NOI18N
+        TypeElement objElement = wc.getElements().getTypeElement("java.lang.Object"); //NOI18N
+        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "obj", objElement != null ? make.Type(objElement.asType()) : make.Identifier("Object"), null)); //NOI18N
         
         List<StatementTree> statements = new ArrayList<StatementTree>();
         //if (obj == null) return false;
