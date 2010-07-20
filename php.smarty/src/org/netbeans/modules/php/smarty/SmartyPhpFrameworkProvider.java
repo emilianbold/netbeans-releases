@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
  * @author Martin Fousek
  */
 public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
+    public static final String SMARTY_AVAILABLE = "smarty-framework"; // NOI18N
     private static final String ICON_PATH = "org/netbeans/modules/php/smarty/resources/smarty-badge-8.png"; // NOI18N
     private static final SmartyPhpFrameworkProvider INSTANCE = new SmartyPhpFrameworkProvider();
 
@@ -136,6 +137,10 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     public boolean isInPhpModule(final PhpModule phpModule) {
         // get php files within the module
         final FoundSmarty fs = new FoundSmarty();
+
+        if (phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true).get(SMARTY_AVAILABLE, "0").equals("1")) {
+            fs.setFound(true);
+        }
 
         if (fs.isFound()) {
             return true;
@@ -227,11 +232,11 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
             setFound(false);
         }
 
-        public synchronized void setFound(boolean isFound) {
+        public final synchronized void setFound(boolean isFound) {
             this.isFound = isFound;
         }
 
-        public synchronized boolean isFound() {
+        public final synchronized boolean isFound() {
             return this.isFound;
         }
     }
