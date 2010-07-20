@@ -41,6 +41,11 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
+import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -49,9 +54,7 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.Registry;
-import org.netbeans.editor.ext.html.parser.AstNode.Description;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.openide.filesystems.FileObject;
 
@@ -59,17 +62,17 @@ import org.openide.filesystems.FileObject;
  *
  * @author mfukala@netbeans.org
  */
-public class SyntaxTreeTest extends TestBase {
+public class SyntaxTreeBuilderTest extends TestBase {
 
     private static final String DATA_DIR_BASE = "testfiles/syntaxtree/";
 
-    public SyntaxTreeTest(String testName) {
+    public SyntaxTreeBuilderTest(String testName) {
         super(testName);
     }
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testIssue185837"));
+        suite.addTest(new SyntaxTreeBuilderTest("testIssue185837"));
         return suite;
     }
 
@@ -97,30 +100,30 @@ public class SyntaxTreeTest extends TestBase {
         testSyntaxTree("issues145821.html");
     }
 
-    public void testUncheckedAST() throws BadLocationException {
-        String code = "<div><a><b></a></b></div>text";
-        //             01234567
-        AstNode root = parseUnchecked(code);
-
-//        System.out.println(AstNodeUtils.dumpTree(root));
-
-        AstNode div = AstNodeUtils.query(root, "div");
-        assertNotNull(div);
-
-        AstNode a = AstNodeUtils.query(root, "div/a");
-        assertNotNull(a);
-
-        AstNode b = AstNodeUtils.query(root, "div/a/b");
-        assertNotNull(b);
-
-        assertEquals(3, div.children().size()); //<a>,</a> and unmatched </b>
-        assertEquals(a, div.children().get(0));
-
-        assertEquals(1, a.children().size()); //<b>
-        assertEquals(b, a.children().get(0));
-        
-
-    }
+//    public void testUncheckedAST() throws BadLocationException {
+//        String code = "<div><a><b></a></b></div>text";
+//        //             01234567
+//        AstNode root = parseUnchecked(code);
+//
+////        System.out.println(AstNodeUtils.dumpTree(root));
+//
+//        AstNode div = AstNodeUtils.query(root, "div");
+//        assertNotNull(div);
+//
+//        AstNode a = AstNodeUtils.query(root, "div/a");
+//        assertNotNull(a);
+//
+//        AstNode b = AstNodeUtils.query(root, "div/a/b");
+//        assertNotNull(b);
+//
+//        assertEquals(3, div.children().size()); //<a>,</a> and unmatched </b>
+//        assertEquals(a, div.children().get(0));
+//
+//        assertEquals(1, a.children().size()); //<b>
+//        assertEquals(b, a.children().get(0));
+//
+//
+//    }
 
     
     public void testAST() throws Exception {
@@ -151,31 +154,31 @@ public class SyntaxTreeTest extends TestBase {
     public void testUnresolvedTagContent() throws Exception {
         //missing TITLE
         assertAST("<html><head></head><body></body></html>",
-                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 6,12, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNRESOLVED_TAG_KEY, 6,12, ProblemDescription.ERROR));
         //         0123456789012345678901234567890123456789
         //         0         1         2         3
 
         //missing BODY
         assertAST("<html><head><title></title></head></html>",
-                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 0,6, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNRESOLVED_TAG_KEY, 0,6, ProblemDescription.ERROR));
         //         0123456789012345678901234567890123456789
         //         0         1         2         3
 
         //unresolved HTML - missing HEAD + unexpected BODY - missing HEAD
         assertAST("<html><body></body></html>",
-                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 0, 6, Description.ERROR),
-                desc(SyntaxTree.UNEXPECTED_TAG_KEY, 6, 12, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNRESOLVED_TAG_KEY, 0, 6, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNEXPECTED_TAG_KEY, 6, 12, ProblemDescription.ERROR));
     }
 
     public void testUnmatchedTagBecauseOfOptionalEndTag() throws Exception {
         //last </P> end tag is unmatched
         assertAST("<p><p></p></p>",
-                desc(SyntaxTree.UNMATCHED_TAG, 10,14, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 10,14, ProblemDescription.ERROR));
         //         0123456789012345678901234567890123456789
         //         0         1         2         3
 
         assertAST("<p><div></div></p>",
-                desc(SyntaxTree.UNMATCHED_TAG, 14, 18, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 14, 18, ProblemDescription.ERROR));
     }
 
     public void testOptionalEndTag() throws Exception {
@@ -184,21 +187,21 @@ public class SyntaxTreeTest extends TestBase {
 
         //test invalid element after optional end
         assertAST("<html><head><title></title><div><body></body></html>",
-                desc(SyntaxTree.UNEXPECTED_TAG_KEY, 27, 32, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNEXPECTED_TAG_KEY, 27, 32, ProblemDescription.ERROR));
     }
 
     public void testUnexpectedTag() throws Exception {
         //TR cannot contain TR - needs (TD|TH)+
         assertAST("<table><tr><tr></table>",
-                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 7, 11, Description.ERROR),
-                desc(SyntaxTree.UNEXPECTED_TAG_KEY, 11, 15, Description.ERROR),
-                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 11, 15, Description.ERROR)
+                desc(SyntaxTreeBuilder.UNRESOLVED_TAG_KEY, 7, 11, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNEXPECTED_TAG_KEY, 11, 15, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNRESOLVED_TAG_KEY, 11, 15, ProblemDescription.ERROR)
                 );
 
         //STYLE is not allowed in BODY; Issue 164903
-        AstNode.Description[] expectedErrors = new AstNode.Description[]{
-            desc(SyntaxTree.UNEXPECTED_TAG_KEY, 40, 46, Description.ERROR),
-            desc(SyntaxTree.UNMATCHED_TAG, 55, 63, Description.ERROR)
+        ProblemDescription[] expectedErrors = new ProblemDescription[]{
+            desc(SyntaxTreeBuilder.UNEXPECTED_TAG_KEY, 40, 46, ProblemDescription.ERROR),
+            desc(SyntaxTreeBuilder.UNMATCHED_TAG, 55, 63, ProblemDescription.ERROR)
         };
         assertAST("<html><head><title></title></head><body><style type=''></style></body></html>", expectedErrors);
         //         0123456789012345678901234567890123456789012345678901234567890123456789
@@ -253,23 +256,23 @@ public class SyntaxTreeTest extends TestBase {
         "</html>";
 
         assertAST(code,
-                desc(SyntaxTree.MISSING_REQUIRED_END_TAG, 45, 52, Description.ERROR),
-                desc(SyntaxTree.UNMATCHED_TAG, 66, 71, Description.ERROR),
-                desc(SyntaxTree.UNMATCHED_TAG, 71, 76, Description.ERROR),
-                desc(SyntaxTree.UNMATCHED_TAG, 76, 84, Description.ERROR),
-                desc(SyntaxTree.UNMATCHED_TAG, 84, 90, Description.ERROR)
+                desc(SyntaxTreeBuilder.MISSING_REQUIRED_END_TAG, 45, 52, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 66, 71, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 71, 76, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 76, 84, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 84, 90, ProblemDescription.ERROR)
                 );
 
     }
     public void testUnknownTags() throws Exception {
         assertAST("<xx></xx>",
-                desc(SyntaxTree.UNKNOWN_TAG_KEY, 0, 4, Description.WARNING),
-                desc(SyntaxTree.UNKNOWN_TAG_KEY, 4, 9, Description.WARNING));
+                desc(SyntaxTreeBuilder.UNKNOWN_TAG_KEY, 0, 4, ProblemDescription.WARNING),
+                desc(SyntaxTreeBuilder.UNKNOWN_TAG_KEY, 4, 9, ProblemDescription.WARNING));
     }
 
     public void testUnknownTagsMatching() throws Exception {
         assertAST("<xx>",
-                desc(SyntaxTree.UNKNOWN_TAG_KEY, 0, 4, Description.WARNING));
+                desc(SyntaxTreeBuilder.UNKNOWN_TAG_KEY, 0, 4, ProblemDescription.WARNING));
     }
 
     public void testOptionalStartTag() throws Exception {
@@ -295,7 +298,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public void testEmptyTags() throws Exception{
         assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>",
-                desc(SyntaxTree.UNMATCHED_TAG, 29, 36, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 29, 36, ProblemDescription.ERROR));
     }
 
     public void testEmptyXhtmlTags() throws Exception{
@@ -311,7 +314,7 @@ public class SyntaxTreeTest extends TestBase {
         assertAST("<html><head><title></title></head><body>" +
                 "<table><tr><td>r1c1<tr><td>r2c2<tr></table>" +
                 "</body></html>",
-                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 71, 75, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNRESOLVED_TAG_KEY, 71, 75, ProblemDescription.ERROR));
     }
 
     public void testOptinalHtmlEndTags() throws Exception{
@@ -345,10 +348,10 @@ public class SyntaxTreeTest extends TestBase {
         //             012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
         //             0         1         2         3         4         5         6         7         8
         AstNode root = assertAST(code,
-                desc(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES, 58, 65, Description.WARNING), //style attr type required
-                desc(SyntaxTree.UNEXPECTED_TAG_KEY, 58, 65, Description.ERROR), //style should be here
-                desc(SyntaxTree.UNMATCHED_TAG, 65, 73, Description.ERROR), // </style> is unmatched
-                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 73, 77, Description.ERROR)); //<tr> doesn't contain required content
+                desc(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES, 58, 65, ProblemDescription.WARNING), //style attr type required
+                desc(SyntaxTreeBuilder.UNEXPECTED_TAG_KEY, 58, 65, ProblemDescription.ERROR), //style should be here
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 65, 73, ProblemDescription.ERROR), // </style> is unmatched
+                desc(SyntaxTreeBuilder.UNRESOLVED_TAG_KEY, 73, 77, ProblemDescription.ERROR)); //<tr> doesn't contain required content
         
 //        AstNodeUtils.dumpTree(root);
 
@@ -389,19 +392,19 @@ public class SyntaxTreeTest extends TestBase {
         assertAST("<html><head><title></title><meta></head><body>" +
                 "<table><tr><td>r1c1<tr><td>r2c2</table>" +
                 "</body></html>",
-                desc(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES, 27, 33, Description.WARNING));
+                desc(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES, 27, 33, ProblemDescription.WARNING));
     }
 
     public void testUnknownAttribute() throws Exception{
         assertAST("<html><head><title></title><body dummy='value'></body></html>",
-                desc(SyntaxTree.UNKNOWN_ATTRIBUTE_KEY, 33, 38, Description.WARNING));
+                desc(SyntaxTreeBuilder.UNKNOWN_ATTRIBUTE_KEY, 33, 38, ProblemDescription.WARNING));
 
         //try it also in optional end tag
         assertAST("<html><head><title></title><body><table><tr><td dummy='value'></table></body></html>",
-                desc(SyntaxTree.UNKNOWN_ATTRIBUTE_KEY, 48, 53, Description.WARNING));
+                desc(SyntaxTreeBuilder.UNKNOWN_ATTRIBUTE_KEY, 48, 53, ProblemDescription.WARNING));
     }
 
-    public void testLogicalEndOfUnclosedTag() throws BadLocationException {
+    public void testLogicalEndOfUnclosedTag() throws BadLocationException, ParseException {
         String code = "<div></";
         //             01234567
         AstNode root = parse(code, null);
@@ -421,10 +424,10 @@ public class SyntaxTreeTest extends TestBase {
         //tag area if there are no attributes or just the opening symbol and
         //tag name if there are some.
         assertAST("<title>",
-                desc(SyntaxTree.UNMATCHED_TAG, 0, 7, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 0, 7, ProblemDescription.ERROR));
         //         01234567
         assertAST("<title lang=''>",
-                desc(SyntaxTree.UNMATCHED_TAG, 0, 6, Description.ERROR));
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 0, 6, ProblemDescription.ERROR));
     }
 
     public void testTagsMatching() throws Exception {
@@ -485,7 +488,7 @@ public class SyntaxTreeTest extends TestBase {
 
     }
 
-    public void testComment() throws BadLocationException {
+    public void testComment() throws BadLocationException, ParseException {
         String code = "<!-- comment -->";
         AstNode root = parse(code, null);
 
@@ -509,19 +512,24 @@ public class SyntaxTreeTest extends TestBase {
         FileObject source = getTestFile(DATA_DIR_BASE + testFile);
         BaseDocument doc = getDocument(source);
         String code = doc.getText(0, doc.getLength());
-        AstNode root = SyntaxParser.parse(SyntaxParserContext.createContext(code)).getASTRoot();
+
+        HtmlSource htmlsource = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(htmlsource).analyze();
+
+        AstNode root = result.parseHtml().root();
+
         StringBuffer output = new StringBuffer();
         AstNodeUtils.dumpTree(root, output);
         assertDescriptionMatches(source, output.toString(), false, ".pass", true);
     }
 
-    private AstNode.Description desc(String key, int from, int to, int type) {
-        return AstNode.Description.create(key, null, type, from, to);
+    private ProblemDescription desc(String key, int from, int to, int type) {
+        return ProblemDescription.create(key, null, type, from, to);
     }
 
-    private String errorsAsString(List<AstNode.Description> errors) {
+    private String errorsAsString(List<ProblemDescription> errors) {
         StringBuffer buf = new StringBuffer();
-        for(Iterator<AstNode.Description> i = errors.listIterator(); i.hasNext() ;) {
+        for(Iterator<ProblemDescription> i = errors.listIterator(); i.hasNext() ;) {
             buf.append(i.next().dump(null));
             if(i.hasNext()) {
                 buf.append(", ");
@@ -558,10 +566,10 @@ public class SyntaxTreeTest extends TestBase {
 
         final int[] errors = new int[1];
         errors[0] = 0;
-        final List<AstNode.Description> errorslist = new ArrayList<AstNode.Description>();
+        final List<ProblemDescription> errorslist = new ArrayList<ProblemDescription>();
         AstNodeVisitor visitor = new AstNodeVisitor() {
             public void visit(AstNode node) {
-                for(Description d : node.getDescriptions()) {
+                for(ProblemDescription d : node.getDescriptions()) {
                     errorslist.add(d);
                     errors[0]++;
                 }
@@ -574,19 +582,19 @@ public class SyntaxTreeTest extends TestBase {
         return root;
     }
 
-    private AstNode assertAST(final String code, AstNode.Description... expectedErrors) throws Exception {
+    private AstNode assertAST(final String code, ProblemDescription... expectedErrors) throws Exception {
         return assertAST(code, null, expectedErrors);
     }
 
-    private AstNode assertAST(final String code, String publicId, AstNode.Description... expectedErrors) throws Exception {
+    private AstNode assertAST(final String code, String publicId, ProblemDescription... expectedErrors) throws Exception {
         AstNode root = parse(code, publicId);
 //        System.out.println("AST for code: " + code);
 //        AstNodeUtils.dumpTree(root);
 
-        final Iterator<AstNode.Description> errorsItr = Arrays.asList(expectedErrors).listIterator();
+        final Iterator<ProblemDescription> errorsItr = Arrays.asList(expectedErrors).listIterator();
         AstNodeVisitor visitor = new AstNodeVisitor() {
             public void visit(AstNode node) {
-                for(Description d : node.getDescriptions()) {
+                for(ProblemDescription d : node.getDescriptions()) {
                     assertTrue("Unexpected error description: " + d.dump(code), errorsItr.hasNext());
                     assertEquals(errorsItr.next(), d);
                 }
@@ -595,7 +603,7 @@ public class SyntaxTreeTest extends TestBase {
 
         AstNodeUtils.visitChildren(root, visitor);
 
-        List<AstNode.Description> missing = new ArrayList<Description>();
+        List<ProblemDescription> missing = new ArrayList<ProblemDescription>();
         while(errorsItr.hasNext()) {
             missing.add(errorsItr.next());
         }
@@ -605,28 +613,19 @@ public class SyntaxTreeTest extends TestBase {
 
     }
 
-    private AstNode parse(String code, String publicId) throws BadLocationException {
-        SyntaxParserContext context = SyntaxParserContext.createContext(code);
-        SyntaxParserResult result = SyntaxParser.parse(context);
-        DTD dtd;
-        if(publicId == null) {
-            dtd = result.getDTD();
-            assertNotNull("Likely invalid public id: " + result.getPublicID(), dtd);
-        } else {
-            dtd = Registry.getDTD(publicId, null);
-            assertEquals(publicId, dtd.getIdentifier());
-        }
-        assertNotNull(dtd);
-        context.setDTD(dtd);
-        return SyntaxTree.makeTree(context);
+    private AstNode parse(String code, String publicId) throws BadLocationException, ParseException {
+        HtmlSource source = new HtmlSource(code);
+//        HtmlVersion version = HtmlVersion.findByPublicId(publicId);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+        return result.parseHtml().root();
     }
 
-    private AstNode parseUnchecked(String code) throws BadLocationException {
-        SyntaxParserContext context = SyntaxParserContext.createContext(code);
-        SyntaxParserResult result = SyntaxParser.parse(context);
-        assertNotNull(result);
-        assertNull(context.getDTD());
-        return SyntaxTree.makeTree(context);
-    }
+//    private AstNode parseUnchecked(String code) throws BadLocationException {
+//        SyntaxParserContext context = SyntaxParserContext.createContext(code);
+//        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(context);
+//        assertNotNull(result);
+//        assertNull(context.getDTD());
+//        return SyntaxTreeBuilder.makeTree(context);
+//    }
 
 }

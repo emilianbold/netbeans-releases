@@ -56,9 +56,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerResult;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.html.editor.HtmlPreferences;
@@ -275,7 +275,7 @@ public class HtmlCompletionQuery extends UserTask {
         }
 
         //find a leaf node for undeclared tags
-        AstNode undeclaredTagsParseTreeRoot = parserResult.root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE);
+        AstNode undeclaredTagsParseTreeRoot = parserResult.root(SyntaxAnalyzerResult.UNDECLARED_TAGS_NAMESPACE);
         assert undeclaredTagsParseTreeRoot != null;
         AstNode undeclaredTagsLeafNode = AstNodeUtils.findDescendant(undeclaredTagsParseTreeRoot, searchAstOffset, backward);
 

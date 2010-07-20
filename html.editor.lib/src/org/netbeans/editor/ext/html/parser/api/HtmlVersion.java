@@ -40,10 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor;
+package org.netbeans.editor.ext.html.parser.api;
 
-import java.util.Arrays;
-import java.util.Collection;
+import org.netbeans.editor.ext.html.dtd.DTD;
 
 /**
  *
@@ -51,55 +50,63 @@ import java.util.Collection;
  */
 public enum HtmlVersion {
 
-    //unknown version fallbacks to 4.01 transitional
-    UNKNOWN(new String[]{}, "-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
+    HTML32("-//W3C//DTD HTML 3.2 Final//EN"), //NOI18N
 
-    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}, "-//W3C//DTD HTML 3.2 Final//EN"), //NOI18N
+    HTML40_STRICT("-//W3C//DTD HTML 4.0//EN"), //NOI18N
+    HTML40_TRANSATIONAL("-//W3C//DTD HTML 4.0 Transitional//EN"), //NOI18N
+    HTML40_FRAMESET("-//W3C//DTD HTML 4.0 Frameset//EN"), //NOI18N
 
-    HTML40(new String[]{"-//W3C//DTD HTML 4.0//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.0 Transitional//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.0 Frameset//EN"}, "-//W3C//DTD HTML 4.0 Transitional//EN"), //NOI18N
+    HTML41_STRICT("-//W3C//DTD HTML 4.01//EN"), //NOI18N
+    HTML41_TRANSATIONAL("-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
+    HTML41_FRAMESET("-//W3C//DTD HTML 4.01 Frameset//EN"), //NOI18N
 
-    HTML41(new String[]{"-//W3C//DTD HTML 4.01//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.01 Transitional//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.01 Frameset//EN"}, "-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
+    HTML5(null), //no public id, just <!doctype html>
 
-    XHTML10(new String[]{"-//W3C//DTD XHTML 1.0 Strict//EN", //NOI18N
-                        "-//W3C//DTD XHTML 1.0 Transitional//EN", //NOI18N
-                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/1999/xhtml", true), //NOI18N
+    XHTML10_STICT("-//W3C//DTD XHTML 1.0 Strict//EN", null, "http://www.w3.org/1999/xhtml", true), //NOI18N
+    XHTML10_TRANSATIONAL("-//W3C//DTD XHTML 1.0 Transitional//EN", null, "http://www.w3.org/1999/xhtml", true), //NOI18N
+    XHTML10_FRAMESET("-//W3C//DTD XHTML 1.0 Frameset//EN", null, "http://www.w3.org/1999/xhtml", true), //NOI18N
 
-    //XHTML 1.1 version fallbacks to XHTML 1.1 strict
-    XHTML11(new String[]{"-//W3C//DTD XHTML 1.1//EN"}, "-//W3C//DTD XHTML 1.0 Strict//EN", "http://www.w3.org/1999/xhtml", true); //NOI18N
+    //XHTML 1.1 version fallbacks to XHTML 1.0 strict since the current SGML parser
+    //cannot properly parse the XHTML1.1 dtd
+    XHTML11("-//W3C//DTD XHTML 1.1//EN", "-//W3C//DTD XHTML 1.0 Strict//EN", "http://www.w3.org/1999/xhtml", true); //NOI18N
 
-    //TODO Add XHTML1.1, XHTML 2.0 and HTML 5 support
-
-    public static HtmlVersion findHtmlVersion(String publicId) {
+    public static HtmlVersion findByPublicId(String publicId) {
         for(HtmlVersion version : HtmlVersion.values()) {
-            if(version.getPublicIDs().contains(publicId)) {
+            if(publicId.equals(version.getPublicID())) {
                 return version;
             }
         }
-        return UNKNOWN;
+        return null;
     }
 
-    private final String[] publicIDs;
+    public static HtmlVersion findByNamespace(String namespace) {
+        for(HtmlVersion version : HtmlVersion.values()) {
+            if(namespace.equals(version.getDefaultNamespace())) {
+                return version;
+            }
+        }
+        return null;
+
+    }
+
+    private final String publicID;
+    private final String fallbackPublicID;
     private final String defaultNamespace;
     private boolean isXhtml;
-    private String fallbackPublicId;
 
-    private HtmlVersion(String[] publicIDs, String fallbackPublicId) {
-        this(publicIDs, fallbackPublicId, null, false);
+    private HtmlVersion(String publicID) {
+        this(publicID, null, null, false);
     }
 
-    private HtmlVersion(String[] publicIDs, String fallbackPublicId, String defaultNamespace, boolean isXhtml) {
-        this.publicIDs = publicIDs;
+    private HtmlVersion(String publicID, String fallbackPublicID, String defaultNamespace, boolean isXhtml) {
+        this.publicID = publicID;
         this.defaultNamespace = defaultNamespace;
         this.isXhtml = isXhtml;
-        this.fallbackPublicId = fallbackPublicId;
+        this.fallbackPublicID = fallbackPublicID;
     }
 
-    public Collection<String> getPublicIDs() {
-        return Arrays.asList(publicIDs);
+    public String getPublicID() {
+        return publicID;
     }
 
     public String getDefaultNamespace() {
@@ -110,8 +117,15 @@ public enum HtmlVersion {
         return this.isXhtml;
     }
 
-    public String getFallbackPublicId() {
-        return fallbackPublicId;
+    public DTD getDTD() {
+        //use the fallback public id to get the DTD if defined, otherwise
+        //use the proper public id. This is needed due to the lack of parser
+        //for XHTML 1.1 file. Such files are parsed according to the XHTML1.0 DTD.
+        String publicid = fallbackPublicID != null ? fallbackPublicID : publicID;
+
+        return org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicid, null);
     }
+
+
 
 }

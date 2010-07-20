@@ -42,70 +42,86 @@
 
 package org.netbeans.editor.ext.html.parser;
 
-import java.net.URI;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import java.util.Map;
-import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.ParseResult;
 import org.netbeans.editor.ext.html.test.TestBase;
 
 /**
  *
  * @author marekfukala
  */
-public class SyntaxParserResultTest extends TestBase {
+public class SyntaxAnalyzerResultTest extends TestBase {
 
-    public SyntaxParserResultTest(String testName) {
+    public SyntaxAnalyzerResultTest(String testName) {
         super(testName);
     }
 
 
-    public void testBasic() {
+    public void testBasic() throws ParseException {
         String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";
-        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
 
         assertNotNull(result);
-        assertNotNull(result.getSource());
+        assertNotNull(result.getSourceCode());
         assertNotNull(result.getElements());
 
         assertNull(result.getPublicID()); //not specified
-        DTD dtd = result.getDTD(); //fallback
-        assertNotNull(dtd);
 
-        assertNotNull(result.getASTRoot());
+        HtmlVersion version = result.getHtmlVersion();
+        assertEquals(HtmlVersion.HTML41_TRANSATIONAL, version);//fallback
+        assertNotNull(version.getDTD());
+
+        HtmlParseResult presult = result.parseHtml();
+        assertNotNull(presult);
+        assertNotNull(presult.root());
+
 
     }
 
-    public void testInvalidPublicId() {
+    public void testInvalidPublicId() throws ParseException {
         String code = "<!DOCTYPE HTML PUBLIC \"invalid_public_id\"><html><head><title>xxx</title></head><body>yyy</body></html>";
-        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
 
         assertNotNull(result);
 
         assertNotNull(result.getPublicID());
         assertEquals("invalid_public_id", result.getPublicID());
 
-        DTD dtd = result.getDTD(); //fallback
-        assertNotNull(dtd);
+        HtmlVersion version = result.getHtmlVersion();
+        assertEquals(HtmlVersion.HTML41_TRANSATIONAL, version);//fallback
+        assertNotNull(version.getDTD());
 
-        assertNotNull(result.getASTRoot());
+        HtmlParseResult presult = result.parseHtml();
+        assertNotNull(presult);
+        assertNotNull(presult.root());
 
     }
 
-    public void testGetGlobalNamespaces() {
-        String code = "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:jsp=\"http://java.sun.com/JSP/Page\"></html>";
-        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
+    public void testHtml5Doctype() throws ParseException {
+        String code = "<!doctype html><section><p>ahoj<p>hello<div>xxx</div></section></x>";
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
 
         assertNotNull(result);
 
-        Map<String, URI> nsmap = result.getGlobalNamespaces();
+        SyntaxElement.Declaration declaration = result.getDoctypeDeclaration();
+        assertNotNull(declaration);
 
-        assertNotNull(nsmap);
-        assertEquals(2, nsmap.keySet().size());
+        assertNull(declaration.getDoctypeFile());
+        assertNull(declaration.getPublicIdentifier());
 
-        assertTrue(nsmap.containsKey(""));
-        assertTrue(nsmap.containsKey("jsp"));
+        HtmlParseResult presult = result.parseHtml();
+        assertNotNull(presult);
+        assertNotNull(presult.root());
 
-        assertEquals("http://www.w3.org/1999/xhtml", nsmap.get("").toString());
-        assertEquals("http://java.sun.com/JSP/Page", nsmap.get("jsp").toString());
     }
 
     public void testGetDeclaredNamespaces() {
@@ -114,7 +130,8 @@ public class SyntaxParserResultTest extends TestBase {
                 "<ui:composition xmlns:ui=\"http://java.sun.com/jsf/facelets\"/>" +
                 "</html>";
 
-        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
 
         assertNotNull(result);
 
@@ -133,20 +150,24 @@ public class SyntaxParserResultTest extends TestBase {
 
     }
 
-    public void testGetAstRoot() {
+    public void testGetAstRoot() throws ParseException {
         String code = "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui=\"http://java.sun.com/jsf/facelets\">" +
                     "<ui:composition><div><ui:define></ui:define></div></ui:composition>" +
                 "</html>";
 
-        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
 
-        AstNode froot = result.getASTRoot("http://java.sun.com/jsf/facelets");
+        ParseResult presult = result.parseEmbeddedCode("http://java.sun.com/jsf/facelets");
+        assertNotNull(presult);
+        AstNode froot = presult.root();
         assertNotNull(froot);
+
         assertEquals(2, froot.children().size());
         assertNotNull(AstNodeUtils.query(froot, "ui:composition"));
         assertNotNull(AstNodeUtils.query(froot, "ui:composition/ui:define"));
 
-        AstNode root = result.getASTRoot();
+        AstNode root = result.parseHtml().root();
         assertNotNull(root);
         assertEquals(2, root.children().size());
         assertNotNull(AstNodeUtils.query(root, "html"));
@@ -154,14 +175,16 @@ public class SyntaxParserResultTest extends TestBase {
 
     }
 
-    public void testUndeclaredTagsParseTree() {
+    public void testUndeclaredTagsParseTree() throws ParseException {
         String code = "<html>" +
                           "<x:out><div><x:in></x:in></div></x:out>" +
                       "</html>";
 
-        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
 
-        AstNode froot = result.getASTRoot(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE);
+
+        AstNode froot = result.parseUndeclaredEmbeddedCode().root();
 
         assertNotNull(froot);
         assertEquals(2, froot.children().size());

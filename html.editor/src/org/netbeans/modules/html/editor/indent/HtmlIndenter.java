@@ -51,7 +51,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.SyntaxParserContext;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
@@ -66,7 +66,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         super(HTMLTokenId.language(), context);
         try {
             SyntaxParserContext parserContext = SyntaxParserContext.createContext(getDocument().getText(0, getDocument().getLength()));
-            dtd = SyntaxParser.parse(parserContext).getDTD();
+            dtd = SyntaxAnalyzer.create(parserContext).getDTD();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }

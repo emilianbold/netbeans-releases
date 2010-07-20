@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,8 +51,9 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.Registry;
-import org.netbeans.editor.ext.html.parser.AstNode.NodeType;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.api.AstNode.NodeType;
 import org.netbeans.editor.ext.html.test.TestBase;
 
 /**
@@ -158,7 +160,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     }
 
-    public void testGetPossibleOpenTagElements() throws BadLocationException {
+    public void testGetPossibleOpenTagElements() throws BadLocationException, ParseException {
         String code = "<html><head><title></title></head><body>...<p>...</body></html>";
         //             0123456789012345678901234567890123456789012345678901234
         //             0         1         2         3         4         5
@@ -194,7 +196,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     }
 
-    public void testIssue169206() throws BadLocationException {
+    public void testIssue169206() throws BadLocationException, ParseException {
         String code = "<html><head><title></title></head><body><table> </table></body></html>";
         //             0123456789012345678901234567890123456789012345678901234
         //             0         1         2         3         4         5
@@ -207,7 +209,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     }
 
-    public void testIssue185837() throws BadLocationException {
+    public void testIssue185837() throws BadLocationException, ParseException {
         String code = "<html><head><title></title></head><body><b><del>xxx</del></b></body></html>";
         //             0123456789012345678901234567890123456789012345678901234
         //             0         1         2         3         4         5
@@ -236,20 +238,10 @@ public class AstNodeUtilsTest extends TestBase {
         return node;
     }
 
-    private AstNode parse(String code, String publicId) throws BadLocationException {
-        SyntaxParserContext context = SyntaxParserContext.createContext(code);
-        SyntaxParserResult result = SyntaxParser.parse(context);
-        DTD dtd;
-        if (publicId == null) {
-            dtd = result.getDTD();
-        } else {
-            dtd = Registry.getDTD(publicId, null);
-            assertEquals(publicId, dtd.getIdentifier());
-        }
-
-        assertNotNull(dtd);
-        context.setDTD(dtd);
-        return SyntaxTree.makeTree(context);
+    private AstNode parse(String code, String publicId) throws BadLocationException, ParseException {
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+        return result.parseHtml().root();
     }
 
     private void assertPossibleElements(AstNode rootNode, int offset, String[] expected, Match type) {
