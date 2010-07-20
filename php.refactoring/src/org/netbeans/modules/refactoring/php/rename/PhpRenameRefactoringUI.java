@@ -80,7 +80,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 
     static String getElementName(final String name, final ElementKind kind) {
         String retval = name;
-        if (kind.equals(ElementKind.VARIABLE)) {
+        if (kind.equals(ElementKind.VARIABLE) || kind.equals(ElementKind.FIELD)) {
             while (retval.length() > 1 && retval.startsWith("$")) {//NOI18N
                 retval = retval.substring(1);
             }
