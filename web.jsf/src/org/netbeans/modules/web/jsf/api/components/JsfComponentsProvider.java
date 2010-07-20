@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.refactoring.php.ui.tree;
+package org.netbeans.modules.web.jsf.api.components;
 
-import java.io.CharConversionException;
-import javax.swing.Icon;
-import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.php.findusages.RefactoringUtils;
-import org.netbeans.modules.refactoring.spi.ui.*;
-import org.openide.util.Exceptions;
-import org.openide.xml.XMLUtil;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author Jan Becicka
+ * @author alexey butenko
  */
-public class RefactoringTreeElement implements TreeElement { 
-    
-    RefactoringElement element;
-    ElementGrip thisFeature;
-    ElementGrip parent;
-    
-    RefactoringTreeElement(RefactoringElement element) {
-        this.element = element;
-        thisFeature = getFeature(element.getLookup().lookup(ElementGrip.class));
-        parent =  thisFeature.getParent();
-        if (parent == null) {
-            parent = thisFeature;
-        }
-    }
-    
-    public TreeElement getParent(boolean isLogical) {
-        if (isLogical) {
-            return TreeElementFactory.getTreeElement(parent);
-        } else {
-            return TreeElementFactory.getTreeElement(element.getParentFile());
-        }
-    }
-    
-    private ElementGrip getFeature(ElementGrip el) {
-        return el;
+public abstract class JsfComponentsProvider {
+    private final String name;
+    private final String description;
+    private final JSFVersion jsfVersion;
+
+    public JsfComponentsProvider(String name, JSFVersion jsfVersion, String description) {
+        Parameters.notNull("name", name); // NOI18N
+        this.name = name;
+        this.jsfVersion = jsfVersion;
+        this.description = description;
     }
 
-    public Icon getIcon() {
-        return thisFeature.getIcon();   
+    public JSFVersion getJsfVersion() {
+        return jsfVersion;
     }
 
-    public String getText(boolean isLogical) {
-        if (isLogical) {
-            return RefactoringUtils.htmlize(thisFeature.toString()) + " ... " + element.getDisplayText();
-        } else {
-            return element.getDisplayText();
-        }
+    public String getName() {
+        return name;
     }
 
-    public Object getUserObject() {
-        return element;
-    }    
+    public String getDescription() {
+        if (description !=  null)
+            return description;
+        return getName();
+    }
+
+    public abstract String getLibraryName();
+    
+    public Library getLibrary() {
+        return LibraryManager.getDefault().getLibrary(getLibraryName());
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    
 }

@@ -1,4 +1,4 @@
-This is a text file which should has 1kB size
+This is a text file which should has size
 
 123456789012345678901234567890123456789012345678901234567890
 ***************************************************************************

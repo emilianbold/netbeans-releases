@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,47 +34,64 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.refactoring.php.ui.tree;
+package org.openide.modules;
 
-import javax.swing.Icon;
-import org.netbeans.modules.refactoring.php.findusages.RefactoringUtils;
-import org.netbeans.modules.refactoring.spi.ui.*;
+import org.openide.util.Lookup;
 
 /**
- *
- * @author Jan Becicka
+ * Information about the set of available {@linkplain ModuleInfo modules}.
+ * @since org.openide.modules 7.19
  */
-public class ElementGripTreeElement implements TreeElement {
+public abstract class Modules {
     
-    private ElementGrip element;
-    /** Creates a new instance of JavaTreeElement */
-    public ElementGripTreeElement(ElementGrip element) {
-        this.element = element;
+    /**
+     * Gets the singleton set of modules.
+     * An implementation of this service should be registered by the module system.
+     * The fallback implementation implements {@link #ownerOf} using a linear search.
+     * @return the default instance
+     */
+    public static Modules getDefault() {
+        Modules impl = Lookup.getDefault().lookup(Modules.class);
+        if (impl == null) {
+            impl = new Trivial();
+        }
+        return impl;
     }
 
-    public TreeElement getParent(boolean isLogical) {
-        ElementGrip enclosing = element.getParent();
-        if (isLogical) {
-            if (enclosing == null) {
-                return TreeElementFactory.getTreeElement(element.getFileObject().getParent());
-            }
-            return TreeElementFactory.getTreeElement(enclosing);
-        } else {
-            return TreeElementFactory.getTreeElement(element.getFileObject());
+    /**
+     * Restricted constructor for subclasses.
+     */
+    protected Modules() {
+        if (!(this instanceof Trivial) && !getClass().getName().equals("org.netbeans.ModuleManager")) {
+            throw new IllegalAccessError();
         }
     }
-
-    public Icon getIcon() {
-        return element.getIcon();
+    
+    /**
+     * Finds the module which loaded a class.
+     * @param clazz a class
+     * @return the owner of the class, or null if it is not owned by any module
+     * @see ModuleInfo#owns
+     */
+    public abstract ModuleInfo ownerOf(Class<?> clazz);
+    
+    private static class Trivial extends Modules {
+        
+        public @Override ModuleInfo ownerOf(Class<?> clazz) {
+            for (ModuleInfo module : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                if (module.owns(clazz)) {
+                    return module;
+                }
+            }
+            return null;
+        }
+        
     }
-
-    public String getText(boolean isLogical) {
-        return RefactoringUtils.htmlize(element.toString());
-    }
-
-    public Object getUserObject() {
-        return element;
-    }
+    
 }

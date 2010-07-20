@@ -338,12 +338,6 @@ Hg ID:    ${hg.id}
     <property name="nb-extra-files" value="test/**,extra/**"/>
 
     <antcall target="zip-cluster-config" inheritall="true"/>
-    
-    <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
-If you like, you may run the IDE straight from
-the ${netbeans.dest}/bin/ directory.
-(For example, type: ant tryme)
-    </echo>
   </target>
 
   <target name="delete-and-merge" depends="merge-delete,merge" />   
@@ -1120,7 +1114,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <subant target="-do-hg-clean" genericantfile="build.xml">
       <dirset dir="..">
         <include name="contrib"/>
-        <include name="misc"/>
       </dirset>
     </subant>
   </target>

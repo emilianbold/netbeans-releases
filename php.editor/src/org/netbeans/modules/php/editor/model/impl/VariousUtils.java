@@ -499,7 +499,7 @@ public class VariousUtils {
                         for (TypeScope type : oldRecentTypes) {
                             if (type instanceof ClassScope) {
                                 ClassScope cls = (ClassScope) type;
-                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
+                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
                                 for (FieldElement fieldElement : inheritedFields) {
                                     if (var != null) {
                                         final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);

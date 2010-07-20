@@ -238,6 +238,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     }
                 }
             });
+            // XXX could use ?tree (would be faster) if there were an alternate object for failed tests only
             String u = url + "testReport/api/xml?xpath=//suite[case/errorStackTrace]&wrapper=failures"; // NOI18N
             InputSource source = new InputSource(new ConnectionBuilder().job(job).url(u).connection().getInputStream());
             source.setSystemId(u);

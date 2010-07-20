@@ -302,7 +302,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public Component getCustomizer() {
-        return new Customizer(new WLJ2eePlatformFactory().getJ2eePlatformImpl(deploymentManager));
+        return new Customizer(deploymentManager);
     }
     
     public WLDeploymentManager getDeploymentManager() {

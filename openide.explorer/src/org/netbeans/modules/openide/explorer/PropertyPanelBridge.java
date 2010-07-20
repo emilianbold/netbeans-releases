@@ -42,43 +42,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.refactoring.php.ui.tree;
+package org.netbeans.modules.openide.explorer;
 
-import javax.swing.Icon;
-import org.openide.filesystems.FileObject;
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.openide.explorer.propertysheet.PropertyPanel;
 
 /**
- *
- * @author Jan Becicka
- * @author Tor Norbye
+ * Provides access to non-public methods on PropertyPanel
+ * 
+ * @author Martin Entlicher
  */
-public final class ElementGrip {
-    private String toString;
-    private FileObject fileObject;
-    private Icon icon;
-    
-    /**
-     * Creates a new instance of ElementGrip
-     * 
-     */
-    public ElementGrip(String name, FileObject fileObject, Icon icon) {
-        this.toString = name;
-        this.fileObject = fileObject;
-        this.icon = icon;
-    }
-    
-    public Icon getIcon() {
-        return icon;
-    }
-    public String toString() {
-        return toString;
+public class PropertyPanelBridge {
+
+    private static final Map<PropertyPanel, Accessor> accessors = new WeakHashMap<PropertyPanel, Accessor>();
+
+    public static void register(PropertyPanel panel, Accessor accessor) {
+        synchronized (accessors) {
+            accessors.put(panel, accessor);
+        }
     }
 
-    public ElementGrip getParent() {
-        return ElementGripFactory.getDefault().getParent(this);
+    public static boolean commit(PropertyPanel panel) {
+        Accessor a;
+        synchronized (accessors) {
+            a = accessors.get(panel);
+        }
+        if (a == null) {
+            return false;
+        } else {
+            return a.commit();
+        }
     }
 
-    public FileObject getFileObject() {
-        return fileObject;
+    public interface Accessor {
+
+        boolean commit();
+
     }
 }

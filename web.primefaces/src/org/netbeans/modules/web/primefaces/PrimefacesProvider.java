@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,56 +34,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.refactoring.php.ui.tree;
+package org.netbeans.modules.web.primefaces;
 
-import java.lang.ref.WeakReference;
-import javax.swing.Icon;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.refactoring.spi.ui.*;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.jsf.api.components.JsfComponentsProvider;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Becicka
+ * @author alexey butenko
  */
-public class ProjectTreeElement implements TreeElement {
 
-    private String name;
-    private Icon icon;
-    private WeakReference<Project> prj;
-    private FileObject prjDir;
-    /** Creates a new instance of ProjectTreeElement */
-    public ProjectTreeElement(Project prj) {
-        ProjectInformation pi = ProjectUtils.getInformation(prj);
-        name = pi.getDisplayName();
-        icon = pi.getIcon();
-        this.prj = new WeakReference<Project>(prj);
-        prjDir = prj.getProjectDirectory();
+public class PrimefacesProvider extends JsfComponentsProvider{
+
+    public PrimefacesProvider() {
+        super(NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces"),JSFVersion.JSF_2_0,
+                NbBundle.getMessage(PrimefacesProvider.class,"LBL_PrimeFaces_Description"));
     }
 
-    public TreeElement getParent(boolean isLogical) {
-        return null;
+    @Override
+    public String getLibraryName() {
+        return NbBundle.getMessage(PrimefacesProvider.class,"LBL_Library_Name");
     }
 
-    public Icon getIcon() {
-        return icon;
-    }
-
-    public String getText(boolean isLogical) {
-        return name;
-    }
-
-    public Object getUserObject() {
-        Project p = prj.get();
-        if (p==null) {
-            p = FileOwnerQuery.getOwner(prjDir);
-        }
-        return p;
-    }
-    
 }

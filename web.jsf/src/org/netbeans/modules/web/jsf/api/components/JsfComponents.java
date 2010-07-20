@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,55 +34,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.refactoring.php.ui.tree;
+package org.netbeans.modules.web.jsf.api.components;
 
-import java.beans.BeanInfo;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.netbeans.modules.refactoring.spi.ui.*;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Jan Becicka
+ * @author alexey butenko
  */
-public class FileTreeElement implements TreeElement {
-
-    private FileObject fo;
-    FileTreeElement(FileObject fo) {
-        this.fo = fo;
-    }
+public final class JsfComponents {
+    private final static String COMPONENTS_PATH = "j2ee/jsf/components";    //NOI18N
 
 
-    public TreeElement getParent(boolean isLogical) {
-        if (isLogical) {
-            return TreeElementFactory.getTreeElement(fo.getParent());
-        } else {
-            Project p = FileOwnerQuery.getOwner(fo);
-            return TreeElementFactory.getTreeElement(p != null ? p : fo.getParent());
-        }
-    }
-
-    public Icon getIcon() {
-        try {
-            return new ImageIcon(DataObject.find(fo).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-        } catch (DataObjectNotFoundException ex) {
-            return null;
-        }
-    }
-
-    public String getText(boolean isLogical) {
-        return fo.getNameExt();
-    }
-
-    public Object getUserObject() {
-        return fo;
+    public static List<? extends JsfComponentsProvider> getJsfComponents() {
+        Collection<? extends JsfComponentsProvider> components =
+                Lookups.forPath(COMPONENTS_PATH).lookupAll(JsfComponentsProvider.class);
+        return new ArrayList<JsfComponentsProvider>(components);
     }
 }

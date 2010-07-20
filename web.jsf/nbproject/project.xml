@@ -630,7 +630,9 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
+                <friend>org.netbeans.modules.web.primefaces</friend>
                 <package>org.netbeans.modules.web.jsf.api</package>
+                <package>org.netbeans.modules.web.jsf.api.components</package>
                 <package>org.netbeans.modules.web.jsf.api.editor</package>
                 <package>org.netbeans.modules.web.jsf.api.facesmodel</package>
                 <package>org.netbeans.modules.web.jsf.api.metamodel</package>

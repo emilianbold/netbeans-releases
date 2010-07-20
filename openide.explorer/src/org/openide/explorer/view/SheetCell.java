@@ -63,6 +63,7 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.openide.explorer.PropertyPanelBridge;
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.outline.Outline;
@@ -770,30 +771,10 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             }
         }
         
-        // PropUtils
-        static final boolean psCommitOnFocusLoss = !Boolean.getBoolean("netbeans.ps.NoCommitOnFocusLoss");  // NOI18N
-
         @Override
         public boolean stopCellEditing() {
-            InplaceEditor inplaceEditor = editor.getInplaceEditor();
-            if (inplaceEditor != null) {
-                //JTable with client property terminateEditOnFocusLost will try to
-                //update the value.  That's not what we want, as it means you can
-                //have a partial value, open a custom editor and get an error because
-                //the table tried to write the partial value, when it lost focus
-                //to a custom editor.
-                if (!/*PropUtils.*/psCommitOnFocusLoss) {
-                    Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
-                    if (
-                        (!(c instanceof JTable)) && (!inplaceEditor.isKnownComponent(c)) &&
-                            (c != inplaceEditor.getComponent())
-                    ) {
-                        // Focused component is unknown - discarding
-                        return false;
-                    }
-                }
-                editor.commit();
-            }
+
+            PropertyPanelBridge.commit(editor);
 
             PropertiesRowModel prm = null;
             if (outline instanceof OutlineView.OutlineViewOutline) {

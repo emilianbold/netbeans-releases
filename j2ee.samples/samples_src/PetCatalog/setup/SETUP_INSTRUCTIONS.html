@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <meta name="author" content="troy.giunipero@sun.com">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="description" content="This document provides basic setup instructions necessary to configuring your development environment for use with the Pet Catalog sample application.">
+
+        <meta name="keywords" content="NetBeans, IDE, integrated development environment,
+            Java, Java EE, open source, web technology, JavaServer Faces, JSF 2.0">
+
+        <link rel="stylesheet" type="text/css" href="../web/resources/css/styles.css">
+
+        <!-- some inline styles adapted from netbeans.css -->
+        <style type="text/css">
+            .b-all { border:1px solid #adadad }
+            .indent{ padding-left:20px }
+            .margin-around { margin: 10px }
+
+            pre {
+                background-color:#FFF8E4;
+                padding:10px;
+                overflow:auto;
+                width:680px;
+                white-space: pre;
+            }
+
+            ul { margin: 5px 0 0 -1em }
+            li { margin-bottom: 5px }
+        </style>
+
+        <title>Pet Catalog - Java EE 6 Sample Application - Setup Instructions</title>
+    </head>
+
+    <body>
+
+<!-- Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved. -->
+
+        <h1>Pet Catalog - Java EE 6 Sample Application</h1>
+
+        <p>The Pet Catalog application is a Java EE 6 sample that demonstrates usage of
+            JavaServer Faces 2.0 and the Java Persistence API. Setup instructions here
+            assume that you are using the following software components:</p>
+
+        <ul>
+            <li><a href="https://glassfish.dev.java.net/public/downloadsindex.html">GlassFish server</a>
+                (v3 or Open Source Edition 3.0.1)</li>
+            <li><a href="http://dev.mysql.com/downloads/mysql/">MySQL database server</a> (version 5.1)</li>
+        </ul>
+
+        <p>For more information on the Pet Catalog Sample Application, see: <a href="http://netbeans.org/kb/samples/pet-catalog.html">http://netbeans.org/kb/samples/pet-catalog.html</a>.</p>
+
+
+        <h2>Setup Instructions</h2>
+
+        <ol>
+            <li><a href="#database">Setting up the Database</a></li>
+            <li><a href="#connPool">Configuring a Connection Pool and JDBC Resource on GlassFish</a></li>
+            <li><a href="#runSample">Running the Sample Application</a></li>
+        </ol>
+
+        <div class="indent">
+            <h3 id="database">Setting up the Database</h3>
+
+            <p>Setup instructions use '<code>root</code>' / '<code>nbuser</code>' as the user
+                account / password combination for access to the MySQL server. <strong>Do not</strong>
+                use an empty database password.</p>
+
+            <div class="indent">
+                <h4>Change the Root Account Password to '<code>nbuser</code>'</h4>
+
+                <ol>
+                    <li>Open a command-line prompt and navigate to the <code>bin</code> directory
+                        within your MySQL installation.
+
+                        <pre>shell&gt; cd <em>&lt;install-dir&gt;</em>/bin</pre>
+
+                        (Where <code><em>&lt;install-dir&gt;</em></code> is the path to your MySQL
+                        installation directory.)<br><br></li>
+
+                    <li>Type in the following:
+
+                        <pre>
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('nbuser') WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;</pre>
+
+                        For more information, see the official MySQL Reference Manual:
+                        <a href="http://dev.mysql.com/doc/refman/5.1/en/default-privileges.html">Securing
+                        the Initial MySQL Accounts</a>.
+                    </li>
+                </ol>
+
+
+                <h4>Register the Server in the IDE</h4>
+
+                <ol>
+                    <li>In the Services window (Ctrl-5; &#8984;-5 on Mac), right-click the Databases
+                        node and choose Register MySQL Server.
+
+                        <br>
+                        <img src="../setup-images/register-mysql-server.png"
+                             class="margin-around b-all" alt="Services window - right-click options on Databases node"
+                             title="Register a MySQL server in the IDE's Services window"></li>
+
+                    <li>In the MySQL Server Properties dialog, under the Basic Properties tab, you
+                        can see the default settings for the MySQL server installation. These are:
+
+                        <ul>
+                            <li><strong>Server Host Name:</strong> <code>localhost</code></li>
+                            <li><strong>Server Port Number:</strong> <code>3306</code></li>
+                            <li><strong>Administrator User Name:</strong> <code>root</code></li>
+                            <li><strong>Administrator Password:</strong> <code>nbuser</code></li>
+                        </ul></li>
+
+                    <li>Select the Save Password option.
+
+                        <br>
+                        <img src="../setup-images/mysql-server-properties.png"
+                             class="margin-around b-all" alt="MySQL Server Properties dialog"
+                             title="Specify MySQL server settings"></li>
+
+                    <li>Click OK. The IDE connects to your MySQL database server, and lists database
+                        instances that are maintained by the server.</li>
+                </ol>
+
+
+                <h4>Create a Database Instance</h4>
+
+                <ol>
+                    <li>Right-click the MySQL Server node and choose Create Database.</li>
+
+                    <li>In the dialog that displays, type in <code>petcatalog</code>. Select the
+                        'Grant Full Access to' option, then select <code>root@localhost</code> from
+                        the drop-down field.
+
+                        <br>
+                        <img src="../setup-images/create-mysql-db-dialog.png"
+                             class="margin-around b-all" alt="Create MySQL Database dialog"
+                             title="Right-click the server node and choose Create Database to create a new database instance"></li>
+
+                    <li>Click OK. When you do so, an empty database named <code>petcatalog</code> is
+                        created, and a connection to the database is automatically established.
+                        Connections are displayed in the Services window using a connection node (
+                        <img src="../setup-images/db-connection-node.png" alt="Database connection node"> ).</li>
+                </ol>
+
+
+                <h4>Create database tables and populate them with sample data</h4>
+
+                <ol>
+                    <li>In the Projects window, expand the Server Resources node and double-click
+                        <code>catalog.sql</code> to open it in the IDE's editor.</li>
+
+                    <li>In the Connection drop-down above the editor, select the
+                        <code>jdbc:mysql://localhost:3306/petcatalog</code> connection that you
+                        created in the previous step.</li>
+
+                    <li>Click the Run SQL ( <img src="../setup-images/run-sql-btn.png" alt="Run SQL button">
+                        ) button in the editor's toolbar. The script runs on your MySQL server.</li>
+                </ol>
+            </div>
+
+
+            <h3 id="connPool">Configuring a Connection Pool and JDBC Resource on GlassFish</h3>
+
+            <p>The <code>sun-resources.xml</code> file, included in the sample application, is a
+                GlassFish-specific deployment descriptor. If you open the file in the editor (from
+                the Projects window, Server Resources &gt; <code>sun-resources.xml</code>), you can
+                see that the file instructs the GlassFish server to create a connection pool named
+                <code>petCatalogPool</code> using the '<code>root</code>' / '<code>nbuser</code>'
+                combination and <code>jdbc:mysql://localhost:3306/petcatalog</code> connection you
+                configured in the previous steps:</p>
+
+            <div class="indent">
+                <pre>
+&lt;jdbc-connection-pool allow-non-component-callers=&quot;false&quot;
+                      associate-with-thread=&quot;false&quot;
+                      connection-creation-retry-attempts=&quot;0&quot;
+                      connection-creation-retry-interval-in-seconds=&quot;10&quot;
+                      connection-leak-reclaim=&quot;false&quot;
+                      connection-leak-timeout-in-seconds=&quot;0&quot;
+                      connection-validation-method=&quot;auto-commit&quot;
+                      datasource-classname=&quot;com.mysql.jdbc.jdbc2.optional.MysqlDataSource&quot;
+                      fail-all-connections=&quot;false&quot;
+                      idle-timeout-in-seconds=&quot;300&quot;
+                      is-connection-validation-required=&quot;false&quot;
+                      is-isolation-level-guaranteed=&quot;true&quot;
+                      lazy-connection-association=&quot;false&quot;
+                      lazy-connection-enlistment=&quot;false&quot;
+                      match-connections=&quot;false&quot;
+                      max-connection-usage-count=&quot;0&quot;
+                      max-pool-size=&quot;32&quot;
+                      max-wait-time-in-millis=&quot;60000&quot;
+                      name=&quot;petCatalogPool&quot;
+                      non-transactional-connections=&quot;false&quot;
+                      pool-resize-quantity=&quot;2&quot;
+                      res-type=&quot;javax.sql.ConnectionPoolDataSource&quot;
+                      statement-timeout-in-seconds=&quot;-1&quot;
+                      steady-pool-size=&quot;8&quot;
+                      validate-atmost-once-period-in-seconds=&quot;0&quot;
+                      wrap-jdbc-objects=&quot;false&quot;&gt;
+
+  &lt;property name=&quot;URL&quot; value=&quot;jdbc:mysql://localhost:3306/petcatalog&quot;/&gt;
+  &lt;property name=&quot;User&quot; value=&quot;root&quot;/&gt;
+  &lt;property name=&quot;Password&quot; value=&quot;nbuser&quot;/&gt;
+&lt;/jdbc-connection-pool&gt;</pre>
+            </div>
+
+            <p>The <code>sun-resources.xml</code> file also instructs the GlassFish server
+                to configure a data source that uses the <code>petCatalogPool</code> connection
+                pool and sets its JNDI name to '<code>jdbc/petcatalog</code>':</p>
+
+            <div class="indent">
+                <pre>
+&lt;jdbc-resource enabled=&quot;true&quot;
+               jndi-name=&quot;jdbc/petcatalog&quot;
+               object-type=&quot;user&quot;
+               pool-name=&quot;petCatalogPool&quot;&gt;
+&lt;/jdbc-resource&gt;</pre>
+            </div>
+
+
+            <h3 id="runSample">Running the Sample Application</h3>
+
+            <ol>
+                <li>In the Services window, expand the Servers &gt; GlassFish Server 3 node and
+                    choose Properties. In the Servers window that displays, make sure the 'Enable
+                    JDBC Driver Deployment' option is selected. This option will ensure that the
+                    <a href="http://www.mysql.com/downloads/connector/j/">Connector/J</a> driver
+                    is deployed to GlassFish when your project is deployed. (If the server is already
+                    running, you'll need to restart the server.)</li>
+
+                <li>In the Projects window, right-click the <code>PetCatalog</code> project node
+                    and choose Run. The project is compiled, packaged and deployed to GlassFish.
+                    The deployed application then opens in your default browser.
+
+                    <br>
+                    <img src="../setup-images/pet-catalog.png"
+                         class="margin-around b-all" alt="Pet Catalog application displayed in browser "
+                         title="Run the application by right-clicking the PetCatalog project node and choosing Run">
+                </li>
+            </ol>
+        </div>
+    </body>
+</html>

@@ -854,7 +854,7 @@ public class JSFClientGenerator {
             }
             finally {
                 //TODO: RETOUCHE correct write to JSF model?
-                model.endTransaction();
+                    model.endTransaction();
                 DataObject facesDO;
                 try {
                     facesDO = DataObject.find(fo);
