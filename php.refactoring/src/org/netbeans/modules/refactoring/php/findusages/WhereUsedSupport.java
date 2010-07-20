@@ -284,9 +284,10 @@ public final class WhereUsedSupport {
 
         Collection<WhereUsedElement> elements = new TreeSet<WhereUsedElement>(new Comparator<WhereUsedElement>() {
 
+            @Override
             public int compare(WhereUsedElement o1, WhereUsedElement o2) {
-                String path1 = o1.getParentFile().getPath();
-                String path2 = o2.getParentFile().getPath();
+                String path1 = o1.getFile().getPath();
+                String path2 = o2.getFile().getPath();
                 int retval = path1.compareTo(path2);
                 if (retval == 0) {
                     int offset1 = o1.getPosition().getBegin().getOffset();
