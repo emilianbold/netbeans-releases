@@ -41,70 +41,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.refactoring.php.rename;
 
-package org.netbeans.modules.refactoring.php.ui.tree;
-
-import java.awt.Image;
-import java.beans.BeanInfo;
-import java.lang.ref.WeakReference;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.refactoring.spi.ui.*;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.refactoring.spi.BackupFacility;
+import org.netbeans.modules.refactoring.spi.Transaction;
 
 /**
+ * @todo Copied from javascript module. Should be a part of either CSL or better
+ * the refactoring API.
  *
  * @author Jan Becicka
  */
-public class SourceGroupTreeElement implements TreeElement {
-    
-    private WeakReference<SourceGroup> sg;
-    private FileObject dir;
-    private Icon icon;
-    private String displayName;
-    
-    private static String PACKAGE_BADGE = "org/netbeans/modules/refactoring/javascript/ui/tree/packageBadge.gif"; // NOI18N
+public class RetoucheCommit implements Transaction {
 
-    SourceGroupTreeElement(SourceGroup sg) {
-        this.sg = new WeakReference<SourceGroup>(sg);
-        dir = sg.getRootFolder();
- 
-        icon = sg.getIcon(false);
-        if ( icon == null ) {
+    ArrayList<BackupFacility.Handle> ids = new ArrayList<BackupFacility.Handle>();
+    private boolean commited = false;
+    Collection<ModificationResult> results;
+
+    public RetoucheCommit(Collection<ModificationResult> results) {
+        this.results = results;
+    }
+
+    @Override
+    public void commit() {
+        try {
+            if (commited) {
+                for (BackupFacility.Handle id : ids) {
+                    try {
+                        id.restore();
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            } else {
+                commited = true;
+                for (ModificationResult result : results) {
+                    ids.add(BackupFacility.getDefault().backup(result.getModifiedFileObjects()));
+                    result.commit();
+                }
+            }
+
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void rollback() {
+        for (BackupFacility.Handle id : ids) {
             try {
-                Image image = DataObject.find(sg.getRootFolder()).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-                image = ImageUtilities.mergeImages( image, ImageUtilities.loadImage(PACKAGE_BADGE), 7, 7 );
-                icon = new ImageIcon(image);
-            } catch (DataObjectNotFoundException d) {
+                id.restore();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
         }
-        displayName = sg.getDisplayName();
-    }
-
-    public TreeElement getParent(boolean isLogical) {
-        return TreeElementFactory.getTreeElement(FileOwnerQuery.getOwner(dir));
-    }
-
-    public Icon getIcon() {
-        return icon;
-    }
-
-    public String getText(boolean isLogical) {
-        return displayName;
-    }
-
-    public Object getUserObject() {
-        SourceGroup s = sg.get();
-        if (s==null) {
-            s = FolderTreeElement.getSourceGroup(dir);
-        }
-        return s;
     }
 }
-

@@ -134,6 +134,37 @@ class CachingSupport {
         return retval;
     }
 
+    private Collection<? extends FieldElement> getMergedFields(ClassScope clsScope, String fieldName, final int... modifiers) {
+        Collection<? extends FieldElement> fields = getCachedFields(clsScope, fieldName);
+        if (fields.isEmpty()) {
+                Set<FieldElement> tmp = new HashSet<FieldElement>();
+                tmp.addAll(ModelUtils.filter(clsScope.getDeclaredFields(), fieldName));
+                tmp.addAll(ModelUtils.filter(clsScope.getInheritedFields(), fieldName));
+                fields = tmp;
+            if (!fields.isEmpty()) {
+                List<FieldElement> methList = fldElems.get(clsScope);
+                if (methList != null) {
+                    methList.add(ModelUtils.getFirst(fields));
+                }
+            }
+        }
+        return fields;
+    }
+
+    static Collection<? extends FieldElement> getFields(ClassScope clsScope, String fieldName, ModelElement elem, final int... modifiers) {
+        Collection<? extends FieldElement> retval;
+        CachingSupport cachingSupport = CachingSupport.getInstance(elem);
+        if (cachingSupport != null) {
+            retval = cachingSupport.getMergedFields(clsScope, fieldName);
+        } else {
+            Set<FieldElement> tmp =  new HashSet<FieldElement>();
+            tmp.addAll(ModelUtils.filter(clsScope.getDeclaredFields(), fieldName));
+            tmp.addAll(ModelUtils.filter(clsScope.getInheritedFields(), fieldName));
+            retval = tmp;
+        }
+        return retval;
+    }
+
     //TODO: modifiers not taken into account
     static Collection<? extends MethodScope> getInheritedMethods(TypeScope typeScope, String methodName, ModelElement elem, final int... modifiers) {
         Collection<? extends MethodScope> retval;
