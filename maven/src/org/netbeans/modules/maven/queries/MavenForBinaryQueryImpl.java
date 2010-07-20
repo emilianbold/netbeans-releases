@@ -194,10 +194,10 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             File file = new File(URI.create(binRoot.toString()));
             String filepath = file.getAbsolutePath().replace('\\', '/'); //NOI18N
             String path = project.getArtifactRelativeRepositoryPath();
-            int ret = filepath.endsWith(path) ? 0 : -1;
+            int ret = path == null ? -1 : filepath.endsWith(path) ? 0 : -1;
             if (ret == -1) {
                 path = project.getTestArtifactRelativeRepositoryPath();
-                ret = filepath.endsWith(path) ? 1 : -1;
+                ret = path == null ? -1 : filepath.endsWith(path) ? 1 : -1;
             }
             return ret;
         }

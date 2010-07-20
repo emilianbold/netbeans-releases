@@ -62,7 +62,7 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
         
     }
     
-   URI[] createPath() {
+    URI[] createPath() {
         List<URI> lst = new ArrayList<URI>();
         //TODO we shall add the test class output as well. how?
         // according the current 2.1 sources this is almost the same as getCompileClasspath()
@@ -77,9 +77,12 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
                 //null means dependencies were not resolved..
             } 
         }
-        File fil = new File(getMavenProject().getOriginalMavenProject().getBuild().getOutputDirectory());
-        fil = FileUtil.normalizeFile(fil);
-        lst.add(0, fil.toURI());
+        String outputDirectory = getMavenProject().getOriginalMavenProject().getBuild().getOutputDirectory();
+        if (outputDirectory != null) {
+            File fil = new File(outputDirectory);
+            fil = FileUtil.normalizeFile(fil);
+            lst.add(0, fil.toURI());
+        }
         URI[] uris = new URI[lst.size()];
         uris = lst.toArray(uris);
         return uris;

@@ -84,6 +84,8 @@ import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
@@ -383,7 +385,7 @@ public final class NbMavenProjectImpl implements Project {
             newproject = res.getProject();
             if (res.hasExceptions()) {
                 for (Object e : res.getExceptions()) {
-                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Error on loading project " + projectFile.getAbsolutePath(), (Throwable) e); //NOI18N
+                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.FINE, "Error on loading project " + projectFile, (Throwable) e); //NOI18N
                     if (e instanceof ArtifactResolutionException) {
                         ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                                 NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Resolution_problem"),
@@ -596,15 +598,22 @@ public final class NbMavenProjectImpl implements Project {
         return home;
     }
 
-    public String getArtifactRelativeRepositoryPath() {
-        return getArtifactRelativeRepositoryPath(getOriginalMavenProject().getArtifact());
+    public @CheckForNull String getArtifactRelativeRepositoryPath() {
+        Artifact artifact = getOriginalMavenProject().getArtifact();
+        if (artifact == null) {
+            return null;
+        }
+        return getArtifactRelativeRepositoryPath(artifact);
     }
     /**
      * path of test artifact in local repository
      * @return
      */
-    public String getTestArtifactRelativeRepositoryPath() {
+    public @CheckForNull String getTestArtifactRelativeRepositoryPath() {
         Artifact main = getOriginalMavenProject().getArtifact();
+        if (main == null) {
+            return null;
+        }
         try {
             ArtifactHandlerManager artifactHandlerManager = (ArtifactHandlerManager) getEmbedder().getPlexusContainer().lookup( ArtifactHandlerManager.ROLE );
             Artifact test = new DefaultArtifact(main.getGroupId(), main.getArtifactId(), main.getVersionRange(),
@@ -615,7 +624,7 @@ public final class NbMavenProjectImpl implements Project {
         }
     }
 
-    public String getArtifactRelativeRepositoryPath(Artifact artifact) {
+    public String getArtifactRelativeRepositoryPath(@NonNull Artifact artifact) {
         //        embedder.setLocalRepositoryDirectory(FileUtil.toFile(getRepositoryRoot()));
         String toRet = getEmbedder().getLocalRepository().pathOf(artifact);
         return toRet;

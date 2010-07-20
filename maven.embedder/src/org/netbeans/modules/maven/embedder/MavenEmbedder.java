@@ -222,7 +222,6 @@ public final class MavenEmbedder {
           configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
           return projectBuilder.build(fallback, configuration).getProject();
         } catch(ProjectBuildingException ex) {
-            Exceptions.printStackTrace(ex);
             return new MavenProject();
         } catch(MavenExecutionRequestPopulationException ex) {
             Exceptions.printStackTrace(ex);

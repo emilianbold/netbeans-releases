@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.api;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -661,8 +662,10 @@ public class PluginPropertyUtils {
     }
 
     private static NBPluginParameterExpressionEvaluator createEvaluator(MavenProject prj) {
-        FileObject bsd = FileUtil.toFileObject(FileUtil.normalizeFile(prj.getBasedir()));
         Properties props = new Properties();
+        File basedir = prj.getBasedir();
+        if (basedir != null) {
+        FileObject bsd = FileUtil.toFileObject(FileUtil.normalizeFile(basedir));
         if (bsd != null) {
             Project p = FileOwnerQuery.getOwner(bsd);
             if (p != null) {
@@ -671,6 +674,7 @@ public class PluginPropertyUtils {
                     props = project.createSystemPropsForPropertyExpressions();
                 }
             }
+        }
         }
         //ugly
         Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();

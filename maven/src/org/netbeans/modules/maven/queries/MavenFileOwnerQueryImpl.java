@@ -250,12 +250,12 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             NbMavenProjectImpl project = it.next();
             String path = project.getArtifactRelativeRepositoryPath();
             LOG.finest("matching againts known project " + path);
-            if (filepath.endsWith(path)) {
+            if (path != null && filepath.endsWith(path)) {
                 return project;
             }
             path = project.getTestArtifactRelativeRepositoryPath();
             LOG.finest("matching againts known project's test " + path);
-            if (filepath.endsWith(path)) {
+            if (path != null && filepath.endsWith(path)) {
                 return project;
             }
         }
