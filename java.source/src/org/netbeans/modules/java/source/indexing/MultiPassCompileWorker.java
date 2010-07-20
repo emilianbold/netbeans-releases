@@ -152,7 +152,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                 }
                 if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum, new CancelService() {
+                    jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum, javaContext.fqn2Files, new CancelService() {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
@@ -265,6 +265,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     System.gc();
                     continue;
                 }
+                javaContext.fqn2Files.set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                     javaContext.sa.analyse(trees, jt, fileManager, active, previous.addedTypes, main);

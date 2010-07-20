@@ -120,7 +120,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                     System.gc();
                 }
                 if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum, new CancelService() {
+                    jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum, javaContext.fqn2Files, new CancelService() {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
@@ -210,6 +210,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             activeTypes.add(sym);
                     }
                 }
+                javaContext.fqn2Files.set(activeTypes, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                     javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
