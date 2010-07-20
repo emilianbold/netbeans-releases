@@ -68,6 +68,7 @@ class JavaParsingContext {
     final ClassIndexImpl uq;
     final SourceAnalyser sa;
     final CheckSums checkSums;
+    final FQN2Files fqn2Files;
 
     public JavaParsingContext(final Context context) throws IOException, NoSuchAlgorithmException {
         cpInfo = ClasspathInfo.create(context.getRoot());
@@ -77,6 +78,7 @@ class JavaParsingContext {
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
+        fqn2Files = FQN2Files.forRoot(context.getRootURI());
     }
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
@@ -91,6 +93,7 @@ class JavaParsingContext {
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
         checkSums = CheckSums.forContext(context);
+        fqn2Files = FQN2Files.forRoot(context.getRootURI());
     }
 
     private static void registerVirtualSources(final ClasspathInfo cpInfo, final Collection<? extends CompileTuple> virtualSources) {
