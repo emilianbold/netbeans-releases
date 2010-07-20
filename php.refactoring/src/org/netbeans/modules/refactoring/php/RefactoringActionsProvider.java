@@ -43,26 +43,90 @@
  */
 package org.netbeans.modules.refactoring.php;
 
+import java.util.Collection;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
-import org.netbeans.modules.refactoring.php.findusages.FindUsages;
+import org.netbeans.modules.refactoring.php.findusages.RefactoringUtils;
+import org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI;
+import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
+import org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Radek Matous
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=400)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position = 400)
 public class RefactoringActionsProvider extends ActionsImplementationProvider {
-    public RefactoringActionsProvider() {
-    }
-
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        return FindUsages.canFindUsages(lookup);
+        //TODO: is from editor? review, improve
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if ((ec == null || ec.getOpenedPanes() == null)) {
+            return false;
+        }
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+        Node n = nodes.iterator().next();
+        DataObject dob = n.getCookie(DataObject.class);
+        if (dob == null) {
+            return false;
+        }
+        FileObject fo = dob.getPrimaryFile();
+        return RefactoringUtils.isRefactorable(fo) ? !RefactoringUtils.isOutsidePhp(lookup, fo) : false;
     }
 
     @Override
     public void doFindUsages(Lookup lookup) {
-        FindUsages.doFindUsages(lookup);
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringUtils.isFromEditor(ec)) {
+            new RefactoringTask(ec) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(final ParserResult info, final int offset) {
+                    WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
+                    if (ctx != null && ctx.getName() != null) {
+                        return new WhereUsedQueryUI(ctx);
+                    }
+                    return null;
+                }
+            }.run();
+        }
+    }
+
+    @Override
+    public boolean canRename(Lookup lookup) {
+        return canFindUsages(lookup);
+    }
+
+    @Override
+    public void doRename(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringUtils.isFromEditor(ec)) {
+            new RefactoringTask(ec) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(final ParserResult info, final int offset) {
+                    WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
+                    if (ctx != null && ctx.getName() != null) {
+                        final FileObject fileObject = ctx.getModelElement().getFileObject();
+                        FileType fileType = PhpSourcePath.getFileType(fileObject);
+                        if (!fileType.equals(FileType.INTERNAL)) {
+                            return new PhpRenameRefactoringUI(ctx);
+                        }
+                    }
+                    return null;
+                }
+            }.run();
+        }
     }
 }
