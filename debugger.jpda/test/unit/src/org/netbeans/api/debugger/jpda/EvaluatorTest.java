@@ -55,7 +55,6 @@ import java.util.List;
 import junit.framework.AssertionFailedError;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 
 /**
  * Tests evaluation of various expressions.
