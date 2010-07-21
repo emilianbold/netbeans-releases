@@ -1200,7 +1200,7 @@ public class FormEditor {
      * 
      * @param formModel form model.
      * @return BindingDesignSupport of given form */
-    static BindingDesignSupport getBindingSupport(FormModel formModel) {
+    public static BindingDesignSupport getBindingSupport(FormModel formModel) {
         FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getBindingSupport() : null;
     }
