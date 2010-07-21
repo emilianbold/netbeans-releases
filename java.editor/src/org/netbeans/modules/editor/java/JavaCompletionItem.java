@@ -2040,7 +2040,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     LOGGER.log(Level.FINE, null, ex);
                 }
             }
-            if (!params.isEmpty() && text.trim().length() > 1) {
+            text = text.trim();
+            if (!params.isEmpty() && text.length() > 1) {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
                     if (position [0] != null)

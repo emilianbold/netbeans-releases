@@ -55,6 +55,7 @@ import java.util.List;
 import junit.framework.AssertionFailedError;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 
 /**
  * Tests evaluation of various expressions.
@@ -114,7 +115,7 @@ public class EvaluatorTest extends NbTestCase {
             support.doFinish ();
         }
     }
-
+    
     public void testInstanceEvaluation() throws Exception {
         try {
             Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src")+
@@ -123,7 +124,7 @@ public class EvaluatorTest extends NbTestCase {
             DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
             support.doContinue();
             support.waitState (JPDADebugger.STATE_STOPPED);
-
+            
             List<Method> methods = getMethods(false);
             AssertionFailedError te = null;
             AssertionFailedError ex = null;
@@ -151,7 +152,7 @@ public class EvaluatorTest extends NbTestCase {
         try {
             Variable var = support.getDebugger ().evaluate (expression);
             fail (
-                "Evaluation of expression was unexpectedly successful: " +
+                "Evaluation of expression was unexpectedly successful: " + 
                 expression + " = " + var.getValue ()
             );
         } catch (InvalidExpressionException e) {
@@ -159,7 +160,7 @@ public class EvaluatorTest extends NbTestCase {
             return;
         }
     }
-
+    
     private void checkEval(Method m) {
         try {
             Variable eMethod = support.getDebugger ().evaluate (m.getName()+"()");
@@ -182,7 +183,7 @@ public class EvaluatorTest extends NbTestCase {
             if (eMethod != null) {
                 assertEquals (
                     "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong type of result:",
-                    eMethod.getType(),
+                    eMethod.getType(), 
                     eVal.getType()
                 );
             }
@@ -252,42 +253,42 @@ public class EvaluatorTest extends NbTestCase {
         }
         return methods;
     }
-
+    
     private static class Method {
-
+        
         private String name;
         private String undoName;
         private String expression;
-
+        
         public Method(String name) {
             this.name = name;
         }
-
+        
         public String getName() {
             return name;
         }
-
+        
         public void setUndo(String undoName) {
             this.undoName = undoName;
         }
-
+        
         public String getUndo() {
             return undoName;
         }
-
+        
         public void setExpression(String expression) {
             this.expression = expression;
         }
-
+        
         public String getExpression() {
             return expression;
         }
     }
-
+    
     private static class JDIValue {
-
+        
         private Value value;
-
+        
         public JDIValue(Value value) {
             this.value = value;
         }
@@ -328,6 +329,6 @@ public class EvaluatorTest extends NbTestCase {
         public String toString() {
             return ""+value;
         }
-
+        
     }
 }
