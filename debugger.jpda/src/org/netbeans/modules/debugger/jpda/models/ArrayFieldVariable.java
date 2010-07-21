@@ -59,7 +59,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.api.debugger.jpda.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -90,8 +90,8 @@ org.netbeans.api.debugger.jpda.Field {
         String parentID
     ) {
         super (
-            debugger, 
-            value, 
+            debugger,
+            value,
             parentID + '.' + index +
                 (value instanceof ObjectReference ? "^" : "")
         );
@@ -102,9 +102,9 @@ org.netbeans.api.debugger.jpda.Field {
         this.array = (ArrayReference) ((JDIVariable) array).getJDIValue();
     }
 
-    
+
     // LocalVariable impl.......................................................
-    
+
 
     /**
     * Returns string representation of type of this variable.
@@ -114,7 +114,7 @@ org.netbeans.api.debugger.jpda.Field {
     public String getName () {
         return getName(maxIndexLog, index);
     }
-    
+
     static String getName(int maxIndexLog, int index) {
         int num0 = maxIndexLog - log10(index);
         if (num0 > 0) {
@@ -123,16 +123,16 @@ org.netbeans.api.debugger.jpda.Field {
             return "[" + index + "]";
         }
     }
-    
+
     static int log10(int n) {
         int l = 1;
         while ((n = n / 10) > 0) l++;
         return l;
     }
-    
+
     //private static final String ZEROS = "000000000000"; // NOI18N
     private static final String ZEROS = "            "; // NOI18N
-    
+
     static String zeros(int n) {
         if (n < ZEROS.length()) {
             return ZEROS.substring(0, n);
@@ -179,7 +179,7 @@ org.netbeans.api.debugger.jpda.Field {
     public boolean isStatic () {
         return false;
     }
-    
+
     /**
     * Returns string representation of type of this variable.
     *
@@ -191,10 +191,10 @@ org.netbeans.api.debugger.jpda.Field {
 
     /**
      * Sets new value of this variable.
-     * 
+     *
      * @param value ne value
      * @throws InvalidExpressionException if the value is invalid
-     */ 
+     */
     protected void setValue (Value value) throws InvalidExpressionException {
         try {
             ArrayReferenceWrapper.setValue(array, index, value);
@@ -223,7 +223,7 @@ org.netbeans.api.debugger.jpda.Field {
         clon.maxIndexLog = this.maxIndexLog;
         return clon;
     }
-    
+
     // other methods ...........................................................
 
     public String toString () {
