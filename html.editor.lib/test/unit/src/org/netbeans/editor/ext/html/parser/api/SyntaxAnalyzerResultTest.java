@@ -42,15 +42,8 @@
 
 package org.netbeans.editor.ext.html.parser.api;
 
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.ParseResult;
 import org.netbeans.editor.ext.html.test.TestBase;
@@ -84,7 +77,6 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         HtmlParseResult presult = result.parseHtml();
         assertNotNull(presult);
         assertNotNull(presult.root());
-
 
     }
 
