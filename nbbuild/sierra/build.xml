@@ -163,8 +163,8 @@
     <target name="clean-02" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel"/>
     <target name="build-02" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel"/>
 
-    <target name="clean-03" depends="clean-xslt, clean-wlm, clean-iep, clean-sql, clean-dm"/>
-    <target name="build-03" depends="build-xslt, build-wlm, build-iep, build-sql, build-dm"/>
+    <target name="clean-03" depends="clean-xslt, clean-wlm, clean-iep, clean-dm"/>
+    <target name="build-03" depends="build-xslt, build-wlm, build-iep, build-dm"/>
 
     <target name="clean-04" depends="clean-edm, clean-etl, clean-encoder, clean-wsdlextensions"/>
     <target name="build-04" depends="build-edm, build-etl, build-encoder, build-wsdlextensions"/>
@@ -326,15 +326,6 @@
         <antcall target="do-module"><param name="module" value="iep.editor"/></antcall>
         <antcall target="do-module"><param name="module" value="iep.project"/></antcall>
         <antcall target="do-module"><param name="module" value="iep.samples"/></antcall>
-    </target>
-
-    <!-- sql -->
-    <target name="build-sql"><antcall target="do-sql"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-sql"><antcall target="do-sql"><param name="action" value="clean"/></antcall></target>
-    <target name=   "do-sql">
-        <antcall target="do-module"><param name="module" value="sql.help"/></antcall>
-        <antcall target="do-module"><param name="module" value="sql.project"/></antcall>
-        <antcall target="do-module"><param name="module" value="sql.wizard"/></antcall>
     </target>
 
     <!-- dm -->
