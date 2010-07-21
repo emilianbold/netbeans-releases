@@ -66,7 +66,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.api.debugger.jpda.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
@@ -93,18 +93,18 @@ import org.openide.util.NbBundle;
 */
 public class FieldBreakpointImpl extends ClassBasedBreakpoint {
 
-    
+
     private FieldBreakpoint breakpoint;
-    
-    
+
+
     public FieldBreakpointImpl (FieldBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
         super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         set ();
     }
-    
+
     protected void setRequests () {
-        boolean access = (breakpoint.getBreakpointType () & 
+        boolean access = (breakpoint.getBreakpointType () &
                           FieldBreakpoint.TYPE_ACCESS) != 0;
         try {
             if (access && !VirtualMachineWrapper.canWatchFieldAccess(getVirtualMachine())) {
@@ -129,7 +129,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         } catch (VMDisconnectedExceptionWrapper e) {
         }
     }
-    
+
     @Override
     protected void classLoaded (List<ReferenceType> referenceTypes) {
         boolean submitted = false;
@@ -182,7 +182,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
                     NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoField", name, breakpoint.getFieldName ()));
         }
     }
-    
+
     protected EventRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         if (oldRequest instanceof AccessWatchpointRequest) {
             Field field = WatchpointRequestWrapper.field((AccessWatchpointRequest) oldRequest);
@@ -215,7 +215,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
             }
         }
     }
-    
+
     public boolean processCondition(Event event) {
         ThreadReference thread;
         try {

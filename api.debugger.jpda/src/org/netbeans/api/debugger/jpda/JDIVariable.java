@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.expr;
+package org.netbeans.api.debugger.jpda;
 
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.Variable;
