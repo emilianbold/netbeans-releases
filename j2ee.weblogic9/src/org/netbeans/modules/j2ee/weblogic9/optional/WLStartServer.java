@@ -69,6 +69,7 @@ import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.InputReaderTask;
 import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
@@ -330,9 +331,11 @@ public final class WLStartServer extends StartServer {
         io.select();
 
         service.submit(InputReaderTask.newTask(InputReaders.forStream(
-                process.getInputStream(), Charset.defaultCharset()), InputProcessors.printing(io.getOut(), true)));
+                process.getInputStream(), Charset.defaultCharset()), 
+                InputProcessors.printing(io.getOut(), new ErrorLineConvertor(), true)));
         service.submit(InputReaderTask.newTask(InputReaders.forStream(
-                process.getErrorStream(), Charset.defaultCharset()), InputProcessors.printing(io.getErr(), false)));
+                process.getErrorStream(), Charset.defaultCharset()), 
+                InputProcessors.printing(io.getErr(), new ErrorLineConvertor(), false)));
     }
 
     private static void stopService(final ExecutorService service) {

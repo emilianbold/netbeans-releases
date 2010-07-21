@@ -112,6 +112,7 @@ public interface GlassfishModule {
     public static final String JAVAMAIL_RESOURCE = "javamail-resource"; // NOI18N
 
     public CommandFactory getCommandFactory();
+
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */

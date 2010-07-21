@@ -109,7 +109,6 @@ public abstract class RestSupport {
     public static final String BASE_URL_TOKEN = "___BASE_URL___";//NOI18N
     public static final String RESTBEANS_TEST_DIR = "build/generated-sources/rest-test";//NOI18N
     public static final String COMMAND_TEST_RESTBEANS = "test-restbeans";//NOI18N
-    public static final String REST_SUPPORT_ON = "rest.support.on";//NOI18N
     public static final String TEST_RESBEANS = "test-resbeans";//NOI18N
     public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";//NOI18N
     public static final String TEST_RESBEANS_JS = TEST_RESBEANS + ".js";
@@ -465,21 +464,33 @@ public abstract class RestSupport {
     /**
      *  Add SWDP library for given source file on specified class path types.
      * 
-     *  @param source source file object for which the libraries is added.
      *  @param classPathTypes types of class path to add ("javac.compile",...)
+     *  @param addJersey add REST Jersey Library or not.
+     *  @param jaxRsClassName jsr311 class name that should be checked for presence on classpath, e.g. "javax/ws/rs/ApplicationPath.class".
      */
-    protected void addSwdpLibrary(String[] classPathTypes) throws IOException {
-        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
-        if (swdpLibrary == null) {
-            return;
+    protected void addSwdpLibrary(String[] classPathTypes, boolean addJersey, String jaxRsClassName) throws IOException {
+
+        FileObject srcRoot = findSourceRoot();
+        if (srcRoot != null) {
+            ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+            if (cp.findResource(jaxRsClassName) == null) {
+                Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+                if (restapiLibrary == null) {
+                    return;
+                }
+                addSwdpLibrary(classPathTypes, restapiLibrary);
+            }
+
+
+            if (addJersey) {
+                Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
+                if (swdpLibrary == null) {
+                    return;
+                }
+                addSwdpLibrary(classPathTypes, swdpLibrary);
+            }
         }
         
-        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-        if (restapiLibrary == null) {
-            return;
-        }
-        addSwdpLibrary(classPathTypes, restapiLibrary);
-        addSwdpLibrary(classPathTypes, swdpLibrary);
     }
 
     /**
@@ -555,17 +566,7 @@ public abstract class RestSupport {
         return true;
     }
     
-    public boolean isRestSupportOn() {
-        if (getAntProjectHelper() == null) {
-            return false;
-        }
-        String v = getProjectProperty(REST_SUPPORT_ON);
-        return "true".equalsIgnoreCase(v) || "on".equalsIgnoreCase(v);
-    }
-
-    public void setRestSupport(Boolean v) {
-        setProjectProperty(REST_SUPPORT_ON, v.toString());
-    }
+    public abstract boolean isRestSupportOn();
 
     public void setProjectProperty(String name, String value) {
         if (getAntProjectHelper() == null) {

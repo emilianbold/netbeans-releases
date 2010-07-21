@@ -52,10 +52,10 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.libs.ppawtlayout.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/cdc-pp-awt-layout.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.ppawtlayout/modules/ext/cdc-pp-awt-layout.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst:///sources/cdc-pp-awt-layout-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.ppawtlayout/sources/cdc-pp-awt-layout-src.zip!/</resource>
     </volume>    
 </library>

@@ -238,6 +238,34 @@ public class ErrorDescriptionFactory {
 
             return null;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof DisableConfigure)) {
+                return false;
+            }
+            final DisableConfigure other = (DisableConfigure) obj;
+            if (this.metadata != other.metadata && (this.metadata == null || !this.metadata.equals(other.metadata))) {
+                return false;
+            }
+            if (this.disable != other.disable) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 43 * hash + (this.metadata != null ? this.metadata.hashCode() : 0);
+            hash = 43 * hash + (this.disable ? 1 : 0);
+            return hash;
+        }
+
+
     }
 
     private static final class TopLevelConfigureFix extends DisableConfigure implements EnhancedFix {

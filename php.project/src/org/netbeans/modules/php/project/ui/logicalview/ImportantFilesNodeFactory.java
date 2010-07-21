@@ -237,7 +237,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         @Override
         protected Node[] createNodes(Pair<PhpFrameworkProvider, FileObject> key) {
             try {
-                return new Node[] {new ImportantFileNode(key)};
+                return new Node[] {new ImportantFileNode(key, ProjectPropertiesSupport.getSourcesDirectory(project))};
             } catch (DataObjectNotFoundException ex) {
                 LOGGER.log(Level.WARNING, ex.getMessage(), ex);
             }
@@ -339,15 +339,21 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
     private static final class ImportantFileNode extends FilterNode {
         private final Pair<PhpFrameworkProvider, FileObject> pair;
+        private final FileObject sourceDir;
 
-        public ImportantFileNode(Pair<PhpFrameworkProvider, FileObject> pair) throws DataObjectNotFoundException {
+        public ImportantFileNode(Pair<PhpFrameworkProvider, FileObject> pair, FileObject sourceDir) throws DataObjectNotFoundException {
             super(DataObject.find(pair.second).getNodeDelegate());
             this.pair = pair;
+            this.sourceDir = sourceDir;
         }
 
         @Override
         public String getShortDescription() {
-            return pair.first.getName();
+            String filepath = FileUtil.getRelativePath(sourceDir, pair.second);
+            if (filepath == null) {
+                filepath = FileUtil.getFileDisplayName(pair.second);
+            }
+            return NbBundle.getMessage(ImportantFileNode.class, "LBL_ImportantFileTooltip", filepath, pair.first.getName());
         }
     }
 }

@@ -82,6 +82,7 @@ import org.openide.util.RequestProcessor;
     private NativeProcess remoteControllerProcess;
     private RfsLocalController localController;
     private String remoteDir;
+    private ErrorReader errorReader;
 
     public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
         super(executionEnvironment, out, err, privProjectStorageDir, files);
@@ -166,7 +167,8 @@ import org.openide.util.RequestProcessor;
         }
         remoteControllerProcess = pb.call();
 
-        RP.post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
+        errorReader = new ErrorReader(remoteControllerProcess.getErrorStream(), err);
+        RP.post(errorReader);
 
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
@@ -260,6 +262,10 @@ import org.openide.util.RequestProcessor;
     }
     
     private void remoteControllerCleanup() {
+        ErrorReader r = errorReader;
+        if (r != null) {
+            r.stop();
+        }
         NativeProcess rc;
         synchronized (this) {
             rc = remoteControllerProcess;
@@ -276,16 +282,21 @@ import org.openide.util.RequestProcessor;
 
         private final BufferedReader errorReader;
         private final PrintWriter errorWriter;
+        private boolean stopped;
 
         public ErrorReader(InputStream errorStream, PrintWriter errorWriter) {
             this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
             this.errorWriter = errorWriter;
+            this.stopped = false;
         }
         @Override
         public void run() {
             try {
                 String line;
                 while ((line = errorReader.readLine()) != null) {
+                    if (stopped) {
+                        break;
+                    }
                     if (errorWriter != null) {
                          errorWriter.println(line);
                     }
@@ -295,6 +306,9 @@ import org.openide.util.RequestProcessor;
                 Exceptions.printStackTrace(ex);
             }
         }
-    }
 
+        private void stop() {
+            stopped = true;
+        }
+    }
 }

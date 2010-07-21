@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
+import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -77,10 +78,11 @@ public final class RepositoryUtils {
     private static final boolean TRACE_ARGS = CndUtils.getBoolean("cnd.repository.trace.args", false); //NOI18N;
     private static final boolean TRACE_REPOSITORY_ACCESS = TRACE_ARGS || DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     private static final Repository repository = RepositoryAccessor.getRepository();
+    private static final RepositoryTranslation translator = RepositoryAccessor.getTranslator();
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 87;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 88;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -346,23 +348,23 @@ public final class RepositoryUtils {
     }
 
     static int getUnitId(CharSequence unitName) {
-        return RepositoryAccessor.getTranslator().getUnitId(unitName);
+        return translator.getUnitId(unitName);
     }
 
     static CharSequence getUnitName(int unitIndex) {
-        return RepositoryAccessor.getTranslator().getUnitName(unitIndex);
+        return translator.getUnitName(unitIndex);
     }
 
     static int getFileIdByName(int unitId, CharSequence fileName) {
-        return RepositoryAccessor.getTranslator().getFileIdByName(unitId, fileName);
+        return translator.getFileIdByName(unitId, fileName);
     }
 
     static CharSequence getFileNameByIdSafe(int unitId, int fileId) {
-        return RepositoryAccessor.getTranslator().getFileNameByIdSafe(unitId, fileId);
+        return translator.getFileNameByIdSafe(unitId, fileId);
     }
 
     static CharSequence getFileNameById(int unitId, int fileId) {
-        return RepositoryAccessor.getTranslator().getFileNameById(unitId, fileId);
+        return translator.getFileNameById(unitId, fileId);
     }
 
     private static boolean isTracingKey(Key key) {

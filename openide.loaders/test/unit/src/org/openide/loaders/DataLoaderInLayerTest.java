@@ -82,7 +82,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.FINER;
     }
     
     protected FileSystem createFS(String... resources) throws IOException {
@@ -126,13 +126,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
         for (int i = 0; i < 100; i++) {
             Object f = Lookups.forPath("Loaders/" + mime + "/Factories").lookup(clazz);
             FolderLookup.ProxyLkp.DISPATCH.waitFinished();
-            LOG.log(Level.INFO, "waiting for {0} result: {1}", new Object[]{i, f});
+            LOG.log(Level.INFO, "waiting for {0} at #{1} result: {2}", new Object[]{add ? "add" : "remove", i, f});
             if (add == (f != null)) {
                 break;
             }
             Thread.sleep(100);
         }
         LOG.info("OK, addRemove finished");
+        // XXX: Probably DataLoaderPool shall listen on changes under Loaders/.../.../Factories and revalidate
+        // automatically
+        DataObjectPool.getPOOL().revalidate();
+        LOG.info("revalidating finished");
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
         String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";
@@ -217,11 +221,11 @@ public class DataLoaderInLayerTest extends NbTestCase {
         
         addRemove("text/plain", f, true);
         try {
-            FileSystem lfs = createFS("folderF/file.simple");
-            FileObject fo = lfs.findResource("folderF");
+            FileSystem lfs = createFS("folderFKK/file.simple");
+            FileObject fo = lfs.findResource("folderFKK");
             DataFolder df = DataFolder.findFolder(fo);
             DataObject[] arr = df.getChildren();
-            assertEquals("One object", 1, arr.length);
+            assertEquals("One object: " + Arrays.toString(arr), 1, arr.length);
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
             
@@ -307,15 +311,21 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
 
     public void testSimpleLoader() throws Exception {
+        FileSystem lfs = createFS("folder/file.simple");
+        FileObject fo = lfs.findResource("folder/file.simple");
+        assertNotNull(fo);
+        DataObject first = DataObject.find(fo);
+        LOG.log(Level.INFO, "default data object created: {0}", first);
+        assertEquals("Realy default", DefaultDataObject.class, first.getClass());
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
         try {
-            FileSystem lfs = createFS("folder/file.simple");
-            FileObject fo = lfs.findResource("folder/file.simple");
-            assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
-            assertEquals(SimpleDataObject.class, dob.getClass());
+            LOG.log(Level.INFO, "Object created: {0}", dob);
+            assertEquals("Checking the right type", SimpleDataObject.class, dob.getClass());
+            LOG.info("Check ok");
         } finally {
+            LOG.warning("Check failed, removing loader");
             addRemoveLoader(l, false);
         }
     }
@@ -450,13 +460,15 @@ public class DataLoaderInLayerTest extends NbTestCase {
         protected String displayName() {
             return "Simple";
         }
+        @Override
         protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
             return new SimpleDataObject(pf, this);
         }
     }
     public static final class SimpleFactory implements DataObject.Factory {
+        @Override
         public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized) throws IOException {
-            return SimpleUniFileLoader.findObject(SimpleUniFileLoader.class).findDataObject(fo, recognized);
+            return SimpleUniFileLoader.findObject(SimpleUniFileLoader.class, true).findDataObject(fo, recognized);
         }
     }
     
@@ -495,6 +507,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
 
     private static void assertImage(String msg, Image img1, Image img2) {
         ImageObserver obs = new ImageObserver() {
+            @Override
             public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
                 fail("Already updated, hopefully");
                 return true;

@@ -275,7 +275,7 @@ public class Commands {
                         resList.add(new ResourceDesc(name, cmdSuffix));
                     }
                 } else {
-                    Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for " + r); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for {0}", r); // NOI18N
                 }
             }
 
@@ -302,17 +302,17 @@ public class Commands {
             this.path = path;
             
             StringBuilder cmd = new StringBuilder(128);
-            cmd.append("path="); // NOI18N
+            cmd.append("DEFAULT="); // NOI18N
             cmd.append(path.getAbsolutePath());
             if(name != null && name.length() > 0) {
-                cmd.append(PARAM_SEPARATOR + "name="); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("name="); // NOI18N
                 cmd.append(Utils.sanitizeName(name));
             }
             if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
-            cmd.append(PARAM_SEPARATOR + "force=true"); // NOI18N
+            cmd.append(PARAM_SEPARATOR).append("force=true"); // NOI18N
             addProperties(cmd,properties);
             query = cmd.toString();
         }
@@ -329,10 +329,15 @@ public class Commands {
 
         @Override
         public InputStream getInputStream() {
-            try {
-                return isDirDeploy ? null : new FileInputStream(path);
-            } catch(FileNotFoundException ex) {
-                return null;
+                if (isDirDeploy) {
+                    return null;
+                } else {
+                    try {
+                        return new FileInputStream(path);
+                    } catch (FileNotFoundException fnfe) {
+                        Logger.getLogger("glassfish").log(Level.INFO, path.getPath(), fnfe); // NOI18N
+                        return null;
+                    }
             }
         }
 
@@ -353,7 +358,7 @@ public class Commands {
 
         private void addProperties(StringBuilder cmd, Map<String,String> properties) {
             if (null != properties && properties.size() > 0) {
-                cmd.append(ServerCommand.PARAM_SEPARATOR + "properties="); // NOI18N
+                cmd.append(ServerCommand.PARAM_SEPARATOR).append("properties="); // NOI18N
                 int i = 0;
                 for (Entry<String,String> e : properties.entrySet()) {
                     String k = e.getKey();
@@ -361,7 +366,7 @@ public class Commands {
                     if (i > 0) {
                         cmd.append(":"); // NOI18N
                     }
-                    cmd.append(k+"="+v);
+                    cmd.append(k).append("=").append(v);
                 }
             }
         }
@@ -379,7 +384,7 @@ public class Commands {
             cmd.append("name="); // NOI18N
             cmd.append(Utils.sanitizeName(name));
             if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
             addKeepSessions(cmd, preserveSessions);
@@ -389,7 +394,7 @@ public class Commands {
 
     private static void addKeepSessions(StringBuilder cmd, Boolean preserveSessions) {
         if(Boolean.TRUE.equals(preserveSessions)) {
-            cmd.append(ServerCommand.PARAM_SEPARATOR + "properties="); // NOI18N
+            cmd.append(ServerCommand.PARAM_SEPARATOR).append("properties="); // NOI18N
             cmd.append("keepSessions=true");  // NOI18N
         }
     }
@@ -510,5 +515,5 @@ public class Commands {
             return true;
         }
     }
-}
+        }
 

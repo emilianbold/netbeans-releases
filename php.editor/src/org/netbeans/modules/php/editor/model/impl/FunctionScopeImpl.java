@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
@@ -135,7 +136,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return retval;
     }
 
-    private static List<String> recursionDetection = new ArrayList<String>();//#168868
+    private static Set<String> recursionDetection = new HashSet<String>();//#168868
 
     public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
@@ -148,9 +149,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             retval = new HashSet<TypeScope>();
             for (String typeName : types.split("\\|")) {//NOI18N
                 if (typeName.trim().length() > 0) {
+                    boolean added = false;
                     try {
-                        recursionDetection.add(typeName);
-                        if (recursionDetection.size() < 30) {
+                        added = recursionDetection.add(typeName);
+                        if (added && recursionDetection.size() < 15) {
                             if (resolve && typeName.contains("@")) {//NOI18N
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
 
@@ -159,7 +161,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                             }
                         }
                     } finally {
-                        recursionDetection.remove(typeName);
+                        if (added) {
+                            recursionDetection.remove(typeName);
+                        }
                     }
                 }
             }

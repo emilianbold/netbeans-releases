@@ -92,6 +92,13 @@ import org.openide.modules.Dependency;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbCollections;
+import org.openide.xml.EntityCatalog;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /** Checks consistency of System File System contents.
  */
@@ -725,17 +732,17 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
         LayerCacheManager bcm = LayerCacheManager.manager(true);
         Logger err = Logger.getLogger("org.netbeans.core.projects.cache");
-        LayerParseHandler h = new LayerParseHandler();
+        TestHandler h = new TestHandler();
         err.addHandler(h);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         bcm.store(bcm.createEmptyFileSystem(), urls, os);
         assertNoErrors("No errors or warnings during layer parsing", h.errors);
     }
     
-    private static class LayerParseHandler extends Handler {
+    private static class TestHandler extends Handler {
         List<String> errors = new ArrayList<String>();
         
-        LayerParseHandler () {}
+        TestHandler () {}
         
         public @Override void publish(LogRecord rec) {
             if (Level.WARNING.equals(rec.getLevel()) || Level.SEVERE.equals(rec.getLevel())) {
@@ -753,7 +760,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
 
     public void testFolderOrdering() throws Exception {
-        LayerParseHandler h = new LayerParseHandler();
+        TestHandler h = new TestHandler();
         Logger.getLogger("org.openide.filesystems.Ordering").addHandler(h);
         Set<List<String>> editorMultiFolders = new HashSet<List<String>>();
         Pattern editorFolder = Pattern.compile("Editors/(application|text)/([^/]+)(/.+|$)");
@@ -923,6 +930,49 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         // (this is likely to be more common, e.g. mysterious Shortcuts/D-A.shadow in uml.drawingarea)
         // XXX check for shortcut conflict between Shortcuts and each keymap, e.g. Ctrl-R in Eclipse keymap
         assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
+    }
+    
+    public void testNbinstHost() throws Exception {
+        TestHandler handler = new TestHandler();
+        Logger.getLogger("org.netbeans.core.startup.InstalledFileLocatorImpl").addHandler(handler);
+        FileObject libs = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
+        if (libs != null) {
+            for (FileObject lib : libs.getChildren()) {
+                Document doc = XMLUtil.parse(new InputSource(lib.getURL().toString()), true, false, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
+                NodeList nl = doc.getElementsByTagName("resource");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    Element resource = (Element) nl.item(i);
+                    validateNbinstURL(new URL(XMLUtil.findText(resource)), handler, lib);
+                }
+            }
+        }
+        for (FileObject f : NbCollections.iterable(FileUtil.getConfigRoot().getChildren(true))) {
+            for (String attr : NbCollections.iterable(f.getAttributes())) {
+                Object val = f.getAttribute(attr);
+                if (val instanceof URL) {
+                    validateNbinstURL((URL) val, handler, f);
+                }
+            }
+        }
+        assertNoErrors("No improper nbinst URLs", handler.errors());
+    }
+    private void validateNbinstURL(URL u, TestHandler handler, FileObject f) {
+        URL u2 = FileUtil.getArchiveFile(u);
+        if (u2 != null) {
+            u = u2;
+        }
+        if ("nbinst".equals(u.getProtocol())) {
+            List<String> errors = handler.errors();
+            try {
+                int len = errors.size();
+                u.openStream().close();
+                if (errors.size() == len + 1) {
+                    errors.set(len, f.getPath() + ": " + errors.get(len));
+                }
+            } catch (IOException x) {
+                errors.add(f.getPath() + ": cannot open " + u + ": " + x);
+            }
+        }
     }
 
 }

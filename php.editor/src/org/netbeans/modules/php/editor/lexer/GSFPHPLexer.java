@@ -63,24 +63,26 @@ public class GSFPHPLexer implements Lexer<PHPTokenId> {
     private final PHP5ColoringLexer scanner;
     private TokenFactory<PHPTokenId> tokenFactory;    
     
-    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
+    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info, boolean short_tag, boolean asp_tag, boolean inPHP) {
+        scanner = new PHP5ColoringLexer(info, short_tag, asp_tag, inPHP);
+        tokenFactory = info.tokenFactory();
+    }
+    
+    public static GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
         boolean short_tag = true;
         boolean asp_tag = false;
-
         FileObject fileObject = (FileObject)info.getAttributeValue(FileObject.class);
         if (fileObject != null) {
             PhpLanguageOptions.Properties languageProperties = PhpLanguageOptions.getDefault().getProperties(fileObject);
             asp_tag = languageProperties.areAspTagsEnabled();
             short_tag = languageProperties.areShortTagsEnabled();
         }
-        scanner = new PHP5ColoringLexer(info, short_tag, asp_tag, inPHP);
-        tokenFactory = info.tokenFactory();
+        synchronized(GSFPHPLexer.class) {
+            return new GSFPHPLexer(info, short_tag, asp_tag, inPHP);
+        }
     }
     
-    public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
-        return new GSFPHPLexer(info, inPHP);
-    }
-    
+    @Override
     public Token<PHPTokenId> nextToken() {
         try {
             PHPTokenId tokenId = scanner.nextToken(); 
@@ -95,11 +97,12 @@ public class GSFPHPLexer implements Lexer<PHPTokenId> {
         return null;
     }
 
+    @Override
     public Object state() {
         return scanner.getState();
     }
 
+    @Override
     public void release() {
-    }
-    
+    }    
 }

@@ -51,21 +51,21 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.visualweb.jsfsupport.components.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/jsfcl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/appbase.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/dataprovider.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/sqlx.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.jsfsupport.components/modules/ext/jsfcl.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.web.ui.appbase/modules/ext/appbase.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.dataprovider/modules/ext/dataprovider.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.rowset/modules/ext/sqlx.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst:///docs/appbase-src.zip!/</resource>
-        <resource>jar:nbinst:///docs/dataprovider-src.zip!/</resource>
-        <resource>jar:nbinst:///docs/jsfcl-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.web.ui.appbase/docs/appbase-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.dataprovider/docs/dataprovider-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.jsfsupport.components/docs/jsfcl-src.zip!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/appbase-doc.zip!/</resource>
-        <resource>jar:nbinst:///docs/dataprovider-doc.zip!/</resource>
-        <resource>jar:nbinst:///docs/jsfcl-doc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.web.ui.appbase/docs/appbase-doc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.dataprovider/docs/dataprovider-doc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.jsfsupport.components/docs/jsfcl-doc.zip!/</resource>
     </volume>
 </library>

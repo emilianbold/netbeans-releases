@@ -63,6 +63,7 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.openide.explorer.PropertyPanelBridge;
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.outline.Outline;
@@ -370,7 +371,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
         return nullPanel;
     }
 
-    private PropertyPanel editor=null;
+    protected PropertyPanel editor=null;
     private PropertyPanel getEditor(Property p, Node n) {
         int prefs = PropertyPanel.PREF_TABLEUI;
 
@@ -769,8 +770,12 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                 });
             }
         }
+        
         @Override
         public boolean stopCellEditing() {
+
+            PropertyPanelBridge.commit(editor);
+
             PropertiesRowModel prm = null;
             if (outline instanceof OutlineView.OutlineViewOutline) {
                 OutlineView.OutlineViewOutline ovo = (OutlineView.OutlineViewOutline) outline;

@@ -50,7 +50,7 @@ import org.apache.jasper.JspC;
 import org.apache.jasper.Options;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.TagPluginManager;
-import org.apache.jasper.compiler.TldLocationsCache;
+import org.apache.jasper.runtime.TldScanner;
 
 /**
  *
@@ -59,11 +59,7 @@ import org.apache.jasper.compiler.TldLocationsCache;
 public class OptionsImpl implements Options {
 
     private static final Logger LOGGER = Logger.getLogger(OptionsImpl.class.getName());
-    
-    /**
-     * Cache for the TLD locations
-     */
-    private final TldLocationsCache tldLocationsCache;
+    TldScanner scanner = null;
 
     /**
      * Jsp config information
@@ -77,8 +73,8 @@ public class OptionsImpl implements Options {
 
     /** Creates a new instance of OptionsImpl */
     public OptionsImpl(ServletContext context) {
-        tldLocationsCache = new TldLocationsCache(context, this, true);
-        jspConfig = new JspConfig(context, this);
+        scanner = new TldScanner(context, true);
+        jspConfig = new JspConfig(context);
         tagPluginManager = new TagPluginManager(context);
     }
     
@@ -162,10 +158,6 @@ public class OptionsImpl implements Options {
         return tagPluginManager;
     }
     
-    public TldLocationsCache getTldLocationsCache() {
-        return tldLocationsCache;
-    }
-    
     public boolean isPoolingEnabled() {
         // should not be needed
         throw new UnsupportedOperationException();
@@ -240,5 +232,10 @@ public class OptionsImpl implements Options {
     
     public boolean getSaveBytecode() {
         throw new UnsupportedOperationException("Not supported yet. getSaveBytecode");
+    }
+
+    @Override
+    public TldScanner getTldScanner() {
+        return scanner;
     }
 }

@@ -123,7 +123,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     System.gc();
                 }
                 if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum, new CancelService() {
+                    jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum, javaContext.fqn2Files, new CancelService() {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
@@ -238,6 +238,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     System.gc();
                     return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
+                javaContext.fqn2Files.set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                     javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
