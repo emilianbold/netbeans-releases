@@ -55,7 +55,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.api.debugger.jpda.JDIVariable;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -86,8 +86,8 @@ org.netbeans.api.debugger.jpda.Field {
         String parentID
     ) {
         super (
-            debugger,
-            value,
+            debugger, 
+            value, 
             parentID + '.' + index + "^"
         );
         this.index = index;
@@ -100,11 +100,11 @@ org.netbeans.api.debugger.jpda.Field {
     public String getName () {
         return ArrayFieldVariable.getName(maxIndexLog, index);
     }
-
+    
     public String getClassName () {
         return getType ();
     }
-
+    
     public JPDAClassType getDeclaringClass() {
         try {
             return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) ValueWrapper.type(array));
@@ -124,11 +124,11 @@ org.netbeans.api.debugger.jpda.Field {
     public boolean isStatic () {
         return false;
     }
-
+    
     public String getDeclaredType () {
         return declaredType;
     }
-
+    
     protected void setValue (Value value) throws InvalidExpressionException {
         try {
             ArrayReferenceWrapper.setValue(array, index, value);
