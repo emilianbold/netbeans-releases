@@ -41,8 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import java.util.List;
 import java.util.logging.Logger;
 import java.io.IOException;
@@ -53,38 +54,39 @@ import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.junit.MockServices;
 
-/** SyntaxParser unit tests
- *
+/**
  * @author Marek Fukala
  */
-public class SyntaxParserTest extends TestBase {
+public class SyntaxAnalyzerTest extends TestBase {
 
     private static final LanguagePath languagePath = LanguagePath.get(HTMLTokenId.language());
 
-    public SyntaxParserTest(String testName) throws IOException, BadLocationException {
+    public SyntaxAnalyzerTest(String testName) throws IOException, BadLocationException {
         super(testName);
     }
 
     public static Test xsuite() throws IOException, BadLocationException {
         TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxParserTest("testParseBrokenSource"));
-        suite.addTest(new SyntaxParserTest("testParseBrokenSource2"));
+        suite.addTest(new SyntaxAnalyzerTest("testParseBrokenSource"));
+        suite.addTest(new SyntaxAnalyzerTest("testParseBrokenSource2"));
         return suite;
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Logger.getLogger(SyntaxParser.class.getName()).setLevel(Level.FINE);
+        Logger.getLogger(SyntaxAnalyzer.class.getName()).setLevel(Level.FINE);
         MockServices.setServices(MockMimeLookup.class);
     }
 
     public void testOpenTag() throws BadLocationException {
         String text = "<div>";
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -108,7 +110,7 @@ public class SyntaxParserTest extends TestBase {
 
     public void testEndTag() throws BadLocationException {
         String text = "</div>";
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -132,7 +134,7 @@ public class SyntaxParserTest extends TestBase {
 
     public void testTagWithOneAttribute() throws BadLocationException {
         String text = "<div align=\"center\"/>";
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -169,7 +171,7 @@ public class SyntaxParserTest extends TestBase {
 
     public void testTagWithUnquotedAttribute() throws BadLocationException {
         String text = "<div align=center/>";
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -208,7 +210,7 @@ public class SyntaxParserTest extends TestBase {
     public void testTagWithOneAttribute2() throws BadLocationException {
         String text = "<div \t \n align =\t \"center\"/>";
         //             012345 67 890123456 78 9012345 678
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -246,7 +248,7 @@ public class SyntaxParserTest extends TestBase {
     public void testTagWithMoreAttributes() throws BadLocationException {
         String text = "<div align=\"center\" \t\n title=\"mydiv\" />";
         //             012345678901 2345678 90 1 23456789 012345 6789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -293,7 +295,7 @@ public class SyntaxParserTest extends TestBase {
 
         String text = "&nbsp; &amp;";
         //             012345678901
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(3, elements.size());
@@ -321,7 +323,7 @@ public class SyntaxParserTest extends TestBase {
     public void testComment() throws BadLocationException {
         String text = "<!-- comment -->";
         //             01234567890123456
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -346,7 +348,7 @@ public class SyntaxParserTest extends TestBase {
 
         //"<!-- comment1 --><!-- comment2 -->\n"
         //             01234567890123456
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(2, elements.size());
@@ -371,7 +373,7 @@ public class SyntaxParserTest extends TestBase {
         String text = comment1 + "\t\n " + comment2 + "\n";
         //             <!-- comment1 -->\t\n <!-- comment2 -->\n
         //             012345678901234567 8 9012345678901234567 890
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(4, elements.size());
@@ -399,7 +401,7 @@ public class SyntaxParserTest extends TestBase {
     public void testSimpleSGMLDeclaration() throws BadLocationException {
         String text = "<!X Y Z>";
         //             0123456789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -427,7 +429,7 @@ public class SyntaxParserTest extends TestBase {
     public void testSGMLDeclaration() throws BadLocationException {
         String text = "<!X -- comment -- Y \n \t Z>";
         //             0123456789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -455,7 +457,7 @@ public class SyntaxParserTest extends TestBase {
     public void testDoctype() throws BadLocationException {
         String text = "<!DOCTYPE html \t PUBLIC \"id part 2\" \n \"file\">";
         //             0123456789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -484,7 +486,7 @@ public class SyntaxParserTest extends TestBase {
         String text = "<!DOCTYPE html \t PUBLIC \"simpleid\" \n \"file\">";
         //             0123456789
 
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -513,7 +515,7 @@ public class SyntaxParserTest extends TestBase {
         String text = "<div style=\"color:red\"/>";
         //             012345678901 2345678 90 1 23456789 012345 6789
 
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -545,7 +547,7 @@ public class SyntaxParserTest extends TestBase {
     public void testParseText() throws BadLocationException {
         String text = "<div>text</div>last";
         //             012345678901 2345678 90 1 23456789 012345 6789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals("Unexpected number of elements: " + elementsToString(elements), 4, elements.size());
@@ -565,7 +567,7 @@ public class SyntaxParserTest extends TestBase {
     public void testParseNewLineText() throws BadLocationException {
         String text = "<div>\n</div>\nlast";
         //             012345678901 2345678 90 1 23456789 012345 6789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals("Unexpected number of elements: " + elementsToString(elements), 4, elements.size());
@@ -582,7 +584,7 @@ public class SyntaxParserTest extends TestBase {
     public void testParseBrokenSource() throws BadLocationException {
         String text = "<div></";
         //             012345678901 2345678 90 1 23456789 012345 6789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(2, elements.size());
@@ -603,7 +605,7 @@ public class SyntaxParserTest extends TestBase {
     public void testParseBrokenSource2() throws BadLocationException {
         String text = "<div></</div>";
         //             012345678901 2345678 90 1 23456789 012345 6789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(3, elements.size());
@@ -628,7 +630,7 @@ public class SyntaxParserTest extends TestBase {
     public void testParseBrokenOpenTag() throws BadLocationException {
         String text = "<div align= </div>";
         //             012345678901 2345678 90 1 23456789 012345 6789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         System.out.println(elementsToString(elements));
 
@@ -652,7 +654,7 @@ public class SyntaxParserTest extends TestBase {
     public void testParseBrokenOpenTag2() throws BadLocationException {
         String text = "<div align=@# </div>";
         //             012345678901 2345678 90 1 23456789 012345 6789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         System.out.println(elementsToString(elements));
 
@@ -675,7 +677,7 @@ public class SyntaxParserTest extends TestBase {
     public void testParseBrokenOpenTagAtFileEnd() throws BadLocationException {
         String text = "<div align=";
         //             012345678901 2345678 90 1 23456789 012345 6789
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -692,7 +694,7 @@ public class SyntaxParserTest extends TestBase {
     public void testParseUnfinishedOpenTag() throws BadLocationException {
         String text = "<col";
         //             01234567
-        List<SyntaxElement> elements = SyntaxParser.parse(SyntaxParserContext.createContext(text)).getElements();
+        List<SyntaxElement> elements = getSyntaxElements(text);
 
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -707,8 +709,13 @@ public class SyntaxParserTest extends TestBase {
 
     }
 
+    private List<SyntaxElement> getSyntaxElements(String code) {
+        HtmlSource source = new HtmlSource(code);
+        return SyntaxAnalyzer.create(source).elements().items();
+    }
+
     private static String elementsToString(List<SyntaxElement> elements) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for(SyntaxElement se : elements) {
             sb.append(se.toString());
             sb.append("\n");

@@ -40,7 +40,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.spi;
+
+import org.netbeans.editor.ext.html.parser.api.AstNode;
 
 /**
  *
