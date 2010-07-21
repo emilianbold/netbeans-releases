@@ -93,7 +93,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
-import org.netbeans.api.debugger.jpda.JDIVariable;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
@@ -120,14 +120,14 @@ import org.openide.util.NbBundle;
 public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     // Customized for add/removePropertyChangeListener
     // Cloneable for fixed watches
-
+    
     private Value   value;
     private JPDADebuggerImpl debugger;
     private String          id;
-
+    
     private Set<PropertyChangeListener> listeners = new HashSet<PropertyChangeListener>();
 
-
+    
     public AbstractVariable (
         JPDADebuggerImpl debugger,
         Value value,
@@ -140,9 +140,9 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             this.id = Integer.toString(super.hashCode());
     }
 
-
+    
     // public interface ........................................................
-
+    
     /**
     * Returns string representation of type of this variable.
     *
@@ -152,7 +152,7 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         Value v = getInnerValue ();
         return getValue(v);
     }
-
+    
     static String getValue (Value v) {
         if (v == null) return "null";
         if (v instanceof VoidValue) return "void";
@@ -253,7 +253,7 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             }
         }*/
     }
-
+    
     private Value convertValue(Value value, Type type) {
         if (type instanceof PrimitiveType) {
             if (value instanceof ObjectReference) {
@@ -321,14 +321,14 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         }
         return value;
     }
-
+    
     /**
      * Override, but do not call directly!
      */
     protected void setValue (Value value) throws InvalidExpressionException {
         throw new InternalError ();
     }
-
+    
     public void setObject(Object bean) {
         try {
             if (bean instanceof String) {
@@ -364,7 +364,7 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             return NbBundle.getMessage(AbstractVariable.class, "MSG_ObjCollected");
         }
     }
-
+    
     public JPDAClassType getClassType() {
         Value value = getInnerValue();
         if (value == null) return null;
@@ -384,23 +384,23 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             return null;
         }
     }
-
+    
     public boolean equals (Object o) {
         return  (o instanceof AbstractVariable) &&
                 (id.equals (((AbstractVariable) o).id));
     }
-
+    
     public int hashCode () {
         return id.hashCode ();
     }
 
-
+    
     // other methods............................................................
-
+    
     protected Value getInnerValue () {
         return value;
     }
-
+    
     protected void setInnerValue (Value v) {
         value = v;
         // refresh tree
@@ -416,42 +416,42 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         //pchs.firePropertyChange("value", null, value);
         //getModel ().fireTableValueChangedChanged (this, null);
     }
-
+    
     public Value getJDIValue() {
         return getInnerValue();
     }
-
+    
     public final JPDADebuggerImpl getDebugger() {
         return debugger;
     }
-
+    
     protected final String getID () {
         return id;
     }
-
+    
     private int cloneNumber = 1;
-
+    
     public Variable clone() {
         AbstractVariable clon = new AbstractVariable(debugger, value, id + "_clone"+(cloneNumber++));
         return clon;
     }
-
+    
     public final void addPropertyChangeListener(PropertyChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-
+    
     public final void removePropertyChangeListener(PropertyChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-
+    
     public String toString () {
         return "Variable ";
     }
-
+    
     /* Uncomment when needed. Was used to create "readable" String and Char values.
     private static String convertToStringInitializer (String s) {
         StringBuffer sb = new StringBuffer ();
@@ -484,7 +484,7 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             }
         return sb.toString();
     }
-
+    
     private static String convertToCharInitializer (String s) {
         StringBuffer sb = new StringBuffer ();
         int i, k = s.length ();
@@ -517,6 +517,6 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         return sb.toString();
     }
      */
-
+    
 }
 
