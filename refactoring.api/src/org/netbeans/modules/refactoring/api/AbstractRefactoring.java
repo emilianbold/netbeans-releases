@@ -72,6 +72,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
+import org.openide.modules.Modules;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -373,13 +374,9 @@ public abstract class AbstractRefactoring {
         }
     }
     
-    private String getModuleName(Class c) {
-        for (ModuleInfo info:Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (info.owns(c)) {
-                return info.getDisplayName();
-            }
-        }
-        return "Unknown";//NOI18N
+    private String getModuleName(Class<?> c) {
+        ModuleInfo info = Modules.getDefault().ownerOf(c);
+        return info != null ? info.getDisplayName() : "Unknown"; //NOI18N
     }
     
     private String createMessage(Class c, Throwable t) {

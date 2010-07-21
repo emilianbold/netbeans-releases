@@ -144,17 +144,17 @@ public final class Setup extends AbstractDiffSetup {
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
                     firstRevision = HgRevision.BASE;
 
-                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision.getRevisionNumber() }); // NOI18N
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     firstRevision = null;
                     firstTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
                 } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
                 | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
                     firstRevision = HgRevision.BASE;
-                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision.getRevisionNumber() }); // NOI18N
                 } else {
                     firstRevision = HgRevision.BASE;
-                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision.getRevisionNumber() }); // NOI18N
                 }
 
                 break;
@@ -173,7 +173,7 @@ public final class Setup extends AbstractDiffSetup {
 
                 if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
                     secondRevision = HgRevision.CURRENT;
-                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalConflict"), new Object [] { secondRevision }); // NOI18N
+                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalConflict"), new Object [] { secondRevision.getRevisionNumber() }); // NOI18N
                 } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
                     secondRevision = HgRevision.CURRENT;
@@ -187,7 +187,7 @@ public final class Setup extends AbstractDiffSetup {
                     secondTitle = loc.getString("MSG_DiffPanel_LocalDeleted"); // NOI18N
                 } else {
                     secondRevision = HgRevision.CURRENT;
-                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalModified"), new Object [] { secondRevision }); // NOI18N
+                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalModified"), new Object [] { secondRevision.getRevisionNumber() }); // NOI18N
                 }
                 break;
 

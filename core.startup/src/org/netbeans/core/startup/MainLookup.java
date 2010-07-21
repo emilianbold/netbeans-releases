@@ -44,7 +44,9 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.Module;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -202,9 +204,9 @@ public final class MainLookup extends ProxyLookup {
     protected void beforeLookup(Lookup.Template templ) {
         Class type = templ.getType();
 
-        // Force module system to be initialize by looking up ModuleInfo.
+        // Force module system to be initialize by looking up ModuleInfo or Modules.
         // Good for unit tests, etc.
-        if (!started && (type == ModuleInfo.class || type == org.netbeans.Module.class)) {
+        if (!started && (type == ModuleInfo.class || type == Module.class || type == Modules.class)) {
             Main.getModuleSystem ();
         }
 

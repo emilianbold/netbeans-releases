@@ -75,8 +75,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import org.netbeans.modules.glassfish.spi.AppDesc;
@@ -144,12 +146,13 @@ public class CommandRunner extends BasicTask<OperationState> {
      *
      */
     public Future<OperationState> restartServer(int debugPort) {
-        if (-1 == debugPort) {
+        final String restartQuery = cf.getRestartQuery(debugPort);
+        if (-1 == debugPort || "".equals(restartQuery) ) {
             return execute(new ServerCommand("restart-domain") {
 
                 @Override
                 public String getQuery() {
-                    return "debug=false";
+                    return restartQuery;
                 }
             }, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
         }
@@ -519,6 +522,14 @@ public class CommandRunner extends BasicTask<OperationState> {
                                 context = SSLContext.getInstance("SSL");
                                 context.init(null, tm, null);
                                 ((HttpsURLConnection)hconn).setSSLSocketFactory(context.getSocketFactory());
+                                ((HttpsURLConnection)hconn).setHostnameVerifier(new HostnameVerifier() {
+
+                                    @Override
+                                    public boolean verify(String string, SSLSession ssls) {
+                                        return true;
+                                    }
+
+                                });
                             } catch (Exception ex) {
                                 // if there is an issue here... there will be another exception later
                                 // which will take care of the user interaction...
