@@ -66,6 +66,15 @@ import org.openide.util.NbBundle;
  */
 public final class RunUtils {
     
+    static {
+        // Otherwise waiting for result of the ExecutorTask does not work.
+        // This is because DefaultArtifactResolver.resolve gets called;
+        // since maven.artifact.threads=5 by default, this adds non-daemon threads
+        // to a ThreadPoolExecutor in the exec process group, so the execution engine
+        // considers the process to still be running.
+        // http://jira.codehaus.org/browse/MNG-4738
+        System.setProperty("maven.artifact.threads", "1"); // NOI18N
+    }
     
     /** Creates a new instance of RunUtils */
     private RunUtils() {
