@@ -884,9 +884,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             } else {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     List<GridAction> actions = null;
-                    DesignerContext context = currentContext();
                     // Component actions
                     setSelection(findComponent(point));
+                    DesignerContext context = currentContext();
                     if (selection != null) {
                         context.setFocusedComponent(selection);
                         actions = gridManager.designerActions(GridAction.Context.COMPONENT);
