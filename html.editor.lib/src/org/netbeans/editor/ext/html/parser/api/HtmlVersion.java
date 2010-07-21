@@ -72,7 +72,8 @@ public enum HtmlVersion {
 
     public static HtmlVersion findByPublicId(String publicId) {
         for(HtmlVersion version : HtmlVersion.values()) {
-            if(publicId == null && publicId == version.publicID || publicId.equals(version.getPublicID())) {
+            if(publicId == null && publicId == version.publicID  //null check
+                    || publicId != null && publicId.equals(version.getPublicID())) {
                 return version;
             }
         }

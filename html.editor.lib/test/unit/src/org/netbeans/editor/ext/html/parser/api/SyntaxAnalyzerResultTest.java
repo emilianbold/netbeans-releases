@@ -88,6 +88,55 @@ public class SyntaxAnalyzerResultTest extends TestBase {
 
     }
 
+    public void testExistingDoctype() throws ParseException {
+        String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">";
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+        assertNotNull(result);
+
+        assertNotNull(result.getPublicID());
+        assertEquals("-//W3C//DTD HTML 4.01 Transitional//EN", result.getPublicID());
+
+        HtmlVersion version = result.getHtmlVersion();
+        assertEquals(HtmlVersion.HTML41_TRANSATIONAL, version);//fallback
+        assertNotNull(version.getDTD());
+
+    }
+
+    public void testDoctypeInLowercase() throws ParseException {
+        String code = "<!doctype html public \"-//W3C//DTD HTML 4.01 Transitional//EN\">";
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+        assertNotNull(result);
+
+        assertNotNull(result.getPublicID());
+        assertEquals("-//W3C//DTD HTML 4.01 Transitional//EN", result.getPublicID());
+
+        HtmlVersion version = result.getHtmlVersion();
+        assertEquals(HtmlVersion.HTML41_TRANSATIONAL, version);//fallback
+        assertNotNull(version.getDTD());
+
+    }
+
+    public void testCorruptedDoctype() throws ParseException {
+        String code = "<!DOCTYP html>";
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+        assertNotNull(result);
+
+        assertNull(result.getPublicID());
+        
+        HtmlVersion version = result.getHtmlVersion();
+        assertEquals(HtmlVersion.HTML41_TRANSATIONAL, version);//fallback
+        assertNotNull(version.getDTD());
+
+    }
+
+
+
     public void testInvalidPublicId() throws ParseException {
         String code = "<!DOCTYPE HTML PUBLIC \"invalid_public_id\"><html><head><title>xxx</title></head><body>yyy</body></html>";
         HtmlSource source = new HtmlSource(code);

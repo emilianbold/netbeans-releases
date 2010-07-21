@@ -304,7 +304,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
     }
 
     public void testEmptyXhtmlTags() throws Exception{
-        assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>", "-//W3C//DTD XHTML 1.0 Strict//EN");
+        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta content=''></meta><title></title></head><body></body></html>");
     }
 
     public void testOptinalEndTagsInTable() throws Exception{
@@ -462,33 +462,9 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
     }
 
-    public void testBigFile() throws Exception {
-        testSyntaxTree("big.html");
-//
-//
-//        FileObject source = getTestFile(DATA_DIR_BASE + "big.html");
-//        BaseDocument doc = getDocument(source);
-//        String code = doc.getText(0, doc.getLength());
-//
-//        System.out.println("lexing...");
-//
-//        long a = System.currentTimeMillis();
-//        int loop = 5;
-//        for(int i = 0; i < loop; i++) {
-//
-//            TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
-//            TokenSequence ts = th.tokenSequence();
-//            ts.moveStart();
-//
-//            while(ts.moveNext()) {
-//            }
-//
-//        }
-//        long b = System.currentTimeMillis();
-//
-//        System.out.println("big file lexed in ~ " + ((b-a)/loop));
-
-    }
+//    public void testBigFile() throws Exception {
+//        testSyntaxTree("big.html");
+//    }
 
     public void testComment() throws BadLocationException, ParseException {
         String code = "<!-- comment -->";
