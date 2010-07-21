@@ -837,8 +837,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         public void mousePressed(MouseEvent e) {
             Point point = e.getPoint();
             draggingStart = point;
-            if (resizingMode == 0) {
-                if (SwingUtilities.isLeftMouseButton(e)) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                if (resizingMode == 0) {
                     // Component selection
                     setSelection(findComponent(point));
                     // Column selection
@@ -851,15 +851,15 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     if (row != -1) {
                         selectedRows.flip(row);
                     }
+                } else {
+                    // Resizing (start)
+                    resizing = true;
+                    draggingRect = fromComponentPane(selection.getBounds());
+                    newGridX = gridInfo.getGridX(selection);
+                    newGridY = gridInfo.getGridY(selection);
+                    newGridHeight = gridInfo.getGridHeight(selection);
+                    newGridWidth = gridInfo.getGridWidth(selection);
                 }
-            } else {
-                // Resizing (start)
-                resizing = true;
-                draggingRect = fromComponentPane(selection.getBounds());
-                newGridX = gridInfo.getGridX(selection);
-                newGridY = gridInfo.getGridY(selection);
-                newGridHeight = gridInfo.getGridHeight(selection);
-                newGridWidth = gridInfo.getGridWidth(selection);
             }
             repaint();
         }
@@ -939,14 +939,16 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 draggingRect = calculateResizingRectangle(e.getPoint());
                 calculateResizingGridLocation();
             } else if (selection != null) {
-                if (!moving) {
-                    // Moving start
-                    newGridHeight = gridInfo.getGridHeight(selection);
-                    newGridWidth = gridInfo.getGridWidth(selection);
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    if (!moving) {
+                        // Moving start
+                        newGridHeight = gridInfo.getGridHeight(selection);
+                        newGridWidth = gridInfo.getGridWidth(selection);
+                    }
+                    moving = true;
+                    draggingRect = calculateMovingRectangle(e.getPoint());
+                    calculateMovingGridLocation(e.getPoint());
                 }
-                moving = true;
-                draggingRect = calculateMovingRectangle(e.getPoint());
-                calculateMovingGridLocation(e.getPoint());
             }
             repaint();
         }
