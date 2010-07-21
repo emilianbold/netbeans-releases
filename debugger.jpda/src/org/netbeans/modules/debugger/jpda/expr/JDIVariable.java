@@ -42,21 +42,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.debugger.jpda;
+package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.Value;
+import org.netbeans.api.debugger.jpda.Variable;
 
 /**
- * This interface is implemented by variables to provide the appropriate JDI value.
+ * A primitive variable, which provides the appropriate JDI value.
  *
  * @author Martin Entlicher
  */
 public interface JDIVariable extends Variable {
-
-    /**
-     * Provides the raw JDI value.
-     * @return The JDI value of the variable.
-     */
+    
     Value getJDIValue();
     
 }

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.debugger.jpda.expr;
 
-import org.netbeans.api.debugger.jpda.JDIVariable;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
