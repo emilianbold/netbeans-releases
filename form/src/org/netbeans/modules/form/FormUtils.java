@@ -1102,7 +1102,7 @@ public class FormUtils
         return false;
     }
 
-    static ViewConverter[] getViewConverters() {
+    public static ViewConverter[] getViewConverters() {
         Lookup.Result<ViewConverter> result = Lookup.getDefault().lookupResult(ViewConverter.class);
         Collection<? extends ViewConverter> all = result.allInstances();
         ViewConverter[] converters = new ViewConverter[all.size()];
