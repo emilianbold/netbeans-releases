@@ -42,52 +42,66 @@
  */
 package org.netbeans.modules.profiler.categories.j2ee;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
 import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
-import org.netbeans.lib.profiler.marker.Mark;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.MarkedCPUCCTNode;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.MethodCPUCCTNode;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode.Children;
+import org.netbeans.lib.profiler.results.cpu.FlatProfileBuilder;
+import org.netbeans.lib.profiler.results.cpu.FlatProfileContainer;
+import org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.SimpleCPUCCTNode;
 import org.netbeans.modules.profiler.categories.Category;
+import org.netbeans.modules.profiler.ui.stats.drilldown.DrillDown;
+import org.openide.util.Lookup;
 
 
 /**
  * @author ads
  *
  */
-public class CategoryMarkTestBase extends TestBase {
+public class FlatProfileTestBase extends TestBase {
 
-    public CategoryMarkTestBase( String name ) {
+    public FlatProfileTestBase( String name ) {
         super(name);
     }
-    
-    protected void doTestCodec( Category category ){
+
+    protected void doTestCodec( Category... categories ){
         resetMarkMappings();
         
         TestGraphBuilder builder = new TestGraphBuilder();
         ProfilerEngineSettings settings = new ProfilerEngineSettings();
         ProfilingSessionStatus status = new ProfilingSessionStatus();
         ProfilerClient client = new ProfilerClient(settings, status , null, null); 
+        
+        CCTResultsFilter filter = Lookup.getDefault().lookup(CCTResultsFilter.class);
+
+        if (filter != null) {
+            filter.reset(); 
+        }
+
+        FlatProfileBuilder flatProfileBuilder = Lookup.getDefault().lookup(
+                FlatProfileBuilder.class);
+        flatProfileBuilder.setContext(client, null, filter);
+        
+        flatProfileBuilder.cctReset();
+        
+        CCTResultsFilter.EvaluatorProvider factory = new TestDrillDownFactory(client);
+        
+        filter.setEvaluators(Collections.singleton( factory ));
+        
         builder.startup( client );
         
-        Set<Integer> markedIds = new HashSet<Integer>();
-        Set<Integer> plainIds = new HashSet<Integer>();
+        List<Integer> markedIds = new LinkedList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
-        plainIds.add(0);
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
-        plainIds.add(1);
         
         status.updateInstrMethodsInfo("com.sun.xml.ws.encoding.MtomCodec.MtomStreamWriter", 0,
                 "flush", "()V");
@@ -100,7 +114,6 @@ public class CategoryMarkTestBase extends TestBase {
                 "method", "()V");
 
         builder.methodEntry( 3 , 0, 1, 0, 0);
-        plainIds.add(3);
         
         builder.methodExit( 3,0,1,0,0);
         
@@ -124,14 +137,12 @@ public class CategoryMarkTestBase extends TestBase {
                 "method", "()V");
 
         builder.methodEntry( 6 , 0, 1, 0, 0);
-        plainIds.add(6);
 
         builder.newThread( 1 , "Thread-1", "java.lang.Thread");
         status.updateInstrMethodsInfo("pack.CustomClass1", 0,
                 "<init>", "()V");
 
         builder.methodEntry( 7 , 1, 2, 0, 0);
-        plainIds.add(7);
 
         status.updateInstrMethodsInfo("com.sun.xml.ws.encoding.MtomCodec.MtomXMLStreamReaderEx", 0,
                 "close", "()V");
@@ -146,35 +157,49 @@ public class CategoryMarkTestBase extends TestBase {
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
 
-        Map<Integer, Mark> methodMarks = getMethodMarks(root );
-        Mark codecMark = category.getAssignedMark();
+        
+        DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
 
-        checkMarks(status, markedIds, plainIds, methodMarks, codecMark, category);
+        checkCategories(status, flatProfileBuilder, markedIds, root, drillDown,
+                categories);
     }
     
-    protected void doTestEndpointInvocation( Category category ){
+    protected void doTestEndpointInvocation( Category... categories ){
         resetMarkMappings();
         
         TestGraphBuilder builder = new TestGraphBuilder();
         ProfilerEngineSettings settings = new ProfilerEngineSettings();
         ProfilingSessionStatus status = new ProfilingSessionStatus();
         ProfilerClient client = new ProfilerClient(settings, status , null, null); 
+        
+        CCTResultsFilter filter = Lookup.getDefault().lookup(CCTResultsFilter.class);
+
+        if (filter != null) {
+            filter.reset(); 
+        }
+
+        FlatProfileBuilder flatProfileBuilder = Lookup.getDefault().lookup(
+                FlatProfileBuilder.class);
+        flatProfileBuilder.setContext(client, null, filter);
+        
+        flatProfileBuilder.cctReset();
+        
+        CCTResultsFilter.EvaluatorProvider factory = new TestDrillDownFactory(client);
+        
+        filter.setEvaluators(Collections.singleton( factory ));
+        
         builder.startup( client );
         
-        Set<Integer> markedIds = new HashSet<Integer>();
-        Set<Integer> plainIds = new HashSet<Integer>();
+        List<Integer> markedIds = new LinkedList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
-        plainIds.add(0);
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
-        plainIds.add(1);
         
         status.updateInstrMethodsInfo("pack.CustomClass", 0,
                 "method", "()V");
 
         builder.methodEntry( 2 , 0, 1, 0, 0);
-        plainIds.add(2);
         
         builder.methodExit( 2,0,1,0,0);
         
@@ -198,7 +223,6 @@ public class CategoryMarkTestBase extends TestBase {
                 "method", "()V");
 
         builder.methodEntry( 5 , 0, 1, 0, 0);
-        plainIds.add(5);
 
         builder.newThread( 1 , "Thread-1", "java.lang.Thread");
 
@@ -220,33 +244,47 @@ public class CategoryMarkTestBase extends TestBase {
                 "method", "()V");
 
         builder.methodEntry( 8 , 1, 1, 0, 0);
-        plainIds.add(8);
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
 
-        Map<Integer, Mark> methodMarks = getMethodMarks(root );
-        Mark endpointInvocationMark = category.getAssignedMark();
+        
+        DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
 
-        checkMarks(status, markedIds, plainIds, methodMarks, endpointInvocationMark, category);
+        checkCategories(status, flatProfileBuilder, markedIds, root, drillDown,
+                categories);
     }
     
-    protected void doTestHttpTransport( Category category ){
+    protected void doTestHttpTransport( Category... categories ){
         resetMarkMappings();
         
         TestGraphBuilder builder = new TestGraphBuilder();
         ProfilerEngineSettings settings = new ProfilerEngineSettings();
         ProfilingSessionStatus status = new ProfilingSessionStatus();
         ProfilerClient client = new ProfilerClient(settings, status , null, null); 
+        
+        CCTResultsFilter filter = Lookup.getDefault().lookup(CCTResultsFilter.class);
+
+        if (filter != null) {
+            filter.reset(); 
+        }
+
+        FlatProfileBuilder flatProfileBuilder = Lookup.getDefault().lookup(
+                FlatProfileBuilder.class);
+        flatProfileBuilder.setContext(client, null, filter);
+        
+        flatProfileBuilder.cctReset();
+        
+        CCTResultsFilter.EvaluatorProvider factory = new TestDrillDownFactory(client);
+        
+        filter.setEvaluators(Collections.singleton( factory ));
+        
         builder.startup( client );
         
-        Set<Integer> markedIds = new HashSet<Integer>();
-        Set<Integer> plainIds = new HashSet<Integer>();
+        List<Integer> markedIds = new LinkedList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
-        plainIds.add(0);
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
-        plainIds.add(1);
         
         status.updateInstrMethodsInfo("com.sun.xml.ws.transport.http.servlet.WSServlet", 0,
                 "doGet", "(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V");
@@ -268,7 +306,6 @@ public class CategoryMarkTestBase extends TestBase {
                 "method", "()V");
 
         builder.methodEntry( 4 , 0, 1, 0, 0);
-        plainIds.add(4);
 
         builder.newThread( 1 , "Thread-1", "java.lang.Thread");
         
@@ -276,7 +313,6 @@ public class CategoryMarkTestBase extends TestBase {
                 "method", "()V");
 
         builder.methodEntry( 5 , 1, 2, 0, 0);
-        plainIds.add(5);
 
         status.updateInstrMethodsInfo("com.sun.xml.ws.transport.http.servlet.WSServlet", 0,
                 "doPut", "(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V");
@@ -305,35 +341,48 @@ public class CategoryMarkTestBase extends TestBase {
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
 
-        Map<Integer, Mark> methodMarks = getMethodMarks(root );
-        Mark mark = category.getAssignedMark();
+        DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
 
-        checkMarks(status, markedIds, plainIds, methodMarks, mark, category);
+        checkCategories(status, flatProfileBuilder, markedIds, root, drillDown,
+                categories); 
     }
     
-    protected void doTestMessageProcessing( Category category ){
+    protected void doTestMessageProcessing( Category... categories ){
         resetMarkMappings();
         
         TestGraphBuilder builder = new TestGraphBuilder();
         ProfilerEngineSettings settings = new ProfilerEngineSettings();
         ProfilingSessionStatus status = new ProfilingSessionStatus();
         ProfilerClient client = new ProfilerClient(settings, status , null, null); 
+        
+        CCTResultsFilter filter = Lookup.getDefault().lookup(CCTResultsFilter.class);
+
+        if (filter != null) {
+            filter.reset(); 
+        }
+
+        FlatProfileBuilder flatProfileBuilder = Lookup.getDefault().lookup(
+                FlatProfileBuilder.class);
+        flatProfileBuilder.setContext(client, null, filter);
+        
+        flatProfileBuilder.cctReset();
+        
+        CCTResultsFilter.EvaluatorProvider factory = new TestDrillDownFactory(client);
+        
+        filter.setEvaluators(Collections.singleton( factory ));
+        
         builder.startup( client );
         
-        Set<Integer> markedIds = new HashSet<Integer>();
-        Set<Integer> plainIds = new HashSet<Integer>();
+        List<Integer> markedIds = new LinkedList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
-        plainIds.add(0);
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
-        plainIds.add(1);
         
         status.updateInstrMethodsInfo("pack.CustomClass", 0,
                 "method", "()V");
 
         builder.methodEntry( 2 , 0, 1, 0, 0);
-        plainIds.add(2);
         
         builder.methodExit( 2,0,3,0,0);
         
@@ -370,33 +419,47 @@ public class CategoryMarkTestBase extends TestBase {
                 "method", "()V");
 
         builder.methodEntry( 7 , 1, 1, 0, 0);
-        plainIds.add(7);
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
+        
+        DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
 
-        Map<Integer, Mark> methodMarks = getMethodMarks(root );
-        Mark mark = category.getAssignedMark();
+        checkCategories(status, flatProfileBuilder, markedIds, root, drillDown,
+                categories); 
 
-        checkMarks(status, markedIds, plainIds, methodMarks, mark, category);
     }
     
-    protected void doTestStreaming(Category category ){
+    protected void doTestStreaming(Category... categories ){
         resetMarkMappings();
         
         TestGraphBuilder builder = new TestGraphBuilder();
         ProfilerEngineSettings settings = new ProfilerEngineSettings();
         ProfilingSessionStatus status = new ProfilingSessionStatus();
         ProfilerClient client = new ProfilerClient(settings, status , null, null); 
+        
+        CCTResultsFilter filter = Lookup.getDefault().lookup(CCTResultsFilter.class);
+
+        if (filter != null) {
+            filter.reset(); 
+        }
+
+        FlatProfileBuilder flatProfileBuilder = Lookup.getDefault().lookup(
+                FlatProfileBuilder.class);
+        flatProfileBuilder.setContext(client, null, filter);
+        
+        flatProfileBuilder.cctReset();
+        
+        CCTResultsFilter.EvaluatorProvider factory = new TestDrillDownFactory(client);
+        
+        filter.setEvaluators(Collections.singleton( factory ));
+        
         builder.startup( client );
         
-        Set<Integer> markedIds = new HashSet<Integer>();
-        Set<Integer> plainIds = new HashSet<Integer>();
+        List<Integer> markedIds = new LinkedList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
-        plainIds.add(0);
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
-        plainIds.add(1);
         
         status.updateInstrMethodsInfo("com.sun.xml.ws.streaming.XMLStreamReaderUtil", 0,
                 "close", "(Ljavax/xml/stream/XMLStreamReader;)V");
@@ -409,7 +472,6 @@ public class CategoryMarkTestBase extends TestBase {
                 "method", "()V");
 
         builder.methodEntry( 3 , 0, 1, 0, 0);
-        plainIds.add(3);
         
         status.updateInstrMethodsInfo("com.sun.xml.ws.streaming.XMLStreamReaderUtil", 0,
                 "readRest", "(Ljavax/xml/stream/XMLStreamReader;)V");
@@ -439,83 +501,67 @@ public class CategoryMarkTestBase extends TestBase {
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
 
-        Map<Integer, Mark> methodMarks = getMethodMarks(root );
-        Mark mark = category.getAssignedMark();
+        DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
 
-        checkMarks(status, markedIds, plainIds, methodMarks, mark, category);
+        checkCategories(status, flatProfileBuilder, markedIds, root, drillDown,
+                categories); 
     }
-    
-    protected void checkMarks( ProfilingSessionStatus status, Set<Integer> ids,
-            Set<Integer> plainIds, Map<Integer, Mark> methodMarks,
-            Mark requestedMark, Category category )
+
+    protected void checkCategory( ProfilingSessionStatus status,
+            FlatProfileContainer flatProfile , String categoryName , 
+            List<Integer> ids )
     {
-        checkMarks(status, ids, plainIds, methodMarks, requestedMark, 
-                category.getLabel());
+        Set<Integer> methodIds = new HashSet<Integer>();
+        for ( int i= 0; i<flatProfile.getNRows(); i++){
+            int methodId = flatProfile.getMethodIdAtRow(i);
+            methodIds.add( methodId );
+        }
+        List<Integer> copyIds = new ArrayList<Integer>(ids);
+        for (Integer id : methodIds) {
+            assertTrue( "Category "+categoryName+" should contain method '"+
+                    status.getInstrMethodClasses()[id]+
+                "."+status.getInstrMethodNames()[id]+"'",copyIds.contains(id));
+            copyIds.remove(id);
+        }
+        if ( copyIds.size()>0){
+            Integer id = copyIds.iterator().next();
+            assertEquals( "Method "+status.getInstrMethodClasses()[id]+
+                    "."+status.getInstrMethodNames()[id]+" is not found in category"
+                    +categoryName,copyIds.size(), 0 );
+        }
     }
     
-    protected void checkMarks( ProfilingSessionStatus status, Set<Integer> ids,
-            Set<Integer> plainIds, Map<Integer, Mark> methodMarks,
-            Mark requestedMark, String categoryName )
+    private void checkCategories( ProfilingSessionStatus status,
+            FlatProfileBuilder flatProfileBuilder, List<Integer> markedIds,
+            SimpleCPUCCTNode root, DrillDown drillDown, Category... categories )
     {
-        for (Entry<Integer, Mark> entry : methodMarks.entrySet()) {
-            int id = entry.getKey();
-            Mark mark = entry.getValue();
-            if (!mark.equals(requestedMark)) {
-                assertTrue("Method '"
-                        + status.getInstrMethodClasses()[id]
-                        + "."
-                        + status.getInstrMethodNames()[id]
-                        + "' should be included in "
-                        + categoryName +" category, but its category is "
-                        + getCategorization().getCategoryForMark(mark)
-                                .getLabel(), false);
-            }
-            ids.remove( id );
-            if (plainIds.contains(id)) {
-                assertTrue("There is a method '"
-                        + status.getInstrMethodClasses()[id] + "."
-                        + status.getInstrMethodNames()[id]
-                        + "' which should not be categorized , but is category is :" +
-                                getCategorization().getCategoryForMark(mark).getLabel(), false);
-            }
-        }
-        if ( !ids.isEmpty()){
-            int id = ids.iterator().next();
-            assertTrue( "There is a method  '"+status.getInstrMethodClasses()[id]+"."+
-                    status.getInstrMethodNames()[id]+
-                    "' which is not marked", false);
+        for (Category category : categories) {
+            drillDown.drilldown(category.getId());
+
+            flatProfileBuilder.cctEstablished(root, false);
+            FlatProfileContainer flatProfile = flatProfileBuilder
+                    .createFlatProfile();
+
+            assertEquals(
+                    markedIds.size() + " methods expected in "
+                            + category.getLabel() + " category",
+                    markedIds.size(), flatProfile.getNRows());
+
+            checkCategory(status, flatProfile, category.getLabel(), markedIds);
         }
     }
     
-    protected Map<Integer, Mark> getMethodMarks( SimpleCPUCCTNode root ){
-        Map<Integer, Mark> result = new HashMap<Integer, Mark>();
-        Stack<Mark> stack = new Stack<Mark>();
-        collectMethodMarks(root, result, stack);
-        return result;
+    protected class TestDrillDownFactory implements CCTResultsFilter.EvaluatorProvider {
+        
+        TestDrillDownFactory( ProfilerClient client ){
+            myDrillDown = new DrillDown(getCategorization(), client);
+        }
+
+        @Override
+        public Set<?> getEvaluators() {
+            return Collections.singleton( myDrillDown);
+        }
+        
+        private DrillDown myDrillDown;
     }
-    
-    private void collectMethodMarks( RuntimeCPUCCTNode node , Map<Integer, Mark> map,
-            Stack<Mark> stack )
-    {
-        if ( node instanceof MarkedCPUCCTNode ){
-            Mark mark = ((MarkedCPUCCTNode)node).getMark();
-            stack.push(mark);
-        }
-        else if ( node instanceof MethodCPUCCTNode ){
-            int methodId = ((MethodCPUCCTNode)node).getMethodId();
-            if ( !stack.isEmpty()) {
-                Mark mark = stack.peek();
-                map.put(methodId, mark);
-            }
-        }
-        Children children = node.getChildren();
-        for ( int i = 0 ; i <children.size(); i++){
-            RuntimeCPUCCTNode child = children.getChildAt(i);
-                collectMethodMarks(child, map, stack);
-        }
-        if ( node instanceof MarkedCPUCCTNode && !stack.isEmpty() ){
-            stack.pop();
-        }
-    }
-    
 }
