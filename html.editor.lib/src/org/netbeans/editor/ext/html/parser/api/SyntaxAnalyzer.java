@@ -52,7 +52,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerElements;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  * Plain HTML syntax analyzer
@@ -140,9 +140,9 @@ public final class SyntaxAnalyzer {
                 ts.offset() + ts.token().length() - start,
                 root_element,
                 doctype_public_id,
-                doctype_file));
+                doctype_file,
+                doctype_name));
     }
-    
     
     private void tag(boolean emptyTag) {
         List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>();
@@ -245,7 +245,7 @@ public final class SyntaxAnalyzer {
     private ArrayList<TokenInfo> attr_keys = null;
     private ArrayList<List<TokenInfo>> attr_values = null;
     
-    private String root_element, doctype_public_id, doctype_file;
+    private String root_element, doctype_public_id, doctype_file, doctype_name;
     
     //PENDING: we do not handle incomplete tokens yet - should be added
     private List<SyntaxElement> parseDocument() {
@@ -281,7 +281,7 @@ public final class SyntaxAnalyzer {
                                 break;
                             case DECLARATION:
                                 start = ts.offset();
-                                if(token.text().toString().equals("<!DOCTYPE")) {
+                                if(LexerUtils.equals("<!doctype", token.text(), true, true)) { //NOI18N
                                     root_element = null;
                                     doctype_public_id = null;
                                     doctype_file = null;
@@ -289,6 +289,7 @@ public final class SyntaxAnalyzer {
                                 } else {
                                     state = S_DECLARATION;
                                 }
+                                doctype_name = token.text().subSequence(2, token.text().length()).toString(); //strip off the <! chars
                                 break;
                             default:
                                 //everything else is just a text
@@ -462,21 +463,19 @@ public final class SyntaxAnalyzer {
                     case S_DOCTYPE_AFTER_ROOT_ELEMENT:
                        switch(id) {
                             case DECLARATION:
-                                if(token.text().toString().equals("PUBLIC")) {
+                                if(LexerUtils.equals("public", token.text(), true, true)) { //NOI18N
                                     doctype_public_id = new String();
                                     state = S_DOCTYPE_PUBLIC_ID;
                                     break;
-                                } else if(token.text().toString().equals("SYSTEM")) {
+                                } else if(LexerUtils.equals("system", token.text(), true, true))  { //NOI18N
                                     state = S_DOCTYPE_FILE;
                                     doctype_file = new String();
                                     break;
+                                } else if(token.text().charAt(0) == '>') {
+                                    declaration();
+                                    state = S_INIT;
+                                    start = -1;
                                 }
-                                //not of the expected
-                                backup(1);
-                                declaration();
-                                state = S_INIT;
-                                start = -1;
-                                
                                 break;
                             case SGML_COMMENT:
                             case EOL:

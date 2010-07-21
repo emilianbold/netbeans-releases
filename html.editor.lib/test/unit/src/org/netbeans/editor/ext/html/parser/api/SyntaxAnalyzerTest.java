@@ -43,7 +43,6 @@
  */
 package org.netbeans.editor.ext.html.parser.api;
 
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import java.util.List;
 import java.util.logging.Logger;
 import java.io.IOException;
@@ -55,7 +54,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.junit.MockServices;
 
@@ -442,6 +440,9 @@ public class SyntaxAnalyzerTest extends TestBase {
 
         SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) e1;
 
+        assertFalse(declaration.isValidDoctype());
+        assertEquals("X", declaration.getDeclarationName());
+
         assertEquals(0, e1.offset());
 
         assertEquals(text.length(), e1.length());
@@ -482,6 +483,27 @@ public class SyntaxAnalyzerTest extends TestBase {
 
     }
 
+    public void testCorruptedDoctype() throws BadLocationException {
+        String text = "<!DOCTYP html>";
+        //             0123456789
+        List<SyntaxElement> elements = getSyntaxElements(text);
+
+        assertNotNull(elements);
+        assertEquals(1, elements.size());
+
+        SyntaxElement e1 = elements.get(0);
+
+        assertNotNull(e1);
+
+        assertEquals(SyntaxElement.TYPE_DECLARATION, e1.type());
+
+        SyntaxElement.Declaration decl = (SyntaxElement.Declaration)e1;
+        assertEquals("DOCTYP", decl.getDeclarationName());
+
+        assertFalse(decl.isValidDoctype());
+
+    }
+
     public void testDoctypeSimplePublicId() throws BadLocationException {
         String text = "<!DOCTYPE html \t PUBLIC \"simpleid\" \n \"file\">";
         //             0123456789
@@ -498,6 +520,8 @@ public class SyntaxAnalyzerTest extends TestBase {
         assertEquals(SyntaxElement.TYPE_DECLARATION, e1.type());
 
         SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) e1;
+
+        assertTrue(declaration.isValidDoctype());
 
         assertEquals(0, e1.offset());
 

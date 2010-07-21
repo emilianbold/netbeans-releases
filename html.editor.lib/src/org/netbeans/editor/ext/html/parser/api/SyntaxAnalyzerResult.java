@@ -45,13 +45,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.Tag;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.ParseException;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.spi.ParseResult;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,9 +58,6 @@ import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerElements;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration;
 import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
-import org.netbeans.editor.ext.html.parser.api.HtmlParserFactory;
-import org.netbeans.editor.ext.html.parser.api.HtmlSourceVersionQuery;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.DefaultParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -305,6 +298,9 @@ public class SyntaxAnalyzerResult {
                 } else {
                     ignoredAreas.add(new IgnoredArea(e.offset(), e.offset() + e.length()));
                 }
+            } else {
+                //add all other element types
+                filtered.add(e);
             }
         }
         return new LocalSourceContext(ignoredAreas, filtered);
@@ -434,8 +430,11 @@ public class SyntaxAnalyzerResult {
         if (declaration == null) {
             for (SyntaxElement e : getElements().items()) {
                 if (e.type() == SyntaxElement.TYPE_DECLARATION) {
-                    declaration = (Declaration) e;
-                    break;
+                    Declaration decl = (Declaration)e;
+                    if(decl.isValidDoctype()) {
+                        declaration = (Declaration) e;
+                        break;
+                    }
                 }
             }
         }

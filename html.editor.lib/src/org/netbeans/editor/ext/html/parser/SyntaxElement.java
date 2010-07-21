@@ -186,6 +186,7 @@ public abstract class SyntaxElement {
         private String root;
         private String publicID;
         private String file;
+        private String doctypeName;
         
         
         /**
@@ -201,12 +202,13 @@ public abstract class SyntaxElement {
          */
         public Declaration( CharSequence document, int from, int length,
                 String doctypeRootElement,
-                String doctypePI, String doctypeFile
+                String doctypePI, String doctypeFile, String doctypeName
                 ) {
             super( document, from, length );
             root = doctypeRootElement;
             publicID = doctypePI;
             file = doctypeFile;
+            this.doctypeName = doctypeName;
         }
         
         /**
@@ -232,6 +234,17 @@ public abstract class SyntaxElement {
          */
         public String getDoctypeFile() {
             return file;
+        }
+
+        /**
+         * @return the declaration id name, e.g. DOCTYPE for <!DOCTYPE ... > declaration
+         */
+        public String getDeclarationName() {
+            return doctypeName;
+        }
+
+        public boolean isValidDoctype() {
+            return "doctype".equalsIgnoreCase(getDeclarationName()) && getRootElement() != null; //NOI18N
         }
 
         @Override
