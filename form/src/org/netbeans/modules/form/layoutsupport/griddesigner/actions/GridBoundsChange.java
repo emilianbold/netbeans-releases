@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,20 +34,79 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.expr;
-
-import com.sun.jdi.Value;
-import org.netbeans.api.debugger.jpda.Variable;
+package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
 /**
- * A primitive variable, which provides the appropriate JDI value.
+ * Information about column/row changes.
  *
- * @author Martin Entlicher
+ * @author Jan Stola
  */
-public interface JDIVariable extends Variable {
-    
-    Value getJDIValue();
-    
+public class GridBoundsChange {
+    /** Old column bounds. */
+    private int[] oldColumnBounds;
+    /** Old row bounds. */
+    private int[] oldRowBounds;
+    /** New column bounds. */
+    private int[] newColumnBounds;
+    /** New row bounds. */
+    private int[] newRowBounds;
+
+    /**
+     * Creates new {@code GridBoundsChange}.
+     *
+     * @param oldColumnBounds old column bounds.
+     * @param oldRowBounds old row bounds.
+     * @param newColumnBounds new column bounds.
+     * @param newRowBounds new row bounds.
+     */
+    public GridBoundsChange(int[] oldColumnBounds, int[] oldRowBounds,
+            int[] newColumnBounds, int[] newRowBounds) {
+        this.oldColumnBounds = oldColumnBounds;
+        this.oldRowBounds = oldRowBounds;
+        this.newColumnBounds = newColumnBounds;
+        this.newRowBounds = newRowBounds;
+    }
+
+    /**
+     * Returns new column bounds.
+     *
+     * @return new column bounds.
+     */
+    public int[] getNewColumnBounds() {
+        return newColumnBounds;
+    }
+
+    /**
+     * Returns new row bounds.
+     *
+     * @return new row bounds.
+     */
+    public int[] getNewRowBounds() {
+        return newRowBounds;
+    }
+
+    /**
+     * Returns old column bounds.
+     *
+     * @return old column bounds.
+     */
+    public int[] getOldColumnBounds() {
+        return oldColumnBounds;
+    }
+
+    /**
+     * Returns old row bounds.
+     *
+     * @return old row bounds.
+     */
+    public int[] getOldRowBounds() {
+        return oldRowBounds;
+    }
+
 }
