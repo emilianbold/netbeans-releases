@@ -80,6 +80,7 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
         } catch (VMDisconnectedExceptionWrapper de) {
         } catch (ObjectCollectedExceptionWrapper ex) {
         }
+        debugger.interestedInThreadGroup(this);
     }
 
     /**
