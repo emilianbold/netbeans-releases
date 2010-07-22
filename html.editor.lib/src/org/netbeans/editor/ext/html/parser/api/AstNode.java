@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,18 +78,18 @@ public class AstNode {
     private Content content = null;
     private ContentModel contentModel = null;
     private Element dtdElement = null;
-    private Collection<Description> descriptions = null;
+    private Collection<ProblemDescription> descriptions = null;
     private List<String> stack = null; //for debugging
     private AstNode matchingNode = null;
     private boolean isEmpty = false;
     private Map<String, Object> properties;
 
-    static AstNode createRootNode(int from, int to, DTD dtd) {
+    public static AstNode createRootNode(int from, int to, DTD dtd) {
         return new RootAstNode(from, to, dtd);
     }
 
     //TODO - replace the public constructors by factory methods
-    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, Element dtdElement, boolean isEmpty, List<String> stack) {
+    public AstNode(String name, NodeType nodeType, int startOffset, int endOffset, Element dtdElement, boolean isEmpty, List<String> stack) {
         this(name, nodeType, startOffset, endOffset, isEmpty);
         this.dtdElement = dtdElement;
         this.contentModel = dtdElement != null ? dtdElement.getContentModel() : null;
@@ -97,13 +97,21 @@ public class AstNode {
         this.stack = stack;
     }
 
-    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, boolean isEmpty) {
+    public AstNode(String name, NodeType nodeType, int startOffset, int endOffset, boolean isEmpty) {
         this.name = name;
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.logicalEndOffset = endOffset;
         this.isEmpty = isEmpty;
+    }
+
+    public boolean isVirtual() {
+        return startOffset() == -1 && endOffset() == -1;
+    }
+
+    public void detachFromParent() {
+        setParent(null);
     }
 
     public String getNamespace() {
@@ -130,11 +138,11 @@ public class AstNode {
         return new int[]{startOffset, logicalEndOffset};
     }
 
-    void setLogicalEndOffset(int offset) {
+    public void setLogicalEndOffset(int offset) {
         this.logicalEndOffset = offset;
     }
 
-    void setMatchingNode(AstNode match) {
+    public void setMatchingNode(AstNode match) {
         this.matchingNode = match;
     }
 
@@ -158,7 +166,7 @@ public class AstNode {
         return dtdElement;
     }
 
-    boolean reduce(Element element) {
+    public boolean reduce(Element element) {
         if (contentModel == null) {
             return false; //unknown tag can contain anything, error reports done somewhere else
         }
@@ -220,7 +228,7 @@ public class AstNode {
 //            System.out.print(e + ", ");
 //        }
 //    }
-    boolean isResolved() {
+    public boolean isResolved() {
         if (content == null) {
             return false;
         }
@@ -262,7 +270,7 @@ public class AstNode {
         return col;
     }
 
-    synchronized void addDescriptionToNode(String key, String message, int type) {
+    public synchronized void addDescriptionToNode(String key, String message, int type) {
         //adjust the description position and length for open tag
         //only the tag name is annotated, not the whole tag
         int from = startOffset();
@@ -277,31 +285,31 @@ public class AstNode {
             }
         }
 
-        addDescription(Description.create(key, message, type, from, to));
+        addDescription(ProblemDescription.create(key, message, type, from, to));
     }
 
-    synchronized void addDescriptionsToNode(Collection<String[]> keys_messages, int type) {
+    public synchronized void addDescriptionsToNode(Collection<String[]> keys_messages, int type) {
         for (String[] msg : keys_messages) {
             addDescriptionToNode(msg[0], msg[1], type);
         }
     }
 
-    synchronized void addDescription(Description message) {
+    public synchronized void addDescription(ProblemDescription message) {
         if (descriptions == null) {
-            descriptions = new ArrayList<Description>(2);
+            descriptions = new ArrayList<ProblemDescription>(2);
         }
         descriptions.add(message);
     }
 
-    synchronized void addDescriptions(Collection<Description> messages) {
+    public synchronized void addDescriptions(Collection<ProblemDescription> messages) {
         if (descriptions == null) {
-            descriptions = new LinkedHashSet<Description>(2);
+            descriptions = new LinkedHashSet<ProblemDescription>(2);
         }
         descriptions.addAll(messages);
     }
 
-    public Collection<Description> getDescriptions() {
-        return descriptions == null ? Collections.<Description>emptyList() : descriptions;
+    public Collection<ProblemDescription> getDescriptions() {
+        return descriptions == null ? Collections.<ProblemDescription>emptyList() : descriptions;
     }
 
     public String name() {
@@ -375,15 +383,39 @@ public class AstNode {
         }
     }
 
-    void addChild(AstNode child) {
-        if (children == null) {
-            children = new LinkedList<AstNode>();
-        }
+    public void addChild(AstNode child) {
+        initChildren();
         children.add(child);
         child.setParent(this);
     }
 
-    void setAttribute(Attribute attr) {
+    public void addChildren(List<AstNode> childrenList) {
+        initChildren();
+        for(AstNode child : childrenList) {
+            addChild(child);
+        }
+    }
+
+    public void removeChild(AstNode child) {
+        initChildren();
+        child.setParent(null);
+        children.remove(child);
+    }
+
+    public void removeChildren(List<AstNode> childrenList) {
+        initChildren();
+        for(AstNode child : childrenList) {
+            removeChild(child);
+        }
+    }
+
+    private synchronized void initChildren() {
+        if (children == null) {
+            children = new LinkedList<AstNode>();
+        }
+    }
+
+    public void setAttribute(Attribute attr) {
         if (attributes == null) {
             attributes = new HashMap<String, Attribute>();
         }
@@ -431,6 +463,10 @@ public class AstNode {
             b.append(type() == NodeType.OPEN_TAG ? "<" : "");
             b.append(type() == NodeType.ENDTAG ? "</" : "");
         }
+        if(getMatchingTag() != null) {
+            b.append('*');
+        }
+
         if (name() != null) {
             b.append(name());
         }
@@ -443,14 +479,17 @@ public class AstNode {
             b.append(type());
         }
         b.append('(');
-        b.append(startOffset());
-        b.append('-');
-        b.append(endOffset());
-        if (logicalEndOffset != endOffset) {
-            b.append('/');
-            b.append(logicalEndOffset);
+        if(isVirtual()) {
+            b.append("virtual");
+        } else {
+            b.append(startOffset());
+            b.append('-');
+            b.append(endOffset());
+            if (logicalEndOffset != endOffset) {
+                b.append('/');
+                b.append(logicalEndOffset);
+            }
         }
-
         b.append(')');
 
         //add dtd element info
@@ -467,7 +506,7 @@ public class AstNode {
         }
 
         //attched messages
-        for (Description d : getDescriptions()) {
+        for (ProblemDescription d : getDescriptions()) {
             b.append(d.getKey());
             b.append(' ');
         }
@@ -480,6 +519,13 @@ public class AstNode {
                 b.append(',');
             }
             b.deleteCharAt(b.length() - 1);
+        }
+
+        if(!getDescriptions().isEmpty()) {
+            b.append("; issues:");
+            for(ProblemDescription d : getDescriptions()) {
+                b.append(d);
+            }
         }
 
         return b.toString();
@@ -502,105 +548,6 @@ public class AstNode {
         this.parent = parent;
     }
 
-    public static final class Description {
-
-        public static final int INFORMATION = 0;
-        public static final int WARNING = 1;
-        public static final int ERROR = 2;
-        private String key;
-        private String text;
-        private int from, to;
-        private int type;
-
-        public static Description create(String key, String text, int type, int from, int to) {
-            return new Description(key, text, type, from, to);
-        }
-
-        private Description(String key, String text, int type, int from, int to) {
-            this.key = key;
-            this.text = text;
-            this.type = type;
-            this.from = from;
-            this.to = to;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public int getType() {
-            return type;
-        }
-
-        public int getFrom() {
-            return from;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public int getTo() {
-            return to;
-        }
-
-        @Override
-        public String toString() {
-            return dump(null);
-        }
-
-        public String dump(String code) {
-            String ttype = "";
-            switch (getType()) {
-                case INFORMATION:
-                    ttype = "Information"; //NOI18N
-                    break;
-                case WARNING:
-                    ttype = "Warning"; //NOI18N
-                    break;
-                case ERROR:
-                    ttype = "Error"; //NOI18N
-                    break;
-            }
-            String nodetext = code == null ? "" : code.substring(getFrom(), getTo());
-            return ttype + ":" + getKey() + " [" + getFrom() + " - " + getTo() + "]: '" + nodetext + (getText() != null ? "'; msg=" + getText() : "");
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Description other = (Description) obj;
-            if ((this.key == null) ? (other.key != null) : !this.key.equals(other.key)) {
-                return false;
-            }
-            if (this.from != other.from) {
-                return false;
-            }
-            if (this.to != other.to) {
-                return false;
-            }
-            if (this.type != other.type) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 23 * hash + (this.key != null ? this.key.hashCode() : 0);
-            hash = 23 * hash + this.from;
-            hash = 23 * hash + this.to;
-            hash = 23 * hash + this.type;
-            return hash;
-        }
-    }
-
     public static interface NodeFilter {
         public boolean accepts(AstNode node);
     }
@@ -619,7 +566,7 @@ public class AstNode {
         protected int nameOffset;
         protected int valueOffset;
 
-        Attribute(String name, String value, int nameOffset, int valueOffset) {
+        public Attribute(String name, String value, int nameOffset, int valueOffset) {
             this.name = name;
             this.value = value;
             this.nameOffset = nameOffset;

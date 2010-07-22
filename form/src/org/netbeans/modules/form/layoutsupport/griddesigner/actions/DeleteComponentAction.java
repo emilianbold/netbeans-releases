@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,20 +34,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
+
+import java.awt.Component;
+import java.util.Collections;
+import javax.swing.Action;
+import org.netbeans.modules.form.layoutsupport.griddesigner.DesignerContext;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridInfoProvider;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridManager;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridUtils;
+import org.openide.util.NbBundle;
 
 /**
+ * Action that deletes the selected component.
  *
- * @author marek
+ * @author Jan Stola
  */
-public interface AstNodeVisitor {
-    
-    public void visit(AstNode node);
+public class DeleteComponentAction implements GridAction {
+    private String name;
+
+    public DeleteComponentAction() {
+        name = NbBundle.getMessage(DeleteComponentAction.class, "DeleteComponentAction_Name"); // NOI18N
+    }
+
+    @Override
+    public Object getValue(String key) {
+        return key.equals(Action.NAME) ? name : null;
+    }
+
+    @Override
+    public boolean isEnabled(DesignerContext context) {
+        return !context.getSelectedComponents().isEmpty();
+    }
+
+    @Override
+    public GridBoundsChange performAction(GridManager gridManager, DesignerContext context) {
+        GridInfoProvider info = gridManager.getGridInfo();
+        int columns = info.getColumnCount();
+        int rows = info.getRowCount();
+        GridUtils.removePaddingComponents(gridManager);
+
+        for (Component component : context.getSelectedComponents()) {
+            gridManager.removeComponent(component);
+        }
+        context.setSelectedComponents(Collections.EMPTY_SET);
+
+        GridUtils.addPaddingComponents(gridManager, columns, rows);
+        GridUtils.revalidateGrid(gridManager);
+        return null;
+    }
 
 }

@@ -37,57 +37,76 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext.html.parser;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.editor.ext.html.test.TestBase;
+package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
 /**
+ * Information about column/row changes.
  *
- * @author mfukala@netbeans.org
+ * @author Jan Stola
  */
-public class AstNodeTest extends TestBase {
+public class GridBoundsChange {
+    /** Old column bounds. */
+    private int[] oldColumnBounds;
+    /** Old row bounds. */
+    private int[] oldRowBounds;
+    /** New column bounds. */
+    private int[] newColumnBounds;
+    /** New row bounds. */
+    private int[] newRowBounds;
 
-    public AstNodeTest(String testName) {
-        super(testName);
+    /**
+     * Creates new {@code GridBoundsChange}.
+     *
+     * @param oldColumnBounds old column bounds.
+     * @param oldRowBounds old row bounds.
+     * @param newColumnBounds new column bounds.
+     * @param newRowBounds new row bounds.
+     */
+    public GridBoundsChange(int[] oldColumnBounds, int[] oldRowBounds,
+            int[] newColumnBounds, int[] newRowBounds) {
+        this.oldColumnBounds = oldColumnBounds;
+        this.oldRowBounds = oldRowBounds;
+        this.newColumnBounds = newColumnBounds;
+        this.newRowBounds = newRowBounds;
     }
 
-    public static Test xsuite() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new AstNodeTest(""));
-        return suite;
+    /**
+     * Returns new column bounds.
+     *
+     * @return new column bounds.
+     */
+    public int[] getNewColumnBounds() {
+        return newColumnBounds;
     }
 
-    public void testNamespaces() throws Exception {
-        AstNode node = new AstNode("div", AstNode.NodeType.OPEN_TAG, 0, 1, false);
-
-        assertEquals("div", node.name());
-        assertEquals("div", node.getNameWithoutPrefix());
-        assertNull(node.getNamespacePrefix());
-
-        node = new AstNode("ui:composition", AstNode.NodeType.OPEN_TAG, 0, 1, false);
-
-        assertEquals("ui:composition", node.name());
-        assertEquals("composition", node.getNameWithoutPrefix());
-        assertEquals("ui", node.getNamespacePrefix());
-
+    /**
+     * Returns new row bounds.
+     *
+     * @return new row bounds.
+     */
+    public int[] getNewRowBounds() {
+        return newRowBounds;
     }
 
-    public void testAttribute() {
-        AstNode.Attribute attr = new AstNode.Attribute("name", "value", 0, 6);
-        assertEquals("name", attr.name());
-        assertEquals("name", attr.nameWithoutNamespacePrefix());
-        assertNull(attr.namespacePrefix());
+    /**
+     * Returns old column bounds.
+     *
+     * @return old column bounds.
+     */
+    public int[] getOldColumnBounds() {
+        return oldColumnBounds;
+    }
 
-        attr = new AstNode.Attribute("xmlns:h", "value", 0, 6);
-        assertEquals("xmlns:h", attr.name());
-        assertEquals("h", attr.nameWithoutNamespacePrefix());
-        assertEquals("xmlns", attr.namespacePrefix());
-
-
+    /**
+     * Returns old row bounds.
+     *
+     * @return old row bounds.
+     */
+    public int[] getOldRowBounds() {
+        return oldRowBounds;
     }
 
 }

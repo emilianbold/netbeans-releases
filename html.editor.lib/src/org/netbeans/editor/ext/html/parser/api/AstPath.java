@@ -39,8 +39,9 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.api.AstNode;
 import java.util.ArrayList;
 import java.util.List;
 

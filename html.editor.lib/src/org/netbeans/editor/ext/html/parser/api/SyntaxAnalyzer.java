@@ -41,23 +41,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerElements;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  * Plain HTML syntax analyzer
  *
  * @author mfukala@netbeans.org
  */
-public final class SyntaxParser {
+public final class SyntaxAnalyzer {
 
     public enum Behaviour {
         /** set as SyntaxParserContext property if you do not want to check html structure */
@@ -69,42 +71,44 @@ public final class SyntaxParser {
     private final LanguagePath languagePath;
     private final TokenHierarchy hi;
     
-    private List<SyntaxElement> EMPTY_ELEMENTS_LIST = Collections.emptyList();
-    private List<SyntaxElement> parsedElements;
+    private SyntaxAnalyzerElements parsedElements;
 
     private final SyntaxElement SHARED_TEXT_ELEMENT = new SyntaxElement.SharedTextElement();
     
-    protected CharSequence parserSource;
-    
-    /**
-     * Creates a plain parser result for an immutable source
-     * 
-     * @param source A non null sequence of characters - parser input
-     */
-    public static SyntaxParserResult parse(SyntaxParserContext context) {
-        assert context != null;
+    private HtmlSource source;
+    private CharSequence sourceCode;
 
-        context.setElements(
-                context.getSourceText().length() == 0 ? Collections.EMPTY_LIST : new SyntaxParser(context.getSourceText()).parseDocument());
-
-        return new SyntaxParserResult(context);
+    public static SyntaxAnalyzer create(HtmlSource source) {
+        return new SyntaxAnalyzer(source);
     }
 
-    private SyntaxParser(final CharSequence source) {
-        this.parserSource = source;
-        this.parsedElements = EMPTY_ELEMENTS_LIST;
+    private SyntaxAnalyzer(HtmlSource source) {
+        this.source = source;
+        this.sourceCode = source.getSourceCode();
         this.languagePath = LanguagePath.get(HTMLTokenId.language());
-        this.hi = TokenHierarchy.create(source, HTMLTokenId.language());
+        this.hi = TokenHierarchy.create(sourceCode, HTMLTokenId.language());
     }
-    
-    public List<SyntaxElement> elements() {
+
+    public SyntaxAnalyzerResult analyze() {
+        return new SyntaxAnalyzerResult(this);
+    }
+
+    HtmlSource source() {
+        return source;
+    }
+
+    synchronized SyntaxAnalyzerElements elements() {
+        if(parsedElements == null) {
+            List<SyntaxElement> parsed = parseDocument();
+            parsedElements = new SyntaxAnalyzerElements(parsed);
+        }
         return parsedElements;
     }
     
     //---------------------------- private methods -----------------------------
  
     private void error() {
-        elements.add(new SyntaxElement.Error(parserSource,
+        elements.add(new SyntaxElement.Error(sourceCode,
                 start,
                 ts.offset() + ts.token().length() - start));
     }
@@ -118,34 +122,34 @@ public final class SyntaxParser {
     }
 
     private void entityReference() {
-        elements.add(new SyntaxElement.EntityReference(parserSource,
+        elements.add(new SyntaxElement.EntityReference(sourceCode,
                 start, 
                 ts.offset() + ts.token().length() - start));
         
     }
     
     private void comment() {
-        elements.add(new SyntaxElement.Comment(parserSource,
+        elements.add(new SyntaxElement.Comment(sourceCode,
                 start, 
                 ts.offset() + ts.token().length() - start));
     }
     
     private void declaration() {
-        elements.add(new SyntaxElement.Declaration(parserSource, 
+        elements.add(new SyntaxElement.Declaration(sourceCode,
                 start, 
                 ts.offset() + ts.token().length() - start,
                 root_element,
                 doctype_public_id,
-                doctype_file));
+                doctype_file,
+                doctype_name));
     }
-    
     
     private void tag(boolean emptyTag) {
         List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>();
             for(int i = 0; i < attr_keys.size(); i++) {
                 TokenInfo key = attr_keys.get(i);
                 List<TokenInfo> values = attr_values.get(i);
-                StringBuffer joinedValue = new StringBuffer();
+                StringBuilder joinedValue = new StringBuilder();
                 
                 if(values == null) {
                     //attribute has no value
@@ -174,7 +178,7 @@ public final class SyntaxParser {
                 }
             }
         
-        elements.add(new SyntaxElement.Tag(parserSource, 
+        elements.add(new SyntaxElement.Tag(sourceCode,
                 start, 
                 ts.offset() + ts.token().length() - start,
                 tagName.intern(), 
@@ -241,7 +245,7 @@ public final class SyntaxParser {
     private ArrayList<TokenInfo> attr_keys = null;
     private ArrayList<List<TokenInfo>> attr_values = null;
     
-    private String root_element, doctype_public_id, doctype_file;
+    private String root_element, doctype_public_id, doctype_file, doctype_name;
     
     //PENDING: we do not handle incomplete tokens yet - should be added
     private List<SyntaxElement> parseDocument() {
@@ -277,7 +281,7 @@ public final class SyntaxParser {
                                 break;
                             case DECLARATION:
                                 start = ts.offset();
-                                if(token.text().toString().equals("<!DOCTYPE")) {
+                                if(LexerUtils.equals("<!doctype", token.text(), true, true)) { //NOI18N
                                     root_element = null;
                                     doctype_public_id = null;
                                     doctype_file = null;
@@ -285,6 +289,7 @@ public final class SyntaxParser {
                                 } else {
                                     state = S_DECLARATION;
                                 }
+                                doctype_name = token.text().subSequence(2, token.text().length()).toString(); //strip off the <! chars
                                 break;
                             default:
                                 //everything else is just a text
@@ -458,21 +463,19 @@ public final class SyntaxParser {
                     case S_DOCTYPE_AFTER_ROOT_ELEMENT:
                        switch(id) {
                             case DECLARATION:
-                                if(token.text().toString().equals("PUBLIC")) {
+                                if(LexerUtils.equals("public", token.text(), true, true)) { //NOI18N
                                     doctype_public_id = new String();
                                     state = S_DOCTYPE_PUBLIC_ID;
                                     break;
-                                } else if(token.text().toString().equals("SYSTEM")) {
+                                } else if(LexerUtils.equals("system", token.text(), true, true))  { //NOI18N
                                     state = S_DOCTYPE_FILE;
                                     doctype_file = new String();
                                     break;
+                                } else if(token.text().charAt(0) == '>') {
+                                    declaration();
+                                    state = S_INIT;
+                                    start = -1;
                                 }
-                                //not of the expected
-                                backup(1);
-                                declaration();
-                                state = S_INIT;
-                                start = -1;
-                                
                                 break;
                             case SGML_COMMENT:
                             case EOL:

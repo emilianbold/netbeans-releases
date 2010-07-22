@@ -84,6 +84,7 @@ public class RelatedCMPHelper {
     
     private boolean cmpFieldsInInterface;
     private boolean generateFinderMethods;
+    private boolean generateJAXBAnnotations;
     private boolean useColumnNamesInRelationships;
 
 
@@ -264,6 +265,14 @@ public class RelatedCMPHelper {
     
     public void setGenerateFinderMethods(boolean generateFinderMethods) {
         this.generateFinderMethods = generateFinderMethods;
+    }
+
+    public boolean isGenerateJAXBAnnotations() {
+        return this.generateJAXBAnnotations;
+    }
+
+    public void setGenerateJAXBAnnotations(boolean generateJAXBAnnotations) {
+        this.generateJAXBAnnotations = generateJAXBAnnotations;
     }
 
     public boolean isFullyQualifiedTableNames() {

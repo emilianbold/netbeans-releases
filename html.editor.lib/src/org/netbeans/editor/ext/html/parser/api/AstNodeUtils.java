@@ -39,8 +39,9 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,22 +60,37 @@ public class AstNodeUtils {
 
     private static final String INDENT = "   ";
 
+
     public static String dumpTree(AstNode node) {
+        return dumpTree(node, (CharSequence)null);
+    }
+
+    public static String dumpTree(AstNode node, CharSequence source) {
         StringBuffer buf = new StringBuffer();
-        dumpTree(node, buf);
+        dumpTree(node, buf, source);
         System.out.println(buf.toString());
         return buf.toString();
     }
 
     public static void dumpTree(AstNode node, StringBuffer buf) {
-        dump(node, "", buf);
+        dumpTree(node, buf, null);
     }
 
-    private static void dump(AstNode node, String prefix, StringBuffer buf) {
-        buf.append(prefix + node.toString());
+    public static void dumpTree(AstNode node, StringBuffer buf, CharSequence source) {
+        dump(node, "", buf, source);
+    }
+
+    private static void dump(AstNode node, String prefix, StringBuffer buf, CharSequence source) {
+        buf.append(prefix);
+        buf.append(node.toString());
+        if(source != null && node.startOffset() != -1 && node.endOffset() != -1) {
+            buf.append(" (");
+            buf.append(source.subSequence(node.startOffset(), node.endOffset()));
+            buf.append(")");
+        }
         buf.append('\n');
         for (AstNode child : node.children()) {
-            dump(child, prefix + INDENT, buf);
+            dump(child, prefix + INDENT, buf, source);
         }
     }
 

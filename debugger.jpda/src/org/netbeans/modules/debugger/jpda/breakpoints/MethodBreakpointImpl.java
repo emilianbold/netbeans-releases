@@ -72,7 +72,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.api.debugger.jpda.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
@@ -103,27 +103,27 @@ import org.openide.util.NbBundle;
 * @author   Jan Jancura
 */
 public class MethodBreakpointImpl extends ClassBasedBreakpoint {
-    
+
     private MethodBreakpoint breakpoint;
-    
-    
+
+
     public MethodBreakpointImpl (MethodBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
         super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         set ();
     }
-    
+
     protected void setRequests () {
         setClassRequests (
-            breakpoint.getClassFilters (), 
-            breakpoint.getClassExclusionFilters (), 
+            breakpoint.getClassFilters (),
+            breakpoint.getClassExclusionFilters (),
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
         for(String filter : breakpoint.getClassFilters()) {
             checkLoadedClasses (filter, breakpoint.getClassExclusionFilters());
         }
     }
-    
+
     protected EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         if (oldRequest instanceof BreakpointRequest) {
             return EventRequestManagerWrapper.createBreakpointRequest(getEventRequestManager (),
@@ -267,7 +267,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         }
         return super.exec (event);
     }
-    
+
     @Override
     protected void classLoaded (List<ReferenceType> referenceTypes) {
         boolean submitted = false;
@@ -412,7 +412,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             setValidity(VALIDITY.INVALID, invalidMessage);
         }
     }
-    
+
     private static boolean egualMethodSignatures(String s1, String s2) {
         int i = s1.lastIndexOf(")");
         if (i > 0) s1 = s1.substring(0, i);
@@ -420,6 +420,6 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         if (i > 0) s2 = s2.substring(0, i);
         return s1.equals(s2);
     }
-    
+
 }
 

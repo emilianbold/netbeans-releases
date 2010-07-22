@@ -124,8 +124,14 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     }
 
     public void reload(ScreenDeviceInfo deviceInfo) {
+        if (getComponent() == null || getComponent().getParentComponent() == null) {
+            return;
+        }
         PropertyValue value = getComponent().getParentComponent().readProperty(ListCD.PROP_LIST_TYPE);
         int type;
+        if (value == null) {
+            return;
+        }
         if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
             type = MidpTypes.getInteger(value);
         } else {

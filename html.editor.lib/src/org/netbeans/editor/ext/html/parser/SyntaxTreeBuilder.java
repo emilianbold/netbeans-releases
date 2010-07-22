@@ -41,6 +41,11 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -48,8 +53,8 @@ import java.util.List;
 import java.util.Locale;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author mfukala@netbeans.org
  */
-public class SyntaxTree {
+public class SyntaxTreeBuilder {
 
     //error messages keys, used for unit testing
     
@@ -74,131 +79,22 @@ public class SyntaxTree {
     public static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
     static final String TAG_CANNOT_BE_EMPTY = "tag_cannot_be_empty"; //NOI18N
 
-    public static AstNode makeTree(SyntaxParserContext context) {
-        if (context.getDTD() == null) {
-            return makeUncheckedTree(context);
-        } else {
-            return makeCheckedTree(context);
+    //XXX >>> fix this, fake context only!!!
+    private static final class Context {
+        private boolean isPropertyEnabled(String prop) {
+            return false;
         }
     }
+    private static final Context context = new Context();
+    //XXX <<<
 
-    private static AstNode makeUncheckedTree(SyntaxParserContext context) {
-        List<SyntaxElement> elements = context.getElements();
-
-        assert elements != null : "passed elements list cannot but null"; //NOI18N
-
-        int lastEndOffset = context.getSourceText().length();
-
-        //create a root node, it can contain one or more child nodes
-        //normally just <html> node should be its child
-        AstNode rootNode = AstNode.createRootNode(0, lastEndOffset, null);
-        LinkedList<AstNode> stack = new LinkedList<AstNode>();
-        stack.add(rootNode);
-
-        for (SyntaxElement element : elements) {
-
-            if (element.type() == SyntaxElement.TYPE_TAG) { //open tag
-                assert element instanceof SyntaxElement.Tag;
-
-                SyntaxElement.Tag tagElement = (SyntaxElement.Tag) element;
-                String tagName = tagElement.getName();
-
-                AstNode lastNode = stack.getLast();
-
-                //create an AST node for current element
-                AstNode openTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
-                        tagElement.offset(), tagElement.offset() + tagElement.length(), tagElement.isEmpty());
-
-                //add existing tag attributes
-                setTagAttributes(openTagNode, tagElement);
-
-                //possible add the node to the nodes stack
-                if (!(tagElement.isEmpty())) {
-                    stack.addLast(openTagNode);
-                }
-
-                //add the node to its parent
-                lastNode.addChild(openTagNode);
-
-            } else if (element.type() == SyntaxElement.TYPE_ENDTAG) { //close tag
-
-                String tagName = ((SyntaxElement.Named) element).getName();
-
-                AstNode closeTagNode = new AstNode(tagName, AstNode.NodeType.ENDTAG,
-                        element.offset(), element.offset() + element.length(), false);
-
-                int matched_index = -1;
-                for (int i = stack.size() - 1; i >= 0; i--) {
-                    AstNode node = stack.get(i);
-                    if (tagName.equals(node.name())) {
-                        //ok, match
-                        matched_index = i;
-                        break;
-                    }
-                }
-
-                assert matched_index != 0; //never match root node, either -1 or > 0
-
-                if (matched_index > 0) {
-                    //something matched
-                    AstNode match = stack.get(matched_index);
-
-                    //remove them ALL the left elements from the stack
-                    for (int i = stack.size() - 1; i > matched_index; i--) {
-                        AstNode node = stack.get(i);
-                        node.setLogicalEndOffset(closeTagNode.startOffset());
-                        stack.remove(i);
-                    }
-
-                    //add the node to the proper parent
-                    AstNode match_parent = stack.get(matched_index - 1);
-                    match_parent.addChild(closeTagNode);
-
-                    //wont' help GS at all, but should be ok
-                    match.setMatchingNode(closeTagNode);
-                    match.setLogicalEndOffset(closeTagNode.endOffset());
-                    closeTagNode.setMatchingNode(match);
-
-                    //remove the matched tag from stack
-                    stack.removeLast();
-
-                } else {
-                    //add it to the last node
-                    stack.getLast().addChild(closeTagNode);
-                }
-
-            } else {
-                //rest of the syntax element types
-                //XXX do we need to have these in the AST???
-
-                // add a new AST node to the last node on the stack
-//                AstNode.NodeType nodeType = intToNodeType(element.type());
-//
-//                AstNode node = new AstNode(null, nodeType, element.offset(),
-//                        element.offset() + element.length(), false);
-//
-//                stack.getLast().addChild(node);
-            }
-        }
-
-        //check the stack content and resolve left nodes
-        for (int i = stack.size() - 1; i > 0; i--) { // (i > 0) == do not process the very first (root) node
-            AstNode node = stack.get(i);
-            node.setLogicalEndOffset(lastEndOffset);
-
-        }
-
-        return rootNode;
-    }
-
-    private static AstNode makeCheckedTree(SyntaxParserContext context) {
-        List<SyntaxElement> elements = context.getElements();
-        DTD dtd = context.getDTD();
+    public static AstNode makeTree(HtmlSource source, HtmlVersion version, List<SyntaxElement> elements) {
+        DTD dtd = version.getDTD();
 
         assert elements != null;
         assert dtd != null;
 
-        int lastEndOffset = context.getSourceText().length();
+        int lastEndOffset = source.getSourceCode().length();
 
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
@@ -230,10 +126,10 @@ public class SyntaxTree {
 
                     //ignore namespaced tags, they won't be matched, but without errors
                     if (!isIgnoredTagName(tagName)) {
-                        String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG", //NOI18N
+                        String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNKNOWN_TAG", //NOI18N
                                 new Object[]{tagName});
 
-                        unknownTagNode.addDescriptionToNode(UNKNOWN_TAG_KEY, errorMessage, AstNode.Description.WARNING);
+                        unknownTagNode.addDescriptionToNode(UNKNOWN_TAG_KEY, errorMessage, ProblemDescription.WARNING);
                     }
 
                     lastNode.addChild(unknownTagNode);
@@ -256,7 +152,7 @@ public class SyntaxTree {
 //                }
 
                 //check tag attributes
-                if(!context.isPropertyEnabled(SyntaxParser.Behaviour.DISABLE_ATTRIBUTES_CHECKS.name())) {
+                if(!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_ATTRIBUTES_CHECKS.name())) {
                     checkTagAttributes(openTagNode, (SyntaxElement.Tag) tagElement, currentNodeDtdElement);
                 }
 
@@ -270,11 +166,11 @@ public class SyntaxTree {
                     if (!lastNode.isResolved()) {
                         //the parent node is not resolved we cannot close it
                         //some mandatory content unresolved, report error
-                        if (!context.isPropertyEnabled(SyntaxParser.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
+                        if (!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
                             String expectedElements = elementsToString(lastNode.getAllPossibleElements());
                             openTagNode.addDescriptionToNode(
-                                    UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG", //NOI18N
-                                    new Object[]{currentNodeDtdElement.getName(), expectedElements}), Description.ERROR);
+                                    UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNEXPECTED_TAG", //NOI18N
+                                    new Object[]{currentNodeDtdElement.getName(), expectedElements}), ProblemDescription.ERROR);
                         }
                     } else {
                         //the parent node is resolved so can be possibly closed
@@ -287,16 +183,16 @@ public class SyntaxTree {
 
                         if (!lastDtdElement.hasOptionalEnd()) {
                             //the last node has required end tag => report error
-                            if(!context.isPropertyEnabled(SyntaxParser.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
+                            if(!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
                                 Collection<Element> possibleElems = lastNode.getAllPossibleElements();
                                 if (possibleElems.isEmpty()) {
-                                    openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT", //NOI18N
-                                            new Object[]{currentNodeDtdElement.getName()}), Description.ERROR);
+                                    openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT", //NOI18N
+                                            new Object[]{currentNodeDtdElement.getName()}), ProblemDescription.ERROR);
                                 } else {
                                     String expectedElements = elementsToString(possibleElems);
                                     openTagNode.addDescriptionToNode(
-                                            UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG", //NOI18N
-                                            new Object[]{currentNodeDtdElement.getName(), expectedElements}), Description.ERROR);
+                                            UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNEXPECTED_TAG", //NOI18N
+                                            new Object[]{currentNodeDtdElement.getName(), expectedElements}), ProblemDescription.ERROR);
                                 }
                             }
 
@@ -353,10 +249,10 @@ public class SyntaxTree {
 
                                 //mark the error only if the parent node is not root
                                 if (lastNode != rootNode) {
-                                    if (!context.isPropertyEnabled(SyntaxParser.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
+                                    if (!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
                                         //nothing reduces the current element, error
-                                        openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT", //NOI18N
-                                                new Object[]{currentNodeDtdElement.getName()}), Description.ERROR);
+                                        openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT", //NOI18N
+                                                new Object[]{currentNodeDtdElement.getName()}), ProblemDescription.ERROR);
                                     }
                                 } else {
                                     stack.addLast(openTagNode);
@@ -407,10 +303,10 @@ public class SyntaxTree {
 
                     //ignore namespaced tags, they won't be matched, but without errors
                     if (!isIgnoredTagName(tagName)) {
-                        String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG", //NOI18N
+                        String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNKNOWN_TAG", //NOI18N
                                 new Object[]{tagName});
 
-                        unknownTagNode.addDescriptionToNode(UNKNOWN_TAG_KEY, errorMessage, AstNode.Description.WARNING);
+                        unknownTagNode.addDescriptionToNode(UNKNOWN_TAG_KEY, errorMessage, ProblemDescription.WARNING);
                     }
 
                     stack.getLast().addChild(unknownTagNode);
@@ -433,7 +329,7 @@ public class SyntaxTree {
                         //check if the matching open tag has forbidden end tag
                         if (AstNodeUtils.hasForbiddenEndTag(node)) {
                             //cannot match, report error
-                            closeTagNode.addDescriptionToNode(FORBIDDEN_END_TAG, NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"), Description.ERROR); //NOI18N
+                            closeTagNode.addDescriptionToNode(FORBIDDEN_END_TAG, NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_FORBIDDEN_ENDTAG"), ProblemDescription.ERROR); //NOI18N
                         } else {
                             //ok, match
                             matched_index = i;
@@ -460,20 +356,20 @@ public class SyntaxTree {
                                 matched_index; i--) {
                             AstNode node = stack.get(i);
 
-                            if (!context.isPropertyEnabled(SyntaxParser.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
+                            if (!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
                                 if (!node.isResolved()) {
                                     //unresolved content
-                                    String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG", //NOI18N
+                                    String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNRESOLVED_TAG", //NOI18N
                                             new Object[]{elementsToString(node.getAllPossibleElements())});
 
-                                    node.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
+                                    node.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, ProblemDescription.ERROR);
                                 }
                             }
 
                             if (!hasOptionalEndTag(node)) {
                                 //missing end tag
-                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_REQUIRED_END_TAG"); //NOI18N
-                                node.addDescriptionToNode(MISSING_REQUIRED_END_TAG, errorMessage, Description.ERROR);
+                                String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_MISSING_REQUIRED_END_TAG"); //NOI18N
+                                node.addDescriptionToNode(MISSING_REQUIRED_END_TAG, errorMessage, ProblemDescription.ERROR);
                             }
                         }
 
@@ -492,13 +388,13 @@ public class SyntaxTree {
 
 //verify the matched tag:
 //check if the tag content is resolved (only for html tags)
-                    if(!context.isPropertyEnabled(SyntaxParser.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
+                    if(!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
                     if (!match.isResolved()) {
                             //some mandatory content unresolved, report error to the open tag
-                            String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG", //NOI18N
+                            String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNRESOLVED_TAG", //NOI18N
                                     new Object[]{elementsToString(match.getAllPossibleElements())});
 
-                            match.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
+                            match.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, ProblemDescription.ERROR);
 
                         }
                     }
@@ -518,8 +414,8 @@ public class SyntaxTree {
                 } else {
                     //no match, mark as unmatched if has required start tag
                     if (!dtdElement.hasOptionalStart()) {
-                        String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG"); //NOI18N
-                        closeTagNode.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.ERROR);
+                        String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNMATCHED_TAG"); //NOI18N
+                        closeTagNode.addDescriptionToNode(UNMATCHED_TAG, errorMessage, ProblemDescription.ERROR);
                     }
 
                     //add it to the last node
@@ -551,17 +447,17 @@ public class SyntaxTree {
 
             if (!hasOptionalEndTag(node)) {
                 //unclosed tag, mark
-                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG"); //NOI18N
-                node.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.ERROR);
+                String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNMATCHED_TAG"); //NOI18N
+                node.addDescriptionToNode(UNMATCHED_TAG, errorMessage, ProblemDescription.ERROR);
             }
 
-            if(!context.isPropertyEnabled(SyntaxParser.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
+            if(!context.isPropertyEnabled(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name())) {
                 if (!node.isResolved()) {
                     //unresolved, mark
-                    String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG", //NOI18N
+                    String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNRESOLVED_TAG", //NOI18N
                             new Object[]{elementsToString(node.getAllPossibleElements())});
 
-                    node.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
+                    node.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, ProblemDescription.ERROR);
                 }
             }
 
@@ -610,8 +506,8 @@ public class SyntaxTree {
             if (attr == null) {
                 if (!isIgnoredTagAttribute(ta.getName())) {
                     //unknown attribute
-                    Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
-                            new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
+                    ProblemDescription desc = ProblemDescription.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
+                            new Object[]{ta.getName(), element.getName()}), ProblemDescription.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
 
                     node.addDescription(desc);
                 }
@@ -629,7 +525,7 @@ public class SyntaxTree {
 
         }
 
-        StringBuffer missingAttributesListMsg = new StringBuffer();
+        StringBuilder missingAttributesListMsg = new StringBuilder();
         for(String missingAttrName : missingAttrsNames) {
             //missing required attribute
             missingAttributesListMsg.append(missingAttrName);
@@ -643,16 +539,16 @@ public class SyntaxTree {
             //attach the error description
             node.addDescriptionToNode(
                     MISSING_REQUIRED_ATTRIBUTES,
-                    NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_REQUIRED_ATTRIBUTES", //NOI18N
+                    NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_MISSING_REQUIRED_ATTRIBUTES", //NOI18N
                     new Object[]{missingAttributesListMsg.toString()}),
-                    Description.WARNING);
+                    ProblemDescription.WARNING);
             //store the collection of the missing attribute for further usage in hintfixes
             node.setProperty(MISSING_REQUIRED_ATTRIBUTES, missingAttrsNames);
         }
 
     }
 
-    private static void setTagAttributes(AstNode node, SyntaxElement.Tag tag) {
+    protected static void setTagAttributes(AstNode node, SyntaxElement.Tag tag) {
         for (TagAttribute ta : tag.getAttributes()) {
             if (ta != null) {
                 AstNode.Attribute nodeAttribute = new AstNode.Attribute(ta.getName(),
@@ -665,7 +561,7 @@ public class SyntaxTree {
     }
 
     private static String elementsToString(Collection<Element> elements) {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         for (Element e : elements) {
             b.append('<'); //NOI18N
             b.append(e.getName());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,20 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.editor.ext.html.parser.api;
 
-package org.netbeans.modules.debugger.jpda.expr;
-
-import com.sun.jdi.Value;
-import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.editor.ext.html.test.TestBase;
 
 /**
- * A primitive variable, which provides the appropriate JDI value.
  *
- * @author Martin Entlicher
+ * @author mfukala@netbeans.org
  */
-public interface JDIVariable extends Variable {
-    
-    Value getJDIValue();
-    
+public class AstNodeTest extends TestBase {
+
+    public AstNodeTest(String testName) {
+        super(testName);
+    }
+
+    public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new AstNodeTest(""));
+        return suite;
+    }
+
+    public void testNamespaces() throws Exception {
+        AstNode node = new AstNode("div", AstNode.NodeType.OPEN_TAG, 0, 1, false);
+
+        assertEquals("div", node.name());
+        assertEquals("div", node.getNameWithoutPrefix());
+        assertNull(node.getNamespacePrefix());
+
+        node = new AstNode("ui:composition", AstNode.NodeType.OPEN_TAG, 0, 1, false);
+
+        assertEquals("ui:composition", node.name());
+        assertEquals("composition", node.getNameWithoutPrefix());
+        assertEquals("ui", node.getNamespacePrefix());
+
+    }
+
+    public void testAttribute() {
+        AstNode.Attribute attr = new AstNode.Attribute("name", "value", 0, 6);
+        assertEquals("name", attr.name());
+        assertEquals("name", attr.nameWithoutNamespacePrefix());
+        assertNull(attr.namespacePrefix());
+
+        attr = new AstNode.Attribute("xmlns:h", "value", 0, 6);
+        assertEquals("xmlns:h", attr.name());
+        assertEquals("h", attr.nameWithoutNamespacePrefix());
+        assertEquals("xmlns", attr.namespacePrefix());
+
+
+    }
+
 }

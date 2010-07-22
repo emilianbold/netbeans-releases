@@ -235,6 +235,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         return generateFinderMethodsCheckBox.isSelected();
     }
 
+    public boolean getGenerateJAXB() {
+        return generateJAXBCheckBox.isSelected();
+    }
+
     public boolean getCreatePersistenceUnit() {
         return createPUCheckbox.isVisible() && createPUCheckbox.isSelected();
     }
@@ -347,6 +351,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         tableActionsButton = new javax.swing.JButton();
         createPUWarningLabel = new ShyLabel();
         createPUCheckbox = new javax.swing.JCheckBox();
+        generateJAXBCheckBox = new javax.swing.JCheckBox();
 
         tableActionsPopup.setInvoker(tableActionsButton);
 
@@ -422,6 +427,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(generateJAXBCheckBox, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_GenerateJAXBAnnotations")); // NOI18N
+        generateJAXBCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_ToolTipJAXB")); // NOI18N
+        generateJAXBCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -440,13 +449,20 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                     .add(locationComboBox, 0, 377, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
                     .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)))
-            .add(cmpFieldsInInterfaceCheckBox)
-            .add(generateFinderMethodsCheckBox)
             .add(layout.createSequentialGroup()
                 .add(createPUCheckbox)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(cmpFieldsInInterfaceCheckBox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(generateJAXBCheckBox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(generateFinderMethodsCheckBox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -456,7 +472,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(11, 11, 11)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classNamesLabel)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(spacerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -474,10 +490,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(21, 21, 21)
                 .add(generateFinderMethodsCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(generateJAXBCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cmpFieldsInInterfaceCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createPUCheckbox)
-                .add(11, 11, 11)
+                .add(5, 5, 5)
                 .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -511,6 +529,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox createPUCheckbox;
     private javax.swing.JLabel createPUWarningLabel;
     private javax.swing.JCheckBox generateFinderMethodsCheckBox;
+    private javax.swing.JCheckBox generateJAXBCheckBox;
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JComboBox packageComboBox;
@@ -683,6 +702,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             helper.setPackageName(getComponent().getPackageName());
             helper.setCmpFieldsInInterface(getComponent().getCmpFieldsInInterface());
             helper.setGenerateFinderMethods(getComponent().getGenerateFinderMethods());
+            helper.setGenerateJAXBAnnotations(getComponent().getGenerateJAXB());
             helper.setCreatePU(getComponent().getCreatePersistenceUnit());
         }
 

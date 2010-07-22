@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.debugger.jpda.expr;
 
+import org.netbeans.api.debugger.jpda.JDIVariable;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
@@ -3796,7 +3797,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     /**
      * Find a class by it's name. If the class is not found loaded in the virtual
      * machine, an attempt to load it is made.
-     * 
+     *
      * @param name The class name
      * @return Found or loaded ReferenceType
      */
