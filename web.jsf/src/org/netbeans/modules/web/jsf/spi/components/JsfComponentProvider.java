@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,9 +13,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,31 +37,17 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.api.components;
+package org.netbeans.modules.web.jsf.spi.components;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.web.jsf.api.components.JsfComponentDescriptor;
 
 /**
  *
- * @author alexey butenko
+ * @author alexeybutenko
  */
-public final class JsfComponents {
-    private final static String COMPONENTS_PATH = "j2ee/jsf/components";    //NOI18N
+public interface JsfComponentProvider {
 
-
-    public static Set<? extends JsfComponentDescriptor> findJsfComponents() {
-        Collection<? extends JsfComponentProvider> componentProvider =
-                Lookups.forPath(COMPONENTS_PATH).lookupAll(JsfComponentProvider.class);
-        Set<JsfComponentDescriptor> result = new HashSet<JsfComponentDescriptor>();
-        for (JsfComponentProvider provider: componentProvider) {
-            for(JsfComponentDescriptor descriptor: provider.getComponents()) {
-                result.add(descriptor);
-            }
-        }
-        return result;
-    }
+    public Set<JsfComponentDescriptor> getComponents();
+    
 }

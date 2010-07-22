@@ -79,7 +79,7 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.components.JsfComponents;
-import org.netbeans.modules.web.jsf.api.components.JsfComponentsProvider;
+import org.netbeans.modules.web.jsf.api.components.JsfComponentDescriptor;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
@@ -101,8 +101,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private boolean customizer;
     
     private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
-    //    private final List<JsfComponentsProvider> componentsLibraries = new ArrayList<JsfComponentsProvider>();
-    private final Map<JSFVersion, List<JsfComponentsProvider>> componentsMap = new HashMap<JSFVersion, List<JsfComponentsProvider>>();
+    //    private final List<JsfComponentDescriptor> componentsLibraries = new ArrayList<JsfComponentDescriptor>();
+    private final Map<JSFVersion, List<JsfComponentDescriptor>> componentsMap = new HashMap<JSFVersion, List<JsfComponentDescriptor>>();
     /**
      * Do not modify it directly, use setJsfVersion method
      */
@@ -211,10 +211,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private void initJsfComponentsLibraries() {
         if (jsfComponentsInitialized)
             return;
-        for (JsfComponentsProvider components : JsfComponents.getJsfComponents()) {
-            List<JsfComponentsProvider> list = componentsMap.get(components.getJsfVersion());
+        for (JsfComponentDescriptor components : JsfComponents.findJsfComponents()) {
+            List<JsfComponentDescriptor> list = componentsMap.get(components.getJsfVersion());
             if (list == null) {
-                list = new ArrayList<JsfComponentsProvider>();
+                list = new ArrayList<JsfComponentDescriptor>();
             }
             list.add(components);
             componentsMap.put(components.getJsfVersion(), list);
@@ -1122,9 +1122,9 @@ private void cbJsfComponentsActionPerformed(java.awt.event.ActionEvent evt) {//G
         List<ComponentsLibraryItem> componentsList = new ArrayList<ComponentsLibraryItem>();
         //Add empty default component
         componentsList.add(new ComponentsLibraryItem(null));
-        List<JsfComponentsProvider> providers = componentsMap.get(version);
+        List<JsfComponentDescriptor> providers = componentsMap.get(version);
         if (providers != null) {
-            for (JsfComponentsProvider provider : providers) {
+            for (JsfComponentDescriptor provider : providers) {
                 componentsList.add(new ComponentsLibraryItem(provider));
             }
         }
@@ -1295,10 +1295,10 @@ private void cbJsfComponentsActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     private static class ComponentsLibraryItem {
-        private JsfComponentsProvider jsfComponentsProvider;
+        private JsfComponentDescriptor jsfComponentsProvider;
         private String defaultName = "None";
 
-        public ComponentsLibraryItem(JsfComponentsProvider jsfComponentsProvider) {
+        public ComponentsLibraryItem(JsfComponentDescriptor jsfComponentsProvider) {
             this.jsfComponentsProvider = jsfComponentsProvider;
         }
 

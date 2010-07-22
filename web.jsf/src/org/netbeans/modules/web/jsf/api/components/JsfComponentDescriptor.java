@@ -51,13 +51,16 @@ import org.openide.util.Parameters;
  *
  * @author alexey butenko
  */
-public abstract class JsfComponentsProvider {
+final public class JsfComponentDescriptor {
     private final String name;
+    private final String libraryName;
     private final String description;
     private final JSFVersion jsfVersion;
 
-    public JsfComponentsProvider(String name, JSFVersion jsfVersion, String description) {
+    public JsfComponentDescriptor(String libraryName, String name, JSFVersion jsfVersion, String description) {
         Parameters.notNull("name", name); // NOI18N
+        Parameters.notNull("libraryName", libraryName); // NOI18N
+        this.libraryName = libraryName;
         this.name = name;
         this.jsfVersion = jsfVersion;
         this.description = description;
@@ -65,6 +68,23 @@ public abstract class JsfComponentsProvider {
 
     public JSFVersion getJsfVersion() {
         return jsfVersion;
+    }
+
+    @Override
+    public int hashCode() {
+        return getLibraryName().hashCode();
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof JsfComponentDescriptor) {
+            JsfComponentDescriptor descriptor = (JsfComponentDescriptor) obj;
+            if (descriptor.getLibraryName().equals(getLibraryName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getName() {
@@ -77,7 +97,9 @@ public abstract class JsfComponentsProvider {
         return getName();
     }
 
-    public abstract String getLibraryName();
+    public String getLibraryName() {
+        return libraryName;
+    };
     
     public Library getLibrary() {
         return LibraryManager.getDefault().getLibrary(getLibraryName());
