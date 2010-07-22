@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="JSP_Servlet">
+            <file name="Constraint.java" url="Constraint.template">
+                <attr name="position" intvalue="1003"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javaee/beanvalidation/resources/Constraint.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javaee.beanvalidation.resources.Bundle"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.javaee.beanvalidation.ConstraintIterator"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            <file name="Validator.java" url="Validator.template">
+                <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

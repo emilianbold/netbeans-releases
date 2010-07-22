@@ -43,7 +43,7 @@
  * Created on Jul 20, 2010, 11:25:13 AM
  */
 
-package org.netbeans.modules.web.beans.validation;
+package org.netbeans.modules.javaee.beanvalidation;
 
 import java.util.ArrayList;
 import java.util.HashSet;

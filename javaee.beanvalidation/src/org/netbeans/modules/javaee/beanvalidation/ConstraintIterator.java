@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.beans.validation;
+package org.netbeans.modules.javaee.beanvalidation;
 
 import java.awt.Component;
 import java.io.IOException;
