@@ -59,6 +59,7 @@ import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration;
 import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.spi.DefaultParseResult;
+import org.netbeans.editor.ext.html.parser.spi.EmptyResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -224,7 +225,7 @@ public class SyntaxAnalyzerResult {
     private ParseResult doParseEmbeddedCode(String namespace) throws ParseException {
         final Collection<String> prefixes = getAllDeclaredNamespaces().get(namespace);
         if(prefixes == null || prefixes.isEmpty()) {
-            return null;
+            return new EmptyResult(getSource());
         }
 
         LocalSourceContext context = createLocalContext(new TagsFilter() {

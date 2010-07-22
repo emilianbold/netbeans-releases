@@ -42,15 +42,9 @@
 
 package org.netbeans.editor.ext.html.parser.api;
 
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.spi.EmptyResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.ParseResult;
 import org.netbeans.editor.ext.html.test.TestBase;
@@ -84,7 +78,6 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         HtmlParseResult presult = result.parseHtml();
         assertNotNull(presult);
         assertNotNull(presult.root());
-
 
     }
 
@@ -242,6 +235,35 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         assertEquals(2, froot.children().size());
         assertNotNull(AstNodeUtils.query(froot, "x:out"));
         assertNotNull(AstNodeUtils.query(froot, "x:out/x:in"));
+
+    }
+
+    public void testGetParseTreeForUnusedNamespace() throws ParseException {
+        String code = "<html xmlns:c=\"http://java.sun.com/jsp/jstl/core\">" +
+                      "</html>";
+
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+        ParseResult presult = result.parseEmbeddedCode("http://java.sun.com/jsp/jstl/core");
+
+        assertNotNull(presult);
+        assertNotNull(presult.root()); //at least the default root node must be present
+
+    }
+
+    public void testGetParseTreeForUndeclaredNamespace() throws ParseException {
+        String code = "<html xmlns:c=\"http://java.sun.com/jsp/jstl/core\">" +
+                      "</html>";
+
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+        ParseResult presult = result.parseEmbeddedCode("http://java.sun.com/jsf/composite");
+
+        assertNotNull(presult);
+        assertTrue(presult instanceof EmptyResult);
+        assertNotNull(presult.root()); //at least the default root node must be present
 
     }
 

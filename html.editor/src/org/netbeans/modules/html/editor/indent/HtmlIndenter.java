@@ -52,7 +52,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -67,7 +69,14 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         try {
             CharSequence code = getDocument().getText(0, getDocument().getLength());
             HtmlSource source = new HtmlSource(code);
-            dtd = SyntaxAnalyzer.create(source).analyze().getHtmlVersion().getDTD();
+            SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+            HtmlVersion version = result.getHtmlVersion();
+            if(version == HtmlVersion.HTML5) {
+                //XXX there's no DTD for html5 so fallback to html4 for now
+                version = HtmlVersion.HTML41_TRANSATIONAL;
+            }
+            dtd = version.getDTD();
+
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
