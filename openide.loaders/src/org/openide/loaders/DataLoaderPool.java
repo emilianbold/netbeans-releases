@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.event.*;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
@@ -568,18 +569,11 @@ implements java.io.Serializable {
             fo.setAttribute(DataObject.EA_ASSIGNED_LOADER, null);
         } else {
             Class c = loader.getClass();
-            // [PENDING] in the future a more efficient API may be introduced
-            Iterator modules = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
-            String modulename = null;
-            while (modules.hasNext()) {
-                ModuleInfo module = (ModuleInfo)modules.next();
-                if (module.owns(c)) {
-                    modulename = module.getCodeNameBase();
-                    break;
-                }
-            }
             fo.setAttribute (DataObject.EA_ASSIGNED_LOADER, c.getName ());
-            fo.setAttribute(DataObject.EA_ASSIGNED_LOADER_MODULE, modulename);
+            ModuleInfo module = Modules.getDefault().ownerOf(c);
+            if (module != null) {
+                fo.setAttribute(DataObject.EA_ASSIGNED_LOADER_MODULE, module.getCodeNameBase());
+            }
         }
         if (!DataObjectPool.getPOOL().revalidate(Collections.singleton(fo)).isEmpty()) {
             DataObject.LOG.fine("It was not possible to invalidate data object: " + fo); // NOI18N

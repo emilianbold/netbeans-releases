@@ -44,7 +44,12 @@
 
 package org.netbeans.api.project;
 
+import java.beans.PropertyChangeEvent;
+import javax.swing.event.ChangeEvent;
+import org.netbeans.spi.project.ProjectIconAnnotator;
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
 import org.netbeans.modules.projectapi.AuxiliaryConfigImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -64,8 +70,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 /**
  * Utility methods to get information about {@link Project}s.
@@ -87,11 +99,7 @@ public class ProjectUtils {
      */
     public static ProjectInformation getInformation(Project p) {
         ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
-        if (pi != null) {
-            return pi;
-        } else {
-            return new BasicInformation(p);
-        }
+        return new AnnotateIconProxyProjectInformation(pi != null ? pi : new BasicInformation(p));
     }
     
     /**
@@ -253,6 +261,87 @@ public class ProjectUtils {
         }
         
     }
+
+    private static final class AnnotateIconProxyProjectInformation implements ProjectInformation, PropertyChangeListener, ChangeListener, LookupListener {
+
+        private final ProjectInformation pinfo;
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final Set<ProjectIconAnnotator> annotators = new WeakSet<ProjectIconAnnotator>();
+        private final Result<ProjectIconAnnotator> annotatorResult = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
+        private Icon icon;
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        public AnnotateIconProxyProjectInformation(ProjectInformation pi) {
+            pinfo = pi;
+            pinfo.addPropertyChangeListener(WeakListeners.propertyChange(this, pinfo));
+            annotatorResult.addLookupListener(WeakListeners.create(LookupListener.class, this, annotatorResult));
+            annotatorsChanged();
+        }
+
+        private void annotatorsChanged() {
+            for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
+                if (annotators.add(pa)) {
+                    pa.addChangeListener(WeakListeners.change(this, pa));
+                }
+            }
+            updateIcon();
+        }
+
+        public @Override void resultChanged(LookupEvent ev) {
+            annotatorsChanged();
+        }
+        
+        public @Override void propertyChange(PropertyChangeEvent evt) {
+            if (ProjectInformation.PROP_ICON.equals(evt.getPropertyName())) {
+                updateIcon();
+            } else {
+                pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            }
+        }
+        
+        public @Override void stateChanged(ChangeEvent e) {
+            updateIcon();
+        }
+        
+        private void updateIcon() {
+            Icon original = pinfo.getIcon();
+            if (original == null) {
+                // Forbidden generally but common in tests.
+                return;
+            }
+            Image _icon = ImageUtilities.icon2Image(original);
+            for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
+                _icon = pa.annotateIcon(getProject(), _icon, false);
+            }
+            Icon old = icon;
+            icon = ImageUtilities.image2Icon(_icon);
+            pcs.firePropertyChange(ProjectInformation.PROP_ICON, old, icon);
+        }
+
+        public @Override Icon getIcon() {
+            return icon;
+        }
+       
+        public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        public @Override void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        public @Override Project getProject() {
+            return pinfo.getProject();
+        }
+        public @Override String getName() {
+            return pinfo.getName();
+        }
+        public @Override String getDisplayName() {
+            return pinfo.getDisplayName();
+        }
+
+    }
+
     
     /**
      * Find a way of storing extra configuration in a project.

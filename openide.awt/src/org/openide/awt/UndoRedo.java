@@ -43,12 +43,13 @@
  */
 package org.openide.awt;
 
-import org.openide.util.Task;
 import java.util.LinkedList;
 
 import javax.swing.event.*;
 import javax.swing.undo.*;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 
 /** Undo and Redo manager for top components and workspace elements.
@@ -116,6 +117,21 @@ public interface UndoRedo {
     */
     public String getRedoPresentationName();
 
+    /** Components that provide {@link UndoRedo} shall announce that by
+     * implementing this provider interface. Both Edit/Undo and Edit/Redo actions
+     * seek this interface inside current selection (e.g. {@link Utilities#actionsGlobalContext()}).
+     * To control these actions make sure your implementation of this interface
+     * is exposed in instance representing {@link Lookup current context}.
+     *
+     * @since 7.25
+     */
+    public static interface Provider {
+        /** Getter for {@link UndoRedo} implementation associated with this provider.
+         * @return non-null implementation
+         */
+        public UndoRedo getUndoRedo();
+    }
+
     /** An undo manager which fires a change event each time it consumes a new undoable edit.
     */
     public static class Manager extends UndoManager implements UndoRedo {
@@ -124,10 +140,7 @@ public interface UndoRedo {
         private final ChangeSupport cs = new ChangeSupport(this);
 
         /** vector of Edits to run */
-        private LinkedList<UndoableEditEvent> runus = new LinkedList<UndoableEditEvent>(); // for fix of #8692
-
-        /** task that clears the queue */
-        private Task task = Task.EMPTY; // for fix of #8692
+        private final LinkedList<UndoableEditEvent> runus = new LinkedList<UndoableEditEvent>(); // for fix of #8692
 
         /** Called from undoableEditHappened() inner class */
         private void superUndoableEditHappened(UndoableEditEvent ue) {
@@ -143,6 +156,7 @@ public interface UndoRedo {
         * Delegates to superclass and notifies listeners.
         * @param ue the edit
         */
+        @Override
         public void undoableEditHappened(final UndoableEditEvent ue) {
             /* Edits are posted to request processor and the deadlock
              * in #8692 between undoredo and document that fires
@@ -156,6 +170,7 @@ public interface UndoRedo {
         }
 
         /** Discard all the existing edits from the undomanager. */
+        @Override
         public void discardAllEdits() {
             synchronized (runus) {
                 runus.add(null);
@@ -164,56 +179,43 @@ public interface UndoRedo {
             updateTask();
         }
 
-        public boolean canUndo() {
-            /* First it must be checked that there are
-             * undoable edits waiting to be added to undoredo.
-             */
-            boolean empty;
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            updateTask();
+        }
 
-            synchronized (runus) {
-                empty = runus.isEmpty();
-            }
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            updateTask();
+        }
 
-            if (!empty) {
-                task.waitFinished();
-            }
-
-            return super.canUndo();
+        @Override
+        public void undoOrRedo() throws CannotRedoException, CannotUndoException {
+            super.undoOrRedo();
+            updateTask();
         }
 
         private void updateTask() {
-            /* The following task is finished when there are no
-             * undoable edits waiting to be added to undoredo.
-             */
-            class R implements Runnable {
-                public void run() {
-                    for (;;) {
-                        UndoableEditEvent ue;
+            for (;;) {
+                UndoableEditEvent ue;
 
-                        synchronized (runus) {
-                            if (runus.isEmpty()) {
-                                break;
-                            }
-
-                            ue = runus.removeFirst();
-                        }
-
-                        if (ue == null) {
-                            superDiscardAllEdits();
-                        } else {
-                            superUndoableEditHappened(ue);
-                        }
-
-                        cs.fireChange();
+                synchronized (runus) {
+                    if (runus.isEmpty()) {
+                        break;
                     }
+
+                    ue = runus.removeFirst();
+                }
+
+                if (ue == null) {
+                    superDiscardAllEdits();
+                } else {
+                    superUndoableEditHappened(ue);
                 }
             }
-
-            R r = new R();
-            r.run();
-
-            //Use internal not default RequestProcessor to solve deadlock #10826
-            //task = internalRequestProcessor.post (r, 0, Thread.MAX_PRIORITY);
+            cs.fireChange();
         }
 
         /* Attaches change listener to the this object.
@@ -222,20 +224,24 @@ public interface UndoRedo {
         */
 
         //#32313 - synchronization of this method was removed
+        @Override
         public void addChangeListener(ChangeListener l) {
             cs.addChangeListener(l);
         }
 
         /* Removes the listener
         */
+        @Override
         public void removeChangeListener(ChangeListener l) {
             cs.removeChangeListener(l);
         }
 
+        @Override
         public String getUndoPresentationName() {
             return this.canUndo() ? super.getUndoPresentationName() : ""; // NOI18N
         }
 
+        @Override
         public String getRedoPresentationName() {
             return this.canRedo() ? super.getRedoPresentationName() : ""; // NOI18N
         }
@@ -248,32 +254,40 @@ public interface UndoRedo {
     */
     @Deprecated
     public static final class Empty extends Object implements UndoRedo {
+        @Override
         public boolean canUndo() {
             return false;
         }
 
+        @Override
         public boolean canRedo() {
             return false;
         }
 
+        @Override
         public void undo() throws CannotUndoException {
             throw new CannotUndoException();
         }
 
+        @Override
         public void redo() throws CannotRedoException {
             throw new CannotRedoException();
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
         }
 
+        @Override
         public String getUndoPresentationName() {
             return ""; // NOI18N
         }
 
+        @Override
         public String getRedoPresentationName() {
             return ""; // NOI18N
         }

@@ -66,7 +66,7 @@ public class GoToTypeActionTest extends TestCase {
 
     public void test1() throws IOException {
         GoToTypeAction action = new GoToTypeAction();
-        TypeDescriptor desc = action.getSelectedType(false);
+        Iterable<? extends TypeDescriptor> desc = action.getSelectedTypes(false);
         panel = action.panel;
         panel.nameField.setText("Pepik");
         action.waitSearchFinished();
@@ -76,7 +76,7 @@ public class GoToTypeActionTest extends TestCase {
     public void testPendingResults() throws IOException {
         TestTypeProvider.count = 10;
         GoToTypeAction action = new GoToTypeAction();
-        TypeDescriptor desc = action.getSelectedType(false);
+        Iterable<? extends TypeDescriptor> desc = action.getSelectedTypes(false);
         panel = action.panel;
         panel.nameField.setText("Pepik");
         action.waitSearchFinished();

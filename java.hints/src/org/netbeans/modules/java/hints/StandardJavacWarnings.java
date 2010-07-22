@@ -61,6 +61,7 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     private static StandardJavacWarnings overrides;
     private static StandardJavacWarnings divisionByZero;
     private static StandardJavacWarnings rawTypes;
+    private static StandardJavacWarnings canUseDiamond;
         
     private String JAVAC_ID = "Javac_"; // NOI18N
     
@@ -143,6 +144,13 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         }
         return rawTypes;
     }
+
+    public static synchronized StandardJavacWarnings createCanUseDiamond() {
+        if ( canUseDiamond == null ) {
+            canUseDiamond = new StandardJavacWarnings(Kind.CAN_USE_DIAMOND);
+        }
+        return canUseDiamond;
+    }
     
     public Set<Tree.Kind> getTreeKinds() {
         return treeKinds;        
@@ -201,7 +209,12 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         EMPTY_STATEMENT_AFTER_IF,
         OVERRIDES,
         DIVISION_BY_ZERO,
-        RAWTYPES;
+        RAWTYPES,
+        CAN_USE_DIAMOND() {
+            boolean defaultOn() {
+                return true;
+            }
+        };
         
         boolean defaultOn() {        
             return false;
@@ -229,6 +242,8 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
                     return "enable_lint_overrides"; // NOI18N
                 case RAWTYPES:
                     return "enable_lint_rawtypes"; // NOI18N
+                case CAN_USE_DIAMOND:
+                    return "enable_can_use_diamond"; // NOI18N
             }
             return "unknown_kind"; // NOI18N
         }

@@ -87,17 +87,19 @@ public class ProjectInfo {
             String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
             if (serverInstanceId != null) {
                 try {
-                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();               
-                    WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
-                    if (wsStack != null) {
-                        jsr109Supported = wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
-                        serverType = WSStackUtils.getServerType(project);
-                        wsgenSupported = true;
-                        wsimportSupported = true;                      
-                    }
-                    WSStack<JaxRpc> jaxRpcStack = JaxRpcStackProvider.getJaxWsStack(j2eePlatform);
-                    if (jaxRpcStack != null) {
-                        jsr109oldSupported = jaxRpcStack.isFeatureSupported(JaxRpc.Feature.JSR109);
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+                    if (j2eePlatform != null) {
+                        WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+                        if (wsStack != null) {
+                            jsr109Supported = wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
+                            serverType = WSStackUtils.getServerType(project);
+                            wsgenSupported = true;
+                            wsimportSupported = true;
+                        }
+                        WSStack<JaxRpc> jaxRpcStack = JaxRpcStackProvider.getJaxWsStack(j2eePlatform);
+                        if (jaxRpcStack != null) {
+                            jsr109oldSupported = jaxRpcStack.isFeatureSupported(JaxRpc.Feature.JSR109);
+                        }
                     }
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Failed to find J2eePlatform", ex);

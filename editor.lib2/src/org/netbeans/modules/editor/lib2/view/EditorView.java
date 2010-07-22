@@ -53,6 +53,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -128,9 +129,12 @@ public abstract class EditorView extends View {
      * Set textual length of the view.
      *
      * @param length &gt;=0 new textual length of the view.
+     * @param modOffset &gt;=0 modification offset of insert/remove that caused this length change.
+     * @param modLength modification length (negative for removals) or 0 for length change
+     *  not caused by insert/remove.
      * @return true if length change is supported or false if the view must be recreated.
      */
-    public boolean setLength(int length) {
+    public boolean setLength(int length, int modOffset, int modLength) {
         return false;
     }
 
@@ -362,6 +366,10 @@ public abstract class EditorView extends View {
     @Override
     public String getToolTipText(float x, float y, Shape allocation) {
         return getToolTipTextChecked(x, y, allocation); // Use coords in doubles
+    }
+
+    public JComponent getToolTip(double x, double y, Shape allocation) {
+        return null;
     }
 
     /**

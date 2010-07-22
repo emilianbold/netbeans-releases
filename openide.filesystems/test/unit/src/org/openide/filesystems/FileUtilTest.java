@@ -56,9 +56,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.Test;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
@@ -75,19 +74,21 @@ public class FileUtilTest extends NbTestCase {
         super(n);
     }
 
-    public static Test suite() {
-        Test suite = null;
-            //suite = new FileUtilTest("testNormalizeFile");
-        if (suite == null) {
-            suite = new NbTestSuite(FileUtilTest.class);
-        }
-        return suite;
-    }
-
     @Override
     public void setUp() throws IOException {
         // folder of declarative resolvers must exist before MIME resolvers tests
         FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/MIMEResolver");
+    }
+
+    public void testWrongNormalization() throws Exception {
+        CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);
+        final File file = new File("/../../tmp/");
+        final File normalizedFile = FileUtil.normalizeFile(file);
+        FileUtil.addFileChangeListener(
+            new FileChangeAdapter() {},
+            normalizedFile
+        );
+        assertEquals("No warnings:\n" + log, 0, log.length());
     }
 
     public void testToFileObjectSlash() throws Exception { // #98388
@@ -297,6 +298,23 @@ public class FileUtilTest extends NbTestCase {
             assertEquals("File not normalized: " + path, paths.get(path), FileUtil.normalizeFile(file).getPath());
         }
     }
+
+    public void testNormalizeFileIsCached() throws Exception {
+        File f = new File(getWorkDir(), "text.txt");
+        CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
+        File one = FileUtil.normalizeFile(f);
+        String msg = "FileUtil.normalizeFile for " + f;
+        if (log.toString().indexOf(msg) == -1) {
+            fail("One querfy for the file shall be in logs:\n" + log);
+        }
+        CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
+        File two = FileUtil.normalizeFile(f);
+        if (log2.toString().contains(msg)) {
+            fail("No second FileUtil.normalizeFile for in:\n" + log);
+        }
+        assertEquals("Files are equal", one, two);
+    }
+
 
     /** Tests that only resolvers are queried which supply at least one of
      * MIME types given in array in FileUtil.getMIMEType(fo, String[]).

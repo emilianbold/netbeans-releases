@@ -43,6 +43,10 @@
  */
 package org.netbeans.modules.mercurial;
 
+import org.netbeans.modules.mercurial.ui.menu.ShowMenu;
+import org.netbeans.modules.mercurial.ui.menu.MergeMenu;
+import org.netbeans.modules.mercurial.ui.menu.ShareMenu;
+import org.netbeans.modules.mercurial.ui.menu.RecoverMenu;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.clone.CloneExternalAction;
 import org.netbeans.modules.mercurial.ui.create.CreateAction;
@@ -67,7 +71,7 @@ import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportMenu;
+import org.netbeans.modules.mercurial.ui.menu.ExportMenu;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
@@ -126,11 +130,11 @@ public class MercurialAnnotator extends VCSAnnotator {
     private String emptyFormat;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    private static String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
-    private static String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
-    private static String toolTipModified = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+    private static final String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
+    private static final String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
+    private static final String toolTipModified = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Modified_Locally");
-    private static String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+    private static final String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
 
     public MercurialAnnotator() {
@@ -161,6 +165,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         return new MessageFormat(format);
     }
     
+    @Override
     public String annotateName(String name, VCSContext context) {
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
@@ -188,6 +193,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             annotateNameHtml(name, mostImportantInfo, mostImportantFile);
     }
                 
+    @Override
     public Image annotateIcon(Image icon, VCSContext context) {
         boolean folderAnnotation = false;
         for (File file : context.getRootFiles()) {
@@ -288,13 +294,14 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
     }
 
+    @Override
     public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         // TODO: get resource strings for all actions:
         ResourceBundle loc = NbBundle.getBundle(MercurialAnnotator.class);
         Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         Set<File> roots = HgUtils.getRepositoryRoots(ctx);
-        boolean noneVersioned = (roots == null || roots.size() == 0);
+        boolean noneVersioned = (roots == null || roots.isEmpty());
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
 
@@ -333,7 +340,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(null);
             actions.add(SystemAction.get(RevertModificationsAction.class));
             actions.add(new RecoverMenu(ctx));
-            if (!onlyProjects && !onlyFolders) {
+            if (!onlyProjects) {
                 actions.add(SystemAction.get(IgnoreAction.class));
             }
             actions.add(null);
@@ -362,13 +369,17 @@ public class MercurialAnnotator extends VCSAnnotator {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(LogAction.class), loc.getString("CTL_PopupMenuItem_Log"), context)); //NOI18N
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_Revert"), context)); //NOI18N
-                if (!onlyProjects  && !onlyFolders) {
+                if (!onlyProjects) {
                     actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), loc.getString("CTL_PopupMenuItem_Ignore"), context)); //NOI18N
+                }
+                if (!onlyProjects && !onlyFolders) {
                     ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
                     actions.add(SystemActionBridge.createAction(exclude, exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING
                             ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
                             : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
                 }
+                actions.add(null);
+                actions.add(new ShareMenu(context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }

@@ -48,9 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -60,25 +58,8 @@ import org.openide.filesystems.URLMapper;
  */
 public class GroupParserTest extends NbTestCase {
 
-    public GroupParserTest() {
-        super("");
-    }
-
     public GroupParserTest(java.lang.String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(GroupParserTest.class);
-        return suite;
-    }
-
-    @Override
-    protected void setUp () throws Exception {
     }
     
     ////////////////////////////////

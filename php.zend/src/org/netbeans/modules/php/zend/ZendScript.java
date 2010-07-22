@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.zend;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -52,6 +51,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
@@ -61,14 +61,14 @@ import org.netbeans.modules.php.zend.ui.options.ZendOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
  * @author Tomas Mysik
  */
 public class ZendScript extends PhpProgram {
-    public static final String SCRIPT_NAME;
+    public static final String SCRIPT_NAME = "zf"; // NOI18N
+    public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
     public static final String OPTIONS_SUB_PATH = "Zend"; // NOI18N
 
@@ -81,17 +81,7 @@ public class ZendScript extends PhpProgram {
     private static final String[] CMD_CREATE_CONFIG = new String[] {"create", "config"}; // NOI18N
     private static final String[] CMD_ENABLE_CONFIG = new String[] {"enable", "config.provider", "NetBeansCommandsProvider"}; // NOI18N
 
-    static {
-        String scriptName = null;
-        if (Utilities.isWindows()) {
-            scriptName = "zf.bat"; // NOI18N
-        } else {
-            scriptName = "zf.sh"; // NOI18N
-        }
-        SCRIPT_NAME = scriptName;
-    }
-
-    public ZendScript(String command) {
+    private ZendScript(String command) {
         super(command);
     }
 
@@ -154,21 +144,7 @@ public class ZendScript extends PhpProgram {
 
     @Override
     public String validate() {
-        if (!StringUtils.hasText(getProgram())) {
-            return NbBundle.getMessage(ZendScript.class, "MSG_NoZend");
-        }
-
-        File file = new File(getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(ZendScript.class, "MSG_ZendNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(ZendScript.class, "MSG_ZendNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(ZendScript.class, "MSG_ZendCannotRead");
-        }
-        return null;
+        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(ZendScript.class, "LBL_ZendScript"));
     }
 
     public static String validate(String command) {

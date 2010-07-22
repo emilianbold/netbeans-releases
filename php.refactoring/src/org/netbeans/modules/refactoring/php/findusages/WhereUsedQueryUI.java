@@ -47,7 +47,6 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -61,31 +60,26 @@ import org.openide.util.lookup.Lookups;
  * @author Martin Matula, Jan Becicka
  */
 public class WhereUsedQueryUI implements RefactoringUI {
-    private WhereUsedQuery query = null;
+    private final WhereUsedQuery query;
     private final String name;
     private WhereUsedPanel panel;
     private final WhereUsedSupport element;
     private ElementKind kind;
     private AbstractRefactoring delegate;
 
-    public WhereUsedQueryUI(WhereUsedSupport usage, ParserResult info) {
+    public WhereUsedQueryUI(WhereUsedSupport usage) {
         this.query = new WhereUsedQuery(Lookups.singleton(usage));
-//        this.query.getContext().add(RefactoringUtils.getClasspathInfoFor(usage.getFileObject()));
         this.element = usage;
         name = usage.getName();
         kind = usage.getElementKind();
     }
     
-    public WhereUsedQueryUI(WhereUsedSupport usage, String name, AbstractRefactoring delegate) {
-        this.delegate = delegate;
-        this.element = usage;
-        this.name = name;
-    }
-    
+    @Override
     public boolean isQuery() {
         return true;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             panel = new WhereUsedPanel(name, element, parent);
@@ -93,8 +87,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
         return panel;
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
-        query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+        query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
         ModelElement element1 = panel.getElement();
         this.element.setModelElement(element1);
         if (kind == ElementKind.METHOD) {
@@ -114,16 +109,17 @@ public class WhereUsedQueryUI implements RefactoringUI {
             query.setRefactoringSource(Lookups.singleton(element));
         }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
-        query.putValue(query.FIND_REFERENCES,panel.isMethodFindUsages());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());
     }
     
     private void setForClass() {
         query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
         query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
         query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
-        query.putValue(query.FIND_REFERENCES,panel.isClassFindUsages());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
     }
     
+    @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         if (kind == ElementKind.METHOD) {
             setForMethod();
@@ -135,10 +131,12 @@ public class WhereUsedQueryUI implements RefactoringUI {
             return null;
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
         return query!=null?query:delegate;
     }
 
+    @Override
     public String getDescription() {
         String nameText = name;//NOI18N
         String bundleKey = (panel!=null && panel.isClassSubTypesDirectOnly()) ? 
@@ -159,16 +157,19 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
 
+    @Override
     public String getName() {
         return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")).format (
                     new Object[] {name}
                 );
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(WhereUsedQueryUI.class);
     }

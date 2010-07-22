@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.20
+#Version 1.22
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -9,7 +9,7 @@ meth public abstract void writeExternal(java.io.ObjectOutput) throws java.io.IOE
 CLSS public abstract interface java.io.Serializable
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -23,8 +23,8 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public abstract org.netbeans.spi.palette.DragAndDropHandler
-cons protected DragAndDropHandler(boolean)
-cons public DragAndDropHandler()
+cons protected init(boolean)
+cons public init()
 meth public abstract void customize(org.openide.util.datatransfer.ExTransferable,org.openide.util.Lookup)
 meth public boolean canDrop(org.openide.util.Lookup,java.awt.datatransfer.DataFlavor[],int)
 meth public boolean canReorderCategories(org.openide.util.Lookup)
@@ -35,7 +35,7 @@ hfds defaultHandler,isTextDnDEnabled
 hcls DefaultDragAndDropHandler
 
 CLSS public abstract org.netbeans.spi.palette.PaletteActions
-cons public PaletteActions()
+cons public init()
 meth public abstract javax.swing.Action getPreferredAction(org.openide.util.Lookup)
 meth public abstract javax.swing.Action[] getCustomCategoryActions(org.openide.util.Lookup)
 meth public abstract javax.swing.Action[] getCustomItemActions(org.openide.util.Lookup)
@@ -76,18 +76,18 @@ meth public static org.netbeans.spi.palette.PaletteController createPalette(org.
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.palette.PaletteFilter
-cons public PaletteFilter()
+cons public init()
 meth public abstract boolean isValidCategory(org.openide.util.Lookup)
 meth public abstract boolean isValidItem(org.openide.util.Lookup)
 supr java.lang.Object
 
 CLSS public org.netbeans.spi.palette.PaletteModule
-cons public PaletteModule()
+cons public init()
 meth public void restored()
 supr org.openide.modules.ModuleInstall
 
 CLSS public org.openide.modules.ModuleInstall
-cons public ModuleInstall()
+cons public init()
 meth protected boolean clearSharedData()
 meth public boolean closing()
 meth public void close()
@@ -102,7 +102,7 @@ supr org.openide.util.SharedClassObject
 hfds serialVersionUID
 
 CLSS public abstract org.openide.util.SharedClassObject
-cons protected SharedClassObject()
+cons protected init()
 intf java.io.Externalizable
 meth protected boolean clearSharedData()
 meth protected final java.lang.Object getLock()

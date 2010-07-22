@@ -75,6 +75,7 @@ public class ParserTest {
         performTest("    http://netbeans.org/bugzilla/buglist.cgi?bug_id=181772,172312\n", 4, 65);
         performTest("    http://some.where/some-thing.html#section?cow=moo's\n", 4, 55);
         performTest("    h", null);
+        performTest("    http://some.where:1234/some-thing.html#section?cow=moo's\n", 4, 60);
     }
 
     @Test

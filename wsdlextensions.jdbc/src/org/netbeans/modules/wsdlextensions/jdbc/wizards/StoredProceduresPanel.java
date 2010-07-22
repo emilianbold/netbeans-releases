@@ -791,7 +791,13 @@ private void catalogPatternNullActionPerformed(java.awt.event.ActionEvent evt) {
                                                                 colName,
                                                                 dbConn.getJDBCConnection());
 
-            } else {
+            } else if(DBMetaData.getDBType(dbConn.getJDBCConnection()).equalsIgnoreCase(DBMetaData.DB2)){
+                proc = DBMetaData.getDB2ProcResultSetColumns(storedProc.getCatalog(),
+                        storedProc.getSchema(),
+                        storedProc.getName(),
+                        colName,
+                        dbConn.getJDBCConnection());
+            }else {
                 proc = DBMetaData.getProcResultSetColumns(storedProc.getCatalog(),
                         storedProc.getSchema(),
                         storedProc.getName(),

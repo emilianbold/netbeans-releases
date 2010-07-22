@@ -47,10 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -92,12 +90,6 @@ public class PropertiesProviderTest extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.FINE;
-    }
-    
-
-    public static Test suite() {
-        //return new PropertiesProviderTest("testCreateWithNameAndExtForForm");
-        return new NbTestSuite(PropertiesProviderTest.class);
     }
     
     @Override

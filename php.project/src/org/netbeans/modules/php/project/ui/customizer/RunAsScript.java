@@ -42,10 +42,14 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -53,10 +57,12 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpOptions;
@@ -96,16 +102,22 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
             indexFileLabel,
             interpreterLabel,
             argsLabel,
+            workDirLabel,
+            phpOptionsLabel,
         };
         this.textFields = new JTextField[] {
             indexFileTextField,
             interpreterTextField,
             argsTextField,
+            workDirTextField,
+            phpOptionsTextField,
         };
         this.propertyNames = new String[] {
             PhpProjectProperties.INDEX_FILE,
             PhpProjectProperties.INTERPRETER,
             PhpProjectProperties.ARGS,
+            PhpProjectProperties.WORK_DIR,
+            PhpProjectProperties.PHP_ARGS,
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
         for (int i = 0; i < textFields.length; i++) {
@@ -202,22 +214,47 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
 
     @Override
     protected void validateFields() {
-        String phpInterpreter = interpreterTextField.getText().trim();
-        String indexFile = indexFileTextField.getText();
-        String args = argsTextField.getText().trim();
-
-        String err = RunAsValidator.validateScriptFields(phpInterpreter,
-                FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)), indexFile, args);
+        String err = RunAsValidator.validateScriptFields(getInterpreter(),
+                FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)), getIndexFile(), getArgs(),
+                getWorkDir(), getPhpOptions());
         category.setErrorMessage(err);
         // #148957 always allow to save customizer
         category.setValid(true);
     }
 
+    private String getInterpreter() {
+        return interpreterTextField.getText().trim();
+    }
+
+    private String getIndexFile() {
+        return indexFileTextField.getText().trim();
+    }
+
+    private String getArgs() {
+        return argsTextField.getText().trim();
+    }
+
+    private String getWorkDir() {
+        return workDirTextField.getText().trim();
+    }
+
+    private String getPhpOptions() {
+        return phpOptionsTextField.getText().trim();
+    }
+
     void composeHint() {
-        String php = interpreterTextField.getText();
-        String script = "./" + indexFileTextField.getText(); // NOI18N
-        String args = argsTextField.getText();
-        hintLabel.setText(php + " " + script + " " + args); // NOI18N
+        StringBuilder sb = new StringBuilder(100);
+        sb.append(getInterpreter());
+        String phpOptions = getPhpOptions();
+        if (StringUtils.hasText(phpOptions)) {
+            sb.append(" "); // NOI18N
+            sb.append(phpOptions);
+        }
+        sb.append(" "); // NOI18N
+        sb.append(getIndexFile());
+        sb.append(" "); // NOI18N
+        sb.append(getArgs());
+        hintLabel.setText(sb.toString().trim());
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -268,9 +305,94 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         indexFileLabel = new JLabel();
         indexFileTextField = new JTextField();
         indexFileBrowseButton = new JButton();
+        workDirLabel = new JLabel();
+        workDirTextField = new JTextField();
+        workDirBrowseButton = new JButton();
+        phpOptionsLabel = new JLabel();
+        phpOptionsTextField = new JTextField();
         hintLabel = new JLabel();
 
-        setFocusTraversalPolicy(null);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return phpOptionsTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return phpOptionsTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return phpOptionsTextField;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  workDirBrowseButton){
+                    return phpOptionsTextField;
+                }
+                if(aComponent ==  workDirTextField){
+                    return workDirBrowseButton;
+                }
+                if(aComponent ==  indexFileTextField){
+                    return indexFileBrowseButton;
+                }
+                if(aComponent ==  indexFileBrowseButton){
+                    return argsTextField;
+                }
+                if(aComponent ==  runAsCombo){
+                    return interpreterTextField;
+                }
+                if(aComponent ==  configureButton){
+                    return indexFileTextField;
+                }
+                if(aComponent ==  defaultInterpreterCheckBox){
+                    return configureButton;
+                }
+                if(aComponent ==  interpreterBrowseButton){
+                    return defaultInterpreterCheckBox;
+                }
+                if(aComponent ==  interpreterTextField){
+                    return interpreterBrowseButton;
+                }
+                if(aComponent ==  argsTextField){
+                    return workDirTextField;
+                }
+                return phpOptionsTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  phpOptionsTextField){
+                    return workDirBrowseButton;
+                }
+                if(aComponent ==  workDirBrowseButton){
+                    return workDirTextField;
+                }
+                if(aComponent ==  indexFileBrowseButton){
+                    return indexFileTextField;
+                }
+                if(aComponent ==  argsTextField){
+                    return indexFileBrowseButton;
+                }
+                if(aComponent ==  interpreterTextField){
+                    return runAsCombo;
+                }
+                if(aComponent ==  indexFileTextField){
+                    return configureButton;
+                }
+                if(aComponent ==  configureButton){
+                    return defaultInterpreterCheckBox;
+                }
+                if(aComponent ==  defaultInterpreterCheckBox){
+                    return interpreterBrowseButton;
+                }
+                if(aComponent ==  interpreterBrowseButton){
+                    return interpreterTextField;
+                }
+                if(aComponent ==  workDirTextField){
+                    return argsTextField;
+                }
+                return phpOptionsTextField;//end getComponentBefore
+
+            }}
+        );
 
         interpreterLabel.setLabelFor(interpreterTextField);
         Mnemonics.setLocalizedText(interpreterLabel, NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
@@ -302,6 +424,8 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         indexFileLabel.setLabelFor(indexFileTextField);
 
 
+
+
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile"));
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_Browse"));
         indexFileBrowseButton.addActionListener(new ActionListener() {
@@ -309,8 +433,16 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
                 indexFileBrowseButtonActionPerformed(evt);
             }
         });
+        Mnemonics.setLocalizedText(workDirLabel, NbBundle.getMessage(RunAsScript.class, "RunAsScript.workDirLabel.text"));
+        Mnemonics.setLocalizedText(workDirBrowseButton, NbBundle.getMessage(RunAsScript.class, "RunAsScript.workDirBrowseButton.text"));
+        workDirBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                workDirBrowseButtonActionPerformed(evt);
+            }
+        });
+        Mnemonics.setLocalizedText(phpOptionsLabel, NbBundle.getMessage(RunAsScript.class, "RunAsScript.phpOptionsLabel.text"));
         Mnemonics.setLocalizedText(hintLabel, "dummy");
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
@@ -322,7 +454,9 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(interpreterLabel)
                     .addComponent(indexFileLabel)
-                    .addComponent(argsLabel))
+                    .addComponent(argsLabel)
+                    .addComponent(workDirLabel)
+                    .addComponent(phpOptionsLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -330,52 +464,65 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(argsTextField, Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                            .addComponent(argsTextField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
                             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(indexFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                                .addComponent(indexFileTextField, GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
                                 .addPreferredGap(ComponentPlacement.RELATED)
                                 .addComponent(indexFileBrowseButton))
-                            .addComponent(runAsCombo, Alignment.TRAILING, 0, 302, Short.MAX_VALUE)
+                            .addComponent(runAsCombo, Alignment.TRAILING, 0, 343, Short.MAX_VALUE)
                             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(interpreterTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                                .addComponent(interpreterTextField, GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
                                 .addPreferredGap(ComponentPlacement.RELATED)
                                 .addComponent(interpreterBrowseButton))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(defaultInterpreterCheckBox)
-                                .addPreferredGap(ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(configureButton)))
+                                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(configureButton))
+                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(workDirTextField, GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(workDirBrowseButton))
+                            .addComponent(phpOptionsTextField, GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE))
                         .addGap(0, 0, 0))))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configureButton, indexFileBrowseButton, interpreterBrowseButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configureButton, indexFileBrowseButton, interpreterBrowseButton, workDirBrowseButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(runAsLabel)
-                    .addComponent(runAsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(runAsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(interpreterLabel)
                     .addComponent(interpreterBrowseButton)
-                    .addComponent(interpreterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(interpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(defaultInterpreterCheckBox)
                     .addComponent(configureButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(indexFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(indexFileLabel)
                     .addComponent(indexFileBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(argsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, 19, GroupLayout.PREFERRED_SIZE)
                     .addComponent(argsLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(hintLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(workDirLabel)
+                    .addComponent(workDirTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(workDirBrowseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(phpOptionsLabel)
+                    .addComponent(phpOptionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(hintLabel))
         );
 
         interpreterLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -420,6 +567,23 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         Utils.browsePhpInterpreter(this, interpreterTextField);
     }//GEN-LAST:event_interpreterBrowseButtonActionPerformed
 
+    private void workDirBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_workDirBrowseButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(RunAsScript.class, "LBL_SelectWorkingDirectory"));
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        File curDir = null;
+        String workDir = getWorkDir();
+        if (StringUtils.hasText(workDir)) {
+            curDir = new File(workDir);
+        } else {
+            curDir = FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
+        }
+        chooser.setCurrentDirectory(curDir);
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            workDirTextField.setText(FileUtil.normalizeFile(chooser.getSelectedFile()).getAbsolutePath());
+        }
+    }//GEN-LAST:event_workDirBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel argsLabel;
     private JTextField argsTextField;
@@ -432,7 +596,12 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     private JButton interpreterBrowseButton;
     private JLabel interpreterLabel;
     private JTextField interpreterTextField;
+    private JLabel phpOptionsLabel;
+    private JTextField phpOptionsTextField;
     private JComboBox runAsCombo;
     private JLabel runAsLabel;
+    private JButton workDirBrowseButton;
+    private JLabel workDirLabel;
+    private JTextField workDirTextField;
     // End of variables declaration//GEN-END:variables
 }

@@ -46,6 +46,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -109,6 +110,7 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.xml.XMLUtil;
 
 /**
  * @author Martin Krauskopf
@@ -355,6 +357,17 @@ final class LibrariesNode extends AbstractNode {
             setShortDescription(LibrariesNode.createHtmlDescription(dep));
         }
 
+        public @Override String getHtmlDisplayName() {
+            if (dep.getModuleEntry().isDeprecated()) {
+                try {
+                    return "<s>" + XMLUtil.toElementContent(getDisplayName()) + "</s>"; // NOI18N
+                } catch (CharConversionException x) {
+                    // ignore
+                }
+            }
+            return null;
+        }
+
         public Action[] getActions(boolean context) {
             return new Action[]{
                         SystemAction.get(OpenProjectAction.class),
@@ -388,6 +401,17 @@ final class LibrariesNode extends AbstractNode {
             this.dep = dep;
             this.project = project;
             setShortDescription(LibrariesNode.createHtmlDescription(dep));
+        }
+
+        public @Override String getHtmlDisplayName() {
+            if (dep.getModuleEntry().isDeprecated()) {
+                try {
+                    return "<s>" + XMLUtil.toElementContent(getDisplayName()) + "</s>"; // NOI18N
+                } catch (CharConversionException x) {
+                    // ignore
+                }
+            }
+            return null;
         }
 
         public Action[] getActions(boolean context) {

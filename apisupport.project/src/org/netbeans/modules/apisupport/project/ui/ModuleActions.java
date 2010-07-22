@@ -63,6 +63,7 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.source.ElementHandle;
@@ -78,6 +79,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -186,6 +188,8 @@ public final class ModuleActions implements ActionProvider {
             supportedActionsSet.add(ActionProvider.COMMAND_DEBUG_TEST_SINGLE);
             supportedActionsSet.add(ActionProvider.COMMAND_RUN_SINGLE);
             supportedActionsSet.add(ActionProvider.COMMAND_DEBUG_SINGLE);
+            supportedActionsSet.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
+            supportedActionsSet.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
         }
         supportedActionsSet.add(ActionProvider.COMMAND_RENAME);
         supportedActionsSet.add(ActionProvider.COMMAND_MOVE);
@@ -225,6 +229,12 @@ public final class ModuleActions implements ActionProvider {
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
             return testSources != null && testSources.sources.length == 1;
+        } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
+            NbPlatform plaf = project.getPlatform(false);
+            if (plaf == null || plaf.getHarnessVersion().compareTo(HarnessVersion.V610) < 0) {
+                return false;
+            }
+            return findTestMethodSources(context) != null;
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject[] files = findSources(context);
             if (files != null && files.length == 1) {
@@ -256,12 +266,17 @@ public final class ModuleActions implements ActionProvider {
         final FileObject[] sources;
         final String testType;
         final FileObject sourceDirectory;
+        final @NullAllowed String method;
         public TestSources(FileObject[] sources, String testType, FileObject sourceDirectory) {
+            this(sources, testType, sourceDirectory, null);
+        }
+        public TestSources(FileObject[] sources, String testType, FileObject sourceDirectory, String method) {
             assert sources != null;
             assert sourceDirectory != null;
             this.sources = sources;
             this.testType = testType;
             this.sourceDirectory = sourceDirectory;
+            this.method = method;
         }
     }
     private TestSources findTestSources(Lookup context, boolean checkInSrcDir) {
@@ -286,6 +301,21 @@ public final class ModuleActions implements ActionProvider {
                     //System.err.println("  files2=" + files2);
                     if (files2 != null) {
                         return new TestSources(files2, "unit", testSrcDir); // NOI18N
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    private TestSources findTestMethodSources(Lookup context) {
+        SingleMethod meth = context.lookup(SingleMethod.class);
+        if (meth != null) {
+            FileObject file = meth.getFile();
+            for (String testType : project.supportedTestTypes()) {
+                FileObject testSrcDir = project.getTestSourceDirectory(testType);
+                if (testSrcDir != null) {
+                    if (FileUtil.isParentOf(testSrcDir, file)) {
+                        return new TestSources(new FileObject[] {file}, testType, testSrcDir, meth.getMethodName());
                     }
                 }
             }
@@ -410,6 +440,18 @@ public final class ModuleActions implements ActionProvider {
                         // fallback to "old" debug tests behavior
                         targetNames = setupDebugTestSingle(p, testSources);
                     }
+                } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD)) {
+                    TestSources testSources = findTestMethodSources(context);
+                    p.setProperty("test.class", testClassName(testSources)); // NOI18N
+                    p.setProperty("test.type", testSources.testType); // NOI18N
+                    p.setProperty("test.methods", testSources.method); // NOI18N
+                    targetNames = new String[] {"test-method"}; // NOI18N
+                } else if (command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
+                    TestSources testSources = findTestMethodSources(context);
+                    p.setProperty("test.class", testClassName(testSources)); // NOI18N
+                    p.setProperty("test.type", testSources.testType); // NOI18N
+                    p.setProperty("test.methods", testSources.method); // NOI18N
+                    targetNames = new String[] {"debug-test-single-nb"}; // NOI18N
                 } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
                     FileObject[] files = findSources(context);
                     String path = null;
@@ -536,11 +578,16 @@ public final class ModuleActions implements ActionProvider {
         p.setProperty("test.type", testSources.testType); // NOI18N
         return  new String[] {"debug-test-main-nb"};    // NOI18N
     }
+    
+    private String testClassName(TestSources testSources) {
+        String path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
+        assert path != null && path.endsWith(".java") : path;
+        // Convert foo/FooTest.java -> foo.FooTest
+        return path.substring(0, path.length() - 5).replace('/', '.'); // NOI18N
+    }
 
     private String[] setupDebugTestSingle(Properties p, TestSources testSources) {
-        String path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
-        // Convert foo/FooTest.java -> foo.FooTest
-        p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
+        p.setProperty("test.class", testClassName(testSources)); // NOI18N
         p.setProperty("test.type", testSources.testType); // NOI18N
         return new String[] {"debug-test-single-nb"}; // NOI18N
     }

@@ -52,7 +52,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +73,7 @@ import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -317,9 +317,6 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         oos.writeObject (new HashMap()/*installBefores*/);
         oos.writeObject (new HashMap()/*installAfters*/);
         
-        // Note which module each loader came from.
-        Collection modules = Lookup.getDefault().lookupAll(ModuleInfo.class); // Collection<ModuleInfo>
-
         Iterator it = loaders.iterator ();
 
         while (it.hasNext ()) {
@@ -345,12 +342,9 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
             if (obj != null) {
                 if (err.isLoggable(Level.FINE)) err.fine("writing modified " + l.getClass().getName());
                 // Find its module, if any.
-                Class c = l.getClass();
-                Iterator mit = modules.iterator();
                 boolean found = false;
-                while (mit.hasNext()) {
-                    ModuleInfo m = (ModuleInfo)mit.next();
-                    if (m.isEnabled() && m.owns(c)) {
+                ModuleInfo m = Modules.getDefault().ownerOf(l.getClass());
+                if (m != null && m.isEnabled()) {
                         if (err.isLoggable(Level.FINE)) err.fine("belongs to module: " + m.getCodeNameBase());
                         oos.writeObject(m.getCodeNameBase());
                         int r = m.getCodeNameRelease();
@@ -362,8 +356,6 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
                             oos.writeObject(null);
                         }
                         found = true;
-                        break;
-                    }
                 }
                 if (!found) {
                     if (err.isLoggable(Level.FINE)) err.fine("does not belong to any module");

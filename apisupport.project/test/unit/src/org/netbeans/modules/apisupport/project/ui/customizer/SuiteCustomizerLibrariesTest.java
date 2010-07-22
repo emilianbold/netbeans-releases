@@ -81,11 +81,6 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         super(name);
     }
 
-//    public static Test suite() {
-//        return new SuiteCustomizerLibrariesTest("testClusterAndModuleNodesEnablement");
-//        // return new NbTestSuite(SuiteCustomizerLibrariesTest.class);
-//    }
-    
     private NbPlatform platform;
     private SuiteProject suite;
     private File install;
@@ -110,7 +105,7 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "bar");
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_REQUIRES, "tok1");
-        TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "bar.jar"), Collections.EMPTY_MAP, mani);
+        TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "bar.jar"), Collections.<String,String>emptyMap(), mani);
         // MODULE foo2
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "foo2");
@@ -121,13 +116,13 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "bar2");
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_NEEDS, "tok1b");
-        TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "bar2.jar"), Collections.EMPTY_MAP, mani);
+        TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "bar2.jar"), Collections.<String,String>emptyMap(), mani);
         // MODULE baz
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "baz");
         mani.getMainAttributes().putValue("OpenIDE-Module-Module-Dependencies", "foo/1 > 1.0");
         mani.getMainAttributes().putValue("OpenIDE-Module-Requires", "org.openide.modules.ModuleFormat1, org.openide.modules.os.Windows");
-        TestBase.createJar(new File(new File(new File(install, "anothercluster"), "modules"), "baz.jar"), Collections.EMPTY_MAP, mani);
+        TestBase.createJar(new File(new File(new File(install, "anothercluster"), "modules"), "baz.jar"), Collections.<String,String>emptyMap(), mani);
         platform = NbPlatform.addPlatform("custom", install, "custom");
         // SUITE setup
         suite = TestBase.generateSuite(getWorkDir(), "suite", "custom");

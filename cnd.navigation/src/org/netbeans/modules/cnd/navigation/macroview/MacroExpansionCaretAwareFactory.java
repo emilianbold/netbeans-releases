@@ -172,7 +172,9 @@ public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactor
     private static void setCaretPosition(final JEditorPane pane, final int position) {
         Runnable setCaret = new Runnable() {
             public void run() {
-                pane.setCaretPosition(position);
+                if (pane.getDocument() != null && position <= pane.getDocument().getLength()) {
+                    pane.setCaretPosition(position);
+                }
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {

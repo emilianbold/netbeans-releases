@@ -65,19 +65,23 @@ public final class DecoratorManager {
         }
         
         // Find all decorator support, categorize by type.
-        decoratorMap = new HashMap<String, Decorator>();;
+        decoratorMap = new HashMap<String, Decorator>();
         for (DecoratorFactory decoratorFactory : 
                 Lookups.forPath(Util.GF_LOOKUP_PATH).lookupAll(DecoratorFactory.class)) {
             java.util.Map<String, Decorator> map = decoratorFactory.getAllDecorators();
             decoratorMap.putAll(map);
         }
     }
+
     
-    public static Decorator findDecorator(String type, Decorator defaultDecorator) {
+    public static Decorator findDecorator(String type, Decorator defaultDecorator,boolean enabled) {
         if(decoratorMap == null) {
             initDecorators();
         }
-        
+
+        if (!enabled) {
+            type = Decorator.DISABLED+type;
+        }
         Decorator d = decoratorMap.get(type);
         return d != null ? d : defaultDecorator;
     }

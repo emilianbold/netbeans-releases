@@ -109,7 +109,7 @@ import org.openide.xml.XMLUtil;
 public class RefactoringUtils {
 
     public static Program getRoot(ParserResult info) {
-        return (info instanceof PHPParseResult) ? ((PHPParseResult)info).getProgram() : null;
+        return (info instanceof PHPParseResult) ? ((PHPParseResult) info).getProgram() : null;
     }
 
     public static Source getSource(Document doc) {
@@ -149,7 +149,7 @@ public class RefactoringUtils {
     }
 
     public static String getHtml(String text) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         // TODO - check whether we need Js highlighting or rhtml highlighting
         TokenHierarchy tokenH = TokenHierarchy.create(text, PHPTokenId.language());
         Lookup lookup = MimeLookup.getLookup(MimePath.get(FileUtils.PHP_MIME_TYPE));
@@ -182,7 +182,7 @@ public class RefactoringUtils {
             return string.replace(" ", "&nbsp;").replace("\n", "<br>"); //NOI18N
 
         }
-        StringBuffer buf = new StringBuffer(string);
+        StringBuilder buf = new StringBuilder(string);
         if (StyleConstants.isBold(set)) {
             buf.insert(0, "<b>"); //NOI18N
 
@@ -363,7 +363,6 @@ public class RefactoringUtils {
 //        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
 //        return cpInfo;
 //    }
-
     public static boolean isOutsidePhp(Lookup lookup, FileObject fo) {
         if (FileUtils.isPhpFile(fo)) {
             EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -381,7 +380,7 @@ public class RefactoringUtils {
         return false;
     }
 
-    static boolean isFromEditor(EditorCookie ec) {
+    public static boolean isFromEditor(EditorCookie ec) {
         if (ec != null && ec.getOpenedPanes() != null) {
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             if (activetc instanceof CloneableEditorSupport.Pane) {
@@ -390,7 +389,7 @@ public class RefactoringUtils {
         }
         return false;
     }
-    
+
     public static List<ASTNode> underCaret(ParserResult info, final int offset) {
         class Result extends Error {
 
@@ -431,9 +430,9 @@ public class RefactoringUtils {
     }
 
     public static boolean isQuoted(String value) {
-        return value.length() >= 2 &&
-                (value.startsWith("\"") || value.startsWith("'")) &&
-                (value.endsWith("\"") || value.endsWith("'"));
+        return value.length() >= 2
+                && (value.startsWith("\"") || value.startsWith("'"))
+                && (value.endsWith("\"") || value.endsWith("'"));
     }
 
     public static String dequote(String value) {

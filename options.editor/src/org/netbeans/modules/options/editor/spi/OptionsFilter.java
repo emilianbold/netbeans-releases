@@ -159,7 +159,11 @@ public final class OptionsFilter {
                 return categories.indexOf(child);
             }
 
-            return category2Nodes.get(parent).indexOf(child);
+            List<Object> catNodes = category2Nodes.get(parent);
+
+            if (catNodes == null) return -1;
+            
+            return catNodes.indexOf(child);
         }
 
         private final List<TreeModelListener> listeners = new LinkedList<TreeModelListener>();
@@ -234,9 +238,35 @@ public final class OptionsFilter {
 
         @Override
         public void treeNodesChanged(TreeModelEvent e) {
-            //XXX: does not change the source of the event.
+            if (   (e.getTreePath().getPathCount() > 1)
+                && (getIndexOfChild(e.getTreePath().getParentPath().getLastPathComponent(), e.getTreePath().getLastPathComponent()) == (-1))) {
+                //the category is filtered out - to point in firing events
+                return ;
+            }
+
+            List<Integer> childIndices = new LinkedList<Integer>();
+            List<Object> children = new LinkedList<Object>();
+
+            for (Object c : e.getChildren()) {
+                int i = getIndexOfChild(e.getTreePath().getLastPathComponent(), e.getTreePath().getLastPathComponent());
+
+                if (i == (-1)) continue;
+
+                childIndices.add(i);
+                children.add(c);
+            }
+
+            int[] childIndicesArray = new int[childIndices.size()];
+            int o = 0;
+
+            for (Integer i : childIndices) {
+                childIndicesArray[o++] = i;
+            }
+
+            TreeModelEvent nue = new TreeModelEvent(this, e.getTreePath(), childIndicesArray, children.toArray(new Object[children.size()]));
+            
             for (TreeModelListener l : getListeners()) {
-                l.treeNodesChanged(e);
+                l.treeNodesChanged(nue);
             }
         }
 

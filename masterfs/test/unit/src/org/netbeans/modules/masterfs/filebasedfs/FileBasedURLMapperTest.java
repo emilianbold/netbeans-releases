@@ -49,8 +49,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
 import java.net.URL;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 /**
  * @author Radek Matous
@@ -59,12 +57,6 @@ public class FileBasedURLMapperTest extends NbTestCase {
 
     public FileBasedURLMapperTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(FileBasedURLMapperTest.class);
-        
-        return suite;
     }
 
     public void testGetURL64012() throws Exception {

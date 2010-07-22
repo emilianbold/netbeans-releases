@@ -47,7 +47,6 @@ package org.openide.text;
 
 import java.io.IOException;
 import javax.swing.JEditorPane;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
@@ -88,17 +87,6 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(CloneableEditorSupportPaneTest.class);
-        
-        return suite;
-    }
-    
-
     protected void setUp () {
         ic = new InstanceContent ();
         support = new CES (this, new AbstractLookup (ic));

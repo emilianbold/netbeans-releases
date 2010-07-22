@@ -45,21 +45,8 @@
 package org.netbeans.core.windows;
 
 import java.util.Locale;
-import java.util.Set;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
-import org.netbeans.core.windows.actions.MaximizeWindowAction;
-import org.netbeans.core.windows.actions.UndockWindowAction;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.netbeans.core.windows.view.ui.MultiSplitPane;
-import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
 
 /** 
  * Test Mode activation behavior.
@@ -73,12 +60,6 @@ public class SwitchesTest extends NbTestCase {
         super (name);
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(SwitchesTest.class);
-        
-        return suite;
-    }
-
     protected boolean runInEQ () {
         return true;
     }

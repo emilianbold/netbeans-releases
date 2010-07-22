@@ -135,6 +135,12 @@ public final class WhereUsedSupport {
         return offset;
     }
 
+    public void clearResults() {
+        if (results != null) {
+            results.clear();
+        }
+    }
+
     public PhpElementKind getKind() {
         return kind;
     }
@@ -275,15 +281,18 @@ public final class WhereUsedSupport {
 
 
     public class Results {
+
         Collection<WhereUsedElement> elements = new TreeSet<WhereUsedElement>(new Comparator<WhereUsedElement>() {
+
+            @Override
             public int compare(WhereUsedElement o1, WhereUsedElement o2) {
-                String path1 = o1.getParentFile().getPath();
-                String path2 = o2.getParentFile().getPath();
+                String path1 = o1.getFile().getPath();
+                String path2 = o2.getFile().getPath();
                 int retval = path1.compareTo(path2);
                 if (retval == 0) {
                     int offset1 = o1.getPosition().getBegin().getOffset();
                     int offset2 = o2.getPosition().getBegin().getOffset();
-                    retval =  offset1 < offset2 ? -1 : 1;
+                    retval = offset1 < offset2 ? -1 : 1;
                 }
                 return retval;
             }
@@ -291,10 +300,16 @@ public final class WhereUsedSupport {
 
         private Results() {
         }
+
+        private void clear() {
+            elements.clear();
+        }
+
         private void addEntry(PhpElement decl) {
             Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getModifiers());
-            elements.add(WhereUsedElement.create(decl.getName(), decl.getFileObject(), new OffsetRange(decl.getOffset(), decl.getOffset()+decl.getName().length()), icon));
+            elements.add(WhereUsedElement.create(decl.getName(), decl.getFileObject(), new OffsetRange(decl.getOffset(), decl.getOffset() + decl.getName().length()), icon));
         }
+
         private void addEntry(FileObject fo, Occurence occurence) {
             Collection<? extends PhpElement> allDeclarations = occurence.getAllDeclarations();
             if (allDeclarations.size() > 0) {
@@ -302,11 +317,10 @@ public final class WhereUsedSupport {
                 Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getModifiers());
                 elements.add(WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon));
             }
-}
+        }
+
         public Collection<WhereUsedElement> getResultElements() {
             return elements;
         }
-
-
     }
 }

@@ -148,6 +148,10 @@ public final class KenaiTopComponent extends TopComponent {
 
     Component getKenaiSwitcher() {
         combo = new KenaiCombo(false);
+        Object k = Utilities.getLastKenai();
+        if (k!=null) {
+            combo.setSelectedItem(k);
+        }
         combo.addActionListener(new ActionListener() {
 
             public void actionPerformed(final ActionEvent e) {

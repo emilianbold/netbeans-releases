@@ -174,5 +174,5 @@ public interface GrammarQuery {
      * @param ctx the hint context node
      * @return an array of properties for this context
      */
-    org.openide.nodes.Node.Property[] getProperties(HintContext nodeCtx);
+    org.openide.nodes.Node.Property<?>[] getProperties(HintContext nodeCtx);
 }

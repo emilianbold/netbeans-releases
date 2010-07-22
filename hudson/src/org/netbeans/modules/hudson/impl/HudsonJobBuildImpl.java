@@ -72,10 +72,12 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     private Result result;
     private final HudsonConnector connector;
 
-    HudsonJobBuildImpl(HudsonConnector connector, HudsonJobImpl job, int build) {
+    HudsonJobBuildImpl(HudsonConnector connector, HudsonJobImpl job, int build, boolean building, Result result) {
         this.connector = connector;
         this.job = job;
         this.build = build;
+        this.building = building;
+        this.result = result;
     }
     
     public HudsonJob getJob() {
@@ -100,7 +102,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     }
     
     public @Override synchronized Result getResult() {
-        if (result == null) {
+        if (result == null && !building) {
             AtomicBoolean _building = new AtomicBoolean();
             AtomicReference<Result> _result = new AtomicReference<Result>(Result.NOT_BUILT);
             connector.loadResult(this, _building, _result);
@@ -114,6 +116,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     public Collection<? extends HudsonJobChangeItem> getChanges() {
         if (changes == null || /* #171978 */changes.isEmpty()) {
             Document changeSet = connector.getDocument(getUrl() +
+                    // XXX use ?tree (but means that each HudsonSCM must add its own pieces)
                     HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet"); // NOI18N
             if (changeSet != null) {
                 for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {

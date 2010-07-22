@@ -193,9 +193,10 @@ public class WLDeploymentFactory implements DeploymentFactory {
     private static synchronized WLMutableState getMutableState(InstanceProperties props) {
         WLMutableState mutableState = stateCache.get(props);
         if (mutableState == null) {
-            mutableState = new WLMutableState();
+            mutableState = new WLMutableState(props);
             stateCache.put(props, mutableState);
         }
+        mutableState.configure();
         return mutableState;
     }
 }

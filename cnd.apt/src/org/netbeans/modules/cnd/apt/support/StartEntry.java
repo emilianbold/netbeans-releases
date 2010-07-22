@@ -70,10 +70,15 @@ public final class StartEntry implements Persistent, SelfPersistent{
         return startFile;
     }
 
+    public APTFileSearch getFileSearch(){
+        return APTFileSearch.get(startFileProject);
+    }
+
     public Key getStartFileProject(){
         return startFileProject;
     }
     
+    @Override
     public void write(DataOutput output) throws IOException {
         assert output != null;
         output.writeUTF(startFile.toString());
@@ -116,7 +121,7 @@ public final class StartEntry implements Persistent, SelfPersistent{
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
-        out.append("Start Entry: from file=" + startFile + "\nof project="+startFileProject); //NOI18N
+        out.append("Start Entry: from file=").append(startFile).append("\nof project=").append(startFileProject); //NOI18N
         return out.toString();
     }
 }

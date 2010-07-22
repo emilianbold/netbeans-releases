@@ -1512,8 +1512,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             declarationsLock.readLock().lock();
             res = getDeclarationsByOffset(startOffset-1);
-            OffsetSortedKey fromKey = new OffsetSortedKey(startOffset,""); // NOI18N
-            OffsetSortedKey toKey = new OffsetSortedKey(endOffset,""); // NOI18N
+            OffsetSortedKey fromKey = new OffsetSortedKey(startOffset,0);
+            OffsetSortedKey toKey = new OffsetSortedKey(endOffset,0);
             SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> map = declarations.subMap(fromKey, toKey);
             for(Map.Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> entry : map.entrySet()){
                 CsmUID<CsmOffsetableDeclaration> anUid = entry.getValue();
@@ -1546,7 +1546,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     // call under read lock
     private List<CsmUID<CsmOffsetableDeclaration>> getDeclarationsByOffset(int offset){
         List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        OffsetSortedKey key = new OffsetSortedKey(offset+1,""); // NOI18N
+        OffsetSortedKey key = new OffsetSortedKey(offset+1,0); // NOI18N
         while(true) {
             SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> head = declarations.headMap(key);
             if (head.isEmpty()) {
@@ -1630,7 +1630,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
-        OffsetSortedKey key = new OffsetSortedKey(startOffset, name);
+        OffsetSortedKey key = new OffsetSortedKey(startOffset, Math.abs(CharSequences.create(name).hashCode()));
         CsmUID<CsmOffsetableDeclaration> anUid = null;
         try {
             declarationsLock.readLock().lock();
@@ -2283,24 +2283,24 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public static final class OffsetSortedKey implements Comparable<OffsetSortedKey>, Persistent, SelfPersistent {
 
-        private int start = 0;
-        private CharSequence name;
+        private final int start;
+        private final int name;
 
         private OffsetSortedKey(CsmOffsetableDeclaration declaration) {
             start = ((CsmOffsetable) declaration).getStartOffset();
-            name = declaration.getName();
+            name = Math.abs(declaration.getName().hashCode());
         }
 
-        private OffsetSortedKey(int offset, CharSequence name) {
+        private OffsetSortedKey(int offset, int name) {
             start = offset;
-            this.name = NameCache.getManager().getString(name);
+            this.name = name;
         }
 
         @Override
         public int compareTo(OffsetSortedKey o) {
             int res = start - o.start;
             if (res == 0) {
-                res = CharSequences.comparator().compare(name, o.name);
+                res = name - o.name;
             }
             return res;
         }
@@ -2318,7 +2318,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         public int hashCode() {
             int hash = 7;
             hash = 37 * hash + this.start;
-            hash = 37 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 37 * hash + this.name;
             return hash;
         }
 
@@ -2330,12 +2330,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         @Override
         public void write(DataOutput output) throws IOException {
             output.writeInt(start);
-            PersistentUtils.writeUTF(name, output);
+            output.writeInt(name);
         }
 
         public OffsetSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = PersistentUtils.readUTF(input, NameCache.getManager());
+            name = input.readInt();
         }
     }
 

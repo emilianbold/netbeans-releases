@@ -371,7 +371,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 0, 5, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 5, 0);
         add(loginButton, gridBagConstraints);
         loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
 

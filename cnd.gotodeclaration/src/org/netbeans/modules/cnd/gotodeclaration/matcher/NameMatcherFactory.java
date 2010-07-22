@@ -31,6 +31,7 @@
 package org.netbeans.modules.cnd.gotodeclaration.matcher;
 
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.type.SearchType;
 
@@ -51,7 +52,10 @@ public class NameMatcherFactory {
                     return matcher.accept(name.toString());
                 }
             };
-            return CsmSelect.getFilterBuilder().createNameFilter(acceptor);
+            CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
+            if (filterBuilder != null) {
+                return filterBuilder.createNameFilter(acceptor);
+            }
         }
         return null;
     }

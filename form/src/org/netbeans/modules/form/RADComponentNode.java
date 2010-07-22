@@ -175,9 +175,16 @@ public class RADComponentNode extends FormNode
 
     @Override
     public Node.PropertySet[] getPropertySets() {
-        return component.getProperties();
+        final Node.PropertySet[][] props = new Node.PropertySet[1][];
+        FormLAF.executeWithLAFLocks(new Runnable() {
+            @Override
+            public void run() {
+                props[0] = component.getProperties();
+            }
+        });
+        return props[0];
     }
-    
+
     /* List new types that can be created in this node.
      * @return new types
      */

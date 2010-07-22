@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -161,16 +160,29 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         };
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         this.fireNameChange(null,null);
         this.fireDisplayNameChange(null,null);
         //The caller holds ProjectManager.mutex() read lock
         LibrariesNode.rp.post (new Runnable () {
+            @Override
             public void run () {
                 ((PlatformContentChildren)getChildren()).addNotify ();
             }
         });
-    }    
+    }
+
+    @Override
+    public String getShortDescription() {
+        final JavaPlatform jp = pp.getPlatform();
+        if (jp != null && !jp.getInstallFolders().isEmpty()) {
+            final FileObject installFolder = jp.getInstallFolders().iterator().next();
+            return FileUtil.getFileDisplayName(installFolder);
+        } else {
+            return super.getShortDescription();
+        }
+    }
     
     /**
      * Creates new PlatformNode
@@ -199,6 +211,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             this.setKeys(Collections.<SourceGroup>emptySet());
         }
 
+        @Override
         protected Node[] createNodes(SourceGroup sg) {
             return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null,null,null,null,null,null)};
         }
@@ -269,6 +282,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             changeSupport.removeChangeListener(l);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (platformPropName.equals (evt.getPropertyName())) {
                 platformCache = null;                
@@ -286,6 +300,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             this.platformProvider = platformProvider;
         }
         
+        @Override
         public boolean hasJavadoc() {
             JavaPlatform platform = platformProvider.getPlatform();            
             if (platform == null) {
@@ -295,6 +310,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return javadocRoots.length > 0;
         }
 
+        @Override
         public void showJavadoc() {
             JavaPlatform platform = platformProvider.getPlatform();            
             if (platform != null) {                            

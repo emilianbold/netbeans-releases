@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSchException;
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.support.Authentication;
@@ -74,12 +74,34 @@ public abstract class ConnectionManagerAccessor {
 
         return DEFAULT;
     }
+//    public abstract Session getConnectionSession(final ExecutionEnvironment env, boolean restoreLostConnection);
 
-    public abstract Session getConnectionSession(final ExecutionEnvironment env, boolean restoreLostConnection);
+    /**
+     * Opens and returns a jsch channel in a thread-safe manner.
+     * Env must be connected prior to this method call
+     *
+     * @param env - env where channel should be opened
+     * @param type - type of a channel to open
+     * @param waitIfNoAvailable - whether should wait for available channel or
+     * just return null in case no channel is available at the moment
+     * @return Opened channel or null if waitIfNoAvailable is not set and no channel is available
+     * @throws InterruptedException
+     * @throws JSchException
+     * @throws IOException
+     */
+    public abstract Channel openAndAcquireChannel(final ExecutionEnvironment env, String type, boolean waitIfNoAvailable) throws InterruptedException, JSchException, IOException;
+
+    /**
+     * Closes (and releases a resource lock) previously opened by
+     * openAndAcquireChannel() jsch channel.
+     *
+     * @param env
+     * @param channel - a channel to close
+     * @throws JSchException
+     */
+    public abstract void closeAndReleaseChannel(final ExecutionEnvironment env, final Channel channel) throws JSchException;
 
     public abstract void reconnect(final ExecutionEnvironment env) throws IOException;
 
     public abstract void changeAuth(ExecutionEnvironment env, Authentication auth);
-
-    public abstract boolean doConnect(ExecutionEnvironment execEnv, boolean fetchHostInfo) throws IOException, CancellationException;
 }

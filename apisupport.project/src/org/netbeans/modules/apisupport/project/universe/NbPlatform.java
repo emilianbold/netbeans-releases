@@ -59,6 +59,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -66,13 +67,14 @@ import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
@@ -133,7 +135,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                         try {
                             PropertyUtils.putGlobalProperties(loadWithProcessing());
                         } catch (IOException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                            LOG.log(Level.INFO, null, e);
                         }
                         inited = true;
                     }
@@ -238,9 +240,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                         platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, findHarness(loc), new URL[0], new URL[0]));
                     }
                 }
-                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Util.err.log("NbPlatform initial list: " + platforms);
-                }
+                LOG.log(Level.FINE, "NbPlatform initial list: {0}", platforms);
             }
         }
         return platforms;
@@ -262,29 +262,24 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         // Semi-arbitrary platform* component.
         File bootJar = InstalledFileLocator.getDefault().locate("core/core.jar", "org.netbeans.core.startup", false); // NOI18N
         if (bootJar == null) {
-            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log("no core/core.jar");
-            }
+            LOG.warning("no core/core.jar");
             return null;
         }
         // Semi-arbitrary harness component.
         File harnessJar = InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-apisupport-harness.jar", "org.netbeans.modules.apisupport.harness", false); // NOI18N
         if (harnessJar == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve default platform. " + // NOI18N
-                    "Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted."); // NOI18N
+            LOG.warning("Cannot resolve default platform. Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted.");
             return null;
         }
         File loc = harnessJar.getParentFile().getParentFile().getParentFile();
         try {
             if (!loc.getCanonicalFile().equals(bootJar.getParentFile().getParentFile().getParentFile().getCanonicalFile())) {
                 // Unusual installation structure, punt.
-                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Util.err.log("core.jar & harness.jar locations do not match: " + bootJar + " vs. " + harnessJar);
-                }
+                LOG.log(Level.WARNING, "core.jar & harness.jar locations do not match: {0} vs. {1}", new Object[] {bootJar, harnessJar});
                 return null;
             }
         } catch (IOException x) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
+            LOG.log(Level.INFO, null, x);
         }
         // Looks good.
         return FileUtil.normalizeFile(loc);
@@ -428,9 +423,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir), harness,
                 Util.findURLs(null), Util.findURLs(null));
         getPlatformsInternal().add(plaf);
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("NbPlatform added: " + plaf);
-        }
+        LOG.log(Level.FINE, "NbPlatform added: {0}", plaf);
         return plaf;
     }
     
@@ -468,9 +461,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         }
         getPlatformsInternal().remove(plaf);
         ModuleList.refresh(); // #97262
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("NbPlatform removed: " + plaf);
-        }
+        LOG.log(Level.FINE, "NbPlatform removed: {0}", plaf);
     }
     
     private final String id;
@@ -557,17 +548,35 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     }
 
     /**
-     * Get javadoc which should by default be associated with the default platform.
+     * Gets Javadoc which should by default be associated with a platform.
      */
-    public URL[] getDefaultJavadocRoots() {
-        if (! isDefault())
-            return null;
-        // javadoc can be built in the meantime, don't cache
-        File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
-        if (apidocsZip != null) {
-            return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
+    public @Override URL[] getDefaultJavadocRoots() {
+        if (isDefault()) {
+            File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
+            if (apidocsZip != null) {
+                return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
+            }
         }
-        return new URL[0];
+        // Use a representative module present in all 6.x versions.
+        ModuleEntry platform = getModule("org.netbeans.modules.core.kit"); // NOI18N
+        if (platform != null) {
+            String spec = platform.getSpecificationVersion();
+            if (spec != null) {
+                Matcher m = Pattern.compile("(\\d+[.]\\d+)([.]\\d+)*").matcher(spec);
+                if (m.matches()) {
+                    String trunkSpec = m.group(1);
+                    try {
+                        String loc = NbBundle.getBundle(NbPlatform.class).getString("NbPlatform.web.javadoc." + trunkSpec);
+                        return new URL[] {new URL(loc)};
+                    } catch (MissingResourceException x) {
+                        // fine, some other trunk version, ignore
+                    } catch (MalformedURLException x) {
+                        assert false : x;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public void addJavadocRoot(URL root) throws IOException {
@@ -933,9 +942,9 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                     jf.close();
                 }
             } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(Level.INFO, null, e);
             } catch (NumberFormatException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(Level.INFO, null, e);
             }
         }
         return harnessVersion = HarnessVersion.UNKNOWN;

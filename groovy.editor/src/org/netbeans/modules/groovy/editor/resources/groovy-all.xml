@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/groovy/editor/resources/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/groovy-all.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.groovy.editor/modules/ext/groovy-all.jar!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->

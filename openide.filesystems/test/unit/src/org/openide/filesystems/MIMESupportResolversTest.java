@@ -43,21 +43,11 @@
  */
 package org.openide.filesystems;
 
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.*;
-import org.openide.ErrorManager;
-import java.awt.Component;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.lang.ref.*;
 import java.util.*;
 
 /**
@@ -76,18 +66,6 @@ public class MIMESupportResolversTest extends TestCase {
         super (testName);
     }
 
-    protected void setUp () throws Exception {
-    }
-
-    protected void tearDown () throws Exception {
-    }
-
-    public static Test suite () {
-        TestSuite suite = new TestSuite(MIMESupportResolversTest.class);
-        return suite;
-    }
-    
-    
     public void testWrongImplOfGetResolvers() throws Exception {
         MIMEResolver[] all = MIMESupport.getResolvers();
         assertTrue("Error manager race condition activated", ErrMgr.switchDone);

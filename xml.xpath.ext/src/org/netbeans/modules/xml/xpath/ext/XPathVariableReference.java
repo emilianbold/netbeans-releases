@@ -71,4 +71,6 @@ public interface XPathVariableReference
      * for such cases. 
      */ 
     ReferenceableSchemaComponent getType();
+
+    void setVariableName(String name);
 }

@@ -130,6 +130,15 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         performTest(SOURCE, 80, 5);
     }
     
+    public void testStringLiterals() throws Exception {
+        performTest(SOURCE, 84, 16);
+    }
+    
+    public void testCharLiterals() throws Exception {
+        performTest(SOURCE, 94, 22);
+    }
+
+    @Override
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         BaseDocument doc;
         try {

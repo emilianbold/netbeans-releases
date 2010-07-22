@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.php.editor.api;
 
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  * @author Radek Matous
@@ -52,5 +54,11 @@ public final class ElementQueryFactory {
     private ElementQueryFactory() {};
     public static ElementQuery.Index getIndexQuery(final QuerySupport querySupport)  {
         return IndexQueryImpl.get(querySupport);
+    }
+    public static ElementQuery.Index getIndexQuery(final PHPParseResult parseResult)  {
+        return IndexQueryImpl.get(QuerySupportFactory.get(parseResult));
+    }
+    public static ElementQuery.File getFileQuery(final PHPParseResult parseResult)  {
+        return PhpElementVisitor.createElementQuery(parseResult);
     }
 }

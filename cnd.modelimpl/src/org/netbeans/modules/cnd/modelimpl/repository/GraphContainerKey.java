@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 final public class GraphContainerKey extends ProjectNameBasedKey {
 
-    public GraphContainerKey(String project) {
+    public GraphContainerKey(CharSequence project) {
         super(project);
     }
 
@@ -62,6 +62,7 @@ final public class GraphContainerKey extends ProjectNameBasedKey {
         super(in);
     }
 
+    @Override
     public int getSecondaryDepth() {
         return 1;
     }
@@ -76,11 +77,13 @@ final public class GraphContainerKey extends ProjectNameBasedKey {
         return "GraphContainerKey " + getProjectName(); // NOI18N
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
         return KeyObjectFactory.KEY_GRAPH_CONTAINER_KEY;
     }
 
+    @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }

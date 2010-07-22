@@ -54,19 +54,16 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -76,7 +73,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=200)
+@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=300)
 public class IncludePathNodeFactory implements NodeFactory {
 
     public IncludePathNodeFactory() {
@@ -86,7 +83,7 @@ public class IncludePathNodeFactory implements NodeFactory {
     @SuppressWarnings("unchecked")
     public NodeList<Node> createNodes(Project p) {
         final PhpProject project = p.getLookup().lookup(PhpProject.class);
-        return NodeFactorySupport.fixedNodeList(new DummyNode(new IncludePathRootNode(project)) {
+        return NodeFactorySupport.fixedNodeList(new Nodes.DummyNode(new IncludePathRootNode(project)) {
             @Override
             public Action[] getActions(boolean context) {
                 return new Action[]{new PhpLogicalViewProvider.CustomizeProjectAction(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH)};
@@ -96,9 +93,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
     private static class IncludePathRootNode extends AbstractNode implements PropertyChangeListener {
 
-        private PhpProject project;
-        private static final String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/php/project/ui/resources/referencedClasspath.gif"; //NOI18N
-        private static final ImageIcon ICON_CLASSPATH = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
+        private final PhpProject project;
 
         public IncludePathRootNode(PhpProject project) {
             super(createChildren(project));
@@ -113,12 +108,16 @@ public class IncludePathNodeFactory implements NodeFactory {
 
         @Override
         public Image getIcon(int type) {
-            return ICON_CLASSPATH.getImage();
+            return getIcon(true);
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return getIcon(type);
+            return getIcon(false);
+        }
+
+        private Image getIcon(boolean opened) {
+            return Utils.getIncludePathIcon(opened);
         }
 
         @Override
@@ -137,30 +136,15 @@ public class IncludePathNodeFactory implements NodeFactory {
         }
     }
 
-    private static class IncludePathChildFactory extends ChildFactory<Node> {
-
-        private final PhpProject project;
+    private static class IncludePathChildFactory extends Nodes.FileChildFactory {
 
         public IncludePathChildFactory(PhpProject project) {
-            this.project = project;
-            assert project != null;
+            super(project);
         }
 
         @Override
-        protected boolean createKeys(List<Node> toPopulate) {
-            toPopulate.addAll(createNodeList().keys());
-            return true;
-        }
-
-        @Override
-        protected Node createNodeForKey(Node key) {
-            return key;
-        }
-
-        @SuppressWarnings("unchecked")
-        NodeList<Node> createNodeList() {
+        protected List<Node> getNodes() {
             List<Node> list = new ArrayList<Node>();
-            assert project != null;
             // #172092
             List<FileObject> includePath = ProjectManager.mutex().readAccess(new Mutex.Action<List<FileObject>>() {
                 @Override
@@ -174,26 +158,17 @@ public class IncludePathNodeFactory implements NodeFactory {
                     list.add(new IncludePathNode(df, project));
                 }
             }
-            Node[] nodes = list.toArray(new Node[list.size()]);
-            return NodeFactorySupport.fixedNodeList(nodes);
+            return list;
         }
     }
 
-    private static class IncludePathNode extends DummyNode {
+    private static class IncludePathNode extends Nodes.FileNode {
 
         private static final String ICON_PATH = "org/netbeans/modules/php/project/ui/resources/libraries.gif"; //NOI18N
         private static final ImageIcon ICON = ImageUtilities.loadImageIcon(ICON_PATH, false);
 
         public IncludePathNode(DataObject dobj, PhpProject project) {
-            super(dobj.getNodeDelegate(), (dobj instanceof DataFolder) ?
-                new DummyChildren(new DummyNode(dobj.getNodeDelegate()), new PhpSourcesFilter(project)) :
-                Children.LEAF);
-        }
-
-        @Override
-        public String getDisplayName() {
-            FileObject fo = getOriginal().getLookup().lookup(FileObject.class);
-            return fo != null ? FileUtil.getFileDisplayName(fo) : super.getDisplayName();
+            super(dobj, project);
         }
 
         @Override
@@ -204,67 +179,6 @@ public class IncludePathNodeFactory implements NodeFactory {
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
-        }
-    }
-
-    private static class DummyNode extends FilterNode {
-        public DummyNode(Node original) {
-            super(original);
-        }
-
-        public DummyNode(Node original, org.openide.nodes.Children children) {
-            super(original, children);
-        }
-
-        @Override
-        public boolean canCopy() {
-            return true;
-        }
-
-        @Override
-        public boolean canCut() {
-            return false;
-        }
-
-        @Override
-        public boolean canDestroy() {
-            return false;
-        }
-
-        @Override
-        public boolean canRename() {
-            return false;
-        }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            return new Action[]{};
-        }
-
-        @Override
-        public boolean hasCustomizer() {
-            return false;
-        }
-    }
-
-    private static class DummyChildren extends FilterNode.Children {
-        private DataFilter filter;
-        DummyChildren(final Node originalNode, DataFilter filter) {
-            super(originalNode);
-            this.filter = filter;
-        }
-
-        @Override
-        protected Node[] createNodes(Node key) {
-            DataObject dobj = key.getLookup().lookup(DataObject.class);
-            return (dobj != null && filter.acceptDataObject(dobj)) ? super.createNodes(key) : new Node[0];
-        }
-
-        @Override
-        protected Node copyNode(final Node originalNode) {
-            DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            return (dobj instanceof DataFolder) ? new DummyNode(dobj.getNodeDelegate(), new DummyChildren(originalNode, filter)) :
-                new DummyNode(dobj.getNodeDelegate());
         }
     }
 }
