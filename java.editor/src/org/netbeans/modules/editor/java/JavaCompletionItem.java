@@ -768,7 +768,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                         sb.append(cnt++);
                                         if (ta.getKind() == TypeKind.TYPEVAR) {
                                             TypeVariable tv = (TypeVariable)ta;
-                                            if (elem == tv.asElement().getEnclosingElement()) {
+                                            if (smartType || elem != tv.asElement().getEnclosingElement()) {
+                                                sb.append(" editable=false default=\""); //NOI18N
+                                                sb.append(Utilities.getTypeName(controller, ta, true));
+                                                asTemplate = true;
+                                            } else {
                                                 sb.append(" typeVar=\""); //NOI18N
                                                 sb.append(tv.asElement().getSimpleName());
                                                 sb.append("\" type=\""); //NOI18N
@@ -778,10 +782,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                                 sb.append(Utilities.getTypeName(controller, ta, false));
                                                 if (addTypeVars && SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
                                                     asTemplate = true;
-                                            } else {
-                                                sb.append(" editable=false default=\""); //NOI18N
-                                                sb.append(Utilities.getTypeName(controller, ta, true));
-                                                asTemplate = true;
                                             }
                                             sb.append("\"}"); //NOI18N
                                         } else if (ta.getKind() == TypeKind.WILDCARD) {
