@@ -44,6 +44,7 @@ package org.netbeans.editor.ext.html.parser.api;
 
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.editor.ext.html.parser.spi.EmptyResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.ParseResult;
 import org.netbeans.editor.ext.html.test.TestBase;
@@ -261,6 +262,7 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         ParseResult presult = result.parseEmbeddedCode("http://java.sun.com/jsf/composite");
 
         assertNotNull(presult);
+        assertTrue(presult instanceof EmptyResult);
         assertNotNull(presult.root()); //at least the default root node must be present
 
     }
