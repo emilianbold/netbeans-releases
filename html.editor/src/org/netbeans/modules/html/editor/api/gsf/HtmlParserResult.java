@@ -56,6 +56,7 @@ import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.spi.ParseResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
@@ -139,7 +140,9 @@ public class HtmlParserResult extends ParserResult {
     /** returns a parse tree for non-html content */
     public AstNode root(String namespace) {
         try {
-            return result.parseEmbeddedCode(namespace).root();
+            ParseResult pr = result.parseEmbeddedCode(namespace);
+            assert pr != null : "Cannot get ParseResult for " + namespace; //NOI18N
+            return pr.root();
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }

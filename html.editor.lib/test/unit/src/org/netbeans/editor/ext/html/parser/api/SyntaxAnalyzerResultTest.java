@@ -237,4 +237,32 @@ public class SyntaxAnalyzerResultTest extends TestBase {
 
     }
 
+    public void testGetParseTreeForUnusedNamespace() throws ParseException {
+        String code = "<html xmlns:c=\"http://java.sun.com/jsp/jstl/core\">" +
+                      "</html>";
+
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+        ParseResult presult = result.parseEmbeddedCode("http://java.sun.com/jsp/jstl/core");
+
+        assertNotNull(presult);
+        assertNotNull(presult.root()); //at least the default root node must be present
+
+    }
+
+    public void testGetParseTreeForUndeclaredNamespace() throws ParseException {
+        String code = "<html xmlns:c=\"http://java.sun.com/jsp/jstl/core\">" +
+                      "</html>";
+
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+
+        ParseResult presult = result.parseEmbeddedCode("http://java.sun.com/jsf/composite");
+
+        assertNotNull(presult);
+        assertNotNull(presult.root()); //at least the default root node must be present
+
+    }
+
 }
