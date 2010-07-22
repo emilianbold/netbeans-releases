@@ -445,24 +445,31 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         public void propertyChange (PropertyChangeEvent e) {
             //System.err.println("ThreadsTreeModel.propertyChange("+e+")");
             //System.err.println("    "+e.getPropertyName()+", "+e.getOldValue()+" => "+e.getNewValue());
-            JPDAThreadGroup tg;
+            boolean showThreadGroups = preferences.getBoolean(SHOW_THREAD_GROUPS, false);
+            JPDAThreadGroup tg = null;
             if (e.getPropertyName() == JPDADebugger.PROP_THREAD_STARTED) {
                 JPDAThread t = (JPDAThread) e.getNewValue();
-                tg = t.getParentThreadGroup();
+                if (showThreadGroups) {
+                    tg = t.getParentThreadGroup();
+                }
             } else if (e.getPropertyName() == JPDADebugger.PROP_THREAD_DIED) {
                 JPDAThread t = (JPDAThread) e.getOldValue();
-                tg = t.getParentThreadGroup();
-                while (tg != null && tg.getThreads().length == 0 && tg.getThreadGroups().length == 0) {
-                    tg = tg.getParentThreadGroup();
+                if (showThreadGroups) {
+                    tg = t.getParentThreadGroup();
+                    while (tg != null && tg.getThreads().length == 0 && tg.getThreadGroups().length == 0) {
+                        tg = tg.getParentThreadGroup();
+                    }
                 }
             } else if (e.getPropertyName() == JPDADebugger.PROP_THREAD_GROUP_ADDED) {
-                tg = (JPDAThreadGroup) e.getNewValue();
-                tg = tg.getParentThreadGroup();
+                if (showThreadGroups) {
+                    tg = (JPDAThreadGroup) e.getNewValue();
+                    tg = tg.getParentThreadGroup();
+                }
             } else {
                 return ;
             }
             Collection nodes = new ArrayList();
-            if (tg == null || !preferences.getBoolean(SHOW_THREAD_GROUPS, false)) {
+            if (tg == null || !showThreadGroups) {
                 nodes.add(ROOT);
             } else if (tg != null) {
                 do {

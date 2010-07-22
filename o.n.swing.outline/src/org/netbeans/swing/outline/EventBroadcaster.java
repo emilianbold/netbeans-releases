@@ -820,7 +820,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * TableModelEvents for each contiguous block */
     private static boolean isDiscontiguous (TreeModelEvent e) {
         int[] indices = e.getChildIndices();
-        if (indices == null || indices.length == 1) {
+        if (indices == null || indices.length <= 1) {
             return false;
         }
         Arrays.sort(indices);
