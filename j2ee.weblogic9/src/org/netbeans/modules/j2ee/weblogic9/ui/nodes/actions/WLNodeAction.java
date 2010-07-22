@@ -42,57 +42,15 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class ModuleCookieSupport {
+public abstract class WLNodeAction extends NodeAction {
 
-    private final TargetModuleID module;
-
-    private final Lookup lookup;
-
-    public ModuleCookieSupport(TargetModuleID module, Lookup lookup) {
-        this.module = module;
-        this.lookup = lookup;
-    }
-
-    public void performAction(Action action) {
-        WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
-        if (manager != null) {
-            // TODO should we make it batch somehow (it is rare case)
-            ProgressObject obj = action.execute(manager, module);
-            final CountDownLatch latch = new CountDownLatch(1);
-            obj.addProgressListener(new ProgressListener() {
-
-                @Override
-                public void handleProgressEvent(ProgressEvent pe) {
-                    if (pe.getDeploymentStatus().isCompleted() || pe.getDeploymentStatus().isFailed()) {
-                        latch.countDown();
-                    }
-                }
-            });
-            try {
-                latch.await(WLDeploymentManager.MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    public static interface Action {
-
-        ProgressObject execute(DeploymentManager manager, TargetModuleID module);
-    }
+    protected static final RequestProcessor ACTION_RP = new RequestProcessor("Weblogic Node Action", 10);
 
 }
