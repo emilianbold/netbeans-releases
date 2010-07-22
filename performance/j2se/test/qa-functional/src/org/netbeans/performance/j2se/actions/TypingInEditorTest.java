@@ -74,6 +74,8 @@ public class TypingInEditorTest extends PerformanceTestCase {
     Node fileToBeOpened;
     JEditorPaneOperator epo;
     Robot r;
+    private int keyCode = KeyEvent.VK_SPACE;
+    private int repeatTimes = 1;
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditorTest(String testName) {
@@ -95,7 +97,6 @@ public class TypingInEditorTest extends PerformanceTestCase {
         return suite;
     }
 
-  
     public void testTxtEditor() {
         fileName = "textfile.txt";
         caretPositionX = 9;
@@ -104,12 +105,44 @@ public class TypingInEditorTest extends PerformanceTestCase {
         doMeasurement();
     }
     
+    public void testTxtEditor10() {
+        fileName = "textfile.txt";
+        repeatTimes = 10;
+        caretPositionX = 9;
+        caretPositionY = 1;
+        fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
+        doMeasurement();
+        repeatTimes = 1;
+    }
+
     public void testJavaEditor() {
         fileName = "Main.java";
         caretPositionX = 9;
         caretPositionY = 1;
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
+    }
+
+    public void testJavaEditor10() {
+        repeatTimes = 10;
+        fileName = "Main.java";
+        caretPositionX = 9;
+        caretPositionY = 1;
+        fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
+        doMeasurement();
+        repeatTimes = 1;
+    }
+
+    public void testJavaEditor10Enter() {
+        keyCode = KeyEvent.VK_ENTER;
+        repeatTimes = 10;
+        fileName = "Main.java";
+        caretPositionX = 9;
+        caretPositionY = 1;
+        fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
+        doMeasurement();
+        keyCode = KeyEvent.VK_SPACE;
+        repeatTimes = 1;
     }
 
     @Override
@@ -123,13 +156,17 @@ public class TypingInEditorTest extends PerformanceTestCase {
     public void prepare() {
         epo=new JEditorPaneOperator(editorOperator);     
         try {
-             r=new Robot();
+             r = new Robot();
+             r.setAutoDelay(10);
         } catch (AWTException e) {};
     }
     
     public ComponentOperator open(){
         //epo.pressKey(KeyEvent.VK_A);//typeKey('a'/*KeyEvent.VK_A*/);
-        r.keyPress(KeyEvent.VK_SPACE);  
+        for (int i = 0; i < repeatTimes; i++) {
+            r.keyPress(keyCode);
+            r.keyRelease(keyCode);
+        }
         return null;
     }
     
