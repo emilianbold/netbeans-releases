@@ -84,6 +84,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -154,6 +155,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -1583,6 +1585,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
         }
+    }
+
+    private Set<JPDAThreadGroup> interestedThreadGroups = new WeakSet<JPDAThreadGroup>();
+
+    public void interestedInThreadGroup(JPDAThreadGroup tg) {
+        interestedThreadGroups.add(tg);
+    }
+
+    public boolean isInterestedInThreadGroups() {
+        return !interestedThreadGroups.isEmpty();
     }
 
     public ThreadsCache getThreadsCache() {
