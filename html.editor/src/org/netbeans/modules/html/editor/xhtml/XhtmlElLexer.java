@@ -83,6 +83,7 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
         } else {
             lexerState = ((Integer) info.state()).intValue();
         }
+        // let EL be always enabled, needed EL infrastructure
 //        if (inputAttributes != null) {
 //            EL_ENABLED = inputAttributes.getValue(LanguagePath.get(XhtmlElTokenId.language()), "el_enabled") != null; //NOI18N
 //        } else {
