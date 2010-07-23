@@ -39,11 +39,15 @@
 
 package org.netbeans.modules.javaee.beanvalidation;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -58,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,6 +89,15 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
         }
         folderPanel = Templates.buildSimpleTargetChooser(project, sourceGroups).create();
 
+        Profile profile = null;
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule !=null) {
+            profile = webModule.getJ2eeProfile();
+            if (!profile.equals(Profile.JAVA_EE_6_FULL) && !profile.equals(Profile.JAVA_EE_6_WEB)) {
+                folderPanel = new ErrorPanel();
+            }
+        }
+
         panels = new WizardDescriptor.Panel[] { folderPanel };
 
         // Creating steps.
@@ -109,7 +123,7 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
 
     public abstract String getDefaultName();
 
-    private FileObject getTargetFolder(Project project) {
+    FileObject getTargetFolder(Project project) {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject webInf = wm.getWebInf();
@@ -122,6 +136,7 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
             }
             return webInf;
         } else {
+            //TODO XXX Need to find META-INF directory not just return a project dir
 //            SourceGroup[] sourceGroup = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
             return project.getProjectDirectory();
         }
@@ -182,5 +197,35 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
             }
         }
         return res;
+    }
+
+    private static class ErrorPanel implements WizardDescriptor.Panel {
+
+        public Component getComponent() {
+            JPanel panel = new JPanel(true);
+            panel.add(new JLabel(NbBundle.getMessage(AbstractIterator.class, "ERR_Wrong_JavaEE")));
+            return panel;
+        }
+
+        public HelpCtx getHelp() {
+            return new HelpCtx(this.getClass());
+        }
+
+        public void readSettings(Object settings) {
+        }
+
+        public void storeSettings(Object settings) {
+        }
+
+        public boolean isValid() {
+            return false;
+        }
+
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+        }
+
     }
 }
