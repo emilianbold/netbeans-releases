@@ -93,7 +93,7 @@ public class JPAGenTest extends SourceTestSupport{
     public void testGenerateOneEntity() throws IOException{
         EntityClass user = getUserEntity();
         
-        generator.generateBeans(new EntityClass[]{user}, true, false, false, 
+        generator.generateBeans(new EntityClass[]{user}, true, false, false, false,
                 FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null, null);
         assertEquals(1,generator.createdObjects().size());
         
@@ -127,7 +127,7 @@ public class JPAGenTest extends SourceTestSupport{
         product.setFields(fields);
         
         
-        generator.generateBeans(new EntityClass[]{user, product}, true, 
+        generator.generateBeans(new EntityClass[]{user, product}, true, false,
                 false, false, FetchType.DEFAULT, CollectionType.COLLECTION,
                 getProgressContributor(), null, null);
         Set<FileObject> result = generator.createdObjects();
@@ -153,7 +153,7 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
-        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null, null);
+        generator.generateBeans(beans, true, false, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null, null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(1, result.size());
         
