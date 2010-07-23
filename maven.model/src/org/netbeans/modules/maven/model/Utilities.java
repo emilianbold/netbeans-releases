@@ -49,6 +49,7 @@ import hidden.org.codehaus.plexus.util.StringInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -202,50 +203,30 @@ public class Utilities {
      * ModelSource object for a FileObject with custom impl of classes added to the lookup.
      * This is optional if both getDocument(FO) and createCatalogModel(FO) are overridden.
      */
-    public static ModelSource createModelSource(FileObject thisFileObj) {
+    public static ModelSource createModelSource(final FileObject thisFileObj) {
         assert thisFileObj != null : "Null file object.";
-
-        final FileObject fobj = thisFileObj;
-
-        DataObject tempdobj;
-        try {
-            tempdobj = DataObject.find(fobj);
-        } catch (DataObjectNotFoundException ex) {
-            tempdobj = null;
-        }
-        final DataObject dobj = tempdobj;
-
-        final File fl = FileUtil.toFile(fobj);
+        final File fl = FileUtil.toFile(thisFileObj);
         boolean editable = (fl != null);
 
         Lookup proxyLookup = Lookups.proxy(new Lookup.Provider() {
             @Override
             public Lookup getLookup() {
-                Document document = null;
+                List<Object> items = new ArrayList<Object>();
+                items.add(thisFileObj);
                 try {
-                    document = _getDocument(dobj);
-                    if (document != null) {
-                        return Lookups.fixed(new Object[] {
-                            fobj,
-                            dobj,
-                            fl,
-                            document
-                        });
-                    } else {
-                        return Lookups.fixed(new Object[] {
-                            fobj,
-                            dobj,
-                            fl
-                        });
+                    DataObject dobj = DataObject.find(thisFileObj);
+                    items.add(dobj);
+                    Document doc = _getDocument(dobj);
+                    if (doc != null) {
+                        items.add(doc);
                     }
-                } catch (IOException ioe) {
-                    logger.log(Level.SEVERE, ioe.getMessage());
-                    return Lookups.fixed(new Object[] {
-                        fobj,
-                        dobj,
-                        fl
-                    });
+                } catch (IOException x) {
+                    logger.log(Level.SEVERE, x.getMessage());
                 }
+                if (fl != null) {
+                    items.add(fl);
+                }
+                return Lookups.fixed(items.toArray());
             }
         });
 
