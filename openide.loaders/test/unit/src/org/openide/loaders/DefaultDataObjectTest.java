@@ -179,6 +179,92 @@ public class DefaultDataObjectTest extends NbTestCase {
         doRenameOpen(false);
     }
 
+    /** Deadlocked as
+Group system
+  Group main
+    Thread main
+        at java.lang.Thread.dumpThreads(Thread.java:-2)
+        at java.lang.Thread.getAllStackTraces(Thread.java:1487)
+        at org.netbeans.junit.NbTestCase.threadDump(NbTestCase.java:265)
+        at org.netbeans.junit.NbTestCase.access$000(NbTestCase.java:95)
+        at org.netbeans.junit.NbTestCase$1Guard.waitFinished(NbTestCase.java:332)
+        at org.netbeans.junit.NbTestCase.runBare(NbTestCase.java:390)
+        at org.netbeans.junit.NbTestCase.run(NbTestCase.java:228)
+    Thread Timer-0
+        at java.lang.Object.wait(Object.java:-2)
+        at java.util.TimerThread.mainLoop(Timer.java:509)
+        at java.util.TimerThread.run(Timer.java:462)
+    Thread Active Reference Queue Daemon
+        at java.lang.Object.wait(Object.java:-2)
+        at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:118)
+        at org.openide.util.lookup.implspi.ActiveQueue$Impl.run(ActiveQueue.java:59)
+        at java.lang.Thread.run(Thread.java:619)
+    Thread AWT-XAWT
+        at sun.awt.X11.XToolkit.waitForEvents(XToolkit.java:-2)
+        at sun.awt.X11.XToolkit.run(XToolkit.java:559)
+        at sun.awt.X11.XToolkit.run(XToolkit.java:523)
+        at java.lang.Thread.run(Thread.java:619)
+    Thread AWT-Shutdown
+        at java.lang.Object.wait(Object.java:-2)
+        at java.lang.Object.wait(Object.java:485)
+        at sun.awt.AWTAutoShutdown.run(AWTAutoShutdown.java:265)
+        at java.lang.Thread.run(Thread.java:619)
+    Thread AWT-EventQueue-0
+        at java.lang.Object.wait(Object.java:-2)
+        at java.lang.Object.wait(Object.java:485)
+        at org.openide.text.CloneableEditor$DoInitialize.initDocument(CloneableEditor.java:660)
+        at org.openide.text.CloneableEditor$DoInitialize.initVisual(CloneableEditor.java:698)
+        at org.openide.text.CloneableEditor.getEditorPane(CloneableEditor.java:1215)
+        at org.openide.text.CloneableEditorSupport.getOpenedPanes(CloneableEditorSupport.java:1111)
+        at org.openide.loaders.DefaultDataObjectTest$1R.run(DefaultDataObjectTest.java:238)
+        at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:199)
+        at java.awt.EventQueue.dispatchEvent(EventQueue.java:597)
+        at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:269)
+        at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:184)
+        at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:174)
+        at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:169)
+        at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:161)
+        at java.awt.EventDispatchThread.run(EventDispatchThread.java:122)
+    Thread Test Watch Dog: testRenameOpenComponentModified
+        at java.lang.Object.wait(Object.java:-2)
+        at java.lang.Object.wait(Object.java:485)
+        at java.awt.EventQueue.invokeAndWait(EventQueue.java:993)
+        at javax.swing.SwingUtilities.invokeAndWait(SwingUtilities.java:1320)
+        at org.openide.loaders.DefaultDataObjectTest.getEPanes(DefaultDataObjectTest.java:242)
+        at org.openide.loaders.DefaultDataObjectTest.doRenameOpen(DefaultDataObjectTest.java:223)
+        at org.openide.loaders.DefaultDataObjectTest.testRenameOpenComponentModified(DefaultDataObjectTest.java:183)
+        at org.netbeans.junit.NbTestCase.access$200(NbTestCase.java:95)
+        at org.netbeans.junit.NbTestCase$2.doSomething(NbTestCase.java:365)
+        at org.netbeans.junit.NbTestCase$1Guard.run(NbTestCase.java:294)
+        at java.lang.Thread.run(Thread.java:619)
+  Thread Reference Handler
+        at java.lang.Object.wait(Object.java:-2)
+        at java.lang.Object.wait(Object.java:485)
+        at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:116)
+  Thread Finalizer
+        at java.lang.Object.wait(Object.java:-2)
+        at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:118)
+        at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:134)
+        at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:159)
+  Thread Signal Dispatcher
+  Thread Java2D Disposer
+        at java.lang.Object.wait(Object.java:-2)
+        at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:118)
+        at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:134)
+        at sun.java2d.Disposer.run(Disposer.java:127)
+        at java.lang.Thread.run(Thread.java:619)
+  Thread Inactive RequestProcessor thread [Was:NbStatusDisplayer/org.netbeans.core.NbStatusDisplayer$MessageImpl]
+        at java.lang.Object.wait(Object.java:-2)
+        at org.openide.util.RequestProcessor$Processor.run(RequestProcessor.java:1910)
+  Thread TimerQueue
+        at java.lang.Object.wait(Object.java:-2)
+        at javax.swing.TimerQueue.run(TimerQueue.java:232)
+        at java.lang.Thread.run(Thread.java:619)
+  Thread Inactive RequestProcessor thread [Was:org.openide.text Editor Initialization/org.openide.text.CloneableEditor$DoInitialize]
+        at java.lang.Object.wait(Object.java:-2)
+        at org.openide.util.RequestProcessor$Processor.run(RequestProcessor.java:1910)
+     */
+    @RandomlyFails 
     public void testRenameOpenComponentModified() throws Exception {
         doRenameOpen(true);
     }

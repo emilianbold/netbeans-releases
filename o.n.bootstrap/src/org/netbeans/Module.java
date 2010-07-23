@@ -259,8 +259,7 @@ public abstract class Module extends ModuleInfo {
         return specVers;
     }
     
-    @Override
-    public boolean owns(Class clazz) {
+    public @Override boolean owns(Class<?> clazz) {
         ClassLoader cl = clazz.getClassLoader();
         if (cl instanceof Util.ModuleProvider) {
             return ((Util.ModuleProvider) cl).getModule() == this;
@@ -268,6 +267,14 @@ public abstract class Module extends ModuleInfo {
         if (cl != classloader) {
             return false;
         }
+        String _codeName = findClasspathModuleCodeName(clazz);
+        if (_codeName != null) {
+            return _codeName.equals(codeName);
+        }
+        return true; // not sure...
+    }
+    
+    static String findClasspathModuleCodeName(Class<?> clazz) {
         // #157798: in JNLP or otherwise classpath mode, all modules share a CL.
         CodeSource src = clazz.getProtectionDomain().getCodeSource();
         if (src != null) {
@@ -280,8 +287,7 @@ public abstract class Module extends ModuleInfo {
                 URL manifest = new URL(loc, "META-INF/MANIFEST.MF");
                 InputStream is = manifest.openStream();
                 try {
-                    Manifest mf = new Manifest(is);
-                    return codeName.equals(mf.getMainAttributes().getValue("OpenIDE-Module"));
+                    return new Manifest(is).getMainAttributes().getValue("OpenIDE-Module");
                 } finally {
                     is.close();
                 }
@@ -289,7 +295,7 @@ public abstract class Module extends ModuleInfo {
                 Logger.getLogger(Module.class.getName()).log(Level.FINE, null, x);
             }
         }
-        return true; // not sure...
+        return null;
     }
     
     /** Get all packages exported by this module to other modules.

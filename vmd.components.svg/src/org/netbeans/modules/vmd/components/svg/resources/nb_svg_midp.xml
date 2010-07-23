@@ -50,14 +50,14 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.vmd.components.svg.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type> 
-        <resource>jar:nbinst:///modules/ext/nb_svg_midp_components.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.svg/modules/ext/nb_svg_midp_components.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst:///sources/nb_svg_midp_components-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.svg/sources/nb_svg_midp_components-src.zip!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///modules/docs/nb_svg_midp_components-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.vmd.components.svg/modules/docs/nb_svg_midp_components-api.zip!/</resource>
     </volume>
 </library>

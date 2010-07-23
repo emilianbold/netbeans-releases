@@ -139,6 +139,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 public SetPropertyCommand getSetPropertyCommand(String name, String value) {
                     return new ServerCommand.SetPropertyCommand(name, value, "DEFAULT={0}={1}"); // NOI18N
                 }
+
+                @Override
+                public String getRestartQuery(int debugPort) {
+                    return "";
+                }
             });
             ee6Provider.init();
         }
@@ -166,6 +171,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 @Override
                 public SetPropertyCommand getSetPropertyCommand(String name, String value) {
                     return new ServerCommand.SetPropertyCommand(name, value, "DEFAULT={0}={1}"); // NOI18N
+                }
+
+                @Override
+                public String getRestartQuery(int debugPort) {
+                    return -1 == debugPort ? "debug=false" : "debug=true";
                 }
             });
             ee6WCProvider.init();
@@ -199,6 +209,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         public SetPropertyCommand getSetPropertyCommand(String name, String value) {
                             return new ServerCommand.SetPropertyCommand(name, value, "target={0}&value={1}"); // NOI18N
                         }
+
+                @Override
+                public String getRestartQuery(int debugPort) {
+                    return "";
+                }
                     });
             preludeProvider.init();
         }

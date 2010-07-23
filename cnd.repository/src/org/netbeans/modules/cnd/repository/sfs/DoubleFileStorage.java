@@ -119,11 +119,13 @@ public class DoubleFileStorage extends FileStorage {
         }
     }
     
+    @Override
     public void close() throws IOException{
        cache_0_dataFile.close();
        cache_1_dataFile.close();
     }
     
+    @Override
     public Persistent read(final Key key) throws IOException {
         if( Stats.hardFickle && key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             return fickleMap.get(key);
@@ -138,8 +140,11 @@ public class DoubleFileStorage extends FileStorage {
         
     }
     
+    @Override
     public void write(final Key key, final Persistent object) throws IOException {
-        WriteStatistics.instance().update(1);
+        if (Stats.writeStatistics) {
+            WriteStatistics.instance().update(1);
+        }
         if( Stats.hardFickle &&  key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             fickleMap.put(key, object);
             return;
@@ -150,6 +155,7 @@ public class DoubleFileStorage extends FileStorage {
         getFileByFlag(!activeFlag).remove(key);
     }
     
+    @Override
     public void remove(final Key key) throws IOException {
         if( Stats.hardFickle &&  key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             fickleMap.remove(key);
@@ -161,11 +167,14 @@ public class DoubleFileStorage extends FileStorage {
         getFileByFlag(!activeFlag).remove(key);
     }
     
+    @Override
     public boolean defragment(final long timeout) throws IOException {
         
         boolean needMoreTime = false;
         
-        WriteStatistics.instance().update(0);
+        if (Stats.writeStatistics) {
+            WriteStatistics.instance().update(0);
+        }
         
         if( Stats.traceDefragmentation ) {
             System.out.printf(">>> Defragmenting %s; timeout %d ms total fragmentation %d%%\n", basePath.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
@@ -240,6 +249,7 @@ public class DoubleFileStorage extends FileStorage {
         return needMoreTime;
     }
     
+    @Override
     public void dump(PrintStream ps) throws IOException {
         ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", basePath.getAbsolutePath()); // NOI18N
         ps.printf("\nActive file:\n"); // NOI18N
@@ -252,6 +262,7 @@ public class DoubleFileStorage extends FileStorage {
         ps.printf("\n"); // NOI18N
     }
     
+    @Override
     public void dumpSummary(PrintStream ps) throws IOException {
         ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", basePath.getAbsolutePath()); // NOI18N
         ps.printf("\nActive file:\n"); // NOI18N
@@ -264,6 +275,7 @@ public class DoubleFileStorage extends FileStorage {
         ps.printf("\n"); // NOI18N
     }
     
+    @Override
     public int getFragmentationPercentage() throws IOException {
         final long fileSize;
         final float delta;
@@ -275,11 +287,13 @@ public class DoubleFileStorage extends FileStorage {
         return Math.round(percentage);
     }
     
+    @Override
     public long getSize() throws IOException {
         boolean activeFlag = getFlag();
         return getFileByFlag(activeFlag).getSize() + getFileByFlag(!activeFlag).getSize();
     }
     
+    @Override
     public int getObjectsCount() {
         boolean activeFlag = getFlag();
         return getFileByFlag(activeFlag).getObjectsCount() + getFileByFlag(!activeFlag).getObjectsCount();

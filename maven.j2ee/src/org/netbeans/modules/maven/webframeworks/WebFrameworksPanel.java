@@ -62,6 +62,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 
@@ -74,6 +75,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.WizardDescriptor;
 
 /**
  * 
@@ -148,7 +150,15 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
         ExtenderController.Properties properties = controller.getProperties();
         String j2eeVersion = webModule.getJ2eePlatformVersion();
         properties.setProperty("j2eeLevel", j2eeVersion); // NOI18N
-        
+        properties.setProperty("maven", Boolean.TRUE);  //NOI18N
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            String serverInstanceID = provider.getServerInstanceID();
+            if (serverInstanceID != null && !"".equals(serverInstanceID)) {
+                properties.setProperty("serverInstanceID", serverInstanceID);   //NOI18N
+            }
+        }
+
         jListFrameworks.setModel(new DefaultListModel());
         List frameworks = WebFrameworks.getFrameworks();
         for (int i = 0; i < frameworks.size(); i++) {
@@ -407,6 +417,10 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
                 if (!category.isValid()) {
                     category.setValid(true);
                     category.setErrorMessage(null);
+                    String message = (String) controller.getProperties().getProperty(WizardDescriptor.PROP_INFO_MESSAGE);
+                    if (message != null) {
+                        category.setErrorMessage(message);
+                    }
                 }
             } else {
                 category.setValid(false);

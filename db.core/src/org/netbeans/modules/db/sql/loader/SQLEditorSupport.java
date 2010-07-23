@@ -167,7 +167,7 @@ public class SQLEditorSupport extends DataEditorSupport
 
     @Override
     protected boolean asynchronousOpen() {
-        return true;
+        return false;
     }
 
     @Override

@@ -181,7 +181,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             vm = MirrorWrapper.virtualMachine(threadReference);
             threadName = ThreadReferenceWrapper.name(threadReference);
             suspended = ThreadReferenceWrapper.isSuspended(threadReference);
-            suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+            if (suspended) {
+                suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+            } else {
+                suspendCount = 0;
+            }
             initiallySuspended = suspended;
         } catch (IllegalThreadStateExceptionWrapper itsex) {
             initFailed = true;

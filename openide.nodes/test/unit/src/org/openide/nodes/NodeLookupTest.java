@@ -50,9 +50,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -66,11 +64,6 @@ import org.openide.util.lookup.InstanceContent;
 public class NodeLookupTest extends NbTestCase {
     public NodeLookupTest(String name) {
         super(name);
-    }
-    
-    public static Test suite() {
-        //return new NodeLookupTest("testChangeInObjectVisibleInLookupThruFilterNodeWhenItOverridesGetCookie");
-        return new NbTestSuite(NodeLookupTest.class);
     }
     
     public void testChangesAreFiredFromLookup () {

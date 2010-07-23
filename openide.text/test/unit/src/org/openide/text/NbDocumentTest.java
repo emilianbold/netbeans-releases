@@ -46,7 +46,6 @@ package org.openide.text;
 
 import javax.swing.text.*;
 
-import junit.framework.*;
 
 import org.netbeans.junit.*;
 
@@ -65,19 +64,6 @@ public class NbDocumentTest extends NbTestCase {
     public NbDocumentTest(String testName) {
         super(testName);
     }
-
-    public static void main(java.lang.String[] args) {
-        if (args.length == 1) {
-            junit.textui.TestRunner.run (new NbDocumentTest (args[0]));
-        }
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(NbDocumentTest.class);
-        return suite;
-    }
-    
 
     protected void setUp () {
 	doc = createStyledDocument();

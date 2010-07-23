@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.HelpCtx;
 
@@ -75,6 +76,8 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     private static final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
 
     private Preferences preferences;
+
+    private Library jsfComponentsLibrary;
 
     public enum LibraryType {USED, NEW, SERVER};
     private LibraryType libraryType;
@@ -130,6 +133,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     private boolean customizer;
     
+    @Override
     public JSFConfigurationPanelVisual getComponent() {
         if (component == null)
             component = new JSFConfigurationPanelVisual(this, customizer);
@@ -137,6 +141,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(JSFConfigurationPanel.class);
     }
@@ -153,10 +158,12 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         this.facesMapping = facesMapping;
     }
 
+    @Override
     public void update() {
         component.update();
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         if (component.valid()) {
@@ -166,6 +173,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return false;
     }
     
+    @Override
     public Set extend(WebModule webModule) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
         preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
@@ -176,7 +184,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         }
         return framework.extendImpl(webModule);
     }
-    
+
     public ExtenderController getController() {
         return controller;
     }
@@ -332,6 +340,13 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     protected void setServerLibrary(ServerLibrary library){
         this.serverLibrary = library;
         fireChangeEvent();
+    }
+    void setJsfComponentsLibrary(Library library) {
+        this.jsfComponentsLibrary = library;
+    }
+
+    public Library getJsfComponentsLibrary() {
+        return jsfComponentsLibrary;
     }
 
     protected static class PreferredLanguage {

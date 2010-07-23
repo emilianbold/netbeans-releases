@@ -101,10 +101,10 @@ public class DwarfSource implements SourceFileProperties{
     private Map<String,GrepEntry> grepBase;
     private String compilerName;
     
-    DwarfSource(CompilationUnit cu, boolean isCPP, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
-        initCompilerSettings(compilerSettings, isCPP);
+    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
+        initCompilerSettings(compilerSettings, lang);
         this.grepBase = grepBase;
-        initSourceSettings(cu, isCPP);
+        initSourceSettings(cu, lang);
     }
 
     private void countFileName(CompilationUnit cu) throws IOException {
@@ -120,8 +120,8 @@ public class DwarfSource implements SourceFileProperties{
         if (FULL_TRACE) {System.out.println("Compilation unit full name:"+fullName);} // NOI18N
     }
 
-    private void initCompilerSettings(CompilerSettings compilerSettings, boolean isCPP){
-        List<String> list = compilerSettings.getSystemIncludePaths(isCPP);
+    private void initCompilerSettings(CompilerSettings compilerSettings, ItemProperties.LanguageKind lang){
+        List<String> list = compilerSettings.getSystemIncludePaths(lang);
        if (list != null){
            systemIncludes = new ArrayList<String>(list);
            //if (FULL_TRACE) {
@@ -159,7 +159,7 @@ public class DwarfSource implements SourceFileProperties{
             systemIncludes = new ArrayList<String>();
         }
         haveSystemIncludes = systemIncludes.size() > 0;
-        Map<String, String> map = compilerSettings.getSystemMacroDefinitions(isCPP);
+        Map<String, String> map = compilerSettings.getSystemMacroDefinitions(lang);
         if (map != null){
             systemMacros = new HashMap<String,String>(map);
         } else {
@@ -308,7 +308,7 @@ public class DwarfSource implements SourceFileProperties{
     }
     
 
-    static String extractCompilerName(CompilationUnit cu, boolean isCPP) throws IOException {
+    static String extractCompilerName(CompilationUnit cu, ItemProperties.LanguageKind lang) throws IOException {
         String compilerName = null;
         if (cu.getCompileOptions() == null) {
             compilerName = cu.getProducer();
@@ -322,11 +322,16 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
             if (compilerName == null) {
-                if (isCPP) {
+                if (lang == ItemProperties.LanguageKind.CPP) {
                     compilerName = PathCache.getString("CC"); // NOI18N
-                } else {
+                } else if (lang == ItemProperties.LanguageKind.C) {
                     compilerName = PathCache.getString("cc"); // NOI18N
+                } else if (lang == ItemProperties.LanguageKind.Fortran) {
+                    compilerName = PathCache.getString("fortran"); // NOI18N
+                } else {
+                    compilerName = PathCache.getString("unknown"); // NOI18N
                 }
+
             }
         }
         return compilerName;
@@ -336,12 +341,12 @@ public class DwarfSource implements SourceFileProperties{
         return cu.getCompileOptions() != null;
     }
 
-    private void initSourceSettings(CompilationUnit cu, boolean isCPP) throws IOException{
+    private void initSourceSettings(CompilationUnit cu, ItemProperties.LanguageKind lang) throws IOException{
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
         countFileName(cu);
-        compilerName = PathCache.getString(extractCompilerName(cu, isCPP));
+        compilerName = PathCache.getString(extractCompilerName(cu, lang));
         compilePath = PathCache.getString(fixFileName(cu.getCompilationDir()));
         sourceName = PathCache.getString(cu.getSourceFileName());
         
@@ -362,11 +367,7 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
         }
-        if (isCPP) {
-            language = ItemProperties.LanguageKind.CPP;
-        } else {
-            language = ItemProperties.LanguageKind.C;
-        }
+        language = lang;
     }
     
     public void process(CompilationUnit cu) throws IOException{
@@ -578,11 +579,11 @@ public class DwarfSource implements SourceFileProperties{
             includeFullName = compilePath + File.separator + path;
         } else {
             includeFullName = fixCygwinPath(path);
-            includeFullName = normalizePath(includeFullName);
         }
         if (normilizeProvider.isWindows()) {
             includeFullName = includeFullName.replace('\\', '/'); // NOI18N
         }
+        includeFullName = normalizePath(includeFullName);
         if (isPath) {
             String userPath = null;
             int i = includeFullName.lastIndexOf('/'); // NOI18N
@@ -875,6 +876,7 @@ public class DwarfSource implements SourceFileProperties{
         } else {
             if (FULL_TRACE) {System.out.println("Cannot grep file:"+fileName);} // NOI18N
         }
+        res.includes.trimToSize();
         grepBase.put(fileName,res);
         return res;
     }

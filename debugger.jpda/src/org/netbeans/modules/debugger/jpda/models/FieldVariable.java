@@ -77,26 +77,27 @@ import org.openide.util.Exceptions;
 /**
  * @author   Jan Jancura
  */
-class FieldVariable extends AbstractVariable implements
+public class FieldVariable extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.Field, Refreshable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     protected Field field;
-    private ObjectReference objectReference;
+    private ObjectReference objectReference;    // ObjectReference to retrieve value of an instance field from.
+    private ReferenceType classType;            // ReferenceType to retrieve value of a static field from.
     private boolean valueSet = true;
     private final Object valueLock = new Object();
     private boolean valueRetrieved = false;
     private PrimitiveValue value;
     
 
-    FieldVariable (
+    public FieldVariable (
         JPDADebuggerImpl debugger,
         PrimitiveValue value,
     //    String className,
         Field field,
         String parentID,
-        ObjectReference objectReference
+        ObjectReference objectReference    // instance or null for static fields
     ) {
         super (
             debugger, 
@@ -108,7 +109,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
         this.objectReference = objectReference;
     }
 
-    FieldVariable (
+    public FieldVariable (
         JPDADebuggerImpl debugger,
         Field field,
         String parentID,
@@ -170,8 +171,25 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
     }
     
     public JPDAClassType getDeclaringClass() {
+        return new JPDAClassTypeImpl(getDebugger(), getTheDeclaringClassType());
+    }
+
+    private ReferenceType getTheDeclaringClassType() {
+        ReferenceType type = classType;
+        if (type == null) {
+            classType = type = getTheDeclaringClassType(objectReference, field);
+        }
+        return type;
+    }
+
+    static ReferenceType getTheDeclaringClassType(ObjectReference objectReference, Field field) {
+        ReferenceType type;
         try {
-            return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) ValueWrapper.type(objectReference));
+            if (objectReference != null) {
+                type = (ReferenceType) ValueWrapper.type(objectReference);
+            } else {
+                type = TypeComponentWrapper.declaringType(field);
+            }
         } catch (InternalExceptionWrapper ex) {
             throw ex.getCause();
         } catch (VMDisconnectedExceptionWrapper ex) {
@@ -179,6 +197,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
         } catch (ObjectCollectedExceptionWrapper ex) {
             throw ex.getCause();
         }
+        return type;
     }
 
     /**
@@ -214,10 +233,18 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
             if (!valueRetrieved) {
                 Value v;
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("STARTED (FV): "+objectReference+".getValue("+field+")");
+                    if (objectReference == null) {
+                        logger.fine("STARTED (FV): "+getTheDeclaringClassType()+".getValue("+field+")");
+                    } else {
+                        logger.fine("STARTED (FV): "+objectReference+".getValue("+field+")");
+                    }
                 }
                 try {
-                    v = ObjectReferenceWrapper.getValue (objectReference, field);
+                    if (objectReference == null) {
+                        v = ReferenceTypeWrapper.getValue (getTheDeclaringClassType(), field);
+                    } else {
+                        v = ObjectReferenceWrapper.getValue (objectReference, field);
+                    }
                 } catch (ObjectCollectedExceptionWrapper ocex) {
                     v = null;
                 } catch (InternalExceptionWrapper ocex) {
@@ -226,7 +253,11 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
                     v = null;
                 }
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("FINISHED(FV): "+objectReference+".getValue("+field+") = "+v);
+                    if (objectReference == null) {
+                        logger.fine("FINISHED(FV): "+getTheDeclaringClassType()+".getValue("+field+") = "+v);
+                    } else {
+                        logger.fine("FINISHED(FV): "+objectReference+".getValue("+field+") = "+v);
+                    }
                     logger.log(Level.FINE, "Called from ", new IllegalStateException("TEST"));
                 }
                 this.value = (PrimitiveValue) v;
@@ -243,7 +274,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
                 ObjectReferenceWrapper.setValue(objectReference, field, value);
                 set = true;
             } else {
-                ReferenceType rt = TypeComponentWrapper.declaringType(field);
+                ReferenceType rt = getTheDeclaringClassType();
                 if (rt instanceof ClassType) {
                     ClassType ct = (ClassType) rt;
                     ClassTypeWrapper.setValue(ct, field, value);
@@ -305,6 +336,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
         clon = new FieldVariable(getDebugger(), (PrimitiveValue) getJDIValue(), field,
                 getID().substring(0, getID().length() - ("." + name + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
                 objectReference);
+        clon.classType = classType;
         return clon;
     }
 

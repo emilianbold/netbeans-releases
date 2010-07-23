@@ -108,11 +108,21 @@ public class HudsonConnector {
         this.instance = instance;
     }
     
+    private boolean canUseTree() {
+        return getHudsonVersion().compareTo(new HudsonVersion("1.367")) >= 0; // NOI18N
+    }
+    
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//primaryView&exclude=//view[name='All']" +
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + (canUseTree() ?
+                "?tree=primaryView[name],views[name,url,jobs[name]]," +
+                "jobs[name,url,color,displayName,buildable,inQueue," +
+                "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
+                "module[name,displayName,url,color]]" :
+                "?depth=1&xpath=/&exclude=//assignedLabel&exclude=//primaryView/job" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
-                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild"); // NOI18N
+                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild" +
+                "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild")); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -120,9 +130,7 @@ public class HudsonConnector {
         // Clear cache
         cache.clear();
         
-        // Parse views and set them into instance
-        Collection<HudsonView> cViews = getViews(docInstance);
-        instance.setViews(cViews);
+        configureViews(instance, docInstance);
         
         // Parse jobs and return them
         return getJobs(docInstance);
@@ -147,8 +155,9 @@ public class HudsonConnector {
      * The changelog ({@code <changeSet>}) can be interpreted separately by {@link HudsonJobBuild#getChanges}.
      */
     Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
-        Document docBuild = getDocument(job.getUrl() + XML_API_URL +
-                "?xpath=/*/build&wrapper=root&exclude=//url");
+        Document docBuild = getDocument(job.getUrl() + XML_API_URL + (canUseTree() ?
+            "?tree=builds[number,result,building]" :
+            "?xpath=/*/build&wrapper=root&exclude=//url"));
         if (docBuild == null) {
             return Collections.emptySet();
         }
@@ -157,6 +166,8 @@ public class HudsonConnector {
         for (int i = 0; i < buildNodes.getLength(); i++) {
             Node build = buildNodes.item(i);
             int number = 0;
+            boolean building = false;
+            Result result = null;
             NodeList details = build.getChildNodes();
             for (int j = 0; j < details.getLength(); j++) {
                 Node detail = details.item(j);
@@ -172,11 +183,15 @@ public class HudsonConnector {
                 String text = firstChild.getTextContent();
                 if (nodeName.equals("number")) { // NOI18N
                     number = Integer.parseInt(text);
+                } else if (nodeName.equals("building")) { // NOI18N
+                    building = Boolean.valueOf(text);
+                } else if (nodeName.equals("result")) { // NOI18N
+                    result = Result.valueOf(text);
                 } else {
                     LOG.warning("unexpected <build> child: " + nodeName);
                 }
             }
-            builds.add(new HudsonJobBuildImpl(this, job, number));
+            builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
         }
         return builds;
     }
@@ -210,8 +225,18 @@ public class HudsonConnector {
         
     }
     
-    private Collection<HudsonView> getViews(Document doc) {
+    private void configureViews(HudsonInstanceImpl instance, Document doc) {
+        String primaryViewName = null;
+        Element primaryViewEl = XMLUtil.findElement(doc.getDocumentElement(), "primaryView", null); // NOI18N
+        if (primaryViewEl != null) {
+            Element nameEl = XMLUtil.findElement(primaryViewEl, "name", null); // NOI18N
+            if (nameEl != null) {
+                primaryViewName = XMLUtil.findText(nameEl);
+            }
+        }
+        
         Collection<HudsonView> views = new ArrayList<HudsonView>();
+        HudsonView primaryView = null;
 
         NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -222,6 +247,7 @@ public class HudsonConnector {
             
             String name = null;
             String url = null;
+            boolean isPrimary = false;
             
             for (int j = 0; j < n.getChildNodes().getLength(); j++) {
                 Node o = n.getChildNodes().item(j);
@@ -230,8 +256,9 @@ public class HudsonConnector {
                 }
                 if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                     name = o.getFirstChild().getTextContent();
+                    isPrimary = name.equals(primaryViewName);
                 } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                    url = normalizeUrl(o.getFirstChild().getTextContent(), "view/[^/]+/"); // NOI18N
+                    url = normalizeUrl(o.getFirstChild().getTextContent(), isPrimary ? "" : "view/[^/]+/"); // NOI18N
                 }
             }
             
@@ -258,11 +285,14 @@ public class HudsonConnector {
                 }
                 
                 views.add(view);
+                if (isPrimary) {
+                    primaryView = view;
+                }
             }
             
         }
         
-        return views;
+        instance.setViews(views, primaryView);
     }
     
     private Collection<HudsonJob> getJobs(Document doc) {

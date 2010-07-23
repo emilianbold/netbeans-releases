@@ -105,6 +105,21 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="source-level-query-2">
+            <api name="java-api-common"/>
+            <summary>Added a factory method to create SourceLevelQueryImplementation2</summary>
+            <version major="1" minor="22"/>
+            <date day="8" month="7" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method to create default ant project based SourceLevelQueryImplementation2.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="185031"/>
+        </change>
         <change id="sources-support">
             <api name="java-api-common"/>
             <summary>Support for mutable Sources</summary>

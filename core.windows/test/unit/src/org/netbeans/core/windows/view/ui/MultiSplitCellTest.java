@@ -44,27 +44,9 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import org.netbeans.core.windows.*;
 import java.util.Locale;
-import java.util.Set;
-import javax.swing.JPanel;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
-import org.netbeans.core.windows.actions.MaximizeWindowAction;
-import org.netbeans.core.windows.actions.UndockWindowAction;
-import org.netbeans.core.windows.view.ViewElement;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.netbeans.core.windows.view.ui.MultiSplitPane;
-import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
 
 /** 
  * Test Mode activation behavior.
@@ -78,12 +60,6 @@ public class MultiSplitCellTest extends NbTestCase {
         super (name);
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(MultiSplitCellTest.class);
-        
-        return suite;
-    }
-
     protected boolean runInEQ () {
         return true;
     }

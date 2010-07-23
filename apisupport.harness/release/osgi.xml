@@ -45,8 +45,8 @@ made subject to such option by the copyright holder.
 <project name="suite-osgi" basedir=".">
 
     <target name="init">
-        <property name="osgi.dest.dir" location="build/osgi"/>
-        <property name="osgi.cache.dir" location="build/osgi-cache"/>
+        <property name="osgi.dest.dir" location="${suite.build.dir}/osgi"/>
+        <property name="osgi.cache.dir" location="${suite.build.dir}/osgi-cache"/>
         <property name="disabled.modules" value=""/>
         <property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>

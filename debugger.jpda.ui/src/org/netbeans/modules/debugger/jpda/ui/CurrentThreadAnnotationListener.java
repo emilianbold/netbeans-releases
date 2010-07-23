@@ -518,7 +518,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     annotationsToRemove.add(annotation);
                     task.schedule(ANNOTATION_SCHEDULE_TIME);
                 }
-                if (!isCurrentThread) {
+                if (!isCurrentThread && t.isSuspended()) {
                     threadsToAnnotate.add(t);
                     FutureAnnotation future = futureAnnotations.get(t);
                     if (future == null) {

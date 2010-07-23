@@ -74,6 +74,7 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -144,6 +145,14 @@ public class WLDeploymentManager implements DeploymentManager {
         return port;
     }
 
+    public void addDomainChangeListener(ChangeListener listener) {
+        mutableState.addDomainChangeListener(listener);
+    }
+
+    public void removeDomainChangeListener(ChangeListener listener) {
+        mutableState.removeDomainChangeListener(listener);
+    }
+
     public boolean isRestartNeeded() {
         return mutableState.isRestartNeeded();
     }
@@ -155,7 +164,7 @@ public class WLDeploymentManager implements DeploymentManager {
     /**
      * Returns the InstanceProperties object for the current server instance.
      */
-    public synchronized InstanceProperties getInstanceProperties() {
+    public final synchronized InstanceProperties getInstanceProperties() {
         if (instanceProperties == null) {
             this.instanceProperties = InstanceProperties.getInstanceProperties(uri);
 
@@ -299,7 +308,8 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getAvailableModules(moduleType, translateTargets(manager, target));
+                        return translateTargetModuleIDs(
+                                manager.getAvailableModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -324,7 +334,8 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getNonRunningModules(moduleType, translateTargets(manager, target));
+                        return translateTargetModuleIDs(
+                                manager.getNonRunningModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -349,7 +360,8 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getRunningModules(moduleType, translateTargets(manager, target));
+                        return translateTargetModuleIDs(
+                                manager.getRunningModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -445,6 +457,18 @@ public class WLDeploymentManager implements DeploymentManager {
         return deployTargets.toArray(new Target[deployTargets.size()]);
     }
 
+    private static TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
+        if (ids == null) {
+            return null;
+        }
+
+        TargetModuleID[] mapped = new TargetModuleID[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            mapped[i] = new ServerTargetModuleID(ids[i]);
+        }
+        return mapped;
+    }
+
     private static interface Action<T> {
 
          T execute(DeploymentManager manager) throws ExecutionException;
@@ -479,4 +503,47 @@ public class WLDeploymentManager implements DeploymentManager {
             return super.getResources(name);
         }
     }
+
+    private static class ServerTargetModuleID implements TargetModuleID {
+
+        private final TargetModuleID moduleId;
+
+        public ServerTargetModuleID(TargetModuleID moduleId) {
+            this.moduleId = moduleId;
+        }
+
+        @Override
+        public String toString() {
+            return getModuleID();
+        }
+
+        @Override
+        public String getWebURL() {
+            return moduleId.getWebURL();
+        }
+
+        @Override
+        public Target getTarget() {
+            return moduleId.getTarget();
+        }
+
+        @Override
+        public TargetModuleID getParentTargetModuleID() {
+            if (moduleId.getParentTargetModuleID() == null) {
+                return null;
+            }
+            return new ServerTargetModuleID(moduleId.getParentTargetModuleID());
+        }
+
+        @Override
+        public String getModuleID() {
+            return moduleId.getModuleID();
+        }
+
+        @Override
+        public TargetModuleID[] getChildTargetModuleID() {
+            return translateTargetModuleIDs(moduleId.getChildTargetModuleID());
+        }
+    }
+
 }

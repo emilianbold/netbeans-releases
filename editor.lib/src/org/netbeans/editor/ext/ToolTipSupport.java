@@ -79,7 +79,6 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
@@ -208,6 +207,8 @@ public class ToolTipSupport {
     /** @Since 2.10 */
     public static final int FLAGS_HEAVYWEIGHT_TOOLTIP = FLAG_PERMANENT;
 
+    private static final String ELIPSIS = "..."; //NOI18N
+    
     private final EditorUI extEditorUI;
     private final Timer enterTimer;
     private final Timer exitTimer;
@@ -415,24 +416,18 @@ public class ToolTipSupport {
                     super.setSize(width, 10000);
                     int offset = viewToModel(new Point(0, height));
                     Document doc = getDocument();
-                    Element root = doc.getDefaultRootElement();
-                    int lineIndex = root.getElementIndex(offset);
-                    lineIndex--; // go to previous line
-                    if (lineIndex >= 0) {
-                        Element lineElem = root.getElement(lineIndex);
-                        if (lineElem != null) {
-                            try {
-                                offset = lineElem.getStartOffset();
-                                doc.remove(offset, doc.getLength() - offset);
-                                doc.insertString(offset, "...", null);
-                            } catch (BadLocationException e) {
-                                // "..." will likely not be displayed but otherwise should be ok
-                            }
-                            // Recalculate the prefSize as it may be smaller
-                            // than the present preferred height
-                            height = Math.min(height, getPreferredSize().height);
+                    try {
+                        if (offset > ELIPSIS.length()) {
+                            offset -= ELIPSIS.length();
+                            doc.remove(offset, doc.getLength() - offset);
+                            doc.insertString(offset, ELIPSIS, null);
                         }
+                    } catch (BadLocationException ble) {
+                        // "..." will likely not be displayed but otherwise should be ok
                     }
+                    // Recalculate the prefSize as it may be smaller
+                    // than the present preferred height
+                    height = Math.min(height, getPreferredSize().height);
                 }
                 super.setSize(width, height);
             }
@@ -664,8 +659,12 @@ public class ToolTipSupport {
                         jep.setText(toolTipText);
                         setToolTip(jep);
                     } else {
-                        boolean multiLineText = toolTipText.contains("\n"); //NOI18N
-                        JTextArea ta = createTextToolTip(!multiLineText);
+// With the improved algorithm for placing popups we can have all text tooltips to wrap lines.
+// Should this cause a problem please revert to the previouse state and have only singleline
+// tooltips to wrap lines.
+//                        boolean multiLineText = toolTipText.contains("\n"); //NOI18N
+//                        JTextArea ta = createTextToolTip(!multiLineText);
+                        JTextArea ta = createTextToolTip(true);
                         ta.setText(toolTipText);
                         setToolTip(ta);
                     }

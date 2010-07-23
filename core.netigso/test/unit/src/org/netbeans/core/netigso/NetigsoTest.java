@@ -47,12 +47,10 @@ package org.netbeans.core.netigso;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
-import junit.framework.Test;
 import org.netbeans.MockModuleInstaller;
 import org.netbeans.MockEvents;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  * Basic tests to verify the basic interaction between NetBeans module
@@ -64,15 +62,6 @@ public class NetigsoTest extends NetigsoHid {
 
     public NetigsoTest(String name) {
         super(name);
-    }
-
-    public static Test suite() {
-        Test t = null;
-//        t = new NetigsoTest("testFactoryCreatesOurModulesWithDeps");
-        if (t == null) {
-            t = new NbTestSuite(NetigsoTest.class);
-        }
-        return t;
     }
 
     public void testFactoryCreatesOurModules() throws Exception {

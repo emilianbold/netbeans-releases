@@ -40,11 +40,8 @@ import java.util.Arrays;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -80,13 +77,6 @@ implements CloneableEditorSupport.Env {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(CloneableEditorSupportRedirectorTest.class);
-        
-        return suite;
-    }
-    
-
     protected void setUp () {
         ic = new InstanceContent ();
         CES support = new CES (this, new AbstractLookup(ic));

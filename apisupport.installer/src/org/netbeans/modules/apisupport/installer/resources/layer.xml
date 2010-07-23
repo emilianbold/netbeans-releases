@@ -55,7 +55,6 @@ made subject to such option by the copyright holder.
         <folder name="Actions">
             <file name="org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.instance"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction.getDefault"/>
                 <attr name="position" intvalue="1"/>
             </file>
         </folder>

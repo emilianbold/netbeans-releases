@@ -44,7 +44,6 @@
 
 package org.netbeans.core.windows;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
 
 import org.openide.windows.*;
@@ -59,19 +58,6 @@ public class OpenAtTabPositionTest extends NbTestCase {
 
     public OpenAtTabPositionTest (String name) {
         super (name);
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(OpenAtTabPositionTest.class);
-        
-        return suite;
     }
 
     protected boolean runInEQ () {

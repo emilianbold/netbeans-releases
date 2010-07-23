@@ -7161,3 +7161,30 @@ org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask$CaretFactoryImpl
 org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask$FactoryImpl
 org.netbeans.modules.java.hints.options.HintsSettings
 org.netbeans.modules.java.hints.spi.AbstractHint$HintSeverity
+
+# OK on June 30, 2010:
+org.netbeans.api.project.ProjectUtils$AnnotateIconProxyProjectInformation
+org.netbeans.spi.project.ProjectIconAnnotator
+org.netbeans.modules.kenai.ui.KenaiNBProjectAnnotator
+org.openide.actions.UndoRedoAction
+org.openide.awt.UndoRedo$Provider
+org.openide.nodes.ChildFactory$Detachable
+org.openide.loaders.MimeFactory
+
+
+# IZ 187271
+org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl
+org.netbeans.modules.csl.core.GsfDataLoader
+org.netbeans.modules.csl.core.GsfDataObject
+org.netbeans.modules.csl.core.GsfEditorSettings
+org.netbeans.modules.csl.core.Language
+org.netbeans.modules.csl.core.LanguageRegistry
+org.netbeans.modules.csl.core.LanguageRegistry$CslCorePackageAccessorImpl
+org.netbeans.modules.csl.core.LanguageRegistry$FsTracker
+org.netbeans.modules.csl.core.ProjectClassPathProvider
+org.netbeans.modules.csl.core.TLIndexerFactory
+org.netbeans.modules.csl.core.TLIndexerFactory$ErrorConvertorImpl
+org.netbeans.modules.csl.editor.codetemplates.CslCorePackageAccessor
+org.netbeans.modules.css.indexing.CssIndexer$Factory
+org.netbeans.modules.java.api.common.queries.SourceLevelQueryImpl2
+org.netbeans.modules.java.api.common.queries.SourceLevelQueryImpl2$R

@@ -50,22 +50,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.TemplateWizard;
 
@@ -93,11 +84,6 @@ public class GenerateLoaderCodeTest extends TestBase {
     @Override
     protected Level logLevel() {
         return Level.FINE;
-    }
-
-    public static Test suite() {
-        //return new GenerateLoaderCodeTest("testBuildJNLPWhenLocalizedFilesAreMissing");
-        return new NbTestSuite(GenerateLoaderCodeTest.class);
     }
 
     protected @Override void setUp() throws Exception {

@@ -65,6 +65,7 @@ openide.options,\
 openide.text,\
 openide.util,\
 openide.util.enumerations,\
+openide.util.lookup,\
 openide.windows,\
 options.api,\
 options.keymap,\

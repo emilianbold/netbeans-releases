@@ -54,10 +54,8 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
-import junit.framework.*;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
-import org.netbeans.junit.*;
 import org.openide.util.io.NbMarshalledObject;
 
 import org.openide.windows.*;
@@ -69,24 +67,10 @@ import org.openide.windows.*;
  */
 public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTestCase {
     
-    /** Creates a new instance of SFSTest */
     public MultiViewTopComponentTest(String name) {
         super (name);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(MultiViewTopComponentTest.class);
-        
-        return suite;
-    }
-
     protected TopComponent callFactory(MultiViewDescription[] desc, MultiViewDescription def) {
         return MultiViewFactory.createMultiView(desc, def);
     }    

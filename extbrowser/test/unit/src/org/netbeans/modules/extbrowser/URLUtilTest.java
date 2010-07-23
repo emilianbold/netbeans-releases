@@ -49,14 +49,7 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.io.File;
-import java.net.URL;
-import junit.framework.*;
 import org.netbeans.junit.*;
-import java.beans.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
          
 /**
  *
@@ -68,10 +61,6 @@ public class URLUtilTest extends NbTestCase {
         super(testName);
     }        
         
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public void testCreateExternalURL() throws Exception {
         // find fileobject for
         // jar:file:/${NB}/ide/modules/docs/org-netbeans-modules-usersguide.jar!/org/netbeans/modules/usersguide/pending.html
@@ -93,11 +82,5 @@ public class URLUtilTest extends NbTestCase {
         assertEquals("HTTP URL is not local - does not contain 127.0.0.1", "127.0.0.1", newURL2.getHost());
          */
     }
-    
-    public static Test suite () {
-        TestSuite suite = new NbTestSuite (URLUtilTest.class);
-        return suite;
-    }
-    
     
 }

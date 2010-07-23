@@ -112,6 +112,8 @@ public class WLTargetModuleID implements TargetModuleID {
 
     @Override
     public String toString() {
-        return getModuleID() + hashCode();
+        // XXX this is used as map key in org.netbeans.modules.j2ee.deployment.impl.TargetServer
+        // so it can't be freely changed
+        return getModuleID();
     }
 }

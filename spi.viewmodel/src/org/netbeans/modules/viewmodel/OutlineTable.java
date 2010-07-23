@@ -97,6 +97,7 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 
 
@@ -131,6 +132,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             treeTable.setHorizontalScrollBarPolicy 
                 (JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            treeTable.setTreeHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add (treeTable, "Center");  //NOI18N
         treeTable.getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
 

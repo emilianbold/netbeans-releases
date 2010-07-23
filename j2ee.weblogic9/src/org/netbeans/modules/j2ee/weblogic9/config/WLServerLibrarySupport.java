@@ -71,6 +71,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryImplementation;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
@@ -107,12 +109,24 @@ public class WLServerLibrarySupport {
 
     private final File serverRoot;
 
+    public WLServerLibrarySupport(WLDeploymentManager dm) {
+        String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        assert domainDir != null;
+        String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+        assert serverDir != null;
+
+        this.domainPath = new File(domainDir);
+        this.serverRoot = new File(serverDir);
+    }
+
     public WLServerLibrarySupport(File serverRoot, File domainPath) {
         this.domainPath = domainPath;
         this.serverRoot = serverRoot;
     }
 
-    public File[] getClasspathEntries(Set<ServerLibraryDependency> libraries) throws ConfigurationException {
+    public Map<ServerLibrary, List<File>> getClasspathEntries(Set<ServerLibraryDependency> libraries)
+            throws ConfigurationException {
+
         Set<WLServerLibrary> deployed = getDeployedLibraries();
         Set<WLServerLibrary> classpath = new HashSet<WLServerLibrary>();
 
@@ -128,7 +142,7 @@ public class WLServerLibrarySupport {
 
         // TODO deployable files
 
-        List<File> result = new ArrayList<File>();
+        Map<ServerLibrary, List<File>> result = new HashMap<ServerLibrary, List<File>>();
         // XXX optimize collection of libs on same server and/or same name
         for (WLServerLibrary lib : classpath) {
             String server = lib.getServer();
@@ -147,7 +161,7 @@ public class WLServerLibrarySupport {
                                 if (webInfLib.exists() && webInfLib.isDirectory()) {
                                     File[] children = webInfLib.listFiles(JAR_FILTER);
                                     if (children != null) {
-                                        result.addAll(Arrays.asList(children));
+                                        result.put(ServerLibraryFactory.createServerLibrary(lib), Arrays.asList(children));
                                     }
                                 }
                             }
@@ -157,10 +171,10 @@ public class WLServerLibrarySupport {
             }
         }
 
-        return result.toArray(new File[result.size()]);
+        return result;
     }
 
-    Set<WLServerLibrary> getDeployedLibraries() {
+    public Set<WLServerLibrary> getDeployedLibraries() {
         FileObject domain = FileUtil.toFileObject(domainPath);
         FileObject domainConfig = null;
         if (domain != null) {
@@ -233,7 +247,7 @@ public class WLServerLibrarySupport {
     }
 
     // consider implementation of equals in WLServerLibrary
-    private static boolean sameLibraries(WLServerLibrary first, WLServerLibrary second) {
+    public static boolean sameLibraries(WLServerLibrary first, WLServerLibrary second) {
         if ((first.specTitle == null) ? (second.specTitle != null) : !first.specTitle.equals(second.specTitle)) {
             return false;
         }
@@ -309,7 +323,7 @@ public class WLServerLibrarySupport {
         return new WLServerLibrary(specTitle, specVersion, implTitle, implVersion, null, name);
     }
 
-    static class WLServerLibrary implements ServerLibraryImplementation {
+    public static class WLServerLibrary implements ServerLibraryImplementation {
 
         private final String specTitle;
 

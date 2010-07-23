@@ -46,10 +46,7 @@ package org.openide.text;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -82,20 +79,6 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        if (args.length == 1) {
-            junit.textui.TestRunner.run (new LineSetTest (args[0]));
-        }
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(LineSetTest.class);
-        
-        return suite;
-    }
-    
-
     @Override
     protected void setUp () {
         ic = new InstanceContent ();

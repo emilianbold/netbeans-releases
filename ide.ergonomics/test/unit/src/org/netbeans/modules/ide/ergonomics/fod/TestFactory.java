@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.junit.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ProjectFactory;
@@ -136,6 +137,12 @@ implements ProjectFactory, Project, ProjectInformation, SubprojectProvider, Logi
 
     public Node findPath(Node root, Object target) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    void assertListeners(String msg) {
+        if (listenerCount == 0) {
+            Assert.fail(msg);
+        }
     }
 
 

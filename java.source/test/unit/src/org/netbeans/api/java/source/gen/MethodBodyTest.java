@@ -83,6 +83,9 @@ public class MethodBodyTest extends GeneratorTest {
 //        suite.addTest(new MethodBodyTest("testAddVarDecl"));
 //        suite.addTest(new MethodBodyTest("testReplaceConstructorBody"));
 //        suite.addTest(new MethodBodyTest("testSwitchStatement"));
+//        suite.addTest(new MethodBodyTest("test187557a"));
+//        suite.addTest(new MethodBodyTest("test187557b"));
+//        suite.addTest(new MethodBodyTest("test187557c"));
         return suite;
     }
 
@@ -408,6 +411,126 @@ public class MethodBodyTest extends GeneratorTest {
                 MethodTree nueMethod = treeMaker.Method(mods, "run", returnType, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}", null);
                 
                 workingCopy.rewrite(nct.getClassBody(), treeMaker.addClassMember(nct.getClassBody(), nueMethod));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test187557a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        return ;\n" + 
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        return 1;\n" + 
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ReturnTree rt = (ReturnTree) method.getBody().getStatements().get(0);
+                
+                workingCopy.rewrite(rt, treeMaker.Return(treeMaker.Literal(1)));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test187557b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        return;\n" + 
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        return 1;\n" + 
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ReturnTree rt = (ReturnTree) method.getBody().getStatements().get(0);
+                
+                workingCopy.rewrite(rt, treeMaker.Return(treeMaker.Literal(1)));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test187557c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        return 1;\n" + 
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        return;\n" + 
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ReturnTree rt = (ReturnTree) method.getBody().getStatements().get(0);
+                
+                workingCopy.rewrite(rt, treeMaker.Return(null));
             }
             
         };

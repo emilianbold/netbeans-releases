@@ -737,8 +737,10 @@ public class InfoPanel extends javax.swing.JPanel {
         RequestProcessor rp;
         try {
             JPDADebugger debugger = (JPDADebugger) blockedThread.getClass().getMethod("getDebugger").invoke(blockedThread);
-            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
-            rp = s.lookupFirst(null, RequestProcessor.class);
+            rp = getRP(debugger);
+            if (rp == null) {
+                return ;
+            }
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
             return ;
@@ -751,15 +753,36 @@ public class InfoPanel extends javax.swing.JPanel {
         hideDebuggerDeadlockPanel();
     }//GEN-LAST:event_resumeDebuggerDeadlockButtonActionPerformed
 
+    private static RequestProcessor getRP(JPDADebugger debugger) {
+        RequestProcessor rp;
+        try {
+            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger); // NOI18N
+            rp = s.lookupFirst(null, RequestProcessor.class);
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+            return null;
+        }
+        return rp;
+    }
+
     private void stepBrkpIgnoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepBrkpIgnoreButtonActionPerformed
         if (stepBrkpDebuggerRef != null) {
-            JPDADebugger d = stepBrkpDebuggerRef.get();
+            final JPDADebugger d = stepBrkpDebuggerRef.get();
             if (d != null) {
-                try {
-                    d.getClass().getMethod("resume").invoke(d);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                RequestProcessor rp = getRP(d);
+                if (rp == null) {
+                    return ;
                 }
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            d.getClass().getMethod("resume").invoke(d); // NOI18N
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             }
         }
     }//GEN-LAST:event_stepBrkpIgnoreButtonActionPerformed

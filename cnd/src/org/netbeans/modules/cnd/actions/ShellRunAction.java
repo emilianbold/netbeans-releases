@@ -53,8 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -71,6 +69,9 @@ import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -113,7 +114,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
-                private ExecutionService es;
+                private NativeExecutionService es;
                 @Override
                 public void doWork() {
                     es = prepare(node, listener, outputListener, project, inputOutput);
@@ -130,7 +131,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             String msg = getString("MSG_TITLE_Prepare",node.getName()); // NOI18N
             ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            ExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
+            NativeExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
             if (es != null) {
                 return es.run();
             }
@@ -138,7 +139,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         return null;
     }
 
-    private static ExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
+    private static NativeExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
             return null;
@@ -211,31 +212,35 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "Run", syncWorker); // NOI18N
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setWorkingDirectory(buildDir)
-        .unbufferOutput(false)
-        .addNativeProcessListener(processChangeListener);
+
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
+                setWorkingDirectory(buildDir).
+                unbufferOutput(false).
+                addNativeProcessListener(processChangeListener);
+
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
+
         List<String> list = ImportUtils.parseArgs(argsFlat.toString());
         list = ImportUtils.normalizeParameters(list);
         npb.setExecutable(shellCommand);
         npb.setArguments(list.toArray(new String[list.size()]));
 
-        ExecutionDescriptor descr = new ExecutionDescriptor()
-        .controllable(true)
-        .frontWindow(true)
-        .inputVisible(true)
-        .inputOutput(inputOutput)
-        .outLineBased(true)
-        .showProgress(true)
-        .postExecution(processChangeListener)
-        .errConvertorFactory(processChangeListener)
-        .outConvertorFactory(processChangeListener);
+        NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
+                frontWindow(true).
+                inputVisible(true).
+                inputOutput(inputOutput).
+                outLineBased(true).
+                showProgress(true).
+                postExecution(processChangeListener).
+                postMessageDisplayer(new PostMessageDisplayer.Default("Run")). // NOI18N
+                errConvertorFactory(processChangeListener).
+                outConvertorFactory(processChangeListener);
 
         // Execute the shellfile
-        return ExecutionService.newService(npb, descr, "Run"); // NOI18N
+        return NativeExecutionService.newService(npb, descr, "Run"); // NOI18N
     }
 
     private static String findWindowsShell(String shellCommand, ExecutionEnvironment execEnv, Node node) {
@@ -289,7 +294,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
         folder = CompilerSetUtils.getCygwinBase();
         if (folder != null) {
-            newShellCommand = pi.findCommand(folder+"/bin", shellCommand); // NOI18N
+            newShellCommand = pi.findCommand(folder + "/bin", shellCommand); // NOI18N
             if (newShellCommand != null) {
                 return newShellCommand;
             }

@@ -44,25 +44,9 @@
 
 package org.openide.explorer;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.DefaultKeyboardFocusManager;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
-import java.beans.FeatureDescriptor;
-import java.util.*;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.JTextField;
 
-import junit.framework.*;
 
-import org.netbeans.junit.*;
-import org.openide.cookies.*;
 import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  * Check the behaviour of ExplorerManager's lookup by doing the same 
@@ -75,15 +59,6 @@ public class ExplorerUtilCreateLookupTest extends org.openide.windows.TopCompone
     public ExplorerUtilCreateLookupTest(String testName) {
         super(testName);
     }
-    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        return new NbTestSuite(ExplorerUtilCreateLookupTest.class);
-    }
-    
     
     protected boolean runInEQ () {
         return true;

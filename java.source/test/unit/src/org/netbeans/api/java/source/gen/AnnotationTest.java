@@ -790,6 +790,119 @@ public class AnnotationTest extends GeneratorTest {
         setValues(preferences, origValues);
     }
 
+    public void testAnnotation187551a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "\n" +
+            "@interface Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "\n" +
+            "@interface Foo {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        ClassTree copy = make.AnnotationType(clazz.getModifiers(), "Foo", clazz.getMembers());
+                        workingCopy.rewrite(typeDecl, copy);
+                    }
+                }
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAnnotation187551b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "\n" +
+            "@interface Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "\n" +
+            "class Foo {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        ModifiersTree mt = make.Modifiers(EnumSet.noneOf(Modifier.class));
+                        //XXX: ideally, TreeMaker.Class should be enough but it is not right now, and it may not be possible to change due to compatibility:
+                        ClassTree copy = make.Class(mt, "Foo", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), clazz.getMembers());
+                        workingCopy.rewrite(typeDecl, copy);
+                    }
+                }
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAnnotation187551c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "\n" +
+            "class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "\n" +
+            "@interface Foo {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        ClassTree copy = make.AnnotationType(clazz.getModifiers(), "Foo", clazz.getMembers());
+                        workingCopy.rewrite(typeDecl, copy);
+                    }
+                }
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     private void setValues(Preferences p, Map<String, String> values) {
         for (Entry<String, String> e : values.entrySet()) {
             if (e.getValue() != null) {

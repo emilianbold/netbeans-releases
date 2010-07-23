@@ -45,13 +45,20 @@ package org.openide.explorer.view;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -73,20 +80,32 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolTip;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneLayout;
+import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -104,9 +123,11 @@ import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -122,6 +143,10 @@ import org.openide.util.WeakListeners;
  * @author David Strupl
  */
 public class OutlineView extends JScrollPane {
+
+    private static final String TREE_HORIZONTAL_SCROLLBAR = "TREE_HORIZONTAL_SCROLLBAR";    // NOI18N
+
+    private static RequestProcessor REVALIDATING_RP = new RequestProcessor("OutlineView", 1);   // NOI18N
 
     /** The table */
     private OutlineViewOutline outline;
@@ -162,6 +187,14 @@ public class OutlineView extends JScrollPane {
     /** Listener on keystroke to invoke default action */
     private ActionListener defaultTreeActionListener;
 
+    // whether to show horizontal scrollbar
+    private boolean isTreeHScrollBar = false;  // Do not show tree horizontal scroll bar by default for compatibility reasons
+    private JScrollBar hScrollBar;
+    private int treeHorizontalScrollBarPolicy = isTreeHScrollBar ?
+                                                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED :
+                                                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER;
+    private ScrollListener listener;
+
     /** Creates a new instance of TableView */
     public OutlineView() {
         this(null);
@@ -178,6 +211,12 @@ public class OutlineView extends JScrollPane {
         SheetCell tableCell = new SheetCell.OutlineSheetCell(outline);
         outline.setDefaultRenderer(Node.Property.class, tableCell);
         outline.setDefaultEditor(Node.Property.class, tableCell);
+
+        hScrollBar = createHorizontalScrollBar();
+        hScrollBar.setUnitIncrement(10);
+        setLayout(new OutlineScrollLayout());
+        add(hScrollBar, TREE_HORIZONTAL_SCROLLBAR);
+
         setViewportView(outline);
         setPopupAllowed(true);
         // do not care about focus
@@ -227,6 +266,8 @@ public class OutlineView extends JScrollPane {
         }
         
         setBorder( BorderFactory.createEmptyBorder() );
+
+        initializeTreeScrollSupport();
     }
 
     /**
@@ -239,7 +280,126 @@ public class OutlineView extends JScrollPane {
         }
         return new NodeOutlineModel(treeModel, rowModel, false, label);
     }
+
+    /** Initialize support for horizontal scrolling.
+     */
+    private void initializeTreeScrollSupport() {
+        if (UIManager.getColor("Table.background") != null) { // NOI18N
+            getViewport().setBackground(UIManager.getColor("Table.background")); // NOI18N
+        }
+
+        listener = new ScrollListener();
+
+        if (isTreeHScrollBar) {
+            outline.getColumnModel().addColumnModelListener(listener);
+        }
+
+        final RequestProcessor.Task revalidatingTask = REVALIDATING_RP.create(new Runnable() {
+            @Override
+            public void run() {
+                if (!SwingUtilities.isEventDispatchThread()) {
+                    try {
+                        SwingUtilities.invokeAndWait(this);
+                    } catch (InterruptedException ex) {
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    listener.revalidateScrollBar();
+                    //System.err.println("OutlineTask revalidating... :-)");
+                    revalidate();
+                }
+
+            }
+        });
+        outline.setTreeWidthChangeTask(revalidatingTask);
+        getViewport().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                revalidatingTask.schedule(100);
+            }
+        });
+
+        hScrollBar.addAdjustmentListener(listener);
+        hScrollBar.getModel().addChangeListener(listener);
+    }
+
+    /**
+     * Returns the horizontal scroll bar policy value for the tree column.
+     * @return the <code>treeHorizontalScrollBarPolicy</code> property
+     * @see #setTreeHorizontalScrollBarPolicy
+     * @since 6.30
+     */
+    public int getTreeHorizontalScrollBarPolicy() {
+        return treeHorizontalScrollBarPolicy;
+    }
+
+    /**
+     * Determines when the horizontal scrollbar appears in the tree column.
+     * The options are:<ul>
+     * <li><code>ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED</code>
+     * <li><code>ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER</code>
+     * <li><code>ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS</code>
+     * </ul>
+     *
+     * @param policy one of the three values listed above
+     * @exception IllegalArgumentException if <code>policy</code>
+     *				is not one of the legal values shown above
+     * @see #getTreeHorizontalScrollBarPolicy
+     * @since 6.30
+     *
+     * @beaninfo
+     *   preferred: true
+     *       bound: true
+     * description: The tree column scrollbar policy
+     *        enum: HORIZONTAL_SCROLLBAR_AS_NEEDED ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+     *              HORIZONTAL_SCROLLBAR_NEVER ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+     *              HORIZONTAL_SCROLLBAR_ALWAYS ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS
+     */
+    public void setTreeHorizontalScrollBarPolicy(int policy) {
+        if (policy == treeHorizontalScrollBarPolicy) {
+            return ;
+        }
+	switch (policy) {
+            case HORIZONTAL_SCROLLBAR_AS_NEEDED:
+            case HORIZONTAL_SCROLLBAR_NEVER:
+            case HORIZONTAL_SCROLLBAR_ALWAYS:
+                    break;
+            default:
+                throw new IllegalArgumentException("invalid treeHorizontalScrollBarPolicy");
+	}
+	int old = treeHorizontalScrollBarPolicy;
+	treeHorizontalScrollBarPolicy = policy;
+        boolean wasHScrollBarVisible = isTreeHScrollBar;
+        isTreeHScrollBar = (policy != JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        if (wasHScrollBarVisible != isTreeHScrollBar) {
+            if (!wasHScrollBarVisible) {
+                outline.getColumnModel().addColumnModelListener(listener);
+            } else {
+                outline.getColumnModel().removeColumnModelListener(listener);
+            }
+            outline.setTreeHScrollingEnabled(isTreeHScrollBar, hScrollBar);
+        }
+	firePropertyChange("treeHorizontalScrollBarPolicy", old, policy);
+	revalidate();
+	repaint();
+    }
+
+    private boolean horizontalScrollBarIsNeeded = false;
     
+    private void sayHorizontalScrollBarNeeded(boolean horizontalScrollBarIsNeeded) {
+        this.horizontalScrollBarIsNeeded = horizontalScrollBarIsNeeded;
+    }
+
+    @Override
+    public int getHorizontalScrollBarPolicy() {
+        if (horizontalScrollBarIsNeeded) {
+            return JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS;
+        } else {
+            return super.getHorizontalScrollBarPolicy();
+        }
+    }
+
     /** Requests focus for the tree component. Overrides superclass method. */
     @Override
     public void requestFocus () {
@@ -1015,16 +1175,28 @@ public class OutlineView extends JScrollPane {
      * Extension of the ETable that allows adding a special comparator
      * for sorting the rows.
      */
-    private static class OutlineViewOutline extends Outline {
+    static class OutlineViewOutline extends Outline {
         private final PropertiesRowModel rowModel;
         private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
 
         private boolean treeSortable = true;
 
-        public OutlineViewOutline(OutlineModel mdl, PropertiesRowModel rowModel) {
+        private boolean isHScrollingEnabled;
+        private JScrollBar hScrollBar;
+        private TableModelListener tmScrollingListener;
+        private int treePositionX = 0;
+        private int[] rowWidths;
+        private RequestProcessor.Task changeTask;
+        //private int maxRowWidth;
+
+        public OutlineViewOutline(final OutlineModel mdl, PropertiesRowModel rowModel) {
             super(mdl);
             this.rowModel = rowModel;
             setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "CTL_ColumnsSelector")); //NOI18N
+        }
+
+        PropertiesRowModel getRowModel() {
+            return rowModel;
         }
         
         @Override
@@ -1050,6 +1222,91 @@ public class OutlineView extends JScrollPane {
                 return Visualizer.findNode (value);
             }
             return PropertiesRowModel.getValueFromProperty(value);
+        }
+
+        void setTreeHScrollingEnabled(boolean isHScrollingEnabled, JScrollBar hScrollBar) {
+            this.isHScrollingEnabled = isHScrollingEnabled;
+            this.hScrollBar = hScrollBar;
+            if (isHScrollingEnabled) {
+                if (tmScrollingListener == null) {
+                    tmScrollingListener = new TableModelListener() {
+                        @Override
+                        public void tableChanged(TableModelEvent e) {
+                            int rowCount = getOutlineModel().getRowCount();
+                            if (rowCount != rowWidths.length) {
+                                rowWidths = Arrays.copyOf(rowWidths, rowCount);
+                            }
+                        }
+                    };
+                    rowWidths = new int[getOutlineModel().getRowCount()];
+                    getOutlineModel().addTableModelListener(tmScrollingListener);
+                }
+            } else {
+                if (tmScrollingListener != null) {
+                    getOutlineModel().removeTableModelListener(tmScrollingListener);
+                    tmScrollingListener = null;
+                    rowWidths = null;
+                }
+            }
+        }
+
+        void setTreeWidthChangeTask(RequestProcessor.Task changeTask) {
+            this.changeTask = changeTask;
+        }
+
+        int getTreePositionX() {
+            return treePositionX;
+        }
+
+        void setTreePositionX(int treePositionX) {
+            if (treePositionX == this.treePositionX) {
+                return ;
+            }
+            this.treePositionX = treePositionX;
+            tableChanged(new TableModelEvent(getModel(), 0, getRowCount(), 0));// convertColumnIndexToView(0)));
+        }
+
+        private void setPreferredTreeWidth(int row, int width) {
+            if (rowWidths[row] != width) {
+                rowWidths[row] = width;
+                changeTask.schedule(100);
+            }
+        }
+
+        int getTreePreferredWidth() {
+            //int ci = convertColumnIndexToView(0);
+            Rectangle visibleRect = getVisibleRect();
+            int r1 = rowAtPoint(new Point(0, visibleRect.y));
+            if (r1 < 0) {
+                return 0;
+            }
+            if (hScrollBar.isVisible()) {
+                // To prevent from "dancing" include the width of the row(s) under the horizontal scroll bar as well.
+                visibleRect.height += hScrollBar.getSize().height;
+            }
+            int r2 = rowAtPoint(new Point(0, visibleRect.y + visibleRect.height));
+            if (r2 < 0) r2 = getRowCount() - 1;
+            int width = 0;
+            for (int r = r1; r <= r2; r++) {
+                if (rowWidths[r] > width) {
+                    width = rowWidths[r];
+                }
+            }
+            width += 2*getIntercellSpacing().width;
+            return width;
+        }
+
+        /** Translate the tree column renderer */
+        @Override
+        public TableCellRenderer getCellRenderer(int row, int column) {
+            TableCellRenderer result = super.getCellRenderer(row, column);
+            if (isHScrollingEnabled) {
+                int c = convertColumnIndexToModel(column);
+                if (c == 0) {
+                    result = new TranslatedTableCellRenderer(this, result);
+                }
+            }
+            return result;
         }
 
         @Override
@@ -1093,7 +1350,10 @@ public class OutlineView extends JScrollPane {
                 //try invoking custom editor
 
                 final Rectangle r = getCellRect(row, column, true);
-                if( ((MouseEvent) e).getX() > ((r.x + r.width) - 24) && ((MouseEvent) e).getX() < (r.x + r.width) 
+                MouseEvent me = (MouseEvent) e;
+                me.translatePoint(treePositionX, 0);
+                int x = me.getX();
+                if ( x > ((r.x + r.width) - 24) && x < (r.x + r.width)
                     && o instanceof Node.Property
                     && !isTreeColumn ) {
 
@@ -1298,6 +1558,45 @@ public class OutlineView extends JScrollPane {
             }
 
         }
+
+        private class TranslatedTableCellRenderer extends Component implements TableCellRenderer {
+
+            private OutlineViewOutline outline;
+            private TableCellRenderer delegate;
+            private Component component;
+
+            public TranslatedTableCellRenderer(OutlineViewOutline outline, TableCellRenderer delegate) {
+                this.outline = outline;
+                this.delegate = delegate;
+            }
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                this.component = delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setPreferredTreeWidth(row, this.component.getPreferredSize().width);
+                return this;
+            }
+
+            @Override
+            public void setBounds(int x, int y, int width, int height) {
+                //System.out.println("setBounds("+x+", "+y+", "+width+", "+height+"), translate = "+outline.getTreePositionX());
+                component.setBounds(x, y, Math.max(width, outline.getTreePreferredWidth()), height);
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return component.getPreferredSize();
+            }
+
+            @Override
+            public void paint(Graphics g) {
+                if (!(component instanceof TranslatedTableCellRenderer)) {
+                    g.translate(-outline.getTreePositionX(), 0);
+                }
+                component.paint(g);
+            }
+
+        }
     }
     
     private static class OutlinePopupFactory extends NodePopupFactory {
@@ -1381,4 +1680,274 @@ public class OutlineView extends JScrollPane {
             return getName().hashCode();
         }
     }
+
+    /* Horizontal scrolling support.
+     */
+    private final class ScrollListener extends ComponentAdapter implements ChangeListener,
+                                                                           TableColumnModelListener,
+                                                                           AdjustmentListener {
+        ScrollListener() {
+        }
+
+        //ScrollBar or Viewport change
+        public void stateChanged(ChangeEvent evt) {
+            if (evt.getSource() == hScrollBar.getModel()) {
+                int value = hScrollBar.getModel().getValue();
+                outline.setTreePositionX(value);
+            } else { // Viewport
+
+            }
+        }
+
+        private void revalidateScrollBar() {
+            if (!isDisplayable()) {
+                return;
+            }
+            if (!isTreeHScrollBar) {
+                return ;
+            }
+
+            if (
+                (outline.getColumnModel().getColumnCount() > 0)
+            ) {
+                int column = outline.convertColumnIndexToView(0);
+                int extentWidth = outline.getColumnModel().getColumn(column).getWidth();
+                int maxWidth = outline.getTreePreferredWidth();
+                int positionX = outline.getTreePositionX();
+
+                int value = Math.max(0, Math.min(positionX, maxWidth - extentWidth));
+
+                hScrollBar.setValues(value, extentWidth, 0, maxWidth);
+                hScrollBar.setBlockIncrement(extentWidth);
+            }
+        }
+
+        @Override
+        public void columnAdded(TableColumnModelEvent e) {
+        }
+
+        @Override
+        public void columnRemoved(TableColumnModelEvent e) {
+        }
+
+        @Override
+        public void columnMoved(TableColumnModelEvent e) {
+            revalidate();
+        }
+
+        @Override
+        public void columnMarginChanged(ChangeEvent e) {
+            revalidateScrollBar();
+        }
+
+        @Override
+        public void columnSelectionChanged(ListSelectionEvent e) {
+        }
+
+        @Override
+        public void adjustmentValueChanged(AdjustmentEvent e) {
+            int value = hScrollBar.getModel().getValue();
+            outline.setTreePositionX(value);
+        }
+    }
+
+    private static class OutlineScrollLayout extends ScrollPaneLayout.UIResource {
+
+        public OutlineScrollLayout() {
+        }
+
+        private JScrollBar thsb;
+
+        @Override
+        public void addLayoutComponent(String s, Component c) {
+            if (s.equals(TREE_HORIZONTAL_SCROLLBAR)) {
+                thsb = (JScrollBar)addSingletonComponent(thsb, c);
+            } else {
+                super.addLayoutComponent(s, c);
+            }
+        }
+
+        @Override
+        public Dimension preferredLayoutSize(Container parent) {
+            Dimension dim = super.preferredLayoutSize(parent);
+            OutlineView ov = (OutlineView) parent;
+            int thsbPolicy = ov.treeHorizontalScrollBarPolicy;
+            if ((thsb != null) && (thsbPolicy != HORIZONTAL_SCROLLBAR_NEVER)) {
+                if (thsbPolicy == HORIZONTAL_SCROLLBAR_ALWAYS) {
+                    dim.height += thsb.getPreferredSize().height;
+                }
+                else {
+                    Dimension extentSize = null;
+                    Dimension viewSize = null;
+                    Component view = null;
+
+                    if (viewport !=  null) {
+                        extentSize = viewport.getPreferredSize();
+                        viewSize = viewport.getViewSize();
+                        view = viewport.getView();
+                    }
+
+                    if ((viewSize != null) && (extentSize != null)) {
+                        boolean canScroll = true;
+                        if (view instanceof Scrollable) {
+                            canScroll = !((Scrollable)view).getScrollableTracksViewportWidth();
+                        }
+                        if (canScroll && (viewSize.width > extentSize.width)) {
+                            dim.height += thsb.getPreferredSize().height;
+                        }
+                    }
+                }
+            }
+            return dim;
+        }
+
+        @Override
+        public Dimension minimumLayoutSize(Container parent) {
+            return super.minimumLayoutSize(parent);
+        }
+
+        @Override
+        public void layoutContainer(Container parent) {
+            OutlineView ov = (OutlineView) parent;
+            if (ov.isTreeHScrollBar && ov.outline.getColumnModel().getColumnCount() > 0) {
+                int column = ov.outline.convertColumnIndexToView(0);
+                int extentWidth = ov.outline.getColumnModel().getColumn(column).getWidth();
+                int maxWidth = ov.outline.getTreePreferredWidth();
+                boolean hsbvisible = thsb.isVisible();
+                boolean hideHsb = (maxWidth <= extentWidth) && ov.treeHorizontalScrollBarPolicy != JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS;
+
+                JScrollBar hsbOrig = hsb;
+                boolean hsbNeeded;
+                if (!hideHsb) {
+                    // Set fake horizontal scroll bar so that the view size is set correctly
+                    Component view = (viewport != null) ? viewport.getView() : null;
+                    boolean viewTracksViewportWidth = false;
+                    if (view instanceof Scrollable) {
+                        Scrollable sv = (Scrollable)view;
+                        viewTracksViewportWidth = sv.getScrollableTracksViewportWidth();
+                    }
+                    Dimension viewPrefSize =
+                            (view != null) ? view.getPreferredSize()
+                                           : new Dimension(0,0);
+                    // Compute availR width: ( see super.layoutContainer(parent); )
+                    Rectangle availR = ov.getBounds();
+                    Insets insets = parent.getInsets();
+                    availR.width -= insets.left + insets.right;
+                    if ((rowHead != null) && (rowHead.isVisible())) {
+                        int rowHeadWidth = Math.min(availR.width,
+                                                    rowHead.getPreferredSize().width);
+                        availR.width -= rowHeadWidth;
+                    }
+                    Border viewportBorder = ov.getViewportBorder();
+                    if (viewportBorder != null) {
+                        Insets vpbInsets = viewportBorder.getBorderInsets(parent);
+                        availR.width -= vpbInsets.left + vpbInsets.right;
+                    }
+                    if (availR.width < 0) {
+                        hsbNeeded = false;
+                    }
+                    if (ov.getHorizontalScrollBarPolicy() == HORIZONTAL_SCROLLBAR_ALWAYS) {
+                        hsbNeeded = true;
+                    }
+                    else if (ov.getHorizontalScrollBarPolicy() == HORIZONTAL_SCROLLBAR_NEVER) {
+                        hsbNeeded = false;
+                    }
+                    else {  // hsbPolicy == HORIZONTAL_SCROLLBAR_AS_NEEDED
+                        Dimension extentSize =
+                            (viewport != null) ? viewport.toViewCoordinates(availR.getSize())
+                                               : new Dimension(0,0);
+
+                        hsbNeeded = !viewTracksViewportWidth && (viewPrefSize.width > extentSize.width);
+                    }
+
+                    if (hsbNeeded) {
+                        hsb = createFakeHSB(hsbOrig);
+                    } else {
+                        ov.sayHorizontalScrollBarNeeded(true);
+                    }
+                } else {
+                    hsbNeeded = false;
+                }
+                super.layoutContainer(parent);
+                if (!hideHsb) {
+                    if (hsbNeeded) {
+                        JScrollBar fakeHsb = hsb;
+                        fakeHsb.setVisible(false);
+                        hsb = hsbOrig;
+                        Rectangle r = fakeHsb.getBounds();
+                        r.height /= 2;
+                        r.y += r.height;
+                        hsb.setBounds(r);
+                        hsb.setVisible(true);
+                    } else {
+                        ov.sayHorizontalScrollBarNeeded(false);
+                        hsbPolicy = ov.getHorizontalScrollBarPolicy();
+                        hsb.setVisible(false);
+                    }
+                }
+                
+                if (hideHsb) {
+                    thsb.setVisible(false);
+                    ov.hScrollBar.setValues(0, 0, 0, 0);
+                } else {
+                    Rectangle vr = viewport.getBounds();
+                    Rectangle r;
+                    r = new Rectangle(getColumnXPos(ov.outline, column),
+                                      vr.y + vr.height,
+                                      extentWidth,
+                                      thsb.getPreferredSize().height);
+                    thsb.setBounds(r);
+                    if (!hsbvisible) {
+                        thsb.setVisible(true);
+                        ov.listener.revalidateScrollBar();
+                    }
+                }
+            } else {
+                super.layoutContainer(parent);
+            }
+        }
+
+        private JScrollBar createFakeHSB(final JScrollBar hsb) {
+            return new JScrollBar(JScrollBar.HORIZONTAL) {
+
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension dim = hsb.getPreferredSize();
+                    return new Dimension(dim.width, 2*dim.height);
+                }
+
+            };
+        }
+
+        private int getColumnXPos(OutlineViewOutline outline, int column) {
+            if (column < 0) {
+                if (!outline.getComponentOrientation().isLeftToRight()) {
+                    return outline.getWidth();
+                } else {
+                    return 0;
+                }
+            } else if (column >= outline.getColumnCount()) {
+                if (outline.getComponentOrientation().isLeftToRight()) {
+                    return outline.getWidth();
+                } else {
+                    return 0;
+                }
+            } else {
+                TableColumnModel cm = outline.getColumnModel();
+                int x = 0;
+                if (outline.getComponentOrientation().isLeftToRight()) {
+                    for (int i = 0; i < column; i++) {
+                        x += cm.getColumn(i).getWidth();
+                    }
+                } else {
+                    for(int i = cm.getColumnCount()-1; i > column; i--) {
+                        x += cm.getColumn(i).getWidth();
+                    }
+                }
+                return x;
+            }
+        }
+
+    }
+
 }

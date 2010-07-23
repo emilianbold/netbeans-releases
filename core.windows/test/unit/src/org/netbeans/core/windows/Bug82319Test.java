@@ -44,7 +44,6 @@
 
 package org.netbeans.core.windows;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -61,19 +60,6 @@ public class Bug82319Test extends NbTestCase {
 
     public Bug82319Test (String name) {
         super (name);
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(Bug82319Test.class);
-        
-        return suite;
     }
 
     protected boolean runInEQ () {

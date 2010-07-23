@@ -100,7 +100,7 @@
         <ant target="test" dir="${home}/xml.search"/>
         <ant target="test" dir="${home}/xml.wsdl.model"/>
         <ant target="test" dir="${home}/soa.ui"/>
-        <ant target="test" dir="${home}/bpel.model"/>
+        <!--ant target="test" dir="${home}/bpel.model"/-->
         <ant target="test" dir="${home}/bpel.mapper"/>
     </target>
 
@@ -163,8 +163,8 @@
     <target name="clean-02" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel"/>
     <target name="build-02" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel"/>
 
-    <target name="clean-03" depends="clean-xslt, clean-wlm, clean-iep, clean-sql, clean-dm"/>
-    <target name="build-03" depends="build-xslt, build-wlm, build-iep, build-sql, build-dm"/>
+    <target name="clean-03" depends="clean-xslt, clean-wlm, clean-iep, clean-dm"/>
+    <target name="build-03" depends="build-xslt, build-wlm, build-iep, build-dm"/>
 
     <target name="clean-04" depends="clean-edm, clean-etl, clean-encoder, clean-wsdlextensions"/>
     <target name="build-04" depends="build-edm, build-etl, build-encoder, build-wsdlextensions"/>
@@ -328,15 +328,6 @@
         <antcall target="do-module"><param name="module" value="iep.samples"/></antcall>
     </target>
 
-    <!-- sql -->
-    <target name="build-sql"><antcall target="do-sql"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-sql"><antcall target="do-sql"><param name="action" value="clean"/></antcall></target>
-    <target name=   "do-sql">
-        <antcall target="do-module"><param name="module" value="sql.help"/></antcall>
-        <antcall target="do-module"><param name="module" value="sql.project"/></antcall>
-        <antcall target="do-module"><param name="module" value="sql.wizard"/></antcall>
-    </target>
-
     <!-- dm -->
     <target name="build-dm"><antcall target="do-dm"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-dm"><antcall target="do-dm"><param name="action" value="clean"/></antcall></target>
@@ -380,17 +371,11 @@
         <antcall target="do-module"><param name="module" value="wsdlextensions.file"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.ftp"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.hl7"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.ims"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.jdbc"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.jms"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.ldap"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.mq"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.rest"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.sap"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.scheduler"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.smtp"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.snmp"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.swift"/></antcall>
     </target>
 
     <!-- kit -->

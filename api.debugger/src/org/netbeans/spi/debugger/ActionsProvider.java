@@ -72,6 +72,8 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class ActionsProvider {
 
+    private static final RequestProcessor debuggerActionsRP = new RequestProcessor("Debugger Actions", 5);
+
     /**
      * Returns set of actions supported by this ActionsProvider.
      *
@@ -120,7 +122,7 @@ public abstract class ActionsProvider {
      */
     public void postAction (final Object action,
                             final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        debuggerActionsRP.post(new Runnable() {
             public void run() {
                 try {
                     doAction(action);

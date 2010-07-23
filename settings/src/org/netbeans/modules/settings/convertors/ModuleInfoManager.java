@@ -164,19 +164,6 @@ final class ModuleInfoManager {
         
         return reloaded;
     }
-
-    /** look up ModuleInfo according to clazz
-     * @param clazz class used in the look up query
-     * @return module info of the module which clazz was loaded from
-     */
-    public ModuleInfo getModuleInfo(Class clazz) {
-        Iterator it = getModulesResult().allInstances().iterator();
-        while (it.hasNext()) {
-            ModuleInfo mi = (ModuleInfo) it.next();
-            if (mi.owns(clazz)) return mi;
-        }
-        return null;
-    }
     
     /** register listener to be notified about changes of mi
      * @param sdc convertor
