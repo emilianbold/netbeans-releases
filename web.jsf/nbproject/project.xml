@@ -628,6 +628,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
+                <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.web.primefaces</friend>
