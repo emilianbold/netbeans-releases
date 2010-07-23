@@ -211,7 +211,7 @@ public final class EmbedderFactory {
         req.setSystemProperties(fillEnvVars(props));
         
         File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
-        File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
+        File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
 
 //        //validating  Configuration
 //        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
@@ -398,7 +398,7 @@ public final class EmbedderFactory {
 //
 //
 //        ClassWorld world = new ClassWorld();
-//        File rootPackageFolder = InstalledFileLocator.getDefault().locate("maven2/rootpackage", null, false); //NOI18N
+//        File rootPackageFolder = InstalledFileLocator.getDefault().locate("modules/ext/maven/rootpackage", "org.netbeans.modules.maven.embedder", false); //NOI18N
 //        if (rootPackageFolder != null) {
 //            rootPackageFolder = FileUtil.normalizeFile(rootPackageFolder);
 //        }
@@ -451,7 +451,7 @@ public final class EmbedderFactory {
 //        //TODO remove explicit activation
 //        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
 //        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE; //NOI18N
-//        File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
+//        File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
 //
 //        //validating  Configuration
 //        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);

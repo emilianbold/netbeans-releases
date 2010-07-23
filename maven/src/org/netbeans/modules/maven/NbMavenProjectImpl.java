@@ -288,7 +288,7 @@ public final class NbMavenProjectImpl implements Project {
 //            hndl.finish();
 //            ProgressTransferListener.clearAggregateHandle();
         }
-        File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
+        File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
         try {
             return embedder.readProject(fallback);
         } catch (Exception x) {
@@ -429,7 +429,7 @@ public final class NbMavenProjectImpl implements Project {
 //                ProgressTransferListener.clearAggregateHandle();
 
             if (newproject == null) {
-                File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
+                File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
                 try {
                     newproject = getEmbedder().readProject(fallback);
                 } catch (Exception x) {

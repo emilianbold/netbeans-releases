@@ -200,7 +200,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     dd.setOptions(new Object[] { close });
                     dd.setClosingOptions(new Object[] { close });
                     DialogDisplayer.getDefault().notify(dd);
-                    File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
+                    File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
                     try {
                         MavenProject m = embedder.readProject(fallback);
                         m.setDescription(null);

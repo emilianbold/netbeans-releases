@@ -181,7 +181,7 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
 
 //TODO validate user settings
 //            File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
-//            File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", "org.netbeans.modules.maven.embedder", false);//NOI18N
+//            File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false);//NOI18N
 //            DefaultConfiguration settConfig = new DefaultConfiguration();
 //            settConfig.setGlobalSettingsFile(globalSettingsPath);
 //            if (userSettingsPath.exists()) {
