@@ -44,7 +44,9 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
@@ -136,6 +138,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      *
      * @return a set of created instance properties
      */
+    @Override
     public Set instantiate() throws IOException {
         // initialize the resulting set
         Set result = new HashSet();
@@ -144,12 +147,15 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
         // if all the data is normally validated - create the instance and
         // attach the additional properties
-        InstanceProperties ip = InstanceProperties.createInstanceProperties(url, username, password, displayName);
-        ip.setProperty(WLPluginProperties.SERVER_ROOT_ATTR, serverRoot);
-        ip.setProperty(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
-        ip.setProperty(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
-        ip.setProperty(WLPluginProperties.DOMAIN_NAME, domainName);
-        ip.setProperty(WLPluginProperties.PORT_ATTR, port);
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(WLPluginProperties.SERVER_ROOT_ATTR, serverRoot);
+        props.put(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
+        props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
+        props.put(WLPluginProperties.DOMAIN_NAME, domainName);
+        props.put(WLPluginProperties.PORT_ATTR, port);
+
+        InstanceProperties ip = InstanceProperties.createInstanceProperties(
+                url, username, password, displayName, props);
         
         Properties runtimeProps = WLPluginProperties.getRuntimeProperties(domainRoot);
         String beaHome = runtimeProps.getProperty( WLPluginProperties.BEA_JAVA_HOME);
