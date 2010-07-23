@@ -628,6 +628,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
+                <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.web.primefaces</friend>
@@ -637,6 +638,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.web.jsf.api.facesmodel</package>
                 <package>org.netbeans.modules.web.jsf.api.metamodel</package>
                 <package>org.netbeans.modules.web.jsf.api.palette</package>
+                <package>org.netbeans.modules.web.jsf.spi.components</package>
             </friend-packages>
         </data>
     </configuration>

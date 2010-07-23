@@ -82,7 +82,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporte
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
-import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
@@ -171,7 +170,8 @@ public class TargetServer {
     }
 
     private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) throws IOException {
-        if (targetz == null || targetz.length != 1) {
+        //if (targetz == null || targetz.length != 1) {
+        if (targetz == null) {
             LOGGER.log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
 
             if (targetz != null && LOGGER.isLoggable(Level.FINE)) {
@@ -392,8 +392,9 @@ public class TargetServer {
     }
 
     private Map<String, TargetModuleID> getAvailableTMIDsMap() {
-        if (availablesMap != null)
+        if (availablesMap != null) {
             return availablesMap;
+        }
 
         // existing TMID's
         DeploymentManager dm = instance.getDeploymentManager();
@@ -408,9 +409,7 @@ public class TargetServer {
                 availablesMap.put(keyOf(ids[i]), ids[i]);
             }
         } catch (TargetException te) {
-            IllegalArgumentException illegalArgumentException = new IllegalArgumentException();
-            illegalArgumentException.initCause(te);
-            throw illegalArgumentException;
+            throw new IllegalArgumentException(te);
         }
         return availablesMap;
     }
@@ -434,9 +433,10 @@ public class TargetServer {
         Set toRedeploy = new HashSet(); //type TargetModule
         for (int i=0; i<targetModules.length; i++) {
             // not my module
-           if (! targetModules[i].getInstanceUrl().equals(instance.getUrl()) ||
-            ! targetNames.contains(targetModules[i].getTargetName()))
+           if (! targetModules[i].getInstanceUrl().equals(instance.getUrl())
+                   || !targetNames.contains(targetModules[i].getTargetName())) {
                 continue;
+            }
 
             TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(targetModules[i].getId());
 

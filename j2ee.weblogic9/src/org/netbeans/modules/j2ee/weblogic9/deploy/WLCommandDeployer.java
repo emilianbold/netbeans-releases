@@ -43,6 +43,7 @@
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.beans.PropertyVetoException;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,8 +82,8 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -92,6 +93,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 
@@ -99,15 +101,20 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
+// FIXME refactor exceution to some common method
 public final class WLCommandDeployer {
 
     private static final Logger LOGGER = Logger.getLogger(WLCommandDeployer.class.getName());
 
-    private static final String WEBLOGIC_JAR_PATH = "server/lib/weblogic.jar";
+    private static RequestProcessor DEPLOYMENT_RP = new RequestProcessor("Weblogic Deployment", 1); // NOI18N
+
+    private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
+
+    private static final String WEBLOGIC_JAR_PATH = "server/lib/weblogic.jar"; // NOI18N
 
     private static final int TIMEOUT = 300000;
 
-    private static final Pattern LIST_APPS_PATTERN = Pattern.compile("\\s+(.*)");
+    private static final Pattern LIST_APPS_PATTERN = Pattern.compile("\\s+(.*)"); // NOI18N
 
     private static boolean showConsole = Boolean.getBoolean(WLCommandDeployer.class.getName() + ".showConsole");
 
@@ -120,64 +127,31 @@ public final class WLCommandDeployer {
         this.ip = ip;
     }
 
+    public ProgressObject directoryDeploy(final Target target, String name,
+            File file, String host, String port, J2eeModule.Type type) {
+        return deploy(createModuleId(target, file, host, port, name, type),
+                file, "-nostage", "-name", name, "-source"); // NOI18N
+    }
+
+    public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
+        return redeploy(moduleId, moduleId.getModuleID());
+    }
+
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
         final TargetModuleID moduleId = createModuleId(new Target() {
 
             @Override
             public String getName() {
-                return "default";
+                return "default"; // NOI18N
             }
 
             @Override
             public String getDescription() {
-                return "server";
+                return "server"; // NOI18N
             }
-        }, file, host, port);
+        }, file, host, port, file.getName(), null);
 
-        final WLProgressObject progress = new WLProgressObject(moduleId);
-
-        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deploying", file.getAbsolutePath())));
-
-        factory.getExecutorService().submit(new Runnable() {
-
-            @Override
-            public void run() {
-                ExecutionService service = createService("-deploy", null, file.getAbsolutePath()); // NOI18N
-                Future<Integer> result = service.run();
-                try {
-                    Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                    if (value.intValue() != 0) {
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed")));
-                    } else {
-                        //waitForUrlReady(factory, moduleId, progress);
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Completed")));
-                    }
-                } catch (InterruptedException ex) {
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_Interrupted")));
-                    result.cancel(true);
-                    Thread.currentThread().interrupt();
-                } catch (TimeoutException ex) {
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_Timeout")));
-                    result.cancel(true);
-                } catch (ExecutionException ex) {
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_With_Message")));
-                }
-            }
-        });
-
-        return progress;
+        return deploy(moduleId, file);
     }
 
     public ProgressObject undeploy(final TargetModuleID[] targetModuleID) {
@@ -187,14 +161,15 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Started")));
 
-        factory.getExecutorService().submit(new Runnable() {
+        DEPLOYMENT_RP.submit(new Runnable() {
 
             @Override
             public void run() {
                 boolean failed = false;
+                LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (TargetModuleID module : targetModuleID) {
                     String name = module.getModuleID();
-                    ExecutionService service = createService("-undeploy", null, "-name", name);
+                    ExecutionService service = createService("-undeploy", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeploying", name)));
@@ -206,7 +181,8 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Failed")));
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Failed",
+                                        lineProcessor.getLastLine())));
                             break;
                         } else {
                             continue;
@@ -252,14 +228,15 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Started")));
 
-        factory.getExecutorService().submit(new Runnable() {
+        DEPLOYMENT_RP.submit(new Runnable() {
 
             @Override
             public void run() {
                 boolean failed = false;
+                LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (TargetModuleID module : targetModuleID) {
                     String name = module.getModuleID();
-                    ExecutionService service = createService("-start", null, "-name", name);
+                    ExecutionService service = createService("-start", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Starting", name)));
@@ -271,7 +248,8 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Failed")));
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Failed",
+                                        lineProcessor.getLastLine())));
                             break;
                         } else {
                             waitForUrlReady(factory, module, progress);
@@ -318,13 +296,15 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Started")));
 
-        factory.getExecutorService().submit(new Runnable() {
+        DEPLOYMENT_RP.submit(new Runnable() {
 
+            @Override
             public void run() {
                 boolean failed = false;
+                LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (TargetModuleID module : targetModuleID) {
                     String name = module.getModuleID();
-                    ExecutionService service = createService("-stop", null, "-name", name);
+                    ExecutionService service = createService("-stop", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stopping", name)));
@@ -336,7 +316,8 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed")));
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed",
+                                        lineProcessor.getLastLine())));
                             break;
                         } else {
                             continue;
@@ -382,17 +363,18 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Started")));
 
-        factory.getExecutorService().submit(new Runnable() {
+        DEPLOYMENT_RP.submit(new Runnable() {
 
             @Override
             public void run() {
                 boolean failed = false;
+                LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (WLDatasource datasource: datasources) {
                     if (datasource.getOrigin() == null) {
                         LOGGER.log(Level.INFO, "Could not deploy {0}", datasource.getName());
                         continue;
                     }
-                    ExecutionService service = createService("-deploy", null, "-name",
+                    ExecutionService service = createService("-deploy", lineProcessor, "-name",
                             datasource.getName(), "-upload", datasource.getOrigin().getAbsolutePath());
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
@@ -405,7 +387,8 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed")));
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed",
+                                        lineProcessor.getLastLine())));
                             break;
                         } else {
                             continue;
@@ -451,13 +434,14 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Started")));
 
-        factory.getExecutorService().submit(new Runnable() {
+        DEPLOYMENT_RP.submit(new Runnable() {
 
             @Override
             public void run() {
                 boolean failed = false;
+                LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (File library : libraries) {
-                    ExecutionService service = createService("-deploy", null,
+                    ExecutionService service = createService("-deploy", lineProcessor,
                             "-library" , library.getAbsolutePath()); // NOI18N
                     Future<Integer> result = service.run();
                     try {
@@ -466,7 +450,8 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed")));
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed",
+                                        lineProcessor.getLastLine())));
                             break;
                         } else {
                             continue;
@@ -536,6 +521,119 @@ public final class WLCommandDeployer {
         }
     }
 
+    private ProgressObject deploy(final TargetModuleID moduleId, final File file,
+            final String... parameters) {
+        final WLProgressObject progress = new WLProgressObject(moduleId);
+
+        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deploying", file.getAbsolutePath())));
+
+        DEPLOYMENT_RP.submit(new Runnable() {
+
+            @Override
+            public void run() {
+                String[] execParams = new String[parameters.length + 1];
+                execParams[execParams.length - 1] = file.getAbsolutePath();
+                if (parameters.length > 0) {
+                    System.arraycopy(parameters, 0, execParams, 0, parameters.length);
+                }
+
+                LastLineProcessor lineProcessor = new LastLineProcessor();
+                ExecutionService service = createService("-deploy", lineProcessor, execParams); // NOI18N
+                Future<Integer> result = service.run();
+                try {
+                    Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                    if (value.intValue() != 0) {
+                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed",
+                                    lineProcessor.getLastLine())));
+                    } else {
+                        //waitForUrlReady(factory, moduleId, progress);
+                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Completed")));
+                    }
+                } catch (InterruptedException ex) {
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_Interrupted")));
+                    result.cancel(true);
+                    Thread.currentThread().interrupt();
+                } catch (TimeoutException ex) {
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_Timeout")));
+                    result.cancel(true);
+                } catch (ExecutionException ex) {
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_With_Message")));
+                }
+            }
+        });
+
+        return progress;
+    }
+
+    private ProgressObject redeploy(final TargetModuleID moduleId, final String name,
+            final String... parameters) {
+        final WLProgressObject progress = new WLProgressObject(moduleId);
+
+        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeploying", name)));
+
+        DEPLOYMENT_RP.submit(new Runnable() {
+
+            @Override
+            public void run() {
+                String[] execParams = new String[parameters.length + 2];
+                execParams[0] = "-name"; // NOI18N
+                execParams[1] = name;
+                if (parameters.length > 0) {
+                    System.arraycopy(parameters, 0, execParams, 2, parameters.length);
+                }
+
+                LastLineProcessor lineProcessor = new LastLineProcessor();
+                ExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
+                Future<Integer> result = service.run();
+                try {
+                    Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                    if (value.intValue() != 0) {
+                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed",
+                                    lineProcessor.getLastLine())));
+                    } else {
+                        //waitForUrlReady(factory, moduleId, progress);
+                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Completed")));
+                    }
+                } catch (InterruptedException ex) {
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_Interrupted")));
+                    result.cancel(true);
+                    Thread.currentThread().interrupt();
+                } catch (TimeoutException ex) {
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_Timeout")));
+                    result.cancel(true);
+                } catch (ExecutionException ex) {
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_With_Message")));
+                }
+            }
+        });
+
+        return progress;
+    }
+
     private ExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
@@ -550,6 +648,7 @@ public final class WLCommandDeployer {
         String port = parts.length > 1 ? parts[1] : "";
 
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
+                .redirectErrorStream(true)
                 .addArgument("-cp") // NOI18N
                 .addArgument(getClassPath())
                 .addArgument("weblogic.Deployer") // NOI18N
@@ -642,7 +741,7 @@ public final class WLCommandDeployer {
                 }
                 long start = System.currentTimeMillis();
                 while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (URLWait.waitForUrlReady(factory.getExecutorService(), url, 1000)) {
+                    if (URLWait.waitForUrlReady(URL_WAIT_RP, url, 1000)) {
                         break;
                     }
                 }
@@ -653,18 +752,21 @@ public final class WLCommandDeployer {
     }
 
     private static WLTargetModuleID createModuleId(Target target, File file,
-            String host, String port) {
+            String host, String port, String name, J2eeModule.Type type) {
 
-        WLTargetModuleID moduleId = new WLTargetModuleID(target, file.getName());
+        WLTargetModuleID moduleId = new WLTargetModuleID(target, name);
 
         try {
             String serverUrl = "http://" + host + ":" + port;
 
             // TODO in fact we should look to deployment plan for overrides
             // for now it is as good as previous solution
-            if (file.getName().endsWith(".war")) { // NOI18N
-                configureWarModuleId(moduleId, file, serverUrl);
-            } else if (file.getName().endsWith(".ear")) { // NOI18N
+            if (J2eeModule.Type.WAR.equals(type) || (type == null && file.getName().endsWith(".war"))) { // NOI18N
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    configureWarModuleId(moduleId, fo, serverUrl);
+                }
+            } else if (J2eeModule.Type.EAR.equals(type) || (type == null && file.getName().endsWith(".ear"))) { // NOI18N
                 configureEarModuleId(moduleId, file, serverUrl);
             }
 
@@ -675,37 +777,21 @@ public final class WLCommandDeployer {
         return moduleId;
     }
 
-    private static void configureWarModuleId(WLTargetModuleID moduleId, File file, String serverUrl) {
-        try {
-            JarFileSystem jfs = new JarFileSystem();
-            jfs.setJarFile(file);
-            FileObject webXml = jfs.getRoot().getFileObject("WEB-INF/weblogic.xml"); // NOI18N
-            if (webXml != null) {
-                InputStream is = webXml.getInputStream();
-                try {
-                    String[] ctx = WeblogicWebApp.createGraph(is).getContextRoot();
-                    if (ctx != null && ctx.length > 0) {
-                        moduleId.setContextURL(serverUrl + ctx[0]);
-                    }
-                } finally {
-                    is.close();
-                }
-            } else {
-                // FIXME there is some default
-                System.out.println("Cannot find file WEB-INF/weblogic.xml in " + file);
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        } catch (PropertyVetoException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-    }
-
     private static void configureEarModuleId(WLTargetModuleID moduleId, File file, String serverUrl) {
         try {
-            JarFileSystem jfs = new JarFileSystem();
-            jfs.setJarFile(file);
-            FileObject appXml = jfs.getRoot().getFileObject("META-INF/application.xml"); // NOI18N
+            FileObject root = null;
+            if (file.isDirectory()) {
+                root = FileUtil.toFileObject(file);
+            } else {
+                JarFileSystem jfs = new JarFileSystem();
+                jfs.setJarFile(file);
+                root = jfs.getRoot();
+            }
+            if (root == null) {
+                return;
+            }
+            
+            FileObject appXml = root.getFileObject("META-INF/application.xml"); // NOI18N
             if (appXml != null) {
                 Application ear = DDProvider.getDefault().getDDRoot(appXml);
                 Module[] modules = ear.getModule();
@@ -718,12 +804,13 @@ public final class WLCommandDeployer {
                 }
             } else {
                 // Java EE 5
-                for (FileObject child : jfs.getRoot().getChildren()) {
+                for (FileObject child : root.getChildren()) {
+                    // this should work for exploded directory as well
                     if (child.hasExt("war") || child.hasExt("jar")) { // NOI18N
                         WLTargetModuleID childModuleId = new WLTargetModuleID(moduleId.getTarget());
 
                         if (child.hasExt("war")) { // NOI18N
-                            configureWarInEarModuleId(childModuleId, child, serverUrl);
+                            configureWarModuleId(childModuleId, child, serverUrl);
                         }
                         moduleId.addChild(childModuleId);
                     }
@@ -736,34 +823,52 @@ public final class WLCommandDeployer {
         }
     }
 
-    private static void configureWarInEarModuleId(WLTargetModuleID moduleId,
-            FileObject warFileObject, String serverUrl) {
-
-        try {
-            String contextRoot = "/" + warFileObject.getName();
-            ZipInputStream zis = new ZipInputStream(warFileObject.getInputStream());
-            try {
-
-                ZipEntry entry = null;
-                while ((entry = zis.getNextEntry()) != null) {
-                    if ("WEB-INF/weblogic.xml".equals(entry.getName())) { // NOI18N
-                        String[] ddContextRoots =
-                                WeblogicWebApp.createGraph(new ZipEntryInputStream(zis)).getContextRoot();
-                        if (ddContextRoots != null && ddContextRoots.length > 0) {
-                            contextRoot = ddContextRoots[0];
+    private static void configureWarModuleId(WLTargetModuleID moduleId, FileObject file, String serverUrl) {
+        if (file.isFolder()) {
+            FileObject weblogicXml = file.getFileObject("WEB-INF/weblogic.xml"); // NOI18N
+            if (weblogicXml != null && weblogicXml.isData()) {
+                try {
+                    InputStream is = new BufferedInputStream(weblogicXml.getInputStream());
+                    try {
+                        String[] ctx = WeblogicWebApp.createGraph(is).getContextRoot();
+                        if (ctx != null && ctx.length > 0) {
+                            moduleId.setContextURL(serverUrl + ctx[0]);
+                            return;
                         }
-                        break;
+                    } finally {
+                        is.close();
                     }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
                 }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Error reading context-root", ex); // NOI18N
-            } finally {
-                zis.close();
             }
+            moduleId.setContextURL(serverUrl + "/" + file.getNameExt());
+        } else {
+            try {
+                String contextRoot = "/" + file.getName(); // NOI18N
+                ZipInputStream zis = new ZipInputStream(file.getInputStream());
+                try {
+                    ZipEntry entry = null;
+                    while ((entry = zis.getNextEntry()) != null) {
+                        if ("WEB-INF/weblogic.xml".equals(entry.getName())) { // NOI18N
+                            String[] ddContextRoots =
+                                    WeblogicWebApp.createGraph(new ZipEntryInputStream(zis)).getContextRoot();
+                            if (ddContextRoots != null && ddContextRoots.length > 0) {
+                                contextRoot = ddContextRoots[0];
+                            }
+                            break;
+                        }
+                    }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, "Error reading context-root", ex); // NOI18N
+                } finally {
+                    zis.close();
+                }
 
-            moduleId.setContextURL(serverUrl + contextRoot);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
+                moduleId.setContextURL(serverUrl + contextRoot);
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }            
         }
     }
 
@@ -788,6 +893,30 @@ public final class WLCommandDeployer {
         public void reset() {
         }
 
+        public void close() {
+        }
+    }
+
+    private static class LastLineProcessor implements LineProcessor {
+
+        private String last = "";
+
+        @Override
+        public synchronized void processLine(String line) {
+            if (!"".equals(line)) {
+                last = line;
+            }
+        }
+
+        public synchronized String getLastLine() {
+            return last;
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
         public void close() {
         }
     }
@@ -828,4 +957,5 @@ public final class WLCommandDeployer {
             return zis.skip(n);
         }
     }
+
 }
