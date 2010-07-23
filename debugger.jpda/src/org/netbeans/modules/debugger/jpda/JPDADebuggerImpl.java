@@ -84,6 +84,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -132,7 +133,7 @@ import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.util.Operator;
-import org.netbeans.api.debugger.jpda.JDIVariable;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
@@ -154,6 +155,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -211,7 +213,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public JPDADebuggerImpl (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-
+        
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         int stepResume = p.getInt("StepResume", (SINGLE_THREAD_STEPPING) ? 1 : 0);
         suspend = (stepResume == 1) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
@@ -796,6 +798,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         lock.lock();
         Variable vr;
         try {
+            if (!frameThread.isSuspended() && !((JPDAThreadImpl) frameThread).isSuspendedNoFire()) {
+                // Thread not suspended => Can not start evaluation
+                throw new InvalidExpressionException
+                    (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContextStackFrame"));
+            }
             ObjectReference v = null;
             if (var instanceof JDIVariable) {
                 v = (ObjectReference) ((JDIVariable) var).getJDIValue();
@@ -1450,7 +1457,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             stateChangeEvent = setStateNoFire(STATE_RUNNING);
             // We must resume only threads which are regularly suspended.
             // Otherwise we may unexpectedly resume threads which just hit an event!
-
+            
             // However, this can not be done right without an atomic resume of a set of threads.
             // Since this functionality is not available in the backend, we will
             // call VirtualMachine.resume() if all threads are suspended
@@ -1578,6 +1585,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
         }
+    }
+
+    private Set<JPDAThreadGroup> interestedThreadGroups = new WeakSet<JPDAThreadGroup>();
+
+    public void interestedInThreadGroup(JPDAThreadGroup tg) {
+        interestedThreadGroups.add(tg);
+    }
+
+    public boolean isInterestedInThreadGroups() {
+        return !interestedThreadGroups.isEmpty();
     }
 
     public ThreadsCache getThreadsCache() {
