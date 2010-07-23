@@ -56,7 +56,6 @@ public class NbExecutionRequestPopulator extends DefaultMavenExecutionRequestPop
 
     @Override
     public MavenExecutionRequest populateDefaults(MavenExecutionRequest request) throws MavenExecutionRequestPopulationException {
-        System.out.println("populating defaults..");
         MavenExecutionRequest toRet =  super.populateDefaults(request);
         if (toRet.getSystemProperties().size() == 0) {
             toRet.setSystemProperties(getSysProps());
