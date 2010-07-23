@@ -529,6 +529,18 @@ public final class PersistenceManager implements PropertyChangeListener {
             }
             if (dob != null) {
                 InstanceCookie ic = dob.getCookie(InstanceCookie.class);
+                if( ic == null ) {
+                    dob = findTopComponentDataObject(getComponentsModuleFolder(), stringId);
+                    if( null != dob ) {
+                        ic = dob.getCookie(InstanceCookie.class);
+                        if( ic != null ) {
+                            LOG.log(warningLevelForDeserTC(stringId),
+                                "[PersistenceManager.getTopComponentForID]" // NOI18N
+                                + " Problem when deserializing TopComponent for tcID:'" + stringId  // NOI18N
+                                + "'. Reason: Broken .settings file in Windows2Local folder, falling back to module's original file."); // NOI18N
+                        }
+                    }
+                }
                 if (ic != null) {
                     TopComponent tc = (TopComponent)ic.instanceCreate();
                     synchronized(LOCK_IDS) {

@@ -97,7 +97,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.api.debugger.jpda.JDIVariable;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
@@ -130,17 +130,17 @@ import org.openide.util.UserQuestionException;
 * @author   Jan Jancura
 */
 public class LineBreakpointImpl extends ClassBasedBreakpoint {
-
+    
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
-
+    
     private int                 lineNumber;
     private int                 breakpointLineNumber;
     private int                 lineNumberForUpdate = -1;
     private BreakpointsReader   reader;
-
-
+    
+    
     public LineBreakpointImpl (
-        LineBreakpoint breakpoint,
+        LineBreakpoint breakpoint, 
         BreakpointsReader reader,
         JPDADebuggerImpl debugger,
         Session session,
@@ -171,7 +171,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     protected LineBreakpoint getBreakpoint() {
         return (LineBreakpoint) super.getBreakpoint();
     }
-
+    
     @Override
     void fixed () {
         logger.fine("LineBreakpoint fixed: "+this);
@@ -208,7 +208,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
         return true;
     }
-
+    
     protected void setRequests () {
         LineBreakpoint breakpoint = getBreakpoint();
         updateLineNumber();
@@ -226,7 +226,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             className = reader.findCachedClassName(breakpoint);
             if (className == null) {
                 className = EditorContextBridge.getContext().getClassName (
-                    breakpoint.getURL (),
+                    breakpoint.getURL (), 
                     lineNumber
                 );
                 if (className != null && className.length() > 0) {
@@ -269,7 +269,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         setClassRequests (
             new String[] {
                 className // The class name is correct even for inner classes now
-            },
+            }, 
             new String [0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
@@ -470,14 +470,14 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             setValidity(Breakpoint.VALIDITY.INVALID, failReason);
         }
     }
-
+    
     protected EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         Location location = BreakpointRequestWrapper.location((BreakpointRequest) oldRequest);
         BreakpointRequest br = EventRequestManagerWrapper.createBreakpointRequest(getEventRequestManager(), location);
         setFilters(br);
         return br;
     }
-
+    
     private void setFilters(BreakpointRequest br) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         JPDAThread[] threadFilters = getBreakpoint().getThreadFilters(getDebugger());
         if (threadFilters != null && threadFilters.length > 0) {
@@ -549,8 +549,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
         super.propertyChange(evt);
     }
-
-
+    
+    
     private static List getLocations (
         ReferenceType referenceType,
         String stratum,
@@ -587,12 +587,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             }
             return locations;
         } catch (AbsentInformationException ex) {
-            // we are not able to create breakpoint in this situation.
+            // we are not able to create breakpoint in this situation. 
             // should we write some message?!?
             // We should indicate somehow that the breakpoint is invalid...
             reason[0] = NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoLineInfo", referenceType.name());
         } catch (ObjectCollectedException ex) {
-            // no problem, breakpoint will be created next time the class
+            // no problem, breakpoint will be created next time the class 
             // is loaded
             // should not occurre. see [51034]
             reason[0] = ex.getLocalizedMessage();
@@ -602,7 +602,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
         } catch (InternalException iex) {
             // Something wrong in JDI
-            ErrorManager.getDefault().annotate(iex,
+            ErrorManager.getDefault().annotate(iex, 
                     NbBundle.getMessage(LineBreakpointImpl.class,
                     "MSG_jdi_internal_error") );
             ErrorManager.getDefault().notify(iex);
@@ -611,7 +611,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
         return Collections.EMPTY_LIST;
     }
-
+    
     private static List<Location> locationsOfLineInClass(
         ReferenceType referenceType,
         String stratum,
@@ -629,9 +629,9 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
 
         if (logger.isLoggable(Level.FINER)) {
             logger.finer("LineBreakpoint: locations for ReferenceType=" +
-                    referenceType + ", stratum=" + stratum +
+                    referenceType + ", stratum=" + stratum + 
                     ", source name=" + sourceName + ", bpSourcePath=" +
-                    bpSourcePath+", lineNumber=" + lineNumber +
+                    bpSourcePath+", lineNumber=" + lineNumber + 
                     " are: {" + list + "}");
         }
         if (!list.isEmpty ()) {
@@ -664,20 +664,20 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
         return Collections.emptyList();
     }
-
+    
     /**
      * Normalizes the given path by removing unnecessary "." and ".." sequences.
-     * This normalization is needed because the compiler stores source paths like "foo/../inc.jsp" into .class files.
+     * This normalization is needed because the compiler stores source paths like "foo/../inc.jsp" into .class files. 
      * Such paths are not supported by our ClassPath API.
      * TODO: compiler bug? report to JDK?
-     *
+     * 
      * @param path path to normalize
      * @return normalized path without "." and ".." elements
-     */
+     */ 
     private static String normalize(String path) {
       Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./");
       Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./");
-
+      
       for (Matcher m = thisDirectoryPattern.matcher(path); m.find(); )
       {
         path = m.replaceAll("$1");
@@ -687,7 +687,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
       {
         if (!m.group(2).equals("..")) {
           path = path.substring(0, m.start()) + m.group(1) + path.substring(m.end());
-          m = parentDirectoryPattern.matcher(path);
+          m = parentDirectoryPattern.matcher(path);        
         }
       }
       return path;
