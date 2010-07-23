@@ -41,18 +41,15 @@
  */
 package org.netbeans.modules.web.el;
 
-import com.sun.el.lang.EvaluationContext;
-import java.beans.FeatureDescriptor;
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import javax.el.ELContext;
-import javax.el.ELResolver;
-import javax.el.ValueExpression;
+import com.sun.el.parser.AstBracketSuffix;
+import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstInteger;
+import com.sun.el.parser.AstMethodSuffix;
+import com.sun.el.parser.AstPropertySuffix;
+import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import javax.el.ELException;
-import javax.el.FunctionMapper;
-import javax.el.VariableMapper;
 import junit.framework.TestCase;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -63,8 +60,6 @@ import static org.junit.Assert.*;
  */
 public class ELParserTest extends TestCase {
 
-    private static NodeVisitor printing;
-
     public ELParserTest(String name) {
         super(name);
     }
@@ -74,6 +69,8 @@ public class ELParserTest extends TestCase {
         String expr = "#{taskController.removeTask(cc.attrs.story, cc.attrs.task)}";
         Node result = ELParser.parse(expr);
         assertNotNull(result);
+        assertNotNull(findIdentifier(result, "taskController"));
+        assertNotNull(findMethod(result, "removeTask"));
         print(expr, result);
     }
 
@@ -82,6 +79,8 @@ public class ELParserTest extends TestCase {
         String expr = "#{customer.name}";
         Node result = ELParser.parse(expr);
         assertNotNull(result);
+        assertNotNull(findIdentifier(result, "customer"));
+        assertNotNull(findProperty(result, "name"));
         print(expr, result);
     }
 
@@ -90,38 +89,39 @@ public class ELParserTest extends TestCase {
         String expr = "${sessionScope.cart.numberOfItems > 0}";
         Node result = ELParser.parse(expr);
         assertNotNull(result);
+        assertNotNull(findIdentifier(result, "sessionScope"));
+        assertNotNull(findProperty(result, "cart"));
+        assertNotNull(findProperty(result, "numberOfItems"));
+        assertNotNull(findNode(result, "0", AstInteger.class));
         print(expr, result);
     }
 
     @Test
     public void testParseImmediate2() {
-        String expr = "{sessionScope.cart.total}";
+        String expr = "${sessionScope.cart.total}";
         Node result = ELParser.parse(expr);
         assertNotNull(result);
+        assertNotNull(findIdentifier(result, "sessionScope"));
+        assertNotNull(findProperty(result, "cart"));
+        assertNotNull(findProperty(result, "total"));
         print(expr, result);
     }
 
     @Test
     public void testParseImmediate3() {
-        String expr = "${customer.name}";
+        String expr = "${customer}";
         Node result = ELParser.parse(expr);
         assertNotNull(result);
+        assertNotNull(findIdentifier(result, "customer"));
         print(expr, result);
     }
 
     @Test
     public void testParseImmediate4() {
-        String expr = "${customer}";
-        Node result = ELParser.parse(expr);
-        assertNotNull(result);
-        print(expr, result);
-    }
-
-    @Test
-    public void testParseImmediate5() {
         String expr = "${customer.address[\"street\"]}";
         Node result = ELParser.parse(expr);
         assertNotNull(result);
+        assertNotNull(findIdentifier(result, "customer"));
         print(expr, result);
     }
 
@@ -132,11 +132,87 @@ public class ELParserTest extends TestCase {
             ELParser.parse(expr);
             fail("Should not parse: " + expr);
         } catch (ELException ele) {
-            System.out.println("ELE: " + ele.getCause());
-            assertTrue(true);
+            assertNotNull(ele.getMessage());
         }
     }
 
+    public void testOffsets() {
+        String expr = "#{foo.bar.baz}";
+        Node result = ELParser.parse(expr);
+        Node foo = findIdentifier(result, "foo");
+        Node bar = findProperty(result, "bar");
+        Node baz = findProperty(result, "baz");
+        assertOffsets(foo, 2, 5);
+        assertOffsets(bar, 6, 9);
+        assertOffsets(baz, 10, 13);
+    }
+
+    public void testOffsets2() {
+        String expr = "#{foo.bar(baz)}";
+        Node result = ELParser.parse(expr);
+        Node foo = findIdentifier(result, "foo");
+        Node bar = findMethod(result, "bar");
+        Node baz = findIdentifier(result, "baz");
+        assertOffsets(foo, 2, 5);
+        assertOffsets(bar, 6, 14);
+        assertOffsets(baz, 10, 13);
+        print(expr, result);
+    }
+
+    public void testOffsets3() {
+        String expr = "#{foo.bar[\"baz\"]}";
+        Node result = ELParser.parse(expr);
+        Node foo = findIdentifier(result, "foo");
+        Node bar = findProperty(result, "bar");
+        Node brackets = findNode(result, AstBracketSuffix.class);
+        Node bazString = findNode(result, "\"baz\"", AstString.class);
+        assertOffsets(foo, 2, 5);
+        assertOffsets(bar, 6, 9);
+        assertOffsets(brackets, 9, 16);
+        assertOffsets(brackets, 9, 16);
+        assertOffsets(bazString, 10, 15);
+    }
+
+    private void assertOffsets(Node node, int start, int end) {
+        assertEquals("Start offset", start, node.startOffset());
+        assertEquals("End offset", end, node.endOffset());
+    }
+
+    private static Node findProperty(final Node root, final String image) {
+        return findNode(root, image, AstPropertySuffix.class);
+    }
+
+    private static Node findIdentifier(final Node root, final String image) {
+        return findNode(root, image, AstIdentifier.class);
+    }
+
+    private static Node findMethod(final Node root, final String image) {
+        return findNode(root, image, AstMethodSuffix.class);
+    }
+
+    private static Node findNode(final Node root, final Class clazz) {
+        return findNode(root, null, clazz);
+    }
+
+    private static Node findNode(final Node root, final String image, final Class clazz) {
+        final Node[] result = new Node[1];
+        root.accept(new NodeVisitor() {
+
+            @Override
+            public void visit(Node node) throws ELException {
+                if (node.getClass().equals(clazz)) {
+                    if (image == null) {
+                        result[0] = node;
+                        return;
+                    } else if (image.equals(node.getImage())) {
+                        result[0] = node;
+                        return;
+                    }
+                }
+            }
+        });
+        return result[0];
+    }
 
     static void print(String expr, Node node) {
         System.out.println("------------------------------");
@@ -151,149 +227,10 @@ public class ELParserTest extends TestCase {
             indent.append(" ");
         }
         System.out.println(indent.toString() + node + ", offset: start - " + node.startOffset()  + " end - " + node.endOffset() + ", image: " + node.getImage() + ", class: " + node.getClass().getSimpleName());
-        try {
-            System.out.println("Type: " + node.getType(getEvaluationContext()) );
-        } catch (UnsupportedOperationException ue) {
-            System.out.println("Type unresolvable");
-        }
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             Node child = node.jjtGetChild(i);
             printTree(child, ++level);
         }
     }
 
-    private static EvaluationContext getEvaluationContext() {
-
-        final FunctionMapper fm = new FuncMapper();
-        final VariableMapper vm = new VarMapper();
-        ELContext elc = new ELContext() {
-
-            @Override
-            public ELResolver getELResolver() {
-                return new ELResolver() {
-
-                    @Override
-                    public Object getValue(ELContext elc, Object o, Object o1) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-
-                    @Override
-                    public Class<?> getType(ELContext elc, Object o, Object o1) {
-                        return "".getClass();
-                    }
-
-                    @Override
-                    public void setValue(ELContext elc, Object o, Object o1, Object o2) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-
-                    @Override
-                    public boolean isReadOnly(ELContext elc, Object o, Object o1) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-
-                    @Override
-                    public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext elc, Object o) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-
-                    @Override
-                    public Class<?> getCommonPropertyType(ELContext elc, Object o) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-
-                };
-            }
-
-            @Override
-            public FunctionMapper getFunctionMapper() {
-                return fm;
-            }
-
-            @Override
-            public VariableMapper getVariableMapper() {
-                return vm;
-            }
-
-            @Override
-            public boolean isPropertyResolved() {
-                return true;
-            }
-
-
-        };
-
-        EvaluationContext ec = new EvaluationContext(elc, fm, vm);
-        return ec;
-    }
-
-    private static class FuncMapper extends FunctionMapper {
-
-        @Override
-        public Method resolveFunction(String string, String string1) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-    }
-
-    private static class VarMapper extends VariableMapper {
-
-        @Override
-        public ValueExpression resolveVariable(String string) {
-            System.out.println("string: " + string);
-            return new ValueExpression() {
-
-                @Override
-                public Object getValue(ELContext elc) {
-                    return "unknown";
-                }
-
-                @Override
-                public void setValue(ELContext elc, Object o) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                @Override
-                public boolean isReadOnly(ELContext elc) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                @Override
-                public Class<?> getType(ELContext elc) {
-                    return "".getClass();
-                }
-
-                @Override
-                public Class<?> getExpectedType() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                @Override
-                public String getExpressionString() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                @Override
-                public boolean equals(Object o) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                @Override
-                public int hashCode() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                @Override
-                public boolean isLiteralText() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
-        }
-
-        @Override
-        public ValueExpression setVariable(String string, ValueExpression ve) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-    }
 }

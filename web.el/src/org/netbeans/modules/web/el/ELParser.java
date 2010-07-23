@@ -46,21 +46,17 @@ import java.util.logging.Logger;
 import javax.el.ELException;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.filesystems.FileObject;
 
 /**
+ * Parser for Expression Language, uses {@link com.sun.el.parser.ELParser} underneath.
  *
+ * @author Erno Mononen
  */
 public final class ELParser extends Parser {
 
@@ -81,66 +77,23 @@ public final class ELParser extends Parser {
     }
     
     /**
-     * Parses the given expression and returns the root AST node for it.
+     * Parses the given EL expression and returns the root AST node for it.
      *
      * @param expr the expression to parse.
      * @return the root AST node
-     * @throws ELException if the given expression is not valid EL.
+     * @throws {@link javax.el.ELException} if the given expression is not valid EL.
      */
     public static Node parse(String expr) {
         return com.sun.el.parser.ELParser.parse(expr);
-    }
-
-    /**
-     * @return
-     */
-    public ELParserResult parse() {
-
-        FileObject fo = NbEditorUtilities.getFileObject(document);
-        ELParserResult parseResult = new ELParserResult(fo);
-
-        String documentMimetype = NbEditorUtilities.getMimeType(document);
-        Language lang = Language.find(documentMimetype);
-
-        if (lang == null) {
-            return parseResult;
-        }
-
-        TokenHierarchy<?> th = TokenHierarchy.get(document);
-        TokenSequence<?> topLevel = th.tokenSequence();
-
-        if (topLevel == null) {
-            return parseResult;
-        }
-
-        topLevel.moveStart();
-
-        while (topLevel.moveNext()) {
-
-            TokenSequence<ELTokenId> elTokenSequence = topLevel.embedded(ELTokenId.language());
-
-            if (elTokenSequence != null) {
-                String expression = topLevel.token().text().toString();
-                int startOffset = topLevel.offset();
-                int endOffset = startOffset + expression.length();
-                OffsetRange range = new OffsetRange(startOffset, endOffset);
-                try {
-                    Node node = parse(expression);
-                    parseResult.addValidElement(node, expression, range);
-                } catch (ELException ex) {
-                    parseResult.addErrorElement(ex, expression, range);
-                }
-            }
-        }
-
-        return parseResult;
     }
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         this.result = new ELParserResult(snapshot);
 
-        // XXX: defined in XhtmlElEmbeddingProvider.GENERATED_CODE that is not currently exposed via API
+        // XXX: defined in XhtmlElEmbeddingProvider.GENERATED_CODE 
+        // that is not currently exposed via API. This is
+        // pretty hacky
         final String expressionSeparator = "@@@"; //NOI18N
        String[] sources = snapshot.getText().toString().split(expressionSeparator); //NOI18N
        int embeddedOffset = 0;
@@ -149,9 +102,6 @@ public final class ELParser extends Parser {
            int endOffset = startOffset + expression.length();
            embeddedOffset += (expression.length() + expressionSeparator.length());
            OffsetRange embeddedRange = new OffsetRange(startOffset, endOffset);
-           OffsetRange originalRange = new OffsetRange(
-                   snapshot.getOriginalOffset(startOffset),
-                   snapshot.getOriginalOffset(endOffset));
            try {
                Node node = parse(expression);
                result.addValidElement(node, expression, embeddedRange);

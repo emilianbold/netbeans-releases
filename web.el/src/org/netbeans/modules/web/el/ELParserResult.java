@@ -55,7 +55,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
- * ParserResult for EL expressions in a file.
+ * {@code ParserResult} for Expression Language expressions.
  *
  * @author Erno Mononen
  */
@@ -103,6 +103,10 @@ public final class ELParserResult extends ParserResult {
         return !elements.isEmpty();
     }
 
+    /**
+     * @return  true if the result contains only valid EL expressions;
+     *  false otherwise.
+     */
     public boolean isValid() {
         for (ELElement each : elements) {
             if (!each.isValid()) {

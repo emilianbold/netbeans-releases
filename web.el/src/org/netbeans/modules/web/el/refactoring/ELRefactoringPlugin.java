@@ -45,6 +45,8 @@ package org.netbeans.modules.web.el.refactoring;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -108,8 +110,17 @@ public class ELRefactoringPlugin implements RefactoringPlugin {
         FileObject fo = refactoring.getRefactoringSource().lookup(FileObject.class);
         if (fo != null) {
             return fo;
+        } else {
+            fo = getHandle().getFileObject();
+            if (fo != null) {
+                return fo;
+            }
         }
-        return getHandle().getFileObject();
+        // seeems we're looking for usages of a class/method that is not declared
+        // in the project's sources
+        ClasspathInfo cpinfo = refactoring.getContext().lookup(ClasspathInfo.class);
+        FileObject[] roots = cpinfo.getClassPath(ClasspathInfo.PathKind.SOURCE).getRoots();
+        return roots.length > 0 ? roots[1] : null;
     }
 
     protected final WebModule getWebModule() {

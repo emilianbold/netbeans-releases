@@ -3,7 +3,6 @@ package org.netbeans.modules.web.el;
 import com.sun.el.parser.Node;
 import javax.el.ELException;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * Represents the parse result of a single EL expression.
@@ -44,14 +43,28 @@ public final class ELElement {
         return new ELElement(null, error, expression, embeddedOffset, parserResult);
     }
 
+    /**
+     * Gets the root node of the expression.
+     * 
+     * @return
+     */
     public Node getNode() {
         return node;
     }
 
+    /**
+     * Gets the offset in the embedded source.
+     * @see #getOriginalOffset()
+     * @return
+     */
     public OffsetRange getEmbeddedOffset() {
         return embeddedOffset;
     }
 
+    /**
+     * Gets the offset in the original document.
+     * @return
+     */
     public OffsetRange getOriginalOffset() {
         return originalOffset;
     }

@@ -86,19 +86,9 @@ public final class ELIndex {
         return null;
     }
 
-    public Collection<? extends IndexResult> findManagedBeanReferences(String managedBeanName) {
-        Collection<? extends IndexResult> queryResults = query(Fields.IDENTIFIER, managedBeanName, QuerySupport.Kind.EXACT);
+    public Collection<? extends IndexResult> findIdentifierReferences(String identifierName) {
+        Collection<? extends IndexResult> queryResults = query(Fields.IDENTIFIER, identifierName, QuerySupport.Kind.EXACT);
         return queryResults;
-//        List<IndexedIdentifier> result = new ArrayList<IndexedIdentifier>();
-//        for (IndexResult ir : queryResults) {
-//            for (String value : ir.getValues(Fields.IDENTIFIER)) {
-//                IndexedIdentifier identifier = IndexedIdentifier.decode(value, ir);
-//                if (identifier.getIdentifier().equals(managedBeanName)) {
-//                    result.add(identifier);
-//                }
-//            }
-//        }
-//        return result;
     }
 
     public List<IndexedProperty> findPropertyReferences(String propertyName, String managedBeanName) {
@@ -117,31 +107,11 @@ public final class ELIndex {
 
     public Collection<? extends IndexResult> findPropertyReferences(String propertyName) {
         return query(Fields.PROPERTY, propertyName, QuerySupport.Kind.EXACT);
-//        List<IndexedProperty> result = new ArrayList<IndexedProperty>();
-//        for (IndexResult ir : queryResults) {
-//            for (String value : ir.getValues(Fields.PROPERTY)) {
-//                IndexedProperty property = IndexedProperty.decode(value, ir);
-////                if (property.getIdentifier().equals(managedBeanName) && property.getProperty().equals(propertyName)) {
-////                    result.add(property);
-////                }
-//            }
-//        }
-//        return result;
     }
 
     public Collection<? extends IndexResult> findMethodReferences(String methodName) {
         Collection<? extends IndexResult> queryResults = query(Fields.METHOD, methodName, QuerySupport.Kind.EXACT);
         return queryResults;
-//        List<IndexedProperty> result = new ArrayList<IndexedProperty>();
-//        for (IndexResult ir : queryResults) {
-//            for (String value : ir.getValues(Fields.METHOD)) {
-//                IndexedProperty property = IndexedProperty.decode(value, ir);
-//                if (property.getIdentifier().equals(identifier) && property.getProperty().equals(methodName)) {
-//                    result.add(property);
-//                }
-//            }
-//        }
-//        return result;
     }
 
 

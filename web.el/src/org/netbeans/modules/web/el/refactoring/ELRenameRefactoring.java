@@ -55,6 +55,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.web.el.ELElement;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionRef;
+import org.openide.util.NbBundle;
 
 /**
  * Rename refactoring plugin for Expression Language.
@@ -86,7 +87,8 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
             PositionRef[] position = RefactoringUtil.getPostionRefs(elem, targetNode);
             differences.add(new Difference(Difference.Kind.CHANGE, 
                     position[0], position[1], targetNode.getImage(),
-                    RefactoringUtil.getPropertyName(rename.getNewName())));
+                    RefactoringUtil.getPropertyName(rename.getNewName()),
+                    NbBundle.getMessage(ELRenameRefactoring.class, "LBL_Update", targetNode.getImage())));
         }
         modificationResult.addDifferences(file, differences);
 

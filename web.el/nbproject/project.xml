@@ -409,7 +409,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
+                <package>org.netbeans.modules.web.el.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

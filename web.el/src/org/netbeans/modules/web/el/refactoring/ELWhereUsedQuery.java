@@ -49,6 +49,7 @@ import com.sun.el.parser.NodeVisitor;
 import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,6 +59,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -70,7 +72,10 @@ import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELIndex;
 import org.netbeans.modules.web.el.ELIndexer.Fields;
+import org.netbeans.modules.web.el.ELParser;
+import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * Finds usages of managed beans in Expression Language.
@@ -79,12 +84,10 @@ import org.openide.filesystems.FileObject;
  */
 public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
-//    private final WhereUsedQuery whereUsedQuery;
     private CompilationInfo info;
 
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
-//        this.whereUsedQuery = whereUsedQuery;
     }
 
     @Override
@@ -104,12 +107,12 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return null;
     }
 
-    protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
-        TypeElement type = (TypeElement) element;
+    protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
+        TypeElement type = (TypeElement) targetType;
         String clazz = type.getQualifiedName().toString();
         FacesManagedBean managedBean = findManagedBeanByClass(clazz);
         ELIndex index = ELIndex.get(handle.getFileObject());
-        Collection<? extends IndexResult> result = index.findManagedBeanReferences(managedBean.getManagedBeanName());
+        Collection<? extends IndexResult> result = index.findIdentifierReferences(managedBean.getManagedBeanName());
         String managedBeanName = managedBean.getManagedBeanName();
         for (ELElement elem : getMatchingElements(result)) {
             for (Node identifier : findMatchingIdentifierNodes(elem.getNode(), managedBeanName)) {
@@ -121,18 +124,47 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return null;
     }
 
-    protected Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
-        String propertyName = RefactoringUtil.getPropertyName(element.getSimpleName().toString());
+    protected Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
+        String propertyName = RefactoringUtil.getPropertyName(targetType.getSimpleName().toString());
         ELIndex index = ELIndex.get(handle.getFileObject());
         final Set<IndexResult> result = new HashSet<IndexResult>();
         result.addAll(index.findPropertyReferences(propertyName));
         result.addAll(index.findMethodReferences(propertyName));
 
-        for (ELElement elem : getMatchingElements(result)) {
-            List<Node> matchingNodes = findMatchingPropertyNodes(elem.getNode(), propertyName, element.getEnclosingElement().asType());
-            addElements(elem, matchingNodes, refactoringElementsBag);
+        // logic: first try to find all properties for which can resolve the type directly,
+        // then search for occurrences in variables
+        for (ELElement each : getMatchingElements(result)) {
+            List<Node> matchingNodes = findMatchingPropertyNodes(each.getNode(), propertyName, targetType.getEnclosingElement().asType());
+            addElements(each, matchingNodes, refactoringElementsBag);
+            handleVariableReferences(each, targetType, refactoringElementsBag);
         }
+        
         return null;
+    }
+
+    private void handleVariableReferences(ELElement elElement, Element targetType, RefactoringElementsBag refactoringElementsBag) {
+        final List<Node> matchingNodes = new ArrayList<Node>();
+        elElement.getNode().accept(new NodeVisitor() {
+
+            @Override
+            public void visit(Node node) throws ELException {
+                if (node instanceof AstPropertySuffix || node instanceof AstMethodSuffix) {
+                    matchingNodes.add(node);
+                }
+            }
+        });
+
+        ELVariableResolver resolver = Lookup.getDefault().lookup(ELVariableResolver.class);
+        for (Node n : matchingNodes) {
+            String expression = resolver.getReferredExpression(elElement.getParserResult().getSnapshot(),
+                    elElement.getOriginalOffset().getStart() + n.startOffset());
+            if (expression != null) {
+                Node expressionNode = ELParser.parse(expression);
+                if (refersToType(expressionNode, targetType.getEnclosingElement().asType())) {
+                    addElements(elElement, Collections.singletonList(n), refactoringElementsBag);
+                }
+            }
+        }
     }
 
     protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
@@ -144,6 +176,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     }
 
     private List<Node> findMatchingPropertyNodes(Node root, final String targetName, final TypeMirror targetType) {
+
         final List<Node> result = new ArrayList<Node>();
         root.accept(new NodeVisitor() {
 
@@ -177,14 +210,61 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return result;
     }
 
-    private List<Node> findMatchingIdentifierNodes(Node root, final String managedBeanName) {
+    /**
+     * Returns true if {@code root} resolves to an expression that refers to the given
+     * {@code targetType}.
+     * @param root
+     * @param targetType
+     * @return
+     */
+    private boolean refersToType(Node root, final TypeMirror targetType) {
+
+        final boolean[] result = new boolean[1];
+        root.accept(new NodeVisitor() {
+
+            @Override
+            public void visit(Node node) throws ELException {
+                if (node instanceof AstIdentifier) {
+                    Node parent = node.jjtGetParent();
+                    FacesManagedBean fmb = findManagedBeanByName(node.getImage());
+                    if (fmb == null) {
+                        return;
+                    }
+                    TypeElement fmbType = info.getElements().getTypeElement(fmb.getManagedBeanClass());
+                    TypeMirror enclosing = fmbType.asType();
+                    Node current = parent;
+                    for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
+                        current = parent.jjtGetChild(i);
+                        if (current instanceof AstPropertySuffix || current instanceof AstMethodSuffix) {
+                            enclosing = getTypeForProperty(current, enclosing);
+                        }
+                    }
+                    //XXX: works just for generic collections, i.e. the assumption is 
+                    // that variables refer to collections, which is not always the case
+                    if (enclosing instanceof DeclaredType) {
+                        List<? extends TypeMirror> typeArguments = ((DeclaredType) enclosing).getTypeArguments();
+                        for (TypeMirror arg : typeArguments) {
+                            if (info.getTypes().isSubtype(arg, targetType)) {
+                                result[0] = true;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        return result[0];
+    }
+
+    private List<Node> findMatchingIdentifierNodes(Node root, final String identifierName) {
         final List<Node> result = new ArrayList<Node>();
         root.accept(new NodeVisitor() {
 
             @Override
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
-                    if (managedBeanName.equals(node.getImage())) {
+                    if (identifierName.equals(node.getImage())) {
                         result.add(node);
                     }
                 }
