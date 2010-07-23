@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,15 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.html.editor.xhtml;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
@@ -52,37 +51,27 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
- * Provides model for html code
+ * Embedding provider for Expression Language.
+ * TODO: merge with XhtmlElEmbeddingProvider ?
  *
- * @author Marek Fukala
+ * @author Erno Mononen
  */
-public class XhtmlElEmbeddingProvider extends EmbeddingProvider {
-
-    public static final String GENERATED_CODE = "@@@"; //NOI18N
+final class ELEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<XhtmlElTokenId> sequence = th.tokenSequence(XhtmlElTokenId.language());
-        sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();
-        boolean lastEmbeddingIsVirtual = false;
+        sequence.moveStart();
         while (sequence.moveNext()) {
             Token t = sequence.token();
-            if (t.id() == XhtmlElTokenId.HTML) {
-                //lets suppose the text is always html :-(
-                embeddings.add(snapshot.create(sequence.offset(), t.length(), "text/html")); //NOI18N
-                lastEmbeddingIsVirtual = false;
-            } else {
-                //replace templating tokens by generated code marker
-                if (!lastEmbeddingIsVirtual) {
-                    embeddings.add(snapshot.create(GENERATED_CODE, "text/html"));
-                    lastEmbeddingIsVirtual = true;
-                }
+            if (t.id() == XhtmlElTokenId.EL) {
+                embeddings.add(snapshot.create(sequence.offset(), t.length(), "text/x-el")); //NOI18N
+                // just to separate expressions for easier handling in EL parser
+                embeddings.add(snapshot.create(XhtmlElEmbeddingProvider.GENERATED_CODE, "text/x-el")); //NOI18N
             }
         }
         if (embeddings.isEmpty()) {
@@ -99,14 +88,6 @@ public class XhtmlElEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public void cancel() {
-        //do nothing
     }
 
-    public static final class Factory extends TaskFactory {
-
-        @Override
-        public Collection<SchedulerTask> create(final Snapshot snapshot) {
-            return Arrays.<SchedulerTask>asList(new XhtmlElEmbeddingProvider(), new ELEmbeddingProvider());
-        }
-    }
 }

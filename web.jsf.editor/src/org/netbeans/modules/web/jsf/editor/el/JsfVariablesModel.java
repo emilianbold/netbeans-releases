@@ -136,7 +136,7 @@ public class JsfVariablesModel {
                     }
 
                     try {
-                        String documentValueContent = result.getSnapshot().getSource().getDocument(false).getText(doc_from, doc_to - doc_from);
+                        String documentValueContent = result.getSnapshot().getSource().getDocument(true).getText(doc_from, doc_to - doc_from);
                         
                         JsfVariableContext context = new JsfVariableContext(
                                 node.logicalStartOffset(),

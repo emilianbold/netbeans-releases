@@ -3,15 +3,31 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.web.beans</code-name-base>
+            <code-name-base>org.netbeans.modules.web.el</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <code-name-base>org.netbeans.modules.web.beans</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.8</specification-version>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.refactoring.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -28,7 +44,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -36,7 +52,16 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.5</specification-version>
+                        <specification-version>0.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.csl.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>2.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -46,6 +71,24 @@
                     <run-dependency>
                         <release-version>3</release-version>
                         <specification-version>1.43</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.15</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -67,29 +110,37 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.15</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.common</code-name-base>
+                    <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.49</specification-version>
+                        <specification-version>1.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.core</code-name-base>
+                    <code-name-base>org.netbeans.modules.el.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.glassfish.javaee</code-name-base>
+                    <run-dependency>
                         <release-version>0-1</release-version>
                         <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -99,24 +150,6 @@
                     <run-dependency>
                         <release-version>0-1</release-version>
                         <specification-version>1.7</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.metadata.model.support</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.project</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.26</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -137,54 +170,57 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.31</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.29</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <code-name-base>org.netbeans.modules.servletjspapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.36</specification-version>
+                        <specification-version>1.0.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
+                    <code-name-base>org.netbeans.modules.web.jsf</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                    <code-name-base>org.netbeans.libs.elimpl</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.11</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.14</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -200,6 +236,14 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <specification-version>7.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
                         <specification-version>7.11</specification-version>
                     </run-dependency>
                 </dependency>
@@ -208,7 +252,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.13</specification-version>
+                        <specification-version>7.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -237,7 +289,6 @@
                 </dependency>
             </module-dependencies>
             <test-dependencies>
-                <!-- Dependencies for a source root with tests: -->
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
@@ -246,14 +297,49 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
-                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.css.editor</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.lexer</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -262,8 +348,12 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.javahelp</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -275,22 +365,37 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
+                        <code-name-base>org.netbeans.modules.web.common</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                        <code-name-base>org.netbeans.modules.web.jsf</code-name-base>
                         <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.web.jsf20</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.web.project</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.loaders</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.nodes</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.options</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.text</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.util</code-name-base>
@@ -305,11 +410,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
-                <friend>org.netbeans.modules.web.jsf</friend>
-                <package>org.netbeans.modules.web.beans.api.model</package>
-                <package>org.netbeans.modules.web.beans.api.model.support</package>
+                <package>org.netbeans.modules.web.el.spi</package>
             </friend-packages>
         </data>
     </configuration>
