@@ -17,7 +17,7 @@
   </folder>
     <folder name="Templates">
         <folder name="Bluej">
-            <attr name="position" intvalue="701"/>
+            <attr name="position" intvalue="711"/>
             <file name="Abstract.java" url="resources/templates/newclass/abstract.tmpl">
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.bluej.Bundle"/>
