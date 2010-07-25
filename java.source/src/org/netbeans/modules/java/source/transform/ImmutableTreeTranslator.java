@@ -758,12 +758,13 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     }
 
     protected final TryTree rewriteChildren(TryTree tree) {
+	List<? extends Tree> resources = translate(tree.getResources());
 	BlockTree body = (BlockTree)translate(tree.getBlock());
 	List<? extends CatchTree> catches = translateStable(tree.getCatches());
 	BlockTree finalizer = (BlockTree)translate(tree.getFinallyBlock());
 	if (body!=tree.getBlock() || !catches.equals(tree.getCatches()) || 
-            finalizer!=tree.getFinallyBlock()) {
-	    TryTree n = make.Try(body, catches, finalizer);
+            finalizer!=tree.getFinallyBlock() || !resources.equals(tree.getResources())) {
+	    TryTree n = make.Try(resources, body, catches, finalizer);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
             copyPosTo(tree,n);

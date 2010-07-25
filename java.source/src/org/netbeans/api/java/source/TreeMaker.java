@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.java.source;
 
+import java.util.Collections;
 import com.sun.source.tree.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
@@ -864,7 +865,14 @@ public final class TreeMaker {
     public TryTree Try(BlockTree tryBlock, 
                 List<? extends CatchTree> catches, 
                 BlockTree finallyBlock) {
-        return delegate.Try(tryBlock, catches, finallyBlock);
+        return Try(Collections.<Tree>emptyList(), tryBlock, catches, finallyBlock);
+    }
+
+    public TryTree Try(List<? extends Tree> resources,
+                BlockTree tryBlock,
+                List<? extends CatchTree> catches,
+                BlockTree finallyBlock) {
+        return delegate.Try(resources, tryBlock, catches, finallyBlock);
     }
     
     /**

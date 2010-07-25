@@ -617,13 +617,17 @@ public class TreeFactory {
         return make.at(NOPOS).Throw((JCExpression)expression);
     }
     
-    public TryTree Try(BlockTree tryBlock, 
+    public TryTree Try(List<? extends Tree> resources,
+                       BlockTree tryBlock,
                        List<? extends CatchTree> catchList, 
                        BlockTree finallyBlock) {
+        ListBuffer<JCTree> res = new ListBuffer<JCTree>();
+        for (Tree t : resources)
+            res.append((JCTree)t);
         ListBuffer<JCCatch> catches = new ListBuffer<JCCatch>();
         for (CatchTree t : catchList)
             catches.append((JCCatch)t);
-        return make.at(NOPOS).Try((JCBlock)tryBlock, catches.toList(), (JCBlock)finallyBlock);
+        return make.at(NOPOS).Try(res.toList(), (JCBlock)tryBlock, catches.toList(), (JCBlock)finallyBlock);
     }
     
     public com.sun.tools.javac.util.List<JCExpression> Types(List<Type> ts) {
@@ -1341,6 +1345,7 @@ public class TreeFactory {
 
     private TryTree modifyTryCatch(TryTree traj, int index, CatchTree kec, Operation op) {
         TryTree copy = Try(
+            traj.getResources(),
             traj.getBlock(),
             c(traj.getCatches(), index, kec, op),
             traj.getFinallyBlock()

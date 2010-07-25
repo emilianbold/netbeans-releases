@@ -1025,6 +1025,19 @@ public final class VeryPretty extends JCTree.Visitor {
     @Override
     public void visitTry(JCTry tree) {
 	print("try");
+        if (!tree.getResources().isEmpty()) {
+            print(" ("); //XXX: space should be according to the code style!
+            for (Iterator<? extends JCTree> it = tree.getResources().iterator(); it.hasNext();) {
+                JCTree r = it.next();
+                //XXX: disabling copying of original text, as the ending ';' needs to be removed in some cases.
+                oldTrees.remove(r);
+                printPrecedingComments(r, false);
+                printExpr(r, 0);
+                printTrailingComments(r, false);
+                if (it.hasNext()) print(";");
+            }
+            print(") "); //XXX: space should be according to the code style!
+        }
 	printBlock(tree.body, cs.getOtherBracePlacement(), cs.spaceBeforeTryLeftBrace());
 	for (List < JCCatch > l = tree.catchers; l.nonEmpty(); l = l.tail)
 	    printStat(l.head);
