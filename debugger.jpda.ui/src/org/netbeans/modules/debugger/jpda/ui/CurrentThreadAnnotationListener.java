@@ -291,20 +291,43 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             } // if
             sourcePath.showSource (frameToShow, language);
         }
+        final int lineNumber = currentThread.getLineNumber (language);
+        final String url = getTheURL(sourcePath, currentThread, language);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 // show current line
                 synchronized (currentPCLock) {
                     if (currentPC != null)
                         EditorContextBridge.getContext().removeAnnotation (currentPC);
-                    if (csf != null && sourcePath != null && currentThread != null) {
+                    if (csf != null && sourcePath != null && currentThread != null && url != null && lineNumber >= 0) {
                         // annotate current line
-                        currentPC = sourcePath.annotate (currentThread, language);
+                        currentPC = sourcePath.annotate (currentThread, language, url, lineNumber);
                     }
                 }
             }
         });
         annotateCallStack (stack, sourcePath);
+    }
+
+    private String getTheURL(SourcePath sourcePath, JPDAThread currentThread, String language) {
+        final String url;
+        String sPath;
+        try {
+            sPath = currentThread.getSourcePath (language);
+        } catch (AbsentInformationException e) {
+            sPath = "";
+        }
+        if (sPath.length() > 0) {
+            url = sourcePath.getURL (SourcePath.convertSlash (sPath), true);
+        } else {
+            String className = currentThread.getClassName ();
+            if (className.length() == 0) {
+                url = null;
+            } else {
+                url = sourcePath.getURL (SourcePath.convertClassNameToRelativePath (className), true);
+            }
+        }
+        return url;
     }
 
     private void showCurrentFrame(final CallStackFrame frame) {
@@ -576,7 +599,9 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             for (JPDAThread t : threadsToAnnotate) {
                 Object annotation;
                 if (theCurrentSourcePath != null) {
-                    annotation = theCurrentSourcePath.annotate(t, language, false);
+                    final int lineNumber = t.getLineNumber (language);
+                    final String url = getTheURL(theCurrentSourcePath, t, language);
+                    annotation = theCurrentSourcePath.annotate(t, language, url, lineNumber, false);
                 } else {
                     annotation = null;
                 }
