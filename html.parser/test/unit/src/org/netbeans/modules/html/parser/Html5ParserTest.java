@@ -43,11 +43,14 @@
 package org.netbeans.modules.html.parser;
 
 import java.io.IOException;
+import java.util.Collection;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.SAXException;
 
@@ -71,30 +74,48 @@ public class Html5ParserTest extends NbTestCase {
 
     
     public void testBasic() throws SAXException, IOException, ParseException {
-        AstNode root = parse("<!doctype html><section><div></div></section>");
+        HtmlParseResult result = parse("<!doctype html><section><div></div></section>");
+        AstNode root = result.root();
         assertNotNull(root);
         assertNotNull(AstNodeUtils.query(root, "html/body/section/div")); //html/body are generated
     }
 
     
     public void testHtmlAndBodyTags() throws ParseException {
-        AstNode root = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
+        HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
+        AstNode root = result.root();
         assertNotNull(root);
         assertNotNull(AstNodeUtils.query(root, "html"));
         assertNotNull(AstNodeUtils.query(root, "html/head"));
         assertNotNull(AstNodeUtils.query(root, "html/head/title"));
         assertNotNull(AstNodeUtils.query(root, "html/body"));
         assertNotNull(AstNodeUtils.query(root, "html/body/div"));
+    }
+
+    public void testProblemsReporting() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html></section>");
+        //                              012345678901234567890123456789
+        //                              0         1         2
+        Collection<ProblemDescription> problems = result.getProblems();
+
+        assertEquals(1, problems.size());
+        ProblemDescription p = problems.iterator().next();
+
+        assertEquals(ProblemDescription.ERROR, p.getType());
+        assertEquals("nokey", p.getKey()); //XXX fix that
+        assertEquals("Stray end tag “section”.", p.getText());
+        assertEquals(15, p.getFrom());
+        assertEquals(25, p.getTo());
 
     }
 
-    private AstNode parse(CharSequence code) throws ParseException {
+    private HtmlParseResult parse(CharSequence code) throws ParseException {
         HtmlSource source = new HtmlSource(code);
-        AstNode root = SyntaxAnalyzer.create(source).analyze().parseHtml().root();
+        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
 
-        assertNotNull(root);
+        assertNotNull(result);
 
-        return root;
+        return result;
     }
 
 }

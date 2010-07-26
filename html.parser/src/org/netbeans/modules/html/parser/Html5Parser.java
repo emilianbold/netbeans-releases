@@ -44,7 +44,8 @@ package org.netbeans.modules.html.parser;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
@@ -75,28 +76,40 @@ public class Html5Parser implements HtmlParser {
             InputSource is = new InputSource(new StringReader(new StringBuilder(source.getSourceCode()).toString()));
             final AstNodeTreeBuilder treeBuilder = new AstNodeTreeBuilder();
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
+            final Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+
             treeBuilder.setErrorHandler(new ErrorHandler() {
 
                 public void warning(SAXParseException exception) throws SAXException {
-                    //                treeBuilder.getCurrentNode().addDescriptionToNode("key", exception.getLocalizedMessage(), AstNode.Description.WARNING);
-                    System.out.println("warning at offset " + tokenizer.offset() + ": " + exception);
+                   handleProblem(exception, ProblemDescription.WARNING);
                 }
 
                 public void error(SAXParseException exception) throws SAXException {
-                    //                treeBuilder.getCurrentNode().addDescriptionToNode("key", exception.getLocalizedMessage(), AstNode.Description.ERROR);
-                    System.out.println("error at offset " + tokenizer.offset() + ": " + exception);
+                   handleProblem(exception, ProblemDescription.ERROR);
                 }
 
                 public void fatalError(SAXParseException exception) throws SAXException {
-                    //                treeBuilder.getCurrentNode().addDescriptionToNode("key", exception.getLocalizedMessage(), AstNode.Description.FATAL);
-                    System.out.println("fatal error at offset " + tokenizer.offset() + ": " + exception);
+                   handleProblem(exception, ProblemDescription.FATAL);
                 }
+
+                private void handleProblem(SAXException exception, int problemType) {
+//                     AstNode current = treeBuilder.getCurrentNode();
+
+                    ProblemDescription problem = ProblemDescription.create("nokey", //NOI18N
+                            exception.getLocalizedMessage(),
+                            problemType,
+//                            current.startOffset(), current.endOffset());
+                            treeBuilder.tagBeginningOffset(), treeBuilder.tagEndOffset());
+
+                    problems.add(problem);
+                }
+
             });
             Driver driver = new Driver(tokenizer);
             driver.tokenize(is);
             AstNode root = treeBuilder.getRoot();
 
-            return new DefaultHtmlParseResult(source, root, Collections.<ProblemDescription>emptyList(), preferedVersion);
+            return new DefaultHtmlParseResult(source, root, problems, preferedVersion);
 
         } catch (SAXException ex) {
             throw new ParseException(ex);

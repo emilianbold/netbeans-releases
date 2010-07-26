@@ -62,7 +62,6 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -231,7 +230,8 @@ public class HtmlParserResult extends ParserResult {
     public synchronized List<? extends Error> getDiagnostics() {
         if (errors == null) {
             errors = new ArrayList<Error>();
-            errors.addAll(findErrors());
+            errors.addAll(getParseResultErrors());
+            errors.addAll(extractErrorsFromAST());
             errors.addAll(findLexicalErrors());
         }
         return errors;
@@ -240,6 +240,47 @@ public class HtmlParserResult extends ParserResult {
     @Override
     protected void invalidate() {
         this.isValid = false;
+    }
+
+    private Collection<Error> getParseResultErrors() {
+        Collection<Error> diagnostics = new ArrayList<Error>();
+        try {
+            //collect problem descriptions from all embedded parse results
+            for (ParseResult parseResult : result.getAllParseResults()) {
+                for (ProblemDescription problem : parseResult.getProblems()) {
+                    DefaultError error =
+                            new DefaultError(problem.getKey(),
+                            problem.getText(),
+                            problem.getText(),
+                            result.getSource().getSourceFileObject(),
+                            problem.getFrom(),
+                            problem.getTo(),
+                            false /* not line error */,
+                            forProblemType(problem.getType()));
+
+                    diagnostics.add(error);
+                }
+            }
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+            return Collections.emptyList();
+        }
+
+        return diagnostics;
+    }
+
+    private static Severity forProblemType(int problemtype) {
+        switch (problemtype) {
+            case ProblemDescription.INFORMATION:
+            case ProblemDescription.WARNING:
+                return Severity.WARNING;
+            case ProblemDescription.ERROR:
+            case ProblemDescription.FATAL:
+                return Severity.ERROR;
+            default:
+                throw new IllegalArgumentException("Invalid ProblemDescription type: " + problemtype); //NOI18N
+        }
+
     }
 
     private List<Error> findLexicalErrors() {
@@ -272,7 +313,7 @@ public class HtmlParserResult extends ParserResult {
 
     }
 
-    private List<Error> findErrors() {
+    private List<Error> extractErrorsFromAST() {
         final List<Error> _errors = new ArrayList<Error>();
 
         AstNodeVisitor errorsCollector = new AstNodeVisitor() {

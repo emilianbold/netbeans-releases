@@ -85,9 +85,10 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         return root;
     }
 
-//    public AstNode getCurrentNode() {
-//        return stack.peek();
-//    }
+    public AstNode getCurrentNode() {
+        return stack.peek();
+    }
+    
     @Override
     protected void elementPopped(String namespace, String name, AstNode t) throws SAXException {
         if (DEBUG) {
@@ -213,11 +214,11 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         super.endTag(en);
     }
 
-    private int tagBeginningOffset() {
+    public  int tagBeginningOffset() {
         return tag_lt_offset;
     }
 
-    private int tagEndOffset() {
+    public  int tagEndOffset() {
         return tag_gt_offset + 1 /* 1 == the '>' length */;
     }
 

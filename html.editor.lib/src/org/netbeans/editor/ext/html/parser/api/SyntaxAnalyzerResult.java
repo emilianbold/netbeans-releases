@@ -155,6 +155,15 @@ public class SyntaxAnalyzerResult {
         return null;
     }
 
+    public Collection<ParseResult> getAllParseResults() throws ParseException {
+        Collection<ParseResult> all = new ArrayList<ParseResult>();
+        all.add(parseHtml());
+        for(String ns : getAllDeclaredNamespaces().keySet()) {
+            all.add(parseEmbeddedCode(ns));
+        }
+        all.add(parseUndeclaredEmbeddedCode());
+        return all;
+    }
 
 
     public synchronized HtmlParseResult parseHtml() throws ParseException {
