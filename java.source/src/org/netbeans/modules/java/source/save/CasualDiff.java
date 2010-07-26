@@ -1078,8 +1078,33 @@ public class CasualDiff {
 
     protected int diffTry(JCTry oldT, JCTry newT, int[] bounds) {
         int localPointer = bounds[0];
-
         int[] bodyPos = getBounds(oldT.body);
+
+        if (!listsMatch(oldT.resources, newT.resources)) {
+            if (oldT.resources.nonEmpty() && newT.resources.isEmpty()) {
+                tokenSequence.move(getOldPos(oldT.resources.head));
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                assert tokenSequence.token().id() == JavaTokenId.LPAREN;
+                copyTo(localPointer, tokenSequence.offset());
+                localPointer = bodyPos[0];
+            } else {
+                int pos = oldT.resources.isEmpty() ? pos = bodyPos[0] : getOldPos(oldT.resources.head);
+                copyTo(localPointer, pos);
+                boolean parens = oldT.resources.isEmpty() || newT.resources.isEmpty();
+                int oldPrec = printer.setPrec(TreeInfo.noPrec);
+                localPointer = diffParameterList(oldT.resources,
+                        newT.resources,
+                        parens ? new JavaTokenId[] { JavaTokenId.LPAREN, JavaTokenId.RPAREN } : null,
+                        pos,
+                        Measure.ARGUMENT
+                );
+                printer.setPrec(oldPrec);
+                if (parens && oldT.resources.isEmpty()) {
+                    printer.print(" "); // print the space after type parameter
+                }
+            }
+        }
+        
         copyTo(localPointer, bodyPos[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
         copyTo(localPointer, localPointer = bodyPos[1]);
