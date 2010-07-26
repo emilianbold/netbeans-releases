@@ -69,6 +69,13 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     private char[] password = null;
 
     private final boolean prompt;
+    private boolean prompted;
+    private boolean promptedUser;
+    private boolean promptedSSH;
+    private boolean promptedSSL;
+    private String certFilePath;
+    private char[] certPassword;
+    private int sshPort = 22;
     
     /** Creates a new instance of SvnClientCallback */
     public SvnClientCallback(SVNUrl url, int handledExceptions) {
@@ -77,16 +84,19 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         this.prompt = (SvnClientExceptionHandler.EX_AUTHENTICATION & handledExceptions) == SvnClientExceptionHandler.EX_AUTHENTICATION;
     }
 
-    public boolean askYesNo(String string, String string0, boolean b) {
+    @Override
+    public boolean askYesNo(String realm, String question, boolean yesIsDefault) {
         // TODO implement me
         return false;
     }
 
+    @Override
     public String getUsername() {
         getAuthData();
         return username;
     }
 
+    @Override
     public String getPassword() {
         getAuthData();
         String retval = ""; //NOI18N
@@ -96,7 +106,8 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         return retval;
     }
 
-    public int askTrustSSLServer(String certMessage, boolean b) {
+    @Override
+    public int askTrustSSLServer(String certMessage, boolean allowPermanently) {
         
         if((SvnClientExceptionHandler.EX_NO_CERTIFICATE & handledExceptions) != SvnClientExceptionHandler.EX_NO_CERTIFICATE) {
             return -1; // XXX test me
@@ -126,52 +137,58 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         }
     }
 
-    public boolean prompt(String string, String string0, boolean b) {        
-        return true;
+    @Override
+    public boolean prompt(String realm, String username, boolean maySave) {        
+        return prompted = !prompted;
     }
 
-    public String askQuestion(String string, String string0, boolean b, boolean b0) {
+    @Override
+    public String askQuestion(String realm, String question, boolean showAnswer, boolean maySave) {
         // TODO implement me
         return null;
     }
 
+    @Override
     public boolean userAllowedSave() {
         return false;
     }
 
-    public boolean promptSSH(String string, String string0, int i, boolean b) {
-        // TODO implement me
-        return false;
+    @Override
+    public boolean promptSSH(String realm, String username, int sshPort, boolean maySave) {
+        this.sshPort = sshPort;
+        return promptedSSH = !promptedSSH;
     }
 
+    @Override
     public String getSSHPrivateKeyPath() {
-        // TODO implement me
-        return null;
+        getAuthData();
+        return certFilePath;
     }
 
+    @Override
     public String getSSHPrivateKeyPassphrase() {
-        // TODO implement me
-        return null;
+        return getCertPassword();
     }
 
+    @Override
     public int getSSHPort() {
-        // TODO implement me
-        return -1;
+        return sshPort;
     }
 
-    public boolean promptSSL(String string, boolean b) {
-        // TODO implement me
-        return false;
+    @Override
+    public boolean promptSSL(String realm, boolean maySave) {
+        return promptedSSL = !promptedSSL;
     }
 
+    @Override
     public String getSSLClientCertPassword() {
-        // TODO implement me
-        return null;
+        return getCertPassword();
     }
 
+    @Override
     public String getSSLClientCertPath() {
-        // TODO implement me
-        return null;
+        getAuthData();
+        return certFilePath;
     }
 
     private void getKenaiAuthData(SvnKenaiAccessor support) {
@@ -205,12 +222,25 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
             if (rc != null) {
                 username = rc.getUsername();
                 password = rc.getPassword();
+                certFilePath = rc.getCertFile();
+                certPassword = rc.getCertPassword();
             }
         }
     }
 
-    public boolean promptUser(String arg0, String arg1, boolean arg2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public boolean promptUser(String realm, String username, boolean maySave) {
+        return promptedUser = !promptedUser;
+    }
+
+    private String getCertPassword() {
+        getAuthData();
+        String certPwd = ""; //NOI18N
+        if (certPassword != null) {
+            certPwd = new String(certPassword);
+            Arrays.fill(certPassword, '\0');
+        }
+        return certPwd;
     }
 
 }
