@@ -369,8 +369,11 @@ public class SvnClientExceptionHandler {
     private SSLSocket getSSLSocket(String host, int port, String[] protocols) throws Exception {
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
+            @Override
                 public X509Certificate[] getAcceptedIssuers() { return null; }
+            @Override
                 public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+            @Override
                 public void checkServerTrusted(X509Certificate[] certs, String authType) { }
             }
         };
@@ -631,6 +634,7 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
                msg.indexOf("authentication failed") > - 1 ||                                // NOI18N
+               msg.indexOf("authentication cancelled") > - 1 ||                             // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
                msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
@@ -642,11 +646,11 @@ public class SvnClientExceptionHandler {
     }
     
     public static boolean isWrongUrl(String msg) {
-//      javahl:
-//      org.tigris.subversion.javahl.ClientException: Bad URL passed to RA layer
+//      javahl: org.tigris.subversion.javahl.ClientException: Bad URL passed to RA layer
 //      svn: URL 'file:///data/subversion/dilino' non-existent in revision 88
         msg = msg.toLowerCase();
         return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
+               (msg.indexOf("svn: url") > -1 && msg.indexOf("non-existent in revision") > - 1 ) ||
                (msg.indexOf("bad url passed to ra layer") > - 1 );
     }
 
