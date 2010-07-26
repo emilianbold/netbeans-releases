@@ -83,7 +83,7 @@ public class DefaultHtmlParser implements HtmlParser {
 
     @Override
     public HtmlParseResult parse(HtmlSource source, HtmlVersion version, Lookup lookup) throws ParseException {
-        assert version != HtmlVersion.HTML5;
+//        assert version != HtmlVersion.HTML5;
         
         SyntaxAnalyzerElements elements = lookup.lookup(SyntaxAnalyzerElements.class);
         assert elements != null;
