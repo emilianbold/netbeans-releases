@@ -318,8 +318,7 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
 //        } catch (SettingsConfigurationException ex) {
 //            LOGGER.log(Level.FINE, ex.getMessage(), ex);
         } catch (RuntimeException re) {
-//TODO            CLIReportingUtils.showError("Runtime Exception thrown during execution", re, req.isShowErrors(), req.getErrorReporter(), out);//NOI18N - part of maven output
-            LOGGER.log(Level.FINE, re.getMessage(), re);
+            out.fatalError("Runtime Exception thrown during execution", re);
             executionResult = -2;
         } catch (ThreadDeath death) {
 //            cancel();
