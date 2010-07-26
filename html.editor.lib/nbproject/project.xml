@@ -215,10 +215,10 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.html.lexer</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-<!--                    <test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.html.parser</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>-->
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
                         <compile-dependency/>
@@ -267,7 +267,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
-<!--                <friend>org.netbeans.modules.html.parser</friend>-->
+                <friend>org.netbeans.modules.html.parser</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
