@@ -326,7 +326,11 @@ public class AnimationLayer implements ActionListener {
         }
         comp.setBounds(bounds);
         comp.validate();
-        comp.paint(gg);
+        // Intentionally using print instead of paint.
+        // Print doesn't use double buffering and it solves some mysterious
+        // problems with modified clip during painting of containers.
+        // BTW: animated transitions library also uses print()
+        comp.print(gg);
         gg.dispose();
     }
 
