@@ -60,8 +60,10 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -95,7 +97,13 @@ public class ThreadsCache implements Executor {
     
     private VirtualMachine vm;
     private JPDADebuggerImpl debugger;
+    // Map of thread groups. Null when not initialized, otherwise contains
+    // list of sub-groups for a group key.
+    // uninitializedGroupList values for unknown sub-groups
     private Map<ThreadGroupReference, List<ThreadGroupReference>> groupMap;
+    private final List<ThreadGroupReference> uninitializedGroupList = Collections.emptyList();
+    // Map of threads hierarchy - list of threads for group keys.
+    // Null when not initialized.
     private Map<ThreadGroupReference, List<ThreadReference>> threadMap;
     private List<ThreadReference> allThreads;
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -103,8 +111,8 @@ public class ThreadsCache implements Executor {
     
     public ThreadsCache(JPDADebuggerImpl debugger) {
         this.debugger = debugger;
-        groupMap = new HashMap<ThreadGroupReference, List<ThreadGroupReference>>();
-        threadMap = new HashMap<ThreadGroupReference, List<ThreadReference>>();
+        //groupMap = new HashMap<ThreadGroupReference, List<ThreadGroupReference>>();
+        //threadMap = new HashMap<ThreadGroupReference, List<ThreadReference>>();
         allThreads = new ArrayList<ThreadReference>();
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm != null) {
@@ -141,7 +149,11 @@ public class ThreadsCache implements Executor {
                 this.vm = null;
             }
             _allThreads = new ArrayList<ThreadReference>(allThreads);
-            _allGroups = getAllGroups();
+            if (groupMap != null) {
+                _allGroups = getAllGroups();
+            } else {
+                _allGroups = Collections.emptyList();
+            }
             
         }
         for (ThreadReference t : _allThreads) {
@@ -158,24 +170,8 @@ public class ThreadsCache implements Executor {
     
     private synchronized void init() throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         allThreads = new ArrayList<ThreadReference>(VirtualMachineWrapper.allThreads(vm));
-        List<ThreadGroupReference> groups;
-        groupMap.put(null, groups = new ArrayList(VirtualMachineWrapper.topLevelThreadGroups(vm)));
-        for (ThreadGroupReference group : groups) {
-            initGroups(group);
-        }
-        List<ThreadReference> mainThreads = new ArrayList();
-        threadMap.put(null, mainThreads);
-        for (ThreadReference thread : allThreads) {
-            try {
-                if (ThreadReferenceWrapper.threadGroup(thread) == null) {
-                    mainThreads.add(thread);
-                }
-            } catch (ObjectCollectedExceptionWrapper e) {
-            } catch (IllegalThreadStateExceptionWrapper e) {
-            }
-        }
     }
-    
+
     private void initGroups(ThreadGroupReference group) {
         try {
             List<ThreadGroupReference> groups = new ArrayList(ThreadGroupReferenceWrapper.threadGroups0(group));
@@ -189,11 +185,58 @@ public class ThreadsCache implements Executor {
         }
     }
 
+    private synchronized void initThreadGroups() throws VMDisconnectedExceptionWrapper {
+        threadMap = new HashMap<ThreadGroupReference, List<ThreadReference>>();
+        if (groupMap == null) {
+            groupMap = new HashMap<ThreadGroupReference, List<ThreadGroupReference>>();
+        } else {
+            // Remove unknown groups:
+            Set<ThreadGroupReference> groups = new HashSet<ThreadGroupReference>(groupMap.keySet());
+            for (ThreadGroupReference g : groups) {
+                if (groupMap.get(g) == uninitializedGroupList) {
+                    groupMap.remove(g);
+                }
+            }
+        }
+        List<ThreadGroupReference> groups;
+        groups = groupMap.get(null);
+        if (groups == null) {
+            try {
+                groups = new ArrayList(VirtualMachineWrapper.topLevelThreadGroups(vm));
+            } catch (InternalExceptionWrapper ex) {
+                return ;
+            }
+            groupMap.put(null, groups);
+        }
+        for (ThreadGroupReference group : groups) {
+            initGroups(group);
+        }
+        List<ThreadReference> mainThreads = new ArrayList();
+        threadMap.put(null, mainThreads);
+        for (ThreadReference thread : allThreads) {
+            try {
+                if (ThreadReferenceWrapper.threadGroup(thread) == null) {
+                    mainThreads.add(thread);
+                }
+            } catch (ObjectCollectedExceptionWrapper e) {
+            } catch (IllegalThreadStateExceptionWrapper e) {
+            } catch (InternalExceptionWrapper e) {
+            }
+        }
+    }
+
     public synchronized List<ThreadReference> getAllThreads() {
         return Collections.unmodifiableList(new ArrayList(allThreads));
     }
     
     public synchronized List<ThreadGroupReference> getTopLevelThreadGroups() {
+        boolean uninitialized;
+        if (groupMap == null) {
+            groupMap = new HashMap<ThreadGroupReference, List<ThreadGroupReference>>();
+            uninitialized = true;
+        } else {
+            uninitialized = false;
+        }
         List<ThreadGroupReference> topGroups = groupMap.get(null);
         if (topGroups == null) {
             if (vm == null) {
@@ -201,11 +244,23 @@ public class ThreadsCache implements Executor {
             }
             topGroups = new ArrayList(VirtualMachineWrapper.topLevelThreadGroups0(vm));
             groupMap.put(null, topGroups);
+            if (uninitialized) {
+                for (ThreadGroupReference g : topGroups) {
+                    groupMap.put(g, uninitializedGroupList);
+                }
+            }
         }
         return Collections.unmodifiableList(new ArrayList(topGroups));
     }
     
     public synchronized List<ThreadReference> getThreads(ThreadGroupReference group) {
+        if (threadMap == null) {
+            try {
+                initThreadGroups();
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return Collections.emptyList();
+            }
+        }
         List<ThreadReference> threads = threadMap.get(group);
         if (threads == null) {
             threads = Collections.emptyList();
@@ -216,7 +271,18 @@ public class ThreadsCache implements Executor {
     }
 
     public synchronized List<ThreadGroupReference> getGroups(ThreadGroupReference group) {
+        if (groupMap == null) {
+            try {
+                initThreadGroups();
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return Collections.emptyList();
+            }
+        }
         List<ThreadGroupReference> groups = groupMap.get(group);
+        if (groups == uninitializedGroupList) {
+            groups = new ArrayList(ThreadGroupReferenceWrapper.threadGroups0(group));
+            groupMap.put(group, groups);
+        }
         if (groups == null) {
             groups = Collections.emptyList();
         } else {
@@ -226,6 +292,13 @@ public class ThreadsCache implements Executor {
     }
 
     private synchronized List<ThreadGroupReference> getAllGroups() {
+        if (groupMap == null) {
+            try {
+                initThreadGroups();
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return Collections.emptyList();
+            }
+        }
         List<ThreadGroupReference> groups = new ArrayList<ThreadGroupReference>();
         fillAllGroups(groups, null);
         return groups;
@@ -234,6 +307,10 @@ public class ThreadsCache implements Executor {
     private void fillAllGroups(List<ThreadGroupReference> groups, ThreadGroupReference g) {
         List<ThreadGroupReference> gs = groupMap.get(g);
         if (gs != null) {
+            if (gs == uninitializedGroupList) {
+                gs = new ArrayList(ThreadGroupReferenceWrapper.threadGroups0(g));
+                groupMap.put(g, gs);
+            }
             groups.addAll(gs);
             for (ThreadGroupReference gg : gs) {
                 fillAllGroups(groups, gg);
@@ -242,6 +319,13 @@ public class ThreadsCache implements Executor {
     }
     
     private List<ThreadGroupReference> addGroups(ThreadGroupReference group) throws ObjectCollectedExceptionWrapper {
+        if (threadMap != null && !threadMap.containsKey(group)) {
+            List<ThreadReference> threads = new ArrayList();
+            threadMap.put(group, threads);
+        }
+        if (groupMap == null) {
+            return Collections.emptyList();
+        }
         List<ThreadGroupReference> addedGroups = new ArrayList<ThreadGroupReference>();
         ThreadGroupReference parent;
         try {
@@ -256,12 +340,16 @@ public class ThreadsCache implements Executor {
         }
         List<ThreadGroupReference> parentsGroups = groupMap.get(parent);
         if (!parentsGroups.contains(group)) {
-            parentsGroups.add(group);
-            addedGroups.add(group);
+            if (parentsGroups == uninitializedGroupList) {
+                parentsGroups = new ArrayList(ThreadGroupReferenceWrapper.threadGroups0(parent));
+                groupMap.put(parent, parentsGroups);
+                addedGroups.addAll(parentsGroups);
+            } else {
+                parentsGroups.add(group);
+                addedGroups.add(group);
+            }
             List<ThreadGroupReference> groups = new ArrayList();
-            List<ThreadReference> threads = new ArrayList();
             groupMap.put(group, groups);
-            threadMap.put(group, threads);
         }
         return addedGroups;
     }
@@ -269,10 +357,13 @@ public class ThreadsCache implements Executor {
     public boolean exec(Event event) {
         if (event instanceof ThreadStartEvent) {
             ThreadReference thread;;
-            ThreadGroupReference group;
+            boolean handleGroups = debugger.isInterestedInThreadGroups();
+            ThreadGroupReference group = null;
             try {
                 thread = ThreadStartEventWrapper.thread((ThreadStartEvent) event);
-                group = ThreadReferenceWrapper.threadGroup(thread);
+                if (handleGroups) {
+                    group = ThreadReferenceWrapper.threadGroup(thread);
+                }
             } catch (InternalExceptionWrapper ex) {
                 return true;
             } catch (VMDisconnectedExceptionWrapper ex) {
@@ -283,6 +374,13 @@ public class ThreadsCache implements Executor {
                 return true;
             }
             List<ThreadGroupReference> addedGroups = null;
+            if (logger.isLoggable(Level.FINE)) {
+                try {
+                    logger.fine("ThreadStartEvent: "+thread+", group = "+group+", handleGroups = "+handleGroups);
+                } catch (Exception ex) {
+                    logger.log(Level.FINE, ex.getLocalizedMessage(), ex);
+                }
+            }
             synchronized (this) {
                 if (group != null) {
                     try {
@@ -301,9 +399,16 @@ public class ThreadsCache implements Executor {
                         }
                     }
                 }
-                List<ThreadReference> threads = threadMap.get(group);
-                if (threads != null && !threads.contains(thread)) { // could be added by init()
-                    threads.add(thread);
+                if (!handleGroups) {
+                    groupMap = null;
+                    threadMap = null;
+                } else {
+                    if (threadMap != null) {
+                        List<ThreadReference> threads = threadMap.get(group);
+                        if (threads != null && !threads.contains(thread)) { // could be added by init()
+                            threads.add(thread);
+                        }
+                    }
                 }
                 if (!allThreads.contains(thread)) { // could be added by init()
                     allThreads.add(thread);
@@ -333,31 +438,48 @@ public class ThreadsCache implements Executor {
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return true;
             }
-            try {
-                group = ThreadReferenceWrapper.threadGroup(thread);
-            } catch (InternalExceptionWrapper ex) {
-                return true;
-            } catch (VMDisconnectedExceptionWrapper ex) {
-                return true;
-            } catch (IllegalThreadStateExceptionWrapper ex) {
-                group = null;
-            } catch (ObjectCollectedExceptionWrapper ocex) {
+            boolean getGroup;
+            synchronized (this) {
+                getGroup = groupMap != null || threadMap != null;
+            }
+            if (getGroup) {
+                try {
+                    group = ThreadReferenceWrapper.threadGroup(thread);
+                } catch (InternalExceptionWrapper ex) {
+                    group = null;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return true;
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    group = null;
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    group = null;
+                }
+            } else {
                 group = null;
             }
+            if (logger.isLoggable(Level.FINE)) {
+                try {
+                    logger.fine("ThreadDeathEvent: "+thread+", group = "+group+", groupMap = "+groupMap);
+                } catch (Exception ex) {
+                    logger.log(Level.FINE, ex.getLocalizedMessage(), ex);
+                }
+            }
             synchronized (this) {
-                List<ThreadReference> threads;
-                if (group != null) {
-                    threads = threadMap.get(group);
-                } else {
-                    threads = null;
-                    for (List<ThreadReference> testThreads : threadMap.values()) {
-                        if (testThreads.contains(thread)) {
-                            threads = testThreads;
+                if (threadMap != null) {
+                    List<ThreadReference> threads;
+                    if (group != null) {
+                        threads = threadMap.get(group);
+                    } else {
+                        threads = null;
+                        for (List<ThreadReference> testThreads : threadMap.values()) {
+                            if (testThreads.contains(thread)) {
+                                threads = testThreads;
+                            }
                         }
                     }
-                }
-                if (threads != null) {
-                    threads.remove(thread);
+                    if (threads != null) {
+                        threads.remove(thread);
+                    }
                 }
                 allThreads.remove(thread);
             }
@@ -459,40 +581,44 @@ public class ThreadsCache implements Executor {
                         }
                     }
                 }
-                List<ThreadReference> threads = threadMap.get(group);
-                if (threads != null && !threads.contains(thread)) { // could be added by init()
-                    threads.add(thread);
+                if (threadMap != null) {
+                    List<ThreadReference> threads = threadMap.get(group);
+                    if (threads != null && !threads.contains(thread)) { // could be added by init()
+                        threads.add(thread);
+                    }
                 }
             }
             allThreads.addAll(newThreads);
 
             // Remove old threads:
-            for (ThreadReference thread : oldThreads) {
-                ThreadGroupReference group;
-                try {
-                    group = ThreadReferenceWrapper.threadGroup(thread);
-                } catch (InternalExceptionWrapper ex) {
-                    group = null;
-                } catch (VMDisconnectedExceptionWrapper ex) {
-                    return ;
-                } catch (IllegalThreadStateExceptionWrapper ex) {
-                    group = null;
-                } catch (ObjectCollectedExceptionWrapper ocex) {
-                    group = null;
-                }
-                List<ThreadReference> threads;
-                if (group != null) {
-                    threads = threadMap.get(group);
-                } else {
-                    threads = null;
-                    for (List<ThreadReference> testThreads : threadMap.values()) {
-                        if (testThreads.contains(thread)) {
-                            threads = testThreads;
+            if (threadMap != null) {
+                for (ThreadReference thread : oldThreads) {
+                    ThreadGroupReference group;
+                    try {
+                        group = ThreadReferenceWrapper.threadGroup(thread);
+                    } catch (InternalExceptionWrapper ex) {
+                        group = null;
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                        return ;
+                    } catch (IllegalThreadStateExceptionWrapper ex) {
+                        group = null;
+                    } catch (ObjectCollectedExceptionWrapper ocex) {
+                        group = null;
+                    }
+                    List<ThreadReference> threads;
+                    if (group != null) {
+                        threads = threadMap.get(group);
+                    } else {
+                        threads = null;
+                        for (List<ThreadReference> testThreads : threadMap.values()) {
+                            if (testThreads.contains(thread)) {
+                                threads = testThreads;
+                            }
                         }
                     }
-                }
-                if (threads != null) {
-                    threads.remove(thread);
+                    if (threads != null) {
+                        threads.remove(thread);
+                    }
                 }
             }
             allThreads.removeAll(oldThreads);

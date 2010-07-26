@@ -143,19 +143,21 @@ public class ComponentPeerTest extends NbTestCase {
                     FileObject dataFile = dataDir.createData("test", "txt");
                     
                     final TokenListImpl[] i = new TokenListImpl[] {new TokenListImpl()};
+                    final DictionaryImpl[] dict = new DictionaryImpl[] {new DictionaryImpl()};
+                    
                     ComponentPeer.ACCESSOR = new LookupAccessor() {
                         public Dictionary lookupDictionary(Locale l) {
-                            return new DictionaryImpl();
+                            return dict[0];
                         }
                         public TokenList lookupTokenList(Document doc) {
                             return i[0];
                         }
                     };
-                    
+
                     JTextComponent pane = new JEditorPane();
-                    
+
                     pane.getDocument().putProperty(Document.StreamDescriptionProperty, DataObject.find(dataFile));
-                    
+
                     i[0].latch = new CountDownLatch(1);
                     
                     ComponentPeer.assureInstalled(pane);
@@ -170,6 +172,7 @@ public class ComponentPeerTest extends NbTestCase {
                     assertTrue(i[0].latch.await(10, TimeUnit.SECONDS));
                     
                     i[0].doc = pane.getDocument();
+                    dict[0].doc = pane.getDocument();
                     
                     references[0] = new WeakReference(pane);
                     references[1] = new WeakReference(i[0].doc);
@@ -177,6 +180,7 @@ public class ComponentPeerTest extends NbTestCase {
                     
                     pane = null;
                     i[0] = null;
+                    dict[0] = null;
                     
                     Thread.sleep(50);
                     
@@ -213,6 +217,7 @@ public class ComponentPeerTest extends NbTestCase {
     }
 
     private class DictionaryImpl implements Dictionary {
+        private Document doc;
         public ValidityType validateWord(CharSequence word) {
             return ValidityType.VALID;
         }

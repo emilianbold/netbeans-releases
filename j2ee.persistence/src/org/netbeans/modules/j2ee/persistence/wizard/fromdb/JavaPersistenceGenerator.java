@@ -171,6 +171,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             final ProgressContributor handle) throws IOException {
 
         generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(),
+                helper.isGenerateJAXBAnnotations(),
                 helper.isFullyQualifiedTableNames(), helper.isRegenTablesAttrs(),
                 helper.getFetchType(), helper.getCollectionType(),
                 handle, progressPanel, helper.getProject());
@@ -178,6 +179,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
     // package private for tests
     void generateBeans(EntityClass[] entityClasses, boolean generateNamedQueries,
+            boolean generateJAXBAnnotations,
             boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
             FetchType fetchType, CollectionType collectionType,
             ProgressContributor progressContributor, ProgressPanel panel, Project prj) throws IOException {
@@ -199,6 +201,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         }
 
         result = new Generator(entityClasses, generateNamedQueries,
+                generateJAXBAnnotations,
                 fullyQualifiedTableNames, regenTablesAttrs,
                 fetchType, collectionType,
                 progressContributor, panel, this).run();
@@ -328,6 +331,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final Map<String, EntityClass> beanMap = new HashMap<String, EntityClass>();
         private final EntityClass[] entityClasses;
         private final boolean generateNamedQueries;
+        private final boolean generateJAXBAnnotations;
         private final boolean fullyQualifiedTableNames;
         private final boolean regenTablesAttrs;
         private final FetchType fetchType;
@@ -337,12 +341,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final PersistenceGenerator persistenceGen;
 
         public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
+                boolean generateJAXBAnnotations,
                 boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
                 FetchType fetchType, CollectionType collectionType,
                 ProgressContributor progressContributor, ProgressPanel progressPanel,
                 PersistenceGenerator persistenceGen) {
             this.entityClasses = entityClasses;
             this.generateNamedQueries = generateNamedQueries;
+            this.generateJAXBAnnotations = generateJAXBAnnotations;
             this.fullyQualifiedTableNames = fullyQualifiedTableNames;
             this.regenTablesAttrs = regenTablesAttrs;
             this.fetchType = fetchType;
@@ -909,6 +915,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                     newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
+                    if (generateJAXBAnnotations) {
+                        newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlRootElement"));
+                    }
 
                 }
 

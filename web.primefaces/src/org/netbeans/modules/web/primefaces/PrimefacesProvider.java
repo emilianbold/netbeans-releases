@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.web.primefaces;
 
-import org.netbeans.modules.web.jsf.api.components.JsfComponentsProvider;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.web.jsf.api.components.JsfComponentDescriptor;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -51,16 +54,13 @@ import org.openide.util.NbBundle;
  * @author alexey butenko
  */
 
-public class PrimefacesProvider extends JsfComponentsProvider{
-
-    public PrimefacesProvider() {
-        super(NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces"),JSFVersion.JSF_2_0,
-                NbBundle.getMessage(PrimefacesProvider.class,"LBL_PrimeFaces_Description"));
-    }
+public class PrimefacesProvider implements JsfComponentProvider {
 
     @Override
-    public String getLibraryName() {
-        return NbBundle.getMessage(PrimefacesProvider.class,"LBL_Library_Name");
+    public Set<JsfComponentDescriptor> getComponents() {
+        JsfComponentDescriptor descriptor = new JsfComponentDescriptor(NbBundle.getMessage(PrimefacesProvider.class, "LBL_Library_Name"),
+                                                NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces"), JSFVersion.JSF_2_0,
+                                                NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"));
+        return Collections.singleton(descriptor);
     }
-
 }

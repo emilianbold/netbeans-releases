@@ -302,7 +302,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public Component getCustomizer() {
-        return new Customizer(deploymentManager);
+        return new Customizer((WLDeploymentManager)deploymentManager);
     }
     
     public WLDeploymentManager getDeploymentManager() {

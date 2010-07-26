@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import org.openide.util.Utilities;
 
 /** A dependency a module can have. Since version 7.10 this class is
@@ -196,32 +197,13 @@ public final class Dependency implements Serializable {
         }
 
         // Now check that the rest is a valid package.
-        StringTokenizer tok = new StringTokenizer(base, ".", true); // NOI18N
-
-        if ((tok.countTokens() % 2) == 0) {
-            throw new NumberFormatException("Even number of pieces: " + base); // NOI18N
-        }
-
-        boolean expectingPath = true;
-
-        while (tok.hasMoreTokens()) {
-            if (expectingPath) {
-                expectingPath = false;
-
-                String nt = tok.nextToken();
-                if (!Utilities.isJavaIdentifier(nt) &&  !"enum".equals (nt)) { // NOI18N
-                    throw new IllegalArgumentException("Bad package component in " + base); // NOI18N
-                }
-            } else {
-                if (!".".equals(tok.nextToken())) { // NOI18N
-                    throw new NumberFormatException("Expected dot in code name: " + base); // NOI18N
-                }
-
-                expectingPath = true;
-            }
+        if (!FQN.matcher(base).matches()) {
+            throw new IllegalArgumentException("Malformed dot-separated identifier: " + base);
         }
     }
-
+    private static final String IDENTIFIER = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; // NOI18N
+    private static final Pattern FQN = Pattern.compile(IDENTIFIER + "(?:[.]" + IDENTIFIER + ")*"); // NOI18N
+    
     /** Parse dependencies from tags.
     * @param type like Dependency.type
     * @param body actual text of tag body; if <code>null</code>, returns nothing

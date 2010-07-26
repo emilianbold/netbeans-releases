@@ -50,6 +50,23 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="Dependency.java.keywords">
+        <api name="modules"/>
+        <summary>Module names can contain Java keywords</summary>
+        <version major="7" minor="20"/>
+        <date day="22" month="7" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility semantic="compatible" modification="yes"/>
+        <description>
+            <p>
+                Naming rules for module code name bases are now relaxed.
+                The name of a module can contain a Java keyword like 
+                <code>org.mysite.import.something</code>, etc.
+            </p>
+        </description>
+        <class package="org.openide.modules" name="Dependency"/>
+        <issue number="188686"/>
+    </change>
     <change id="Modules">
         <api name="modules"/>
         <summary>Quicker way to find owner of a class</summary>

@@ -45,8 +45,6 @@ package org.netbeans.modules.j2ee.weblogic9;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,8 +70,6 @@ public class WLDeploymentFactory implements DeploymentFactory {
     public static final int DEFAULT_PORT = 7001;
 
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentFactory.class.getName());
-
-    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     /**
      * The singleton instance of the factory
@@ -184,10 +180,6 @@ public class WLDeploymentFactory implements DeploymentFactory {
     @Override
     public String getDisplayName() {
         return NbBundle.getMessage(WLDeploymentFactory.class, "TXT_displayName");
-    }
-
-    public ExecutorService getExecutorService() {
-        return executorService;
     }
 
     private static synchronized WLMutableState getMutableState(InstanceProperties props) {

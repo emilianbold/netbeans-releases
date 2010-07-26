@@ -144,7 +144,7 @@ public final class ChangeType implements ErrorRule<Void> {
 
                 resolved = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, resolved);
 
-                if (resolved == null || resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.EXECUTABLE || resolved.getKind() == TypeKind.NULL) {
+                if (resolved == null || resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.NONE ||resolved.getKind() == TypeKind.EXECUTABLE || resolved.getKind() == TypeKind.NULL) {
                 } else if (resolved.getKind() != TypeKind.ERROR &&
                 		expected.getKind() != TypeKind.ERROR) {
                     tm[0] = expected;

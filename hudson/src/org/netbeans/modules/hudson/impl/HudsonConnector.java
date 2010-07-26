@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -109,7 +110,8 @@ public class HudsonConnector {
     }
     
     private boolean canUseTree() {
-        return getHudsonVersion().compareTo(new HudsonVersion("1.367")) >= 0; // NOI18N
+        HudsonVersion v = getHudsonVersion();
+        return v != null && v.compareTo(new HudsonVersion("1.367")) >= 0; // NOI18N
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
@@ -213,7 +215,7 @@ public class HudsonConnector {
         }
     }
     
-    protected synchronized HudsonVersion getHudsonVersion() {
+    protected synchronized @CheckForNull HudsonVersion getHudsonVersion() {
         if (null == version)
             version = retrieveHudsonVersion();
         
@@ -419,7 +421,7 @@ public class HudsonConnector {
     }
     private static final Map<String,Pattern> tailPatterns = new HashMap<String,Pattern>();
     
-    private synchronized HudsonVersion retrieveHudsonVersion() {
+    private synchronized @CheckForNull HudsonVersion retrieveHudsonVersion() {
         HudsonVersion v = null;
         
         try {

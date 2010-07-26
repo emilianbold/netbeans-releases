@@ -54,8 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
@@ -152,7 +151,7 @@ public class JsfUtils {
             //belonging to some namespace
             Collection<AstNode> roots = new ArrayList<AstNode>();
             roots.addAll(result.roots().values());
-            roots.add(result.root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE));
+            roots.add(result.rootOfUndeclaredTagsParseTree());
 
             for (AstNode r : roots) {
                 //find first open tag node
