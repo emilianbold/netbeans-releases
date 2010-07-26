@@ -447,12 +447,12 @@ implements ChangeListener {
     * @return set of DataObjects that refused to be revalidated
     */
     public Set<DataObject> revalidate () {
-        Set<FileObject> files;
+        Set<Item> set;
         synchronized (this) {
-            files = createSetOfAllFiles (map.values ());
+            // copy the values synchronously
+            set = new HashSet<Item>(map.values());
         }
-
-        return revalidate (files);
+        return revalidate(createSetOfAllFiles(set));
     }
 
     /** Notifies that an object has been created.
@@ -859,13 +859,9 @@ implements ChangeListener {
 
     /** When the loader pool is changed, then all objects are rescanned.
     */
+    @Override
     public void stateChanged (javax.swing.event.ChangeEvent ev) {
-        Set<Item> set;
-        synchronized (this) {
-            // copy the values synchronously
-            set = new HashSet<Item>(map.values());
-        }
-        revalidate(createSetOfAllFiles(set));
+        revalidate();
     }
     
     /** Create list of all files for given collection of data objects.
