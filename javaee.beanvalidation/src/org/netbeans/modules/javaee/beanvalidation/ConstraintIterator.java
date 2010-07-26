@@ -62,7 +62,6 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -73,7 +72,7 @@ import org.openide.util.NbBundle;
  */
 public class ConstraintIterator implements TemplateWizard.Iterator{
     
-    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private int index;
     private final String VALIDATOR_TEMPLATE = "Validator.java"; //NOI18N
     
@@ -86,7 +85,7 @@ public class ConstraintIterator implements TemplateWizard.Iterator{
         DataObject dTemplate = DataObject.find( template );
         List<String> targetElements = (List<String>) wizard.getProperty(WizardProperties.TARGET_ELEMENTS);
         if (targetElements == null) {
-            targetElements = new ArrayList();
+            targetElements = new ArrayList<String>();
         }
         String validatorClassName = (String) wizard.getProperty(WizardProperties.VALIDATOR_CLASS_NAME);
         String validatorType = (String)wizard.getProperty(WizardProperties.VALIDATOR_TYPE);
@@ -116,7 +115,7 @@ public class ConstraintIterator implements TemplateWizard.Iterator{
         index = 0;
 
         Project project = Templates.getProject(wizard);
-        final WizardDescriptor.Panel constraintPanel = new ConstraintPanel(wizard);
+        final WizardDescriptor.Panel<WizardDescriptor> constraintPanel = new ConstraintPanel(wizard);
         SourceGroup[] sourceGroup = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         WizardDescriptor.Panel javaPanel;
         if (sourceGroup.length == 0) {
