@@ -739,7 +739,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     }
 
     private static enum MixedCodeOptions {
-        DEFAULT("defaut"),  //NOI18N
+        DEFAULT("default"),  //NOI18N
         TRUSTED_ONLY("trusted_only"),   //NOI18N
         TRUSTED_LIBRARY("trusted_library"); //NOI18N
 
