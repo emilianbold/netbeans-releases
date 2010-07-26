@@ -223,8 +223,8 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/wagon-provider-api-1.0-beta-6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/xbean-reflect-3.4-patched.jar</runtime-relative-path>
-                <binary-origin>external/xbean-reflect-3.4-patched.jar</binary-origin>
+                <runtime-relative-path>ext/maven/xbean-reflect-3.5.jar</runtime-relative-path>
+                <binary-origin>external/xbean-reflect-3.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/xercesMinimal-1.9.6.2.jar</runtime-relative-path>
