@@ -1568,6 +1568,18 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitTry(TryTree node, Void p) {
             accept(TRY);
+            List<? extends Tree> res = node.getResources();
+            if (res != null && !res.isEmpty()) {
+                int old = indent;
+                indent += continuationIndentSize;
+                spaces(cs.spaceBeforeTryParen() ? 1 : 0);
+                accept(LPAREN);
+                spaces(cs.spaceWithinTryParens() ? 1 : 0, true);
+                wrapList(cs.wrapTryResources(), cs.alignMultilineTryResources(), false, res);
+                spaces(cs.spaceWithinTryParens() ? 1 : 0);
+                accept(RPAREN);
+                indent = old;
+            }
             scan(node.getBlock(), p);
             for (CatchTree catchTree : node.getCatches()) {
                 if (cs.placeCatchOnNewLine())
