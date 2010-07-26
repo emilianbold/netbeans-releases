@@ -242,6 +242,9 @@ public class SyntaxAnalyzerResult {
         HtmlSource source = new HtmlSource(clearedSource, analyzer.source().getSnapshot() , analyzer.source().getSourceFileObject());
 
         AstNode root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, context.getFiltered());
+
+        //XXX fix that later
+        root.setProperty(AstNode.NAMESPACE_PROPERTY, namespace);
         
         return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
 
