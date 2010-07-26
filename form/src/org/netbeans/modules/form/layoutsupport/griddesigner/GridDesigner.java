@@ -59,6 +59,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
 import javax.swing.OverlayLayout;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormLoaderSettings;
@@ -89,7 +90,8 @@ public class GridDesigner extends JPanel implements Customizer {
     private JSplitPane splitPane;
     private GridCustomizer customizer;
 
-    public GridDesigner() {
+    private void setDesignedContainer(RADVisualContainer metaContainer) {
+        FormModel formModel = metaContainer.getFormModel();
         setLayout(new BorderLayout());
         splitPane = new JSplitPane();
         innerPane = new JPanel() {
@@ -99,18 +101,23 @@ public class GridDesigner extends JPanel implements Customizer {
             }
         };
         innerPane.setLayout(new OverlayLayout(innerPane));
+        glassPane = new GlassPane(this);
+        glassPane.setOpaque(false);
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BorderLayout());
+        JToolBar toolBar = new JToolBar();
+        UndoRedoSupport support = UndoRedoSupport.getSupport(formModel);
+        support.reset(glassPane);
+        toolBar.add(support.getRedoAction());
+        toolBar.add(support.getUndoAction());
+        rightPanel.add(toolBar, BorderLayout.PAGE_START);
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setViewportView(innerPane);
         scrollPane.setPreferredSize(new Dimension(500,500));
-        splitPane.setRightComponent(scrollPane);
-        glassPane = new GlassPane(this);
-        glassPane.setOpaque(false);
+        rightPanel.add(scrollPane);
+        splitPane.setRightComponent(rightPanel);
         add(splitPane);
-    }
-
-    private void setDesignedContainer(RADVisualContainer metaContainer) {
-        FormModel formModel = metaContainer.getFormModel();
         replicator = new VisualReplicator(true, FormUtils.getViewConverters(), FormEditor.getBindingSupport(formModel));
         replicator.setTopMetaComponent(metaContainer);
         Object bean = (Container)replicator.createClone();

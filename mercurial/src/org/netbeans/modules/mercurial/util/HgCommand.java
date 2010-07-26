@@ -1873,11 +1873,11 @@ public class HgCommand {
             command.add(HG_COMMIT_OPT_LOGFILE_CMD);
             command.add(tempfile.getAbsolutePath());
             for(File f: commitFiles){
-                if (f.getAbsolutePath().length() >= repository.getAbsolutePath().length()) {
+                if (f.getAbsolutePath().length() <= repository.getAbsolutePath().length()) {
                     // list contains the root itself
                     command.add(f.getAbsolutePath());
                 } else {
-                    command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
+                    command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length() + 1));
                 }
             }
             if(Utilities.isWindows()) {
