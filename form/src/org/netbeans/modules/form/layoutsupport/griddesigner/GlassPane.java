@@ -92,6 +92,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private GridManager gridManager;
     /** Grid information provider. */
     private GridInfoProvider gridInfo;
+    /** Grid customizer. */
+    private GridCustomizer customizer;
 
     // SELECTION
 
@@ -208,6 +210,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     public void setGridManager(GridManager gridManager) {
         this.gridManager = gridManager;
         this.gridInfo = gridManager.getGridInfo();
+        this.customizer = gridManager.getCustomizer(this);
         GridUtils.revalidateGrid(gridManager);
         GridUtils.addPaddingComponents(gridManager, gridInfo.getColumnCount(), gridInfo.getRowCount());
     }
@@ -1027,6 +1030,12 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     }
                 }
                 change = new GridBoundsChange(animOldColumnBounds, animOldRowBounds, animNewColumnBounds, animNewRowBounds);
+            }
+            
+            // Update customizer
+            if (customizer != null) {
+                DesignerContext context = currentContext();
+                customizer.setContext(context);                
             }
             animChange = change;
             animLayer.animate();
