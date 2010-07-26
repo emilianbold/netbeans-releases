@@ -985,24 +985,25 @@ class LuceneIndex extends Index implements Evictable {
                 final File cacheDir = ((FSDirectory)this.directory).getFile();
                 final File[] children = cacheDir.listFiles();
                 if (children != null) {
-                    for (final File child : children) {
+                    for (final File child : children) {                                                
                         if (!child.delete()) {
                             final Class c = this.directory.getClass();
                             int refCount = -1;
                             try {
-                                final Field field = c.getDeclaredField("refCount");
+                                final Field field = c.getDeclaredField("refCount"); //NOI18N
                                 field.setAccessible(true);
                                 refCount = field.getInt(this.directory);
                             } catch (NoSuchFieldException e) {/*Not important*/}
                               catch (IllegalAccessException e) {/*Not important*/}
-
+                            final Map<Thread,StackTraceElement[]> sts = Thread.getAllStackTraces();
                             throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
                                     child.exists()  +","+                                               //NOI18N
                                     child.canRead() +","+                                               //NOI18N
                                     child.canWrite() +","+                                              //NOI18N
                                     cacheDir.canRead() +","+                                            //NOI18N
                                     cacheDir.canWrite() +","+                                           //NOI18N
-                                    refCount+")");                                                      //NOI18N
+                                    refCount +","+                                                      //NOI18N
+                                    sts +")");                                                          //NOI18N
                         }
                     }
                 }

@@ -74,12 +74,16 @@ public class DefaultHtmlParser implements HtmlParser {
                 || version == HtmlVersion.XHTML10_STICT
                 || version == HtmlVersion.XHTML10_TRANSATIONAL
                 || version == HtmlVersion.XHTML10_FRAMESET
-                || version == HtmlVersion.XHTML11;
+                || version == HtmlVersion.XHTML11
+
+                //temporary workaround for until the real html5 parser
+                //module is enabled.
+                || version == HtmlVersion.HTML5;
     }
 
     @Override
     public HtmlParseResult parse(HtmlSource source, HtmlVersion version, Lookup lookup) throws ParseException {
-        assert version != HtmlVersion.HTML5;
+//        assert version != HtmlVersion.HTML5;
         
         SyntaxAnalyzerElements elements = lookup.lookup(SyntaxAnalyzerElements.class);
         assert elements != null;

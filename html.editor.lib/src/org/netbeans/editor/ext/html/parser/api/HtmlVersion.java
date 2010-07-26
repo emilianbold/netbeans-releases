@@ -60,7 +60,8 @@ public enum HtmlVersion {
     HTML41_TRANSATIONAL("-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
     HTML41_FRAMESET("-//W3C//DTD HTML 4.01 Frameset//EN"), //NOI18N
 
-    HTML5(null), //no public id, just <!doctype html>
+    //XXX remove the fallback once the html5 parser module is enabled
+    HTML5(null, "-//W3C//DTD HTML 4.01 Frameset//EN", null, false), //no public id, just <!doctype html>
 
     XHTML10_STICT("-//W3C//DTD XHTML 1.0 Strict//EN", null, "http://www.w3.org/1999/xhtml", true), //NOI18N
     XHTML10_TRANSATIONAL("-//W3C//DTD XHTML 1.0 Transitional//EN", null, "http://www.w3.org/1999/xhtml", true), //NOI18N
