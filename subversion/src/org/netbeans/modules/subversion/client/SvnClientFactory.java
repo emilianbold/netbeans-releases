@@ -472,6 +472,24 @@ public class SvnClientFactory {
             protected ConnectionType connectionType() {
                 return ConnectionType.svnkit;
             }
+            
+            @Override
+            /**
+             * Slightly different from the default one
+             */
+            protected void setupAdapter(ISVNClientAdapter adapter, String username, char[] password, ISVNPromptUserPassword callback) {
+                if (callback != null) {
+                    adapter.addPasswordCallback(callback);
+                }
+                try {
+                    File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
+                    adapter.setConfigDirectory(configDir);
+                } catch (SVNClientException ex) {
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                }
+                adapter.setUsername(username);
+                adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
+            }
         };
         LOG.info("svnClientAdapter running on svnkit");
         return true;
@@ -624,6 +642,7 @@ public class SvnClientFactory {
             if(callback != null) {
                 adapter.addPasswordCallback(callback);
             } else {
+                // do not set password for javahl, it seems that in that case the password is stored permanently in ~/.subversion/auth
                 adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             }
             try {

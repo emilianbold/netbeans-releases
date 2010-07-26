@@ -215,12 +215,16 @@ public final class WhereUsedSupport {
                     return null;
                 }
             }
-            final ModelElement declaration = ModelUtils.getFirst(declarations);
             final Index indexQuery = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
-            return (declaration != null && declarations.size() > 0) ?
-                new WhereUsedSupport( indexQuery, declarations, offset, info.getSnapshot().getSource().getFileObject()) : null;
+            FileObject fileObject = info.getSnapshot().getSource().getFileObject();
+            return getInstance(declarations, indexQuery, fileObject, offset);
         }
         return null;
+    }
+
+    public static WhereUsedSupport getInstance(final Set<ModelElement> declarations, final Index indexQuery, final FileObject fileObject, final int offset) {
+        final ModelElement declaration = ModelUtils.getFirst(declarations);        
+        return (declaration != null && declarations.size() > 0) ? new WhereUsedSupport(indexQuery, declarations, offset, fileObject) : null;
     }
 
     public ModelElement getModelElement() {

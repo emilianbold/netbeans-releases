@@ -328,12 +328,12 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.mozilla.rhino.patched</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.api.xml</code-name-base>
                         <compile-dependency/>
                         <test/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.mozilla.rhino.patched</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
@@ -390,6 +390,10 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.junit</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -439,6 +443,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <package>org.netbeans.modules.html.editor.api</package>
