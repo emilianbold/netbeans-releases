@@ -83,7 +83,13 @@ public class OutputLogger implements ISVNNotifyListener {
      * and in that case it should be closed again. See getLog().
      */
     private static final HashSet<String> openedWindows = new HashSet<String>(5);
-    private static final Pattern filePattern = Pattern.compile("[AUCGE ][ UC][ BC][ C] ?(.+)"); //NOI18N
+    private static final Pattern[] filePatterns = new Pattern[] {
+        Pattern.compile("[AUCGE ][ UC][ BC][ C] ?(.+)"), //NOI18N
+        Pattern.compile("Reverted '(.+)'"), //NOI18N - for commandline
+        Pattern.compile("Reverted (.+)"), //NOI18N - for javahl
+        Pattern.compile("Sending        (.+)"), //NOI18N
+        Pattern.compile("Adding         (.+)") //NOI18N
+    };
     
     public static OutputLogger getLogger(SVNUrl repositoryRoot) {
         if (repositoryRoot != null) {
@@ -199,12 +205,15 @@ public class OutputLogger implements ISVNNotifyListener {
     
     private void logln(String message, boolean ignore) {
         OpenFileOutputListener ol = null;
-        Matcher m = filePattern.matcher(message);
-        if (m.matches() && m.groupCount() > 0) {
-            String path = m.group(1);
-            File f = new File(path);
-            if (!f.isDirectory()) {
-                ol = new OpenFileOutputListener(FileUtil.normalizeFile(f), m.start(1));
+        for (Pattern p : filePatterns) {
+            Matcher m = p.matcher(message);
+            if (m.matches() && m.groupCount() > 0) {
+                String path = m.group(1);
+                File f = new File(path);
+                if (!f.isDirectory()) {
+                    ol = new OpenFileOutputListener(FileUtil.normalizeFile(f), m.start(1));
+                    break;
+                }
             }
         }
         log(message + "\n", ol, ignore); // NOI18N
