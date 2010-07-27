@@ -73,7 +73,6 @@ import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.NbGlobalActionGoalProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
@@ -145,7 +144,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbSnapshots.addActionListener(listener);
         comIndex.addActionListener(listener);
         completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
-        initEmbeddedVersion();
     }
 
     static String[] AVAILABLE_OPTIONS = new String[] {
@@ -187,38 +185,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         return Arrays.asList(AVAILABLE_OPTIONS);
     }
 
-    private void initEmbeddedVersion() {
-        try {
-            Properties properties = new Properties();
-            InputStream resourceAsStream = EmbedderFactory.class.getClassLoader().getResourceAsStream("META-INF/maven/org.apache.maven/maven-core/pom.properties");
-            try {
-                properties.load(resourceAsStream);
-            } finally {
-                resourceAsStream.close();
-            }
-            if (properties.getProperty("builtOn") != null) { //NOI18N
-                lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion1",
-                        properties.getProperty("version", "unknown"), properties.getProperty("builtOn")));
-            } else {
-                lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion2", properties.getProperty("version", "unknown")));
-            }
-        } catch (IOException e) {
-            lblEmbeddedVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_MavenVersion3"));
-        }
-    }
-
     private void initExternalVersion()
     {
         String path = txtCommandLine.getText().trim();
-        if (path.length() == 0) {
-            String ver = MavenSettings.getDefaultMavenInstanceVersion();
-            if (ver != null) {
-                lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_ExMavenVersion3", ver));//NOI18N
-            } else {
-                lblExternalVersion.setText("");
-            }
-            return;
-        }
         File root = new File(path);
         File lib = new File(root, "lib"); //NOI18N
         if (lib.exists()) {
@@ -309,6 +278,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblCommandLine = new javax.swing.JLabel();
         txtCommandLine = new javax.swing.JTextField();
         btnCommandLine = new javax.swing.JButton();
+        btnDefault = new javax.swing.JButton();
         lblExternalVersion = new javax.swing.JLabel();
         lblOptions = new javax.swing.JLabel();
         txtOptions = new javax.swing.JTextField();
@@ -317,7 +287,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblLocalRepository = new javax.swing.JLabel();
         txtLocalRepository = new MyJTextField();
         btnLocalRepository = new javax.swing.JButton();
-        lblEmbeddedVersion = new javax.swing.JLabel();
         lblBinaries = new javax.swing.JLabel();
         comBinaries = new javax.swing.JComboBox();
         lblJavadoc = new javax.swing.JLabel();
@@ -334,8 +303,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text")); // NOI18N
 
-        txtCommandLine.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtCommandLine.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(btnCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnCommandLine.text")); // NOI18N
         btnCommandLine.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -343,7 +310,12 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblExternalVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblExternalVersion.text", new Object[] {})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnDefault, NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnDefault.text")); // NOI18N
+        btnDefault.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDefaultActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(lblOptions, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblOptions.text")); // NOI18N
 
@@ -364,8 +336,6 @@ public class SettingsPanel extends javax.swing.JPanel {
                 btnLocalRepositoryActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblEmbeddedVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblEmbeddedVersion.text")); // NOI18N
 
         lblBinaries.setLabelFor(comBinaries);
         org.openide.awt.Mnemonics.setLocalizedText(lblBinaries, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblBinaries.text")); // NOI18N
@@ -415,12 +385,13 @@ public class SettingsPanel extends javax.swing.JPanel {
                             .add(lblLocalRepository))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblEmbeddedVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(txtCommandLine, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                                .add(txtCommandLine, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(btnCommandLine))
-                            .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                                .add(btnCommandLine)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(btnDefault))
+                            .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(comSource, 0, 387, Short.MAX_VALUE)
@@ -440,7 +411,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                             .add(lblJavadoc)
                             .add(lblBinaries)
                             .add(lblSource)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE))
+                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE))
                         .add(106, 106, 106))
                     .add(btnGoals)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -448,7 +419,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(cbSnapshots)
-                            .add(comIndex, 0, 391, Short.MAX_VALUE))
+                            .add(comIndex, 0, 396, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnIndex)))
                 .addContainerGap())
@@ -459,11 +430,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(lblEmbeddedVersion)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(6, 6, 6)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblCommandLine)
                     .add(txtCommandLine, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(btnDefault)
                     .add(btnCommandLine))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -605,6 +576,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
 
     }//GEN-LAST:event_btnOptionsActionPerformed
+
+    private void btnDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultActionPerformed
+        txtCommandLine.setText(MavenSettings.getDefaultMavenHome().getAbsolutePath());
+    }//GEN-LAST:event_btnDefaultActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -612,6 +587,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup bgFailure;
     private javax.swing.ButtonGroup bgPlugins;
     private javax.swing.JButton btnCommandLine;
+    private javax.swing.JButton btnDefault;
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnLocalRepository;
@@ -626,7 +602,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel lblBinaries;
     private javax.swing.JLabel lblCommandLine;
-    private javax.swing.JLabel lblEmbeddedVersion;
     private javax.swing.JLabel lblExternalVersion;
     private javax.swing.JLabel lblIndex;
     private javax.swing.JLabel lblJavadoc;
@@ -641,7 +616,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     public void setValues() {
         txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
         txtCommandLine.getDocument().removeDocumentListener(docList);
-        File command = MavenSettings.getDefault().getCommandLinePath();
+        File command = MavenSettings.getDefault().getMavenHome();
         txtCommandLine.setText(command != null ? command.getAbsolutePath() : ""); //NOI18N
         initExternalVersion();
         txtCommandLine.getDocument().addDocumentListener(docList);
@@ -662,15 +637,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         MavenSettings.getDefault().setDefaultOptions(txtOptions.getText().trim());
         MavenSettings.getDefault().setCustomLocalRepository(((MyJTextField)txtLocalRepository).getRealText());
         String cl = txtCommandLine.getText().trim();
-        if (cl.length() == 0) {
-            cl = null;
-        }
         //MEVENIDE-553
-        File command = cl != null ? new File(cl) : null;
-        if (command != null && command.exists()) {
-            MavenSettings.getDefault().setCommandLinePath(command);
+        File command = cl.isEmpty() ? null : new File(cl);
+        if (command != null && command.isDirectory()) {
+            MavenSettings.getDefault().setMavenHome(command);
         } else {
-            MavenSettings.getDefault().setCommandLinePath(null);
+            MavenSettings.getDefault().setMavenHome(null);
         }
         RepositoryPreferences.getInstance().setIndexUpdateFrequency(comIndex.getSelectedIndex());
         RepositoryPreferences.getInstance().setIncludeSnapshots(cbSnapshots.isSelected());

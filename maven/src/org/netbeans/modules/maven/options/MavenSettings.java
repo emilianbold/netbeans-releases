@@ -57,6 +57,7 @@ import java.util.regex.Pattern;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -68,7 +69,6 @@ import org.openide.util.Utilities;
 public class MavenSettings  {
     public static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; // NOI18N
     public static final String PROP_SYNCH_PROXY = "synchronizeProxySettings"; //NOI18N
-    public static final String PROP_USE_COMMANDLINE = "useCommandLineMaven"; //NOI18N
     public static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath"; //NOI18N
     public static final String PROP_SHOW_RUN_DIALOG = "showRunDialog"; //NOI18N
     public static final String PROP_SOURCE_DOWNLOAD = "sourceDownload"; //NOI18N
@@ -265,16 +265,21 @@ public class MavenSettings  {
         return getPreferences().get(PROP_CUSTOM_LOCAL_REPOSITORY, null);
     }
     
-    public File getCommandLinePath() {
+    public static File getDefaultMavenHome() {
+        return InstalledFileLocator.getDefault().locate("maven", "org.netbeans.modules.maven.embedder", false); // NOI18N
+    }
+    
+    public File getMavenHome() {
         String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
         if (str != null) {
             return FileUtil.normalizeFile(new File(str));
+        } else {
+            return getDefaultMavenHome();
         }
-        return null;
     }
 
-    public void setCommandLinePath(File path) {
-        if (path == null) {
+    public void setMavenHome(File path) {
+        if (path == null || path.equals(getDefaultMavenHome())) {
             getPreferences().remove(PROP_COMMANDLINE_PATH);
         } else {
             putProperty(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
@@ -353,42 +358,6 @@ public class MavenSettings  {
         }
     }
 
-    private static Boolean cachedMaven = null;
-    
-    public static boolean canFindExternalMaven() {
-        File home = MavenSettings.getDefault().getCommandLinePath();
-        String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
-        if (home != null && home.exists()) {
-            File bin = new File(home, "bin" + File.separator + ex);//NOI18N
-            if (bin.exists()) {
-                return true;
-            }
-        }
-        if (cachedMaven != null) {
-            return cachedMaven.booleanValue();
-        }
-        Commandline cmdline = new Commandline();
-        cmdline.setExecutable(ex);
-        Arg arg = cmdline.createArg();
-        arg.setValue("--version"); //NOI18N
-        cmdline.addArg(arg);
-        RegExpConsumer cons = new RegExpConsumer();
-        try {
-            int ret = CommandLineUtils.executeCommandLine(cmdline, cons, cons);
-            cachedMaven = cons.hasMavenAround;
-            return cons.hasMavenAround;
-        } catch (CommandLineException ex1) {
-            Exceptions.printStackTrace(ex1);
-            cachedMaven = false;
-            return false;
-        }
-    }
-    
-    static String getDefaultMavenInstanceVersion() {
-        String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
-        return getMavenVersion(ex);
-    }
-
     private static String getMavenVersion(String ex) {
         Commandline cmdline = new Commandline();
         cmdline.setExecutable(ex);
@@ -407,10 +376,10 @@ public class MavenSettings  {
     }
 
     public static String getCommandLineMavenVersion() {
-        File path = getDefault().getCommandLinePath();
-        if (path == null) {
-            return getDefaultMavenInstanceVersion();
-        }
+        return getCommandLineMavenVersion(getDefault().getMavenHome());
+    }
+    
+    public static String getCommandLineMavenVersion(File path) {
         String pathString = path.getAbsolutePath() + File.separator + "bin" + File.separator + (Utilities.isWindows() ? "mvn.bat" : "mvn"); //NOI18N
         String ver = getMavenVersion(pathString);
         if (ver != null) {

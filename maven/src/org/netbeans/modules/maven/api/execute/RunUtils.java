@@ -46,19 +46,12 @@ import java.io.File;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.customizer.WarnPanel;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
-import org.netbeans.modules.maven.execute.MavenJavaExecutor;
-import org.netbeans.modules.maven.options.DontShowAgainSettings;
-import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
-import org.openide.util.NbBundle;
 
 /**
  * Utility method for executing a maven build, using the RunConfig.
@@ -84,6 +77,7 @@ public final class RunUtils {
      *  execute maven build in netbeans execution engine.
      */
     public static ExecutorTask executeMaven(RunConfig config) {
+        /*
         MavenExecutor exec;
         boolean useEmbedded = false;
         if (config.getProject() != null) {
@@ -111,6 +105,8 @@ public final class RunUtils {
             }
             exec = new MavenJavaExecutor(config);
         }
+         */
+        MavenExecutor exec = new MavenCommandLineExecutor(config);
         return executeMavenImpl(config.getTaskDisplayName(), exec);
     }
 
