@@ -45,6 +45,7 @@
 package org.openide.util;
 
 import java.lang.ref.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
@@ -82,6 +83,42 @@ public class RequestProcessorTest extends NbTestCase {
                 ex.getMessage() + "\n" + ErrManager.messages.toString()
             ).initCause(ex);
         }
+    }
+
+    public void testNonParallelReSchedule() throws Exception {
+        final AtomicInteger counter = new AtomicInteger();
+        final AtomicInteger peek = new AtomicInteger();
+        peek.set(1);
+
+        class R implements Runnable {
+
+            @Override
+            public void run() {
+                try {
+                    int cnt = counter.incrementAndGet();
+                    Thread.sleep(200);
+                    int now = counter.get();
+                    if (now > peek.get()) {
+                        peek.set(now);
+                    }
+                    counter.decrementAndGet();
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+        R run = new R();
+        RequestProcessor RP = new RequestProcessor("testNonParallelReSchedule", 20);
+        RequestProcessor.Task task = RP.create(run);
+        for (int i = 0; i < 20; i++) {
+            task.schedule(0);
+            Thread.sleep(10);
+        }
+        for (int i = 0; i < 50; i++) {
+            task.waitFinished();
+        }
+
+        assertEquals("At most one task at once", 1, peek.get());
     }
     
     
