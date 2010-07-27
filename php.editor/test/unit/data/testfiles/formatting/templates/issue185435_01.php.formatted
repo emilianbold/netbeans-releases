@@ -12,7 +12,7 @@
 		
 		if( $wgRequest->getVal( 'printable' ) === 'yes' ) {
 			$wgOut->setPrintable();
-                        str_getcsv($inpu)
+			str_getcsv($inpu)
 		}
 		$ret = NULL;
 		if( $curid = $wgRequest->getInt( 'curid' ) ) {
