@@ -53,6 +53,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -75,6 +76,8 @@ public class JoinCatches {
 
     @TriggerTreeKind(Kind.TRY)
     public static ErrorDescription hint(HintContext ctx) {
+        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) return null;
+        
         TryTree tt = (TryTree) ctx.getPath().getLeaf();
 
         List<? extends CatchTree> catches = new ArrayList<CatchTree>(tt.getCatches());

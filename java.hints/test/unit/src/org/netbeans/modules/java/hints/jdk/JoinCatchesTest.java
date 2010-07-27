@@ -57,6 +57,7 @@ public class JoinCatchesTest extends TestBase {
     }
 
     public void testHint() throws Exception {
+        setSourceLevel("1.7");
         performFixTest("test/Test.java",
                        "package test;\n" +
                        "public class Test {\n" +
