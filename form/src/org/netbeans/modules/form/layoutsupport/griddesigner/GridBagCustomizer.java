@@ -44,10 +44,12 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
+import java.util.ResourceBundle;
 import java.util.Set;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsChange;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -164,12 +166,14 @@ public class GridBagCustomizer implements GridCustomizer {
         seAnchorButton.addActionListener(formListener);
 
         baselineAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/baseline.png"))); // NOI18N
+        baselineAnchorButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.baselineRelated")); // NOI18N
         baselineAnchorButton.setEnabled(false);
         baselineAnchorButton.setFocusPainted(false);
         baselineAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         baselineAnchorButton.addActionListener(formListener);
 
         bidiAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/bidi.png"))); // NOI18N
+        bidiAnchorButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.bidiAware")); // NOI18N
         bidiAnchorButton.setEnabled(false);
         bidiAnchorButton.setFocusPainted(false);
         bidiAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -230,12 +234,14 @@ public class GridBagCustomizer implements GridCustomizer {
         );
 
         hFillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_h.png"))); // NOI18N
+        hFillButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.horizontal")); // NOI18N
         hFillButton.setEnabled(false);
         hFillButton.setFocusPainted(false);
         hFillButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         hFillButton.addActionListener(formListener);
 
         vFillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_v.png"))); // NOI18N
+        vFillButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.vertical")); // NOI18N
         vFillButton.setEnabled(false);
         vFillButton.setFocusPainted(false);
         vFillButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -393,6 +399,7 @@ public class GridBagCustomizer implements GridCustomizer {
             bidiAnchorButton.setSelected(true);
         }
         update(currentAnchor(), -1);
+        updateTooltips();
     }//GEN-LAST:event_baselineAnchorButtonActionPerformed
 
     private void bidiAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bidiAnchorButtonActionPerformed
@@ -401,6 +408,7 @@ public class GridBagCustomizer implements GridCustomizer {
             baselineAnchorButton.setSelected(false);
         }
         update(currentAnchor(), -1);
+        updateTooltips();
     }//GEN-LAST:event_bidiAnchorButtonActionPerformed
 
     private int currentFill() {
@@ -472,6 +480,10 @@ public class GridBagCustomizer implements GridCustomizer {
     public void setContext(DesignerContext context) {
         Set<Component> components = context.getSelectedComponents();
         boolean one = components.size() == 1;
+        if (!bidiAnchorButton.isEnabled() && one) {
+            // Make the anchor bidi-aware by default
+            bidiAnchorButton.setSelected(true);
+        }
         bidiAnchorButton.setEnabled(one);
         baselineAnchorButton.setEnabled(one);
         nwAnchorButton.setEnabled(one);
@@ -495,15 +507,6 @@ public class GridBagCustomizer implements GridCustomizer {
         } else {
             anchorGroup.clearSelection();
         }
-        bidiAnchorButton.setSelected(anchor == GridBagConstraints.FIRST_LINE_START
-                || anchor == GridBagConstraints.PAGE_START
-                || anchor == GridBagConstraints.FIRST_LINE_END
-                || anchor == GridBagConstraints.LINE_START
-                || anchor == GridBagConstraints.CENTER
-                || anchor == GridBagConstraints.LINE_END
-                || anchor == GridBagConstraints.LAST_LINE_START
-                || anchor == GridBagConstraints.PAGE_END
-                || anchor == GridBagConstraints.LAST_LINE_END);
         baselineAnchorButton.setSelected(anchor == GridBagConstraints.ABOVE_BASELINE_LEADING
                 || anchor == GridBagConstraints.ABOVE_BASELINE
                 || anchor == GridBagConstraints.ABOVE_BASELINE_TRAILING
@@ -513,6 +516,17 @@ public class GridBagCustomizer implements GridCustomizer {
                 || anchor == GridBagConstraints.BELOW_BASELINE_LEADING
                 || anchor == GridBagConstraints.BELOW_BASELINE
                 || anchor == GridBagConstraints.BELOW_BASELINE_TRAILING);
+        if (anchor != GridBagConstraints.CENTER) {
+            bidiAnchorButton.setSelected(anchor == GridBagConstraints.FIRST_LINE_START
+                || anchor == GridBagConstraints.PAGE_START
+                || anchor == GridBagConstraints.FIRST_LINE_END
+                || anchor == GridBagConstraints.LINE_START
+                || anchor == GridBagConstraints.LINE_END
+                || anchor == GridBagConstraints.LAST_LINE_START
+                || anchor == GridBagConstraints.PAGE_END
+                || anchor == GridBagConstraints.LAST_LINE_END
+                || baselineAnchorButton.isSelected());
+        }
         nwAnchorButton.setSelected(anchor == GridBagConstraints.NORTHWEST
                 || anchor == GridBagConstraints.FIRST_LINE_START
                 || anchor == GridBagConstraints.ABOVE_BASELINE_LEADING);
@@ -543,6 +557,7 @@ public class GridBagCustomizer implements GridCustomizer {
                 || fill == GridBagConstraints.BOTH);
         vFillButton.setSelected(fill == GridBagConstraints.VERTICAL
                 || fill == GridBagConstraints.BOTH);
+        updateTooltips();
     }
 
     @Override
@@ -572,6 +587,47 @@ public class GridBagCustomizer implements GridCustomizer {
                 return null;
             }
         });
+    }
+    
+    private void updateTooltips() {
+        boolean baseline = baselineAnchorButton.isSelected();
+        boolean bidi = bidiAnchorButton.isSelected();
+        ResourceBundle bundle = NbBundle.getBundle(GridBagCustomizer.class);
+        String key = (baseline ? "GridBagCustomizer.anchor.aboveBaselineLeading" // NOI18N
+                : (bidi ? "GridBagCustomizer.anchor.firstLineStart" // NOI18N
+                    : "GridBagCustomizer.anchor.northWest")); // NOI18N
+        nwAnchorButton.setToolTipText(bundle.getString(key));
+        key = (baseline ? "GridBagCustomizer.anchor.aboveBaseline" // NOI18N
+                : (bidi ? "GridBagCustomizer.anchor.pageStart" // NOI18N
+                    : "GridBagCustomizer.anchor.north")); // NOI18N
+        nAnchorButton.setToolTipText(bundle.getString(key));
+        key = (baseline ? "GridBagCustomizer.anchor.aboveBaselineTrailing" // NOI18N
+                : (bidi ? "GridBagCustomizer.anchor.firstLineEnd" // NOI18N
+                    : "GridBagCustomizer.anchor.northEast")); // NOI18N
+        neAnchorButton.setToolTipText(bundle.getString(key));
+        key = (baseline ? "GridBagCustomizer.anchor.baselineLeading" // NOI18N
+                : (bidi ? "GridBagCustomizer.anchor.lineStart" // NOI18N
+                    : "GridBagCustomizer.anchor.west")); // NOI18N
+        wAnchorButton.setToolTipText(bundle.getString(key));
+        key = (baseline ? "GridBagCustomizer.anchor.baseline" // NOI18N
+                : "GridBagCustomizer.anchor.center"); // NOI18N
+        cAnchorButton.setToolTipText(bundle.getString(key));
+        key = (baseline ? "GridBagCustomizer.anchor.baselineTrailing" // NOI18N
+                : (bidi ? "GridBagCustomizer.anchor.lineEnd" // NOI18N
+                    : "GridBagCustomizer.anchor.east")); // NOI18N
+        eAnchorButton.setToolTipText(bundle.getString(key));
+        key = (baseline ? "GridBagCustomizer.anchor.belowBaselineLeading" // NOI18N
+                : (bidi ? "GridBagCustomizer.anchor.lastLineStart" // NOI18N
+                    : "GridBagCustomizer.anchor.southWest")); // NOI18N
+        swAnchorButton.setToolTipText(bundle.getString(key));
+        key = (baseline ? "GridBagCustomizer.anchor.belowBaseline" // NOI18N
+                : (bidi ? "GridBagCustomizer.anchor.pageEnd" // NOI18N
+                    : "GridBagCustomizer.anchor.south")); // NOI18N
+        sAnchorButton.setToolTipText(bundle.getString(key));
+        key = (baseline ? "GridBagCustomizer.anchor.belowBaselineTrailing" // NOI18N
+                : (bidi ? "GridBagCustomizer.anchor.lastLineEnd" // NOI18N
+                    : "GridBagCustomizer.anchor.southEast")); // NOI18N
+        seAnchorButton.setToolTipText(bundle.getString(key));
     }
 
 }
