@@ -50,10 +50,12 @@ import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -343,17 +345,17 @@ public class JMeterIntegrationEngine {
   }
   
   public boolean savePlan(final JMeterPlan plan) {
-    BufferedWriter writer = null;
+    OutputStream out = null;
     try {
-      writer = new BufferedWriter(new FileWriter(plan.getPath()));
-      SaveService.saveTree(plan.getTree(), writer);
+      out = new FileOutputStream(plan.getPath());
+      SaveService.saveTree(plan.getTree(), out);
     } catch (Exception e) {
       e.printStackTrace();
       return false;
     } finally {
-      if (writer != null) {
+      if (out != null) {
         try {
-          writer.close();
+          out.close();
         } catch (IOException e) {}
       }
     }
