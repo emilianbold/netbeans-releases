@@ -72,11 +72,11 @@ import org.openide.util.WeakListeners;
  */
 public class CachingFileManager implements JavaFileManager, PropertyChangeListener {
 
-    protected final CachingArchiveProvider provider;
-    protected final JavaFileFilterImplementation filter;
-    protected final ClassPath cp;
-    protected final boolean cacheFile;
-    protected final boolean ignoreExcludes;
+    private final CachingArchiveProvider provider;
+    private final boolean cacheFile;
+    private final JavaFileFilterImplementation filter;
+    private final boolean ignoreExcludes;
+    private final ClassPath cp;
     private final boolean allowOutput;
 
     private static final Logger LOG = Logger.getLogger(CachingFileManager.class.getName());
