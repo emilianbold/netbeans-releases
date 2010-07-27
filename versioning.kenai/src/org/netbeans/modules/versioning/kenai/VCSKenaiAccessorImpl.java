@@ -46,10 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -468,6 +466,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             this.m = m;
         }
 
+        @Override
         public Type getType() {
             switch(m.getType()) {
                 case NEW:
@@ -481,10 +480,12 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             }
         }
 
+        @Override
         public String getResource() {
             return m.getResource();
         }
 
+        @Override
         public String getId() {
             return m.getId();
         }
@@ -497,6 +498,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             this.kp = kp;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             handleKenaiProjectEvent(evt, kp.getName());
         }
