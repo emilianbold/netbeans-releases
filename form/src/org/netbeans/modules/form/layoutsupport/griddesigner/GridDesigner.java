@@ -111,10 +111,15 @@ public class GridDesigner extends JPanel implements Customizer {
         toolBar.add(support.getRedoAction());
         toolBar.add(support.getUndoAction());
         rightPanel.add(toolBar, BorderLayout.PAGE_START);
+        // Estimate of the size of the header
+        Dimension headerDim = new JLabel("99").getPreferredSize(); // NOI18N
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setViewportView(innerPane);
         scrollPane.setPreferredSize(new Dimension(500,500));
+        int unitIncrement = headerDim.height;
+        scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
         rightPanel.add(scrollPane);
         splitPane.setRightComponent(rightPanel);
         add(splitPane);
@@ -123,8 +128,6 @@ public class GridDesigner extends JPanel implements Customizer {
         Object bean = (Container)replicator.createClone();
         Container container = metaContainer.getContainerDelegate(bean);
         innerPane.removeAll();
-        // Estimate of the size of the header
-        Dimension headerDim = new JLabel("99").getPreferredSize(); // NOI18N
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.WHITE);
         GroupLayout layout = new GroupLayout(mainPanel);
