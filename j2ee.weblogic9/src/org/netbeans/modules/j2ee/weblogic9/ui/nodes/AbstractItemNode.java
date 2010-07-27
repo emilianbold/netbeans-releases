@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -45,58 +44,49 @@ package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import javax.swing.Action;
 
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
+ * @author ads
  *
- * @author Kirill Sorokin
  */
-public class WLTargetNode extends AbstractNode {
+abstract class AbstractItemNode extends AbstractNode {
+    
+    AbstractItemNode(ChildFactory<?> childFactory, String name)
+    {
+        super(Children.create(childFactory, true));
+        this.childFactory = childFactory;
+        setDisplayName(name);
+        if(childFactory instanceof RefreshModulesCookie)
+            getCookieSet().add((RefreshModulesCookie)childFactory);
+    }
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), 
-                NbBundle.getMessage(WLTargetNode.class, "LBL_Apps")),   // NOI18N
-                new ResourceNode(new ResourceChildren(lookup), 
-                        ResourceNodeType.RESOURCE, 
-                        NbBundle.getMessage(WLTargetNode.class, 
-                        "LBL_Resources"))});
+    AbstractItemNode(Children children)
+    {
+        super(children);
+        childFactory = null;
     }
-    
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
+
+    public Action[] getActions(boolean context)
+    {
+        if(getChildFactory() instanceof RefreshModulesCookie)
+            return (new SystemAction[] {
+                SystemAction.get(RefreshModulesAction.class)
+            });
+        else
+            return new SystemAction[0];
     }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+
+    protected ChildFactory<?> getChildFactory()
+    {
+        return childFactory;
     }
-    
-    @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
-    }
+
+    private final ChildFactory<?> childFactory;
 }

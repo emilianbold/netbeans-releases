@@ -44,22 +44,14 @@
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.security.AllPermission;
-import java.security.CodeSource;
-import java.security.PermissionCollection;
-import java.security.Permissions;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -76,6 +68,7 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLClassLoader;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
@@ -472,36 +465,6 @@ public class WLDeploymentManager implements DeploymentManager {
     private static interface Action<T> {
 
          T execute(DeploymentManager manager) throws ExecutionException;
-    }
-
-    private static class WLClassLoader extends URLClassLoader {
-
-        public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException {
-            super(urls, parent);
-        }
-
-        public void addURL(File f) throws MalformedURLException {
-            if (f.isFile()) {
-                addURL(f.toURL());
-            }
-        }
-
-        @Override
-        protected PermissionCollection getPermissions(CodeSource codeSource) {
-            Permissions p = new Permissions();
-            p.add(new AllPermission());
-            return p;
-        }
-
-        @Override
-        public Enumeration<URL> getResources(String name) throws IOException {
-            // get rid of annoying warnings
-            if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
-                return Collections.enumeration(Collections.<URL>emptyList());
-            }
-
-            return super.getResources(name);
-        }
     }
 
     private static class ServerTargetModuleID implements TargetModuleID {

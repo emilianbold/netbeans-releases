@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -43,60 +42,23 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import javax.swing.Action;
-
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-/**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
- *
- * @author Kirill Sorokin
- */
-public class WLTargetNode extends AbstractNode {
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), 
-                NbBundle.getMessage(WLTargetNode.class, "LBL_Apps")),   // NOI18N
-                new ResourceNode(new ResourceChildren(lookup), 
-                        ResourceNodeType.RESOURCE, 
-                        NbBundle.getMessage(WLTargetNode.class, 
-                        "LBL_Resources"))});
-    }
+/**
+ * @author ads
+ *
+ */
+class ResourceChildren extends WLNodeChildren<ResourceNode> {
     
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-    
-    @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    ResourceChildren(Lookup lookup){
+        setKeys( new ResourceNode[]{ createJDBCNode(lookup)});
+    } 
+
+    private ResourceNode createJDBCNode( Lookup lookup ) {
+        return new ResourceNode(new JDBCChildren(lookup) , ResourceNodeType.JDBC,
+                NbBundle.getMessage(ResourceChildren.class, "LBL_JDBC"));   // NOI18N
     }
 }
