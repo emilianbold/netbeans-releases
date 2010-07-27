@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -43,60 +42,34 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import javax.swing.Action;
-
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.nodes.Children.Keys;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.nodes.Children.Keys;
+
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
+ * @author ads
  *
- * @author Kirill Sorokin
  */
-public class WLTargetNode extends AbstractNode {
+class WLNodeChildren<T> extends Keys<T> {
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), 
-                NbBundle.getMessage(WLTargetNode.class, "LBL_Apps")),   // NOI18N
-                new ResourceNode(new ResourceChildren(lookup), 
-                        ResourceNodeType.RESOURCE, 
-                        NbBundle.getMessage(WLTargetNode.class, 
-                        "LBL_Resources"))});
+    WLNodeChildren()
+    {
+    }
+
+    protected void addNotify() {
     }
     
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
+    protected void removeNotify() {
     }
     
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof AbstractNode){
+            return new Node[]{(AbstractNode)key};
+        }
+        
+        return null;
     }
-    
-    @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
-    }
+
 }

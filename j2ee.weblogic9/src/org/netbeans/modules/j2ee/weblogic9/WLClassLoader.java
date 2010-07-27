@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,62 +40,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
+package org.netbeans.modules.j2ee.weblogic9;
 
-import javax.swing.Action;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.Collections;
+import java.util.Enumeration;
 
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
+ * @author ads
  *
- * @author Kirill Sorokin
  */
-public class WLTargetNode extends AbstractNode {
+public class WLClassLoader extends URLClassLoader {
+    
+    public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException {
+        super(urls, parent);
+    }
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), 
-                NbBundle.getMessage(WLTargetNode.class, "LBL_Apps")),   // NOI18N
-                new ResourceNode(new ResourceChildren(lookup), 
-                        ResourceNodeType.RESOURCE, 
-                        NbBundle.getMessage(WLTargetNode.class, 
-                        "LBL_Resources"))});
+    public void addURL(File f) throws MalformedURLException {
+        if (f.isFile()) {
+            addURL(f.toURL());
+        }
     }
-    
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-    
+
     @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    protected PermissionCollection getPermissions(CodeSource codeSource) {
+        Permissions p = new Permissions();
+        p.add(new AllPermission());
+        return p;
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        // get rid of annoying warnings
+        if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
+            return Collections.enumeration(Collections.<URL>emptyList());
+        }
+
+        return super.getResources(name);
     }
 }

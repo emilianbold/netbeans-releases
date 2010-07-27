@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -43,60 +42,76 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import javax.swing.Action;
+import java.awt.Image;
 
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.ImageUtilities;
+
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
+ * @author ads
  *
- * @author Kirill Sorokin
  */
-public class WLTargetNode extends AbstractNode {
+class ResourceNode extends AbstractItemNode {
+    
+    enum ResourceNodeType{
+        RESOURCE,
+        JDBC,
+        JDBC_RESOURCES,
+        JDBC_POOL,
+        ;
+    }
+    
+    private static final String RESOURCES_ICON = 
+        "org/netbeans/modules/glassfish/common/resources/resources.gif"; // NOI18N
+    
+    private static final String JDBC_RESOURCE_ICON = 
+        "org/netbeans/modules/glassfish/javaee/resources/jdbc.gif"; // NOI18N
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), 
-                NbBundle.getMessage(WLTargetNode.class, "LBL_Apps")),   // NOI18N
-                new ResourceNode(new ResourceChildren(lookup), 
-                        ResourceNodeType.RESOURCE, 
-                        NbBundle.getMessage(WLTargetNode.class, 
-                        "LBL_Resources"))});
+    ResourceNode( Children children , ResourceNodeType type , String name ) {
+        super(children);
+        setDisplayName(name);
+        this.resourceType= type; 
     }
     
     
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
+    ResourceNode(ChildFactory<? extends AbstractNode> childFactory ,
+            ResourceNodeType type , String name ) 
+    {
+        super(childFactory, name);
+        setDisplayName( name);
+        this.resourceType= type; 
     }
     
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
+    /* (non-Javadoc)
+     * @see org.openide.nodes.AbstractNode#getIcon(int)
      */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+    @Override
+    public Image getIcon( int type ) {
+        if ( resourceType == ResourceNodeType.RESOURCE ){
+            return ImageUtilities.loadImage(RESOURCES_ICON);
+        }
+        else if (resourceType == ResourceNodeType.JDBC){
+            return ImageUtilities.loadImage(JDBC_RESOURCE_ICON);
+        }
+        else {
+            return getIconDelegate().getIcon(type);
+        }
     }
     
     @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
+    
+    private Node getIconDelegate() {
+        return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
+    }
+    
+    private ResourceNodeType resourceType;
 }
