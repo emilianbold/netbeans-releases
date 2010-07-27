@@ -480,6 +480,10 @@ public class GridBagCustomizer implements GridCustomizer {
     public void setContext(DesignerContext context) {
         Set<Component> components = context.getSelectedComponents();
         boolean one = components.size() == 1;
+        if (!bidiAnchorButton.isEnabled() && one) {
+            // Make the anchor bidi-aware by default
+            bidiAnchorButton.setSelected(true);
+        }
         bidiAnchorButton.setEnabled(one);
         baselineAnchorButton.setEnabled(one);
         nwAnchorButton.setEnabled(one);
@@ -503,15 +507,6 @@ public class GridBagCustomizer implements GridCustomizer {
         } else {
             anchorGroup.clearSelection();
         }
-        bidiAnchorButton.setSelected(anchor == GridBagConstraints.FIRST_LINE_START
-                || anchor == GridBagConstraints.PAGE_START
-                || anchor == GridBagConstraints.FIRST_LINE_END
-                || anchor == GridBagConstraints.LINE_START
-                || anchor == GridBagConstraints.CENTER
-                || anchor == GridBagConstraints.LINE_END
-                || anchor == GridBagConstraints.LAST_LINE_START
-                || anchor == GridBagConstraints.PAGE_END
-                || anchor == GridBagConstraints.LAST_LINE_END);
         baselineAnchorButton.setSelected(anchor == GridBagConstraints.ABOVE_BASELINE_LEADING
                 || anchor == GridBagConstraints.ABOVE_BASELINE
                 || anchor == GridBagConstraints.ABOVE_BASELINE_TRAILING
@@ -521,6 +516,17 @@ public class GridBagCustomizer implements GridCustomizer {
                 || anchor == GridBagConstraints.BELOW_BASELINE_LEADING
                 || anchor == GridBagConstraints.BELOW_BASELINE
                 || anchor == GridBagConstraints.BELOW_BASELINE_TRAILING);
+        if (anchor != GridBagConstraints.CENTER) {
+            bidiAnchorButton.setSelected(anchor == GridBagConstraints.FIRST_LINE_START
+                || anchor == GridBagConstraints.PAGE_START
+                || anchor == GridBagConstraints.FIRST_LINE_END
+                || anchor == GridBagConstraints.LINE_START
+                || anchor == GridBagConstraints.LINE_END
+                || anchor == GridBagConstraints.LAST_LINE_START
+                || anchor == GridBagConstraints.PAGE_END
+                || anchor == GridBagConstraints.LAST_LINE_END
+                || baselineAnchorButton.isSelected());
+        }
         nwAnchorButton.setSelected(anchor == GridBagConstraints.NORTHWEST
                 || anchor == GridBagConstraints.FIRST_LINE_START
                 || anchor == GridBagConstraints.ABOVE_BASELINE_LEADING);
