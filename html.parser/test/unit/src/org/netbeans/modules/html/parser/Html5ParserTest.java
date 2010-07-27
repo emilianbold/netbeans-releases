@@ -109,6 +109,36 @@ public class Html5ParserTest extends NbTestCase {
 
     }
 
+    public void testStyle() throws ParseException {
+        String code = "<!DOCTYPE html>\n"+
+        "<style type=\"text/css\">\n" +
+            "@import \"resources2/ezcompik/newcss2moje.css\";\n"+
+        "</style>\n";
+
+//        AstNodeTreeBuilder.DEBUG = true;
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+        assertNotNull(root);
+        AstNode head = AstNodeUtils.query(root, "html/head");
+        assertNotNull(head);
+        assertEquals(2, head.children().size());
+        AstNode styleOpenTag = head.children().get(0);
+
+        assertNotNull(styleOpenTag);
+        assertEquals(16, styleOpenTag.startOffset());
+        assertEquals(39, styleOpenTag.endOffset());
+
+        AstNode styleEndTag = head.children().get(1);
+        assertNotNull(styleEndTag);
+        assertEquals(87, styleEndTag.startOffset());
+        assertEquals(95, styleEndTag.endOffset());
+
+        assertSame(styleEndTag, styleOpenTag.getMatchingTag());
+        assertEquals(95, styleOpenTag.getLogicalRange()[1]);
+
+//        AstNodeUtils.dumpTree(result.root());
+    }
+
     private HtmlParseResult parse(CharSequence code) throws ParseException {
         HtmlSource source = new HtmlSource(code);
         HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
