@@ -238,27 +238,29 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             String parentVersion = null;
             while (it.hasNext()) {
                 Model mdl = it.next();
-                File fl = FileUtil.normalizeFile(mdl.getPomFile());
-                FileObject fo = FileUtil.toFileObject(fl);
-                InstanceContent ic = new InstanceContent();
-                if (fo != null) {
-                    try {
-                        DataObject dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
-                        if (dobj != null) {
-                            ic.add(dobj);
-                            EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
-                            if (ec != null) {
-                                ic.add(ec);
+                File fl = mdl.getPomFile();
+                if (fl != null) {
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
+                    InstanceContent ic = new InstanceContent();
+                    if (fo != null) {
+                        try {
+                            DataObject dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
+                            if (dobj != null) {
+                                ic.add(dobj);
+                                EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
+                                if (ec != null) {
+                                    ic.add(ec);
+                                }
                             }
+                        } catch (DataObjectNotFoundException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
-                }
-                
-                nds.add(0, new POMNode(fl, mdl, new AbstractLookup(ic), parentVersion));
-                if (mdl.getVersion() != null) {
-                    parentVersion = mdl.getVersion();
+
+                    nds.add(0, new POMNode(fl, mdl, new AbstractLookup(ic), parentVersion));
+                    if (mdl.getVersion() != null) {
+                        parentVersion = mdl.getVersion();
+                    }
                 }
             }
             return nds.toArray(new Node[0]);
