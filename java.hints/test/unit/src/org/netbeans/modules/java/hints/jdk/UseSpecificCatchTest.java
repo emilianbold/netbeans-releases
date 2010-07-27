@@ -87,6 +87,41 @@ public class UseSpecificCatchTest extends TestBase {
                         "}\n").replaceAll("[ \n\t]+", " "));
     }
 
+    public void testHintPosFinally() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        try {\n" +
+                       "            if (true) throw new java.io.FileNotFoundException();\n" +
+                       "            else      throw new java.net.MalformedURLException();\n" +
+                       "        } catch (Throwable e) {\n" +
+                       "            e.printStackTrace();\n" +
+                       "        } finally {\n" +
+                       "            System.err.println(1);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       "6:17-6:26:verifier:ERR_UseSpecificCatch",
+                       "FIX_UseSpecificCatch",
+                       ("package test;\n" +
+                        "import java.io.FileNotFoundException;\n" +
+                        "import java.net.MalformedURLException;\n" +
+                        "public class Test {\n" +
+                        "    {\n" +
+                        "        try {\n" +
+                        "            if (true) throw new java.io.FileNotFoundException();\n" +
+                        "            else      throw new java.net.MalformedURLException();\n" +
+                        "        } catch (final FileNotFoundException | MalformedURLException e) {\n" +
+                        "            e.printStackTrace();\n" +
+                       "        } finally {\n" +
+                       "            System.err.println(1);\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t]+", " "));
+    }
+
     public void testHintNeg() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +

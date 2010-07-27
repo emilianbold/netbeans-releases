@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
@@ -74,12 +75,18 @@ import org.openide.util.NbBundle;
 @Hint(category="rules15", suppressWarnings="UseSpecificCatch")
 public class UseSpecificCatch {
 
-    @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;}")
+    @TriggerPatterns({
+        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;} finally {$fin$;}")
+    })
     public static ErrorDescription hint1(HintContext ctx) {
         return impl(ctx, "java.lang.Throwable");
     }
 
-    @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;}")
+    @TriggerPatterns({
+        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;}"),
+        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;} finally {$fin$;}")
+    })
     public static ErrorDescription hint2(HintContext ctx) {
         return impl(ctx, "java.lang.Exception");
     }
