@@ -130,7 +130,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             KenaiProject kp = KenaiProject.forRepository(url);
             return kp != null ? kp.getKenai().getPasswordAuthentication() != null : false;
         } catch (KenaiException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.log(Level.WARNING, "isLogged: Cannot load kenai project for {0}", url); //NOI18N
+            LOG.log(Level.FINE, null, ex);
         }
         return false;
     }
@@ -307,7 +308,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             KenaiProject kp = KenaiProject.forRepository(sourcesUrl);
             return kp != null ? kp.getWebLocation().toString() : null;
         } catch (KenaiException ex) {
-            LOG.log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, "getProjectUrl: Cannot load kenai project for {0}", sourcesUrl); //NOI18N
+            LOG.log(Level.FINE, null, ex);
             return null;
         }
     }
@@ -529,7 +531,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
                 try {
                     kp = KenaiProject.forRepository(url);
                 } catch (KenaiException ex) {
-                    LOG.log(Level.WARNING, null, ex);
+                    LOG.log(Level.WARNING, "handleKenaiProjectEvent: Cannot load kenai project for {0}", url); //NOI18N
+                    LOG.log(Level.FINE, null, ex);
                     return;
                 }
                 String name = kp.getName();
