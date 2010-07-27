@@ -46,6 +46,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,9 +60,11 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -515,5 +519,69 @@ public class Commands {
             return true;
         }
     }
+    
+    /*
+     * Command to get log data from the server
+     */
+    public static final class FetchLogData extends ServerCommand {
+        private String lines = "";
+        private String nextURL = "";
+        
+        public FetchLogData(String query) {
+            super("view-log");
+            this.query = query;
         }
+        
+        public String getLines() {
+            return lines;
+        }
+
+        public String getNextQuery() {
+            return nextURL;
+        }
+
+        @Override
+        public boolean acceptsGzip() {
+            return true;
+        }
+        
+        @Override
+        public boolean readResponse(InputStream in, HttpURLConnection hconn) {
+            StringWriter sw = new StringWriter();
+            try {
+                InputStream cooked = in;
+                String ce = hconn.getContentEncoding();
+                if (null != ce && ce.contains("gzip")) {
+                    cooked = new GZIPInputStream(in);
+                }
+                java.io.InputStreamReader isr = new java.io.InputStreamReader(cooked);
+                java.io.BufferedReader br = new java.io.BufferedReader(isr);
+                while (br.ready()) {
+                    sw.write(br.readLine());
+                    sw.write("\n");
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                try {
+                    sw.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            lines = sw.toString();
+            nextURL = hconn.getHeaderField("X-Text-Append-Next");
+            int delim = nextURL.lastIndexOf("?");
+            if (-1 != delim) {
+                nextURL = nextURL.substring(delim+1);
+            }
+            return -1 == delim ? false : true;
+        }
+        
+        @Override
+        public String getSrc() {
+            return "/management/domain/";
+        }
+    }
+}
 

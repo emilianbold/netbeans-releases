@@ -44,21 +44,13 @@
 
 package org.netbeans.modules.glassfish.common.actions;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.LogViewMgr;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.Recognizer;
-import org.netbeans.modules.glassfish.spi.RecognizerCookie;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
@@ -78,44 +70,8 @@ public class ViewServerLogAction extends NodeAction {
         Lookup lookup = nodes[0].getLookup();
         GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
         if(commonSupport != null) {
-            Map<String, String> properties = commonSupport.getInstanceProperties();
-            String uri = properties.get(GlassfishModule.URL_ATTR);
-            LogViewMgr mgr = LogViewMgr.getInstance(uri);
-            List<Recognizer> recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
-            mgr.ensureActiveReader(recognizers, getServerLog(properties));
-            mgr.selectIO();
+            LogViewMgr.displayOutput(commonSupport.getInstanceProperties(), lookup);
         }
-    }
-    
-    private List<Recognizer> getRecognizers(Collection<? extends RecognizerCookie> cookies) {
-        List<Recognizer> recognizers;
-        if(!cookies.isEmpty()) {
-            recognizers = new LinkedList<Recognizer>();
-            for(RecognizerCookie cookie: cookies) {
-                recognizers.addAll(cookie.getRecognizers());
-            }
-            recognizers = Collections.unmodifiableList(recognizers);
-        } else {
-            recognizers = Collections.emptyList();
-        }
-        return recognizers;
-    }
-    
-    private File getServerLog(Map<String, String> ip) {
-        File result = null;
-        String domainsFolder = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-        String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
-        File domainFolder = new File(domainsFolder, domainName);
-
-        // domain folder must exist.
-        if(domainFolder.exists()) {
-            // however, logs folder or server.log does not have to exist yet.
-            result = new File(domainFolder, "logs" + File.separatorChar + "server.log");
-        } else {
-            Logger.getLogger("glassfish").log(Level.WARNING, NbBundle.getMessage(
-                    ViewServerLogAction.class, "MSG_DomainFolderNotFound", domainFolder.getAbsolutePath()));
-        }
-        return result;
     }
     
     @Override
@@ -125,7 +81,8 @@ public class ViewServerLogAction extends NodeAction {
             if(commonSupport != null) {
                 String uri = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
                 return uri != null && uri.length() > 0 &&
-                    null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ;
+                    (null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ||
+                    (commonSupport.getInstanceProvider().equals(GlassfishInstanceProvider.getEe6WC()) && commonSupport.isRemote() && isRunning(commonSupport)));
             }
         }
         return false;
@@ -150,5 +107,9 @@ public class ViewServerLogAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
+    private boolean isRunning(GlassfishModule commonSupport) {
+        ServerState ss = commonSupport.getServerState();
+        return ss == ServerState.RUNNING || ss == ServerState.RUNNING_JVM_DEBUG || ss == ServerState.RUNNING_JVM_PROFILER;
+    }
 }
