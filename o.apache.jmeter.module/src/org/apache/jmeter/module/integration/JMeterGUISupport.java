@@ -323,10 +323,9 @@ public class JMeterGUISupport implements JMeterPlugin {
   public void saveScript(final FileObject script) throws Exception {
     FileLock aLock = script.lock();
     try {
-      OutputStreamWriter osw = new OutputStreamWriter(script.getOutputStream(aLock));
       HashTree plan = treeModel.getTestPlan();
       convertSubTree(plan);
-      SaveService.saveTree(plan, osw);
+      SaveService.saveTree(plan, script.getOutputStream(aLock));
       ActionRouter.getInstance().doActionNow(new ActionEvent(this, 1, ActionNames.SUB_TREE_SAVED));
     } finally {
       aLock.releaseLock();
