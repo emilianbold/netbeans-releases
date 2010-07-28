@@ -519,7 +519,7 @@ public class Reformatter implements ReformatTask {
             if (pkg != null) {
                 blankLines(cs.getBlankLinesBeforePackage());
                 if (!node.getPackageAnnotations().isEmpty()) {
-                    wrapList(cs.wrapAnnotations(), false, false, node.getPackageAnnotations());
+                    wrapList(cs.wrapAnnotations(), false, false, true, node.getPackageAnnotations());
                     newline();
                 }
                 accept(PACKAGE);
@@ -639,7 +639,7 @@ public class Reformatter implements ReformatTask {
                 List<? extends Tree> impls = node.getImplementsClause();
                 if (impls != null && !impls.isEmpty()) {
                     wrapToken(cs.wrapExtendsImplementsKeyword(), -1, 1, id == INTERFACE ? EXTENDS : IMPLEMENTS);
-                    wrapList(cs.wrapExtendsImplementsList(), cs.alignMultilineImplements(), true, impls);
+                    wrapList(cs.wrapExtendsImplementsList(), cs.alignMultilineImplements(), true, true, impls);
                 }
                 indent = old;
             }
@@ -816,7 +816,7 @@ public class Reformatter implements ReformatTask {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             boolean insideFor = parent.getKind() == Tree.Kind.FOR_LOOP;
             ModifiersTree mods = node.getModifiers();
-            if (mods != null && !fieldGroup) {
+            if (mods != null && !fieldGroup && sp.getStartPosition(root, mods) < sp.getEndPosition(root, mods)) {
                 if (scan(mods, p)) {
                     if (!insideFor) {
                         indent += continuationIndentSize;
@@ -851,7 +851,7 @@ public class Reformatter implements ReformatTask {
                     List<? extends ExpressionTree> args = nct.getArguments();
                     if (args != null && !args.isEmpty()) {
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
-                        wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, args);
+                        wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, true, args);
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
                     }
                     if (id == LPAREN)
@@ -955,14 +955,14 @@ public class Reformatter implements ReformatTask {
             List<? extends VariableTree> params = node.getParameters();
             if (params != null && !params.isEmpty()) {
                 spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0, true);
-                wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, params);
+                wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, true, params);
                 spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
             }
             accept(RPAREN);
             List<? extends ExpressionTree> threxs = node.getThrows();
             if (threxs != null && !threxs.isEmpty()) {
                 wrapToken(cs.wrapThrowsKeyword(), -1, 1, THROWS);
-                wrapList(cs.wrapThrowsList(), cs.alignMultilineThrows(), true, threxs);
+                wrapList(cs.wrapThrowsList(), cs.alignMultilineThrows(), true, true, threxs);
             }
             Tree init = node.getDefaultValue();
             if (init != null) {
@@ -1061,7 +1061,7 @@ public class Reformatter implements ReformatTask {
             accept(LPAREN);
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
-                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), false, args);
+                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), false, true, args);
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
             }
             accept(RPAREN);
@@ -1440,7 +1440,7 @@ public class Reformatter implements ReformatTask {
             List<? extends ExpressionTree> args = node.getArguments();
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
-                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, args);
+                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, true, args);
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
             }
             accept(RPAREN);
@@ -1502,7 +1502,7 @@ public class Reformatter implements ReformatTask {
             List<? extends ExpressionTree> args = node.getArguments();
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true); 
-                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, args);
+                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, true, args);
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);
             }
             accept(RPAREN);
@@ -1575,7 +1575,7 @@ public class Reformatter implements ReformatTask {
                 spaces(cs.spaceBeforeTryParen() ? 1 : 0);
                 accept(LPAREN);
                 spaces(cs.spaceWithinTryParens() ? 1 : 0, true);
-                wrapList(cs.wrapTryResources(), cs.alignMultilineTryResources(), false, res);
+                wrapList(cs.wrapTryResources(), cs.alignMultilineTryResources(), false, false, res);
                 spaces(cs.spaceWithinTryParens() ? 1 : 0);
                 accept(RPAREN);
                 indent = old;
@@ -2111,7 +2111,7 @@ public class Reformatter implements ReformatTask {
                         newline();
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0, true);
-                    wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), false, inits);
+                    wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), false, true, inits);
                     if (tokens.token().text().toString().indexOf('\n') >= 0)
                         afterNewline = true;
                     int index = tokens.index();
@@ -3122,13 +3122,13 @@ public class Reformatter implements ReformatTask {
             return false;
         }
 
-        private void wrapList(CodeStyle.WrapStyle wrapStyle, boolean align, boolean prependSpace, List<? extends Tree> trees) {
+        private void wrapList(CodeStyle.WrapStyle wrapStyle, boolean align, boolean prependSpace, boolean commaSeparated, List<? extends Tree> trees) {
             boolean first = true;
             int alignIndent = -1;
             for (Iterator<? extends Tree> it = trees.iterator(); it.hasNext();) {
                 Tree impl = it.next();
                 if (wrapAnnotation && impl.getKind() == Tree.Kind.ANNOTATION) {
-                    wrapTree(CodeStyle.WrapStyle.WRAP_ALWAYS, alignIndent, cs.spaceAfterComma() ? 1 : 0, impl);
+                    wrapTree(CodeStyle.WrapStyle.WRAP_ALWAYS, alignIndent, (commaSeparated ? cs.spaceAfterComma() : cs.spaceAfterSemi()) ? 1 : 0, impl);
                 } else if (impl.getKind() == Tree.Kind.ERRONEOUS) {
                     scan(impl, null);
                 } else if (first) {
@@ -3146,12 +3146,17 @@ public class Reformatter implements ReformatTask {
                         scan(impl, null);
                     }
                 } else {
-                    wrapTree(wrapStyle, alignIndent, cs.spaceAfterComma() ? 1 : 0, impl);
+                    wrapTree(wrapStyle, alignIndent, (commaSeparated ? cs.spaceAfterComma() : cs.spaceAfterSemi()) ? 1 : 0, impl);
                 }
                 first = false;
                 if (it.hasNext()) {
-                    spaces(cs.spaceBeforeComma() ? 1 : 0);
-                    accept(COMMA);
+                    if (commaSeparated) {
+                        spaces(cs.spaceBeforeComma() ? 1 : 0);
+                        accept(COMMA);
+                    } else {
+                        spaces(cs.spaceBeforeSemi() ? 1 : 0);
+                        accept(SEMICOLON);
+                    }
                 }
             }
         }
