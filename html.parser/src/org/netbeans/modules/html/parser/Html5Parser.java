@@ -46,9 +46,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import nu.validator.htmlparser.impl.ElementName;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
+import nu.validator.htmlparser.impl.StackNode;
+import nu.validator.htmlparser.impl.StateSnapshot;
 import nu.validator.htmlparser.impl.Tokenizer;
-import nu.validator.htmlparser.impl.TreeBuilder;
 import nu.validator.htmlparser.io.Driver;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
@@ -136,6 +140,19 @@ public class Html5Parser implements HtmlParser {
                 || version == HtmlVersion.XHTML11;
     }
 
+
+    public static StateSnapshot makeTreeBuilderSnapshot(AstNode node) {
+        int treeBuilderState = node.treeBuilderState;
+        List<StackNode> stack = new ArrayList<StackNode>();
+        do {
+            stack.add(0, new StackNode("http://www.w3.org/1999/xhtml", (ElementName)node.elementName, node));
+        } while((node = node.parent()) != null && !node.isRootNode());
+
+        StateSnapshot snapshot = new StateSnapshot(stack.toArray(new StackNode[]{}),
+                new StackNode[]{}, null, treeBuilderState);
+        return snapshot;
+    }
+
     private static class Html5ParserResult extends DefaultHtmlParseResult {
 
         public Html5ParserResult(HtmlSource source, AstNode root, Collection<ProblemDescription> problems, HtmlVersion version) {
@@ -146,16 +163,76 @@ public class Html5Parser implements HtmlParser {
             Collection<HtmlTag> possible = new ArrayList<HtmlTag>();
             if(type == HtmlTagType.OPEN_TAG) {
                 //open tags
-//                ReinstatingTreeBuilder builder = new ReinstatingTreeBuilder();
+                StateSnapshot snapshot = makeTreeBuilderSnapshot(afterNode);
+                ReinstatingTreeBuilder builder = new ReinstatingTreeBuilder(snapshot);
 
+                HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
+                for(ElementName element : ElementName.ELEMENT_NAMES) {
+                    int group = element.group;
+                    Boolean enabled = enabledGroups.get(group);
+
+                    if(enabled == null) {
+                        //not checked yet
+
+                        //XXX is it even correct to assume that the result
+                        //will be the same for all members of one group????
+                        enabled = builder.canFollow(afterNode, element);
+                        enabledGroups.put(group, enabled);
+                    }
+
+                    if(enabled.booleanValue()) {
+                        //the element falls to a group already marked as possible in the context
+                        possible.add(new HtmlElement2HtmlTagWrapper(element));
+                    }
+                }
+                
 
             } else {
                 //end tags
+                //TODO implement
             }
 
             return possible;
         }
 
     }
+
+    //XXX not nice, multiple new instances can be created for each ElementName
+    private static final class HtmlElement2HtmlTagWrapper implements HtmlTag {
+
+        private String name;
+
+        public HtmlElement2HtmlTagWrapper(ElementName element) {
+            this.name = element.name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final HtmlTag other = (HtmlTag) obj;
+            if ((this.name == null) ? (other.getName() != null) : !this.name.equals(other.getName())) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 47 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+
+    }
+
 
 }

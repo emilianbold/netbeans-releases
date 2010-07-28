@@ -80,8 +80,7 @@ public class ReinstatingTreeBuilderTest extends NbTestCase {
 
         System.out.println("mode=" + tr.treeBuilderState);
 
-        StateSnapshot snapshot = new StateSnapshot(stack.toArray(new StackNode[]{}), new StackNode[]{}, null, tr.treeBuilderState);
-
+        StateSnapshot snapshot = Html5Parser.makeTreeBuilderSnapshot(tr);
         ReinstatingTreeBuilder tb = new ReinstatingTreeBuilder(snapshot);
 
         assertCanFollow(false, tr, ElementName.P, tb);
@@ -98,11 +97,9 @@ public class ReinstatingTreeBuilderTest extends NbTestCase {
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
         assertNotNull(body);
+        
 
-        stack = makeStack(tr);
-
-        snapshot = new StateSnapshot(stack.toArray(new StackNode[]{}), new StackNode[]{}, null, body.treeBuilderState);
-
+        snapshot = Html5Parser.makeTreeBuilderSnapshot(body);
         tb = new ReinstatingTreeBuilder(snapshot);
 
         assertCanFollow(true, body, ElementName.TSPAN, tb);
@@ -117,7 +114,7 @@ public class ReinstatingTreeBuilderTest extends NbTestCase {
             stack.add(0, new StackNode("http://www.w3.org/1999/xhtml", (ElementName)node.elementName, node));
             System.out.println(node);
         } while((node = node.parent()) != null && !node.isRootNode());
-
+   
         return stack;
     }
 

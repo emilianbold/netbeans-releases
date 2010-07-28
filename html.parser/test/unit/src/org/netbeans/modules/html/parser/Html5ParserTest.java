@@ -51,6 +51,8 @@ import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.SAXException;
 
@@ -138,6 +140,34 @@ public class Html5ParserTest extends NbTestCase {
 
 //        AstNodeUtils.dumpTree(result.root());
     }
+
+    public void testGetPossibleTagsInContext() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
+
+        assertNotNull(result.root());
+
+        AstNode body = AstNodeUtils.query(result.root(), "html/body");
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, HtmlTagType.OPEN_TAG);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag divTag = new HtmlTag() {
+            public String getName() {
+                return "div";
+            }
+        };
+
+        HtmlTag headTag = new HtmlTag() {
+            public String getName() {
+                return "head";
+            }
+        };
+
+        assertTrue(possible.contains(divTag));
+        assertFalse(possible.contains(headTag));
+
+    }
+
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
         HtmlSource source = new HtmlSource(code);
