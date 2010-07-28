@@ -1028,6 +1028,12 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     public void close () throws IOException {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "Closing index: {0} {1}",  //NOI18N
+                    new Object[]{
+                        this.refCacheRoot.getAbsolutePath(),
+                        Thread.currentThread().getStackTrace()});
+        }
         close(true);
     }
 
