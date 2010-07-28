@@ -1,2 +1,0 @@
-   %%returnTypeName%% retVal = %%returnTypeDefaultValue%%;
-      return retVal;
