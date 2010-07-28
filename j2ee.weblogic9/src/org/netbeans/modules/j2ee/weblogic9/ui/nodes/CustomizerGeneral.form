@@ -44,7 +44,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="serverPortLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="serverPort" min="-2" pref="34" max="-2" attributes="0"/>
+                      <Component id="serverPort" min="-2" pref="55" max="-2" attributes="0"/>
                   </Group>
                   <Component id="NoteChangesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
