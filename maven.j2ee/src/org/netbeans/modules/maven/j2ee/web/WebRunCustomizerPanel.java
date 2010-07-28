@@ -177,8 +177,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             comProfile.setEnabled(false);
         }
 
-        initValues();
         txtContextPath.setText(impl.getContextPath());
+        initValues();
     }
     
     private void initValues() {
