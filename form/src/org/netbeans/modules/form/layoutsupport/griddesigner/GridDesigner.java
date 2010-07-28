@@ -62,6 +62,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.OverlayLayout;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormLAF;
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormUtils;
@@ -125,8 +126,15 @@ public class GridDesigner extends JPanel implements Customizer {
         add(splitPane);
         replicator = new VisualReplicator(true, FormUtils.getViewConverters(), FormEditor.getBindingSupport(formModel));
         replicator.setTopMetaComponent(metaContainer);
-        Object bean = (Container)replicator.createClone();
-        Container container = metaContainer.getContainerDelegate(bean);
+        final Object[] bean = new Object[1];
+        // Create the cloned components in the correct look and feel setup
+        FormLAF.executeWithLookAndFeel(formModel, new Runnable() {
+            @Override
+            public void run() {
+                bean[0] = (Container)replicator.createClone();
+            } 
+        });        
+        Container container = metaContainer.getContainerDelegate(bean[0]);
         innerPane.removeAll();
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.WHITE);
