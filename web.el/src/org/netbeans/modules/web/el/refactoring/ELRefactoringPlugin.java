@@ -43,9 +43,7 @@
 package org.netbeans.modules.web.el.refactoring;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -58,10 +56,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
-import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.el.ELLanguage;
 import org.netbeans.modules.web.el.ELParserResult;
 import org.openide.filesystems.FileObject;
@@ -121,30 +116,6 @@ public class ELRefactoringPlugin implements RefactoringPlugin {
         ClasspathInfo cpinfo = refactoring.getContext().lookup(ClasspathInfo.class);
         FileObject[] roots = cpinfo.getClassPath(ClasspathInfo.PathKind.SOURCE).getRoots();
         return roots.length > 0 ? roots[1] : null;
-    }
-
-    protected final WebModule getWebModule() {
-        return WebModule.getWebModule(getFileObject());
-    }
-
-    protected FacesManagedBean findManagedBeanByClass(String clazz) {
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(getWebModule());
-        for (FacesManagedBean bean : beans) {
-            if (bean.getManagedBeanClass().equals(clazz)) {
-                return bean;
-            }
-        }
-        return null;
-    }
-
-    protected FacesManagedBean findManagedBeanByName(String beanName) {
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(getWebModule());
-        for (FacesManagedBean bean : beans) {
-            if (bean.getManagedBeanName().equals(beanName)) {
-                return bean;
-            }
-        }
-        return null;
     }
 
     protected static ParserResultHolder getParserResult(FileObject fo) {
