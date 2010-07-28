@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola
  */
-public class InsertColumnAction implements GridAction {
+public class InsertColumnAction extends AbstractGridAction {
     private String name;
     /** Determines whether the new column should be inserted before of after the focused column. */
     private boolean insertAfter;
