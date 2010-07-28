@@ -39,79 +39,51 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.el;
 
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
-import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
-import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- */
+// TODO web.beans would be a better module for this, but
+// that would cause cyclic dependencies due to JsfSupport - perhaps
+// there is another way to get named beans?
 @ServiceProvider(service=org.netbeans.modules.web.el.spi.ELVariableResolver.class)
-public final class JsfELVariableResolver implements ELVariableResolver {
+public final class WebBeansELVariableResolver implements ELVariableResolver {
 
     @Override
     public String getBeanClass(String beanName, FileObject context) {
-        for (FacesManagedBean bean : getManagedBeans(context)) {
-            if (bean.getManagedBeanName().equals(beanName)) {
-                return bean.getManagedBeanClass();
+        for (WebBean bean : getWebBeans(context)) {
+            if (beanName.equals(bean.getName())) {
+                return bean.getBeanClassName();
             }
         }
         return null;
     }
-
+    
     @Override
     public String getBeanName(String clazz, FileObject context) {
-        for (FacesManagedBean bean : getManagedBeans(context)) {
-            if (bean.getManagedBeanClass().equals(clazz)) {
-                return bean.getManagedBeanName();
+        for (WebBean bean : getWebBeans(context)) {
+            if (clazz.equals(bean.getBeanClassName())) {
+                return bean.getName();
             }
         }
         return null;
     }
 
     @Override
-    public String getReferredExpression(Snapshot snapshot, final int offset) {
-        final String[] result = new String[1];
-        try {
-            ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
-
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    //one level - works only if xhtml is top level
-                    Result parseResult = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
-                    if (parseResult instanceof HtmlParserResult) {
-                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) parseResult);
-                        List<JsfVariableContext> contexts = model.getAllAvailableVariables(offset, false);
-                        result[0] = contexts.isEmpty() ? null : contexts.get(0).getVariableValue();
-                        return;
-                    }
-                }
-            });
-        } catch (ParseException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return result[0];
+    public String getReferredExpression(Snapshot snapshot, int offset) {
+        return null;
     }
 
-    private List<FacesManagedBean> getManagedBeans(FileObject context) {
-        WebModule webModule = WebModule.getWebModule(context);
-        return JSFBeanCache.getBeans(webModule);
+    private List<WebBean> getWebBeans(FileObject context) {
+        JsfSupport jsfSupport = JsfSupport.findFor(context);
+        return WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel());
     }
+
 }
