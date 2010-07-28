@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
+import nu.validator.htmlparser.impl.TreeBuilder;
 import nu.validator.htmlparser.io.Driver;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
@@ -57,6 +58,8 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.ErrorHandler;
@@ -109,7 +112,7 @@ public class Html5Parser implements HtmlParser {
             driver.tokenize(is);
             AstNode root = treeBuilder.getRoot();
 
-            return new DefaultHtmlParseResult(source, root, problems, preferedVersion);
+            return new Html5ParserResult(source, root, problems, preferedVersion);
 
         } catch (SAXException ex) {
             throw new ParseException(ex);
@@ -131,6 +134,28 @@ public class Html5Parser implements HtmlParser {
                 || version == HtmlVersion.XHTML10_TRANSATIONAL
                 || version == HtmlVersion.XHTML10_FRAMESET
                 || version == HtmlVersion.XHTML11;
+    }
+
+    private static class Html5ParserResult extends DefaultHtmlParseResult {
+
+        public Html5ParserResult(HtmlSource source, AstNode root, Collection<ProblemDescription> problems, HtmlVersion version) {
+            super(source, root, problems, version);
+        }
+
+        public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type) {
+            Collection<HtmlTag> possible = new ArrayList<HtmlTag>();
+            if(type == HtmlTagType.OPEN_TAG) {
+                //open tags
+//                ReinstatingTreeBuilder builder = new ReinstatingTreeBuilder();
+
+
+            } else {
+                //end tags
+            }
+
+            return possible;
+        }
+
     }
 
 }

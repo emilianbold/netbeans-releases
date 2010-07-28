@@ -42,28 +42,12 @@
 
 package org.netbeans.editor.ext.html.parser.spi;
 
-import java.util.Collection;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
-
 /**
  *
  * @author marekfukala
  */
-public abstract class DefaultHtmlParseResult extends DefaultParseResult implements HtmlParseResult {
+public enum HtmlTagType {
 
-    private HtmlVersion version;
-
-    public DefaultHtmlParseResult(HtmlSource source, AstNode root, Collection<ProblemDescription> problems, HtmlVersion version) {
-        super(source, root, problems);
-        this.version = version;
-    }
-
-    @Override
-    public HtmlVersion version() {
-        return version;
-    }
+    OPEN_TAG, END_TAG;
 
 }

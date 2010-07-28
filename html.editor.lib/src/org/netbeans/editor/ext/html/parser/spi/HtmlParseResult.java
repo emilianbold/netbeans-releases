@@ -42,6 +42,8 @@
 
 package org.netbeans.editor.ext.html.parser.spi;
 
+import java.util.Collection;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 
 /**
@@ -51,5 +53,8 @@ import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 public interface HtmlParseResult extends ParseResult {
 
     public HtmlVersion version();
+
+    /** experimental - may be refactored out of this class */
+    public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type);
     
 }

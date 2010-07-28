@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.html.parser;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -139,8 +138,12 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if (DEBUG) {
             System.out.println("+" + t + "; stack:" + dumpStack());
         }
-        
+
         stack.push(t);
+
+        //>>>experimental only!!!
+        t.elementName = startTag;
+        //<<<
 
         //stray end tags - add them to the current node
         AstNode head;
@@ -247,6 +250,13 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         isEndTag = false;
         startTag = en;
         super.startTag(en, ha, bln);
+
+        //>>>experimental only!!!!!!!!!
+        AstNode last = stack.peek();
+        last.treeBuilderState = mode;
+        //<<<
+
+
         startTag = null;
     }
 

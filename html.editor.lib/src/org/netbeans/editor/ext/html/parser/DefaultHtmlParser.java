@@ -42,6 +42,7 @@
 
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
@@ -51,6 +52,8 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -87,7 +90,15 @@ public class DefaultHtmlParser implements HtmlParser {
 
         AstNode root = SyntaxTreeBuilder.makeTree(source, version, elements.items());
 
-        return new DefaultHtmlParseResult(source, root, Collections.<ProblemDescription>emptyList(), version);
+        return new DefaultHtmlParseResult(source, root, Collections.<ProblemDescription>emptyList(), version) {
+
+            @Override
+            public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type) {
+                //TODO implement
+                return Collections.emptyList();
+            }
+
+        };
 
     }
 

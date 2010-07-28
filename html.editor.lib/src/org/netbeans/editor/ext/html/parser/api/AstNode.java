@@ -84,6 +84,11 @@ public class AstNode {
     private boolean isEmpty = false;
     private Map<String, Object> properties;
 
+    //>>>experimental
+    public  int treeBuilderState;
+    public Object elementName;
+    //<<<
+
     public static AstNode createRootNode(int from, int to, DTD dtd) {
         return new RootAstNode(from, to, dtd);
     }
@@ -104,6 +109,10 @@ public class AstNode {
         this.endOffset = endOffset;
         this.logicalEndOffset = endOffset;
         this.isEmpty = isEmpty;
+    }
+
+    public boolean isRootNode() {
+        return false;
     }
 
     public boolean isVirtual() {
@@ -521,12 +530,18 @@ public class AstNode {
             b.deleteCharAt(b.length() - 1);
         }
 
+        b.append("; mode=");
+        b.append(treeBuilderState);
+        b.append("; ElementName=");
+        b.append(elementName);
+
         if(!getDescriptions().isEmpty()) {
             b.append("; issues:");
             for(ProblemDescription d : getDescriptions()) {
                 b.append(d);
             }
         }
+
 
         return b.toString();
     }
@@ -626,6 +641,13 @@ public class AstNode {
             super(ROOT_NODE_NAME, NodeType.ROOT, startOffset, endOffset, false);
             this.dtd = dtd;
         }
+
+        @Override
+        public boolean isRootNode() {
+            return true;
+        }
+
+
 
         @Override
         public List<Element> getAllPossibleElements() {
