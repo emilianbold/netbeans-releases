@@ -43,8 +43,26 @@
 package org.netbeans.modules.web.el.spi;
 
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 public interface ELVariableResolver {
+
+    /**
+     * Gets the bean name of the given {@code clazz}.
+     *
+     * @param clazz the FQN of the class
+     * @return the bean name of of the class or {@code null}.
+     */
+    String getBeanName(String clazz, FileObject context);
+
+    /**
+     * Gets the class of the bean identified by the given {@code beanName}.
+     * 
+     * @param beanName the bean name
+     * @param context
+     * @return the FQN of the bean or {@code null}.
+     */
+    String getBeanClass(String beanName, FileObject context);
 
     /**
      * Gets the expression referred by the variable at the given {@code offset}.

@@ -110,15 +110,26 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
         TypeElement type = (TypeElement) targetType;
         String clazz = type.getQualifiedName().toString();
-        FacesManagedBean managedBean = findManagedBeanByClass(clazz);
-        ELIndex index = ELIndex.get(handle.getFileObject());
-        Collection<? extends IndexResult> result = index.findIdentifierReferences(managedBean.getManagedBeanName());
-        String managedBeanName = managedBean.getManagedBeanName();
-        for (ELElement elem : getMatchingElements(result)) {
-            for (Node identifier : findMatchingIdentifierNodes(elem.getNode(), managedBeanName)) {
-                WhereUsedQueryElement wuqe =
-                        new WhereUsedQueryElement(elem.getParserResult().getFileObject(), managedBeanName, elem, identifier, getParserResult(elem.getParserResult().getFileObject()));
-                refactoringElementsBag.add(refactoring, wuqe);
+        String beanName = findBeanName(clazz);
+        if (beanName != null) {
+            ELIndex index = ELIndex.get(handle.getFileObject());
+            Collection<? extends IndexResult> result = index.findIdentifierReferences(beanName);
+            for (ELElement elem : getMatchingElements(result)) {
+                for (Node identifier : findMatchingIdentifierNodes(elem.getNode(), beanName)) {
+                    WhereUsedQueryElement wuqe =
+                            new WhereUsedQueryElement(elem.getParserResult().getFileObject(), beanName, elem, identifier, getParserResult(elem.getParserResult().getFileObject()));
+                    refactoringElementsBag.add(refactoring, wuqe);
+                }
+            }
+        }
+        return null;
+    }
+
+    private String findBeanName(String clazz) {
+        for (ELVariableResolver resolver : getResolvers()) {
+            String beanName = resolver.getBeanName(clazz, getFileObject());
+            if (beanName != null) {
+                return beanName;
             }
         }
         return null;
@@ -154,17 +165,32 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             }
         });
 
-        ELVariableResolver resolver = Lookup.getDefault().lookup(ELVariableResolver.class);
-        for (Node n : matchingNodes) {
-            String expression = resolver.getReferredExpression(elElement.getParserResult().getSnapshot(),
-                    elElement.getOriginalOffset().getStart() + n.startOffset());
-            if (expression != null) {
-                Node expressionNode = ELParser.parse(expression);
-                if (refersToType(expressionNode, targetType.getEnclosingElement().asType())) {
-                    addElements(elElement, Collections.singletonList(n), refactoringElementsBag);
+        for (ELVariableResolver resolver : getResolvers()) {
+            for (Node n : matchingNodes) {
+                String expression = resolver.getReferredExpression(elElement.getParserResult().getSnapshot(),
+                        elElement.getOriginalOffset().getStart() + n.startOffset());
+                if (expression != null) {
+                    Node expressionNode = ELParser.parse(expression);
+                    if (refersToType(expressionNode, targetType.getEnclosingElement().asType())) {
+                        addElements(elElement, Collections.singletonList(n), refactoringElementsBag);
+                    }
                 }
             }
         }
+    }
+
+    private Collection<? extends ELVariableResolver> getResolvers() {
+        return Lookup.getDefault().lookupAll(ELVariableResolver.class);
+    }
+
+    private String findBeanClass(String beanName) {
+        for (ELVariableResolver resolver : getResolvers()) {
+            String beanClass = resolver.getBeanClass(beanName, getFileObject());
+            if (beanClass != null) {
+                return beanClass;
+            }
+        }
+        return null;
     }
 
     protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
@@ -184,11 +210,11 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    FacesManagedBean fmb = findManagedBeanByName(node.getImage());
-                    if (fmb == null) {
+                    String beanClass = findBeanClass(node.getImage());
+                    if (beanClass == null) {
                         return;
                     }
-                    TypeElement fmbType = info.getElements().getTypeElement(fmb.getManagedBeanClass());
+                    TypeElement fmbType = info.getElements().getTypeElement(beanClass);
                     TypeMirror enclosing = fmbType.asType();
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
@@ -226,11 +252,11 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    FacesManagedBean fmb = findManagedBeanByName(node.getImage());
-                    if (fmb == null) {
+                    String beanClass = findBeanClass(node.getImage());
+                    if (beanClass == null) {
                         return;
                     }
-                    TypeElement fmbType = info.getElements().getTypeElement(fmb.getManagedBeanClass());
+                    TypeElement fmbType = info.getElements().getTypeElement(beanClass);
                     TypeMirror enclosing = fmbType.asType();
                     Node current = parent;
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
