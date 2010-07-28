@@ -81,7 +81,7 @@ public class ReinstatingTreeBuilderTest extends NbTestCase {
         System.out.println("mode=" + tr.treeBuilderState);
 
         StateSnapshot snapshot = Html5Parser.makeTreeBuilderSnapshot(tr);
-        ReinstatingTreeBuilder tb = new ReinstatingTreeBuilder(snapshot);
+        ReinstatingTreeBuilder tb = ReinstatingTreeBuilder.create(snapshot);
 
         assertCanFollow(false, tr, ElementName.P, tb);
         
@@ -100,7 +100,7 @@ public class ReinstatingTreeBuilderTest extends NbTestCase {
         
 
         snapshot = Html5Parser.makeTreeBuilderSnapshot(body);
-        tb = new ReinstatingTreeBuilder(snapshot);
+        tb = ReinstatingTreeBuilder.create(snapshot);
 
         assertCanFollow(true, body, ElementName.TSPAN, tb);
         

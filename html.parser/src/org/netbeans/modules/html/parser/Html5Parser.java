@@ -164,7 +164,7 @@ public class Html5Parser implements HtmlParser {
             if(type == HtmlTagType.OPEN_TAG) {
                 //open tags
                 StateSnapshot snapshot = makeTreeBuilderSnapshot(afterNode);
-                ReinstatingTreeBuilder builder = new ReinstatingTreeBuilder(snapshot);
+                ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);
 
                 HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
                 for(ElementName element : ElementName.ELEMENT_NAMES) {
@@ -176,14 +176,22 @@ public class Html5Parser implements HtmlParser {
 
                         //XXX is it even correct to assume that the result
                         //will be the same for all members of one group????
+                        
+//                        System.out.print("element " + element + "...");
                         enabled = builder.canFollow(afterNode, element);
+//                        System.out.println(enabled ? "+" : "-");
                         enabledGroups.put(group, enabled);
+
+                        if(enabled.booleanValue()) {
+                            //add all element from the group as possible
+                            for(ElementName member : ElementNameGroups.getElementForTreeBuilderGroup(group)) {
+                                possible.add(new HtmlElement2HtmlTagWrapper(member));
+                            }
+
+                        }
+
                     }
 
-                    if(enabled.booleanValue()) {
-                        //the element falls to a group already marked as possible in the context
-                        possible.add(new HtmlElement2HtmlTagWrapper(element));
-                    }
                 }
                 
 
@@ -215,7 +223,7 @@ public class Html5Parser implements HtmlParser {
             if (obj == null) {
                 return false;
             }
-            if (getClass() != obj.getClass()) {
+            if(!(obj instanceof HtmlTag)) {
                 return false;
             }
             final HtmlTag other = (HtmlTag) obj;

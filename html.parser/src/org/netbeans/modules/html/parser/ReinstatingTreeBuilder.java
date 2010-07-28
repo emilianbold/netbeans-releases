@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ElementName;
 import nu.validator.htmlparser.impl.HtmlAttributes;
 import nu.validator.htmlparser.impl.StateSnapshot;
+import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.impl.TreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
@@ -67,7 +68,13 @@ public class ReinstatingTreeBuilder extends TreeBuilder<AstNode>{
 
     String errorOrFatalError; //debugging purposes
 
-    public ReinstatingTreeBuilder(StateSnapshot<AstNode> treeBuilderSnapshot) {
+    public static ReinstatingTreeBuilder create(StateSnapshot<AstNode> treeBuilderSnapshot) {
+        ReinstatingTreeBuilder builder = new ReinstatingTreeBuilder(treeBuilderSnapshot);
+        builder.tokenizer = new Tokenizer(builder);
+        return builder;
+    }
+
+    private ReinstatingTreeBuilder(StateSnapshot<AstNode> treeBuilderSnapshot) {
         this.snapshot = treeBuilderSnapshot;
 
         setErrorHandler(new ErrorHandler() {
@@ -119,7 +126,6 @@ public class ReinstatingTreeBuilder extends TreeBuilder<AstNode>{
 
     @Override
     protected void elementPushed(String string, String string1, AstNode t) throws SAXException {
-        System.out.println("+" + string1);
         super.elementPushed(string, string1, t);
         pushedNodes.push(t);
     }

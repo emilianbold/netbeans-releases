@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.parser;
 
 import java.io.IOException;
@@ -71,10 +70,7 @@ public class Html5ParserTest extends NbTestCase {
 //        String code = "<!DOCTYPE html></p><section><p>cau<p>  <p>ahoj</section><section><div></div></section>";
 //        String code = "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"><section><p id=\"my\">cau<p><p class=\"klasa\">ahoj</section>";
 //        String code = "<!DOCTYPE html><html xmlns:myns=\"http://marek.org/\"><myns:section><p id=\"my\">cau<p><p class=\"klasa\">ahoj</myns:section></html>";
-
 //        AstNodeUtils.dumpTree(root);
-
-    
     public void testBasic() throws SAXException, IOException, ParseException {
         HtmlParseResult result = parse("<!doctype html><section><div></div></section>");
         AstNode root = result.root();
@@ -82,7 +78,6 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(AstNodeUtils.query(root, "html/body/section/div")); //html/body are generated
     }
 
-    
     public void testHtmlAndBodyTags() throws ParseException {
         HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
         AstNode root = result.root();
@@ -112,10 +107,10 @@ public class Html5ParserTest extends NbTestCase {
     }
 
     public void testStyle() throws ParseException {
-        String code = "<!DOCTYPE html>\n"+
-        "<style type=\"text/css\">\n" +
-            "@import \"resources2/ezcompik/newcss2moje.css\";\n"+
-        "</style>\n";
+        String code = "<!DOCTYPE html>\n"
+                + "<style type=\"text/css\">\n"
+                + "@import \"resources2/ezcompik/newcss2moje.css\";\n"
+                + "</style>\n";
 
 //        AstNodeTreeBuilder.DEBUG = true;
         HtmlParseResult result = parse(code);
@@ -151,23 +146,13 @@ public class Html5ParserTest extends NbTestCase {
 
         assertTrue(!possible.isEmpty());
 
-        HtmlTag divTag = new HtmlTag() {
-            public String getName() {
-                return "div";
-            }
-        };
-
-        HtmlTag headTag = new HtmlTag() {
-            public String getName() {
-                return "head";
-            }
-        };
+        HtmlTag divTag = new HtmlTagImpl("div");
+        HtmlTag headTag = new HtmlTagImpl("head");
 
         assertTrue(possible.contains(divTag));
         assertFalse(possible.contains(headTag));
 
     }
-
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
         HtmlSource source = new HtmlSource(code);
@@ -178,4 +163,38 @@ public class Html5ParserTest extends NbTestCase {
         return result;
     }
 
+    private static class HtmlTagImpl implements HtmlTag {
+
+        private String name;
+
+        public HtmlTagImpl(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof HtmlTag)) {
+                return false;
+            }
+            final HtmlTag other = (HtmlTag) obj;
+            if ((this.name == null) ? (other.getName() != null) : !this.name.equals(other.getName())) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 67 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+    }
 }
