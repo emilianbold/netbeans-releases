@@ -69,20 +69,44 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
-/** Interface that provides basic information about a virtual
-* filesystem. Classes that implement it
-* should follow JavaBean conventions because when a new
-* instance of a filesystem class is inserted into the system, it should
-* permit the user to modify it with standard Bean properties.
-* <P>
-* Implementing classes should also have associated subclasses of {@link FileObject}.
-* <p>Although the class is serializable, only the {@link #isHidden hidden state} and {@link #getSystemName system name}
-* are serialized, and the deserialized object is by default {@link #isValid invalid} (and may be a distinct
-* object from a valid filesystem in the Repository). If you wish to safely deserialize a file
-* system, you should after deserialization try to replace it with a filesystem of the
-* {@link Repository#findFileSystem same name} in the Repository.
-* @author Jaroslav Tulach
-*/
+/**
+ * Interface that provides basic information about a virtual filesystem.
+ * <p>Implementing classes should also have associated subclasses of {@link FileObject}.
+ * But most subclasses will be of either {@link AbstractFileSystem} or {@link MultiFileSystem}.</p>
+ * <p>When using the {@code org.netbeans.modules.masterfs} module, you do not need
+ * to explicitly create any filesystems just to access disk files; use {@link FileUtil#toFileObject}
+ * instead.</p>
+ * <p>The system filesystem may be gotten from {@link FileUtil#getConfigRoot} and
+ * normally includes XML layers created using {@link XMLFileSystem}.</p>
+ * <p>Since version 7.1 you can dynamically change the content of the system filesystem.
+ * As the system filesystem contains various definitions (in NetBeans Platform menus,
+ * toolbars, layout of windows, etc.), you can make nonpersistent changes to these settings.
+ * First create a filesystem implementation, then register it in default lookup.
+ * It is easiest to subclass {@code MultiFileSystem} so you can proxy to filesystems
+ * created by other means not amenable to subclassing. For example:</p>
+ * <pre>
+&#64;ServiceProvider(service=FileSystem.class)
+public class LoginFileSystem extends MultiFileSystem {
+    private static LoginFileSystem INSTANCE;
+    public LoginFileSystem() {
+        INSTANCE = this;
+        setPropagateMasks(true); // in case you want to use *_hidden masks
+        // initially empty (no delegates)
+    }
+    public static void injectLayer(URL u) throws SAXException {
+        INSTANCE.setDelegates(new XMLFileSystem(u));
+    }
+}
+ * </pre>
+ * <p>If you show a dialog letting the user log in to some server, you can call
+ * {@code LoginFileSystem.injectLayer(...)} with the URL to an XML layer.
+ * The contents of the layer will become available only after login.
+ * You could also use {@link FileUtil#createMemoryFileSystem} to programmatically
+ * construct entries rather than using a static layer, and so on.</p>
+ * <p>Since version 7.3 you can also return {@link Boolean#TRUE} from a call to
+ * {@code yourFS.getRoot().getAttribute("fallback")} so as to place your filesystem
+ * behind all layers provided by standard modules.</p>
+ */
 public abstract class FileSystem implements Serializable {
 
     private static final Logger LOG = Logger.getLogger(FileSystem.class.getName());
