@@ -515,10 +515,12 @@ public abstract class J2eeModuleProvider {
         @NonNull
         public Set<ServerLibraryDependency> getLibraries() throws ConfigurationException;
 
-        void addLibraryChangeListener(@NonNull ChangeListener listener);
+        public void addLibraryChangeListener(@NonNull ChangeListener listener);
 
-        void removeLibraryChangeListener(@NonNull ChangeListener listener);
-        
+        public void removeLibraryChangeListener(@NonNull ChangeListener listener);
+
+        public boolean isDescriptorRequired();
+
         /**
          * Retrieves message destinations stored in the module.
          * 
