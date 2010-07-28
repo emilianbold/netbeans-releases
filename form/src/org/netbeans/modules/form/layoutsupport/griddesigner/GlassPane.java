@@ -60,6 +60,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
@@ -925,9 +926,14 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     if (actions != null) {
                         JPopupMenu menu = new JPopupMenu();
                         for (GridAction action : actions) {
-                            GridActionWrapper wrapper = new GridActionWrapper(action);
-                            wrapper.setDesignerContext(context);
-                            menu.add(wrapper);
+                            JMenuItem menuItem = action.getPopupPresenter(GlassPane.this);
+                            if (menuItem == null) {
+                                GridActionWrapper wrapper = new GridActionWrapper(action);
+                                wrapper.setDesignerContext(context);
+                                menu.add(wrapper);
+                            } else {
+                                menu.add(menuItem);
+                            }
                         }
                         menu.show(GlassPane.this, point.x, point.y);
                     }
