@@ -624,6 +624,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     localResult(env);
                     addValueKeywords(env);
                     break;
+                case TRY:
+                    insideTry(env);
+                    break;
                 case CATCH:
                     insideCatch(env);
                     break;
@@ -1726,6 +1729,63 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
+        private void insideTry(Env env) throws IOException {
+            CompilationController controller = env.getController();
+            TreePath path = env.getPath();
+            TryTree tt = (TryTree)path.getLeaf();
+            TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, tt, env.getOffset());
+            if (last == null || (last.token().id() != JavaTokenId.LPAREN && last.token().id() != JavaTokenId.SEMICOLON)) {
+                int offset = env.getOffset();
+                SourcePositions sp = env.getSourcePositions();
+                CompilationUnitTree root = env.getRoot();
+                Tree lastRes = null;
+                for (Tree res : tt.getResources()) {
+                    if (sp.getEndPosition(root, res) >= offset)
+                        break;
+                    lastRes = res;
+                }
+                if (lastRes != null) {
+                    controller.toPhase(Phase.RESOLVED);
+                    TreePath resPath = new TreePath(path, lastRes);                    
+                    Element el = controller.getTrees().getElement(resPath);
+                    if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+                        TypeMirror tm = controller.getTrees().getTypeMirror(resPath);
+                        final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+                        Scope scope = env.getScope();
+                        final ExecutableElement method = scope.getEnclosingMethod();
+                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                            public boolean accept(Element e, TypeMirror t) {
+                                return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                                        !illegalForwardRefs.contains(e);
+                            }
+                        };
+                        for (String name : Utilities.varNamesSuggestions(tm, env.getPrefix(), controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), false))
+                            results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
+                    }
+                }
+                return;
+            }
+            addKeyword(env, FINAL_KEYWORD, SPACE, false);
+            addLocalMembersAndVars(env);
+            Set<? extends TypeMirror> smarts = env.getSmartTypes();
+            if (smarts != null) {
+                Elements elements = controller.getElements();
+                for (TypeMirror smart : smarts) {
+                    if (smart != null) {
+                        if (smart.getKind() == TypeKind.DECLARED) {
+                            for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
+                                TypeElement elem = (TypeElement)subtype.asElement();
+                                if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))
+                                    results.add(JavaCompletionItem.createTypeItem(controller, elem, subtype, anchorOffset, true, elements.isDeprecated(elem), true, true, false, true));
+                                env.addToExcludes(elem);
+                            }
+                        }
+                    }
+                }
+            }
+            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+        }
+
         private void insideCatch(Env env) throws IOException {
             TreePath path = env.getPath();
             String prefix = env.getPrefix();
@@ -3881,6 +3941,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 ret.add(type);
                         }
                         return ret;
+                    case TRY:
+                        TypeElement te = controller.getElements().getTypeElement("java.lang.AutoCloseable"); //NOI18N
+                        return te != null ? Collections.singleton(controller.getTypes().getDeclaredType(te)) : null;
                     case IF:
                         IfTree iff = (IfTree)tree;
                         return iff.getCondition() == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
@@ -3956,7 +4019,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ret = new HashSet<TypeMirror>();
                         Types types = controller.getTypes();
                         ret.add(controller.getTypes().getPrimitiveType(TypeKind.INT));
-                        TypeElement te = controller.getElements().getTypeElement("java.lang.Enum"); //NOI18N
+                        te = controller.getElements().getTypeElement("java.lang.Enum"); //NOI18N
                         if (te != null)
                             ret.add(types.getDeclaredType(te));
                         if (controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0) {
