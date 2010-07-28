@@ -400,35 +400,24 @@ public final class WLStartServer extends StartServer {
         protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
             String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            if ( Vendor.ORACLE.toString().equals(vendor) || Vendor.SUN.toString().equals(vendor))
-            {
-                result = builder.addEnvironmentVariable(JAVA_VENDOR,          
+            result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,          
                         vendor);
-            }
-            String beaHome = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.BEA_JAVA_HOME);
-            String sunHome = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.SUN_JAVA_HOME);
-            if ( (beaHome == null || beaHome.trim().length() ==0)  &&
-                    (sunHome==null || sunHome.trim().length()==0 ))
-            {
-                JavaPlatform javaPlatform = getSettings().getJavaPlatform();
-                vendor = javaPlatform.getVendor();
+            /*JavaPlatform javaPlatform = getSettings().getJavaPlatform();
+            vendor = javaPlatform.getVendor();
 
-                String javaHome = getJavaHome(javaPlatform);
-                result = result.addEnvironmentVariable("JAVA_HOME", javaHome);  // NOI18N
-                if (SUN.equals(vendor)) {
-                    result = result.addEnvironmentVariable("SUN_JAVA_HOME",     // NOI18N
-                            javaHome);
-                }
-            }
+            String javaHome = getJavaHome(javaPlatform);
+            result = result.addEnvironmentVariable("JAVA_HOME", javaHome); // NOI18N
+            if (SUN.equals(vendor)) {
+                result = result.addEnvironmentVariable("SUN_JAVA_HOME", // NOI18N
+                        javaHome);
+            }*/
 
             StringBuilder javaOptsBuilder = new StringBuilder();
             String[] profJvmArgs = getSettings().getJvmArgs();
             for (int i = 0; i < profJvmArgs.length; i++) {
                 javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
             }
-            result = result.addEnvironmentVariable(JAVA_OPTIONS,          // NOI18N
+            result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,          // NOI18N
                     javaOptsBuilder.toString());
             return result;
         }
@@ -468,7 +457,7 @@ public final class WLStartServer extends StartServer {
             debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DEBUGGER_PORT_ATTR));
 
-            ExternalProcessBuilder result = builder.addEnvironmentVariable(JAVA_OPTIONS,
+            ExternalProcessBuilder result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,
                     "-Xdebug -Xnoagent -Djava.compiler=none " +
                     "-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="
                     + debugPort);   //NOI18N
@@ -478,9 +467,9 @@ public final class WLStartServer extends StartServer {
 
     private class WLStartTask implements Runnable {
 
-        static final String JAVA_VENDOR = "JAVA_VENDOR";    // NOI18N
+        static final String JAVA_VENDOR_VARIABLE = "JAVA_VENDOR";    // NOI18N
 
-        static final String JAVA_OPTIONS = "JAVA_OPTIONS";  // NOI18N
+        static final String JAVA_OPTIONS_VARIABLE = "JAVA_OPTIONS";  // NOI18N
 
         /**
          * The amount of time in milliseconds during which the server should
@@ -599,15 +588,12 @@ public final class WLStartServer extends StartServer {
             ExternalProcessBuilder result = builder;
             String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
             if ( javaOpts!= null && javaOpts.trim().length() >0 ){
-                result = builder.addEnvironmentVariable(JAVA_OPTIONS,          
+                result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,          
                         javaOpts.trim());
             }
             String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            if ( Vendor.ORACLE.toString().equals(vendor) || Vendor.SUN.toString().equals(vendor))
-            {
-                result = builder.addEnvironmentVariable(JAVA_VENDOR,         
+            result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
                         vendor);
-            }
             return result;
         }
 

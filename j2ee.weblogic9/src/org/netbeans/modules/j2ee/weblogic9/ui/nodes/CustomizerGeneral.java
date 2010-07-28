@@ -194,7 +194,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(serverPortLabel)
                         .addGap(18, 18, 18)
-                        .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(NoteChangesLabel))
                 .addContainerGap())
         );
