@@ -203,14 +203,7 @@ public abstract class JavaSourceTaskFactory {
         }
         
         for (Entry<JavaSource, CancellableTask<CompilationInfo>> e : toAdd.entrySet()) {
-            try {
-                ACCESSOR2.addPhaseCompletionTask(e.getKey(), e.getValue(), phase, priority);
-            } catch (FileObjects.InvalidFileException ie) {
-                LOG.info("JavaSource.addPhaseCompletionTask called on deleted file");       //NOI18N
-            } catch (IOException ex) {
-                if (LOG.isLoggable(Level.SEVERE))
-                    LOG.log(Level.SEVERE, ex.getMessage(), ex);
-            }
+            ACCESSOR2.addPhaseCompletionTask(e.getKey(), e.getValue(), phase, priority);
         }
     }
        
@@ -249,7 +242,7 @@ public abstract class JavaSourceTaskFactory {
             }
         };
         ACCESSOR2 = new Accessor2() {
-            public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) throws IOException {
+            public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) {
                 JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js, task, phase, priority);                
             }
 
@@ -264,7 +257,7 @@ public abstract class JavaSourceTaskFactory {
     }
 
     static interface Accessor2 {
-        public abstract void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority ) throws IOException;
+        public abstract void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority );
         public abstract void removePhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task );
         public abstract void rescheduleTask(JavaSource js, CancellableTask<CompilationInfo> task);
     }
