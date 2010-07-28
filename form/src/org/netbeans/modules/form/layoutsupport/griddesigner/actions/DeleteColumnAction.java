@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola
  */
-public class DeleteColumnAction implements GridAction {
+public class DeleteColumnAction extends AbstractGridAction {
     private String name;
 
     public DeleteColumnAction() {
