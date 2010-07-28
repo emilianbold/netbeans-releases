@@ -42,14 +42,23 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
+import java.util.logging.Level;
 import javax.swing.JLabel;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent.Registry;
+import org.openide.windows.WindowManager;
 
 /**
  * Implementation provides access to kenai API
@@ -59,6 +68,10 @@ import org.openide.nodes.Node;
 public abstract class KenaiAccessor {
 
     public static final String PROP_LOGIN = "kenai.login.changed";              // NOI18N
+
+    public KenaiAccessor() {
+       WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
+    }
 
     /**
      * Returns all projects from the kenai dashboard
@@ -173,4 +186,34 @@ public abstract class KenaiAccessor {
      */
     public abstract void removePropertyChangeListener(PropertyChangeListener listener, String kenaiHostUrl);
 
+    private class ActivatedTCListener implements PropertyChangeListener {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            Registry registry = WindowManager.getDefault().getRegistry();
+            if (registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                TopComponent tc = registry.getActivated();
+                BugtrackingManager.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
+                if(tc instanceof QueryTopComponent) {
+                    QueryTopComponent qtc = (QueryTopComponent) tc;
+                    Query query = qtc.getQuery();
+                    if(query == null) {
+                        return;
+                    }
+                    Repository repository = query.getRepository();
+                    if(repository == null) {
+                        return;
+                    }
+                    KenaiSupport support = repository.getLookup().lookup(KenaiSupport.class);
+                    if(support == null || query != support.getAllIssuesQuery(repository)) {
+                        return;
+                    }
+                    KenaiProject kenaiProject = repository.getLookup().lookup(KenaiProject.class);
+                    if(kenaiProject == null) {
+                        return;
+                    }
+                    kenaiProject.fireQueryActivated(query);
+                }
+            }
+        }
+    }
 }

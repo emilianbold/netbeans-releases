@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,9 +57,16 @@ import java.util.Map;
 import java.util.Set;
 import javax.faces.context.ExternalContext;
 //import javax.portlet.PortletContext;
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import org.openide.util.Enumerations;
 
 /**
@@ -428,6 +436,54 @@ public class RaveExternalContext extends ExternalContext {
         }
 
         public void setCharacterEncoding(String str) throws java.io.UnsupportedEncodingException {
+        }
+        @Override
+        public boolean authenticate(HttpServletResponse hsr) throws IOException, ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public void login(String string, String string1) throws ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public void logout() throws ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Collection<Part> getParts() throws IOException, ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Part getPart(String string) throws IOException, ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public ServletContext getServletContext() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public AsyncContext startAsync() throws IllegalStateException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public AsyncContext startAsync(ServletRequest sr, ServletResponse sr1) throws IllegalStateException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public boolean isAsyncStarted() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public boolean isAsyncSupported() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public AsyncContext getAsyncContext() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public DispatcherType getDispatcherType() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     };
     

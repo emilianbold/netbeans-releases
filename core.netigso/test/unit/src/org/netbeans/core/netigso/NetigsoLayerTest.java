@@ -58,14 +58,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * How does OSGi integration deals with layer registration?
@@ -78,15 +75,6 @@ public class NetigsoLayerTest extends SetupHid {
 
     public NetigsoLayerTest(String name) {
         super(name);
-    }
-
-    public static Test suite() {
-        Test t = null;
-//        t = new NetigsoTest("testOSGiCanRequireBundleOnNetBeans");
-        if (t == null) {
-            t = new NbTestSuite(NetigsoLayerTest.class);
-        }
-        return t;
     }
 
     protected @Override void setUp() throws Exception {

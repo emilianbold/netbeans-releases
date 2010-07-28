@@ -7,7 +7,6 @@ Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
 
-
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
 Development and Distribution License("CDDL") (collectively, the
@@ -60,7 +59,7 @@ made subject to such option by the copyright holder.
           <fileset dir="extsrc" excludes="${jar-excludes}"/>
         </copy>
     </target>
-    
+
     <target name="ext-jar" depends="ext-compile">
         <mkdir dir="${cluster}/modules/ext"/>
         <jar jarfile="${cluster}/modules/ext/jsp-parser-ext.jar" compress="false">
@@ -69,44 +68,52 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="netbeans-extra" depends="release,ext-jar"/>
-    
+
     <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
         <locjar jarfile="${cluster}/modules/ext/jsp-parser-ext.jar"
                 basedir="${nb_all}/translatedfiles/src/${module.name}/extsrc"
                 compress="${build.package.compress}"/>
     </target>
 
-     <!-- location of glassfish instalation -->
-    <property name="glassfish_location" location="/space/servers/glassfishV2B58"/>
-    
+     
     <target name="create-jars-from-glassfish">
+        <!-- location of glassfish instalation -->
+        
+        <!-- <property name="glassfish_location" location="/Users/tomslot/glassfishv3"/> -->
+        <fail message="Set glassfish_location">
+            <condition>
+                <not>
+                    <available  file="${glassfish_location}" type="dir"/>
+                </not>
+            </condition>
+        </fail>
+
         <!-- glassfish-jspparser.jar -->
-        <mkdir dir="./glassfishjspparser"/>
-        <unzip src="${glassfish_location}/lib/appserv-rt.jar" dest="./glassfishjspparser/"/>
-        <delete file="./glassfish-jspparser-2.0.jar" />
-        <zip  basedir="./glassfishjspparser" 
-        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class, com/sun/appserv/server/util/PreprocessorUtil.class" 
-            zipfile="./external/glassfish-jspparser-2.0.jar" />
-        
-        <!-- glassfish-logging.jar -->
-        <mkdir dir="./glassfishlogging"/>
-        <delete file="./glassfish-logging-2.0.jar" />
-        <zip  basedir="./glassfishjspparser" includes="com/sun/org/apache/commons/logging/**" 
-            zipfile="../libs.glassfish_logging/external/glassfish-logging-2.0.jar" />
-        
-        <delete dir="./glassfishjspparser" />
-        <delete dir="./glassfishlogging" />
-        
-        <!-- servlet2.5-jsp2.1-api.jar -->
-        <mkdir dir="./servletjspapi" />
-        <unzip src="${glassfish_location}/lib/javaee.jar" dest="./servletjspapi/"/>
-        <mkdir dir="./servletjspapi/javax/servlet/resources" />
-        <copy todir="./servletjspapi/javax/servlet/resources">
-            <fileset dir="${glassfish_location}/lib/dtds">
+        <mkdir dir="glassfishjspparser"/>
+        <unzip src="${glassfish_location}/glassfish/modules/jsp-impl.jar" dest="glassfishjspparser/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/el-impl.jar" dest="glassfishjspparser/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/glassfish-ee-api.jar" dest="glassfishjspparser/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/common-util.jar" dest="glassfishjspparser/"/>
+        <delete file="glassfish-jspparser-3.0.jar" />
+        <zip  basedir="glassfishjspparser"
+        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class, com/sun/appserv/server/util/PreprocessorUtil.class"
+            zipfile="./external/glassfish-jspparser-3.0.jar" />
+
+        <delete dir="glassfishjspparser" />
+
+        <!-- servlet3.0-jsp2.2-api.jar -->
+        <mkdir dir="servletjspapi" />
+        <unzip src="${glassfish_location}/glassfish/modules/gf-client-module.jar" dest="./servletjspapi/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jar" dest="./servletjspapi/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jsp.jar" dest="./servletjspapi/"/>
+
+        <mkdir dir="servletjspapi/javax/servlet/resources" />
+        <copy todir="servletjspapi/javax/servlet/resources">
+            <fileset dir="./servletjspapi/dtds">
                 <include name="web-app_2_2.dtd"/>
                 <include name="web-app_2_3.dtd"/>
             </fileset>
-            <fileset dir="${glassfish_location}/lib/schemas">
+            <fileset dir="servletjspapi/schemas">
                 <include name="XMLSchema.dtd"/>
                 <include name="web-app_2_4.xsd"/>
                 <include name="web-app_2_5.xsd"/>
@@ -117,29 +124,29 @@ made subject to such option by the copyright holder.
                 <include name="javaee_web_services_client_1_2.xsdjsp_2_0.xsd"/>
                 <include name="jsp_2_1.xsd"/>
                 <include name="jsp_2_0.xsd"/>
-                <include name="datatypes.dtd"/>     
+                <include name="datatypes.dtd"/>
                 <include name="xml.xsd"/>
                 <include name="web-jsptaglibrary_2_0.xsd"/>
                 <include name="web-jsptaglibrary_2_1.xsd"/>
             </fileset>
         </copy>
-        
-        <mkdir dir="./servletjspapi/javax/servlet/jsp/resources" />
-        <copy todir="./servletjspapi/javax/servlet/jsp/resources">
-            <fileset dir="${glassfish_location}/lib/dtds">
+
+        <mkdir dir="servletjspapi/javax/servlet/jsp/resources" />
+        <copy todir="servletjspapi/javax/servlet/jsp/resources">
+            <fileset dir="servletjspapi/dtds">
                 <include name="web-jsptaglibrary_1_1.dtd"/>
                 <include name="web-jsptaglibrary_1_2.dtd"/>
                 <include name="web-app_2_3.dtd"/>
             </fileset>
-            <fileset dir="${glassfish_location}/lib/schemas">
+            <fileset dir="servletjspapi/schemas">
                 <include name="web-jsptaglibrary_2_0.xsd"/>
                 <include name="web-jsptaglibrary_2_1.xsd"/>
                 <include name="jsp_2_1.xsd"/>
                 <include name="jsp_2_0.xsd"/>
             </fileset>
         </copy>
-        <delete file="./servlet2.5-jsp2.1-api.jar"/>
-        <zip basedir="./servletjspapi" includes="javax/servlet/**, javax/el/**" zipfile="../servletjspapi/external/servlet2.5-jsp2.1-api.jar" />
-        <delete dir="./servletjspapi" />
+        <delete file="servlet3.0-jsp2.2-api.jar"/>
+        <zip basedir="servletjspapi" includes="javax/servlet/**, javax/el/**" zipfile="../servletjspapi/external/servlet3.0-jsp2.2-api.jar" />
+        <delete dir="servletjspapi" />
     </target>
 </project>

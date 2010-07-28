@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor;
 
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
@@ -91,7 +92,7 @@ public class NbReaderProvider implements ReaderProvider {
 
     @Override
     public boolean isXMLContent(String identifier) {
-        return HtmlVersion.findHtmlVersion(identifier).isXhtml();
+        return HtmlVersion.findByPublicId(identifier).isXhtml();
     }
 
     @Override

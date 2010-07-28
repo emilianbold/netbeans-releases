@@ -76,6 +76,8 @@ public final class PhpFrameworks {
     /**
      * Add {@link LookupListener listener} to be notified when frameworks change
      * (new framework added, existing removed).
+     * <p>
+     * To avoid memory leaks, do not forget to {@link #removeFrameworksListener(LookupListener) remove} the listener.
      * @param listener {@link LookupListener listener} to be added
      * @since 1.14
      * @see #removeFrameworksListener(LookupListener)

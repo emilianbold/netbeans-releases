@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -69,11 +70,12 @@ public class DiffAction extends ContextAction {
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty())
             return false;
         return true;
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Diff"; // NOI18N
     }
@@ -113,7 +115,7 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
 
-    public static void diff(File file, String rev1, String rev2) {
+    public static void diff(File file, HgRevision rev1, HgRevision rev2) {
         MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2, false); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N

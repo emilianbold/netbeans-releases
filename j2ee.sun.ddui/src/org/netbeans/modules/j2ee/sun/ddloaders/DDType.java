@@ -48,6 +48,12 @@ public final class DDType {
     private static final String NAME_SUNWEBAPP = "sun-web.xml"; // NOI18N
     private static final String NAME_SUNRESOURCE = "sun-resources.xml"; // NOI18N
     
+    private static final String NAME_GFAPPCLIENT = "glassfish-application-client.xml"; // NOI18N
+    private static final String NAME_GFAPPLICATION = "glassfish-application.xml"; // NOI18N
+    private static final String NAME_GFEJBJAR = "glassfish-ejb-jar.xml"; // NOI18N
+    private static final String NAME_GFWEBAPP = "glassfish-web.xml"; // NOI18N
+    private static final String NAME_GFRESOURCE = "glassfish-resources.xml"; // NOI18N
+
     // Type declarations for the different descriptor types.
     public static DDType DD_SUN_WEB_APP = new DDType(NAME_SUNWEBAPP, ModuleType.WAR, DDViewFactory.SunWebDDViewFactory.class);
     public static DDType DD_SUN_EJB_JAR = new DDType(NAME_SUNEJBJAR, ModuleType.EJB, DDViewFactory.SunEjbJarDDViewFactory.class);
@@ -55,6 +61,12 @@ public final class DDType {
     public static DDType DD_SUN_APPLICATION = new DDType(NAME_SUNAPPLICATION, ModuleType.EAR, DDViewFactory.SunApplicationDDViewFactory.class);
     public static DDType DD_SUN_CMP_MAPPINGS = new DDType(NAME_SUNCMPMAPPING, ModuleType.EJB, DDViewFactory.SunCmpMappingsDDViewFactory.class);
     public static DDType DD_SUN_RESOURCE = new DDType(NAME_SUNRESOURCE, null, DDViewFactory.SunResourceDDViewFactory.class);
+
+    public static DDType DD_GF_WEB_APP = new DDType(NAME_GFWEBAPP, ModuleType.WAR, DDViewFactory.SunWebDDViewFactory.class);
+    public static DDType DD_GF_EJB_JAR = new DDType(NAME_GFEJBJAR, ModuleType.EJB, DDViewFactory.SunEjbJarDDViewFactory.class);
+    public static DDType DD_GF_APP_CLIENT = new DDType(NAME_GFAPPCLIENT, ModuleType.CAR, DDViewFactory.SunAppClientDDViewFactory.class);
+    public static DDType DD_GF_APPLICATION = new DDType(NAME_GFAPPLICATION, ModuleType.EAR, DDViewFactory.SunApplicationDDViewFactory.class);
+    public static DDType DD_GF_RESOURCE = new DDType(NAME_GFRESOURCE, null, DDViewFactory.SunResourceDDViewFactory.class);
 
     // Various indexes for finding a DDType object
     private static Map<String, DDType> fileToTypeMap = new HashMap<String, DDType>(11);
@@ -66,6 +78,11 @@ public final class DDType {
         fileToTypeMap.put(NAME_SUNAPPCLIENT, DD_SUN_APP_CLIENT);
         fileToTypeMap.put(NAME_SUNCMPMAPPING, DD_SUN_CMP_MAPPINGS);
         fileToTypeMap.put(NAME_SUNRESOURCE, DD_SUN_RESOURCE);
+        fileToTypeMap.put(NAME_GFWEBAPP, DD_GF_WEB_APP);
+        fileToTypeMap.put(NAME_GFEJBJAR, DD_GF_EJB_JAR);
+        fileToTypeMap.put(NAME_GFAPPLICATION, DD_GF_APPLICATION);
+        fileToTypeMap.put(NAME_GFAPPCLIENT, DD_GF_APP_CLIENT);
+        fileToTypeMap.put(NAME_GFRESOURCE, DD_GF_RESOURCE);
     }
     
     public static DDType getDDType(String fileName) {

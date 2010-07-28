@@ -335,7 +335,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             if (isValid)
                 return NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn});
             else
-                return "<html><font color='#808080'><s>" + NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn});
+                return JavaFixAllImports.NOT_VALID_IMPORT_HTML + NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn});
         }
 
         public ChangeInfo implement() throws IOException {

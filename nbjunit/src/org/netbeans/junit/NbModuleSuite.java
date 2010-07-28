@@ -58,7 +58,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -163,8 +162,8 @@ public class NbModuleSuite {
         
         /** Regular expression to match clusters that shall be enabled.
          * To enable all cluster, one can use <code>".*"</code>. To enable
-         * ide and java clusters, it is handy to pass in <code>"ide.*|java.*</code>.
-         * There is no need to requrest presence of <code>platform.*</code> cluster,
+         * ide and java clusters, it is handy to pass in <code>"ide|java"</code>.
+         * There is no need to request presence of <code>platform</code> cluster,
          * as that is available all the time by default.
          * <p>
          * Since version 1.55 this method can be called multiple times.
@@ -438,7 +437,7 @@ public class NbModuleSuite {
      * determined from the actual classpath of a module, which is common
      * when in all NetBeans tests. All other modules are kept disabled.
      * In addition,it allows one limit the clusters that shall be made available.
-     * For example <code>ide.*|java.*</code> will start the container just
+     * For example <code>ide|java</code> will start the container just
      * with platform, ide and java clusters.
      * 
      * 
@@ -462,7 +461,7 @@ public class NbModuleSuite {
      * determined from the actual classpath of a module, which is common
      * when in all NetBeans tests. All other modules are kept disabled.
      * In addition,it allows one limit the clusters that shall be made available.
-     * For example <code>ide.*|java.*</code> will start the container just
+     * For example <code>ide|java</code> will start the container just
      * with platform, ide and java clusters.
      * 
      * 
@@ -639,14 +638,14 @@ public class NbModuleSuite {
             String selectiveClusters = System.getProperty("cluster.path.final"); // NOI18N
             Set<File> path = null;
             if (selectiveClusters != null) {
-                path = new HashSet<File>();
+                path = new TreeSet<File>();
                 for (String p : tokenizePath(selectiveClusters)) {
                     File f = new File(p);
                     path.add(f.getCanonicalFile());
                 }
             }
             if (path == null) {
-                path = new HashSet<File>(Arrays.asList(plat.getParentFile().listFiles()));
+                path = new TreeSet<File>(Arrays.asList(plat.getParentFile().listFiles()));
             }
             for (String c : regExps) {
                 for (File f : path) {

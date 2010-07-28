@@ -55,7 +55,9 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>javadoc</type>
+        <!-- Illegal to refer to Javadoc in the enterprise cluster from the java cluster; consider moving docs here, or overriding library definition in j2ee.platform:
         <resource>jar:nbinst://org.netbeans.modules.j2ee.platform/docs/javaee6-doc-api.zip!/</resource>
+        -->
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->

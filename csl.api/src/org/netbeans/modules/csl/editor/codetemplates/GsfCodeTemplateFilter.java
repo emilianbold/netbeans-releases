@@ -46,9 +46,9 @@ package org.netbeans.modules.csl.editor.codetemplates;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -84,6 +84,7 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         Source js = Source.create (component.getDocument());
         if (js != null) {
             try {
+                @SuppressWarnings("LeakingThisInConstructor")
                 Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(js), this);
                 if (!f.isDone()) {
                     f.cancel(true);
@@ -94,6 +95,7 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         }
     }
 
+    @Override
     public boolean accept(CodeTemplate template) {
         // Selection templates are eligible for "Surround With" should be filtered
         // based on whether the surrounding code makes sense (computed by
@@ -114,6 +116,7 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         return cancelled;
     }
 
+    @Override
     public void run (ResultIterator resultIterator) throws IOException, ParseException {
         if (isCancelled()) {
             return;
@@ -124,7 +127,8 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         }
         ParserResult parserResult = (ParserResult) result;
         Snapshot snapshot = parserResult.getSnapshot ();
-        CodeCompletionHandler completer = GsfCompletionProvider.getCompletable (snapshot.getSource ().getDocument (true),  startOffset);
+        Document doc = snapshot.getSource().getDocument(true);
+        CodeCompletionHandler completer = doc == null ? null : GsfCompletionProvider.getCompletable(doc, startOffset);
             
         if (completer != null && !isCancelled()) {
             templates = completer.getApplicableTemplates(parserResult, startOffset, endOffset);
@@ -133,6 +137,7 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
 
     public static final class Factory implements CodeTemplateFilter.Factory {
         
+        @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new GsfCodeTemplateFilter(component, offset);
         }

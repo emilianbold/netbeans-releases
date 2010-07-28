@@ -43,9 +43,7 @@
 package org.netbeans.modules.quicksearch;
 
 import java.util.Iterator;
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -56,21 +54,8 @@ public class CategoryResultTest extends NbTestCase {
     
     private Exception exc = null;
     
-    public CategoryResultTest() {
-        super("");
-    }
-    
     public CategoryResultTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(CategoryResultTest.class);
-        return suite;
     }
     
     /** Tests if CategoryResult data access is properly synchronized */

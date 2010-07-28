@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>javadoc</type>
-            <resource>jar:nbinst:///docs/struts-1.3.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/docs/struts-1.3.8-javadoc.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->

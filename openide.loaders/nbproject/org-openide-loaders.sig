@@ -1,9 +1,9 @@
 #Signature file v4.1
-#Version 7.10
+#Version 7.16
 
 CLSS public java.awt.Canvas
-cons public Canvas()
-cons public Canvas(java.awt.GraphicsConfiguration)
+cons public init()
+cons public init(java.awt.GraphicsConfiguration)
 innr protected AccessibleAWTCanvas
 intf javax.accessibility.Accessible
 meth public java.awt.image.BufferStrategy getBufferStrategy()
@@ -17,7 +17,7 @@ supr java.awt.Component
 hfds base,nameCounter,serialVersionUID
 
 CLSS public abstract java.awt.Component
-cons protected Component()
+cons protected init()
 fld public final static float BOTTOM_ALIGNMENT = 1.0
 fld public final static float CENTER_ALIGNMENT = 0.5
 fld public final static float LEFT_ALIGNMENT = 0.0
@@ -287,11 +287,11 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,changeSupportLock,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,opaquePropertyChangeListener,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
 
 CLSS public java.awt.Container
-cons public Container()
+cons public init()
 innr protected AccessibleAWTContainer
 meth protected java.lang.String paramString()
 meth protected void addImpl(java.awt.Component,java.lang.Object,int)
@@ -368,18 +368,17 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
-meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,ncomponents,numOfHWComponents,numOfLWComponents,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public java.awt.FlowLayout
-cons public FlowLayout()
-cons public FlowLayout(int)
-cons public FlowLayout(int,int,int)
+cons public init()
+cons public init(int)
+cons public init(int,int,int)
 fld public final static int CENTER = 1
 fld public final static int LEADING = 3
 fld public final static int LEFT = 0
@@ -427,7 +426,7 @@ intf java.util.EventListener
 meth public abstract void actionPerformed(java.awt.event.ActionEvent)
 
 CLSS public abstract java.awt.event.MouseAdapter
-cons public MouseAdapter()
+cons public init()
 intf java.awt.event.MouseListener
 intf java.awt.event.MouseMotionListener
 intf java.awt.event.MouseWheelListener
@@ -470,7 +469,7 @@ fld public final static int WIDTH = 1
 meth public abstract boolean imageUpdate(java.awt.Image,int,int,int,int,int)
 
 CLSS public java.beans.FeatureDescriptor
-cons public FeatureDescriptor()
+cons public init()
 meth public boolean isExpert()
 meth public boolean isHidden()
 meth public boolean isPreferred()
@@ -503,10 +502,10 @@ meth public abstract void readExternal(java.io.ObjectInput) throws java.io.IOExc
 meth public abstract void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 
 CLSS public java.io.IOException
-cons public IOException()
-cons public IOException(java.lang.String)
-cons public IOException(java.lang.String,java.lang.Throwable)
-cons public IOException(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Exception
 hfds serialVersionUID
 
@@ -523,7 +522,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
-cons protected Enum(java.lang.String,int)
+cons protected init(java.lang.String,int)
 intf java.io.Serializable
 intf java.lang.Comparable<{java.lang.Enum%0}>
 meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
@@ -540,15 +539,15 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
-cons public Exception()
-cons public Exception(java.lang.String)
-cons public Exception(java.lang.String,java.lang.Throwable)
-cons public Exception(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Throwable
 hfds serialVersionUID
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -565,14 +564,14 @@ CLSS public abstract interface java.lang.Runnable
 meth public abstract void run()
 
 CLSS public java.lang.Thread
-cons public Thread()
-cons public Thread(java.lang.Runnable)
-cons public Thread(java.lang.Runnable,java.lang.String)
-cons public Thread(java.lang.String)
-cons public Thread(java.lang.ThreadGroup,java.lang.Runnable)
-cons public Thread(java.lang.ThreadGroup,java.lang.Runnable,java.lang.String)
-cons public Thread(java.lang.ThreadGroup,java.lang.Runnable,java.lang.String,long)
-cons public Thread(java.lang.ThreadGroup,java.lang.String)
+cons public init()
+cons public init(java.lang.Runnable)
+cons public init(java.lang.Runnable,java.lang.String)
+cons public init(java.lang.String)
+cons public init(java.lang.ThreadGroup,java.lang.Runnable)
+cons public init(java.lang.ThreadGroup,java.lang.Runnable,java.lang.String)
+cons public init(java.lang.ThreadGroup,java.lang.Runnable,java.lang.String,long)
+cons public init(java.lang.ThreadGroup,java.lang.String)
 fld public final static int MAX_PRIORITY = 10
 fld public final static int MIN_PRIORITY = 1
 fld public final static int NORM_PRIORITY = 5
@@ -631,10 +630,10 @@ supr java.lang.Object
 hfds EMPTY_STACK_TRACE,SUBCLASS_IMPLEMENTATION_PERMISSION,blocker,blockerLock,contextClassLoader,daemon,defaultUncaughtExceptionHandler,eetop,group,inheritableThreadLocals,inheritedAccessControlContext,name,nativeParkEventPointer,parkBlocker,priority,single_step,stackSize,stillborn,stopBeforeStart,subclassAudits,target,threadInitNumber,threadLocals,threadQ,threadSeqNumber,threadStatus,throwableFromStop,tid,uncaughtExceptionHandler
 
 CLSS public java.lang.Throwable
-cons public Throwable()
-cons public Throwable(java.lang.String)
-cons public Throwable(java.lang.String,java.lang.Throwable)
-cons public Throwable(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 intf java.io.Serializable
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
@@ -710,7 +709,7 @@ meth public abstract int compare({java.util.Comparator%0},{java.util.Comparator%
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
+cons public init(java.lang.Object)
 fld protected java.lang.Object source
 intf java.io.Serializable
 meth public java.lang.Object getSource()
@@ -722,7 +721,7 @@ CLSS public abstract interface javax.accessibility.Accessible
 meth public abstract javax.accessibility.AccessibleContext getAccessibleContext()
 
 CLSS public abstract javax.swing.AbstractButton
-cons public AbstractButton()
+cons public init()
 fld protected java.awt.event.ActionListener actionListener
 fld protected java.awt.event.ItemListener itemListener
 fld protected javax.swing.ButtonModel model
@@ -867,11 +866,11 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void setEnabled(boolean)
 
 CLSS public javax.swing.JButton
-cons public JButton()
-cons public JButton(java.lang.String)
-cons public JButton(java.lang.String,javax.swing.Icon)
-cons public JButton(javax.swing.Action)
-cons public JButton(javax.swing.Icon)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,javax.swing.Icon)
+cons public init(javax.swing.Action)
+cons public init(javax.swing.Icon)
 innr protected AccessibleJButton
 intf javax.accessibility.Accessible
 meth protected java.lang.String paramString()
@@ -886,13 +885,13 @@ supr javax.swing.AbstractButton
 hfds uiClassID
 
 CLSS public javax.swing.JCheckBoxMenuItem
-cons public JCheckBoxMenuItem()
-cons public JCheckBoxMenuItem(java.lang.String)
-cons public JCheckBoxMenuItem(java.lang.String,boolean)
-cons public JCheckBoxMenuItem(java.lang.String,javax.swing.Icon)
-cons public JCheckBoxMenuItem(java.lang.String,javax.swing.Icon,boolean)
-cons public JCheckBoxMenuItem(javax.swing.Action)
-cons public JCheckBoxMenuItem(javax.swing.Icon)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,boolean)
+cons public init(java.lang.String,javax.swing.Icon)
+cons public init(java.lang.String,javax.swing.Icon,boolean)
+cons public init(javax.swing.Action)
+cons public init(javax.swing.Icon)
 innr protected AccessibleJCheckBoxMenuItem
 intf javax.accessibility.Accessible
 intf javax.swing.SwingConstants
@@ -906,7 +905,7 @@ supr javax.swing.JMenuItem
 hfds uiClassID
 
 CLSS public abstract javax.swing.JComponent
-cons public JComponent()
+cons public init()
 fld protected javax.accessibility.AccessibleContext accessibleContext
 fld protected javax.swing.event.EventListenerList listenerList
 fld protected javax.swing.plaf.ComponentUI ui
@@ -1060,14 +1059,14 @@ meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
 meth public void update(java.awt.Graphics)
 meth public void updateUI()
 supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
+hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
 CLSS public javax.swing.JList
-cons public JList()
-cons public JList(java.lang.Object[])
-cons public JList(java.util.Vector<?>)
-cons public JList(javax.swing.ListModel)
+cons public init()
+cons public init(java.lang.Object[])
+cons public init(java.util.Vector<?>)
+cons public init(javax.swing.ListModel)
 fld public final static int HORIZONTAL_WRAP = 2
 fld public final static int VERTICAL = 0
 fld public final static int VERTICAL_WRAP = 1
@@ -1152,10 +1151,10 @@ hfds cellRenderer,dataModel,dragEnabled,dropLocation,dropMode,fixedCellHeight,fi
 hcls ListSelectionHandler
 
 CLSS public javax.swing.JMenu
-cons public JMenu()
-cons public JMenu(java.lang.String)
-cons public JMenu(java.lang.String,boolean)
-cons public JMenu(javax.swing.Action)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,boolean)
+cons public init(javax.swing.Action)
 fld protected javax.swing.JMenu$WinListener popupListener
 innr protected AccessibleJMenu
 innr protected WinListener
@@ -1219,7 +1218,7 @@ hfds DEBUG,TRACE,VERBOSE,customMenuLocation,delay,listenerRegistry,menuChangeLis
 hcls MenuChangeListener
 
 CLSS public javax.swing.JMenuBar
-cons public JMenuBar()
+cons public init()
 innr protected AccessibleJMenuBar
 intf javax.accessibility.Accessible
 intf javax.swing.MenuElement
@@ -1258,12 +1257,12 @@ supr javax.swing.JComponent
 hfds DEBUG,TRACE,VERBOSE,margin,paintBorder,selectionModel,uiClassID
 
 CLSS public javax.swing.JMenuItem
-cons public JMenuItem()
-cons public JMenuItem(java.lang.String)
-cons public JMenuItem(java.lang.String,int)
-cons public JMenuItem(java.lang.String,javax.swing.Icon)
-cons public JMenuItem(javax.swing.Action)
-cons public JMenuItem(javax.swing.Icon)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,int)
+cons public init(java.lang.String,javax.swing.Icon)
+cons public init(javax.swing.Action)
+cons public init(javax.swing.Icon)
 innr protected AccessibleJMenuItem
 intf javax.accessibility.Accessible
 intf javax.swing.MenuElement
@@ -1306,10 +1305,10 @@ hfds DEBUG,TRACE,VERBOSE,accelerator,isMouseDragged,uiClassID
 hcls MenuItemFocusListener
 
 CLSS public javax.swing.JPanel
-cons public JPanel()
-cons public JPanel(boolean)
-cons public JPanel(java.awt.LayoutManager)
-cons public JPanel(java.awt.LayoutManager,boolean)
+cons public init()
+cons public init(boolean)
+cons public init(java.awt.LayoutManager)
+cons public init(java.awt.LayoutManager,boolean)
 innr protected AccessibleJPanel
 intf javax.accessibility.Accessible
 meth protected java.lang.String paramString()
@@ -1322,8 +1321,8 @@ supr javax.swing.JComponent
 hfds uiClassID
 
 CLSS public javax.swing.JPopupMenu
-cons public JPopupMenu()
-cons public JPopupMenu(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 innr protected AccessibleJPopupMenu
 innr public static Separator
 intf javax.accessibility.Accessible
@@ -1389,14 +1388,14 @@ supr javax.swing.JComponent
 hfds DEBUG,TRACE,VERBOSE,classLock,defaultLWPopupEnabledKey,desiredLocationX,desiredLocationY,frame,invoker,label,lightWeightPopup,margin,paintBorder,popup,popupPostionFixDisabled,selectionModel,uiClassID
 
 CLSS public javax.swing.JToggleButton
-cons public JToggleButton()
-cons public JToggleButton(java.lang.String)
-cons public JToggleButton(java.lang.String,boolean)
-cons public JToggleButton(java.lang.String,javax.swing.Icon)
-cons public JToggleButton(java.lang.String,javax.swing.Icon,boolean)
-cons public JToggleButton(javax.swing.Action)
-cons public JToggleButton(javax.swing.Icon)
-cons public JToggleButton(javax.swing.Icon,boolean)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,boolean)
+cons public init(java.lang.String,javax.swing.Icon)
+cons public init(java.lang.String,javax.swing.Icon,boolean)
+cons public init(javax.swing.Action)
+cons public init(javax.swing.Icon)
+cons public init(javax.swing.Icon,boolean)
 innr protected AccessibleJToggleButton
 innr public static ToggleButtonModel
 intf javax.accessibility.Accessible
@@ -1408,10 +1407,10 @@ supr javax.swing.AbstractButton
 hfds uiClassID
 
 CLSS public javax.swing.JToolBar
-cons public JToolBar()
-cons public JToolBar(int)
-cons public JToolBar(java.lang.String)
-cons public JToolBar(java.lang.String,int)
+cons public init()
+cons public init(int)
+cons public init(java.lang.String)
+cons public init(java.lang.String,int)
 innr protected AccessibleJToolBar
 innr public static Separator
 intf javax.accessibility.Accessible
@@ -1531,7 +1530,7 @@ CLSS public abstract interface javax.swing.tree.TreeCellRenderer
 meth public abstract java.awt.Component getTreeCellRendererComponent(javax.swing.JTree,java.lang.Object,boolean,boolean,boolean,int,boolean)
 
 CLSS public javax.swing.undo.AbstractUndoableEdit
-cons public AbstractUndoableEdit()
+cons public init()
 fld protected final static java.lang.String RedoName = "Redo"
 fld protected final static java.lang.String UndoName = "Undo"
 intf java.io.Serializable
@@ -1552,7 +1551,7 @@ supr java.lang.Object
 hfds alive,hasBeenDone
 
 CLSS public javax.swing.undo.CompoundEdit
-cons public CompoundEdit()
+cons public init()
 fld protected java.util.Vector<javax.swing.undo.UndoableEdit> edits
 meth protected javax.swing.undo.UndoableEdit lastEdit()
 meth public boolean addEdit(javax.swing.undo.UndoableEdit)
@@ -1572,7 +1571,7 @@ supr javax.swing.undo.AbstractUndoableEdit
 hfds inProgress
 
 CLSS public javax.swing.undo.UndoManager
-cons public UndoManager()
+cons public init()
 intf javax.swing.event.UndoableEditListener
 meth protected javax.swing.undo.UndoableEdit editToBeRedone()
 meth protected javax.swing.undo.UndoableEdit editToBeUndone()
@@ -1622,12 +1621,12 @@ CLSS public abstract interface org.netbeans.api.actions.Printable
 meth public abstract void print()
 
 CLSS public org.openide.DialogDescriptor
-cons public DialogDescriptor(java.lang.Object,java.lang.String)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener,boolean)
+cons public init(java.lang.Object,java.lang.String)
+cons public init(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
+cons public init(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,java.awt.event.ActionListener)
+cons public init(java.lang.Object,java.lang.String,boolean,java.awt.event.ActionListener)
+cons public init(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
+cons public init(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener,boolean)
 fld public final static int BOTTOM_ALIGN = 0
 fld public final static int DEFAULT_ALIGN = 0
 fld public final static int RIGHT_ALIGN = 1
@@ -1654,7 +1653,7 @@ supr org.openide.NotifyDescriptor
 hfds DEFAULT_CLOSING_OPTIONS,buttonListener,closingOptions,helpCtx,leaf,modal,optionsAlign
 
 CLSS public org.openide.NotifyDescriptor
-cons public NotifyDescriptor(java.lang.Object,java.lang.String,int,int,java.lang.Object[],java.lang.Object)
+cons public init(java.lang.Object,java.lang.String,int,int,java.lang.Object[],java.lang.Object)
 fld public final static int DEFAULT_OPTION = -1
 fld public final static int ERROR_MESSAGE = 0
 fld public final static int INFORMATION_MESSAGE = 1
@@ -1713,7 +1712,7 @@ hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,cha
 
 CLSS public abstract org.openide.ServiceType
  anno 0 java.lang.Deprecated()
-cons public ServiceType()
+cons public init()
 fld public final static java.lang.String PROP_NAME = "name"
 innr public abstract static Registry
 innr public final static Handle
@@ -1734,11 +1733,11 @@ supr java.lang.Object
 hfds err,name,serialVersionUID,supp
 
 CLSS public org.openide.WizardDescriptor
-cons protected WizardDescriptor()
-cons public <%0 extends java.lang.Object> WizardDescriptor(org.openide.WizardDescriptor$Iterator<{%%0}>,{%%0})
-cons public <%0 extends java.lang.Object> WizardDescriptor(org.openide.WizardDescriptor$Panel<{%%0}>[],{%%0})
-cons public WizardDescriptor(org.openide.WizardDescriptor$Iterator<org.openide.WizardDescriptor>)
-cons public WizardDescriptor(org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>[])
+cons protected init()
+cons public <%0 extends java.lang.Object> init(org.openide.WizardDescriptor$Iterator<{%%0}>,{%%0})
+cons public <%0 extends java.lang.Object> init(org.openide.WizardDescriptor$Panel<{%%0}>[],{%%0})
+cons public init(org.openide.WizardDescriptor$Iterator<org.openide.WizardDescriptor>)
+cons public init(org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>[])
 fld public final static java.lang.Object FINISH_OPTION
 fld public final static java.lang.Object NEXT_OPTION
 fld public final static java.lang.Object PREVIOUS_OPTION
@@ -1789,6 +1788,7 @@ hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,autoWizardSt
 hcls BoundedHtmlBrowser,EmptyPanel,FinishAction,FixedHeightLabel,ImagedPanel,Listener,PropL,SettingsAndIterator,WizardPanel,WrappedCellRenderer
 
 CLSS public abstract interface static org.openide.WizardDescriptor$Iterator<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 meth public abstract boolean hasNext()
 meth public abstract boolean hasPrevious()
 meth public abstract java.lang.String name()
@@ -1799,7 +1799,7 @@ meth public abstract void previousPanel()
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public abstract org.openide.actions.ActionManager
-cons public ActionManager()
+cons public init()
 fld public final static java.lang.String PROP_CONTEXT_ACTIONS = "contextActions"
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth public abstract org.openide.util.actions.SystemAction[] getContextActions()
@@ -1813,7 +1813,7 @@ hfds supp
 hcls Trivial
 
 CLSS public org.openide.actions.CloneViewAction
-cons public CloneViewAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.Object getActionMapKey()
@@ -1822,7 +1822,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.CloseViewAction
-cons public CloseViewAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.lang.Object getActionMapKey()
 meth public java.lang.String getName()
@@ -1830,7 +1830,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.CopyAction
-cons public CopyAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -1840,7 +1840,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.CustomizeAction
-cons public CustomizeAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void performAction(org.openide.nodes.Node[])
@@ -1849,7 +1849,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.NodeAction
 
 CLSS public org.openide.actions.CutAction
-cons public CutAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -1859,7 +1859,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.DeleteAction
-cons public DeleteAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -1869,7 +1869,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.EditAction
-cons public EditAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean surviveFocusChange()
 meth protected int mode()
@@ -1880,7 +1880,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.FileSystemAction
-cons public FileSystemAction()
+cons public init()
 intf org.openide.util.ContextAwareAction
 intf org.openide.util.actions.Presenter$Menu
 intf org.openide.util.actions.Presenter$Popup
@@ -1895,7 +1895,7 @@ hfds NONE
 hcls DelegateAction,Menu
 
 CLSS public final org.openide.actions.FileSystemRefreshAction
-cons public FileSystemRefreshAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected int mode()
 meth protected java.lang.Class<?>[] cookieClasses()
@@ -1905,7 +1905,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.FindAction
-cons public FindAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.String getName()
@@ -1913,17 +1913,18 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.GarbageCollectAction
-cons public GarbageCollectAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.awt.Component getToolbarPresenter()
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
 meth public void performAction()
 supr org.openide.util.actions.CallableSystemAction
+hfds RP
 hcls HeapViewWrapper
 
 CLSS public org.openide.actions.GotoAction
-cons public GotoAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
@@ -1931,7 +1932,7 @@ supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.InstantiateAction
  anno 0 java.lang.Deprecated()
-cons public InstantiateAction()
+cons public init()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void performAction(org.openide.nodes.Node[])
 meth public java.lang.String getName()
@@ -1941,7 +1942,7 @@ supr org.openide.util.actions.NodeAction
 hfds serialVersionUID
 
 CLSS public final org.openide.actions.MoveDownAction
-cons public MoveDownAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void initialize()
@@ -1953,7 +1954,7 @@ hfds PROP_ORDER_LISTENER,curIndexCookie
 hcls OrderingListener
 
 CLSS public final org.openide.actions.MoveUpAction
-cons public MoveUpAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void initialize()
@@ -1965,7 +1966,7 @@ hfds PROP_ORDER_LISTENER,curIndexCookie,err
 hcls OrderingListener
 
 CLSS public final org.openide.actions.NewAction
-cons public NewAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void performAction(org.openide.nodes.Node[])
@@ -1979,7 +1980,7 @@ hfds model
 hcls ActSubMenuModel,DelegateAction
 
 CLSS public org.openide.actions.NewTemplateAction
-cons public NewTemplateAction()
+cons public init()
 innr public abstract interface static Cookie
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
@@ -1996,11 +1997,12 @@ hfds EMPTY_NODE_ARRAY,MAX_RECENT_ITEMS,active,privilegedListFolder,recentChanged
 hcls DataShadowFilterNode,DefaultTemplateWizard,DelegateAction,MenuWithRecent,NodeLookupListener,RootChildren,TemplateActionListener,TemplateChildren
 
 CLSS public abstract interface static org.openide.actions.NewTemplateAction$Cookie
+ outer org.openide.actions.NewTemplateAction
 intf org.openide.nodes.Node$Cookie
 meth public abstract org.openide.loaders.TemplateWizard getTemplateWizard()
 
 CLSS public org.openide.actions.NextTabAction
-cons public NextTabAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.String getName()
@@ -2008,7 +2010,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.OpenAction
-cons public OpenAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean surviveFocusChange()
 meth protected int mode()
@@ -2019,7 +2021,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public final org.openide.actions.OpenLocalExplorerAction
-cons public OpenLocalExplorerAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected java.lang.String iconResource()
@@ -2029,7 +2031,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.NodeAction
 
 CLSS public final org.openide.actions.PageSetupAction
-cons public PageSetupAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
@@ -2037,7 +2039,7 @@ meth public void performAction()
 supr org.openide.util.actions.CallableSystemAction
 
 CLSS public final org.openide.actions.PasteAction
-cons public PasteAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -2056,7 +2058,7 @@ hfds globalModel,types
 hcls ActSubMenuModel,ActionPT,DelegateAction,NodeSelector
 
 CLSS public final org.openide.actions.PopupAction
-cons public PopupAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected void initialize()
 meth public java.lang.String getName()
@@ -2064,7 +2066,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.PreviousTabAction
-cons public PreviousTabAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.String getName()
@@ -2072,7 +2074,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.PrintAction
-cons public PrintAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected int mode()
 meth protected java.lang.Class[] cookieClasses()
@@ -2083,7 +2085,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.PropertiesAction
-cons public PropertiesAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected java.lang.String iconResource()
@@ -2096,7 +2098,7 @@ supr org.openide.util.actions.NodeAction
 hcls DelegateAction
 
 CLSS public org.openide.actions.RedoAction
-cons public RedoAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public boolean isEnabled()
@@ -2107,7 +2109,7 @@ supr org.openide.util.actions.CallableSystemAction
 hfds SWING_DEFAULT_LABEL
 
 CLSS public org.openide.actions.RenameAction
-cons public RenameAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected boolean surviveFocusChange()
@@ -2117,7 +2119,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.NodeAction
 
 CLSS public org.openide.actions.ReorderAction
-cons public ReorderAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean surviveFocusChange()
 meth protected int mode()
@@ -2128,14 +2130,14 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.ReplaceAction
-cons public ReplaceAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.SaveAction
-cons public SaveAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected int mode()
 meth protected java.lang.Class[] cookieClasses()
@@ -2149,7 +2151,7 @@ hfds dataObject,getNodeDelegate
 hcls Delegate
 
 CLSS public final org.openide.actions.SaveAllAction
-cons public SaveAllAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -2161,7 +2163,7 @@ hfds RUNNING,chl,serialVersionUID
 hcls ModifiedListL
 
 CLSS public final org.openide.actions.SaveAsTemplateAction
-cons public SaveAsTemplateAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected boolean surviveFocusChange()
@@ -2174,7 +2176,7 @@ supr org.openide.util.actions.NodeAction
 hcls FolderNodeAcceptor
 
 CLSS public org.openide.actions.ToolsAction
-cons public ToolsAction()
+cons public init()
 innr public abstract interface static Model
 intf org.openide.util.ContextAwareAction
 intf org.openide.util.actions.Presenter$Menu
@@ -2192,13 +2194,14 @@ hfds gl,serialVersionUID
 hcls DelegateAction,G,Inline,Popup
 
 CLSS public abstract interface static org.openide.actions.ToolsAction$Model
+ outer org.openide.actions.ToolsAction
  anno 0 java.lang.Deprecated()
 meth public abstract org.openide.util.actions.SystemAction[] getActions()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public org.openide.actions.UndoAction
-cons public UndoAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public boolean isEnabled()
@@ -2211,7 +2214,7 @@ hcls Listener
 
 CLSS public org.openide.actions.UndockAction
  anno 0 java.lang.Deprecated()
-cons public UndockAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.String getName()
@@ -2219,7 +2222,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.ViewAction
-cons public ViewAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean surviveFocusChange()
 meth protected int mode()
@@ -2231,15 +2234,23 @@ supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.WorkspaceSwitchAction
  anno 0 java.lang.Deprecated()
-cons public WorkspaceSwitchAction()
+cons public init()
 meth public java.lang.String getName()
 meth public javax.swing.JMenuItem getMenuPresenter()
 meth public org.openide.util.HelpCtx getHelpCtx()
 meth public void performAction()
 supr org.openide.util.actions.CallableSystemAction
 
+CLSS public abstract org.openide.awt.AcceleratorBinding
+cons protected init()
+meth protected abstract javax.swing.KeyStroke keyStrokeForAction(javax.swing.Action,org.openide.filesystems.FileObject)
+meth public static void setAccelerator(javax.swing.Action,org.openide.filesystems.FileObject)
+supr java.lang.Object
+hfds ALL
+hcls Iter
+
 CLSS public org.openide.awt.Actions
-cons public Actions()
+cons public init()
  anno 0 java.lang.Deprecated()
 innr public abstract interface static ButtonActionConnector
 innr public abstract interface static SubMenuModel
@@ -2265,20 +2276,24 @@ meth public static void connect(javax.swing.JMenuItem,org.openide.util.actions.S
 meth public static void setMenuText(javax.swing.AbstractButton,java.lang.String,boolean)
  anno 0 java.lang.Deprecated()
 supr java.lang.Object
-hcls BooleanButtonBridge,Bridge,ButtonBridge,CheckMenuBridge,ISubActionListener,MenuBridge,SubMenuBridge
+hfds GET
+hcls BooleanButtonBridge,Bridge,ButtonActionConnectorGetter,ButtonBridge,CheckMenuBridge,ISubActionListener,MenuBridge,SubMenuBridge
 
 CLSS public abstract interface static org.openide.awt.Actions$ButtonActionConnector
+ outer org.openide.awt.Actions
 meth public abstract boolean connect(javax.swing.AbstractButton,javax.swing.Action)
 meth public abstract boolean connect(javax.swing.JMenuItem,javax.swing.Action,boolean)
 
 CLSS public static org.openide.awt.Actions$CheckboxMenuItem
-cons public CheckboxMenuItem(org.openide.util.actions.BooleanStateAction,boolean)
+ outer org.openide.awt.Actions
+cons public init(org.openide.util.actions.BooleanStateAction,boolean)
 supr javax.swing.JCheckBoxMenuItem
 hfds serialVersionUID
 
 CLSS public static org.openide.awt.Actions$MenuItem
-cons public MenuItem(javax.swing.Action,boolean)
-cons public MenuItem(org.openide.util.actions.SystemAction,boolean)
+ outer org.openide.awt.Actions
+cons public init(javax.swing.Action,boolean)
+cons public init(org.openide.util.actions.SystemAction,boolean)
 intf org.openide.awt.DynamicMenuContent
 meth public javax.swing.JComponent[] getMenuPresenters()
 meth public javax.swing.JComponent[] synchMenuPresenters(javax.swing.JComponent[])
@@ -2286,10 +2301,11 @@ supr javax.swing.JMenuItem
 hfds bridge,serialVersionUID
 
 CLSS public static org.openide.awt.Actions$SubMenu
+ outer org.openide.awt.Actions
  anno 0 java.lang.Deprecated()
-cons public SubMenu(javax.swing.Action,org.openide.awt.Actions$SubMenuModel,boolean)
-cons public SubMenu(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel)
-cons public SubMenu(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel,boolean)
+cons public init(javax.swing.Action,org.openide.awt.Actions$SubMenuModel,boolean)
+cons public init(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel)
+cons public init(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel,boolean)
 intf org.openide.awt.DynamicMenuContent
 meth public javax.swing.JComponent[] getMenuPresenters()
 meth public javax.swing.JComponent[] synchMenuPresenters(javax.swing.JComponent[])
@@ -2297,6 +2313,7 @@ supr org.openide.awt.JMenuPlus
 hfds bridge,serialVersionUID
 
 CLSS public abstract interface static org.openide.awt.Actions$SubMenuModel
+ outer org.openide.awt.Actions
  anno 0 java.lang.Deprecated()
 meth public abstract int getCount()
 meth public abstract java.lang.String getLabel(int)
@@ -2306,17 +2323,19 @@ meth public abstract void performActionAt(int)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public static org.openide.awt.Actions$ToolbarButton
+ outer org.openide.awt.Actions
  anno 0 java.lang.Deprecated()
-cons public ToolbarButton(javax.swing.Action)
-cons public ToolbarButton(org.openide.util.actions.SystemAction)
+cons public init(javax.swing.Action)
+cons public init(org.openide.util.actions.SystemAction)
 meth public java.awt.Dimension getMaximumSize()
 meth public java.awt.Dimension getMinimumSize()
 supr org.openide.awt.ToolbarButton
 hfds serialVersionUID
 
 CLSS public static org.openide.awt.Actions$ToolbarToggleButton
+ outer org.openide.awt.Actions
  anno 0 java.lang.Deprecated()
-cons public ToolbarToggleButton(org.openide.util.actions.BooleanStateAction)
+cons public init(org.openide.util.actions.BooleanStateAction)
 meth public java.awt.Dimension getMaximumSize()
 meth public java.awt.Dimension getMinimumSize()
 supr org.openide.awt.ToolbarToggleButton
@@ -2329,14 +2348,15 @@ meth public static javax.swing.JToggleButton createDropDownToggleButton(javax.sw
 supr java.lang.Object
 
 CLSS public abstract interface org.openide.awt.DynamicMenuContent
+fld public final static java.lang.String HIDE_WHEN_DISABLED = "hideWhenDisabled"
 meth public abstract javax.swing.JComponent[] getMenuPresenters()
 meth public abstract javax.swing.JComponent[] synchMenuPresenters(javax.swing.JComponent[])
 
 CLSS public org.openide.awt.EqualFlowLayout
  anno 0 java.lang.Deprecated()
-cons public EqualFlowLayout()
-cons public EqualFlowLayout(int)
-cons public EqualFlowLayout(int,int,int)
+cons public init()
+cons public init(int)
+cons public init(int,int,int)
 meth public java.awt.Dimension minimumLayoutSize(java.awt.Container)
 meth public java.awt.Dimension preferredLayoutSize(java.awt.Container)
 meth public void layoutContainer(java.awt.Container)
@@ -2344,9 +2364,9 @@ supr java.awt.FlowLayout
 hfds serialVersionUID
 
 CLSS public org.openide.awt.HtmlBrowser
-cons public HtmlBrowser()
-cons public HtmlBrowser(boolean,boolean)
-cons public HtmlBrowser(org.openide.awt.HtmlBrowser$Factory,boolean,boolean)
+cons public init()
+cons public init(boolean,boolean)
+cons public init(org.openide.awt.HtmlBrowser$Factory,boolean,boolean)
 fld public final static int DEFAULT_HEIGHT = 600
 fld public final static int DEFAULT_WIDTH = 400
 innr public abstract interface static Factory
@@ -2376,10 +2396,12 @@ hfds bBack,bForward,bReload,bStop,browserComponent,browserFactory,browserImpl,br
 hcls AccessibleHtmlBrowser,BrowserListener,TrivialURLDisplayer
 
 CLSS public abstract interface static org.openide.awt.HtmlBrowser$Factory
+ outer org.openide.awt.HtmlBrowser
 meth public abstract org.openide.awt.HtmlBrowser$Impl createHtmlBrowserImpl()
 
 CLSS public abstract static org.openide.awt.HtmlBrowser$Impl
-cons public Impl()
+ outer org.openide.awt.HtmlBrowser
+cons public init()
 fld public final static java.lang.String PROP_BACKWARD = "backward"
 fld public final static java.lang.String PROP_FORWARD = "forward"
 fld public final static java.lang.String PROP_HISTORY = "history"
@@ -2408,7 +2430,8 @@ supr java.lang.Object
 hfds serialVersionUID
 
 CLSS public abstract static org.openide.awt.HtmlBrowser$URLDisplayer
-cons protected URLDisplayer()
+ outer org.openide.awt.HtmlBrowser
+cons protected init()
 meth public abstract void showURL(java.net.URL)
 meth public static org.openide.awt.HtmlBrowser$URLDisplayer getDefault()
 meth public void showURLExternal(java.net.URL)
@@ -2427,6 +2450,7 @@ supr java.lang.Object
 hfds LABEL,LOG,STRICT_HTML,STYLE_WORDWRAP,badStrings,colorStack,entities,entitySubstitutions
 
 CLSS public abstract interface static org.openide.awt.HtmlRenderer$Renderer
+ outer org.openide.awt.HtmlRenderer
 intf javax.swing.ListCellRenderer
 intf javax.swing.table.TableCellRenderer
 intf javax.swing.tree.TreeCellRenderer
@@ -2442,7 +2466,7 @@ meth public abstract void setText(java.lang.String)
 
 CLSS public org.openide.awt.JInlineMenu
  anno 0 java.lang.Deprecated()
-cons public JInlineMenu()
+cons public init()
 intf org.openide.awt.DynamicMenuContent
 meth public java.awt.Insets getInsets()
 meth public javax.swing.JComponent[] getMenuPresenters()
@@ -2453,18 +2477,18 @@ hfds BLANK_ICON,addedItems,items,serialVersionUID,upToDate
 
 CLSS public org.openide.awt.JMenuPlus
  anno 0 java.lang.Deprecated()
-cons public JMenuPlus()
-cons public JMenuPlus(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 supr javax.swing.JMenu
 hfds serialVersionUID
 
 CLSS public org.openide.awt.JPopupMenuPlus
  anno 0 java.lang.Deprecated()
-cons public JPopupMenuPlus()
+cons public init()
 supr javax.swing.JPopupMenu
 
 CLSS public org.openide.awt.JPopupMenuUtils
-cons public JPopupMenuUtils()
+cons public init()
 meth public static boolean isPopupContained(javax.swing.JPopupMenu)
 meth public static java.awt.Rectangle getScreenRect()
 meth public static void dynamicChange(javax.swing.JPopupMenu,boolean)
@@ -2474,10 +2498,10 @@ hfds problem,problemTested,reqProc,task
 
 CLSS public org.openide.awt.ListPane
  anno 0 java.lang.Deprecated()
-cons public ListPane()
-cons public ListPane(java.lang.Object[])
-cons public ListPane(java.util.Vector)
-cons public ListPane(javax.swing.ListModel)
+cons public init()
+cons public init(java.lang.Object[])
+cons public init(java.util.Vector)
+cons public init(javax.swing.ListModel)
 meth protected void paintBackground(java.awt.Graphics)
 meth protected void paintComponent(java.awt.Graphics)
 meth public boolean getScrollableTracksViewportHeight()
@@ -2502,8 +2526,8 @@ hfds dataL,fixedCellHeight,fixedCellWidth,inputL,propertyL,realColumnCount,realR
 hcls DataListener,InputListener,PropertyListener
 
 CLSS public org.openide.awt.MenuBar
-cons public MenuBar()
-cons public MenuBar(org.openide.loaders.DataFolder)
+cons public init()
+cons public init(org.openide.loaders.DataFolder)
 intf java.io.Externalizable
 meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth public void addImpl(java.awt.Component,java.lang.Object,int)
@@ -2513,7 +2537,7 @@ meth public void waitFinished()
 meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr javax.swing.JMenuBar
 hfds menuBarFolder,serialVersionUID
-hcls LazyMenu,MarkedKeyEvent,MenuBarFolder
+hcls LazyMenu,LazySeparator,MarkedKeyEvent,MenuBarFolder
 
 CLSS public final org.openide.awt.Mnemonics
 meth public static int findMnemonicAmpersand(java.lang.String)
@@ -2523,7 +2547,7 @@ supr java.lang.Object
 hfds MNEMONIC_INDEX_LISTENER,PROP_DISPLAYED_MNEMONIC_INDEX,PROP_MNEMONIC,PROP_TEXT
 
 CLSS public org.openide.awt.MouseUtils
-cons public MouseUtils()
+cons public init()
 innr public abstract static PopupMouseAdapter
 meth public static boolean isDoubleClick(java.awt.event.MouseEvent)
 meth public static boolean isLeftMouseButton(java.awt.event.MouseEvent)
@@ -2534,8 +2558,9 @@ supr java.lang.Object
 hfds DOUBLE_CLICK_DELTA,tempe,temph,tempm,tempx,tempy
 
 CLSS public abstract static org.openide.awt.MouseUtils$PopupMouseAdapter
-cons public PopupMouseAdapter()
-cons public PopupMouseAdapter(int)
+ outer org.openide.awt.MouseUtils
+cons public init()
+cons public init(int)
  anno 0 java.lang.Deprecated()
 fld public final static int DEFAULT_THRESHOLD = 5
  anno 0 java.lang.Deprecated()
@@ -2545,12 +2570,12 @@ meth public void mouseReleased(java.awt.event.MouseEvent)
 supr java.awt.event.MouseAdapter
 
 CLSS public abstract org.openide.awt.Notification
-cons public Notification()
+cons public init()
 meth public abstract void clear()
 supr java.lang.Object
 
 CLSS public abstract org.openide.awt.NotificationDisplayer
-cons public NotificationDisplayer()
+cons public init()
 innr public final static !enum Priority
 meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener,org.openide.awt.NotificationDisplayer$Priority)
 meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,javax.swing.JComponent,javax.swing.JComponent,org.openide.awt.NotificationDisplayer$Priority)
@@ -2560,6 +2585,7 @@ supr java.lang.Object
 hcls NotificationImpl,SimpleNotificationDisplayer
 
 CLSS public final static !enum org.openide.awt.NotificationDisplayer$Priority
+ outer org.openide.awt.NotificationDisplayer
 fld public final static org.openide.awt.NotificationDisplayer$Priority HIGH
 fld public final static org.openide.awt.NotificationDisplayer$Priority LOW
 fld public final static org.openide.awt.NotificationDisplayer$Priority NORMAL
@@ -2570,7 +2596,7 @@ supr java.lang.Enum<org.openide.awt.NotificationDisplayer$Priority>
 
 CLSS public org.openide.awt.SpinButton
  anno 0 java.lang.Deprecated()
-cons public SpinButton()
+cons public init()
 fld protected boolean arrowsOrientation
 fld protected boolean boundsIgnored
 fld protected boolean orientation
@@ -2628,6 +2654,7 @@ supr java.awt.Canvas
 hfds SPIN_DOWN,SPIN_UP,serialVersionUID,spinButtonListeners,valueSupport
 
 CLSS protected final org.openide.awt.SpinButton$RepeatThread
+ outer org.openide.awt.SpinButton
  anno 0 java.lang.Deprecated()
 meth public void run()
 supr java.lang.Thread
@@ -2635,7 +2662,7 @@ hfds finish
 
 CLSS public org.openide.awt.SpinButtonAdapter
  anno 0 java.lang.Deprecated()
-cons public SpinButtonAdapter()
+cons public init()
 intf org.openide.awt.SpinButtonListener
 meth public void changeValue()
 meth public void moveDown()
@@ -2650,7 +2677,7 @@ meth public abstract void moveUp()
 
 CLSS public org.openide.awt.SplittedPanel
  anno 0 java.lang.Deprecated()
-cons public SplittedPanel()
+cons public init()
 fld public final static int DEFAULT_SPLITTER = 0
 fld public final static int EMPTY_SPLITTER = 1
 fld public final static int FIRST_PREFERRED = -1
@@ -2708,9 +2735,10 @@ hfds DEFAULT_SPLIT_TYPE,absolute,accessibleContext,continuousLayout,descriptionF
 hcls DefaultSplitter,MouseListenerAdapter,SplitLayout
 
 CLSS public static org.openide.awt.SplittedPanel$EmptySplitter
+ outer org.openide.awt.SplittedPanel
  anno 0 java.lang.Deprecated()
-cons public EmptySplitter()
-cons public EmptySplitter(int)
+cons public init()
+cons public init(int)
 intf javax.accessibility.Accessible
 meth public java.awt.Dimension getPreferredSize()
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
@@ -2718,18 +2746,20 @@ supr javax.swing.JComponent
 hfds accessibleContext,serialVersionUID,width
 
 CLSS public static org.openide.awt.SplittedPanel$SplitChangeEvent
+ outer org.openide.awt.SplittedPanel
  anno 0 java.lang.Deprecated()
-cons public SplitChangeEvent(org.openide.awt.SplittedPanel,int,int)
+cons public init(org.openide.awt.SplittedPanel,int,int)
 meth public int getNewValue()
 meth public int getOldValue()
 supr java.util.EventObject
 hfds newValue,oldValue,serialVersionUID
 
 CLSS public abstract interface static org.openide.awt.SplittedPanel$SplitChangeListener
+ outer org.openide.awt.SplittedPanel
 meth public abstract void splitChanged(org.openide.awt.SplittedPanel$SplitChangeEvent)
 
 CLSS public abstract org.openide.awt.StatusDisplayer
-cons protected StatusDisplayer()
+cons protected init()
 fld public final static int IMPORTANCE_ANNOTATION = 1000
 fld public final static int IMPORTANCE_ERROR_HIGHLIGHT = 700
 fld public final static int IMPORTANCE_FIND_OR_REPLACE = 800
@@ -2746,6 +2776,7 @@ hfds INSTANCE
 hcls Trivial
 
 CLSS public abstract interface static org.openide.awt.StatusDisplayer$Message
+ outer org.openide.awt.StatusDisplayer
 meth public abstract void clear(int)
 
 CLSS public abstract interface org.openide.awt.StatusLineElementProvider
@@ -2758,11 +2789,11 @@ meth public static javax.swing.JTabbedPane createCloseButtonTabbedPane()
 supr java.lang.Object
 
 CLSS public org.openide.awt.Toolbar
-cons public Toolbar()
-cons public Toolbar(java.lang.String)
-cons public Toolbar(java.lang.String,boolean)
-cons public Toolbar(java.lang.String,java.lang.String)
-cons public Toolbar(java.lang.String,java.lang.String,boolean)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,boolean)
+cons public init(java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String,boolean)
 fld public final static int BASIC_HEIGHT = 34
  anno 0 java.lang.Deprecated()
 innr public abstract interface static DnDListener
@@ -2786,12 +2817,13 @@ meth public void setDnDListener(org.openide.awt.Toolbar$DnDListener)
 meth public void setUI(javax.swing.plaf.ToolBarUI)
 meth public void setVisible(boolean)
 supr javax.swing.JToolBar
-hfds LOG,backingFolder,displayName,emptyInsets,isJdk15,isJdk16,isMetalLaF,label,processor,serialVersionUID
+hfds LOG,backingFolder,displayName,emptyInsets,isMetalLaF,label,processor,serialVersionUID
 hcls DefaultIconButton,Folder
 
 CLSS public static org.openide.awt.Toolbar$DnDEvent
+ outer org.openide.awt.Toolbar
  anno 0 java.lang.Deprecated()
-cons public DnDEvent(org.openide.awt.Toolbar,java.lang.String,int,int,int)
+cons public init(org.openide.awt.Toolbar,java.lang.String,int,int,int)
 fld public final static int DND_END = 2
 fld public final static int DND_LINE = 3
 fld public final static int DND_ONE = 1
@@ -2803,6 +2835,7 @@ supr java.util.EventObject
 hfds dx,dy,name,serialVersionUID,type
 
 CLSS public abstract interface static org.openide.awt.Toolbar$DnDListener
+ outer org.openide.awt.Toolbar
  anno 0 java.lang.Deprecated()
 intf java.util.EventListener
 meth public abstract void dragToolbar(org.openide.awt.Toolbar$DnDEvent)
@@ -2810,14 +2843,14 @@ meth public abstract void dropToolbar(org.openide.awt.Toolbar$DnDEvent)
 
 CLSS public org.openide.awt.ToolbarButton
  anno 0 java.lang.Deprecated()
-cons public ToolbarButton()
-cons public ToolbarButton(javax.swing.Icon)
+cons public init()
+cons public init(javax.swing.Icon)
 meth public void processMouseEvent(java.awt.event.MouseEvent)
 supr javax.swing.JButton
 hfds serialVersionUID
 
 CLSS public final org.openide.awt.ToolbarPool
-cons public ToolbarPool(org.openide.loaders.DataFolder)
+cons public init(org.openide.loaders.DataFolder)
 fld public final static java.lang.String DEFAULT_CONFIGURATION = "Standard"
 innr public abstract interface static Configuration
 intf javax.accessibility.Accessible
@@ -2839,15 +2872,16 @@ hfds center,defaultPool,folder,instance,listener,name,preferredIconSize,serialVe
 hcls ComponentConfiguration,Folder,PopupListener,TPTaskListener
 
 CLSS public abstract interface static org.openide.awt.ToolbarPool$Configuration
+ outer org.openide.awt.ToolbarPool
 meth public abstract java.awt.Component activate()
 meth public abstract java.lang.String getName()
 meth public abstract javax.swing.JPopupMenu getContextMenu()
 
 CLSS public org.openide.awt.ToolbarToggleButton
  anno 0 java.lang.Deprecated()
-cons public ToolbarToggleButton()
-cons public ToolbarToggleButton(javax.swing.Icon)
-cons public ToolbarToggleButton(javax.swing.Icon,boolean)
+cons public init()
+cons public init(javax.swing.Icon)
+cons public init(javax.swing.Icon,boolean)
 supr javax.swing.JToggleButton
 hfds serialVersionUID
 
@@ -2865,8 +2899,9 @@ meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void undo()
 
 CLSS public final static org.openide.awt.UndoRedo$Empty
+ outer org.openide.awt.UndoRedo
  anno 0 java.lang.Deprecated()
-cons public Empty()
+cons public init()
 intf org.openide.awt.UndoRedo
 meth public boolean canRedo()
 meth public boolean canUndo()
@@ -2879,7 +2914,8 @@ meth public void undo()
 supr java.lang.Object
 
 CLSS public static org.openide.awt.UndoRedo$Manager
-cons public Manager()
+ outer org.openide.awt.UndoRedo
+cons public init()
 intf org.openide.awt.UndoRedo
 meth public boolean canUndo()
 meth public java.lang.String getRedoPresentationName()
@@ -2918,6 +2954,7 @@ meth public abstract void open()
 meth public abstract void saveDocument() throws java.io.IOException
 
 CLSS public abstract interface static org.openide.cookies.EditorCookie$Observable
+ outer org.openide.cookies.EditorCookie
 fld public final static java.lang.String PROP_DOCUMENT = "document"
 fld public final static java.lang.String PROP_MODIFIED = "modified"
 fld public final static java.lang.String PROP_OPENED_PANES = "openedPanes"
@@ -2933,6 +2970,7 @@ meth public abstract java.lang.Object instanceCreate() throws java.io.IOExceptio
 meth public abstract java.lang.String instanceName()
 
 CLSS public abstract interface static org.openide.cookies.InstanceCookie$Of
+ outer org.openide.cookies.InstanceCookie
 intf org.openide.cookies.InstanceCookie
 meth public abstract boolean instanceOf(java.lang.Class<?>)
 
@@ -2955,7 +2993,7 @@ meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public org.openide.loaders.ConnectionSupport
  anno 0 java.lang.Deprecated()
-cons public ConnectionSupport(org.openide.loaders.MultiDataObject$Entry,org.openide.cookies.ConnectionCookie$Type[])
+cons public init(org.openide.loaders.MultiDataObject$Entry,org.openide.cookies.ConnectionCookie$Type[])
 intf org.openide.cookies.ConnectionCookie
 meth public java.util.List<org.openide.cookies.ConnectionCookie$Type> getRegisteredTypes()
 meth public java.util.Set listenersFor(org.openide.cookies.ConnectionCookie$Type)
@@ -2971,7 +3009,8 @@ CLSS public abstract interface org.openide.loaders.CreateFromTemplateAttributesP
 meth public abstract java.util.Map<java.lang.String,?> attributesFor(org.openide.loaders.DataObject,org.openide.loaders.DataFolder,java.lang.String)
 
 CLSS public abstract org.openide.loaders.CreateFromTemplateHandler
-cons public CreateFromTemplateHandler()
+cons public init()
+fld public final static java.lang.String FREE_FILE_EXTENSION = "freeFileExtension"
 meth protected abstract boolean accept(org.openide.filesystems.FileObject)
 meth protected abstract org.openide.filesystems.FileObject createFromTemplate(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject,java.lang.String,java.util.Map<java.lang.String,java.lang.Object>) throws java.io.IOException
 supr java.lang.Object
@@ -2985,14 +3024,15 @@ intf java.io.Serializable
 meth public abstract boolean acceptDataObject(org.openide.loaders.DataObject)
 
 CLSS public abstract interface static org.openide.loaders.DataFilter$FileBased
+ outer org.openide.loaders.DataFilter
 intf org.openide.loaders.DataFilter
 meth public abstract boolean acceptFileObject(org.openide.filesystems.FileObject)
 
 CLSS public org.openide.loaders.DataFolder
-cons protected DataFolder(org.openide.filesystems.FileObject,org.openide.loaders.DataLoader) throws org.openide.loaders.DataObjectExistsException
+cons protected init(org.openide.filesystems.FileObject,org.openide.loaders.DataLoader) throws org.openide.loaders.DataObjectExistsException
  anno 0 java.lang.Deprecated()
-cons protected DataFolder(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
-cons public DataFolder(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectExistsException
+cons protected init(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
+cons public init(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectExistsException
  anno 0 java.lang.Deprecated()
 fld public final static java.lang.String PROP_CHILDREN = "children"
 fld public final static java.lang.String PROP_ORDER = "order"
@@ -3031,8 +3071,9 @@ hfds EA_ORDER,EA_SORT_MODE,FOLDER_ICON_BASE,IMGS,KEEP_ALIVE,ROOT_SHADOW_NAME,dat
 hcls ClonedFilter,ClonedFilterHandle,ListPCL,NewFolder,Paste
 
 CLSS public org.openide.loaders.DataFolder$FolderNode
-cons protected FolderNode(org.openide.loaders.DataFolder)
-cons public FolderNode(org.openide.loaders.DataFolder,org.openide.nodes.Children)
+ outer org.openide.loaders.DataFolder
+cons protected init(org.openide.loaders.DataFolder)
+cons public init(org.openide.loaders.DataFolder,org.openide.nodes.Children)
 meth protected org.openide.nodes.Sheet createSheet()
 meth protected void createPasteTypes(java.awt.datatransfer.Transferable,java.util.List<org.openide.util.datatransfer.PasteType>)
 meth public <%0 extends org.openide.nodes.Node$Cookie> {%%0} getCookie(java.lang.Class<{%%0}>)
@@ -3044,9 +3085,10 @@ meth public void setName(java.lang.String)
 supr org.openide.loaders.DataNode
 
 CLSS public static org.openide.loaders.DataFolder$Index
-cons public Index(org.openide.loaders.DataFolder)
+ outer org.openide.loaders.DataFolder
+cons public init(org.openide.loaders.DataFolder)
  anno 0 java.lang.Deprecated()
-cons public Index(org.openide.loaders.DataFolder,org.openide.nodes.Node)
+cons public init(org.openide.loaders.DataFolder,org.openide.nodes.Node)
 meth public int getNodesCount()
 meth public org.openide.nodes.Node[] getNodes()
 meth public void reorder()
@@ -3056,7 +3098,8 @@ hfds df,listener,node
 hcls Listener
 
 CLSS public abstract static org.openide.loaders.DataFolder$SortMode
-cons public SortMode()
+ outer org.openide.loaders.DataFolder
+cons public init()
 fld public final static org.openide.loaders.DataFolder$SortMode CLASS
 fld public final static org.openide.loaders.DataFolder$SortMode FOLDER_NAMES
 fld public final static org.openide.loaders.DataFolder$SortMode LAST_MODIFIED
@@ -3067,9 +3110,9 @@ intf java.util.Comparator<org.openide.loaders.DataObject>
 supr java.lang.Object
 
 CLSS public abstract org.openide.loaders.DataLoader
-cons protected DataLoader(java.lang.Class<? extends org.openide.loaders.DataObject>)
+cons protected init(java.lang.Class<? extends org.openide.loaders.DataObject>)
  anno 0 java.lang.Deprecated()
-cons protected DataLoader(java.lang.String)
+cons protected init(java.lang.String)
 fld public final static java.lang.String PROP_ACTIONS = "actions"
 fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
 innr public abstract interface static RecognizedFiles
@@ -3096,11 +3139,12 @@ supr org.openide.util.SharedClassObject
 hfds ACTION_MANAGER,ERR,LOADER_VERSION,PROP_DEF_ACTIONS,PROP_REPRESENTATION_CLASS,PROP_REPRESENTATION_CLASS_NAME,serialVersionUID
 
 CLSS public abstract interface static org.openide.loaders.DataLoader$RecognizedFiles
+ outer org.openide.loaders.DataLoader
 meth public abstract void markRecognized(org.openide.filesystems.FileObject)
 
 CLSS public abstract org.openide.loaders.DataLoaderPool
-cons protected DataLoaderPool()
-cons protected DataLoaderPool(org.openide.loaders.DataLoader)
+cons protected init()
+cons protected init(org.openide.loaders.DataLoader)
 intf java.io.Serializable
 meth protected abstract java.util.Enumeration<? extends org.openide.loaders.DataLoader> loaders()
 meth protected final void fireChangeEvent(javax.swing.event.ChangeEvent)
@@ -3124,8 +3168,8 @@ hfds DEFAULT,allLoaders,cntchanges,defaultLoaders,emptyDataLoaderRecognized,list
 hcls DefaultLoader,DefaultPool,EmptyDataLoaderRecognized,FolderLoader,InstanceLoader,InstanceLoaderSystem,ShadowLoader
 
 CLSS public org.openide.loaders.DataNode
-cons public DataNode(org.openide.loaders.DataObject,org.openide.nodes.Children)
-cons public DataNode(org.openide.loaders.DataObject,org.openide.nodes.Children,org.openide.util.Lookup)
+cons public init(org.openide.loaders.DataObject,org.openide.nodes.Children)
+cons public init(org.openide.loaders.DataObject,org.openide.nodes.Children,org.openide.util.Lookup)
 meth protected org.openide.nodes.Sheet createSheet()
 meth protected org.openide.util.actions.SystemAction[] createActions()
  anno 0 java.lang.Deprecated()
@@ -3153,11 +3197,11 @@ meth public void destroy() throws java.io.IOException
 meth public void setName(java.lang.String)
 meth public void setName(java.lang.String,boolean)
 supr org.openide.nodes.AbstractNode
-hfds PROP_EXTENSION,defaultLookup,obj,propL,refreshIconNodes,refreshNameIconLock,refreshNameNodes,refreshNamesIconsRunning,refreshNamesIconsTask,serialVersionUID,showFileExtensions
+hfds PROP_EXTENSION,RP,defaultLookup,obj,propL,refreshIconNodes,refreshNameIconLock,refreshNameNodes,refreshNamesIconsRunning,refreshNamesIconsTask,serialVersionUID,showFileExtensions
 hcls AllFilesProperty,ExtensionProperty,LastModifiedProperty,LazyFilesSet,NamesUpdater,ObjectHandle,PropL,SizeProperty
 
 CLSS public abstract org.openide.loaders.DataObject
-cons public DataObject(org.openide.filesystems.FileObject,org.openide.loaders.DataLoader) throws org.openide.loaders.DataObjectExistsException
+cons public init(org.openide.filesystems.FileObject,org.openide.loaders.DataLoader) throws org.openide.loaders.DataObjectExistsException
 fld public final static java.lang.String PROP_COOKIE = "cookie"
 fld public final static java.lang.String PROP_FILES = "files"
 fld public final static java.lang.String PROP_HELP = "helpCtx"
@@ -3228,6 +3272,7 @@ hfds EA_ASSIGNED_LOADER,EA_ASSIGNED_LOADER_MODULE,LOG,OBJ_LOG,REGISTRY_INSTANCE,
 hcls CreateAction,ModifiedRegistry,Replace
 
 CLSS public abstract interface static org.openide.loaders.DataObject$Container
+ outer org.openide.loaders.DataObject
 fld public final static java.lang.String PROP_CHILDREN = "children"
 intf org.openide.nodes.Node$Cookie
 meth public abstract org.openide.loaders.DataObject[] getChildren()
@@ -3235,9 +3280,11 @@ meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeLis
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 
 CLSS public abstract interface static org.openide.loaders.DataObject$Factory
+ outer org.openide.loaders.DataObject
 meth public abstract org.openide.loaders.DataObject findDataObject(org.openide.filesystems.FileObject,java.util.Set<? super org.openide.filesystems.FileObject>) throws java.io.IOException
 
 CLSS public final static org.openide.loaders.DataObject$Registry
+ outer org.openide.loaders.DataObject
 meth public java.util.Set<org.openide.loaders.DataObject> getModifiedSet()
 meth public org.openide.loaders.DataObject[] getModified()
 meth public void addChangeListener(javax.swing.event.ChangeListener)
@@ -3245,22 +3292,22 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
 
 CLSS public org.openide.loaders.DataObjectExistsException
-cons public DataObjectExistsException(org.openide.loaders.DataObject)
+cons public init(org.openide.loaders.DataObject)
 meth public java.lang.Throwable fillInStackTrace()
 meth public org.openide.loaders.DataObject getDataObject()
 supr java.io.IOException
 hfds obj,serialVersionUID
 
 CLSS public org.openide.loaders.DataObjectNotFoundException
-cons public DataObjectNotFoundException(org.openide.filesystems.FileObject)
+cons public init(org.openide.filesystems.FileObject)
 meth public org.openide.filesystems.FileObject getFileObject()
 supr java.io.IOException
 hfds obj,serialVersionUID
 
 CLSS public org.openide.loaders.DataShadow
-cons protected DataShadow(org.openide.filesystems.FileObject,org.openide.loaders.DataObject,org.openide.loaders.DataLoader) throws org.openide.loaders.DataObjectExistsException
+cons protected init(org.openide.filesystems.FileObject,org.openide.loaders.DataObject,org.openide.loaders.DataLoader) throws org.openide.loaders.DataObjectExistsException
  anno 0 java.lang.Deprecated()
-cons protected DataShadow(org.openide.filesystems.FileObject,org.openide.loaders.DataObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
+cons protected init(org.openide.filesystems.FileObject,org.openide.loaders.DataObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
 innr protected static ShadowNode
 intf org.openide.loaders.DataObject$Container
 meth protected org.openide.filesystems.FileObject handleMove(org.openide.loaders.DataFolder) throws java.io.IOException
@@ -3286,7 +3333,8 @@ hfds MUTEX,RP,SHADOW_EXTENSION,allDataShadows,lastTask,lookup,nodes,origL,origin
 hcls DSLookup,DSWeakReference,OrigL
 
 CLSS protected static org.openide.loaders.DataShadow$ShadowNode
-cons public ShadowNode(org.openide.loaders.DataShadow)
+ outer org.openide.loaders.DataShadow
+cons public init(org.openide.loaders.DataShadow)
 meth protected org.openide.nodes.NodeListener createNodeListener()
 meth public <%0 extends org.openide.nodes.Node$Cookie> {%%0} getCookie(java.lang.Class<{%%0}>)
 meth public boolean canDestroy()
@@ -3315,15 +3363,17 @@ hcls Name,PropL
 CLSS public final org.openide.loaders.Environment
 innr public abstract interface static Provider
 meth public static javax.naming.Context findSettingsContext(org.openide.loaders.DataObject)
+ anno 0 java.lang.Deprecated()
 meth public static org.openide.util.Lookup find(org.openide.loaders.DataObject)
 supr java.lang.Object
 hfds result
 
 CLSS public abstract interface static org.openide.loaders.Environment$Provider
+ outer org.openide.loaders.Environment
 meth public abstract org.openide.util.Lookup getEnvironment(org.openide.loaders.DataObject)
 
 CLSS public org.openide.loaders.ExtensionList
-cons public ExtensionList()
+cons public init()
 intf java.io.Serializable
 intf java.lang.Cloneable
 meth public boolean equals(java.lang.Object)
@@ -3342,7 +3392,7 @@ supr java.lang.Object
 hfds CASE_INSENSITIVE,list,mimeTypes,serialVersionUID
 
 CLSS public org.openide.loaders.FileEntry
-cons public FileEntry(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
+cons public init(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
 innr public abstract static Format
 innr public final static Folder
 innr public final static Numb
@@ -3356,7 +3406,8 @@ supr org.openide.loaders.MultiDataObject$Entry
 hfds serialVersionUID
 
 CLSS public final static org.openide.loaders.FileEntry$Folder
-cons public Folder(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
+ outer org.openide.loaders.FileEntry
+cons public init(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
 meth public org.openide.filesystems.FileObject copy(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject createFromTemplate(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject move(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
@@ -3365,14 +3416,16 @@ meth public void delete() throws java.io.IOException
 supr org.openide.loaders.MultiDataObject$Entry
 
 CLSS public abstract static org.openide.loaders.FileEntry$Format
-cons public Format(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
+ outer org.openide.loaders.FileEntry
+cons public init(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
 meth protected abstract java.text.Format createFormat(org.openide.filesystems.FileObject,java.lang.String,java.lang.String)
 meth public org.openide.filesystems.FileObject createFromTemplate(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 supr org.openide.loaders.FileEntry
 hfds serialVersionUID
 
 CLSS public final static org.openide.loaders.FileEntry$Numb
-cons public Numb(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
+ outer org.openide.loaders.FileEntry
+cons public init(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
 meth public boolean isImportant()
 meth public org.openide.filesystems.FileObject copy(org.openide.filesystems.FileObject,java.lang.String)
 meth public org.openide.filesystems.FileObject createFromTemplate(org.openide.filesystems.FileObject,java.lang.String)
@@ -3383,8 +3436,8 @@ supr org.openide.loaders.MultiDataObject$Entry
 hfds serialVersionUID
 
 CLSS public abstract org.openide.loaders.FolderInstance
-cons public FolderInstance(org.openide.loaders.DataFolder)
-cons public FolderInstance(org.openide.loaders.DataObject$Container)
+cons public init(org.openide.loaders.DataFolder)
+cons public init(org.openide.loaders.DataObject$Container)
 fld protected org.openide.loaders.DataFolder folder
 intf org.openide.cookies.InstanceCookie
 meth protected abstract java.lang.Object createInstance(org.openide.cookies.InstanceCookie[]) throws java.io.IOException,java.lang.ClassNotFoundException
@@ -3408,8 +3461,8 @@ hcls HoldInstance,Listener
 
 CLSS public org.openide.loaders.FolderLookup
  anno 0 java.lang.Deprecated()
-cons public FolderLookup(org.openide.loaders.DataObject$Container)
-cons public FolderLookup(org.openide.loaders.DataObject$Container,java.lang.String)
+cons public init(org.openide.loaders.DataObject$Container)
+cons public init(org.openide.loaders.DataObject$Container,java.lang.String)
 meth protected final java.lang.Object createInstance(org.openide.cookies.InstanceCookie[]) throws java.io.IOException,java.lang.ClassNotFoundException
 meth protected final org.openide.util.Task postCreationTask(java.lang.Runnable)
 meth protected java.lang.Object instanceForCookie(org.openide.loaders.DataObject,org.openide.cookies.InstanceCookie) throws java.io.IOException,java.lang.ClassNotFoundException
@@ -3425,7 +3478,7 @@ CLSS public abstract interface org.openide.loaders.FolderRenameHandler
 meth public abstract void handleRename(org.openide.loaders.DataFolder,java.lang.String)
 
 CLSS public org.openide.loaders.InstanceDataObject
-cons public InstanceDataObject(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
+cons public init(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
 fld public final static java.lang.String INSTANCE = "instance"
 intf org.openide.cookies.InstanceCookie$Of
 meth protected org.openide.filesystems.FileObject handleRename(java.lang.String) throws java.io.IOException
@@ -3455,7 +3508,7 @@ hfds CLOSE,EA_INSTANCE_CLASS,EA_INSTANCE_CREATE,EA_INSTANCE_OF,EA_NAME,EA_PROVID
 hcls CookieAdjustingFilter,Creator,FileObjectContext,Ser,UnrecognizedSettingNode,UpdatableNode,WriterProvider
 
 CLSS public org.openide.loaders.InstanceSupport
-cons public InstanceSupport(org.openide.loaders.MultiDataObject$Entry)
+cons public init(org.openide.loaders.MultiDataObject$Entry)
 innr public static Instance
 intf org.openide.cookies.InstanceCookie$Of
 meth protected java.lang.ClassLoader createClassLoader()
@@ -3480,7 +3533,8 @@ hfds applet,bean,clazz,clazzException,entry,writeRepl
 hcls ClassEx
 
 CLSS public static org.openide.loaders.InstanceSupport$Instance
-cons public Instance(java.lang.Object)
+ outer org.openide.loaders.InstanceSupport
+cons public init(java.lang.Object)
 intf org.openide.cookies.InstanceCookie$Of
 meth public boolean instanceOf(java.lang.Class<?>)
 meth public java.lang.Class<?> instanceClass()
@@ -3507,7 +3561,7 @@ supr java.lang.Object
 hfds dndMimeType
 
 CLSS public org.openide.loaders.MultiDataObject
-cons public MultiDataObject(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
+cons public init(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
 innr public abstract Entry
 meth protected final org.openide.loaders.MultiDataObject$Entry registerEntry(org.openide.filesystems.FileObject)
 meth protected final org.openide.nodes.CookieSet getCookieSet()
@@ -3539,7 +3593,8 @@ hfds ERR,RECOGNIZER,chLis,checked,cookieSet,cookieSetLock,delayProcessor,delayed
 hcls ChangeAndBefore,EmptyRecognizer,EntryReplace,Pair
 
 CLSS public abstract org.openide.loaders.MultiDataObject$Entry
-cons protected Entry(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
+ outer org.openide.loaders.MultiDataObject
+cons protected init(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
 intf java.io.Serializable
 meth protected java.lang.Object writeReplace()
 meth public abstract org.openide.filesystems.FileObject copy(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
@@ -3559,9 +3614,9 @@ supr java.lang.Object
 hfds file,lock,serialVersionUID
 
 CLSS public abstract org.openide.loaders.MultiFileLoader
-cons protected MultiFileLoader(java.lang.Class<? extends org.openide.loaders.DataObject>)
+cons protected init(java.lang.Class<? extends org.openide.loaders.DataObject>)
  anno 0 java.lang.Deprecated()
-cons protected MultiFileLoader(java.lang.String)
+cons protected init(java.lang.String)
 meth protected abstract org.openide.filesystems.FileObject findPrimaryFile(org.openide.filesystems.FileObject)
 meth protected abstract org.openide.loaders.MultiDataObject createMultiObject(org.openide.filesystems.FileObject) throws java.io.IOException
 meth protected abstract org.openide.loaders.MultiDataObject$Entry createPrimaryEntry(org.openide.loaders.MultiDataObject,org.openide.filesystems.FileObject)
@@ -3571,8 +3626,8 @@ supr org.openide.loaders.DataLoader
 hfds serialVersionUID
 
 CLSS public abstract org.openide.loaders.OpenSupport
-cons protected OpenSupport(org.openide.loaders.MultiDataObject$Entry,org.openide.loaders.OpenSupport$Env)
-cons public OpenSupport(org.openide.loaders.MultiDataObject$Entry)
+cons protected init(org.openide.loaders.MultiDataObject$Entry,org.openide.loaders.OpenSupport$Env)
+cons public init(org.openide.loaders.MultiDataObject$Entry)
 fld protected org.openide.loaders.MultiDataObject$Entry entry
 innr public static Env
 meth protected java.lang.String messageOpened()
@@ -3581,7 +3636,8 @@ supr org.openide.windows.CloneableOpenSupport
 hcls FileSystemNameListener,Listener
 
 CLSS public static org.openide.loaders.OpenSupport$Env
-cons public Env(org.openide.loaders.DataObject)
+ outer org.openide.loaders.OpenSupport
+cons public init(org.openide.loaders.DataObject)
 intf java.beans.PropertyChangeListener
 intf java.beans.VetoableChangeListener
 intf java.io.Serializable
@@ -3604,7 +3660,7 @@ supr java.lang.Object
 hfds LOCK_SUPPORT,fsListenerMap,obj,propSupp,serialVersionUID,vetoSupp
 
 CLSS public org.openide.loaders.OperationAdapter
-cons public OperationAdapter()
+cons public init()
 intf org.openide.loaders.OperationListener
 meth public void operationCopy(org.openide.loaders.OperationEvent$Copy)
 meth public void operationCreateFromTemplate(org.openide.loaders.OperationEvent$Copy)
@@ -3625,16 +3681,19 @@ supr java.util.EventObject
 hfds COPY,CREATE,DELETE,MOVE,RENAME,SHADOW,TEMPL,obj,pl,serialVersionUID
 
 CLSS public final static org.openide.loaders.OperationEvent$Copy
+ outer org.openide.loaders.OperationEvent
 meth public org.openide.loaders.DataObject getOriginalDataObject()
 supr org.openide.loaders.OperationEvent
 hfds orig,serialVersionUID
 
 CLSS public final static org.openide.loaders.OperationEvent$Move
+ outer org.openide.loaders.OperationEvent
 meth public org.openide.filesystems.FileObject getOriginalPrimaryFile()
 supr org.openide.loaders.OperationEvent
 hfds file,serialVersionUID
 
 CLSS public final static org.openide.loaders.OperationEvent$Rename
+ outer org.openide.loaders.OperationEvent
 meth public java.lang.String getOriginalName()
 supr org.openide.loaders.OperationEvent
 hfds name,serialVersionUID
@@ -3651,7 +3710,7 @@ meth public abstract void operationRename(org.openide.loaders.OperationEvent$Ren
 
 CLSS public abstract org.openide.loaders.RepositoryNodeFactory
  anno 0 java.lang.Deprecated()
-cons protected RepositoryNodeFactory()
+cons protected init()
 meth public abstract org.openide.nodes.Node repository(org.openide.loaders.DataFilter)
 meth public static org.openide.loaders.RepositoryNodeFactory getDefault()
 supr java.lang.Object
@@ -3661,8 +3720,8 @@ CLSS public abstract interface org.openide.loaders.SaveAsCapable
 meth public abstract void saveAs(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 
 CLSS public org.openide.loaders.TemplateWizard
-cons protected TemplateWizard(org.openide.loaders.TemplateWizard$Iterator)
-cons public TemplateWizard()
+cons protected init(org.openide.loaders.TemplateWizard$Iterator)
+cons public init()
 innr public abstract interface static Iterator
 meth protected java.util.Set<org.openide.loaders.DataObject> handleInstantiate() throws java.io.IOException
 meth protected org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createTargetChooser()
@@ -3699,6 +3758,7 @@ hfds CUSTOM_DESCRIPTION,CUSTOM_ITERATOR,EA_DESCRIPTION,EA_DESC_RESOURCE,EA_ITERA
 hcls DefaultIterator,InstantiatingIteratorBridge
 
 CLSS public abstract interface static org.openide.loaders.TemplateWizard$Iterator
+ outer org.openide.loaders.TemplateWizard
 intf java.io.Serializable
 intf org.openide.WizardDescriptor$Iterator<org.openide.WizardDescriptor>
 intf org.openide.nodes.Node$Cookie
@@ -3707,9 +3767,9 @@ meth public abstract void initialize(org.openide.loaders.TemplateWizard)
 meth public abstract void uninitialize(org.openide.loaders.TemplateWizard)
 
 CLSS public abstract org.openide.loaders.UniFileLoader
-cons protected UniFileLoader(java.lang.Class<? extends org.openide.loaders.DataObject>)
+cons protected init(java.lang.Class<? extends org.openide.loaders.DataObject>)
  anno 0 java.lang.Deprecated()
-cons protected UniFileLoader(java.lang.String)
+cons protected init(java.lang.String)
 fld public final static java.lang.String PROP_EXTENSIONS = "extensions"
 meth protected abstract org.openide.loaders.MultiDataObject createMultiObject(org.openide.filesystems.FileObject) throws java.io.IOException
 meth protected org.openide.filesystems.FileObject findPrimaryFile(org.openide.filesystems.FileObject)
@@ -3723,8 +3783,8 @@ supr org.openide.loaders.MultiFileLoader
 hfds serialVersionUID
 
 CLSS public org.openide.loaders.XMLDataObject
-cons protected XMLDataObject(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader,boolean) throws org.openide.loaders.DataObjectExistsException
-cons public XMLDataObject(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
+cons protected init(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader,boolean) throws org.openide.loaders.DataObjectExistsException
+cons public init(org.openide.filesystems.FileObject,org.openide.loaders.MultiFileLoader) throws org.openide.loaders.DataObjectExistsException
 fld public final static int STATUS_ERROR = 3
 fld public final static int STATUS_NOT = 0
 fld public final static int STATUS_OK = 1
@@ -3791,8 +3851,9 @@ hfds ERR,chainingEntityResolver,cnstr,doc,editor,emgrLock,errorHandler,infoParse
 hcls DelDoc,ErrorPrinter,ICDel,InfoLkp,Loader,NullHandler,PlainDataNode,XMLEditorSupport,XMLNode
 
 CLSS public final static org.openide.loaders.XMLDataObject$Info
+ outer org.openide.loaders.XMLDataObject
  anno 0 java.lang.Deprecated()
-cons public Info()
+cons public init()
 intf java.lang.Cloneable
 meth public boolean equals(java.lang.Object)
 meth public boolean removeProcessorClass(java.lang.Class<?>)
@@ -3806,13 +3867,14 @@ supr java.lang.Object
 hfds iconBase,processors
 
 CLSS public abstract interface static org.openide.loaders.XMLDataObject$Processor
+ outer org.openide.loaders.XMLDataObject
  anno 0 java.lang.Deprecated()
 intf org.openide.nodes.Node$Cookie
 meth public abstract void attachTo(org.openide.loaders.XMLDataObject)
 
 CLSS public org.openide.nodes.AbstractNode
-cons public AbstractNode(org.openide.nodes.Children)
-cons public AbstractNode(org.openide.nodes.Children,org.openide.util.Lookup)
+cons public init(org.openide.nodes.Children)
+cons public init(org.openide.nodes.Children,org.openide.util.Lookup)
 fld protected java.text.MessageFormat displayFormat
 fld protected org.openide.util.actions.SystemAction[] systemActions
  anno 0 java.lang.Deprecated()
@@ -3860,9 +3922,9 @@ hfds DEFAULT_ICON,DEFAULT_ICON_BASE,DEFAULT_ICON_EXTENSION,ICON_BASE,NO_NEW_TYPE
 hcls SheetAndCookieListener
 
 CLSS public org.openide.nodes.FilterNode
-cons public FilterNode(org.openide.nodes.Node)
-cons public FilterNode(org.openide.nodes.Node,org.openide.nodes.Children)
-cons public FilterNode(org.openide.nodes.Node,org.openide.nodes.Children,org.openide.util.Lookup)
+cons public init(org.openide.nodes.Node)
+cons public init(org.openide.nodes.Node,org.openide.nodes.Children)
+cons public init(org.openide.nodes.Node,org.openide.nodes.Children,org.openide.util.Lookup)
 fld protected final static int DELEGATE_DESTROY = 64
 fld protected final static int DELEGATE_GET_ACTIONS = 128
 fld protected final static int DELEGATE_GET_CONTEXT_ACTIONS = 256
@@ -3945,7 +4007,8 @@ meth public abstract void reorder()
 meth public abstract void reorder(int[])
 
 CLSS public abstract static org.openide.nodes.Index$Support
-cons public Support()
+ outer org.openide.nodes.Index
+cons public init()
 intf org.openide.nodes.Index
 meth protected void fireChangeEvent(javax.swing.event.ChangeEvent)
 meth public abstract int getNodesCount()
@@ -3964,8 +4027,8 @@ supr java.lang.Object
 hfds listeners
 
 CLSS public abstract org.openide.nodes.Node
-cons protected Node(org.openide.nodes.Children)
-cons protected Node(org.openide.nodes.Children,org.openide.util.Lookup)
+cons protected init(org.openide.nodes.Children)
+cons protected init(org.openide.nodes.Children,org.openide.util.Lookup)
 fld public final static java.lang.String PROP_COOKIE = "cookie"
 fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
 fld public final static java.lang.String PROP_ICON = "icon"
@@ -4024,6 +4087,7 @@ meth public final void addNodeListener(org.openide.nodes.NodeListener)
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removeNodeListener(org.openide.nodes.NodeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public int hashCode()
 meth public java.lang.String getHtmlDisplayName()
 meth public java.lang.String toString()
 meth public javax.swing.Action getPreferredAction()
@@ -4045,13 +4109,14 @@ hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBa
 hcls LookupEventList
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
+ outer org.openide.nodes.Node
 
 CLSS public abstract interface org.openide.text.ActiveEditorDrop
 fld public final static java.awt.datatransfer.DataFlavor FLAVOR
 meth public abstract boolean handleTransfer(javax.swing.text.JTextComponent)
 
 CLSS public abstract org.openide.text.Annotatable
-cons public Annotatable()
+cons public init()
 fld public final static java.lang.String PROP_ANNOTATION_COUNT = "annotationCount"
 fld public final static java.lang.String PROP_DELETED = "deleted"
 fld public final static java.lang.String PROP_TEXT = "text"
@@ -4067,7 +4132,7 @@ supr java.lang.Object
 hfds attachedAnnotations,deleted,propertyChangeSupport
 
 CLSS public abstract org.openide.text.Annotation
-cons public Annotation()
+cons public init()
 fld public final static java.lang.String PROP_ANNOTATION_TYPE = "annotationType"
 fld public final static java.lang.String PROP_MOVE_TO_FRONT = "moveToFront"
 fld public final static java.lang.String PROP_SHORT_DESCRIPTION = "shortDescription"
@@ -4089,7 +4154,7 @@ CLSS public abstract interface org.openide.text.AnnotationProvider
 meth public abstract void annotate(org.openide.text.Line$Set,org.openide.util.Lookup)
 
 CLSS public org.openide.text.AttributedCharacters
-cons public AttributedCharacters()
+cons public init()
 fld protected char[] chars
 fld protected int current
 fld protected int[] runLimit
@@ -4103,7 +4168,8 @@ meth public void append(char[],java.awt.Font,java.awt.Color)
 supr java.lang.Object
 
 CLSS public static org.openide.text.AttributedCharacters$AttributedCharacterIteratorImpl
-cons public AttributedCharacterIteratorImpl(char[],java.awt.Font[],java.awt.Color[],int[],int[])
+ outer org.openide.text.AttributedCharacters
+cons public init(char[],java.awt.Font[],java.awt.Color[],int[],int[])
 fld protected char[] chars
 fld protected int current
 fld protected int[] runLimit
@@ -4134,8 +4200,8 @@ meth public java.util.Set<java.text.AttributedCharacterIterator$Attribute> getAl
 supr java.lang.Object
 
 CLSS public org.openide.text.CloneableEditor
-cons public CloneableEditor()
-cons public CloneableEditor(org.openide.text.CloneableEditorSupport)
+cons public init()
+cons public init(org.openide.text.CloneableEditorSupport)
 fld protected javax.swing.JEditorPane pane
 intf org.openide.text.CloneableEditorSupport$Pane
 meth protected boolean closeLast()
@@ -4171,8 +4237,8 @@ hfds CLOSE_LAST_LOCK,HELP_ID,LOG,RP,RPPostprocessing,TIMER,cursorPosition,custom
 hcls AWTQuery,DoInitialize
 
 CLSS public abstract org.openide.text.CloneableEditorSupport
-cons public CloneableEditorSupport(org.openide.text.CloneableEditorSupport$Env)
-cons public CloneableEditorSupport(org.openide.text.CloneableEditorSupport$Env,org.openide.util.Lookup)
+cons public init(org.openide.text.CloneableEditorSupport$Env)
+cons public init(org.openide.text.CloneableEditorSupport$Env,org.openide.util.Lookup)
 fld public final static java.lang.String EDITOR_MODE = "editor"
 innr public abstract interface static Env
 innr public abstract interface static Pane
@@ -4224,10 +4290,11 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,documentStatus,inUserQuestionExceptionHandler,isStrongSet,justRevertedToNotModified,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,revertingUndoOrReloading,undoRedo,warnedClasses
+hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,documentStatus,inUserQuestionExceptionHandler,isStrongSet,justRevertedToNotModified,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,revertingUndoOrReloading,undoRedo,warnedClasses
 hcls BeforeModificationEdit,BeforeSaveEdit,CESUndoRedoManager,DelegateIOExc,FilterUndoableEdit,Listener,PlainEditorKit,SearchBeforeModificationEdit,StrongRef
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
+ outer org.openide.text.CloneableEditorSupport
 fld public final static java.lang.String PROP_TIME = "time"
 intf org.openide.windows.CloneableOpenSupport$Env
 meth public abstract java.io.InputStream inputStream() throws java.io.IOException
@@ -4236,18 +4303,19 @@ meth public abstract java.lang.String getMimeType()
 meth public abstract java.util.Date getTime()
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Pane
+ outer org.openide.text.CloneableEditorSupport
 meth public abstract javax.swing.JEditorPane getEditorPane()
 meth public abstract org.openide.windows.CloneableTopComponent getComponent()
 meth public abstract void ensureVisible()
 meth public abstract void updateName()
 
 CLSS public abstract org.openide.text.CloneableEditorSupportRedirector
-cons public CloneableEditorSupportRedirector()
+cons public init()
 meth protected abstract org.openide.text.CloneableEditorSupport redirect(org.openide.util.Lookup)
 supr java.lang.Object
 
 CLSS public org.openide.text.DataEditorSupport
-cons public DataEditorSupport(org.openide.loaders.DataObject,org.openide.text.CloneableEditorSupport$Env)
+cons public init(org.openide.loaders.DataObject,org.openide.text.CloneableEditorSupport$Env)
 innr public abstract static Env
 meth protected boolean canClose()
 meth protected java.lang.String documentID()
@@ -4276,7 +4344,8 @@ hfds ERR,TABNAMES_HTML,cacheCounter,charsets,nodeL,obj
 hcls DOEnvLookup,DataNodeListener,EnvListener,SaveImpl
 
 CLSS public abstract static org.openide.text.DataEditorSupport$Env
-cons public Env(org.openide.loaders.DataObject)
+ outer org.openide.text.DataEditorSupport
+cons public init(org.openide.loaders.DataObject)
 intf org.openide.text.CloneableEditorSupport$Env
 meth protected abstract org.openide.filesystems.FileLock takeLock() throws java.io.IOException
 meth protected abstract org.openide.filesystems.FileObject getFile()
@@ -4292,7 +4361,7 @@ hfds action,canWrite,fileLock,fileObject,serialVersionUID,warnedFiles
 hcls ME,SaveAsCapableImpl
 
 CLSS public abstract org.openide.text.DocumentLine
-cons public DocumentLine(org.openide.util.Lookup,org.openide.text.PositionRef)
+cons public init(org.openide.util.Lookup,org.openide.text.PositionRef)
 fld protected org.openide.text.PositionRef pos
 innr public abstract static Set
 meth protected void addAnnotation(org.openide.text.Annotation)
@@ -4320,7 +4389,8 @@ hfds assigned,breakpoint,current,docL,error,lineParts,listener,serialVersionUID
 hcls FindAnnotationPosition,LR,Part
 
 CLSS public abstract static org.openide.text.DocumentLine$Set
-cons public Set(javax.swing.text.StyledDocument)
+ outer org.openide.text.DocumentLine
+cons public init(javax.swing.text.StyledDocument)
 meth protected abstract org.openide.text.Line createLine(int)
 meth public int getOriginalLineNumber(org.openide.text.Line)
 meth public java.util.List<? extends org.openide.text.Line> getLines()
@@ -4331,7 +4401,7 @@ hfds list,listener
 
 CLSS public org.openide.text.EditorSupport
  anno 0 java.lang.Deprecated()
-cons public EditorSupport(org.openide.loaders.MultiDataObject$Entry)
+cons public init(org.openide.loaders.MultiDataObject$Entry)
 fld protected java.lang.String modifiedAppendix
  anno 0 java.lang.Deprecated()
 fld public final static java.lang.String EDITOR_MODE = "editor"
@@ -4386,16 +4456,17 @@ hfds del,listenToModifs
 hcls Del,DelEnv,EntryEnv
 
 CLSS public static org.openide.text.EditorSupport$Editor
-cons public Editor()
-cons public Editor(org.openide.loaders.DataObject)
-cons public Editor(org.openide.loaders.DataObject,org.openide.text.EditorSupport)
+ outer org.openide.text.EditorSupport
+cons public init()
+cons public init(org.openide.loaders.DataObject)
+cons public init(org.openide.loaders.DataObject,org.openide.text.EditorSupport)
 fld protected org.openide.loaders.DataObject obj
 meth public void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
 supr org.openide.text.CloneableEditor
 hfds serialVersionUID
 
 CLSS public org.openide.text.FilterDocument
-cons public FilterDocument(javax.swing.text.Document)
+cons public init(javax.swing.text.Document)
 fld protected javax.swing.text.Document original
 intf javax.swing.text.StyledDocument
 meth public int getLength()
@@ -4431,7 +4502,7 @@ supr java.lang.Object
 hfds leaf
 
 CLSS public org.openide.text.FilterStyledDocument
-cons public FilterStyledDocument(javax.swing.text.StyledDocument)
+cons public init(javax.swing.text.StyledDocument)
 meth public java.awt.Color getBackground(javax.swing.text.AttributeSet)
 meth public java.awt.Color getForeground(javax.swing.text.AttributeSet)
 meth public java.awt.Font getFont(javax.swing.text.AttributeSet)
@@ -4448,7 +4519,7 @@ supr org.openide.text.FilterDocument
 
 CLSS public abstract org.openide.text.IndentEngine
  anno 0 java.lang.Deprecated()
-cons public IndentEngine()
+cons public init()
 meth protected boolean acceptMimeType(java.lang.String)
 meth public abstract int indentLine(javax.swing.text.Document,int)
 meth public abstract int indentNewLine(javax.swing.text.Document,int)
@@ -4465,8 +4536,8 @@ hfds INSTANCE,map,serialVersionUID
 hcls Default
 
 CLSS public abstract org.openide.text.Line
-cons public Line(java.lang.Object)
-cons public Line(org.openide.util.Lookup)
+cons public init(java.lang.Object)
+cons public init(org.openide.util.Lookup)
 fld public final static int SHOW_GOTO = 2
  anno 0 java.lang.Deprecated()
 fld public final static int SHOW_REUSE = 4
@@ -4515,7 +4586,8 @@ hfds LOG,dataObject,nullPart,serialVersionUID
 hcls NullPart
 
 CLSS public abstract static org.openide.text.Line$Part
-cons public Part()
+ outer org.openide.text.Line
+cons public init()
 fld public final static java.lang.String PROP_COLUMN = "column"
 fld public final static java.lang.String PROP_LENGTH = "length"
 fld public final static java.lang.String PROP_LINE = "line"
@@ -4525,7 +4597,8 @@ meth public abstract org.openide.text.Line getLine()
 supr org.openide.text.Annotatable
 
 CLSS public abstract static org.openide.text.Line$Set
-cons public Set()
+ outer org.openide.text.Line
+cons public init()
 meth public abstract java.util.List<? extends org.openide.text.Line> getLines()
 meth public abstract org.openide.text.Line getCurrent(int)
 meth public abstract org.openide.text.Line getOriginal(int)
@@ -4535,6 +4608,7 @@ supr java.lang.Object
 hfds date,whm
 
 CLSS public final static !enum org.openide.text.Line$ShowOpenType
+ outer org.openide.text.Line
 fld public final static org.openide.text.Line$ShowOpenType NONE
 fld public final static org.openide.text.Line$ShowOpenType OPEN
 fld public final static org.openide.text.Line$ShowOpenType REUSE
@@ -4544,6 +4618,7 @@ meth public static org.openide.text.Line$ShowOpenType[] values()
 supr java.lang.Enum<org.openide.text.Line$ShowOpenType>
 
 CLSS public final static !enum org.openide.text.Line$ShowVisibilityType
+ outer org.openide.text.Line
 fld public final static org.openide.text.Line$ShowVisibilityType FOCUS
 fld public final static org.openide.text.Line$ShowVisibilityType FRONT
 fld public final static org.openide.text.Line$ShowVisibilityType NONE
@@ -4554,9 +4629,13 @@ supr java.lang.Enum<org.openide.text.Line$ShowVisibilityType>
 CLSS public final org.openide.text.NbDocument
 fld public final static java.lang.Object GUARDED
 fld public final static java.lang.String BREAKPOINT_STYLE_NAME = "NbBreakpointStyle"
+ anno 0 java.lang.Deprecated()
 fld public final static java.lang.String CURRENT_STYLE_NAME = "NbCurrentStyle"
+ anno 0 java.lang.Deprecated()
 fld public final static java.lang.String ERROR_STYLE_NAME = "NbErrorStyle"
+ anno 0 java.lang.Deprecated()
 fld public final static java.lang.String NORMAL_STYLE_NAME = "NbNormalStyle"
+ anno 0 java.lang.Deprecated()
 innr public abstract interface static Annotatable
 innr public abstract interface static CustomEditor
 innr public abstract interface static CustomToolbar
@@ -4590,33 +4669,39 @@ hfds ATTR_ADD,ATTR_REMOVE
 hcls DocumentRenderer
 
 CLSS public abstract interface static org.openide.text.NbDocument$Annotatable
+ outer org.openide.text.NbDocument
 intf javax.swing.text.Document
 meth public abstract void addAnnotation(javax.swing.text.Position,int,org.openide.text.Annotation)
 meth public abstract void removeAnnotation(org.openide.text.Annotation)
 
 CLSS public abstract interface static org.openide.text.NbDocument$CustomEditor
+ outer org.openide.text.NbDocument
 intf javax.swing.text.Document
 meth public abstract java.awt.Component createEditor(javax.swing.JEditorPane)
 
 CLSS public abstract interface static org.openide.text.NbDocument$CustomToolbar
+ outer org.openide.text.NbDocument
 intf javax.swing.text.Document
 meth public abstract javax.swing.JToolBar createToolbar(javax.swing.JEditorPane)
 
 CLSS public abstract interface static org.openide.text.NbDocument$PositionBiasable
+ outer org.openide.text.NbDocument
 intf javax.swing.text.Document
 meth public abstract javax.swing.text.Position createPosition(int,javax.swing.text.Position$Bias) throws javax.swing.text.BadLocationException
 
 CLSS public abstract interface static org.openide.text.NbDocument$Printable
+ outer org.openide.text.NbDocument
 intf javax.swing.text.Document
 meth public abstract java.text.AttributedCharacterIterator[] createPrintIterators()
 
 CLSS public abstract interface static org.openide.text.NbDocument$WriteLockable
+ outer org.openide.text.NbDocument
 intf javax.swing.text.Document
 meth public abstract void runAtomic(java.lang.Runnable)
 meth public abstract void runAtomicAsUser(java.lang.Runnable) throws javax.swing.text.BadLocationException
 
 CLSS public final org.openide.text.PositionBounds
-cons public PositionBounds(org.openide.text.PositionRef,org.openide.text.PositionRef)
+cons public init(org.openide.text.PositionRef,org.openide.text.PositionRef)
 intf java.io.Serializable
 meth public java.lang.String getText() throws java.io.IOException,javax.swing.text.BadLocationException
 meth public java.lang.String toString()
@@ -4664,6 +4749,7 @@ supr java.lang.Object
 hfds DEFAULT_FONT_NAME,DEFAULT_FONT_SIZE,DEFAULT_FONT_STYLE,INSTANCE,PROP_FOOTER_ALIGNMENT,PROP_FOOTER_FONT_NAME,PROP_FOOTER_FONT_SIZE,PROP_FOOTER_FONT_STYLE,PROP_FOOTER_FORMAT,PROP_HEADER_ALIGNMENT,PROP_HEADER_FONT_NAME,PROP_HEADER_FONT_SIZE,PROP_HEADER_FONT_STYLE,PROP_HEADER_FORMAT,PROP_LINE_ASCENT_CORRECTION,PROP_PAGE_HEIGHT,PROP_PAGE_IMAGEABLEAREA_HEIGHT,PROP_PAGE_IMAGEABLEAREA_WIDTH,PROP_PAGE_IMAGEABLEAREA_X,PROP_PAGE_IMAGEABLEAREA_Y,PROP_PAGE_ORIENTATION,PROP_PAGE_WIDTH,PROP_WRAP
 
 CLSS public final static !enum org.openide.text.PrintPreferences$Alignment
+ outer org.openide.text.PrintPreferences
 fld public final static org.openide.text.PrintPreferences$Alignment CENTER
 fld public final static org.openide.text.PrintPreferences$Alignment LEFT
 fld public final static org.openide.text.PrintPreferences$Alignment RIGHT
@@ -4676,9 +4762,9 @@ intf javax.swing.Action
 meth public abstract javax.swing.Action createContextAwareInstance(org.openide.util.Lookup)
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -4694,10 +4780,11 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -4714,10 +4801,11 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 
 CLSS public abstract org.openide.util.SharedClassObject
-cons protected SharedClassObject()
+cons protected init()
 intf java.io.Externalizable
 meth protected boolean clearSharedData()
 meth protected final java.lang.Object getLock()
@@ -4744,8 +4832,8 @@ hfds PROP_SUPPORT,addNotifySuper,alreadyWarnedAboutDupes,dataEntry,err,first,fir
 hcls DataEntry,SetAccessibleAction,WriteReplace
 
 CLSS public org.openide.util.Task
-cons protected Task()
-cons public Task(java.lang.Runnable)
+cons protected init()
+cons public init(java.lang.Runnable)
 fld public final static org.openide.util.Task EMPTY
 intf java.lang.Runnable
 meth protected final void notifyFinished()
@@ -4761,7 +4849,7 @@ supr java.lang.Object
 hfds RP,finished,list,overrides,run
 
 CLSS public abstract org.openide.util.actions.CallableSystemAction
-cons public CallableSystemAction()
+cons public init()
 intf org.openide.util.actions.Presenter$Menu
 intf org.openide.util.actions.Presenter$Popup
 intf org.openide.util.actions.Presenter$Toolbar
@@ -4775,7 +4863,7 @@ supr org.openide.util.actions.SystemAction
 hfds DEFAULT_ASYNCH,serialVersionUID,warnedAsynchronousActions
 
 CLSS public abstract org.openide.util.actions.CallbackSystemAction
-cons public CallbackSystemAction()
+cons public init()
 intf org.openide.util.ContextAwareAction
 meth protected void initialize()
 meth public boolean getSurviveFocusChange()
@@ -4794,7 +4882,7 @@ hfds LISTENER,PROP_ACTION_PERFORMER,err,notSurviving,serialVersionUID,surviving
 hcls ActionDelegateListener,DelegateAction,GlobalManager,WeakAction
 
 CLSS public abstract org.openide.util.actions.CookieAction
-cons public CookieAction()
+cons public init()
 fld public final static int MODE_ALL = 4
 fld public final static int MODE_ANY = 7
 fld public final static int MODE_EXACTLY_ONE = 8
@@ -4809,7 +4897,7 @@ hfds PROP_COOKIES,listener,serialVersionUID
 hcls CookieDelegateAction,CookiesChangeListener
 
 CLSS public abstract org.openide.util.actions.NodeAction
-cons public NodeAction()
+cons public init()
 intf org.openide.util.ContextAwareAction
 meth protected abstract boolean enable(org.openide.nodes.Node[])
 meth protected abstract void performAction(org.openide.nodes.Node[])
@@ -4835,19 +4923,22 @@ innr public abstract interface static Popup
 innr public abstract interface static Toolbar
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Menu
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract javax.swing.JMenuItem getMenuPresenter()
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Popup
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract javax.swing.JMenuItem getPopupPresenter()
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Toolbar
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract java.awt.Component getToolbarPresenter()
 
 CLSS public abstract org.openide.util.actions.SystemAction
-cons public SystemAction()
+cons public init()
 fld public final static java.lang.String PROP_ENABLED = "enabled"
 fld public final static java.lang.String PROP_ICON = "icon"
 intf javax.swing.Action
@@ -4875,7 +4966,7 @@ hfds BLANK_ICON,LOG,PROP_ICON_TEXTUAL,relativeIconResourceClasses,serialVersionU
 hcls ComponentIcon
 
 CLSS public abstract org.openide.windows.CloneableOpenSupport
-cons public CloneableOpenSupport(org.openide.windows.CloneableOpenSupport$Env)
+cons public init(org.openide.windows.CloneableOpenSupport$Env)
 fld protected org.openide.windows.CloneableOpenSupport$Env env
 fld protected org.openide.windows.CloneableTopComponent$Ref allEditors
 innr public abstract interface static Env
@@ -4894,6 +4985,7 @@ hfds container
 hcls Listener
 
 CLSS public abstract interface static org.openide.windows.CloneableOpenSupport$Env
+ outer org.openide.windows.CloneableOpenSupport
 fld public final static java.lang.String PROP_MODIFIED = "modified"
 fld public final static java.lang.String PROP_VALID = "valid"
 intf java.io.Serializable
@@ -4908,7 +5000,7 @@ meth public abstract void removeVetoableChangeListener(java.beans.VetoableChange
 meth public abstract void unmarkModified()
 
 CLSS public abstract org.openide.windows.CloneableTopComponent
-cons public CloneableTopComponent()
+cons public init()
 fld public final static org.openide.windows.CloneableTopComponent$Ref EMPTY
 innr public static Ref
 intf java.io.Externalizable
@@ -4929,8 +5021,8 @@ supr org.openide.windows.TopComponent
 hfds isLastActivated,ref,serialVersionUID
 
 CLSS public org.openide.windows.TopComponent
-cons public TopComponent()
-cons public TopComponent(org.openide.util.Lookup)
+cons public init()
+cons public init(org.openide.util.Lookup)
 fld public final static int CLOSE_EACH = 0
  anno 0 java.lang.Deprecated()
 fld public final static int CLOSE_LAST = 1
@@ -5000,6 +5092,7 @@ meth public org.openide.util.Lookup getLookup()
 meth public org.openide.util.actions.SystemAction[] getSystemActions()
  anno 0 java.lang.Deprecated()
 meth public static javax.swing.Action openAction(org.openide.windows.TopComponent,java.lang.String,java.lang.String,boolean)
+meth public void addNotify()
 meth public void open()
 meth public void open(org.openide.windows.Workspace)
  anno 0 java.lang.Deprecated()
@@ -5016,9 +5109,10 @@ meth public void setToolTipText(java.lang.String)
 meth public void toFront()
 meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr javax.swing.JComponent
-hfds LOG,UILOG,activatedNodes,attentionGetter,closeOperation,defaultLookupLock,defaultLookupRef,displayName,htmlDisplayName,icon,nodeName,serialVersion,serialVersionUID,warnedClasses,warnedTCPIClasses
+hfds LOG,MODE_ID_PREFERENCES_KEY_INFIX,UILOG,activatedNodes,attentionGetter,closeOperation,defaultLookupLock,defaultLookupRef,displayName,htmlDisplayName,icon,modeName,nodeName,serialVersion,serialVersionUID,warnedClasses,warnedTCPIClasses
 hcls AttentionGetter,CloneWindowAction,CloseWindowAction,Replacer,SynchronizeNodes
 
 CLSS public abstract interface static org.openide.windows.TopComponent$Cloneable
+ outer org.openide.windows.TopComponent
 meth public abstract org.openide.windows.TopComponent cloneComponent()
 

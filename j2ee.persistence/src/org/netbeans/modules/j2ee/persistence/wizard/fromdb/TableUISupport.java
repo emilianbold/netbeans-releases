@@ -70,8 +70,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.UpdateType;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,11 +85,14 @@ public class TableUISupport {
         return new TableJList();
     }
 
-    public static void connectAvailable(JList availableTablesList, TableClosure tableClosure) {
+    public static void connectAvailable(JList availableTablesList, TableClosure tableClosure, FilterAvailable filter) {
         availableTablesList.setModel(new AvailableTablesModel(tableClosure));
 
         if (!(availableTablesList.getCellRenderer() instanceof AvailableTableRenderer)) {
-            availableTablesList.setCellRenderer(new AvailableTableRenderer());
+            availableTablesList.setCellRenderer(new AvailableTableRenderer(filter));
+        } else {
+            AvailableTableRenderer renderer = (AvailableTableRenderer) availableTablesList.getCellRenderer();
+            renderer.updateFilter(filter);
         }
     }
 
@@ -103,12 +104,32 @@ public class TableUISupport {
         }
     }
 
-    public static Set<Table> getSelectedTables(JList list) {
+    public static Set<Table> getSelectedTables(JList list){
+        return getSelectedTables(list, false);
+    }
+
+    public static Set<Table> getSelectedTables(JList list, boolean enabledOnly) {
         Set<Table> result = new HashSet<Table>();
 
-        Object[] selectedValues = list.getSelectedValues();
-        for (int i = 0; i < selectedValues.length; i++) {
-            result.add((Table)selectedValues[i]);
+        int[] selected = list.getSelectedIndices();
+        for (int i = 0; i < selected.length; i++) {
+            Table table = (Table)list.getModel().getElementAt(selected[i]);
+            if(enabledOnly){
+                if(!list.getCellRenderer().getListCellRendererComponent(list, table, selected[i], false, false).isEnabled())continue;
+            }
+            result.add(table);
+        }
+
+        return result;
+    }
+
+    public static Set<Table> getEnabledTables(JList list) {
+        Set<Table> result = new HashSet<Table>();
+
+        for (int i = 0; i < list.getModel().getSize(); i++) {
+            Table table = (Table)list.getModel().getElementAt(i);
+            if(!list.getCellRenderer().getListCellRendererComponent(list, table, i, false, false).isEnabled())continue;
+            result.add(table);
         }
 
         return result;
@@ -202,6 +223,11 @@ public class TableUISupport {
     }
 
     private static final class AvailableTableRenderer extends DefaultListCellRenderer {
+        private FilterAvailable filter;
+
+        public AvailableTableRenderer(FilterAvailable filter){
+            this.filter = filter;
+        }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             DisabledReason disabledReason = null;
@@ -221,10 +247,17 @@ public class TableUISupport {
             }
 
             JLabel component = (JLabel)super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
-            component.setEnabled(disabledReason == null);
+            boolean needDisable = (disabledReason instanceof Table.NoPrimaryKeyDisabledReason) || 
+                    (filter.equals(FilterAvailable.NEW) && (disabledReason instanceof Table.ExistingDisabledReason)) ||
+                    (filter.equals(FilterAvailable.UPDATE) && (disabledReason==null));
+            component.setEnabled(!needDisable);
             component.setToolTipText(disabledReason != null ? disabledReason.getDescription() : null);
 
             return component;
+        }
+
+        void updateFilter (FilterAvailable filter){
+            this.filter = filter;
         }
 
     }
@@ -237,11 +270,11 @@ public class TableUISupport {
             Object displayName = null;
             boolean referenced = false;
             TableClosure tableClosure = null;
-
+            DisabledReason disabledReason = null;
             if (value instanceof Table) {
                 table = (Table)value;
 
-                DisabledReason disabledReason = table.getDisabledReason();
+                disabledReason = table.getDisabledReason();
                 if (disabledReason!= null) {
                     displayName = NbBundle.getMessage(TableUISupport.class, "LBL_TableNameWithDisabledReason", table.getName(), disabledReason.getDisplayName());
                 } else {
@@ -262,7 +295,7 @@ public class TableUISupport {
             }
 
             JLabel component = (JLabel)super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
-            component.setEnabled(!referenced && !table.isDisabled());
+            component.setEnabled(!referenced && !(table.isDisabled()));
             String tooltip = referenced ? getTableTooltip(table, tableClosure) : null;
             if (table.isDisabled()){
                 String descr = table.getDisabledReason().getDescription();
@@ -419,9 +452,9 @@ public class TableUISupport {
                 if (getModel() instanceof TableClassNamesModel) {
                     TableClassNamesModel model = (TableClassNamesModel)getModel();
                     Table table = model.getTableAt(row);
-                    SelectedTables selectedTables = model.getSelectedTables();
-                    FileObject classFO = selectedTables.getTargetFolder() != null ? selectedTables.getTargetFolder().getFileObject(selectedTables.getClassName(table), "java") : null; //NOI18N
-                    if (classFO != null){
+                    DisabledReason dr = table.getDisabledReason();
+                    boolean existing = dr instanceof Table.ExistingDisabledReason;
+                    if (existing){
                         return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.UPDATE, UpdateType.RECREATE}));
                     } else {
                         return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.NEW}));
@@ -501,4 +534,6 @@ public class TableUISupport {
             return -1;
         }
     }
+
+    public enum FilterAvailable{ANY,NEW,UPDATE};
 }

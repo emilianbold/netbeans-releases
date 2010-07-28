@@ -82,7 +82,6 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -281,7 +280,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         if (!StringUtils.hasText(indexFile)) {
             indexFile = null;
         }
-        err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
+        err = RunAsValidator.validateWebFields(url, getWebRoot(), indexFile, args);
         if (err != null) {
             validateCategory(err);
             return;
@@ -625,6 +624,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 selected = ((RemoteConfiguration) model.getElementAt(0)).getName();
             }
             selectRemoteConnection(selected);
+            updateRemoteConnectionHint();
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 

@@ -135,7 +135,7 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
     protected void initialize(){
         EditorOperator.closeDiscardAll();        
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        
+        waitNoEvent(10000);
     }
 
     protected Node getProjectNode(String projectName) {
@@ -204,34 +204,6 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         menuItem = OPEN;
         fileName = "php20kb.php";
         nodePath = "Source Files";
-
-        String path = nodePath+"|"+fileName;
-        fileToBeOpened = new Node(getProjectNode(testProject),path);
-        popup =  fileToBeOpened.callPopup();
-        popup.pushMenu(menuItem);
-
-        EditorOperator editorOperator1 = EditorWindowOperator.getEditor(fileName);
-        editorOperator1.makeComponentVisible();
-        editorOperator1.select(1, 1);
-
-        FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
-        assertNotNull("File object found", fo);
-        assertEquals("Correct name", "php20kb.php", fo.getNameExt());
-        File dir = FileUtil.toFile(fo.getParent());
-        assertNotNull("Directory is backed by java.io.File", dir);
-
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator1);
-//        try {
-//            SourceUtils.waitScanFinished();
-//        } catch (InterruptedException ex) {
-//            fail("No interrupts please");
-//        }
-        AtomicLong l = new AtomicLong();
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator1);
-        CountingSecurityManager.initialize(dir.getPath());
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator1);
-        CountingSecurityManager.assertCounts("At most 40 touches", 40, l);
-
         doMeasurement();
     }
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+<MIME-resolver>
+    <file>
+        <fattr name="template" text="true"/>
+        <fattr name="javax.script.ScriptEngine" text="freemarker"/>
+        <resolver mime="text/x-freemarker"/>
+    </file>
+    <file>
+        <fattr name="template" text="true"/>
+        <fattr name="javax.script.ScriptEngine" text="FreeMarker"/>
+        <resolver mime="text/x-freemarker"/>
+    </file>
+</MIME-resolver>

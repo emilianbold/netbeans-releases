@@ -60,4 +60,5 @@ class Simple2
     { echo "test"; }
 
 }
+
 ?>

@@ -44,8 +44,11 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.JComponent;
@@ -135,6 +138,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      *
      * @return a set of created instance properties
      */
+    @Override
     public Set instantiate() throws IOException {
         // initialize the resulting set
         Set result = new HashSet();
@@ -143,10 +147,29 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
         // if all the data is normally validated - create the instance and
         // attach the additional properties
-        InstanceProperties ip = InstanceProperties.createInstanceProperties(url, username, password, displayName);
-        ip.setProperty(WLPluginProperties.SERVER_ROOT_ATTR, serverRoot);
-        ip.setProperty(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
-        ip.setProperty(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(WLPluginProperties.SERVER_ROOT_ATTR, serverRoot);
+        props.put(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
+        props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
+        props.put(WLPluginProperties.DOMAIN_NAME, domainName);
+        props.put(WLPluginProperties.PORT_ATTR, port);
+
+        InstanceProperties ip = InstanceProperties.createInstanceProperties(
+                url, username, password, displayName, props);
+        
+        Properties runtimeProps = WLPluginProperties.getRuntimeProperties(domainRoot);
+        String beaHome = runtimeProps.getProperty( WLPluginProperties.BEA_JAVA_HOME);
+        String sunHome = runtimeProps.getProperty( WLPluginProperties.SUN_JAVA_HOME);
+        String vendor = null;
+        if ( beaHome!= null && beaHome.trim().length()>0) {
+            vendor = WLPluginProperties.Vendor.ORACLE.toString();
+            ip.setProperty( WLPluginProperties.BEA_JAVA_HOME , beaHome.trim());
+        }
+        if ( sunHome!= null && sunHome.trim().length() >0 ) {
+            vendor = WLPluginProperties.Vendor.SUN.toString();
+            ip.setProperty( WLPluginProperties.SUN_JAVA_HOME , sunHome.trim());
+        }
+        ip.setProperty( WLPluginProperties.VENDOR , vendor );
 
         // add the created instance properties to the result set
         result.add(ip);
@@ -169,6 +192,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String username;
     private String password;
     private String url;
+    private String domainName;
+    private String port;
 
 
     /**
@@ -178,6 +203,22 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public void setUrl(String url) {
         this.url = url;
+    }
+    
+    /**
+     * Setter for port.
+     * @param port the new instance port
+     */
+    public void setPort(String port){
+        this.port = port;
+    }
+    
+    /**
+     * Setter for domain name.
+     * @param name the new instance domain name
+     */
+    public void setDomainName(String name){
+        domainName = name;
     }
 
     /**
@@ -199,6 +240,24 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public String getServerRoot() {
         return this.serverRoot;
+    }
+    
+    /**
+     * Getter for the http port
+     *
+     * @return the http port
+     */
+    public String getPort(){
+        return port;
+    }
+    
+    /**
+     * Getter for the domain name
+     *
+     * @return the domain name
+     */
+    public String getDomainName(){
+        return domainName;
     }
 
     /**

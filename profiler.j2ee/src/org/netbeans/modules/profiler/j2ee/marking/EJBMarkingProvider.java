@@ -51,8 +51,6 @@ import org.netbeans.lib.profiler.marker.Mark;
  * @author Jaroslav Bachorik
  */
 public class EJBMarkingProvider extends BaseEJBMarkingProvider {
-    private LifecycleEJBMarkingProvider delegate1;
-    private EJB2PersistenceMarkingProvider delegate2;
 
     public EJBMarkingProvider(Project project, Mark assignedMark) {
         super(project, assignedMark);
@@ -60,20 +58,7 @@ public class EJBMarkingProvider extends BaseEJBMarkingProvider {
 
     @Override
     protected boolean isValid(ExecutableElement method) {
-        return !(getLCProvider().isValid(method) || getPersProvider().isValid(method));
-    }
-
-    private LifecycleEJBMarkingProvider getLCProvider() {
-        if (delegate1 == null) {
-            delegate1 = new LifecycleEJBMarkingProvider(getProject(), getMark());
-        }
-        return delegate1;
-    }
-
-    private EJB2PersistenceMarkingProvider getPersProvider() {
-        if (delegate2 == null) {
-            delegate2 = new EJB2PersistenceMarkingProvider(getProject(), getMark());
-        }
-        return delegate2;
+        return !(LifecycleEJBMarkingProvider.isApplicable(method) || 
+                EJB2PersistenceMarkingProvider.isApplicable(method));
     }
 }

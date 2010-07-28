@@ -42,24 +42,21 @@
 
 package org.netbeans.modules.cnd.testrunner;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
-import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -67,12 +64,10 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactoryProvider;
 import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
@@ -80,8 +75,10 @@ import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -90,12 +87,8 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
@@ -169,14 +162,6 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         }
         env.put(pi.getPathName(), path);
 
-        LineConvertor converter = null;
-
-        if (actionType == ProjectActionEvent.PredefinedType.BUILD) {
-            converter = new CompilerLineConvertor(
-                    conf.getCompilerSet().getCompilerSet(),
-                    execEnv, FileUtil.toFileObject(new File(runDirectory)));
-        }
-
         // TODO: this is actual only for sun studio compiler
         env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
@@ -187,9 +172,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
             // return null;
         }
 
-        ProcessChangeListener processChangeListener =
-                new ProcessChangeListener(this, null/*Writer outputListener*/,
-                converter, io, pae.getActionName(), false);
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(this);
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
                 .setWorkingDirectory(workingDirectory)
@@ -203,31 +186,27 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         NativeExecutionDescriptor descr = null;
 
         convertor = createTestRunnerConvertor(pae.getProject());
+        
+        final LineConvertorFactory lcf = new LineConvertorFactory() {
+            LineConvertor c = convertor;
 
-        descr = new NativeExecutionDescriptor()
-                .controllable(true)
-                .frontWindow(false)
-                .inputVisible(showInput)
-                .inputOutput(io)
-                .outLineBased(true)
-                .showProgress(true)
-                .postExecution(processChangeListener)
-                .errConvertorFactory(new LineConvertorFactory() {
-                    LineConvertor c = convertor;
-                    @Override
-                    public LineConvertor newLineConvertor() {
-                        return c;
-                    }
-                    })
-                .outConvertorFactory(new LineConvertorFactory() {
-                    LineConvertor c = convertor;
-                    @Override
-                    public LineConvertor newLineConvertor() {
-                        return c;
-                    }
-                    });
+            @Override
+            public LineConvertor newLineConvertor() {
+                return c;
+            }
+        };
 
-        execution = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
+        descr = new NativeExecutionDescriptor().controllable(true).
+                frontWindow(false).
+                inputVisible(showInput).
+                inputOutput(io).
+                outLineBased(true).
+                showProgress(true).
+                postExecution(processChangeListener).
+                errConvertorFactory(lcf).
+                outConvertorFactory(lcf);
+
+        execution = NativeExecutionService.newService(npb, descr, pae.getActionName());
         runExecution();
     }
 
@@ -346,15 +325,6 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         return path;
     }
 
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getBundle(DefaultProjectActionHandler.class).getString(s);
-    }
-
-    protected static String getString(String key, String... a1) {
-        return NbBundle.getMessage(DefaultProjectActionHandler.class, key, a1);
-    }
-
     @Override
     public void executionStarted(int pid) {
         for (ExecutionListener l : listeners) {
@@ -378,8 +348,13 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     }
 
     @Override
-    public boolean enabled() {
-        return true;
+    public void rerun(Set<Testcase> tests) {
+        //not implemented yet
+    }
+
+    @Override
+    public boolean enabled(RerunType type) {
+        return RerunType.ALL.equals(type);
     }
 
     @Override
@@ -392,25 +367,13 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         changeSupport.removeChangeListener(listener);
     }
 
-    private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
+    private static final class ProcessChangeListener implements ChangeListener, Runnable {
 
+        private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
         private final ExecutionListener listener;
-        private Writer outputListener;
-        private final LineConvertor lineConvertor;
-        private final InputOutput tab;
-        private final String actionName;
-        private long startTimeMillis;
-        private Runnable postRunnable;
-        private final boolean outSummary;
 
-        public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
-                InputOutput tab, String actionName, boolean outSummary) {
+        public ProcessChangeListener(ExecutionListener listener) {
             this.listener = listener;
-            this.outputListener = outputListener;
-            this.lineConvertor = lineConvertor;
-            this.tab = tab;
-            this.actionName = actionName;
-            this.outSummary = outSummary;
         }
 
         @Override
@@ -418,189 +381,28 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
             }
+
             final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-            final NativeProcess process = (NativeProcess) event.getSource();
-            switch (event.state) {
-                case INITIAL:
-                    break;
-                case STARTING:
-                    break;
-                case RUNNING:
-                    startTimeMillis = System.currentTimeMillis();
-                    if (listener != null) {
-                        listener.executionStarted(event.pid);
-                    }
-                    break;
-                case CANCELLED: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
+            processRef.compareAndSet(null, (NativeProcess) event.getSource());
 
-                        @Override
-                        public void run() {
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (process.exitValue() != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                tab.getOut().println(res.toString());
-                                tab.getOut().println();
-                                closeIO();
-                            }
-
-                            if (listener != null) {
-                                listener.executionFinished(process.exitValue());
-                            }
-
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format("MSG_TERMINATED", actionName)); // NOI18N
-                        }
-                    };
-                    break;
+            if (event.state == NativeProcess.State.RUNNING) {
+                if (listener != null) {
+                    listener.executionStarted(event.pid);
                 }
-                case ERROR: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
+            }
 
-                        @Override
-                        public void run() {
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (process.exitValue() != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                tab.getErr().println(res.toString());
-                                tab.getErr().println();
-                                closeIO();
-                            }
-                            if (listener != null) {
-                                listener.executionFinished(-1);
-                            }
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_FAILED"), actionName));
-                        }
-                    };
-                    break;
-                }
-                case FINISHED: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
-
-                        @Override
-                        public void run() {
-                            int rc = process.exitValue();
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (rc != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
-                                pw.println(res.toString());
-                                pw.println();
-                                closeIO();
-                            }
-
-                            if (listener != null) {
-                                listener.executionFinished(process.exitValue());
-                            }
-
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString(rc == 0 ? "MSG_SUCCESSFUL" : "MSG_FAILED"), actionName));
-                        }
-                    };
-                    break;
-                }
+            if (!(e instanceof NativeProcessChangeEvent)) {
+                return;
             }
         }
 
         @Override
         public void run() {
-            if (postRunnable != null) {
-                postRunnable.run();
+            NativeProcess process = processRef.get();
+            
+            if (process != null && listener != null) {
+                listener.executionFinished(process.exitValue());
             }
-        }
-
-        private void closeIO() {
-            if (false) {
-                tab.getErr().close();
-                tab.getOut().close();
-                try {
-                    tab.getIn().close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        @Override
-        public LineConvertor newLineConvertor() {
-            return new LineConvertor() {
-
-                @Override
-                public List<ConvertedLine> convert(String line) {
-                    return ProcessChangeListener.this.convert(line);
-                }
-            };
-        }
-
-        private synchronized void closeOutputListener() {
-            if (outputListener != null) {
-                try {
-                    outputListener.flush();
-                    outputListener.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                outputListener = null;
-            }
-        }
-
-        private synchronized List<ConvertedLine> convert(String line) {
-            if (outputListener != null) {
-                try {
-                    outputListener.write(line);
-                    outputListener.write("\n"); // NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            if (lineConvertor != null) {
-                return lineConvertor.convert(line);
-            }
-            return null;
-        }
-
-        private static String formatTime(long millis) {
-            StringBuilder res = new StringBuilder();
-            long seconds = millis / 1000;
-            long minutes = seconds / 60;
-            long hours = minutes / 60;
-            if (hours > 0) {
-                res.append(" ").append(hours).append(getString("HOUR")); // NOI18N
-            }
-            if (minutes > 0) {
-                res.append(" ").append(minutes - hours * 60).append(getString("MINUTE")); // NOI18N
-            }
-            if (seconds > 0) {
-                res.append(" ").append(seconds - minutes * 60).append(getString("SECOND")); // NOI18N
-            } else {
-                res.append(" ").append(millis - seconds * 1000).append(getString("MILLISECOND")); // NOI18N
-            }
-            return res.toString();
         }
     }
 

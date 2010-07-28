@@ -44,12 +44,12 @@
 
 package org.netbeans.modules.javadoc.search;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import org.openide.ErrorManager;
 
-import org.openide.filesystems.FileObject;
 
 /**
  * @author  Petr Suchomel
@@ -83,7 +83,7 @@ final class JavadocSearchEngineImpl extends JavadocSearchEngine {
                           }
                       };
                       
-        FileObject[] docRoots = JavadocRegistry.getDefault().getDocRoots();
+        URL[] docRoots = JavadocRegistry.getDefault().getDocRoots();
         synchronized(this) {
             if (isStopped) {
                 return;
@@ -103,7 +103,7 @@ final class JavadocSearchEngineImpl extends JavadocSearchEngine {
                 ErrorManager.getDefault().log ("NO Search type for " + docRoots[i]);
                 continue;
             }
-            FileObject indexFo = st.getDocFileObject( docRoots[i] );
+            URL indexFo = st.getDocFileObject( docRoots[i] );
             if (indexFo == null) {
                 ErrorManager.getDefault().log ("NO Index files fot " + docRoots[i] );
                 continue;

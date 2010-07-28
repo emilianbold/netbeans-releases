@@ -44,23 +44,12 @@
 
 package org.openide.loaders;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.nodes.Children;
 
 public class FolderChildrenLazyTest extends FolderChildrenTest {
     public FolderChildrenLazyTest(java.lang.String testName) {
         super(testName);
     }
-    public static Test suite() {
-        Test t = null;
-//        t = new FolderChildrenLazyTest("testChildrenCanGC");
-        if (t == null) {
-            t = new NbTestSuite(FolderChildrenLazyTest.class);
-        }
-        return t;
-    }
-
     @Override
     protected void assertChildrenType(Children ch) {
         assertEquals("Lazy", FolderChildren.class, ch.getClass());

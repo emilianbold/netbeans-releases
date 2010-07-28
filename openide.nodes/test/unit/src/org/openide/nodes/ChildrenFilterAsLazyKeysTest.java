@@ -44,6 +44,8 @@
 
 package org.openide.nodes;
 
+import org.netbeans.junit.RandomlyFails;
+
 public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
     {
         System.setProperty("org.openide.explorer.VisualizerNode.prefetchCount", "0");
@@ -53,10 +55,6 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
         super(testName);
     }
 
-//    public static ChildrenFilterAsLazyKeysTest suite() {
-//        return new ChildrenFilterAsLazyKeysTest("testProblemsWithRefereshAfterInitializationInReadAccessIssue140313");
-//    }
-
     @Override
     protected boolean lazy() {
         return true;
@@ -65,5 +63,10 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
     @Override
     protected Node createNode (Children ch) {
         return new FilterNode (new AbstractNode (ch));
+    }
+    
+    @Override @RandomlyFails
+    public void testSetChildrenDoNotCallAddNotify() {
+        super.testSetChildrenDoNotCallAddNotify();
     }
 }

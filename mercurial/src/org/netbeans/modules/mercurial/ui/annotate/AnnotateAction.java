@@ -228,7 +228,7 @@ public class AnnotateAction extends ContextAction {
                 if (log.getRevisionAsLong() < lowestRevisionNumber) {
                     lowestRevisionNumber = log.getRevisionAsLong();
                 }
-                if (annotation.getRevision().equals(log.getRevision())) {
+                if (annotation.getRevision().equals(log.getRevisionNumber())) {
                     annotation.setDate(log.getDate());
                     annotation.setId(log.getCSetShortID());
                     annotation.setCommitMessage(log.getMessage());

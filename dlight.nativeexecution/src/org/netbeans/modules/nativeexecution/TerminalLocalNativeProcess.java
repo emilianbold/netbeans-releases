@@ -237,8 +237,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             creation_ts = System.nanoTime();
 
             waitPID(terminalProcess, pidFileFile);
+
             if (isInterrupted()) {
-                cancel();
                 throw new IOException(loc("TerminalLocalNativeProcess.terminalRunCancelled.text")); // NOI18N
             }
         } catch (Throwable ex) {
@@ -263,20 +263,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         }
 
         return pid;
-    }
-
-    @Override
-    public synchronized void cancel() {
-        int pid = getPIDNoException();
-        if (pid > 0) {
-            try {
-                CommonTasksSupport.sendSignal(ExecutionEnvironmentFactory.getLocal(), pid, Signal.SIGKILL, null).get();
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            } catch (ExecutionException ex) {
-                ex.printStackTrace();
-            }
-        }
     }
 
     @Override
@@ -341,10 +327,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 } catch (IOException ex) {
                 }
             }
-        }
-
-        if (getState() == State.CANCELLED) {
-            throw new InterruptedException();
         }
 
         return exitCode;

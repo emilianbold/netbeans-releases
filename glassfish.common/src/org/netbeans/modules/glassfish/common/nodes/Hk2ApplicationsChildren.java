@@ -92,9 +92,8 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                         java.util.Map<String, List<AppDesc>> appMap = mgr.getApplications(null);
                         for(Entry<String, List<AppDesc>> entry: appMap.entrySet()) {
                             List<AppDesc> apps = entry.getValue();
-                            Decorator decorator = DecoratorManager.findDecorator(entry.getKey(), Hk2ItemNode.J2EE_APPLICATION);
                             for(AppDesc app: apps) {
-                                keys.add(new Hk2ApplicationNode(lookup, app, decorator));
+                                keys.add(new Hk2ApplicationNode(lookup, app, DecoratorManager.findDecorator(entry.getKey(), Hk2ItemNode.J2EE_APPLICATION, app.getEnabled())));
                             }
                         }
                     } catch (Exception ex) {

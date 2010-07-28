@@ -410,6 +410,14 @@ final class ProjectProperties {
         public void fileAttributeChanged(FileAttributeEvent fe) {}
 
     }
+    
+    static File antJar;
+    private static synchronized File antJar() {
+        if (antJar == null) {
+            antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
+        }
+        return antJar;
+    }
 
     /**
      * See {@link AntProjectHelper#getStockPropertyPreprovider}.
@@ -422,11 +430,11 @@ final class ProjectProperties {
                 m = NbCollections.checkedMapByCopy(p, String.class, String.class, false);
             }
             m.put("basedir", FileUtil.toFile(helper.getProjectDirectory()).getAbsolutePath()); // NOI18N
-            File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
-            if (antJar != null) {
-                File antHome = antJar.getParentFile().getParentFile();
+            File _antJar = antJar();
+            if (_antJar != null) {
+                File antHome = _antJar.getParentFile().getParentFile();
                 m.put("ant.home", antHome.getAbsolutePath()); // NOI18N
-                m.put("ant.core.lib", antJar.getAbsolutePath()); // NOI18N
+                m.put("ant.core.lib", _antJar.getAbsolutePath()); // NOI18N
             }
             stockPropertyPreprovider = PropertyUtils.fixedPropertyProvider(m);
         }

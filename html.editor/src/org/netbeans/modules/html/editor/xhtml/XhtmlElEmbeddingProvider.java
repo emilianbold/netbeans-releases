@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.xhtml;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -105,7 +106,7 @@ public class XhtmlElEmbeddingProvider extends EmbeddingProvider {
 
         @Override
         public Collection<SchedulerTask> create(final Snapshot snapshot) {
-            return Collections.<SchedulerTask>singletonList(new XhtmlElEmbeddingProvider());
+            return Arrays.<SchedulerTask>asList(new XhtmlElEmbeddingProvider(), new ELEmbeddingProvider());
         }
     }
 }

@@ -202,7 +202,7 @@ public class UtilitiesTest extends NbTestCase {
         TypeMirror type = info.getTrees().getTypeMirror(tp);
         TypeMirror resolved = Utilities.resolveCapturedType(info, type);
 
-        assertEquals(golden, org.netbeans.modules.editor.java.Utilities.getTypeName(resolved, true).toString());
+        assertEquals(golden, org.netbeans.modules.editor.java.Utilities.getTypeName(info, resolved, true).toString());
     }
 
     private void performResolveFieldGroupTest(String code, int numOfElements) throws Exception {

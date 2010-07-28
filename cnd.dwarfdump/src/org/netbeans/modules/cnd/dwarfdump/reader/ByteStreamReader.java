@@ -67,6 +67,7 @@ public class ByteStreamReader implements DataInput {
     
     public static final int LSB = 1;
     public static final int MSB = 2;
+    private final byte[] buffer = new byte[8];
     
     public ByteStreamReader(String fname, RandomAccessFile reader) {
         file = reader;
@@ -121,18 +122,18 @@ public class ByteStreamReader implements DataInput {
     }
     
     public long readNumber(int size) throws IOException {
-        byte[] bytes = new byte[size];
+        assert size <= 8;
         long n = 0;
         
-        file.readFully(bytes);
+        file.readFully(buffer, 0, size);
         
         for (int i = 0; i < size; i++) {
             long u = 0;
             
             if (dataEncoding == LSB) {
-                u = (0xff & bytes[i]);
+                u = (0xff & buffer[i]);
             } else {
-                u = (0xff & bytes[size - i - 1]);
+                u = (0xff & buffer[size - i - 1]);
             }
             
             n |= (u << (i * 8));
@@ -149,14 +150,6 @@ public class ByteStreamReader implements DataInput {
     @Override
     public int readInt() throws IOException {
         return (int)readNumber(4);
-    }
-    
-    public int readInt(boolean useEncoding) throws IOException {
-        if (useEncoding) {
-            return readInt();
-        } else {
-            return file.readInt();
-        }
     }
     
     public long readDWlen() throws IOException {

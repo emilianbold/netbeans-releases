@@ -63,29 +63,17 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Michal Mocnak
  */
-public class WLItemNode extends AbstractNode {
+public class WLItemNode extends AbstractItemNode {
 
     private ModuleType moduleType;
 
-    private final ChildFactory<? extends AbstractNode> childFactory;
-
-    public WLItemNode(ChildFactory<? extends AbstractNode> childFactory, String name){
-        super(Children.create(childFactory, true));
-        this.childFactory = childFactory;
-        setDisplayName(name);
-        if (childFactory instanceof RefreshModulesCookie) {
-            getCookieSet().add((RefreshModulesCookie) childFactory);
-        }
-    }
-
     public WLItemNode(ChildFactory<? extends AbstractNode> childFactory, String name, ModuleType moduleType) {
-        this(childFactory, name);
+        super(childFactory, name);
         this.moduleType = moduleType;
     }
 
     public WLItemNode(Children children, String name) {
         super(children);
-        this.childFactory = null;
         setDisplayName(name);
     }
 
@@ -117,7 +105,7 @@ public class WLItemNode extends AbstractNode {
 
     @Override
     public javax.swing.Action[] getActions(boolean context) {
-        if (childFactory instanceof RefreshModulesCookie) {
+        if (getChildFactory() instanceof RefreshModulesCookie) {
             return new SystemAction[] {
                 SystemAction.get(RefreshModulesAction.class)
             };

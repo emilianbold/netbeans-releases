@@ -104,10 +104,6 @@ public final class TreeViewTest extends NbTestCase {
         }
     }
 
-//    public static TreeViewTest suite() {
-//        return new TreeViewTest("test");
-//    }
-
     /**
      * Tests whether <code>JTree</code>'s property <code>scrollsOnExpand</code>
      * is taken into account in

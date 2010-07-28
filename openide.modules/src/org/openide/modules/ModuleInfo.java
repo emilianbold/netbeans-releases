@@ -43,13 +43,9 @@
  */
 package org.openide.modules;
 
-import java.beans.*;
-
-// THIS CLASS OUGHT NOT USE NbBundle NOR org.openide CLASSES
-// OUTSIDE OF openide-util.jar! UI AND FILESYSTEM/DATASYSTEM
-// INTERACTIONS SHOULD GO ELSEWHERE.
-import java.util.*;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Set;
 
 /** General information about a module.
  * Immutable from an API perspective, serves as
@@ -162,6 +158,7 @@ public abstract class ModuleInfo {
      * was loaded as a part of this module, and thus will only be
      * loadable later if this module is enabled.
      * If in doubt, return <code>false</code>.
+     * @see Modules#ownerOf
      * @since 1.28
      */
     public abstract boolean owns(Class<?> clazz);

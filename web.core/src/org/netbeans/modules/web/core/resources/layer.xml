@@ -190,7 +190,7 @@ made subject to such option by the copyright holder.
       <!-- Tag Handlers --> 
       <file name="TagHandler.java" url="templates/SimpleTagHandler.template">
         <attr name="position" intvalue="900"/>
-                <attr name="template" boolvalue="true"/>
+        <attr name="template" boolvalue="true"/>
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagHandler.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>

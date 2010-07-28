@@ -62,7 +62,6 @@ import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockChangeListener;
 import org.openide.util.test.MockLookup;
@@ -109,7 +108,6 @@ public class AntProjectHelperTest extends NbTestCase {
     private Project p;
     private AntProjectHelper h;
     private AntBasedTestUtil.TestListener l;
-    private File antJar;
     
     protected @Override void setUp() throws Exception {
         FileObject fo = FileUtil.getConfigFile("Services");
@@ -123,16 +121,8 @@ public class AntProjectHelperTest extends NbTestCase {
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.properties"), projdir, "nbproject/project.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/private.properties"), projdir, "nbproject/private/private.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/global.properties"), scratch, "userdir/build.properties");
-        antJar = new File(getWorkDir(), "ant/lib/ant.jar");
-        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType(), new InstalledFileLocator() {
-            public @Override File locate(String relativePath, String codeNameBase, boolean localized) {
-                if (relativePath.equals("ant/lib/ant.jar")) {
-                    return antJar;
-                } else {
-                    return null;
-                }
-            }
-        });
+        ProjectProperties.antJar = new File(getWorkDir(), "ant/lib/ant.jar");
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
         h = p.getLookup().lookup(AntProjectHelper.class);
@@ -816,7 +806,7 @@ public class AntProjectHelperTest extends NbTestCase {
         Map<String,String> props = h.getStockPropertyPreprovider().getProperties();
         assertEquals(FileUtil.toFile(projdir).getAbsolutePath(), props.get("basedir"));
         assertEquals(new File(getWorkDir(), "ant").getAbsolutePath(), props.get("ant.home"));
-        assertEquals(antJar.getAbsolutePath(), props.get("ant.core.lib"));
+        assertEquals(ProjectProperties.antJar.getAbsolutePath(), props.get("ant.core.lib"));
     }
 
     public void testSchemaValidation() throws Exception {

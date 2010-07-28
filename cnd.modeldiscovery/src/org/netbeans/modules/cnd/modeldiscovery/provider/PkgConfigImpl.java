@@ -55,7 +55,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.RemoteFile;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -63,7 +62,6 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfigurat
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 

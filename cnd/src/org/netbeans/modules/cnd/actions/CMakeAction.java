@@ -49,8 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -61,6 +59,9 @@ import org.netbeans.modules.cnd.loaders.CMakeDataObject;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -98,7 +99,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
-                private ExecutionService es;
+                private NativeExecutionService es;
                 @Override
                 public void doWork() {
                     es = CMakeAction.prepare(node, listener, outputListener, project, inputOutput);
@@ -115,7 +116,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
             String msg = getString("MSG_TITLE_Prepare", "cmake"); // NOI18N
             ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            ExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
+            NativeExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
             if (es != null) {
                 return es.run();
             }
@@ -123,7 +124,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         return null;
     }
 
-    private static ExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
+    private static NativeExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         //Save file
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
@@ -165,26 +166,30 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "CMake", syncWorker); // NOI18N
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setWorkingDirectory(buildDir)
-        .unbufferOutput(false)
-        .addNativeProcessListener(processChangeListener);
+
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
+                setWorkingDirectory(buildDir).
+                unbufferOutput(false).
+                addNativeProcessListener(processChangeListener);
+        
         npb.redirectError();
         List<String> list = ImportUtils.parseArgs(argsFlat.toString());
         list = ImportUtils.normalizeParameters(list);
         npb.setExecutable(executable);
         npb.setArguments(list.toArray(new String[list.size()]));
 
-        ExecutionDescriptor descr = new ExecutionDescriptor()
-        .controllable(true)
-        .frontWindow(true)
-        .inputVisible(true)
-        .inputOutput(inputOutput)
-        .showProgress(true)
-        .postExecution(processChangeListener)
-        .outConvertorFactory(processChangeListener);
+        NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
+                frontWindow(true).
+                inputVisible(true).
+                inputOutput(inputOutput).
+                showProgress(true).
+                postExecution(processChangeListener).
+                postMessageDisplayer(new PostMessageDisplayer.Default("CMake")). // NOI18N
+                outConvertorFactory(processChangeListener);
+
         // Execute the makefile
-        return ExecutionService.newService(npb, descr, "cmake"); // NOI18N
+        return NativeExecutionService.newService(npb, descr, "cmake"); // NOI18N
     }
 }

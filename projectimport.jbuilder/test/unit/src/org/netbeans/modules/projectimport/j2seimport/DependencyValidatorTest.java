@@ -43,7 +43,6 @@
  */
 
 package org.netbeans.modules.projectimport.j2seimport;
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,18 +60,6 @@ public class DependencyValidatorTest extends NbTestCase {
 
     public DependencyValidatorTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DependencyValidatorTest.class);
-        
-        return suite;
     }
 
     /**

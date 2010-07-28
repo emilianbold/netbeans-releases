@@ -725,6 +725,25 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
 
+    public void testDotClassForSameClass() throws Exception {
+        performTest("package test; public class Test { {Class c = |Test.class|; c = |Test.class|; c = String.class; } }");
+    }
+    
+    public void testTryCatchVariable() throws Exception {
+        performVariablesTest("package test; public class Test { { try { throw new java.io.IOException(); } catch (java.io.IOException ex) { } } }",
+                             "try { $stmts$; } catch $catches$",
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                                new Pair<String, int[]>("$stmts$", new int[] {42, 74}),
+                                new Pair<String, int[]>("$catches$", new int[] {77, 111}),
+                             },
+                             new Pair[] {
+                             },
+                             false,
+                             true);
+    }
+
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

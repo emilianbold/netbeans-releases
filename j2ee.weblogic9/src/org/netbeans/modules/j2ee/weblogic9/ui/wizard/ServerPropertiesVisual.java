@@ -55,9 +55,11 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -68,6 +70,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
@@ -85,9 +88,6 @@ import org.xml.sax.SAXException;
  * @author Petr Hejl
  */
 public class ServerPropertiesVisual extends javax.swing.JPanel {
-
-    // TODO read from domain-registry.xml instead?
-    private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
 
     private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
 
@@ -162,6 +162,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         instantiatingIterator.setDomainRoot(domainPathField.getText());
         instantiatingIterator.setUsername(usernameField.getText());
         instantiatingIterator.setPassword(new String(passwordField.getPassword()));
+        instantiatingIterator.setPort(portField.getText().trim());
+        instantiatingIterator.setDomainName( item.getDomainName() );
 
         // everything seems ok
         return true;
@@ -230,65 +232,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     }
 
     /**
-     * Gets the list of registered domains according to the given server
-     * installation root
-     *
-     * @param serverRoot the server's installation location
-     *
-     * @return an array if strings with the domains' paths
-     */
-    private String[] getRegisteredDomains(String serverRoot){
-        // init the resulting vector
-        List<String> result = new ArrayList<String>();
-
-        // is the server root was not defined, return an empty array of domains
-        if (serverRoot == null) {
-            return new String[0];
-        }
-
-        // init the input stream for the file and the w3c document object
-        File file = new File(serverRoot + File.separator + DOMAIN_LIST.replaceAll("/", File.separator));
-        LineNumberReader lnr = null;
-
-        // read the list file line by line fetching out the domain paths
-        try {
-            // create a new reader for the FileInputStream
-            lnr = new LineNumberReader(new InputStreamReader(new FileInputStream(file)));
-
-            // read the lines
-            String line;
-            while ((line = lnr.readLine()) != null) {
-                // skip the comments
-                if (line.startsWith("#")) {  // NOI18N
-                    continue;
-                }
-
-                // fetch the domain path
-                String path = line.split("=")[1].replaceAll("\\\\\\\\", "/").replaceAll("\\\\:", ":"); // NOI18N
-
-                // add the path to the resulting set
-                result.add(path);
-            }
-        } catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);   // NOI18N
-        } catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);   // NOI18N
-        } finally {
-            try {
-                // close the stream
-                if (lnr != null) {
-                    lnr.close();
-                }
-            } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
-            }
-        }
-
-        // convert the vector to an array and return
-        return (String[]) result.toArray(new String[result.size()]);
-    }
-
-    /**
      * Gets the list of local server instances.
      *
      * @return a vector with the local instances
@@ -298,102 +241,26 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         Vector result = new Vector();
 
         // get the list of registered profiles
-        String[] domains = getRegisteredDomains(instantiatingIterator.getServerRoot());
+        String[] domains = WLPluginProperties
+                .getRegisteredDomainPaths(instantiatingIterator.getServerRoot());
 
         // for each domain get the list of instances
         for (int i = 0; i < domains.length; i++) {
-            // get the instances configuration file's path
-            String configPath = domains[i] + "/config/config.xml"; // NOI18N
 
-            // init the input stream for the file and the w3c document object
-            InputStream inputStream = null;
-            Document document = null;
-
-            try {
-                // open the stream from the instances config file
-                inputStream = new FileInputStream(new File(configPath));
-
-                // parse the document
-                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
-
-                // get the root element
-                Element root = document.getDocumentElement();
-
-                // get the child nodes
-                NodeList children = root.getChildNodes();
-
-                // for each child
-                for (int j = 0; j < children.getLength(); j++) {
-                    Node child = children.item(j);
-                    // if the child's name equals 'server' get its children
-                    // and iterate over them
-                    if (child.getNodeName().matches("(?:[a-z]+\\:)?server")) {  // NOI18N
-                        NodeList nl = child.getChildNodes();
-
-                        // desclare the server's name/host/port
-                        String name = "";  // NOI18N
-                        String port = "";  // NOI18N
-                        String host = "";  // NOI18N
-
-                        // iterate over the children
-                        for (int k = 0; k < nl.getLength(); k++) {
-                            Node ch = nl.item(k);
-
-                            // if the child's name equals 'name' fetch the
-                            // instance's name
-                            if (ch.getNodeName().matches("(?:[a-z]+\\:)?name")) {  // NOI18N
-                                name = ch.getFirstChild().getNodeValue();
-                            }
-
-                            // if the child's name equals 'listen-port' fetch the
-                            // instance's port
-                            if (ch.getNodeName().matches("(?:[a-z]+\\:)?listen-port")) {  // NOI18N
-                                port = ch.getFirstChild().getNodeValue();
-                            }
-
-                            // if the child's name equals 'listen-address' fetch the
-                            // instance's host
-                            if (ch.getNodeName().matches("(?:[a-z]+\\:)?listen-address")) {  // NOI18N
-                                if (ch.hasChildNodes()) {
-                                    host = ch.getFirstChild().getNodeValue();
-                                }
-                            }
-                        }
-
-                        if (port != null) {
-                            port = port.trim();
-                        }
-
-                        // if all the parameters were fetched successfully add
-                        // them to the result
-                        if ((name != null) && (!name.equals(""))) { // NOI18N
-                            //address and port have minOccurs=0 and are missing in 90 examples server
-                            port = (port == null || port.equals("")) //NOI18N
-                                    ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
-                                    : port;
-                            host = (host == null || host.equals(""))
-                                    ? "localhost" // NOI18N
-                                    : host;
-                            result.add(new Instance(name, host, port, domains[i]));
-                        }
-                    }
-                }
-            } catch (FileNotFoundException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
-            } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
-            } catch (ParserConfigurationException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
-            } catch (SAXException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
-            } finally {
-                try {
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
-                } catch (IOException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
-                }
+            Properties properties = WLPluginProperties.getDomainProperties(domains[i]);
+            String name = properties.getProperty( WLPluginProperties.ADMIN_SERVER_NAME);
+            String port = properties.getProperty( WLPluginProperties.PORT_ATTR);
+            String host = properties.getProperty( WLPluginProperties.HOST_ATTR );
+            String domainName = properties.getProperty( WLPluginProperties.DOMAIN_NAME );
+            if ((name != null) && (!name.equals(""))) { // NOI18N
+                // address and port have minOccurs=0 and are missing in 90
+                // examples server
+                port = (port == null || port.equals("")) // NOI18N
+                ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
+                        : port;
+                host = (host == null || host.equals("")) ? "localhost" // NOI18N
+                        : host;
+                result.add(new Instance(name, host, port, domains[i], domainName));
             }
         }
 
@@ -653,7 +520,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
-
+    
 
     private class UpdateListener implements DocumentListener {
 
@@ -768,7 +635,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
     /**
      * A model for the server instance. It contains all the critical properties
-     * for the plugin: name, host, port, profile path.
+     * for the plugin: name, host, port, profile path, domain name.
      *
      * @author Kirill Sorokin
      */
@@ -793,6 +660,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * Instance's profile directory
          */
         private String domainPath;
+        
+        /**
+         * Instance's domain name
+         */
+        private String domainName;
 
         /**
          * Creates a new instance of Instance
@@ -802,12 +674,15 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @param port the instance's port
          * @param domainPath the instance's profile path
          */
-        public Instance(String name, String host, String port, String domainPath) {
+        public Instance(String name, String host, String port, String domainPath,
+                String domainName) 
+        {
             // save the properties
             this.name = name;
             this.host = host;
             this.port = port;
             this.domainPath = domainPath;
+            this.domainName = domainName;
         }
 
         /**
@@ -826,6 +701,24 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         public void setName(String name) {
             this.name = name;
+        }
+        
+        /**
+         * Getter for the domain name
+         *
+         * @return the domain name
+         */
+        public String getDomainName() {
+            return this.domainName;
+        }
+
+        /**
+         * Setter for the domain name
+         *
+         * @param the new domain name
+         */
+        public void setDomainName(String name) {
+            domainName = name;
         }
 
         /**

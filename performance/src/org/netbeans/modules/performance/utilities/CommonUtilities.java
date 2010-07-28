@@ -646,7 +646,7 @@ public class CommonUtilities {
         
         try {
             //log("Let's check whether GlassFish V2 is already added");
-            runtimeTree.findPath("Servers|GlassFish V2");
+            runtimeTree.findPath("Servers|GlassFish Server 3");
         } catch (TimeoutExpiredException tee) {
             //log("There is no GlassFish V2 node so we'll add it");
             
@@ -654,7 +654,7 @@ public class CommonUtilities {
 
             NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
 
-            new JListOperator(addServerInstanceDialog, 1).selectItem("GlassFish V2");
+            new JListOperator(addServerInstanceDialog, 1).selectItem("GlassFish Server 3");
 
             new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
 
@@ -704,8 +704,8 @@ public class CommonUtilities {
             log("Looking path = Servers");
             path = runtimeTree.findPath("Servers");
             runtimeTree.selectPath(path);
-            log("Looking path = Servers|GlassFish V2");
-            path = runtimeTree.findPath("Servers|GlassFish V2"); // NOI18N
+            log("Looking path = Servers|GlassFish Server 3");
+            path = runtimeTree.findPath("Servers|GlassFish Server 3"); // NOI18N
             runtimeTree.selectPath(path);
         } catch (Exception exc) {
             exc.printStackTrace(System.err);

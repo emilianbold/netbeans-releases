@@ -196,26 +196,36 @@ public final class CacheFolder {
         return result;
     }
 
-    private static String getNbUserDir () {
-        final String nbUserProp = System.getProperty(NB_USER_DIR);
-        return nbUserProp;
-    }
-    
     public static synchronized FileObject getCacheFolder () {
         if (cacheFolder == null) {
-            final String nbUserDirProp = getNbUserDir();
-            assert nbUserDirProp != null;
+            final String nbUserDirProp = System.getProperty(NB_USER_DIR);
+            if (nbUserDirProp == null) {
+                throw new IllegalStateException("No " + NB_USER_DIR + " system property"); //NOI18N
+            }
+
             final File nbUserDir = new File (nbUserDirProp);
             File cache = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
             if (!cache.exists()) {
-                boolean created = cache.mkdirs();                
-                assert created : "Cannot create cache folder";  //NOI18N
+                cache.mkdirs();
+                if (!cache.exists()) {
+                    throw new IllegalStateException("Can't create indices cache folder " + cache.getAbsolutePath()); //NOI18N
+                }
             }
-            else {
-                assert cache.isDirectory() && cache.canRead() && cache.canWrite();
+
+            if (!cache.isDirectory()) {
+                throw new IllegalStateException("Indices cache folder " + cache.getAbsolutePath() + " is not a folder"); //NOI18N
             }
+            if (!cache.canRead()) {
+                throw new IllegalStateException("Can't read from indices cache folder " + cache.getAbsolutePath()); //NOI18N
+            }
+            if (!cache.canWrite()) {
+                throw new IllegalStateException("Can't write to indices cache folder " + cache.getAbsolutePath()); //NOI18N
+            }
+
             cacheFolder = FileUtil.toFileObject(cache);
-            assert cacheFolder != null;
+            if (cacheFolder == null) {
+                throw new IllegalStateException("Can't convert indices cache folder " + cache.getAbsolutePath() + " to FileObject"); //NOI18N
+            }
         }
         return cacheFolder;
     }

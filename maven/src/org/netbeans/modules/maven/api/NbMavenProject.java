@@ -378,11 +378,7 @@ public final class NbMavenProject {
                 } finally {
                     handle.finish();
                     ProgressTransferListener.clearAggregateHandle();
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            fireProjectReload();
-                        }
-                    });
+                    fireProjectReload();
                 }
             }
         });

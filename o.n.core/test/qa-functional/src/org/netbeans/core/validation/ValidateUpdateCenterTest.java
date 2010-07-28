@@ -41,6 +41,7 @@
  */
 package org.netbeans.core.validation;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -74,13 +75,14 @@ public class ValidateUpdateCenterTest extends NbTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
+        suite.addTest(new ValidateUpdateCenterTest("clusterVersions"));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
                 clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
-                clusters("(platform|harness|ide|websvccommon|gsf|java|profiler|nb)[0-9.]*").enableModules(".*").
+                clusters("platform|harness|ide|websvccommon|java|profiler|nb").enableModules(".*").
                 honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
-                clusters("(platform|harness|ide)[0-9.]*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+                clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         return suite;
     }
 
@@ -116,6 +118,21 @@ public class ValidateUpdateCenterTest extends NbTestCase {
             fail("Some regular modules (that no one depends on) neither AutoUpdate-Show-In-Client=true nor AutoUpdate-Essential-Module=true (thus unreachable through Plugin Manager)" + auVisibilityProblems);
         }
     }
+    
+    public void testPluginDisplay() throws Exception {
+        StringBuilder problems = new StringBuilder();
+        for (Module mod : Main.getModuleSystem().getManager().getModules()) {
+            if ("false".equals(mod.getAttribute("AutoUpdate-Show-In-Client"))) {
+                continue;
+            }
+            if (mod.getLocalizedAttribute("OpenIDE-Module-Display-Category") == null) {
+                problems.append('\n').append(mod.getCodeNameBase());
+            }
+        }
+        if (problems.length() > 0) {
+            fail("Some modules are AutoUpdate-Show-In-Client=true but have no specified OpenIDE-Module-Display-Category" + problems);
+        }
+    }
 
     public void testConsistency() throws Exception {
         Set<Manifest> manifests = loadManifests();
@@ -126,6 +143,19 @@ public class ValidateUpdateCenterTest extends NbTestCase {
                 message.append("\nProblems found for module ").append(entry.getKey()).append(": ").append(entry.getValue());
             }
             fail(message.toString());
+        }
+    }
+
+    public void clusterVersions() throws Exception {
+        for (String clusterLocation : System.getProperty("cluster.path.final").split(File.pathSeparator)) {
+            File cluster = new File(clusterLocation);
+            if (cluster.getName().matches("ergonomics|harness|extra")) {
+                // Not used for module dependencies, so exempted.
+                continue;
+            }
+            if (cluster.isDirectory()) {
+                assertTrue("found a VERSION.txt in " + cluster, new File(cluster, "VERSION.txt").isFile());
+            }
         }
     }
 

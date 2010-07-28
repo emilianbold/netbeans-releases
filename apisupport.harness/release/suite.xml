@@ -73,8 +73,12 @@ made subject to such option by the copyright holder.
             </condition>
         </fail>
     </target>
+    
+    <target name="-init-build-dir">
+        <property name="suite.build.dir" location="build"/>
+    </target>
 
-    <target name="-convert-old-project" unless="cluster.path.evaluated">
+    <target name="-convert-old-project" unless="cluster.path.evaluated" depends="-init-build-dir">
         <!-- netbeans.dest.dir -> cluster.path.id translation for pre-7.0 modules -->
         <fail unless="netbeans.dest.dir" message="Either cluster.path/cluster.path.evaluated properties or netbeans.dest.dir must be set."/>
 
@@ -106,8 +110,8 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
-        <mkdir dir="${basedir}/build"/>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${suite.build.dir}" deleteonexit="true" prefix="duplicates"/>
+        <mkdir dir="${suite.build.dir}"/>
         <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
 
         <pathconvert property="cluster.path.evaluated">
@@ -117,12 +121,12 @@ made subject to such option by the copyright holder.
         </pathconvert>
     </target>
 
-    <target name="-init" depends="-taskdefs,-convert-old-project">
+    <target name="-init" depends="-taskdefs,-init-build-dir,-convert-old-project">
         <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path.final" id="cluster.path.id"/>
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
         <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.sorted"/>
-        <property name="cluster" location="build/cluster"/>
+        <property name="cluster" location="${suite.build.dir}/cluster"/>
         <echo level="verbose">Suite in ${basedir} with clusters ${cluster.path.final}, build cluster ${cluster}, and sorted modules ${modules.sorted}</echo>
         <!-- synchronize with SuiteProject -->
         <property name="disabled.modules" value=""/>
@@ -131,8 +135,8 @@ made subject to such option by the copyright holder.
         <property name="app.version" value="0.1"/>
         <property name="branding.dir" location="branding"/>
         <property name="dist.dir" location="dist"/>
-        <property name="test.xml.results.dir" value="${basedir}/build/test/xmldata" />
-        <property name="test.report.base.dir" value="build/test/report" />
+        <property name="test.xml.results.dir" value="${suite.build.dir}/test/xmldata" />
+        <property name="test.report.base.dir" value="${suite.build.dir}/test/report" />
         <property name="test.report.html.dir" value="${test.report.base.dir}/html" />
         <condition property="run.branding"> <!-- #84689 -->
             <and>
@@ -195,7 +199,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="nbms" depends="-init,branding,release,-hide-excluded-modules" description="Build NBMs and an Auto Update site descriptor for all modules in the suite.">
-        <property name="build.updates.dir" location="build/updates"/>
+        <property name="build.updates.dir" location="${suite.build.dir}/updates"/>
         <!-- reads from suite/project.properties first -->
         <condition property="help.target.cluster" value="${nbm.target.cluster}" >
             <isset property="nbm.target.cluster"/>
@@ -274,7 +278,7 @@ made subject to such option by the copyright holder.
                 <selector refid="zip.platform.included.files"/>
             </pathfileset>
             <chainedmapper>
-                <mapper type="regexp" from="(^.+)[/\\](config[/\\]Modules[/\\]|lib[/\\]|core[/\\])" to="\1"/> <!-- #71849, #185047 -->
+                <mapper type="regexp" from="(^.+)[/\\](config[/\\]Modules|(?&lt;=[/\\]platform\d{0,2}[/\\])(lib|core))[/\\]" to="\1"/> <!-- #71849, #185047, #188601 -->
                 <filtermapper>
                     <linecontainsregexp negate="true">
                         <regexp pattern="update[/\\]backup[/\\]netbeans[/\\]?$"/>
@@ -282,7 +286,7 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="zip.platform.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
+        <tempfile property="zip.platform.clusters.duplicates.file" destdir="${suite.build.dir}" deleteonexit="true" prefix="duplicates"/>
         <echo file="${zip.platform.clusters.duplicates.file}" message="${zip.platform.clusters.duplicates}"/>
 
         <union id="zip.platform.clusters"> <!-- union removes duplicates -->
@@ -300,7 +304,7 @@ made subject to such option by the copyright holder.
             </chainedmapper>
         </pathconvert>
 
-        <property name="build.launcher.dir" location="build/launcher"/>
+        <property name="build.launcher.dir" location="${suite.build.dir}/launcher"/>
         
         <mkdir dir="${build.launcher.dir}/etc"/>
         <!-- clean old launchers (platform could be changed) -->
@@ -337,12 +341,12 @@ made subject to such option by the copyright holder.
         <mkdir dir="${dist.dir}"/>
         <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
              we have to copy them to temp location -->
-        <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true" prefix="nbexec"/>
-        <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete" prefix="rest"/>
+        <tempfile property="temp.dir.nbexec" destdir="${suite.build.dir}" deleteonexit="true" prefix="nbexec"/>
+        <tempfile property="temp.dir.rest" destdir="${suite.build.dir}" deleteonexit="delete" prefix="rest"/>
         <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
             <property name="dest.dir" value="${temp.dir.rest}"/>
             <property name="nbexec.dir" value="${temp.dir.nbexec}"/>
-            <property name="build.dir" value="${basedir}/build"/>
+            <property name="build.dir" value="${suite.build.dir}"/>
             <resources refid="zip.platform.clusters"/>
         </subant>
         <zip destfile="${dist.dir}/${app.name}.zip">
@@ -374,6 +378,7 @@ made subject to such option by the copyright holder.
                 </and>
             </fileset>
         </copy>
+        <touch file="${dest.dir}/${cluster.name}/.lastModified"/>
         <condition property="copy.nbexec" value="true">
             <matches pattern="^platform[0-9]*$" string="${cluster.name}"/>
         </condition>
@@ -417,7 +422,7 @@ See: http://wiki.netbeans.org/DevFaqHowToReuseModules
         <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
             <property name="dest.dir" value="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}"/>
             <property name="nbexec.dir" value="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}"/>
-            <property name="build.dir" value="${basedir}/build"/>
+            <property name="build.dir" value="${suite.build.dir}"/>
             <resources refid="zip.platform.clusters"/>
         </subant>
 
@@ -453,7 +458,7 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
     </target>
 
     <target name="-testuserdir-delete-init" depends="-init">
-        <property name="test.user.dir" location="build/testuserdir"/>
+        <property name="test.user.dir" location="${suite.build.dir}/testuserdir"/>
         <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
         <available property="app.running" file="${test.user.dir.lock}"/>
     </target>
@@ -470,7 +475,7 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
     
     <target name="clean" depends="-init,testuserdir-delete" description="Clean everything.">
         <delete failonerror="false" includeemptydirs="true">
-            <fileset dir="build">
+            <fileset dir="${suite.build.dir}">
                 <exclude name="testuserdir/"/>
             </fileset>
         </delete>

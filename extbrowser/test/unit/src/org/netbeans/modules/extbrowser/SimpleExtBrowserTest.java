@@ -49,7 +49,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
 import java.beans.*;
 import org.openide.execution.NbProcessDescriptor;
@@ -64,10 +63,6 @@ public class SimpleExtBrowserTest extends NbTestCase {
         super(testName);
     }        
         
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     /** Test of getName method, of class org.netbeans.modules.extbrowser.SimpleExtBrowser. */
     public void testGetName () {
         if (testObject.getName () == null)
@@ -110,15 +105,6 @@ public class SimpleExtBrowserTest extends NbTestCase {
         });
     }
     
-    public static Test suite () {
-        TestSuite suite = new NbTestSuite (SimpleExtBrowserTest.class);
-        
-        return suite;
-    }
-    
-    // Add test methods here, they have to start with 'test' name.
-    // for example: 
-    // public void testHello() {}
     protected SimpleExtBrowser testObject;
     
     protected void setUp () {

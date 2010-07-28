@@ -114,7 +114,7 @@ public class SourceForBinaryImplTest extends TestBase {
         SuiteProject suite = generateSuite("suite");
         NbModuleProject project = TestBase.generateSuiteComponent(suite, "module");
         File library = new File(getWorkDir(), "test-library-0.1_01.jar");
-        createJar(library, Collections.EMPTY_MAP, new Manifest());
+        createJar(library, Collections.<String,String>emptyMap(), new Manifest());
         FileObject libraryFO = FileUtil.toFileObject(library);
         FileObject yyJar = FileUtil.copyFile(libraryFO, FileUtil.toFileObject(getWorkDir()), "yy");
         

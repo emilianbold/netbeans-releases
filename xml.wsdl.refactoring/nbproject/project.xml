@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -95,7 +95,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -112,8 +112,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

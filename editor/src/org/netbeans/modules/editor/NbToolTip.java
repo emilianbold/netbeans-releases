@@ -46,12 +46,15 @@ package org.netbeans.modules.editor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.PopupManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Annotation;
@@ -231,6 +234,25 @@ public class NbToolTip extends FileChangeAdapter {
         if (toolTipText != null){
             return;
         }
+
+        Point p = tts.getLastMouseEvent().getPoint();
+        assert (tts.getLastMouseEvent().getSource() == target);
+        org.netbeans.modules.editor.lib2.view.DocumentView docView =
+                org.netbeans.modules.editor.lib2.view.DocumentView.get(target);
+        Shape alloc;
+        if (docView != null && (alloc = docView.getAllocation()) != null) {
+            JComponent toolTip = docView.getToolTip(p.getX(), p.getY(), alloc);
+            if (toolTip != null) {
+                String tooltipType = (String) toolTip.getClientProperty("tooltip-type");
+                if ("fold-preview".equals(tooltipType)) {
+                    tts.setToolTip(toolTip, PopupManager.ViewPortBounds, PopupManager.BelowPreferred, -1, 0);
+//                    tts.setToolTip(toolTip, PopupManager.ScrollBarBounds, PopupManager.Largest, 2, 0);
+                } else {
+                    tts.setToolTip(toolTip);
+                }
+                return;
+            }
+        }
         
         Annotation[] annos = getTipAnnotations();
         BaseDocument doc = Utilities.getDocument(target);
@@ -247,7 +269,6 @@ public class NbToolTip extends FileChangeAdapter {
                     // partial fix of #33165 - read-locking of the document added
                     doc.readLock();
                     try {
-                        Point p = tts.getLastMouseEvent().getPoint();
                         int offset = getOffsetForPoint(p, target, doc);
                         if (offset >= 0) {
                             EditorKit kit = org.netbeans.editor.Utilities.getKit(target);
@@ -271,7 +292,7 @@ public class NbToolTip extends FileChangeAdapter {
                                 if (annos != null) {
                                     // Get the annotations stuff
                                     int line = Utilities.getLineOffset(doc, offset);
-                                    int col = offset - Utilities.getRowStart(target, offset);
+                                    int col = offset - Utilities.getRowStartFromLineOffset(doc, line);
                                     Line.Set ls = ec.getLineSet();
                                     if (ls != null) {
                                         Line l = ls.getCurrent(line);
@@ -393,6 +414,8 @@ public class NbToolTip extends FileChangeAdapter {
                         }
                     }
                 });
+            } else { // Attempt to get tooltip from view under mouse
+
             }
         }
 

@@ -45,9 +45,11 @@ package org.netbeans.modules.refactoring.php;
 
 import org.netbeans.modules.refactoring.php.findusages.PhpWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringPlugin;
+import org.netbeans.modules.refactoring.php.delete.SafeDeleteSupport;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
+import org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.*;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -55,18 +57,33 @@ import org.openide.util.Lookup;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=100)
 public class PhpRefactoringsFactory implements RefactoringPluginFactory {
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof WhereUsedQuery) {
-            return createFindUsages(refactoring);
-        }
+            return createFindUsages((WhereUsedQuery)refactoring);
+        } else if (refactoring instanceof RenameRefactoring) {
+            return createRename((RenameRefactoring)refactoring);
+        } else if (refactoring instanceof SafeDeleteRefactoring) {
+            return createDelete((SafeDeleteRefactoring)refactoring);
+	}
         return null;
     }
-
-    private RefactoringPlugin createFindUsages(AbstractRefactoring refactoring) {
+    
+    private RefactoringPlugin createFindUsages(WhereUsedQuery refactoring) {
         Lookup look = refactoring.getRefactoringSource();
-        FileObject file = look.lookup(FileObject.class);
         WhereUsedSupport handle = look.lookup(WhereUsedSupport.class);
+        return (handle != null) ? new PhpWhereUsedQueryPlugin(refactoring) : null;
+    }
 
-        return (handle != null) ? new PhpWhereUsedQueryPlugin((WhereUsedQuery) refactoring) : null;
+    private RefactoringPlugin createRename(RenameRefactoring refactoring) {
+        Lookup look = refactoring.getRefactoringSource();
+        WhereUsedSupport handle = look.lookup(WhereUsedSupport.class);
+        return (handle != null) ? new PhpRenameRefactoringPlugin(refactoring) : null;
+    }
+
+    private RefactoringPlugin createDelete(SafeDeleteRefactoring refactoring) {
+        Lookup look = refactoring.getRefactoringSource();
+        SafeDeleteSupport handle = look.lookup(SafeDeleteSupport.class);
+        return (handle != null) ? new PhpDeleteRefactoringPlugin(refactoring) : null;
     }
 }

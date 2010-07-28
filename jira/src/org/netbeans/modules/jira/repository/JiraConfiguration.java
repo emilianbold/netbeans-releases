@@ -74,7 +74,7 @@ import org.openide.util.Exceptions;
 public class JiraConfiguration {
 
     private JiraClient client;
-    private final JiraRepository repository;
+    protected final JiraRepository repository;
 
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         this.client = jiraClient;
@@ -174,7 +174,8 @@ public class JiraConfiguration {
     }
 
     public Component[] getComponents(String projectId) {
-        return getProjectById(projectId).getComponents();
+        Component[] components = getProjectById(projectId).getComponents();
+        return components != null ? components : new Component[0];
     }
 
     public Component[] getComponents(final Project project) {
@@ -192,7 +193,8 @@ public class JiraConfiguration {
     }
 
     public Version[] getVersions(String projectId) {
-        return getProjectById(projectId).getVersions();
+        Version[] versions = getProjectById(projectId).getVersions();
+        return versions != null ? versions : new Version[0];
     }
 
     public Version[] getVersions(final Project project) {

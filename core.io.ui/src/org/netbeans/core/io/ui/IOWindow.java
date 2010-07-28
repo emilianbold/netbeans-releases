@@ -148,9 +148,9 @@ public final class IOWindow implements IOContainer.Provider {
         return true;
     }
 
-    static final class IOWindowImpl extends TopComponent implements ChangeListener, PropertyChangeListener {
+    public static final class IOWindowImpl extends TopComponent implements ChangeListener, PropertyChangeListener {
 
-        static IOWindowImpl DEFAULT;
+        public static IOWindowImpl DEFAULT;
 
         static synchronized IOWindowImpl findDefault() {
             if (DEFAULT == null) {

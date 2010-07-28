@@ -56,6 +56,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
@@ -69,6 +71,8 @@ import org.netbeans.modules.nativeexecution.api.ProcessInfo;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
@@ -92,7 +96,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private volatile State state;
     private volatile int pid = 0;
     private volatile boolean isInterrupted;
-    private boolean cancelled = false;
+    private final AtomicBoolean cancelledFlag = new AtomicBoolean(false);
     private Future<ProcessInfoProvider> infoProviderSearchTask;
     private Future<Integer> waitTask = null;
     private AtomicInteger result = null;
@@ -153,27 +157,35 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 @Override
                 public Integer call() throws Exception {
                     int exitCode = -1;
+                    State state = null;
 
                     try {
                         exitCode = waitResult();
                         result = new AtomicInteger(exitCode);
-                        setState(State.FINISHED);
+                        state = State.FINISHED;
                     } catch (InterruptedException ex) {
                         result = new AtomicInteger(exitCode);
-                        setState(State.CANCELLED);
+                        state = State.CANCELLED;
                         throw ex;
                     } catch (Throwable th) {
                         result = new AtomicInteger(exitCode);
-                        setState(State.ERROR);
+                        state = State.ERROR;
                         Exceptions.printStackTrace(th);
+                    } finally {
+                        if (cancelledFlag.get()) {
+                            setState(State.CANCELLED);
+                        } else if (state != null) {
+                            setState(state);
+                        }
                     }
 
                     return exitCode;
                 }
             }, "Waiting for " + id); // NOI18N
         } catch (Throwable ex) {
-            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString()); // NOI18N
             setState(State.ERROR);
+            destroy();
+            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString()); // NOI18N
             String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage());
             errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
         }
@@ -193,11 +205,6 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         isInterrupted |= Thread.currentThread().isInterrupted();
         return isInterrupted;
-    }
-
-    protected final void interrupt() {
-        isInterrupted = true;
-        destroy();
     }
 
     @Override
@@ -223,9 +230,25 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
     /**
      * To be implemented by a successor.
-     * It must terminate the underlaying system process on this method call.
+     * It must implement the specific termination of the underlaying system
+     * process on this method call.
+     * It is guaranteed that this method is called only once.
+     * Implementation should not (but may) wait for the actual terminaltion
+     * before returning from the call.
+     * If destroyImpl() returnes and process's waitFor() still not exited during 
+     * specified (by return value) seconds (i.e. process was not actually
+     * terminated), then a SIGKILL is send to the process.
+     *
+     * Default implementation just returns 0. So SIGKILL is send immediately to
+     * force-terminate the process.
+     *
+     * @return number of seconds to wait before doing an attempt to
+     * force-terminate the process with the SIGKILL signal (signal is send only
+     * if process was not finished by that time).
      */
-    protected abstract void cancel();
+    protected int destroyImpl() {
+        return 0;
+    }
 
     /**
      * To be implemented by a successor. This method must cause the current
@@ -259,27 +282,51 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     /**
      * Terminates the underlaying system process. The system process represented
      * by this <code>AbstractNativeProcess</code> object is forcibly terminated.
+     *
+     * Returning from the call of this method does not mean that the process was
+     * already terminated.
+     *
      */
     @Override
     public final void destroy() {
-        synchronized (this) {
-            if (cancelled) {
-                return;
-            }
-
-            setState(State.CANCELLED);
-
-            cancelled = true;
+        if (cancelledFlag.getAndSet(true)) {
+            return;
         }
 
-        cancel();
+        final int timeToWait = destroyImpl();
 
-        // waitTask == null if createAndStart() failed
-        if (waitTask != null) {
-            try {
-                waitTask.get();
-            } catch (InterruptedException ex) {
-            } catch (ExecutionException ex) {
+        if (pid > 0 && waitTask != null && !waitTask.isDone()) {
+            Future<Integer> killTask = null;
+
+            if (timeToWait > 0) {
+                // Submit an asynchronious task that will send SIGKILL if
+                // process is still here after returned timeout...
+                final Callable<Integer> waitForTermination = new Callable<Integer>() {
+
+                    @Override
+                    public Integer call() throws Exception {
+                        try {
+                            return waitTask.get(timeToWait, TimeUnit.SECONDS);
+                        } catch (TimeoutException ex) {
+                            // Process didn't gone.. Kill it!
+                            return CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null).get();
+                        }
+                    }
+                };
+
+                killTask = NativeTaskExecutorService.submit(waitForTermination,
+                        "Waiting " + timeToWait + " seconds for process " + id + " to terminate..."); // NOI18N
+            } else {
+                killTask = CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
+            }
+
+            if (killTask != null) {
+                try {
+                    killTask.get();
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -315,6 +362,19 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             } else {
                 Exceptions.printStackTrace(ex);
             }
+        } finally {
+            // Will clear interrupted flag (if set) as it is a general
+            // convension that "any method that exits by throwing an
+            // InterruptedException clears interrupt status when it does so."
+            // http://java.sun.com/docs/books/tutorial/essential/concurrency/interrupt.html
+            //
+            // This convension is violated in java.lang.Process.waitFor()
+            // doesn't do this (http://bugs.sun.com/view_bug.do?bug_id=6420270)
+            //
+            // But having this Thread.interrupted() here doesn't harm in other
+            // cases as well.
+
+            Thread.interrupted();
         }
 
         return exitStatus;

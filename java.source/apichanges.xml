@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TypeUtilities.getTypeName">
+             <api name="general"/>
+             <summary>Added TypeUtilities.getTypeName method.</summary>
+             <version major="0" minor="62"/>
+             <date day="13" month="7" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TypeUtilities.getTypeName</code> method, which
+                 allows to print type to string.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TypeUtilities"/>
+             <issue number="104194"/>
+        </change>
         <change id="SourceUtils.getAttributeValueCompletions">
              <api name="general"/>
              <summary>Added SourceUtils.getAttributeValueCompletions method.</summary>

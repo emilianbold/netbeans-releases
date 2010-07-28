@@ -56,6 +56,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.Lookup;
 
@@ -71,11 +72,11 @@ public abstract class J2eePlatformImpl {
     
     /** Display name property */
     public static final String PROP_DISPLAY_NAME = "displayName";       //NOI18N
+
     /** Libraries property */
-    public static final String PROP_LIBRARIES = "libraries";            //NOI18N
-    /** Platform roots property */
-    public static final String PROP_PLATFORM_ROOTS = "platformRoots";   //NOI18N
-    
+    public static final String PROP_LIBRARIES = "libraries"; //NOI18N
+    public static final String PROP_SERVER_LIBRARIES = "serverLibraries"; //NOI18N
+
     private PropertyChangeSupport supp;
     
     /**
@@ -84,7 +85,11 @@ public abstract class J2eePlatformImpl {
      * @return platform's libraries.
      */
     public abstract LibraryImplementation[] getLibraries();
-    
+
+    public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
+        return getLibraries();
+    }
+
     /**
      * Return platform's display name.
      *

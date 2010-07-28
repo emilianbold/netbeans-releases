@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 7.31.0
+#Version 8.6
 
 CLSS public java.awt.datatransfer.Clipboard
-cons public Clipboard(java.lang.String)
+cons public init(java.lang.String)
 fld protected java.awt.datatransfer.ClipboardOwner owner
 fld protected java.awt.datatransfer.Transferable contents
 meth public boolean isDataFlavorAvailable(java.awt.datatransfer.DataFlavor)
@@ -71,15 +71,15 @@ CLSS public abstract interface java.io.Flushable
 meth public abstract void flush() throws java.io.IOException
 
 CLSS public java.io.IOException
-cons public IOException()
-cons public IOException(java.lang.String)
-cons public IOException(java.lang.String,java.lang.Throwable)
-cons public IOException(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Exception
 hfds serialVersionUID
 
 CLSS public abstract java.io.InputStream
-cons public InputStream()
+cons public init()
 intf java.io.Closeable
 meth public abstract int read() throws java.io.IOException
 meth public boolean markSupported()
@@ -104,8 +104,8 @@ meth public abstract long skip(long) throws java.io.IOException
 meth public abstract void close() throws java.io.IOException
 
 CLSS public java.io.ObjectInputStream
-cons protected ObjectInputStream() throws java.io.IOException
-cons public ObjectInputStream(java.io.InputStream) throws java.io.IOException
+cons protected init() throws java.io.IOException
+cons public init(java.io.InputStream) throws java.io.IOException
 innr public abstract static GetField
 intf java.io.ObjectInput
 intf java.io.ObjectStreamConstants
@@ -155,8 +155,8 @@ meth public abstract void write(int) throws java.io.IOException
 meth public abstract void writeObject(java.lang.Object) throws java.io.IOException
 
 CLSS public java.io.ObjectOutputStream
-cons protected ObjectOutputStream() throws java.io.IOException
-cons public ObjectOutputStream(java.io.OutputStream) throws java.io.IOException
+cons protected init() throws java.io.IOException
+cons public init(java.io.OutputStream) throws java.io.IOException
 innr public abstract static PutField
 intf java.io.ObjectOutput
 intf java.io.ObjectStreamConstants
@@ -227,7 +227,7 @@ fld public final static short STREAM_MAGIC = -21267
 fld public final static short STREAM_VERSION = 5
 
 CLSS public abstract java.io.OutputStream
-cons public OutputStream()
+cons public init()
 intf java.io.Closeable
 intf java.io.Flushable
 meth public abstract void write(int) throws java.io.IOException
@@ -247,10 +247,10 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Exception
-cons public Exception()
-cons public Exception(java.lang.String)
-cons public Exception(java.lang.String,java.lang.Throwable)
-cons public Exception(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Throwable
 hfds serialVersionUID
 
@@ -258,7 +258,7 @@ CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
 meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -275,18 +275,18 @@ CLSS public abstract interface java.lang.Runnable
 meth public abstract void run()
 
 CLSS public java.lang.RuntimeException
-cons public RuntimeException()
-cons public RuntimeException(java.lang.String)
-cons public RuntimeException(java.lang.String,java.lang.Throwable)
-cons public RuntimeException(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Exception
 hfds serialVersionUID
 
 CLSS public java.lang.Throwable
-cons public Throwable()
-cons public Throwable(java.lang.String)
-cons public Throwable(java.lang.String,java.lang.Throwable)
-cons public Throwable(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 intf java.io.Serializable
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
@@ -329,7 +329,7 @@ intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract java.text.Format
-cons protected Format()
+cons protected init()
 innr public static Field
 intf java.io.Serializable
 intf java.lang.Cloneable
@@ -344,7 +344,7 @@ hfds serialVersionUID
 hcls FieldDelegate
 
 CLSS public abstract java.util.AbstractCollection<%0 extends java.lang.Object>
-cons protected AbstractCollection()
+cons protected init()
 intf java.util.Collection<{java.util.AbstractCollection%0}>
 meth public <%0 extends java.lang.Object> {%%0}[] toArray({%%0}[])
 meth public abstract int size()
@@ -363,7 +363,7 @@ meth public void clear()
 supr java.lang.Object
 
 CLSS public abstract java.util.AbstractMap<%0 extends java.lang.Object, %1 extends java.lang.Object>
-cons protected AbstractMap()
+cons protected init()
 innr public static SimpleEntry
 innr public static SimpleImmutableEntry
 intf java.util.Map<{java.util.AbstractMap%0},{java.util.AbstractMap%1}>
@@ -387,7 +387,7 @@ supr java.lang.Object
 hfds keySet,values
 
 CLSS public abstract java.util.AbstractSet<%0 extends java.lang.Object>
-cons protected AbstractSet()
+cons protected init()
 intf java.util.Set<{java.util.AbstractSet%0}>
 meth public boolean equals(java.lang.Object)
 meth public boolean removeAll(java.util.Collection<?>)
@@ -415,7 +415,7 @@ meth public abstract void clear()
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
+cons public init(java.lang.Object)
 fld protected java.lang.Object source
 intf java.io.Serializable
 meth public java.lang.Object getSource()
@@ -461,6 +461,28 @@ meth public abstract void clear()
 CLSS public abstract interface java.util.concurrent.Executor
 meth public abstract void execute(java.lang.Runnable)
 
+CLSS public abstract interface java.util.concurrent.ExecutorService
+intf java.util.concurrent.Executor
+meth public abstract <%0 extends java.lang.Object> java.util.List<java.util.concurrent.Future<{%%0}>> invokeAll(java.util.Collection<? extends java.util.concurrent.Callable<{%%0}>>) throws java.lang.InterruptedException
+meth public abstract <%0 extends java.lang.Object> java.util.List<java.util.concurrent.Future<{%%0}>> invokeAll(java.util.Collection<? extends java.util.concurrent.Callable<{%%0}>>,long,java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
+meth public abstract <%0 extends java.lang.Object> java.util.concurrent.Future<{%%0}> submit(java.lang.Runnable,{%%0})
+meth public abstract <%0 extends java.lang.Object> java.util.concurrent.Future<{%%0}> submit(java.util.concurrent.Callable<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> {%%0} invokeAny(java.util.Collection<? extends java.util.concurrent.Callable<{%%0}>>) throws java.lang.InterruptedException,java.util.concurrent.ExecutionException
+meth public abstract <%0 extends java.lang.Object> {%%0} invokeAny(java.util.Collection<? extends java.util.concurrent.Callable<{%%0}>>,long,java.util.concurrent.TimeUnit) throws java.lang.InterruptedException,java.util.concurrent.ExecutionException,java.util.concurrent.TimeoutException
+meth public abstract boolean awaitTermination(long,java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
+meth public abstract boolean isShutdown()
+meth public abstract boolean isTerminated()
+meth public abstract java.util.List<java.lang.Runnable> shutdownNow()
+meth public abstract java.util.concurrent.Future<?> submit(java.lang.Runnable)
+meth public abstract void shutdown()
+
+CLSS public abstract interface java.util.concurrent.ScheduledExecutorService
+intf java.util.concurrent.ExecutorService
+meth public abstract <%0 extends java.lang.Object> java.util.concurrent.ScheduledFuture<{%%0}> schedule(java.util.concurrent.Callable<{%%0}>,long,java.util.concurrent.TimeUnit)
+meth public abstract java.util.concurrent.ScheduledFuture<?> schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)
+meth public abstract java.util.concurrent.ScheduledFuture<?> scheduleAtFixedRate(java.lang.Runnable,long,long,java.util.concurrent.TimeUnit)
+meth public abstract java.util.concurrent.ScheduledFuture<?> scheduleWithFixedDelay(java.lang.Runnable,long,long,java.util.concurrent.TimeUnit)
+
 CLSS public abstract interface javax.swing.Action
 fld public final static java.lang.String ACCELERATOR_KEY = "AcceleratorKey"
 fld public final static java.lang.String ACTION_COMMAND_KEY = "ActionCommandKey"
@@ -482,7 +504,7 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void setEnabled(boolean)
 
 CLSS public abstract org.openide.ErrorManager
-cons public ErrorManager()
+cons public init()
 fld public final static int ERROR = 65536
 fld public final static int EXCEPTION = 4096
 fld public final static int INFORMATIONAL = 1
@@ -510,6 +532,7 @@ hfds current
 hcls AnnException,DelegatingErrorManager,OwnLevel
 
 CLSS public abstract interface static org.openide.ErrorManager$Annotation
+ outer org.openide.ErrorManager
 meth public abstract int getSeverity()
 meth public abstract java.lang.String getLocalizedMessage()
 meth public abstract java.lang.String getMessage()
@@ -517,7 +540,7 @@ meth public abstract java.lang.Throwable getStackTrace()
 meth public abstract java.util.Date getDate()
 
 CLSS public abstract org.openide.LifecycleManager
-cons protected LifecycleManager()
+cons protected init()
 meth public abstract void exit()
 meth public abstract void saveAll()
 meth public static org.openide.LifecycleManager getDefault()
@@ -527,7 +550,7 @@ hcls Trivial
 
 CLSS public abstract org.openide.ServiceType
  anno 0 java.lang.Deprecated()
-cons public ServiceType()
+cons public init()
 fld public final static java.lang.String PROP_NAME = "name"
 innr public abstract static Registry
 innr public final static Handle
@@ -548,8 +571,9 @@ supr java.lang.Object
 hfds err,name,serialVersionUID,supp
 
 CLSS public final static org.openide.ServiceType$Handle
+ outer org.openide.ServiceType
  anno 0 java.lang.Deprecated()
-cons public Handle(org.openide.ServiceType)
+cons public init(org.openide.ServiceType)
 intf java.io.Serializable
 meth public java.lang.String toString()
 meth public org.openide.ServiceType getServiceType()
@@ -557,8 +581,9 @@ supr java.lang.Object
 hfds className,name,serialVersionUID,serviceType
 
 CLSS public abstract static org.openide.ServiceType$Registry
+ outer org.openide.ServiceType
  anno 0 java.lang.Deprecated()
-cons public Registry()
+cons public init()
 intf java.io.Serializable
 meth public <%0 extends org.openide.ServiceType> java.util.Enumeration<{%%0}> services(java.lang.Class<{%%0}>)
 meth public abstract java.util.Enumeration<org.openide.ServiceType> services()
@@ -579,13 +604,25 @@ CLSS public abstract interface org.openide.util.Cancellable
 meth public abstract boolean cancel()
 
 CLSS public final org.openide.util.ChangeSupport
-cons public ChangeSupport(java.lang.Object)
+cons public init(java.lang.Object)
 meth public boolean hasListeners()
 meth public void addChangeListener(javax.swing.event.ChangeListener)
 meth public void fireChange()
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
 hfds LOG,listeners,source
+
+CLSS public final org.openide.util.CharSequences
+meth public static boolean isCompact(java.lang.CharSequence)
+meth public static int indexOf(java.lang.CharSequence,java.lang.CharSequence)
+meth public static int indexOf(java.lang.CharSequence,java.lang.CharSequence,int)
+meth public static java.lang.CharSequence create(char[],int,int)
+meth public static java.lang.CharSequence create(java.lang.CharSequence)
+meth public static java.lang.CharSequence empty()
+meth public static java.util.Comparator<java.lang.CharSequence> comparator()
+supr java.lang.Object
+hfds Comparator,EMPTY
+hcls ByteBasedSequence,CharBasedSequence,CharSequenceComparator,CompactCharSequence,Fixed_0_7,Fixed_16_23,Fixed_8_15
 
 CLSS public abstract interface org.openide.util.ContextAwareAction
 intf javax.swing.Action
@@ -595,7 +632,7 @@ CLSS public abstract interface org.openide.util.ContextGlobalProvider
 meth public abstract org.openide.util.Lookup createGlobalContext()
 
 CLSS public final org.openide.util.EditableProperties
-cons public EditableProperties(boolean)
+cons public init(boolean)
 intf java.lang.Cloneable
 meth public java.lang.Object clone()
 meth public java.lang.String get(java.lang.Object)
@@ -629,6 +666,7 @@ supr java.lang.Object
 hcls AltEn,FilEn,QEn,RNulls,SeqEn
 
 CLSS public abstract interface static org.openide.util.Enumerations$Processor<%0 extends java.lang.Object, %1 extends java.lang.Object>
+ outer org.openide.util.Enumerations
 meth public abstract {org.openide.util.Enumerations$Processor%1} process({org.openide.util.Enumerations$Processor%0},java.util.Collection<{org.openide.util.Enumerations$Processor%0}>)
 
 CLSS public final org.openide.util.Exceptions
@@ -641,9 +679,9 @@ hfds LOC_MSG_PLACEHOLDER,LOG
 hcls AnnException,OwnLevel
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -659,6 +697,7 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 
 CLSS public final org.openide.util.ImageUtilities
@@ -678,7 +717,7 @@ hfds ERR,NO_ICON,PNG_READER,TOOLTIP_SEPAR,cache,component,compositeCache,current
 hcls ActiveRef,CompositeImageKey,DisabledButtonFilter,LazyDisabledIcon,ToolTipImage,ToolTipImageKey
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -695,7 +734,8 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract static org.openide.util.Lookup$Item<%0 extends java.lang.Object>
-cons public Item()
+ outer org.openide.util.Lookup
+cons public init()
 meth public abstract java.lang.Class<? extends {org.openide.util.Lookup$Item%0}> getType()
 meth public abstract java.lang.String getDisplayName()
 meth public abstract java.lang.String getId()
@@ -704,10 +744,12 @@ meth public java.lang.String toString()
 supr java.lang.Object
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 
 CLSS public abstract static org.openide.util.Lookup$Result<%0 extends java.lang.Object>
-cons public Result()
+ outer org.openide.util.Lookup
+cons public init()
 meth public abstract java.util.Collection<? extends {org.openide.util.Lookup$Result%0}> allInstances()
 meth public abstract void addLookupListener(org.openide.util.LookupListener)
 meth public abstract void removeLookupListener(org.openide.util.LookupListener)
@@ -716,10 +758,11 @@ meth public java.util.Set<java.lang.Class<? extends {org.openide.util.Lookup$Res
 supr java.lang.Object
 
 CLSS public final static org.openide.util.Lookup$Template<%0 extends java.lang.Object>
-cons public Template()
+ outer org.openide.util.Lookup
+cons public init()
  anno 0 java.lang.Deprecated()
-cons public Template(java.lang.Class<{org.openide.util.Lookup$Template%0}>)
-cons public Template(java.lang.Class<{org.openide.util.Lookup$Template%0}>,java.lang.String,{org.openide.util.Lookup$Template%0})
+cons public init(java.lang.Class<{org.openide.util.Lookup$Template%0}>)
+cons public init(java.lang.Class<{org.openide.util.Lookup$Template%0}>,java.lang.String,{org.openide.util.Lookup$Template%0})
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.Class<{org.openide.util.Lookup$Template%0}> getType()
@@ -730,7 +773,7 @@ supr java.lang.Object
 hfds hashCode,id,instance,type
 
 CLSS public final org.openide.util.LookupEvent
-cons public LookupEvent(org.openide.util.Lookup$Result)
+cons public init(org.openide.util.Lookup$Result)
 supr java.util.EventObject
 
 CLSS public abstract interface org.openide.util.LookupListener
@@ -738,7 +781,7 @@ intf java.util.EventListener
 meth public abstract void resultChanged(org.openide.util.LookupEvent)
 
 CLSS public org.openide.util.MapFormat
-cons public MapFormat(java.util.Map)
+cons public init(java.util.Map)
 meth protected java.lang.Object processKey(java.lang.String)
 meth public boolean isExactMatch()
 meth public boolean willThrowExceptionIfKeyWasNotFound()
@@ -759,10 +802,10 @@ supr java.text.Format
 hfds BUFSIZE,argmap,arguments,exactmatch,ldel,locale,maxOffset,offsets,rdel,serialVersionUID,throwex
 
 CLSS public final org.openide.util.Mutex
-cons public Mutex()
-cons public Mutex(java.lang.Object)
-cons public Mutex(org.openide.util.Mutex$Privileged)
-cons public Mutex(org.openide.util.Mutex$Privileged,java.util.concurrent.Executor)
+cons public init()
+cons public init(java.lang.Object)
+cons public init(org.openide.util.Mutex$Privileged)
+cons public init(org.openide.util.Mutex$Privileged,java.util.concurrent.Executor)
 fld public final static org.openide.util.Mutex EVENT
 innr public abstract interface static Action
 innr public abstract interface static ExceptionAction
@@ -783,14 +826,17 @@ hfds CHAIN,LOCK,LOG,MODE_COUNT,NONE,S,X,beStrict,cmatrix,cnt,counter,grantedMode
 hcls InternalLock,QueueCell,ThreadInfo
 
 CLSS public abstract interface static org.openide.util.Mutex$Action<%0 extends java.lang.Object>
+ outer org.openide.util.Mutex
 intf org.openide.util.Mutex$ExceptionAction<{org.openide.util.Mutex$Action%0}>
 meth public abstract {org.openide.util.Mutex$Action%0} run()
 
 CLSS public abstract interface static org.openide.util.Mutex$ExceptionAction<%0 extends java.lang.Object>
+ outer org.openide.util.Mutex
 meth public abstract {org.openide.util.Mutex$ExceptionAction%0} run() throws java.lang.Exception
 
 CLSS public final static org.openide.util.Mutex$Privileged
-cons public Privileged()
+ outer org.openide.util.Mutex
+cons public init()
 meth public void enterReadAccess()
 meth public void enterWriteAccess()
 meth public void exitReadAccess()
@@ -799,14 +845,14 @@ supr java.lang.Object
 hfds parent
 
 CLSS public org.openide.util.MutexException
-cons public MutexException(java.lang.Exception)
+cons public init(java.lang.Exception)
 meth public java.lang.Exception getException()
 meth public java.lang.Throwable getCause()
 supr java.lang.Exception
 hfds ex,serialVersionUID
 
 CLSS public org.openide.util.NbBundle
-cons public NbBundle()
+cons public init()
  anno 0 java.lang.Deprecated()
 innr public abstract interface static ClassLoaderFinder
 meth public !varargs static java.lang.String getMessage(java.lang.Class,java.lang.String,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object[])
@@ -839,6 +885,7 @@ hfds LOG,USE_DEBUG_LOADER,brandingToken,bundleCache,localizedFileCache
 hcls AttributesMap,DebugLoader,LocaleIterator,MergedBundle,PBundle
 
 CLSS public abstract interface static org.openide.util.NbBundle$ClassLoaderFinder
+ outer org.openide.util.NbBundle
  anno 0 java.lang.Deprecated()
 meth public abstract java.lang.ClassLoader find()
  anno 0 java.lang.Deprecated()
@@ -858,14 +905,20 @@ hfds LOG
 hcls CheckedIterator,CheckedMap,CheckedSet
 
 CLSS public final org.openide.util.NbPreferences
+innr public abstract interface static Provider
 meth public static java.util.prefs.Preferences forModule(java.lang.Class)
 meth public static java.util.prefs.Preferences root()
 supr java.lang.Object
 hfds PREFS_IMPL
 
+CLSS public abstract interface static org.openide.util.NbPreferences$Provider
+ outer org.openide.util.NbPreferences
+meth public abstract java.util.prefs.Preferences preferencesForModule(java.lang.Class)
+meth public abstract java.util.prefs.Preferences preferencesRoot()
+
 CLSS public org.openide.util.NotImplementedException
-cons public NotImplementedException()
-cons public NotImplementedException(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 supr java.lang.RuntimeException
 hfds serialVersionUID
 
@@ -879,21 +932,37 @@ supr java.lang.Object
 
 CLSS public org.openide.util.Queue<%0 extends java.lang.Object>
  anno 0 java.lang.Deprecated()
-cons public Queue()
+cons public init()
 meth public void put({org.openide.util.Queue%0})
 meth public {org.openide.util.Queue%0} get()
 supr java.lang.Object
 hfds queue
 
 CLSS public final org.openide.util.RequestProcessor
-cons public RequestProcessor()
-cons public RequestProcessor(java.lang.String)
-cons public RequestProcessor(java.lang.String,int)
-cons public RequestProcessor(java.lang.String,int,boolean)
-cons public RequestProcessor(java.lang.String,int,boolean,boolean)
+cons public init()
+cons public init(java.lang.Class<?>)
+cons public init(java.lang.String)
+cons public init(java.lang.String,int)
+cons public init(java.lang.String,int,boolean)
+cons public init(java.lang.String,int,boolean,boolean)
 innr public final Task
-intf java.util.concurrent.Executor
+intf java.util.concurrent.ScheduledExecutorService
+meth public <%0 extends java.lang.Object> java.util.List<java.util.concurrent.Future<{%%0}>> invokeAll(java.util.Collection<? extends java.util.concurrent.Callable<{%%0}>>) throws java.lang.InterruptedException
+meth public <%0 extends java.lang.Object> java.util.List<java.util.concurrent.Future<{%%0}>> invokeAll(java.util.Collection<? extends java.util.concurrent.Callable<{%%0}>>,long,java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
+meth public <%0 extends java.lang.Object> java.util.concurrent.Future<{%%0}> submit(java.lang.Runnable,{%%0})
+meth public <%0 extends java.lang.Object> java.util.concurrent.Future<{%%0}> submit(java.util.concurrent.Callable<{%%0}>)
+meth public <%0 extends java.lang.Object> java.util.concurrent.ScheduledFuture<{%%0}> schedule(java.util.concurrent.Callable<{%%0}>,long,java.util.concurrent.TimeUnit)
+meth public <%0 extends java.lang.Object> {%%0} invokeAny(java.util.Collection<? extends java.util.concurrent.Callable<{%%0}>>) throws java.lang.InterruptedException,java.util.concurrent.ExecutionException
+meth public <%0 extends java.lang.Object> {%%0} invokeAny(java.util.Collection<? extends java.util.concurrent.Callable<{%%0}>>,long,java.util.concurrent.TimeUnit) throws java.lang.InterruptedException,java.util.concurrent.ExecutionException,java.util.concurrent.TimeoutException
+meth public boolean awaitTermination(long,java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
 meth public boolean isRequestProcessorThread()
+meth public boolean isShutdown()
+meth public boolean isTerminated()
+meth public java.util.List<java.lang.Runnable> shutdownNow()
+meth public java.util.concurrent.Future<?> submit(java.lang.Runnable)
+meth public java.util.concurrent.ScheduledFuture<?> schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)
+meth public java.util.concurrent.ScheduledFuture<?> scheduleAtFixedRate(java.lang.Runnable,long,long,java.util.concurrent.TimeUnit)
+meth public java.util.concurrent.ScheduledFuture<?> scheduleWithFixedDelay(java.lang.Runnable,long,long,java.util.concurrent.TimeUnit)
 meth public org.openide.util.RequestProcessor$Task create(java.lang.Runnable)
 meth public org.openide.util.RequestProcessor$Task create(java.lang.Runnable,boolean)
 meth public org.openide.util.RequestProcessor$Task post(java.lang.Runnable)
@@ -909,12 +978,14 @@ meth public static org.openide.util.RequestProcessor$Task postRequest(java.lang.
 meth public static org.openide.util.RequestProcessor$Task postRequest(java.lang.Runnable,int,int)
  anno 0 java.lang.Deprecated()
 meth public void execute(java.lang.Runnable)
+meth public void shutdown()
 meth public void stop()
 supr java.lang.Object
-hfds DEFAULT,SLOW,UNLIMITED,counter,enableStackTraces,interruptThread,logger,name,processorLock,processors,queue,running,starterThread,stopped,throughput
-hcls EnqueueTask,FastItem,Item,Processor,SlowItem
+hfds DEFAULT,SLOW,UNLIMITED,counter,enableStackTraces,inParallel,interruptThread,logger,name,processorLock,processors,queue,running,starterThread,stopped,throughput,warnParallel
+hcls EnqueueTask,FastItem,FixedDelayTask,FixedRateTask,Item,Processor,RPFutureTask,RunnableWrapper,ScheduledRPFutureTask,SlowItem,TaskFutureWrapper,WaitableCallable
 
 CLSS public final org.openide.util.RequestProcessor$Task
+ outer org.openide.util.RequestProcessor
 intf org.openide.util.Cancellable
 meth public boolean cancel()
 meth public boolean waitFinished(long) throws java.lang.InterruptedException
@@ -926,10 +997,10 @@ meth public void schedule(int)
 meth public void setPriority(int)
 meth public void waitFinished()
 supr org.openide.util.Task
-hfds item,lastThread,priority,time
+hfds cancelled,item,lastThread,priority,time
 
 CLSS public abstract org.openide.util.SharedClassObject
-cons protected SharedClassObject()
+cons protected init()
 intf java.io.Externalizable
 meth protected boolean clearSharedData()
 meth protected final java.lang.Object getLock()
@@ -956,8 +1027,8 @@ hfds PROP_SUPPORT,addNotifySuper,alreadyWarnedAboutDupes,dataEntry,err,first,fir
 hcls DataEntry,SetAccessibleAction,WriteReplace
 
 CLSS public org.openide.util.Task
-cons protected Task()
-cons public Task(java.lang.Runnable)
+cons protected init()
+cons public init(java.lang.Runnable)
 fld public final static org.openide.util.Task EMPTY
 intf java.lang.Runnable
 meth protected final void notifyFinished()
@@ -1010,14 +1081,14 @@ hfds serialVersionUID
 hcls Union2First,Union2Second
 
 CLSS public org.openide.util.UserCancelException
-cons public UserCancelException()
-cons public UserCancelException(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 supr java.io.IOException
 hfds serialVersionUID
 
 CLSS public abstract org.openide.util.UserQuestionException
-cons public UserQuestionException()
-cons public UserQuestionException(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 meth public abstract void confirmed() throws java.io.IOException
 supr java.io.IOException
 hfds serialVersionUID
@@ -1121,9 +1192,10 @@ hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEI
 hcls NamesAndValues,RE
 
 CLSS public static org.openide.util.Utilities$UnorderableException
+ outer org.openide.util.Utilities
  anno 0 java.lang.Deprecated()
-cons public UnorderableException(java.lang.String,java.util.Collection,java.util.Map)
-cons public UnorderableException(java.util.Collection,java.util.Map)
+cons public init(java.lang.String,java.util.Collection,java.util.Map)
+cons public init(java.util.Collection,java.util.Map)
 meth public java.util.Collection getUnorderable()
 meth public java.util.Map getDeps()
 supr java.lang.RuntimeException
@@ -1139,10 +1211,10 @@ meth public static javax.swing.event.DocumentListener document(javax.swing.event
 supr java.lang.Object
 
 CLSS public org.openide.util.WeakSet<%0 extends java.lang.Object>
-cons public WeakSet()
-cons public WeakSet(int)
-cons public WeakSet(int,float)
-cons public WeakSet(java.util.Collection<? extends {org.openide.util.WeakSet%0}>)
+cons public init()
+cons public init(int)
+cons public init(int,float)
+cons public init(java.util.Collection<? extends {org.openide.util.WeakSet%0}>)
 intf java.io.Serializable
 intf java.lang.Cloneable
 meth public <%0 extends java.lang.Object> {%%0}[] toArray({%%0}[])
@@ -1160,12 +1232,31 @@ supr java.util.AbstractSet<{org.openide.util.WeakSet%0}>
 hfds entries,iterChain,loadFactor,modcount,nullCount,refq,serialVersionUID,size
 hcls Entry,WeakSetIterator
 
+CLSS public abstract org.openide.util.actions.ActionInvoker
+cons protected init()
+meth protected abstract void invokeAction(javax.swing.Action,java.awt.event.ActionEvent)
+meth public static void invokeAction(javax.swing.Action,java.awt.event.ActionEvent,boolean,java.lang.Runnable)
+supr java.lang.Object
+hfds RP
+hcls ActionRunnable
+
 CLSS public abstract interface org.openide.util.actions.ActionPerformer
  anno 0 java.lang.Deprecated()
 meth public abstract void performAction(org.openide.util.actions.SystemAction)
 
+CLSS public abstract org.openide.util.actions.ActionPresenterProvider
+cons protected init()
+meth public abstract java.awt.Component createToolbarPresenter(javax.swing.Action)
+meth public abstract java.awt.Component[] convertComponents(java.awt.Component)
+meth public abstract javax.swing.JMenuItem createMenuPresenter(javax.swing.Action)
+meth public abstract javax.swing.JMenuItem createPopupPresenter(javax.swing.Action)
+meth public abstract javax.swing.JPopupMenu createEmptyPopup()
+meth public static org.openide.util.actions.ActionPresenterProvider getDefault()
+supr java.lang.Object
+hcls Default
+
 CLSS public abstract org.openide.util.actions.BooleanStateAction
-cons public BooleanStateAction()
+cons public init()
 fld public final static java.lang.String PROP_BOOLEAN_STATE = "booleanState"
 intf org.openide.util.actions.Presenter$Menu
 intf org.openide.util.actions.Presenter$Popup
@@ -1181,7 +1272,7 @@ supr org.openide.util.actions.SystemAction
 hfds serialVersionUID
 
 CLSS public abstract org.openide.util.actions.CallableSystemAction
-cons public CallableSystemAction()
+cons public init()
 intf org.openide.util.actions.Presenter$Menu
 intf org.openide.util.actions.Presenter$Popup
 intf org.openide.util.actions.Presenter$Toolbar
@@ -1195,7 +1286,7 @@ supr org.openide.util.actions.SystemAction
 hfds DEFAULT_ASYNCH,serialVersionUID,warnedAsynchronousActions
 
 CLSS public abstract org.openide.util.actions.CallbackSystemAction
-cons public CallbackSystemAction()
+cons public init()
 intf org.openide.util.ContextAwareAction
 meth protected void initialize()
 meth public boolean getSurviveFocusChange()
@@ -1219,19 +1310,22 @@ innr public abstract interface static Popup
 innr public abstract interface static Toolbar
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Menu
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract javax.swing.JMenuItem getMenuPresenter()
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Popup
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract javax.swing.JMenuItem getPopupPresenter()
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Toolbar
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract java.awt.Component getToolbarPresenter()
 
 CLSS public abstract org.openide.util.actions.SystemAction
-cons public SystemAction()
+cons public init()
 fld public final static java.lang.String PROP_ENABLED = "enabled"
 fld public final static java.lang.String PROP_ICON = "icon"
 intf javax.swing.Action
@@ -1270,7 +1364,7 @@ intf java.util.EventListener
 meth public abstract void clipboardChanged(org.openide.util.datatransfer.ClipboardEvent)
 
 CLSS public abstract org.openide.util.datatransfer.ExClipboard
-cons public ExClipboard(java.lang.String)
+cons public init(java.lang.String)
 innr public abstract interface static Convertor
 meth protected abstract org.openide.util.datatransfer.ExClipboard$Convertor[] getConvertors()
 meth protected final void fireClipboardChange()
@@ -1285,6 +1379,7 @@ supr java.awt.datatransfer.Clipboard
 hfds listeners
 
 CLSS public abstract interface static org.openide.util.datatransfer.ExClipboard$Convertor
+ outer org.openide.util.datatransfer.ExClipboard
 meth public abstract java.awt.datatransfer.Transferable convert(java.awt.datatransfer.Transferable)
 
 CLSS public org.openide.util.datatransfer.ExTransferable
@@ -1306,7 +1401,8 @@ hfds listeners,map
 hcls Empty
 
 CLSS public static org.openide.util.datatransfer.ExTransferable$Multi
-cons public Multi(java.awt.datatransfer.Transferable[])
+ outer org.openide.util.datatransfer.ExTransferable
+cons public init(java.awt.datatransfer.Transferable[])
 intf java.awt.datatransfer.Transferable
 meth public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
 meth public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors()
@@ -1316,7 +1412,8 @@ hfds flavorList,transferObject
 hcls TransferObjectImpl
 
 CLSS public abstract static org.openide.util.datatransfer.ExTransferable$Single
-cons public Single(java.awt.datatransfer.DataFlavor)
+ outer org.openide.util.datatransfer.ExTransferable
+cons public init(java.awt.datatransfer.DataFlavor)
 intf java.awt.datatransfer.Transferable
 meth protected abstract java.lang.Object getData() throws java.awt.datatransfer.UnsupportedFlavorException,java.io.IOException
 meth public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
@@ -1334,7 +1431,7 @@ meth public abstract java.awt.datatransfer.Transferable getTransferableAt(int)
 meth public abstract java.lang.Object getTransferData(int,java.awt.datatransfer.DataFlavor) throws java.awt.datatransfer.UnsupportedFlavorException,java.io.IOException
 
 CLSS public abstract org.openide.util.datatransfer.NewType
-cons public NewType()
+cons public init()
 intf org.openide.util.HelpCtx$Provider
 meth public abstract void create() throws java.io.IOException
 meth public java.lang.String getName()
@@ -1342,7 +1439,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr java.lang.Object
 
 CLSS public abstract org.openide.util.datatransfer.PasteType
-cons public PasteType()
+cons public init()
 intf org.openide.util.HelpCtx$Provider
 meth public abstract java.awt.datatransfer.Transferable paste() throws java.io.IOException
 meth public java.lang.String getName()
@@ -1356,7 +1453,7 @@ meth public abstract void ownershipLost()
 meth public abstract void rejected()
 
 CLSS public org.openide.util.io.FoldingIOException
-cons public FoldingIOException(java.lang.Throwable)
+cons public init(java.lang.Throwable)
  anno 0 java.lang.Deprecated()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String toString()
@@ -1367,7 +1464,7 @@ supr java.io.IOException
 hfds serialVersionUID,t
 
 CLSS public final org.openide.util.io.NbMarshalledObject
-cons public NbMarshalledObject(java.lang.Object) throws java.io.IOException
+cons public init(java.lang.Object) throws java.io.IOException
 intf java.io.Serializable
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
@@ -1376,7 +1473,7 @@ supr java.lang.Object
 hfds HEX,hash,objBytes,serialVersionUID
 
 CLSS public org.openide.util.io.NbObjectInputStream
-cons public NbObjectInputStream(java.io.InputStream) throws java.io.IOException
+cons public init(java.io.InputStream) throws java.io.IOException
 meth protected java.io.ObjectStreamClass readClassDescriptor() throws java.io.IOException,java.lang.ClassNotFoundException
 meth protected java.lang.Class resolveClass(java.io.ObjectStreamClass) throws java.io.IOException,java.lang.ClassNotFoundException
 meth public static java.lang.Object readSafely(java.io.ObjectInput) throws java.io.IOException
@@ -1384,7 +1481,7 @@ meth public static void skipSafely(java.io.ObjectInput) throws java.io.IOExcepti
 supr java.io.ObjectInputStream
 
 CLSS public org.openide.util.io.NbObjectOutputStream
-cons public NbObjectOutputStream(java.io.OutputStream) throws java.io.IOException
+cons public init(java.io.OutputStream) throws java.io.IOException
 meth protected void annotateClass(java.lang.Class) throws java.io.IOException
 meth public java.lang.Object replaceObject(java.lang.Object) throws java.io.IOException
 meth public static void writeSafely(java.io.ObjectOutput,java.lang.Object) throws java.io.IOException
@@ -1392,19 +1489,19 @@ supr java.io.ObjectOutputStream
 hfds SVUID,alreadyReported,examinedClasses,serializing
 
 CLSS public org.openide.util.io.NullInputStream
-cons public NullInputStream()
+cons public init()
 fld public boolean throwException
 meth public int read() throws java.io.IOException
 supr java.io.InputStream
 
 CLSS public org.openide.util.io.NullOutputStream
-cons public NullOutputStream()
+cons public init()
 fld public boolean throwException
 meth public void write(int) throws java.io.IOException
 supr java.io.OutputStream
 
 CLSS public org.openide.util.io.OperationException
-cons public OperationException(java.lang.Exception)
+cons public init(java.lang.Exception)
 meth public java.lang.Exception getException()
 meth public java.lang.String getMessage()
 meth public java.lang.Throwable getCause()
@@ -1412,8 +1509,8 @@ supr java.io.IOException
 hfds ex,serialVersionUID
 
 CLSS public org.openide.util.io.ReaderInputStream
-cons public ReaderInputStream(java.io.Reader) throws java.io.IOException
-cons public ReaderInputStream(java.io.Reader,java.lang.String) throws java.io.IOException
+cons public init(java.io.Reader) throws java.io.IOException
+cons public init(java.io.Reader,java.lang.String) throws java.io.IOException
 meth public int available() throws java.io.IOException
 meth public int read() throws java.io.IOException
 meth public int read(byte[],int,int) throws java.io.IOException
@@ -1422,115 +1519,14 @@ supr java.io.InputStream
 hfds osw,pis,pos,reader
 
 CLSS public org.openide.util.io.SafeException
-cons public SafeException(java.lang.Exception)
+cons public init(java.lang.Exception)
 meth public java.lang.Exception getException()
 meth public java.lang.Throwable getCause()
 supr org.openide.util.io.FoldingIOException
 hfds ex,serialVersionUID
 
-CLSS public org.openide.util.lookup.AbstractLookup
-cons protected AbstractLookup()
-cons public AbstractLookup(org.openide.util.lookup.AbstractLookup$Content)
-innr public abstract static Pair
-innr public static Content
-intf java.io.Serializable
-meth protected final void addPair(org.openide.util.lookup.AbstractLookup$Pair<?>)
-meth protected final void addPair(org.openide.util.lookup.AbstractLookup$Pair<?>,java.util.concurrent.Executor)
-meth protected final void removePair(org.openide.util.lookup.AbstractLookup$Pair<?>)
-meth protected final void removePair(org.openide.util.lookup.AbstractLookup$Pair<?>,java.util.concurrent.Executor)
-meth protected final void setPairs(java.util.Collection<? extends org.openide.util.lookup.AbstractLookup$Pair>)
-meth protected final void setPairs(java.util.Collection<? extends org.openide.util.lookup.AbstractLookup$Pair>,java.util.concurrent.Executor)
-meth protected void beforeLookup(org.openide.util.Lookup$Template<?>)
-meth protected void initialize()
-meth public final <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
-meth public final <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
-meth public final <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
-meth public java.lang.String toString()
-supr org.openide.util.Lookup
-hfds count,serialVersionUID,tree,treeLock
-hcls CycleError,ISE,Info,NotifyListeners,R,ReferenceIterator,ReferenceToResult,Storage
-
-CLSS public static org.openide.util.lookup.AbstractLookup$Content
-cons public Content()
-cons public Content(java.util.concurrent.Executor)
-intf java.io.Serializable
-meth public final void addPair(org.openide.util.lookup.AbstractLookup$Pair<?>)
-meth public final void removePair(org.openide.util.lookup.AbstractLookup$Pair<?>)
-meth public final void setPairs(java.util.Collection<? extends org.openide.util.lookup.AbstractLookup$Pair>)
-supr java.lang.Object
-hfds al,notifyIn,serialVersionUID
-
-CLSS public abstract static org.openide.util.lookup.AbstractLookup$Pair<%0 extends java.lang.Object>
-cons protected Pair()
-intf java.io.Serializable
-meth protected abstract boolean creatorOf(java.lang.Object)
-meth protected abstract boolean instanceOf(java.lang.Class<?>)
-supr org.openide.util.Lookup$Item<{org.openide.util.lookup.AbstractLookup$Pair%0}>
-hfds index,serialVersionUID
-
-CLSS public final org.openide.util.lookup.InstanceContent
-cons public InstanceContent()
-cons public InstanceContent(java.util.concurrent.Executor)
-innr public abstract interface static Convertor
-meth public final <%0 extends java.lang.Object, %1 extends java.lang.Object> void add({%%0},org.openide.util.lookup.InstanceContent$Convertor<{%%0},{%%1}>)
-meth public final <%0 extends java.lang.Object, %1 extends java.lang.Object> void remove({%%0},org.openide.util.lookup.InstanceContent$Convertor<{%%0},{%%1}>)
-meth public final <%0 extends java.lang.Object, %1 extends java.lang.Object> void set(java.util.Collection<{%%0}>,org.openide.util.lookup.InstanceContent$Convertor<{%%0},{%%1}>)
-meth public final void add(java.lang.Object)
-meth public final void remove(java.lang.Object)
-supr org.openide.util.lookup.AbstractLookup$Content
-hcls ConvertingItem,SimpleItem
-
-CLSS public abstract interface static org.openide.util.lookup.InstanceContent$Convertor<%0 extends java.lang.Object, %1 extends java.lang.Object>
-meth public abstract java.lang.Class<? extends {org.openide.util.lookup.InstanceContent$Convertor%1}> type({org.openide.util.lookup.InstanceContent$Convertor%0})
-meth public abstract java.lang.String displayName({org.openide.util.lookup.InstanceContent$Convertor%0})
-meth public abstract java.lang.String id({org.openide.util.lookup.InstanceContent$Convertor%0})
-meth public abstract {org.openide.util.lookup.InstanceContent$Convertor%1} convert({org.openide.util.lookup.InstanceContent$Convertor%0})
-
-CLSS public org.openide.util.lookup.Lookups
-meth public !varargs static org.openide.util.Lookup exclude(org.openide.util.Lookup,java.lang.Class[])
-meth public !varargs static org.openide.util.Lookup fixed(java.lang.Object[])
-meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.openide.util.Lookup fixed({%%0}[],org.openide.util.lookup.InstanceContent$Convertor<? super {%%0},{%%1}>)
-meth public static <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem({%%0},java.lang.String)
-meth public static org.openide.util.Lookup forPath(java.lang.String)
-meth public static org.openide.util.Lookup metaInfServices(java.lang.ClassLoader)
-meth public static org.openide.util.Lookup metaInfServices(java.lang.ClassLoader,java.lang.String)
-meth public static org.openide.util.Lookup proxy(org.openide.util.Lookup$Provider)
-meth public static org.openide.util.Lookup singleton(java.lang.Object)
-supr java.lang.Object
-hcls LookupItem
-
-CLSS public org.openide.util.lookup.ProxyLookup
-cons protected ProxyLookup()
-cons public !varargs ProxyLookup(org.openide.util.Lookup[])
-meth protected !varargs final void setLookups(java.util.concurrent.Executor,org.openide.util.Lookup[])
-meth protected !varargs final void setLookups(org.openide.util.Lookup[])
-meth protected final org.openide.util.Lookup[] getLookups()
-meth protected void beforeLookup(org.openide.util.Lookup$Template<?>)
-meth public final <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
-meth public final <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
-meth public final <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
-meth public java.lang.String toString()
-supr org.openide.util.Lookup
-hfds data
-hcls EmptyInternalData,ImmutableInternalData,R,RealInternalData,SingleInternalData,WeakRef,WeakResult
-
-CLSS public abstract interface !annotation org.openide.util.lookup.ServiceProvider
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract !hasdefault int position()
-meth public abstract !hasdefault java.lang.String path()
-meth public abstract !hasdefault java.lang.String[] supersedes()
-meth public abstract java.lang.Class<?> service()
-
-CLSS public abstract interface !annotation org.openide.util.lookup.ServiceProviders
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract org.openide.util.lookup.ServiceProvider[] value()
-
 CLSS public abstract org.openide.xml.EntityCatalog
-cons public EntityCatalog()
+cons public init()
 fld public final static java.lang.String PUBLIC_ID = "-//NetBeans//Entity Mapping Registration 1.0//EN"
 intf org.xml.sax.EntityResolver
 meth public static org.openide.xml.EntityCatalog getDefault()
@@ -1540,18 +1536,26 @@ hcls Forwarder
 
 CLSS public final org.openide.xml.XMLUtil
 meth public static byte[] fromHex(char[],int,int) throws java.io.IOException
+meth public static java.lang.String findText(org.w3c.dom.Node)
 meth public static java.lang.String toAttributeValue(java.lang.String) throws java.io.CharConversionException
 meth public static java.lang.String toElementContent(java.lang.String) throws java.io.CharConversionException
 meth public static java.lang.String toHex(byte[],int,int)
+meth public static java.util.List<org.w3c.dom.Element> findSubElements(org.w3c.dom.Element)
 meth public static org.w3c.dom.Document createDocument(java.lang.String,java.lang.String,java.lang.String,java.lang.String)
 meth public static org.w3c.dom.Document parse(org.xml.sax.InputSource,boolean,boolean,org.xml.sax.ErrorHandler,org.xml.sax.EntityResolver) throws java.io.IOException,org.xml.sax.SAXException
+meth public static org.w3c.dom.Element findElement(org.w3c.dom.Element,java.lang.String,java.lang.String)
+meth public static org.w3c.dom.Element translateXML(org.w3c.dom.Element,java.lang.String)
+meth public static org.xml.sax.ErrorHandler defaultErrorHandler()
 meth public static org.xml.sax.XMLReader createXMLReader() throws org.xml.sax.SAXException
 meth public static org.xml.sax.XMLReader createXMLReader(boolean) throws org.xml.sax.SAXException
 meth public static org.xml.sax.XMLReader createXMLReader(boolean,boolean) throws org.xml.sax.SAXException
+meth public static void appendChildElement(org.w3c.dom.Element,org.w3c.dom.Element,java.lang.String[])
+meth public static void copyDocument(org.w3c.dom.Element,org.w3c.dom.Element,java.lang.String)
 meth public static void validate(org.w3c.dom.Element,javax.xml.validation.Schema) throws org.xml.sax.SAXException
 meth public static void write(org.w3c.dom.Document,java.io.OutputStream,java.lang.String) throws java.io.IOException
 supr java.lang.Object
 hfds DEC2HEX,IDENTITY_XSLT_WITH_INDENT,doms,saxes
+hcls ErrHandler
 
 CLSS public abstract interface org.xml.sax.EntityResolver
 meth public abstract org.xml.sax.InputSource resolveEntity(java.lang.String,java.lang.String) throws java.io.IOException,org.xml.sax.SAXException

@@ -44,11 +44,8 @@
 
 package org.netbeans.core.windows;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -65,12 +62,6 @@ public class PersistenceHandlerTest extends NbTestCase {
         super (name);
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(PersistenceHandlerTest.class);
-        
-        return suite;
-    }
-
     protected boolean runInEQ () {
         return true;
     }

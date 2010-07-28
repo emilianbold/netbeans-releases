@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.api;
 
+import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
@@ -56,6 +57,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -112,15 +114,35 @@ public interface ElementQuery {
         
     Set<TypeConstantElement> getTypeConstants(NameKind constantQuery);
 
-    Set<PhpElement> getTopLevelElements(NameKind query);
 
-    Set<VariableElement> getTopLevelVariables(NameKind query);
 
     Set<NamespaceElement> getNamespaces(NameKind query);
 
     QueryScope getQueryScope();
 
+    public interface File extends ElementQuery {
+        FileObject getFileObject();
+        
+        URL getURL();
+
+        PHPParseResult getResult();
+
+        Set<MethodElement> getDeclaredMethods(TypeElement typeElement);
+
+        Set<FieldElement> getDeclaredFields(TypeElement classQuery);
+
+        Set<TypeConstantElement> getDeclaredTypeConstants(TypeElement typeElement);
+
+        Set<VariableElement> getTopLevelVariables();
+
+        Set<VariableElement> getMethodVariables(MethodElement method);
+
+        Set<VariableElement> getFunctionVariables(FunctionElement function);
+    }
+    
     public interface Index extends ElementQuery {
+        Set<PhpElement> getTopLevelElements(NameKind query);
+        Set<VariableElement> getTopLevelVariables(NameKind query);
 
         Set<MethodElement> getDeclaredConstructors(ClassElement typeElement);
 

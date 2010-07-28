@@ -51,12 +51,16 @@ import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  *
- * @author tomslot
+ * @author Radek Matous
  */
 public class PHPCodeCompletionTest extends PHPTestBase {
 
     public PHPCodeCompletionTest(String testName) {
         super(testName);
+    }
+
+    public void test186936() throws Exception {
+        checkCompletion("testfiles/completion/lib/test186936/issue186936.php", "$myFoo->^", false);
     }
 
     public void testPhpContextWithPrefix() throws Exception {

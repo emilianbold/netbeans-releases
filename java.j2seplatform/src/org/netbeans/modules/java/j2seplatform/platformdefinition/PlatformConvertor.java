@@ -565,11 +565,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         
         private boolean shouldWriteJavadoc () {
             if (defaultPlatform) {
-                assert this.instance instanceof DefaultPlatformImpl;
-                DefaultPlatformImpl dp = (DefaultPlatformImpl) this.instance;
-                List jdf = dp.getJavadocFolders();
-                List defaultJdf = DefaultPlatformImpl.getJavadoc(FileUtil.normalizeFile(new File(dp.getSystemProperties().get("jdk.home")))); // NOI18N
-                return defaultJdf == null || !jdf.equals (defaultJdf);
+                return !instance.getJavadocFolders().equals(J2SEPlatformImpl.defaultJavadoc(instance));
             }
             return true;
         }

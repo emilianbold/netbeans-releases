@@ -55,7 +55,6 @@ import org.openide.util.*;
 
 import org.netbeans.junit.*;
 import java.util.Enumeration;
-import junit.framework.Test;
 
 public class FolderInstanceListenersWithCookieTest extends NbTestCase {
     private Logger err;
@@ -78,10 +77,6 @@ public class FolderInstanceListenersWithCookieTest extends NbTestCase {
         return 20000;
     }
 
-    public static Test suite() {
-        return new NbTestSuite(FolderInstanceListenersWithCookieTest.class);
-    }
-    
     private static void setSystemProp(String key, String value) {
         java.util.Properties prop = System.getProperties();
         if (prop.get(key) != null) return;

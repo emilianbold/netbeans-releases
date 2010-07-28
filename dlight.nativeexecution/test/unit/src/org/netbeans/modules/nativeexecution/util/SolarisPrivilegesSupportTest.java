@@ -45,15 +45,17 @@ import java.io.IOException;
 import java.security.acl.NotOwnerException;
 import java.util.Arrays;
 import java.util.concurrent.CancellationException;
+import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -63,6 +65,14 @@ public class SolarisPrivilegesSupportTest extends NativeExecutionBaseTestCase {
 
     public SolarisPrivilegesSupportTest(String name) {
         super(name);
+    }
+
+    public SolarisPrivilegesSupportTest(String name, ExecutionEnvironment env) {
+        super(name, env);
+    }
+
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(SolarisPrivilegesSupportTest.class);
     }
 
     @BeforeClass
@@ -86,23 +96,26 @@ public class SolarisPrivilegesSupportTest extends NativeExecutionBaseTestCase {
     /**
      * Test of getInstance method, of class SolarisPrivilegesSupportImpl.
      */
-    @Test
+    @org.junit.Test
+    @ForAllEnvironments(section = "dlight.nativeexecution.sps")
     public void test() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "blackbox.russia.sun.com"); // NOI18N
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
             SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(execEnv);
             System.out.println(sps.getExecutionPrivileges());
             try {
                 sps.requestPrivileges(Arrays.asList("dtrace_kernel"), true); // NOI18N
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
             } catch (NotOwnerException ex) {
                 System.out.println(ex);
             }
             System.out.println(sps.getExecutionPrivileges());
         } catch (IOException ex) {
-            System.out.println(ex);
+            Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
-            System.out.println(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 }

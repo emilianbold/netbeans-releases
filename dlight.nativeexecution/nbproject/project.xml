@@ -167,16 +167,18 @@
             <friend-packages>
                 <friend>com.microchip.mdbcore</friend>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.microchip.mplab.nbide.embedded</friend>
+                <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
                 <friend>com.sun.cloud.api</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.cloud.impl.rest</friend>
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
-                <friend>com.sun.dlight.attachsupport</friend>
-                <friend>com.sun.dlight.bridge</friend>
-                <friend>com.sun.dlight.connection</friend>
-                <friend>com.sun.dlight.spi.impl</friend>
+                <friend>com.sun.tools.dlight.attachsupport</friend>
+                <friend>com.sun.tools.dlight.bridge</friend>
+                <friend>com.sun.tools.dlight.connection</friend>
+                <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>

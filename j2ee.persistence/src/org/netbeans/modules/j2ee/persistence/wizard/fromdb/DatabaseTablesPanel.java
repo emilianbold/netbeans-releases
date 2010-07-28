@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
@@ -53,6 +54,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -107,6 +111,14 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private TableClosure tableClosure;
 
     private boolean sourceSchemaUpdateEnabled;
+    private boolean allowUpdateRecreate = true;
+
+    private String[] filterComboTxts = {
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),//NOI18N
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_NEW"),//NOI18N
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_UPDATE")//NOI18N
+    };
+    private TableUISupport.FilterAvailable filterAvailable = TableUISupport.FilterAvailable.ANY;
 
     private Project project;
 
@@ -420,6 +432,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         return tableClosure;
     }
 
+
     private void updateSourceSchema() {
         if (!sourceSchemaUpdateEnabled) {
             return;
@@ -489,7 +502,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         tableClosure = new TableClosure(tableProvider);
         tableClosure.setClosureEnabled(tableClosureCheckBox.isSelected());
 
-        TableUISupport.connectAvailable(availableTablesList, tableClosure);
+        TableUISupport.connectAvailable(availableTablesList, tableClosure, filterAvailable);
         TableUISupport.connectSelected(selectedTablesList, tableClosure);
 
         updateButtons();
@@ -508,28 +521,31 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }
 
     private void updateButtons() {
-        Set<Table> addTables = TableUISupport.getSelectedTables(availableTablesList);
+        Set<Table> addTables = TableUISupport.getSelectedTables(availableTablesList, true);
         addButton.setEnabled(tableClosure.canAddAllTables(addTables));
 
-        addAllButton.setEnabled(tableClosure.canAddSomeTables(tableClosure.getAvailableTables()));
+        addAllButton.setEnabled(TableUISupport.getEnabledTables(availableTablesList).size()>0);
 
         Set<Table> tables = TableUISupport.getSelectedTables(selectedTablesList);
         removeButton.setEnabled(tableClosure.canRemoveAllTables(tables));
 
         removeAllButton.setEnabled(tableClosure.getSelectedTables().size() > 0);
-        tableError.setText("");
+        String problems = "";
         for (Table t : addTables) {
             if (t.isDisabled()) {
                 if (t.getDisabledReason() instanceof Table.ExistingDisabledReason) {
                     String existingClass = ((Table.ExistingDisabledReason) t.getDisabledReason()).getFQClassName();
-                    tableError.setText(NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped", new Object[] {t.getName(), existingClass}));
-                    break;
+                    if(allowUpdateRecreate){
+                        problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped_UpdateAllowed", new Object[] {t.getName(), existingClass});
+                    } else {
+                        problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped_UpdateAllowed", new Object[] {t.getName(), existingClass});
+                    }
                 } else if (t.getDisabledReason() instanceof Table.NoPrimaryKeyDisabledReason) {
-                    tableError.setText(NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[] {t.getName()}));
-                    break;
+                    problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[] {t.getName()});
                 }
             }
         }
+        tableError.setText(problems);tableError.setCaretPosition(0);
     }
 
     /** This method is called from within the constructor to
@@ -559,7 +575,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         addAllButton = new javax.swing.JButton();
         removeAllButton = new javax.swing.JButton();
         tableClosureCheckBox = new javax.swing.JCheckBox();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        addAllTypeCombo = new javax.swing.JComboBox();
+        tableErrorScroll = new javax.swing.JScrollPane();
         tableError = new javax.swing.JTextPane();
 
         setName(org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_DatabaseTables")); // NOI18N
@@ -614,6 +631,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         tablesPanel.add(availableTablesScrollPane, gridBagConstraints);
@@ -673,7 +691,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 0);
         buttonPanel.add(addAllButton, gridBagConstraints);
@@ -686,7 +704,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buttonPanel.add(removeAllButton, gridBagConstraints);
@@ -711,15 +729,34 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
         tablesPanel.add(tableClosureCheckBox, gridBagConstraints);
 
-        jScrollPane3.setBorder(null);
+        addAllTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(filterComboTxts));
+        addAllTypeCombo.setEditor(null);
+        addAllTypeCombo.setRenderer(new ItemListCellRenderer());
+        addAllTypeCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addAllTypeComboActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
+        tablesPanel.add(addAllTypeCombo, gridBagConstraints);
+        addAllTypeCombo.getAccessibleContext().setAccessibleName("Tables filter");
+        addAllTypeCombo.getAccessibleContext().setAccessibleDescription("Tables filter");
+
+        tableErrorScroll.setBorder(null);
 
         tableError.setEditable(false);
+        tableError.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tableError.setOpaque(false);
-        jScrollPane3.setViewportView(tableError);
+        tableErrorScroll.setViewportView(tableError);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -734,7 +771,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     .add(dbschemaComboBox, 0, 387, Short.MAX_VALUE)
                     .add(datasourceComboBox, 0, 387, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableErrorScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -749,7 +786,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 6, Short.MAX_VALUE)
                 .add(tablesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(tableErrorScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -766,7 +803,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeAllButtonActionPerformed
 
     private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
-        tableClosure.addAllTables();
+        Set<Table> tables = TableUISupport.getEnabledTables(availableTablesList);
+        tableClosure.addTables(tables);
         availableTablesList.clearSelection();
         updateButtons();
 
@@ -783,7 +821,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        Set<Table> tables = TableUISupport.getSelectedTables(availableTablesList);
+        Set<Table> tables = TableUISupport.getSelectedTables(availableTablesList, true);
         tableClosure.addTables(tables);
         availableTablesList.clearSelection();
         updateButtons();
@@ -810,9 +848,21 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         updateSourceSchema();
     }//GEN-LAST:event_datasourceRadioButtonItemStateChanged
 
+    private void addAllTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllTypeComboActionPerformed
+        if(filterComboTxts[0].equals(addAllTypeCombo.getSelectedItem().toString())){
+            filterAvailable = filterAvailable.ANY;
+        } else if (filterComboTxts[1].equals(addAllTypeCombo.getSelectedItem().toString())){
+            filterAvailable = filterAvailable.NEW;
+        } else {
+            filterAvailable = filterAvailable.UPDATE;
+        }
+        TableUISupport.connectAvailable(availableTablesList, tableClosure, filterAvailable);
+    }//GEN-LAST:event_addAllTypeComboActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addAllButton;
+    private javax.swing.JComboBox addAllTypeCombo;
     private javax.swing.JButton addButton;
     private javax.swing.JLabel availableTablesLabel;
     private javax.swing.JList availableTablesList;
@@ -822,7 +872,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton datasourceRadioButton;
     private javax.swing.JComboBox dbschemaComboBox;
     private javax.swing.JRadioButton dbschemaRadioButton;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JButton removeAllButton;
     private javax.swing.JButton removeButton;
     private javax.swing.ButtonGroup schemaSource;
@@ -831,6 +880,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane selectedTablesScrollPane;
     private javax.swing.JCheckBox tableClosureCheckBox;
     private javax.swing.JTextPane tableError;
+    private javax.swing.JScrollPane tableErrorScroll;
     private javax.swing.JPanel tablesPanel;
     // End of variables declaration//GEN-END:variables
 
@@ -851,6 +901,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
                 availableBounds.width = equalWidth;
                 availableTablesScrollPane.setBounds(availableBounds);
+
+                Rectangle addAllCmbRec = addAllTypeCombo.getBounds();
+                if((addAllCmbRec.x+addAllCmbRec.width)!=(availableBounds.x+availableBounds.width)){
+                    addAllCmbRec.x=(availableBounds.x+availableBounds.width)-addAllCmbRec.width;
+                    addAllTypeCombo.setBounds(addAllCmbRec);
+                }
 
                 Rectangle buttonBounds = buttonPanel.getBounds();
                 buttonBounds.x += xOffset;
@@ -1024,6 +1080,17 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         private void setWarningMessage(String warningMessage) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warningMessage);
+        }
+    }
+    private class ItemListCellRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+            Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel label = (JLabel)component;
+
+                label.setText(value.toString());
+             return label;
         }
     }
 }

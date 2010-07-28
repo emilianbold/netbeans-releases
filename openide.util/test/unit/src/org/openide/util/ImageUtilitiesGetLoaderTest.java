@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.*;
-import java.lang.ref.*;
 import java.util.*;
 
 /**
@@ -76,20 +75,6 @@ public class ImageUtilitiesGetLoaderTest extends TestCase {
         super (testName);
     }
 
-    @Override
-    protected void setUp () throws Exception {
-    }
-
-    @Override
-    protected void tearDown () throws Exception {
-    }
-
-    public static Test suite () {
-        TestSuite suite = new TestSuite(ImageUtilitiesGetLoaderTest.class);
-        return suite;
-    }
-    
-    
     public void testWrongImplOfGetLoaderIssue62194() throws Exception {
         ClassLoader l = ImageUtilities.getLoader ();
         assertTrue("Error manager race condition activated", ErrMgr.switchDone);

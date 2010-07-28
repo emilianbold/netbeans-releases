@@ -72,6 +72,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -498,7 +499,7 @@ public class VariousUtils {
                         for (TypeScope type : oldRecentTypes) {
                             if (type instanceof ClassScope) {
                                 ClassScope cls = (ClassScope) type;
-                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
+                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
                                 for (FieldElement fieldElement : inheritedFields) {
                                     if (var != null) {
                                         final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
@@ -1114,6 +1115,77 @@ public class VariousUtils {
             }
         }
         return CachingSupport.getTypes(staticTypeName, inScope);
+    }
+
+    public static QualifiedName getPreferredName(QualifiedName fullName, NamespaceScope contextNamespace) {
+        Collection<QualifiedName> allNames = getAllNames(fullName, contextNamespace);
+        int segmentCount = Integer.MAX_VALUE;
+        QualifiedName retval = null;
+        for (QualifiedName qualifiedName : allNames) {
+            int size = qualifiedName.getSegments().size();
+            if (size < segmentCount) {
+                retval = qualifiedName;
+                segmentCount = size;
+            }
+        }
+        return retval;
+    }
+    public static Collection<QualifiedName> getAllNames(QualifiedName fullName, NamespaceScope contextNamespace) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        namesProposals.addAll(getRelatives(contextNamespace, fullName));
+        namesProposals.add(fullName.toFullyQualified());
+        return namesProposals;
+    }
+    public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        for (UseElement useElement : declaredUses) {
+            QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
+            if (proposedName != null) {
+                namesProposals.add(proposedName);
+            }
+        }
+        return namesProposals;
+    }
+    public static Collection<QualifiedName> getRelativesToNamespace( NamespaceScope contextNamespace, QualifiedName fullName) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace), false);
+        if (proposedName != null) {
+            namesProposals.add(proposedName);
+        }
+        return namesProposals;
+    }
+    public static Collection<QualifiedName> getRelatives( NamespaceScope contextNamespace, QualifiedName fullName) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        namesProposals.addAll(getRelativesToNamespace(contextNamespace, fullName));
+        namesProposals.addAll(getRelativesToUses(contextNamespace, fullName));
+        return namesProposals;
+    }
+
+    public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
+        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        if (!name.getKind().isFullyQualified()) {
+            QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
+            if (proposedName != null) {
+                namesProposals.add(proposedName);
+            }
+            for (UseElement useElement : declaredUses) {
+                final QualifiedName useQName = QualifiedName.create(useElement.getName());
+                proposedName = useQName.toNamespaceName().append(name).toFullyQualified();
+                if (proposedName != null) {
+                    namesProposals.add(proposedName);
+                }
+                if (!useQName.getName().equalsIgnoreCase(name.getName())) {
+                    proposedName = useQName.append(name).toFullyQualified();
+                    if (proposedName != null) {
+                        namesProposals.add(proposedName);
+                    }
+                }
+            }
+        }
+        namesProposals.add(name);
+        return namesProposals;
     }
 
 }
