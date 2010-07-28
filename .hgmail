@@ -43,7 +43,6 @@ commits@ruby.netbeans.org=o.jruby.distro/*,o.rubyforge.debugcommons/*,ruby*/*,o.
 schema2beans-commits@ide.netbeans.org=schema2beans/*
 scripting-commits@ide.netbeans.org=languages.bat/*,languages.javascript/*,languages.sh/*,javascript.editing/*,javascript.refactoring/*,javascript.hints/*,o.mozilla.rhino.patched/*
 tomcatint-commits@serverplugins.netbeans.org=tomcat5/*
-commits@uml.netbeans.org=antlr/*,uml*/*
 commits@usersguide.netbeans.org=usersguide/*,java.examples/*
 commits@webservices.netbeans.org=websvc.*/*,j2ee.dd.webservice/*
 commits@xml.netbeans.org=api.xml/*,editor.structure/*,libs.jxpath/*,o.n.xml.libs.jxpath/*,visdev.prefuse/*,xml*/*,xsl/*

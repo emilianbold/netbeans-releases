@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.uml/1
-OpenIDE-Module-Layer: org/netbeans/modules/uml/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/uml/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.4
-AutoUpdate-Show-In-Client: false
