@@ -162,16 +162,18 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
         protected Node[] createNodes(List<Model> key) {
             List<POMNode> nds = new ArrayList<POMNode>();
             for (Model mdl : key) {
-                File fl = FileUtil.normalizeFile(mdl.getPomFile());
-                FileObject fo = FileUtil.toFileObject(fl);
-                Lookup lookup;
-                if (fo != null && !"pom".equals(fo.getExt())) { //NOI18N
-                    lookup = Lookups.singleton(fo);
-                } else {
-                    lookup = Lookup.EMPTY;
-                }
+                if(mdl.getPomFile() != null ) {
+                    File fl = FileUtil.normalizeFile(mdl.getPomFile());
+                    FileObject fo = FileUtil.toFileObject(fl);
+                    Lookup lookup;
+                    if (fo != null && !"pom".equals(fo.getExt())) { //NOI18N
+                        lookup = Lookups.singleton(fo);
+                    } else {
+                        lookup = Lookup.EMPTY;
+                    }
 
-                nds.add(new POMNode(fl, mdl, lookup));
+                    nds.add(new POMNode(fl, mdl, lookup));
+                }
             }
             return nds.toArray(new Node[0]);
         }
