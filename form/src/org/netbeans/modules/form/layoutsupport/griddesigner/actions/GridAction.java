@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
+import javax.swing.JMenuItem;
 import org.netbeans.modules.form.layoutsupport.griddesigner.DesignerContext;
 import org.netbeans.modules.form.layoutsupport.griddesigner.GridManager;
 
@@ -82,5 +83,18 @@ public interface GridAction {
      * if no columns/rows were inserted/deleted.
      */
     GridBoundsChange performAction(GridManager gridManager, DesignerContext context);
+
+    /**
+     * Returns (special) popup menu presenter for this action. Majority
+     * of actions should return {@code null} from this method. You should
+     * return your own presenter only if {@code JMenuItem} is not suitable
+     * presenter for this action.
+     * 
+     * @param performer action performer that should be used by the popup
+     * presenter to perform the actual action.
+     * @return popup menu or {@code null} if {@code JMenuItem} should
+     * be used as the popup menu presenter.
+     */
+    JMenuItem getPopupPresenter(GridActionPerformer performer);
 
 }
