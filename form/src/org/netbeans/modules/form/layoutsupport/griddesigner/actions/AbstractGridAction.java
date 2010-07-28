@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
+import javax.swing.JMenuItem;
 import org.netbeans.modules.form.layoutsupport.griddesigner.DesignerContext;
 
 
@@ -72,6 +73,17 @@ public abstract class AbstractGridAction implements GridAction {
     @Override
     public boolean isEnabled(DesignerContext context) {
         return true;
+    }
+
+    /**
+     * Returns {@code null}.
+     * 
+     * @param performer not used.
+     * @return {@code null}.
+     */
+    @Override
+    public JMenuItem getPopupPresenter(GridActionPerformer performer) {
+        return null;
     }
 
 }

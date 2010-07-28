@@ -40,61 +40,24 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
-
-import javax.swing.JMenuItem;
-import org.netbeans.modules.form.layoutsupport.griddesigner.DesignerContext;
-import org.netbeans.modules.form.layoutsupport.griddesigner.GridManager;
-
+package org.netbeans.modules.j2ee.deployment.plugins.spi.config;
 
 /**
- * Action on the grid.
+ * The interface which report whether the deployment descriptor is required
+ * for particular server in order to work properly.
  *
- * @author Jan Stola
+ * @author Petr Hejl
+ * @since 1.69
  */
-public interface GridAction {
-    /** Action's context. */
-    public enum Context {COMPONENT, COLUMN, ROW, GRID}
+// TODO so far this is only considered by the EAR project
+public interface DeploymentDescriptorConfiguration {
 
     /**
-     * Returns attribtue values of this action
-     * (corresponds to {@code javax.swing.Action.getValue()}).
-     *
-     * @param key name of the attribute whose value should be returned.
-     * @return value of the specified attribute.
+     * Returns <code>true</code> if the deployment descriptor is required by
+     * the server.
+     * @return <code>true</code> if the deployment descriptor is required by
+     *             the server
      */
-    Object getValue(String key);
-
-    /**
-     * Determines whether this action is enabled in the specified context.
-     *
-     * @param context designer context.
-     * @return {@code true} if the action is enabled,
-     * returns {@code false} otherwise.
-     */
-    boolean isEnabled(DesignerContext context);
-
-    /**
-     * Performs this action.
-     *
-     * @param gridManager manager to use to modify the grid.
-     * @param context designer context.
-     * @return column/row changes done by this action or {@code null}
-     * if no columns/rows were inserted/deleted.
-     */
-    GridBoundsChange performAction(GridManager gridManager, DesignerContext context);
-
-    /**
-     * Returns (special) popup menu presenter for this action. Majority
-     * of actions should return {@code null} from this method. You should
-     * return your own presenter only if {@code JMenuItem} is not suitable
-     * presenter for this action.
-     * 
-     * @param performer action performer that should be used by the popup
-     * presenter to perform the actual action.
-     * @return popup menu or {@code null} if {@code JMenuItem} should
-     * be used as the popup menu presenter.
-     */
-    JMenuItem getPopupPresenter(GridActionPerformer performer);
+    boolean isDescriptorRequired();
 
 }
