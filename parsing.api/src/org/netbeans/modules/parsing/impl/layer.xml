@@ -53,6 +53,16 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.parsing.impl.indexing.Bundle#ScanForExternalChanges_name"/>
                 <attr name="asynchronous" boolvalue="false"/>
             </file>
+            <file name="org-netbeans-modules-parsing-impl-indexing-ui-RefreshAllIndexes.instance">
+                <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.parsing.impl.ui.Bundle#CTL_RefreshAllIndexes"/>
+                <attr name="injectable" stringvalue="org.netbeans.modules.parsing.impl.ui.RefreshAllIndexes"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+                <attr name="selectionType" stringvalue="ANY"/>
+                <attr name="type" stringvalue="org.openide.loaders.DataObject"/>
+                <attr name="asynchronous" boolvalue="true"/>
+            </file>
         </folder>
     </folder>
     <folder name="Menu">
@@ -71,7 +81,7 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-dialog-binding">
-                <file name="org-netbeans-modules-parsing-impl-DialogBindingEmbeddingProvider$Factory.instance" />
+                <file name="org-netbeans-modules-parsing-impl-DialogBindingEmbeddingProvider$Factory.instance"/>
             </folder>
         </folder>
     </folder>
