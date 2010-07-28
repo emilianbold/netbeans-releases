@@ -78,6 +78,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -103,6 +104,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private boolean isProfileCompatible;
 
     private String oldUrl;
+    private String oldContextPath;
     private ComboBoxUpdater<Wrapper> listener;
     
     /** Creates new form WebRunCustomizerPanel */
@@ -216,6 +218,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         String browser = (String)project.getProjectDirectory().getAttribute(PROP_SHOW_IN_BROWSER);
         boolean bool = browser != null ? Boolean.parseBoolean(browser) : true;
         cbBrowser.setSelected(bool);
+        updateContextPathEnablement();
     }
     
     
@@ -270,6 +273,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         lblServer.setLabelFor(comServer);
         org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Server")); // NOI18N
 
+        comServer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comServerActionPerformed(evt);
+            }
+        });
+
         lblJ2EEVersion.setLabelFor(txtJ2EEVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lblJ2EEVersion, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_J2EE_Version")); // NOI18N
 
@@ -306,8 +315,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createSequentialGroup()
                                 .add(lblHint2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 237, Short.MAX_VALUE))
-                            .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 240, Short.MAX_VALUE))
+                            .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblContextPath)
@@ -361,6 +370,30 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         txtRelativeUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtRelativeUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    private void comServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comServerActionPerformed
+        updateContextPathEnablement();
+    }//GEN-LAST:event_comServerActionPerformed
+
+    private void updateContextPathEnablement() {
+        if (listener.getValue() == null || ExecutionChecker.DEV_NULL.equals(listener.getValue().getServerID())) {
+            if (txtContextPath.isEnabled()) {
+                txtContextPath.setEnabled(false);
+                oldContextPath = txtContextPath.getText();
+                txtContextPath.setText(NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.contextPathDisabled"));
+            }
+        } else {
+            if (!txtContextPath.isEnabled()) {
+                txtContextPath.setEnabled(true);
+                WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
+                if (oldContextPath != null) {
+                    txtContextPath.setText(oldContextPath);
+                } else {
+                    txtContextPath.setText(impl.getContextPath());
+                }
+            }
+        }
+    }
+    
     private boolean checkMapping(NetbeansActionMapping map) {
         if (map == null) {
             return false;
@@ -416,7 +449,11 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             record.setParameters(new Object[] { obj.toString() });
             POHImpl.USG_LOGGER.log(record);
         }
-        return txtContextPath.getText().trim();
+        if (txtContextPath.isEnabled()) {
+            return txtContextPath.getText().trim();
+        } else {
+            return null;
+        }
     }
 
     //this megod is called after the model was saved.

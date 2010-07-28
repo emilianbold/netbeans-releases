@@ -78,6 +78,7 @@ public class J2eeLookupProvider implements LookupProvider {
     public J2eeLookupProvider() {
     }
     
+    @Override
     public Lookup createAdditionalLookup(Lookup baseLookup) {
         Project project = baseLookup.lookup(Project.class);
         assert project != null;
