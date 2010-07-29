@@ -55,6 +55,11 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
                         <attr name="position" intvalue="100"/>
                     </file>
+                    <file name="PredefinedConnectionProvider.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.oracle.PredefinedConnectionProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="150"/>
+                    </file>
                     <file name="ConnectionNodeProviderFactory.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ConnectionNodeProvider.getFactory"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
