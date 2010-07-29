@@ -47,7 +47,6 @@ import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -92,11 +91,6 @@ public final class PhpEditorExtender {
         @Override
         public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
             return Collections.emptyList();
-        }
-
-        @Override
-        public PhpClass getClass(FileObject fo, String variableName) {
-            return null;
         }
     }
 }

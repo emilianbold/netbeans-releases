@@ -47,7 +47,6 @@ package org.netbeans.core.windows;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.*;
 import org.netbeans.junit.*;
 
 import org.openide.util.RequestProcessor;
@@ -62,19 +61,6 @@ public class WindowManagerImplTest extends NbTestCase {
 
     public WindowManagerImplTest (String name) {
         super (name);
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(WindowManagerImplTest.class);
-        
-        return suite;
     }
 
     public void testEDTAssert () {

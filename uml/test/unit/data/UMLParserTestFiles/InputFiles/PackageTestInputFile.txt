@@ -1,4 +1,0 @@
-Package
- { package, Keyword }
- Identifier
-  { com, Identifier }

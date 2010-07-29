@@ -57,9 +57,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.text.DefaultEditorKit;
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
@@ -85,24 +83,9 @@ import org.openide.util.lookup.Lookups;
  */
 public class NavigatorTCTest extends NbTestCase {
     
-    /** Creates a new instance of ProviderRegistryTest */
-    public NavigatorTCTest() {
-        super("");
-    }
-    
     public NavigatorTCTest(String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(NavigatorTCTest.class);
-        return suite;
-    }
-
     
     public void testCorrectCallsOfNavigatorPanelMethods () throws Exception {
         System.out.println("Testing correct calls of NavigatorPanel methods...");

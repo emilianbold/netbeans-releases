@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.kenai.ui.nodes;
 
+import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -55,8 +58,15 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -69,9 +79,15 @@ public class AddInstanceAction extends AbstractAction {
 
     private Kenai kenai;
     private JDialog dialog;
+    private boolean expandNewNode = false;
 
     public AddInstanceAction() {
         super(NbBundle.getMessage(AddInstanceAction.class, "CTL_AddInstance"));
+    }
+
+    public AddInstanceAction(boolean expandNewNode) {
+        this();
+        this.expandNewNode = expandNewNode;
     }
 
     @Override
@@ -104,8 +120,12 @@ public class AddInstanceAction extends AbstractAction {
                                         if (ae != null && ae.getSource() instanceof JComboBox) {
                                             ((JComboBox) ae.getSource()).setSelectedItem(AddInstanceAction.this.kenai);
                                         }
+                                        if (expandNewNode) {
+                                            selectNode(AddInstanceAction.this.kenai.getUrl().toString());
+                                        }
                                     }
                                 });
+
                             } catch (KenaiException ex) {
                                 if (kenai != null) {
                                     KenaiManager.getDefault().removeKenai(kenai);
@@ -162,6 +182,56 @@ public class AddInstanceAction extends AbstractAction {
         dialog.pack();
         dialog.setVisible(true);
     }
+
+    private static final Logger LOG = Logger.getLogger(AddInstanceAction.class.getName());
+
+    private static void selectNode(final String... path) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
+                if (tab == null) {
+                    // XXX have no way to open it, other than by calling ServicesTabAction
+                    LOG.fine("No ServicesTab found");
+                    return;
+                }
+                tab.open();
+                tab.requestActive();
+                if (!(tab instanceof ExplorerManager.Provider)) {
+                    LOG.fine("ServicesTab not an ExplorerManager.Provider");
+                    return;
+                }
+                final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
+                final Node root = mgr.getRootContext();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        Node hudson = NodeOp.findChild(root, KenaiRootNode.KENAI_NODE_NAME);
+                        if (hudson == null) {
+                            LOG.fine("ServicesTab does not contain " + KenaiRootNode.KENAI_NODE_NAME);
+                            return;
+                        }
+                        Node _selected;
+                        try {
+                            _selected = NodeOp.findPath(hudson, path);
+                        } catch (NodeNotFoundException x) {
+                            LOG.log(Level.FINE, "Could not find subnode", x);
+                            _selected = x.getClosestNode();
+                        }
+                        final Node selected = _selected;
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            public void run() {
+                                try {
+                                    mgr.setSelectedNodes(new Node[] {selected});
+                                } catch (PropertyVetoException x) {
+                                    LOG.log(Level.FINE, "Could not select path", x);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
 
     public Kenai getLastKenai() {
         return kenai;

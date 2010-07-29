@@ -121,12 +121,8 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static final String DIRTY_ROOT = "dirty"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
+    private static final int TRESHOLD = 500;
 
-    private static final CompileWorker[] WORKERS = {
-        new OnePassCompileWorker(),
-        new MultiPassCompileWorker()
-    };
-        
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", context.isAllFilesIndexing() ? context.getRootURI() : files); //NOI18N
@@ -195,15 +191,19 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 if (tuple != null) {
                                     toCompile.add(tuple);
                                 }
-                                clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
+                                clear(context, javaContext, i, removedTypes, removedFiles);
                             }
                             for (CompileTuple tuple : virtualSourceTuples) {
-                                clear(context, javaContext, tuple.indexable.getRelativePath(), removedTypes, removedFiles);
+                                clear(context, javaContext, tuple.indexable, removedTypes, removedFiles);
                             }
                             toCompile.addAll(virtualSourceTuples);
                             List<CompileTuple> toCompileRound = toCompile;
                             int round = 0;
                             while (round++ < 2) {
+                                CompileWorker[] WORKERS = {
+                                    toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
+                                    new MultiPassCompileWorker()
+                                };
                                 for (CompileWorker w : WORKERS) {
                                     compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
                                     if (compileResult == null || context.isCancelled()) {
@@ -257,6 +257,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                         }
                         javaContext.checkSums.store();
+                        javaContext.fqn2Files.store();
                         javaContext.sa.store();
                         javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
                         if (!context.checkForEditorModifications()) { // #152222
@@ -341,7 +342,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                         final Set<File> removedFiles = new HashSet<File> ();
                         for (Indexable i : files) {
-                            clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
+                            clear(context, javaContext, i, removedTypes, removedFiles);
                             ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
                             javaContext.checkSums.remove(i.getURL());
                         }
@@ -349,6 +350,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                         }
                         javaContext.checkSums.store();
+                        javaContext.fqn2Files.store();
                         javaContext.sa.store();
                         BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
                         javaContext.uq.typesEvent(null, removedTypes, null);
@@ -365,10 +367,11 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static void clear(final Context context, final JavaParsingContext javaContext, final String sourceRelative, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles) throws IOException {
+    private static void clear(final Context context, final JavaParsingContext javaContext, final Indexable indexable, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles) throws IOException {
         final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         final File classFolder = JavaIndex.getClassFolder(context);
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
+        final String sourceRelative = indexable.getRelativePath();
         final List<String> sourceRelatives = new LinkedList<String>();
         sourceRelatives.add(sourceRelative);
         File file;
@@ -407,10 +410,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String className : readRSFile(file)) {
                         File f = new File(classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
                         if (!binaryName.equals(className)) {
-                            toDelete.add(Pair.<String, String>of(className, relative));
-                            removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                            removedFiles.add(f);
-                            f.delete();
+                            if (javaContext.fqn2Files.remove(className, indexable.getURL())) {
+                                toDelete.add(Pair.<String, String>of(className, relative));
+                                removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                removedFiles.add(f);
+                                f.delete();
+                            }
                         } else {
                             cont = !dieIfNoRefFile;
                         }
@@ -422,27 +427,29 @@ public class JavaCustomIndexer extends CustomIndexer {
                 file.delete();
             }
             if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-                String fileName = file.getName();
-                fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-                final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N
-                File parent = file.getParentFile();
-                FilenameFilter filter = new FilenameFilter() {
+                if (javaContext.fqn2Files.remove(FileObjects.getBinaryName(file, classFolder), indexable.getURL())) {
+                    String fileName = file.getName();
+                    fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+                    final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N
+                    File parent = file.getParentFile();
+                    FilenameFilter filter = new FilenameFilter() {
 
-                    public boolean accept(File dir, String name) {
-                        for (int i = 0; i < patterns.length; i++) {
-                            if (name.startsWith(patterns[i])) {
-                                return true;
+                        public boolean accept(File dir, String name) {
+                            for (int i = 0; i < patterns.length; i++) {
+                                if (name.startsWith(patterns[i])) {
+                                    return true;
+                                }
                             }
+                            return false;
                         }
-                        return false;
+                    };
+                    for (File f : parent.listFiles(filter)) {
+                        String className = FileObjects.getBinaryName(f, classFolder);
+                        toDelete.add(Pair.<String, String>of(className, null));
+                        removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                        removedFiles.add(f);
+                        f.delete();
                     }
-                };
-                for (File f : parent.listFiles(filter)) {
-                    String className = FileObjects.getBinaryName(f, classFolder);
-                    toDelete.add(Pair.<String, String>of(className, null));
-                    removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                    removedFiles.add(f);
-                    f.delete();
                 }
             }
         }

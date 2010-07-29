@@ -61,6 +61,8 @@ import java.io.Reader;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 
 import javax.swing.event.ChangeListener;
@@ -72,7 +74,6 @@ import javax.swing.text.MutableAttributeSet;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
-import org.openide.filesystems.FileObject;
 
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
@@ -80,7 +81,6 @@ import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.openide.ErrorManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 
@@ -92,7 +92,7 @@ import org.openide.util.Lookup;
 public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListener, PropertyChangeListener  {
         
     private static JavadocRegistry INSTANCE;
-
+    private static final Logger LOG = Logger.getLogger(JavadocRegistry.class.getName());
     
     private GlobalPathRegistry regs;    
     private final ChangeSupport cs = new ChangeSupport(this);
@@ -115,10 +115,10 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
 
     /** Returns Array of the Javadoc Index roots
      */
-    public FileObject[] getDocRoots() {
+    public URL[] getDocRoots() {
         synchronized (this) {
             if (this.docRoots != null) {
-                return this.docRoots.getRoots();
+                return docRoots();
             }
         }        
         //XXX must be called out of synchronized block to prevent
@@ -134,12 +134,20 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
                 this.results = _results;
                 registerListeners(this, _classpaths, _results, this.docRoots);
             }
-            return this.docRoots.getRoots();
+            return docRoots();
         }
+    }
+    private URL[] docRoots() {
+        List<ClassPath.Entry> entries = docRoots.entries();
+        URL[] roots = new URL[entries.size()];
+        for (int i = 0; i < roots.length; i++) {
+            roots[i] = entries.get(i).getURL();
+        }
+        return roots;
     }
     
     
-    public JavadocSearchType findSearchType( FileObject apidocRoot ) {
+    public JavadocSearchType findSearchType(URL apidocRoot) {
         String encoding = getDocEncoding (apidocRoot);
         for (JavadocSearchType jdst : Lookup.getDefault().lookupAll(JavadocSearchType.class)) {
             if (jdst.accepts(apidocRoot, encoding)) {
@@ -249,40 +257,26 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     }
 
 
-    private String getDocEncoding (FileObject root) {
-         assert root != null && root.isFolder();
-        FileObject fo = root.getFileObject("index-all.html");   //NOI18N
-        if (fo == null) {
-            fo = root.getFileObject("index-files"); //NOI18N
-            if (fo == null) {
-                return null;
+    private String getDocEncoding(URL root) {
+        assert root != null && root.toString().endsWith("/") : root;
+        InputStream is = URLUtils.open(root, "index-all.html", "index-files/index-1.html");
+        if (is != null) {
+            try {
+                try {
+                    ParserDelegator pd = new ParserDelegator();
+                    BufferedReader in = new BufferedReader(new InputStreamReader(is));
+                    EncodingCallback ecb = new EncodingCallback(in);
+                    pd.parse(in, ecb, true);
+                    return ecb.getEncoding();
+                } finally {
+                    is.close();
+                }
+            } catch (IOException x) {
+                LOG.log(Level.FINE, "Getting encoding from " + root, x);
             }
-            fo = fo.getFileObject("index-1.html");  //NOI18N
-            if (fo == null) {
-                return null;
-            }
-        }
-        ParserDelegator pd = new ParserDelegator();
-        try {
-            InputStream is = fo.getInputStream();
-            try {                
-                BufferedReader in = new BufferedReader(new InputStreamReader(is));
-                EncodingCallback ecb = new EncodingCallback(in);
-                pd.parse(in, ecb, true);
-                return ecb.getEncoding();
-            } catch (IOException ioe) {                
-                //Do nothing
-            } finally {
-                is.close();
-            }
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().annotate(ioe, fo.toString());
-            ErrorManager.getDefault().notify (ioe);
         }
         return null;
     }
-
-
 
     private static class EncodingCallback extends HTMLEditorKit.ParserCallback {
 

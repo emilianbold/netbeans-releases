@@ -338,12 +338,6 @@ Hg ID:    ${hg.id}
     <property name="nb-extra-files" value="test/**,extra/**"/>
 
     <antcall target="zip-cluster-config" inheritall="true"/>
-    
-    <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
-If you like, you may run the IDE straight from
-the ${netbeans.dest}/bin/ directory.
-(For example, type: ant tryme)
-    </echo>
   </target>
 
   <target name="delete-and-merge" depends="merge-delete,merge" />   
@@ -1120,7 +1114,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <subant target="-do-hg-clean" genericantfile="build.xml">
       <dirset dir="..">
         <include name="contrib"/>
-        <include name="misc"/>
       </dirset>
     </subant>
   </target>
@@ -1163,40 +1156,59 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </antcall>
   </target>
 
-    <target name="localtest" depends="bootstrap">
-        <mkdir dir="build/test/unit/classes"/>
-        <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.6">
-            <classpath path="${test.unit.cp}"/>
-            <compilerarg line="-Xlint -Xlint:-serial"/>
-        </javac>
-        <copy todir="build/test/unit/classes">
-            <fileset dir="test/unit/src" excludes="**/*.java"/>
-        </copy>
-        <mkdir dir="build/test/unit/results"/>
-        <property name="includes" value="**/*Test"/>
-        <property name="junit.vm.args" value=""/>
-        <junit showoutput="true" fork="true" tempdir="build/test/unit/results" filtertrace="false" includeantruntime="false">
+    <target name="-localtest-macrodef">
+        <macrodef name="localtest">
+            <element name="test" implicit="true"/>
+            <sequential>
+                <mkdir dir="build/test/unit/classes"/>
+                <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.6">
+                    <classpath path="${test.unit.cp}"/>
+                    <compilerarg line="-Xlint -Xlint:-serial"/>
+                </javac>
+                <copy todir="build/test/unit/classes">
+                    <fileset dir="test/unit/src" excludes="**/*.java"/>
+                </copy>
+                <mkdir dir="build/test/unit/results"/>
+                <property name="junit.vm.args" value=""/>
+                <junit showoutput="true" fork="true" tempdir="build/test/unit/results" filtertrace="false" includeantruntime="false">
+                    <test/>
+                    <classpath>
+                        <pathelement path="${test.unit.cp}"/>
+                        <pathelement location="build/test/unit/classes"/>
+                    </classpath>
+                    <sysproperty key="nb_all" file=".."/>
+                    <sysproperty key="netbeans.dest.dir.work" file="${netbeans.dest.dir}"/>
+                    <sysproperty key="nbjunit.workdir" file="build/test/unit/work"/>
+                    <syspropertyset>
+                        <propertyref prefix="test-unit-sys-prop."/>
+                        <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                    <jvmarg value="-ea"/>
+                    <jvmarg line="${junit.vm.args}"/>
+                </junit>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="localtest" depends="bootstrap,-localtest-macrodef">
+        <property name="includes" value="**/*Test.class"/>
+        <localtest>
             <batchtest todir="build/test/unit/results">
-                <fileset dir="build/test/unit/classes">
-                    <include name="${includes}.class"/>
-                </fileset>
+                <fileset dir="build/test/unit/classes" includes="${includes}"/>
             </batchtest>
-            <classpath>
-                <pathelement path="${test.unit.cp}"/>
-                <pathelement location="build/test/unit/classes"/>
-            </classpath>
-            <sysproperty key="nb_all" file=".."/>
-            <sysproperty key="netbeans.dest.dir.work" file="${netbeans.dest.dir}"/>
-            <sysproperty key="nbjunit.workdir" file="build/test/unit/work"/>
-            <syspropertyset>
-                <propertyref prefix="test-unit-sys-prop."/>
-                <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
-            </syspropertyset>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-            <jvmarg value="-ea"/>
-            <jvmarg line="${junit.vm.args}"/>
-        </junit>
+        </localtest>
+    </target>
+    <target name="localtest-single" depends="bootstrap,-localtest-macrodef,-localtest-single-nomethod,-localtest-single-method"/>
+    <target name="-localtest-single-nomethod" unless="method">
+        <localtest>
+            <test name="${test.class}" todir="build/test/unit/results"/>
+        </localtest>
+    </target>
+    <target name="-localtest-single-method" if="method">
+        <localtest>
+            <test name="${test.class}" methods="${method}" todir="build/test/unit/results"/>
+        </localtest>
     </target>
     <target name="localtest-single-nb-debug" depends="bootstrap,-jdk-presetdef-nbjpdastart">
         <nbjpdastart addressproperty="jpda.address" name="nbbuild" transport="dt_socket">
@@ -1205,7 +1217,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
                 <pathelement location="build/test/unit/classes"/>
             </classpath>
         </nbjpdastart>
-        <antcall target="localtest">
+        <antcall target="localtest-single">
             <param name="junit.vm.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
         </antcall>
     </target>
@@ -1503,6 +1515,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="group-dependencies" file="${generated.files.dir}/cluster-deps.txt" />
       <output type="group-implementation-dependencies" file="${generated.files.dir}/cluster-impl-deps.txt" />
       <output type="modules" file="${generated.files.dir}/modules.txt" />
+      <output type="disabled-autoloads" file="${generated.files.dir}/disabled-autoloads.txt"/>
       <output type="dependencies" file="${generated.files.dir}/deps.txt" />
       <output type="implementation-dependencies" file="${generated.files.dir}/impl-deps.txt" />
       <output type="public-packages" file="${generated.files.dir}/public-packages.txt" />
@@ -1519,23 +1532,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
   
   <target name="generate-files-layout" depends="generate-golden-files-init" description="Generate summary of installed files.">
-    
+    <taskdef name="generate-files-layout" classname="org.netbeans.nbbuild.GenerateFilesLayout" classpath="nbantext.jar"/>
     <property name="check.files.layout.generated" location="${generated.files.dir}/files-layout.txt" />
   
     <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
-    <fileset id="check-file-layout" dir="${check-file-layout-root}" casesensitive="yes" >
-        <exclude name="*"/> <!-- i.e. files at top level -->
+    <generate-files-layout output="${check.files.layout.generated}">
+      <files dir="${check-file-layout-root}" casesensitive="yes" >
         <exclude name="bin/"/>
         <exclude name="etc/"/>
         <exclude name="mobility*/emulators-inst/wtk22_*.zip"/> <!-- XXX #110820 -->
-    </fileset>
-    
-    <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep="," >
-        <map from="${check-file-layout-root}${file.separator}" to="" />
-    </pathconvert>
-    <echo message="${check-file-layout}${line.separator}" file="${check.files.layout.generated}" />
-    <replace file="${check.files.layout.generated}" token="," value="${line.separator}" />
-    <replace file="${check.files.layout.generated}" token="\" value="/" />
+        <exclude name="*/.lastModified"/>
+      </files>
+    </generate-files-layout>
   </target>
 
   <target name="index-layer-paths" depends="generate-golden-files-init" description="Create index of layer paths.">
@@ -1619,7 +1627,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
     <pathconvert property="modules.fullpath" >
         <path>
-            <dirset dir="${nb_all}" includes="${config.javadoc.stable}" />
+            <dirset dir="${nb_all}" includes="${config.javadoc.stable},${config.javadoc.devel}" />
         </path>
         <mapper type="identity" />
     </pathconvert>
@@ -1747,6 +1755,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <exclude name="**/*.html"/><exclude name="**/*.css"/> <!-- JavaHelp etc. pages use their own header style -->
             <exclude name="**/test/**/data/"/> <!-- test data should never be touched -->
             <exclude name="**/*.orig"/> <!-- result of hg revert -->
+            <exclude name="*/external/"/> <!-- foreign licenses etc. -->
             <exclude name="contrib/"/><exclude name="l10n/"/><exclude name="misc/"/><exclude name="nb-javac/"/> <!-- subrepos -->
         </fileset>
         <property name="prefix" value="^([ \t]*[*#/;%~-]*[ \t]*)?"/>
@@ -1778,6 +1787,26 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <fileset refid="fs"/>
         </checklicense>
         <checklicense fragment="by Sun in the GPL" fail="whenpresent">
+            <fileset refid="fs"/>
+        </checklicense>
+        <!-- Samples: -->
+        <checklicense>
+            <fileset refid="fs"/>
+            <convert token="${prefix}Copyright \(c\) \d+(?:-\d+)?, Sun Microsystems, Inc\." prefix="true">
+                <line text="Copyright (c) 2010, Oracle."/>
+            </convert>
+            <convert token=" \* Neither the name of Sun Microsystems, Inc\. nor the names of its ">
+                <line text=" * Neither the name of Oracle nor the names of its "/>
+            </convert>
+            <convert token=" \* Neither the name of Sun Microsystems nor the names of its contributors">
+                <line text=" * Neither the name of Oracle nor the names of its contributors"/>
+            </convert>
+            <!-- XXX there are other patterns in mobility.midpexamples -->
+        </checklicense>
+        <checklicense fragment=", Sun Microsystems, Inc." fail="whenpresent">
+            <fileset refid="fs"/>
+        </checklicense>
+        <checklicense fragment="the name of Sun Microsystems" fail="whenpresent">
             <fileset refid="fs"/>
         </checklicense>
     </target>

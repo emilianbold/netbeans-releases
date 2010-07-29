@@ -66,6 +66,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -235,7 +236,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         }
         
         final String platformId = this.evaluator.getProperty("platform.active");  //NOI18N
-        final JavaPlatform activePlatform = J2SEProjectUtil.getActivePlatform (platformId);
+        final JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform (platformId);
         if (activePlatform == null) {
             return true;
         }        

@@ -322,7 +322,7 @@ final class StandardModule extends Module {
     private void findExtensionsAndVariants(Manifest m) {
         assert jar != null : "Cannot load extensions from classpath module " + getCodeNameBase();
         localeVariants = null;
-        List<File> l = LocaleVariants.findLocaleVariantsOf(jar);
+        List<File> l = LocaleVariants.findLocaleVariantsOf(jar, getCodeNameBase());
         if (!l.isEmpty()) {
             localeVariants = new HashSet<File>(l);
         }
@@ -353,7 +353,7 @@ final class StandardModule extends Module {
                 }
                 if (plainExtensions == null) plainExtensions = new HashSet<File>();
                 plainExtensions.add(extfile);
-                l = LocaleVariants.findLocaleVariantsOf(extfile);
+                l = LocaleVariants.findLocaleVariantsOf(extfile, getCodeNameBase());
                 if (!l.isEmpty()) {
                     if (localeExtensions == null) {
                         localeExtensions = new HashSet<File>();
@@ -454,7 +454,7 @@ final class StandardModule extends Module {
                     name = locbundle.substring(0, idx);
                     ext = locbundle.substring(idx);
                 }
-                List<FileWithSuffix> pairs = LocaleVariants.findLocaleVariantsWithSuffixesOf(jar);
+                List<FileWithSuffix> pairs = LocaleVariants.findLocaleVariantsWithSuffixesOf(jar, getCodeNameBase());
                 Collections.reverse(pairs);
                 for (FileWithSuffix pair : pairs) {
                     File localeJar = pair.file;

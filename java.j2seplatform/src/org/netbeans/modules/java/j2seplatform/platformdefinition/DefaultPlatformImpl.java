@@ -93,9 +93,6 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         if (sources == null) {
             sources = getSources (javaHome);
         }
-        if (javadoc == null) {
-            javadoc = getJavadoc (javaHome);
-        }
         return new DefaultPlatformImpl(installFolders, properties, new HashMap(System.getProperties()), sources,javadoc);
     }
     
@@ -179,19 +176,4 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         return null;
     }
     
-    
-    static List<URL> getJavadoc (File javaHome) {
-        if (javaHome != null ) {
-            File f = new File (javaHome,"docs"); //NOI18N
-            if (f.isDirectory() && f.canRead()) {
-                try {
-                    return Collections.singletonList(f.toURI().toURL());
-                } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(mue);
-                }
-            }                        
-        }
-        return null;
-    }
-
 }

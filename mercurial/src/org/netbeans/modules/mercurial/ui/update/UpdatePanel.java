@@ -60,7 +60,7 @@ public class UpdatePanel extends ChangesetPickerPanel {
 
     /** Creates new form ReverModificationsPanel */
     public UpdatePanel(File repo) {
-        super(repo, new File[] {repo});
+        super(repo, null);
         initComponents();
         loadRevisions();
     }

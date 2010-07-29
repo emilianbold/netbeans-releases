@@ -206,7 +206,14 @@ is divided into following sections:
   </fail>
                 </xsl:if>
                 <available file="${{manifest.file}}" property="manifest.available"/>
-                <available file="${{application.splash}}" property="splashscreen.available"/>
+                <condition property="splashscreen.available">
+                    <and>
+                        <not>
+                            <equals arg1="${{application.splash}}" arg2="" trim="true"/>
+                        </not>
+                        <available file="${{application.splash}}"/>
+                    </and>
+                </condition>                
                 <condition property="main.class.available">
                     <and>
                         <isset property="main.class"/>
@@ -463,7 +470,7 @@ is divided into following sections:
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <compilerarg value="-processorpath" />
-                            <compilerarg path="@{{processorpath}}" />
+                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
                             <compilerarg line="${{ap.processors.internal}}" />
                             <compilerarg line="${{annotation.processing.processor.options}}" />
                             <compilerarg value="-s" />
@@ -650,9 +657,11 @@ is divided into following sections:
                         <xsl:attribute name="default">**</xsl:attribute>
                     </attribute>
                     <sequential>
+                        <property name="junit.forkmode" value="perTest"/>
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
                             <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="forkmode">${junit.forkmode}</xsl:attribute>
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
@@ -1383,6 +1392,18 @@ is divided into following sections:
                         <include name="**/*.java"/>
                     </fileset>
                 </javadoc>
+                <copy todir="${{dist.javadoc.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                        <xsl:with-param name="includes2">**/doc-files/**</xsl:with-param>
+                    </xsl:call-template>
+                    <fileset>
+                        <xsl:attribute name="dir">${build.generated.sources.dir}</xsl:attribute>
+                        <xsl:attribute name="erroronmissingdir">false</xsl:attribute>
+                        <include name="**/doc-files/**"/>
+                    </fileset>
+                </copy>
+
             </target>
             
             <target name="-javadoc-browse">

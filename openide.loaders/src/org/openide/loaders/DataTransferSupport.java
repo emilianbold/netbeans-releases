@@ -113,6 +113,8 @@ abstract class DataTransferSupport {
     /** Supports paste of multiple DataObject at once.
      */
     static abstract class PasteTypeExt extends PasteType {
+        private static final RequestProcessor RP = new RequestProcessor("Paste Support"); // NOI18N
+        
         /** All DataObjects being pasted. */
         private DataObject objs [];
         /** Create paste type. */
@@ -127,7 +129,7 @@ abstract class DataTransferSupport {
         * @param obj pasted DataObject
         */
         protected abstract void handlePaste (DataObject obj) throws IOException;
-        /** Could be clipboard cleand up after the paste operation is finished or
+        /** Could be clipboard clean up after the paste operation is finished or
          * should its content be preserved.
          * @return default implementation returns <code>false</code>
          */
@@ -143,27 +145,26 @@ abstract class DataTransferSupport {
             return true;
         }
         /** Paste all DataObjects */
+        @Override
         public final Transferable paste() throws IOException {
             if (javax.swing.SwingUtilities.isEventDispatchThread()) {
-                org.openide.util.RequestProcessor.getDefault().post(new java.lang.Runnable() {
+                RP.post(new java.lang.Runnable() {
+                    @Override
+                    public void run() {
+                        java.lang.String n = org.openide.awt.Actions.cutAmpersand(getName());
+                        org.netbeans.api.progress.ProgressHandle h = org.netbeans.api.progress.ProgressHandleFactory.createHandle(n);
 
-                                                                        public void run() {
-                                                                            java.lang.String n = org.openide.awt.Actions.cutAmpersand(getName());
-                                                                            org.netbeans.api.progress.ProgressHandle h = org.netbeans.api.progress.ProgressHandleFactory.createHandle(n);
-
-                                                                            h.start();
-                                                                            h.switchToIndeterminate();
-                                                                            try {
-                                                                                doPaste();
-                                                                            }
-                                                                            catch (java.io.IOException ioe) {
-                                                                                Exceptions.printStackTrace(ioe);
-                                                                            }
-                                                                            finally {
-                                                                                h.finish();
-                                                                            }
-                                                                        }
-                                                                    });
+                        h.start();
+                        h.switchToIndeterminate();
+                        try {
+                            doPaste();
+                        } catch (java.io.IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
+                        } finally {
+                            h.finish();
+                        }
+                    }
+                });
             } else {
                 doPaste();
             }

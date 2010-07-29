@@ -121,11 +121,13 @@ public class WebUtils {
                             //normalize the file (may contain xxx/../../yyy parts which
                             //causes that fileobject representing the same file are not equal
                             File resolvedFile = FileUtil.toFile(resolvedFileObject);
-                            FileObject resolvedFileObjectInCanonicalForm = FileUtil.toFileObject(resolvedFile.getCanonicalFile());
-                            //find out the base folder - bottom most folder of the link
-                            FileObject linkBase = findRelativeLinkBase(source, importedFileName);
-                            FileReference ref = new FileReference(source, resolvedFileObjectInCanonicalForm, linkBase, importedFileName, FileReferenceType.RELATIVE);
-                            return ref;
+                            if(resolvedFile != null) {
+                                FileObject resolvedFileObjectInCanonicalForm = FileUtil.toFileObject(resolvedFile.getCanonicalFile());
+                                //find out the base folder - bottom most folder of the link
+                                FileObject linkBase = findRelativeLinkBase(source, importedFileName);
+                                FileReference ref = new FileReference(source, resolvedFileObjectInCanonicalForm, linkBase, importedFileName, FileReferenceType.RELATIVE);
+                                return ref;
+                            }
                         }
                     }
                 } else {

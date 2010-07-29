@@ -88,6 +88,12 @@ public class NbInstaller extends ModuleInstall {
                 LOG.log(Level.FINE,"Set moduleEnabled: " + moduleEnabled);
             }
         }        
+        if (System.getProperty("netbeans.home") == null) {
+            moduleEnabled = false;
+            LOG.log(Level.INFO, "Using org.netbeans.modules.registration module outside of regular NetBeans installation is not possible.\n" +
+                    "Since netbeans.home property not set, disabling this module action");
+        }
+        
         RegisterAction a = SharedClassObject.findObject(RegisterAction.class, true);
         a.setEnabled(moduleEnabled);
         

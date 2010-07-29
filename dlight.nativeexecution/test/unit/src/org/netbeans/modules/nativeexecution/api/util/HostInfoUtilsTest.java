@@ -52,6 +52,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -59,6 +60,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -109,6 +111,35 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //            Exceptions.printStackTrace(ex);
 //        }
 //    }
+
+    @org.junit.Test
+    public void testCpuFamily() throws Exception {
+        class Pair {
+            public Pair(String mspec, HostInfo.CpuFamily cpuFamily) {
+                this.mspec = mspec;
+                this.cpuFamily = cpuFamily;
+            }
+            public final String mspec;
+            public final HostInfo.CpuFamily cpuFamily;
+        }
+        Pair[] pairs = new Pair[] {
+            new Pair("intel-S2", HostInfo.CpuFamily.X86),
+            new Pair("sparc-S2", HostInfo.CpuFamily.SPARC),
+            new Pair("intel-Linux", HostInfo.CpuFamily.X86)
+//            new Pair("intel-FreeBSD", HostInfo.CpuFamily.X86)
+        };
+        for (Pair pair : pairs) {
+            ExecutionEnvironment env = NativeExecutionTestSupport.getTestExecutionEnvironment(pair.mspec);
+            if (env == null) {
+                System.err.printf("Warning: execution environment not found for mspec {0}\n" + pair.mspec);
+            } else {
+                ConnectionManager.getInstance().connectTo(env);
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                assertEquals("CPU family for " + env, pair.cpuFamily, hostInfo.getCpuFamily());
+            }
+        }
+    }
+
     /**
      * This test assures that only first call to getHostInfo does the job.
      * So any subsequent call should return cached result.

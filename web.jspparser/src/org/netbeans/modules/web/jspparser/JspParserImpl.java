@@ -98,10 +98,10 @@ public class JspParserImpl implements JspParserAPI {
 
     private static final String[] JAR_FILE_NAMES = new String[]{
         "ant/lib/ant.jar",  //NOI18N
-        "modules/ext/glassfish-jspparser-2.0.jar", //NOI18N
+        "modules/ext/glassfish-jspparser-3.0.jar", //NOI18N
 //        "modules/ext/glassfish-logging.jar" //NOI18N
         "modules/ext/jsp-parser-ext.jar", //NOI18N
-        "modules/ext/servlet2.5-jsp2.1-api.jar", //NOI18N
+        "modules/ext/servlet3.0-jsp2.2-api.jar", //NOI18N
         "ant/lib/ant-launcher.jar" //Glassfish V2 //NOI18N
     };
 

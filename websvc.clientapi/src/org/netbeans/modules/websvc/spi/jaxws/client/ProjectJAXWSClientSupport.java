@@ -178,12 +178,6 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
             }
             
             if (localWsdl!=null) {
-                Boolean value = jaxWsModel.getJsr109();
-                if((value == null || Boolean.TRUE.equals(value)) && !isJsr109){
-                    jaxWsModel.setJsr109(Boolean.FALSE);
-                } else if (Boolean.FALSE.equals(value) && isJsr109) {
-                    jaxWsModel.setJsr109(Boolean.TRUE);
-                }             
                 try {
                     String localWsdlUrl = FileUtil.getRelativePath(xmlResourcesFo, localWsdl);
                     client = jaxWsModel.addClient(finalClientName, wsdlUrl, packageName);

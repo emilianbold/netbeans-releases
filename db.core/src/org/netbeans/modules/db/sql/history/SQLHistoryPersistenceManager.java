@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,6 +53,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import org.openide.util.Exceptions;
@@ -89,11 +90,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author John Baker
  */
 public class SQLHistoryPersistenceManager {
-    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
-    public static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
     private static final int READ = 0;
-    private static final int WRITE = 1;
-    private static final int MODIFY = 2;
+    private static final int ADD = 1;
+    private static final int REMOVE = 2;
+    private static final int CREATE = 3;
     public static final Logger LOGGER = Logger.getLogger(SQLHistoryPersistenceManager.class.getName());
     private static SQLHistoryPersistenceManager _instance = null;
     private static Document document;
@@ -113,7 +113,7 @@ public class SQLHistoryPersistenceManager {
     public void removeHistoryFile(FileObject historyRoot) {
         try {
             FileObject folder = DataFolder.findFolder(historyRoot).getPrimaryFile();
-            String fn = FileUtil.getFileDisplayName(folder) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N; 
+            String fn = FileUtil.getFileDisplayName(folder) + File.separator + SQLHistoryManager.SQL_HISTORY_FILE_NAME;
             FileObject historyFo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fn)));
             historyFo.delete();
         } catch (IOException ex) {
@@ -126,22 +126,35 @@ public class SQLHistoryPersistenceManager {
         try {
             this.sqlHistoryList = sqlHistoryList;
             DataFolder df = DataFolder.findFolder(historyFileObject);
-            AtomicFileAction writer = new AtomicFileAction(df, null, WRITE, sqlHistoryList);
+            int action = df.getChildren().length == 0 ? CREATE : ADD;
+            AtomicFileAction writer = new AtomicFileAction(df, null, action, sqlHistoryList);
             df.getPrimaryFile().getFileSystem().runAtomicAction(writer);
         } catch (IOException ex) {
-            throw new SQLHistoryException();
+            throw new SQLHistoryException(ex.getLocalizedMessage(), ex);
         }
     }
 
-    public List<SQLHistory> retrieve(String historyFilePath, FileObject historyFileObject) throws ClassNotFoundException, SQLHistoryException {
+    public List<SQLHistory> retrieve(FileObject historyFileObject) throws ClassNotFoundException, SQLHistoryException {
         Handler handler = null;
+        int limit;
+        String limitUser = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
+        if (!limitUser.isEmpty()) { // NOI18N
+            try {
+                limit = Integer.parseInt(limitUser);
+            } catch (NumberFormatException nfe) {
+                limit = Integer.parseInt(SQLHistoryManager.SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
+            }
+        } else {
+            limit = Integer.parseInt(SQLHistoryManager.SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
+        }
         try {
-            handler = new Handler(historyFilePath);
+            handler = new Handler(limit);
             DataFolder df = DataFolder.findFolder(historyFileObject);
             AtomicFileAction reader = new AtomicFileAction(df, handler, READ, null);
             df.getPrimaryFile().getFileSystem().runAtomicAction(reader);
 
         } catch (IOException ex) {
+            LOGGER.log(Level.FINE, ex.getLocalizedMessage(), ex);
             sqlHistoryList = handler.getXmlSqlHistoryList();
             throw new SQLHistoryException();
         }
@@ -165,30 +178,34 @@ public class SQLHistoryPersistenceManager {
     }
 
     public List<SQLHistory> updateSQLSaved(int limit, FileObject historyFileObject) throws SQLHistoryException {
-        String historyFilePath = null;
         List<SQLHistory> updatedSQLHistoryList = null;
         try {
-            historyFilePath = FileUtil.getFileDisplayName(historyFileObject) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-            if (historyFileObject == null || !(new File(historyFilePath).exists())) {
+            if (historyFileObject == null) {
                 return new ArrayList<SQLHistory>();
             }
-            updatedSQLHistoryList = retrieve(historyFilePath, historyFileObject);
+            updatedSQLHistoryList = retrieve(historyFileObject);
             // Remove elements from list based on the number of statements to save that is set in the SQL History dialog
             if (limit < updatedSQLHistoryList.size()) {
                 numElemsToRemove = updatedSQLHistoryList.size() - limit;
                 boolean containsElems = true;
                 containsElems = !updatedSQLHistoryList.isEmpty();
-                if (containsElems && (limit == 0 || numElemsToRemove >= 0)) {
+                if (containsElems && numElemsToRemove == updatedSQLHistoryList.size()) {
+                    // remove all
                     DataFolder df = DataFolder.findFolder(historyFileObject);
-                    AtomicFileAction modifier = new AtomicFileAction(df, null, MODIFY, updatedSQLHistoryList);
+                    List<SQLHistory> emptyList = Collections.emptyList();
+                    AtomicFileAction writer = new AtomicFileAction(df, null, CREATE, emptyList);
+                    df.getPrimaryFile().getFileSystem().runAtomicAction(writer);
+                } else if (containsElems && (limit == 0 || numElemsToRemove >= 0)) {
+                    DataFolder df = DataFolder.findFolder(historyFileObject);
+                    AtomicFileAction modifier = new AtomicFileAction(df, null, REMOVE, updatedSQLHistoryList);
                     df.getPrimaryFile().getFileSystem().runAtomicAction(modifier);
                 }
             }
-            updatedSQLHistoryList = retrieve(historyFilePath, historyFileObject);
+            updatedSQLHistoryList = retrieve(historyFileObject);
         } catch (ClassNotFoundException ex) {
-            throw new SQLHistoryException();
+            throw new SQLHistoryException(ex.getLocalizedMessage(), ex);
         } catch (IOException ex) {
-            throw new SQLHistoryException();
+            throw new SQLHistoryException(ex.getLocalizedMessage(), ex);
         }
         return updatedSQLHistoryList;
     }
@@ -208,6 +225,7 @@ public class SQLHistoryPersistenceManager {
             this.actionType = actionType;
         }
 
+        @Override
         public void run() throws IOException {
             FileLock lck = null;
             OutputStream ostm = null;
@@ -217,7 +235,7 @@ public class SQLHistoryPersistenceManager {
             DocumentBuilder builder = null;
             try {
                 FileObject folder = parent.getPrimaryFile();
-                String fn = FileUtil.getFileDisplayName(folder) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+                String fn = FileUtil.getFileDisplayName(folder) + File.separator + SQLHistoryManager.SQL_HISTORY_FILE_NAME;
                 // Read, Write or Update the persisted SQL file
                 switch (actionType) {
                     case READ:
@@ -231,38 +249,46 @@ public class SQLHistoryPersistenceManager {
                         reader.setEntityResolver(EntityCatalog.getDefault());
                         reader.parse(inputSource);
                         break;
-                    case WRITE:
+                    case ADD:
                         factory = DocumentBuilderFactory.newInstance();
                         builder = factory.newDocumentBuilder();
-                        if (folder.getChildren().length == 0) {
-                            data = folder.createData(SQL_HISTORY_FILE_NAME, "xml"); //NOI18N
-                            lck = data.lock();
-                            ostm = data.getOutputStream(lck);
-                            writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
-                            document = builder.newDocument();
-                            xmlWriter = new XmlWriter(data, sqlHistoryList, writer);
-                            xmlWriter.write();
-                        } else {
-                            data = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fn)));
-                            InputStream inputStream = data.getInputStream();
-                            document = builder.parse(inputStream);
-                            inputStream.close();
-                            lck = data.lock();
-                            ostm = data.getOutputStream(lck);
-                            writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
-                        }
+                        data = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fn)));
+                        InputStream inputStream = data.getInputStream();
+                        document = builder.parse(inputStream);
+                        inputStream.close();
+                        lck = data.lock();
+                        ostm = data.getOutputStream(lck);
+                        writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
                         // Create or update then write the DOM
                         xmlWriter = new XmlWriter(data, sqlHistoryList, writer);
                         xmlWriter.write(xmlWriter.createElements(document), ""); // NOI18N
                         break;
-                    case MODIFY:
+                    case CREATE:
+                        factory = DocumentBuilderFactory.newInstance();
+                        builder = factory.newDocumentBuilder();
+                        if (new File(fn).exists()) {
+                            data = folder.getFileObject(SQLHistoryManager.SQL_HISTORY_FILE_NAME);
+                        } else {
+                            data = folder.createData(SQLHistoryManager.SQL_HISTORY_FILE_NAME);
+                        }
+                        lck = data.lock();
+                        ostm = data.getOutputStream(lck);
+                        writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
+                        document = builder.newDocument();
+                        xmlWriter = new XmlWriter(data, sqlHistoryList, writer);
+                        xmlWriter.write();
+                        // Create or update then write the DOM
+                        xmlWriter = new XmlWriter(data, sqlHistoryList, writer);
+                        xmlWriter.write(xmlWriter.createElements(document), ""); // NOI18N
+                        break;
+                    case REMOVE:
                         factory = DocumentBuilderFactory.newInstance();
                         builder = factory.newDocumentBuilder();
                         if (folder.getChildren().length > 0) {
                             data = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fn)));
-                            InputStream inputStream = data.getInputStream();
-                            document = builder.parse(inputStream);
-                            inputStream.close();
+                            InputStream is = data.getInputStream();
+                            document = builder.parse(is);
+                            is.close();
                             lck = data.lock();
                             ostm = data.getOutputStream(lck);
                             writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
@@ -275,11 +301,11 @@ public class SQLHistoryPersistenceManager {
                 }
             } catch (ParserConfigurationException ex) {
                 LOGGER.log(Level.INFO, ex.getMessage());
-                throw new IOException();
+                throw new IOException(ex.getLocalizedMessage(), ex);
 
             } catch (SAXException ex) {
                 LOGGER.log(Level.INFO, ex.getMessage());
-                throw new IOException();
+                throw new IOException(ex.getLocalizedMessage(),ex);
             } finally {
                 if (writer != null) {
                     writer.flush();
@@ -300,10 +326,8 @@ public class SQLHistoryPersistenceManager {
     private static final class XmlWriter {
         private PrintWriter pw;
         private List<SQLHistory> sqlHistoryList;
-        private FileObject data;
 
         public XmlWriter(FileObject data, List<SQLHistory> sqlHistoryList, PrintWriter pw) {
-            this.data = data;
             this.sqlHistoryList = sqlHistoryList;
             this.pw = pw;
         }
@@ -421,7 +445,7 @@ public class SQLHistoryPersistenceManager {
         }
 
         private String fixup(String s) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             int len = s.length();
             for (int i = 0; i < len; i++) {
                 char c = s.charAt(i);
@@ -458,17 +482,17 @@ public class SQLHistoryPersistenceManager {
         private static final String ELEMENT_SQL = "sql"; // NOI18N
         private static final String ATTR_URL_PROPERTY_VALUE = "url"; // NOI18N
         private static final String ATTR_DATE_PROPERTY_VALUE = "date"; // NOI18N
-        private final String sqlHistoryFileName;
         private static String url;
         private static StringBuilder sql;
         private static Date date;
         boolean matchingUrl = false;
         private List<SQLHistory> xmlSqlHistoryList = new ArrayList<SQLHistory>();
         static boolean isSql = false;
-        private int limit = 10000;
-
-        public Handler(String sqlHistoryFileName) {
-            this.sqlHistoryFileName = sqlHistoryFileName;
+        private int limit;
+        private static Calendar calendar = Calendar.getInstance();
+        
+        public Handler(int limit) {
+            this.limit = limit;
         }
 
         @Override
@@ -476,7 +500,6 @@ public class SQLHistoryPersistenceManager {
             if (ELEMENT_SQL.equals(qName)) {
                 isSql = true;
                 url = attrs.getValue(ATTR_URL_PROPERTY_VALUE);
-                Calendar calendar = Calendar.getInstance();
                 try {
                     calendar.setTimeInMillis(Long.parseLong(attrs.getValue(ATTR_DATE_PROPERTY_VALUE)));
                     date = calendar.getTime();
@@ -512,10 +535,6 @@ public class SQLHistoryPersistenceManager {
         }
 
         private void addHistory(String url, String sql, Date date) {
-            String sqlSetting = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
-            if (!sqlSetting.equals("")) { // NOI18N
-                limit = Integer.parseInt(NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""));  // NOI18N
-            }
             if ((xmlSqlHistoryList.size() <= limit) || limit == 0) {
                 xmlSqlHistoryList.add(new SQLHistory(url, sql, date));
                 setXmlSqlHistoryList(xmlSqlHistoryList);

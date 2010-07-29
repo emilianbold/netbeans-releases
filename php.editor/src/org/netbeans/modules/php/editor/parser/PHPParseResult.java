@@ -89,7 +89,7 @@ public class PHPParseResult extends ParserResult {
             }
         }
         if (extended) {
-            model.getExtendedModel();
+            model.getExtendedElements();
         }
         return model;
     }

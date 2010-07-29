@@ -89,7 +89,8 @@ public class ProviderUtil {
     public static final Provider ECLIPSELINK_PROVIDER1_0 = new EclipseLinkProvider(Persistence.VERSION_1_0);
     public static final Provider KODO_PROVIDER = new KodoProvider();
     public static final Provider DATANUCLEUS_PROVIDER = new DataNucleusProvider();
-    public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
+    public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider(Persistence.VERSION_2_0);
+    public static final Provider OPENJPA_PROVIDER1_0 = new OpenJPAProvider(Persistence.VERSION_1_0);
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
     
     /**
@@ -765,7 +766,7 @@ public class ProviderUtil {
     public static Provider[] getAllProviders() {
         return new Provider[]{
             ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER, HIBERNATE_PROVIDER2_0, HIBERNATE_PROVIDER,
-            KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
+            KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, OPENJPA_PROVIDER1_0, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     
     /**

@@ -84,6 +84,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     private static final String DEF_GROUP = "defgroup"; // NOI18N
     private static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
     public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
+    public static final String FIX_UNRESOLVED_INCLUDE = "fixUnresolvedInclude"; // NOI18N
 
     static {
     }
@@ -304,6 +305,19 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().putBoolean(FULL_FILE_INDEXER, value);
         if (oldValue != value) {
             firePropertyChange(FULL_FILE_INDEXER, oldValue, value);
+        }
+    }
+
+    // Fix unresolved include directive by file indexer
+    public boolean isFixUnresolvedInclude() {
+        return getPreferences().getBoolean(FIX_UNRESOLVED_INCLUDE, true);
+    }
+
+    public void setFixUnresolvedInclude(boolean value) {
+        boolean oldValue = isFixUnresolvedInclude();
+        getPreferences().putBoolean(FIX_UNRESOLVED_INCLUDE, value);
+        if (oldValue != value) {
+            firePropertyChange(FIX_UNRESOLVED_INCLUDE, oldValue, value);
         }
     }
 

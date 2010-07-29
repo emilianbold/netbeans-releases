@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.14
+#Version 1.16
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -7,7 +7,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -88,7 +88,7 @@ meth public abstract org.openide.util.Lookup lookup()
 meth public abstract org.openide.util.Lookup$Result<org.netbeans.spi.editor.mimelookup.MimeLookupInitializer> child(java.lang.String)
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item

@@ -201,7 +201,7 @@ public class JMXTypeDataNode extends DataNode {
   }
 
   private boolean firePropertyChanged(final String name, final Object oldValue, final Object newValue) {
-    Arguments args = (Arguments) associatedPlan.getRoot().getProperty(TestPlan.USER_DEFINED_VARIABLES).getObjectValue();
+    Arguments args = (Arguments) associatedPlan.getRoot().getUserDefinedVariablesAsProperty().getObjectValue();
     for (int i = 0; i < args.getArgumentCount(); i++) {
       Argument arg = args.getArgument(i);
       System.out.println(arg.getName() + " = " + arg.getValue());

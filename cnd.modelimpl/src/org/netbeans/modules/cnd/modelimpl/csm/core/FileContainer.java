@@ -114,7 +114,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
-	super(new FileContainerKey(project.getUniqueName().toString()), false);
+	super(new FileContainerKey(project.getUniqueName()), false);
 	put();
     }
     
@@ -188,6 +188,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return impl;
     }
 
+    public CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {
+        FileEntry f = getFileEntry(file, treatSymlinkAsSeparateFile, false);
+        if (f == null) {
+            return null;
+        }
+        return f.fileNew;
+    }
 
     /** 
      * This should only be called if we are sure this is the only correct state:

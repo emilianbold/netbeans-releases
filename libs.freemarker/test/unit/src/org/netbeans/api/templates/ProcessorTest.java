@@ -54,11 +54,9 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import junit.framework.Test;
 import junit.framework.TestCase;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,11 +72,6 @@ public class ProcessorTest extends TestCase {
         super(testName);
     }
     
-    public static Test suite() throws Exception {
-        return new NbTestSuite(ProcessorTest.class);
-        //return new ProcessorTest("testCanImportSubpkgOfParentPkg");
-    }
-
     @Override
     protected void setUp() throws Exception {
         root = FileUtil.getConfigRoot();

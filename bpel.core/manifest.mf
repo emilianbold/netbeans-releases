@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 6.5.1
-OpenIDE-Module: org.netbeans.modules.bpel.core/1
+OpenIDE-Module-Specification-Version: 6.9
+OpenIDE-Module: org.netbeans.modules.bpel.core
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/bpel/core/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/bpel/core/resources/layer.xml
 Main-Class: org.netbeans.modules.bpel.core.compatibility.converter.ConverterObsoleteBPELExtensions

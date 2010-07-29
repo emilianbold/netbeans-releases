@@ -84,14 +84,14 @@ public class MacOSXExecutableFileFilter extends javax.swing.filechooser.FileFilt
 
     /** Check if this file's header represents an elf executable */
     private boolean checkHeader(File f) {
-        byte b[] = new byte[18];
+        byte bytes[] = new byte[18];
 	int left = 18; // bytes left to read
 	int offset = 0; // offset into b array
 	InputStream is = null;
 	try {
 	    is = new FileInputStream(f);
 	    while (left > 0) {
-		int n = is.read(b, offset, left);
+		int n = is.read(bytes, offset, left);
 		if (n <= 0) {
 		    // File isn't big enough to be an elf file...
 		    return false;
@@ -109,17 +109,67 @@ public class MacOSXExecutableFileFilter extends javax.swing.filechooser.FileFilt
 		}
 	    }
 	}
-
-        // FIXUP: not sure exactly how to check for executable on Mac OS X (Mach-O)
-        if (b[0] == -50 &&
-            b[1] == -6 &&
-            b[2] == -19 &&
-            b[3] == -2 &&
-            b[12] == 2) {
+//    <file>
+//	<!-- Mac Power PC peff executable -->
+//	<!--          J o y ! p e f f     -->
+//	<magic   hex="4a6f792170656666"
+//	        mask="ffffffffffffffff"/>
+//	<!-- Next 4 bytes contains architecture type:
+//             "pwpc" for the PowerPC CFM
+//             "m68k" for CFM-68K
+//             Ignore architecture. -->
+//        <resolver mime="application/x-exe"/>
+//    </file>
+        if (bytes[0] == 'J' && bytes[1] == 'o' && bytes[2] == 'y' && bytes[3] == '!' && bytes[4] == 'p' && bytes[5] == 'e' && bytes[6] == 'f' && bytes[7] == 'f') {
             return true;
-        } else {
-            return false;
         }
+//
+//    <file>
+//	<!-- Mach-O executable i386 -->
+//	<!--                  v       v       v       v-->
+//	<magic   hex="cefaedfe0000000000000000020000000000"
+//	        mask="ffffffff0000000000000000ff0000000000"/>
+//        <resolver mime="application/x-exe"/>
+//    </file>
+        if (bytes[0] == (byte)0xce && bytes[1] == (byte)0xfa && bytes[2] == (byte)0xed && bytes[3] == (byte)0xfe && bytes[12] == 2) {
+            return true;
+        }
+//
+//    <file>
+//	<!-- Mach-O executable x86-64 -->
+//	<!--                  v       v       v       v-->
+//	<magic   hex="cffaedfe0000000000000000020000000000"
+//	        mask="ffffffff0000000000000000ff0000000000"/>
+//        <resolver mime="application/x-exe"/>
+//    </file>
+        if (bytes[0] == (byte)0xcf && bytes[1] == (byte)0xfa && bytes[2] == (byte)0xed && bytes[3] == (byte)0xfe){
+            return true;
+        }
+//
+//    <file>
+//	<!-- Mach-O executable ppc -->
+//	<!--                  v       v       v       v-->
+//	<magic   hex="feedface0000000000000000000000020000"
+//	        mask="ffffffff0000000000000000000000ff0000"/>
+//        <resolver mime="application/x-exe"/>
+//    </file>
+        if (bytes[0] == (byte)0xfe && bytes[1] == (byte)0xed && bytes[2] == (byte)0xfa && bytes[3] == (byte)0xce){
+            return true;
+        }
+//
+//    <file>
+//	<!-- Mach-O universal binary with 2 architectures-->
+//        <!-- FIXUP: this mask matches too many files and doesn't
+//                    check for right architecture -->
+//	<!--                  v       v       v       v-->
+//	<magic   hex="cafebabe0000000000000000000000000000"
+//	        mask="ffffffff0000000000000000000000000000"/>
+//        <resolver mime="application/x-exe"/>
+//    </file>
+        if (bytes[0] == (byte)0xca && bytes[1] == (byte)0xfe && bytes[2] == (byte)0xba && bytes[3] == (byte)0xbe){
+            return true;
+        }
+        return false;
     }
 
     /** Look up i18n strings here */

@@ -125,7 +125,7 @@ public final class HighlightsViewPart extends EditorView {
     }
 
     @Override
-    public boolean setLength(int length) {
+    public boolean setLength(int length, int modOffset, int modLength) {
         throw new IllegalStateException();
     }
 

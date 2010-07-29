@@ -53,7 +53,6 @@ import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -74,6 +73,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Parameters;
 import org.xml.sax.SAXException;
 
 /**
@@ -104,6 +104,7 @@ public final class LayerHandle {
 
     public LayerHandle(Project project, FileObject layerXML) {
         //System.err.println("new LayerHandle for " + project);
+        Parameters.notNull("project", project);
         this.project = project;
         this.layerXML = layerXML;
     }
@@ -116,18 +117,7 @@ public final class LayerHandle {
      * If there is a {@code META-INF/generated-layer.xml} this will be included as well.
      * @param create if true, and there is no layer yet, create it now; if false, just return null
      */
-    public FileSystem layer(boolean create) {
-        return layer(create, null);
-    }
-
-    /**
-     * Get the layer as a structured filesystem.
-     * See {@link #layer(boolean)} for details.
-     * @param create see {@link #layer(boolean)} for details
-     * @param cp optional classpath to search for resources specified with <code>nbres:</code>
-     *  or <code>nbresloc:</code> parameter; default is <code>null</code>
-     */
-    public synchronized FileSystem layer(boolean create, ClassPath cp) {
+    public synchronized FileSystem layer(boolean create) {
         if (fs == null) {
             FileObject xml = getLayerFile();
             if (xml == null) {
@@ -154,7 +144,7 @@ public final class LayerHandle {
                 }
             }
             try {
-                fs = new DualLayers(new WritableXMLFileSystem(xml.getURL(), cookie = LayerUtils.cookieForFile(xml), cp));
+                fs = new DualLayers(new WritableXMLFileSystem(xml.getURL(), cookie = LayerUtils.cookieForFile(xml), LayerUtils.findResourceCP(project)));
             } catch (FileStateInvalidException e) {
                 throw new AssertionError(e);
             }

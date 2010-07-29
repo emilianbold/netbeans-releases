@@ -52,9 +52,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.SplitConstraint;
@@ -67,23 +65,10 @@ import org.openide.filesystems.URLMapper;
  */
 public class ModeParserTest extends NbTestCase {
     
-    public ModeParserTest() {
-        super("");
-    }
-    
     public ModeParserTest(java.lang.String testName) {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(ModeParserTest.class);
-        return suite;
-    }
-
     protected void setUp () throws Exception {
 //        File localRoot;
 //        try {

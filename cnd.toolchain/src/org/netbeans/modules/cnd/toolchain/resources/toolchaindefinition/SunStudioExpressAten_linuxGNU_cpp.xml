@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
         <system_include_paths flags="-compat=g -xdryrun -E" parser="Sun"/>
         <system_macros flags="-compat=g -xdumpmacros=defs,sys -E" parser="Sun"/>
         <development_mode>
-           <fast_build flags=""/>
+           <fast_build flags="-compat=g"/>
            <debug flags="-compat=g -g" default="true"/>
            <performance_debug flags="-compat=g -g0 -xO2"/>
            <test_coverage flags="-compat=g -xprofile=tcov +d -xinline="/>

@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.identity.ant.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///ant/nblib/org-netbeans-modules-identity-ant.jar!/</resource>
-        <resource>jar:nbinst:///modules/org-netbeans-modules-identity-profile-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.identity.ant/ant/nblib/org-netbeans-modules-identity-ant.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.identity.profile.api/modules/org-netbeans-modules-identity-profile-api.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>        

@@ -800,7 +800,7 @@ public class TraceModel extends TraceModelBase {
         }
         StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
         List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), qInc);
-        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes);
+        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, null);
     }
 
     private APTMacroMap getMacroMap(File file) {

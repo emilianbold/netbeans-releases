@@ -137,6 +137,11 @@ public class DependencyTest extends NbTestCase {
         assertEquals(Dependency.COMPARE_ANY, d2.getComparison());
     }
     
+    public void testAllowJavaIdentifiers() throws Exception {
+        Set<Dependency> single = Dependency.create(Dependency.TYPE_MODULE, "acme.j2ee.webapp.import");
+        assertEquals("One item created: " + single, 1, single.size());
+    }
+
     private void misparse(int type, String s) {
         try {
             Dependency.create(type, s);
@@ -220,6 +225,11 @@ public class DependencyTest extends NbTestCase {
         misparse(Dependency.TYPE_PACKAGE, "org.apache.jasper > 1.1, org.apache.jasper[Options]");
         misparse(Dependency.TYPE_REQUIRES, "foo.bar, foo.bar");
         misparse(Dependency.TYPE_JAVA, "Java > 1.4.0, Java = 1.4.0_01");
+    }
+    
+    public void testMisparseNumbers() throws Exception {
+        misparse(Dependency.TYPE_MODULE, "acme.2.webapp.importing");
+        misparse(Dependency.TYPE_MODULE, "acme.2xyz.webapp.importing");
     }
     
     public void testConstants() throws Exception {

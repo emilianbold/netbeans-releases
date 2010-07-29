@@ -355,7 +355,6 @@ public class ImportClassPanel extends javax.swing.JPanel {
         private static int LIGHTER_COLOR_COMPONENT = DARKER_COLOR_COMPONENT;
                 
         
-        private Color denidedColor = new Color( 0x80, 0x80, 0x80 ); 
         private Color fgColor;
         private Color bgColor;
         private Color bgColorDarker;
@@ -393,9 +392,10 @@ public class ImportClassPanel extends javax.swing.JPanel {
             if ( value instanceof TypeDescription ) {
                 TypeDescription td = (TypeDescription)value;                
                  // setIcon(td.getIcon());
-                setText(td.qualifiedName);
                 if ( td.isDenied ) {
-                    setForeground( denidedColor );
+                    setText(JavaFixAllImports.NOT_VALID_IMPORT_HTML + td.qualifiedName);
+                } else {
+                    setText(td.qualifiedName);
                 }
                 setIcon( ElementIcons.getElementIcon( td.kind, null ) );
             }

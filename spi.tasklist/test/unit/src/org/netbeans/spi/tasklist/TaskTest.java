@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import javax.swing.Action;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import org.openide.filesystems.FileObject;
@@ -83,19 +82,6 @@ public class TaskTest extends NbTestCase {
         
         assertNotNull( "make sure we have a task group ready for testing", 
                 TaskGroupFactory.getDefault().getGroup( TASK_GROUP_NAME ) );
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TaskTest.class);
-        
-        return suite;
     }
 
     public void testGetters() throws FileStateInvalidException {

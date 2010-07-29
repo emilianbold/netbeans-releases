@@ -70,18 +70,21 @@ import java.util.logging.Level;
 import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Union2;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** Manages a collection of modules.
  * Must use {@link #mutex} to access its important methods.
  * @author Jesse Glick
  */
-public final class ModuleManager {
+public final class ModuleManager extends Modules {
 
     public static final String PROP_MODULES = "modules"; // NOI18N
     public static final String PROP_ENABLED_MODULES = "enabledModules"; // NOI18N
@@ -272,6 +275,7 @@ public final class ModuleManager {
     }
 
     private final Util.ModuleLookup lookup = new Util.ModuleLookup();
+    private final Lookup completeLookup = new ProxyLookup(Lookups.fixed(this), lookup);
     /** Retrieve set of modules in Lookup form.
      * The core top manager should install this into the set of
      * available lookups. Will fire lookup events when the
@@ -281,7 +285,7 @@ public final class ModuleManager {
      * straight to this lookup when ModuleInfo/Module is requested.
      */
     public Lookup getModuleLookup() {
-        return lookup;
+        return completeLookup;
     }
     // Access from ChangeFirer:
     final void fireModulesCreatedDeleted(Set created, Set deleted) {
@@ -318,6 +322,18 @@ public final class ModuleManager {
      */
     public final Module get(String codeNameBase) {
         return modulesByName.get(codeNameBase);
+    }
+
+    public @Override ModuleInfo ownerOf(Class<?> clazz) {
+        ClassLoader cl = clazz.getClassLoader();
+        if (cl instanceof Util.ModuleProvider) {
+            return ((Util.ModuleProvider) cl).getModule();
+        }
+        String codename = Module.findClasspathModuleCodeName(clazz);
+        if (codename != null) {
+            return get(codename.replaceFirst("/\\d+$", "")); // NOI18N
+        }
+        return null;
     }
 
     /**

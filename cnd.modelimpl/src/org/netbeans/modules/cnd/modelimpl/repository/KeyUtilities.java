@@ -79,15 +79,15 @@ public class KeyUtilities {
     }
 
     public static Key createProjectKey(ProjectBase project) {
-        return createProjectKey(project.getUniqueName().toString());
+        return createProjectKey(project.getUniqueName());
     }
 
-    public static Key createProjectKey(String projectQualifiedName) {
+    public static Key createProjectKey(CharSequence projectQualifiedName) {
         return new ProjectKey(projectQualifiedName);
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
-        return createProjectKey(ProjectBase.getUniqueName(nativeProject).toString());
+        return createProjectKey(ProjectBase.getUniqueName(nativeProject));
     }
 
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
@@ -121,23 +121,23 @@ public class KeyUtilities {
     }
     ////////////////////////////////////////////////////////////////////////////
 
-    public static int getUnitId(String unitName) {
+    public static int getUnitId(CharSequence unitName) {
         return RepositoryUtils.getUnitId(unitName);
     }
 
-    public static String getUnitName(int unitIndex) {
+    public static CharSequence getUnitName(int unitIndex) {
         return RepositoryUtils.getUnitName(unitIndex);
     }
 
-    public static int getFileIdByName(final int unitId, final String fileName) {
+    public static int getFileIdByName(final int unitId, final CharSequence fileName) {
         return RepositoryUtils.getFileIdByName(unitId, fileName);
     }
 
-    public static String getFileNameById(final int unitId, final int fileId) {
+    public static CharSequence getFileNameById(final int unitId, final int fileId) {
         return RepositoryUtils.getFileNameById(unitId, fileId);
     }
 
-    public static String getFileNameByIdSafe(final int unitId, final int fileId) {
+    public static CharSequence getFileNameByIdSafe(final int unitId, final int fileId) {
         return RepositoryUtils.getFileNameByIdSafe(unitId, fileId);
     }
 

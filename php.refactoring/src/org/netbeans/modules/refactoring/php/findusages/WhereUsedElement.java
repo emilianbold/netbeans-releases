@@ -44,7 +44,6 @@
 package org.netbeans.modules.refactoring.php.findusages;
 
 
-import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
 
@@ -54,7 +53,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.netbeans.modules.refactoring.php.ui.tree.ElementGripFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -75,44 +73,52 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private PositionBounds bounds;
     private String displayText;
     private FileObject parentFile;
+    private final Icon icon;
+    private final String name;
 
     public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, String name,
         OffsetRange range, Icon icon) {
         this.bounds = bounds;
         this.displayText = displayText;
         this.parentFile = parentFile;
-        ElementGripFactory.getDefault().put(parentFile, name, range, icon);
+        this.name = name;
+        this.icon = icon;
     }
 
+    @Override
     public String getDisplayText() {
         return displayText;
     }
 
+    @Override
     public Lookup getLookup() {
-        Object composite =
-            ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
-
-        if (composite == null) {
-            composite = parentFile;
-        }
-
+        Object composite = parentFile;
         return Lookups.singleton(composite);
     }
 
+    @Override
     public PositionBounds getPosition() {
         return bounds;
     }
 
+    @Override
     public String getText() {
         return displayText;
     }
 
+    @Override
     public void performChange() {
     }
 
-    public FileObject getParentFile() {
+    public FileObject getFile() {
         return parentFile;
     }
+
+    @Override
+    public FileObject getParentFile() {
+        return getFile();
+    }
+
     
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
@@ -211,5 +217,19 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
 
         return new WhereUsedElement(bounds, sb.toString().trim(), fo, name, 
                 new OffsetRange(start, end), icon);
+    }
+
+    /**
+     * @return the icon
+     */
+    public Icon getIcon() {
+        return icon;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
     }
 }

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpModuleImpl;
 import org.netbeans.modules.php.project.PhpProject;

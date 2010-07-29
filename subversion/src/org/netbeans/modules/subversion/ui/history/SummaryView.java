@@ -72,6 +72,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import javax.swing.border.LineBorder;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -613,265 +614,256 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     private class SummaryCellRenderer extends JPanel implements ListCellRenderer {
-
         private static final String FIELDS_SEPARATOR = "        "; // NOI18N
-        private static final double DARKEN_FACTOR = 0.95;
 
-        private Style selectedStyle;
-        private Style normalStyle;
-        private Style filenameStyle;
-        private Style indentStyle;
-        private Style noindentStyle;
-        private Style hiliteStyle;
-        private Style issueHyperlinkStyle;
-        private final Style authorStyle;
-
-        private Color selectionBackground;
-        private Color selectionForeground;
-
-        private JTextPane textPane = new JTextPane();
-        private JPanel    actionsPane = new JPanel();
-
-        private DateFormat defaultFormat;
-
-        private int             index;
-        private HyperlinkLabel  diffLink;
-        private HyperlinkLabel  revertLink;
-
-        public SummaryCellRenderer() {
-            selectionBackground = new JList().getSelectionBackground();
-            selectionForeground = new JList().getSelectionForeground();
-
-            selectedStyle = textPane.addStyle("selected", null); // NOI18N
-            StyleConstants.setForeground(selectedStyle, selectionForeground); // NOI18N
-            StyleConstants.setBackground(selectedStyle, selectionBackground); // NOI18N
-            normalStyle = textPane.addStyle("normal", null); // NOI18N
-            StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
-            filenameStyle = textPane.addStyle("filename", normalStyle); // NOI18N
-            StyleConstants.setBold(filenameStyle, true);
-            indentStyle = textPane.addStyle("indent", null); // NOI18N
-            StyleConstants.setLeftIndent(indentStyle, 50);
-            noindentStyle = textPane.addStyle("noindent", null); // NOI18N
-            StyleConstants.setLeftIndent(noindentStyle, 0);
-            defaultFormat = DateFormat.getDateTimeInstance();
-
-            issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
-            StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
-            StyleConstants.setUnderline(issueHyperlinkStyle, true);
-
-            authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
-            StyleConstants.setForeground(authorStyle, Color.BLUE);
-
-            hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
-            Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
-            if (c != null) StyleConstants.setBackground(hiliteStyle, c);
-            c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
-            if (c != null) StyleConstants.setForeground(hiliteStyle, c);
-
-            setLayout(new BorderLayout());
-            add(textPane);
-            add(actionsPane, BorderLayout.PAGE_END);
-            actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
-
-            diffLink = new HyperlinkLabel();
-            diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-            actionsPane.add(diffLink);
-
-            revertLink = new HyperlinkLabel();
-            actionsPane.add(revertLink);
-
-            textPane.setBorder(null);
-        }
-
-        public Color darker(Color c) {
-            return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0),
-                 Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
-                 Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
-        }
+        private RevisionRenderer cr = new RevisionRenderer();
+        private ChangepathRenderer rr = new ChangepathRenderer();
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof RepositoryRevision) {
-                renderContainer(list, (RepositoryRevision) value, index, isSelected);
+                return cr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             } else {
-                renderRevision(list, (RepositoryRevision.Event) value, index, isSelected);
+                return rr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
-            return this;
         }
 
-        private void renderContainer(JList list, RepositoryRevision container, int index, boolean isSelected) {
+        private class RevisionRenderer extends JPanel implements ListCellRenderer {
 
-            StyledDocument sd = textPane.getStyledDocument();
+            private static final double DARKEN_FACTOR = 0.95;
 
-            Style style;
-            Color backgroundColor;
-            Color foregroundColor;
+            private Style selectedStyle;
+            private Style normalStyle;
+            private Style filenameStyle;
+            private Style indentStyle;
+            private Style noindentStyle;
+            private Style hiliteStyle;
+            private Style issueHyperlinkStyle;
+            private final Style authorStyle;
 
-            if (isSelected) {
-                foregroundColor = selectionForeground;
-                backgroundColor = selectionBackground;
-                style = selectedStyle;
-            } else {
-                foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
-                backgroundColor = UIManager.getColor("List.background"); // NOI18N
-                backgroundColor = darker(backgroundColor);
-                style = normalStyle;
+            private Color selectionBackground;
+            private Color selectionForeground;
+
+            private JTextPane textPane = new JTextPane();
+            private JPanel    actionsPane = new JPanel();
+
+            private DateFormat defaultFormat;
+
+            private int             index;
+            private HyperlinkLabel  diffLink;
+            private HyperlinkLabel  revertLink;
+
+            public RevisionRenderer() {
+                selectionBackground = new JList().getSelectionBackground();
+                selectionForeground = new JList().getSelectionForeground();
+
+                selectedStyle = textPane.addStyle("selected", null); // NOI18N
+                StyleConstants.setForeground(selectedStyle, selectionForeground); // NOI18N
+                StyleConstants.setBackground(selectedStyle, selectionBackground); // NOI18N
+                normalStyle = textPane.addStyle("normal", null); // NOI18N
+                StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
+                filenameStyle = textPane.addStyle("filename", normalStyle); // NOI18N
+                StyleConstants.setBold(filenameStyle, true);
+                indentStyle = textPane.addStyle("indent", null); // NOI18N
+                StyleConstants.setLeftIndent(indentStyle, 50);
+                noindentStyle = textPane.addStyle("noindent", null); // NOI18N
+                StyleConstants.setLeftIndent(noindentStyle, 0);
+                defaultFormat = DateFormat.getDateTimeInstance();
+
+                issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
+                StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
+                StyleConstants.setUnderline(issueHyperlinkStyle, true);
+
+                authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
+                StyleConstants.setForeground(authorStyle, Color.BLUE);
+
+                hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
+                Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
+                if (c != null) StyleConstants.setBackground(hiliteStyle, c);
+                c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
+                if (c != null) StyleConstants.setForeground(hiliteStyle, c);
+
+                setLayout(new BorderLayout());
+                add(textPane);
+                add(actionsPane, BorderLayout.PAGE_END);
+                actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
+
+                diffLink = new HyperlinkLabel();
+                diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
+                actionsPane.add(diffLink);
+
+                revertLink = new HyperlinkLabel();
+                actionsPane.add(revertLink);
+
+                textPane.setBorder(null);
             }
-            textPane.setBackground(backgroundColor);
-            actionsPane.setBackground(backgroundColor);
 
-            this.index = index;
+            public Color darker(Color c) {
+                return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0),
+                     Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
+                     Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
+            }
 
-            // XXX cache
-            Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
-            Collection<VCSHyperlinkProvider> hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                RepositoryRevision revision = (RepositoryRevision) value;
+                StyledDocument sd = textPane.getStyledDocument();
 
-            try {
-                // clear document
-                sd.remove(0, sd.getLength());
-                sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
+                Style style;
+                Color backgroundColor;
+                Color foregroundColor;
 
-                // add revision
-                sd.insertString(0, Long.toString(container.getLog().getRevision().getNumber()), style);
-                sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
+                if (isSelected) {
+                    foregroundColor = selectionForeground;
+                    backgroundColor = selectionBackground;
+                    style = selectedStyle;
+                } else {
+                    foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
+                    backgroundColor = UIManager.getColor("List.background"); // NOI18N
+                    backgroundColor = darker(backgroundColor);
+                    style = normalStyle;
+                }
+                textPane.setBackground(backgroundColor);
+                actionsPane.setBackground(backgroundColor);
 
-                // add author
-                sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
-                String author = container.getLog().getAuthor();
-                Linker l = linkerSupport.getLinker(AuthorLinker.class, index);
-                if(l == null) {
-                    if(kenaiUsersMap != null && author != null && !author.equals("")) {
-                        KenaiUser kenaiUser = kenaiUsersMap.get(author);
-                        if(kenaiUser != null) {
-                            l = new AuthorLinker(kenaiUser, authorStyle, sd, author);
-                            linkerSupport.add(l, index);
+                this.index = index;
+
+                // XXX cache
+                Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
+                Collection<VCSHyperlinkProvider> hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
+
+                try {
+                    // clear document
+                    sd.remove(0, sd.getLength());
+                    sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
+
+                    // add revision
+                    sd.insertString(0, Long.toString(revision.getLog().getRevision().getNumber()), style);
+                    sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
+
+                    // add author
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
+                    String author = revision.getLog().getAuthor();
+                    Linker l = linkerSupport.getLinker(AuthorLinker.class, index);
+                    if(l == null) {
+                        if(kenaiUsersMap != null && author != null && !author.equals("")) {
+                            KenaiUser kenaiUser = kenaiUsersMap.get(author);
+                            if(kenaiUser != null) {
+                                l = new AuthorLinker(kenaiUser, authorStyle, sd, author);
+                                linkerSupport.add(l, index);
+                            }
                         }
                     }
-                }
-                if(l != null) {
-                    l.insertString(sd, isSelected ? style : null);
-                } else {
-                    sd.insertString(sd.getLength(), author, style);
-                }
+                    if(l != null) {
+                        l.insertString(sd, isSelected ? style : null);
+                    } else {
+                        sd.insertString(sd.getLength(), author, style);
+                    }
 
-                // add date
-                Date date = container.getLog().getDate();
-                if (date != null) {
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + defaultFormat.format(date), style);
-                }
+                    // add date
+                    Date date = revision.getLog().getDate();
+                    if (date != null) {
+                        sd.insertString(sd.getLength(), FIELDS_SEPARATOR + defaultFormat.format(date), style);
+                    }
 
-                // add commit msg
-                String commitMessage = container.getLog().getMessage();
-                if (commitMessage == null) commitMessage = "";
-                if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); // NOI18N
-                sd.insertString(sd.getLength(), "\n", style);
+                    // add commit msg
+                    String commitMessage = revision.getLog().getMessage();
+                    if (commitMessage == null) commitMessage = "";
+                    if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); // NOI18N
+                    sd.insertString(sd.getLength(), "\n", style);
 
-                // compute issue hyperlinks
-                l = linkerSupport.getLinker(IssueLinker.class, index);
-                if(l == null) {
-                    for (VCSHyperlinkProvider hp : hpInstances) {
-                        l = IssueLinker.create(hp, issueHyperlinkStyle, master.getRoots()[0], sd, commitMessage);
-                        if(l != null) {
-                            linkerSupport.add(l, index);
-                            break; // get the first one
+                    // compute issue hyperlinks
+                    l = linkerSupport.getLinker(IssueLinker.class, index);
+                    if(l == null) {
+                        for (VCSHyperlinkProvider hp : hpInstances) {
+                            l = IssueLinker.create(hp, issueHyperlinkStyle, master.getRoots()[0], sd, commitMessage);
+                            if(l != null) {
+                                linkerSupport.add(l, index);
+                                break; // get the first one
+                            }
                         }
                     }
-                }
-                if(l != null) {
-                    l.insertString(sd, style);
-                } else {
-                    sd.insertString(sd.getLength(), commitMessage, style);
-                }
-
-                int msglen = commitMessage.length();
-                int doclen = sd.getLength();
-                if (message != null && !isSelected) {
-                    int idx = commitMessage.indexOf(message);
-                    if (idx != -1) {
-                        sd.setCharacterAttributes(doclen - msglen + idx, message.length(), hiliteStyle, true);
+                    if(l != null) {
+                        l.insertString(sd, style);
+                    } else {
+                        sd.insertString(sd.getLength(), commitMessage, style);
                     }
+
+                    int msglen = commitMessage.length();
+                    int doclen = sd.getLength();
+                    if (message != null && !isSelected) {
+                        int idx = commitMessage.indexOf(message);
+                        if (idx != -1) {
+                            sd.setCharacterAttributes(doclen - msglen + idx, message.length(), hiliteStyle, true);
+                        }
+                    }
+
+                    resizePane(commitMessage, list.getFontMetrics(list.getFont()));
+                    if(isSelected) {
+                        sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
+                    }
+                } catch (BadLocationException e) {
+                    Subversion.LOG.log(Level.SEVERE, null, e);
                 }
 
-                resizePane(commitMessage, list.getFontMetrics(list.getFont()));
-                if(isSelected) {
-                    sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
+                actionsPane.setVisible(true);
+                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
+                revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
+
+                return this;
+            }
+
+            private void resizePane(String text, FontMetrics fm) {
+                if(text == null) {
+                    text = "";
                 }
-            } catch (BadLocationException e) {
-                Subversion.LOG.log(Level.SEVERE, null, e);
+                int width = master.getWidth();
+                if (width > 0) {
+                    Rectangle2D rect = fm.getStringBounds(text, textPane.getGraphics());
+                    int nlc, i;
+                    for (nlc = -1, i = 0; i != -1 ; i = text.indexOf('\n', i + 1), nlc++);
+                    nlc++;
+                    int lines = (int) (rect.getWidth() / (width - 80) + 1);
+                    int ph = fm.getHeight() * (lines + nlc) + 0;
+                    textPane.setPreferredSize(new Dimension(width - 50, ph));
+                }
             }
 
-            actionsPane.setVisible(true);
-            diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
-            revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (index == -1) return;
+                Rectangle apb = actionsPane.getBounds();
+
+                Rectangle bounds = diffLink.getBounds();
+                bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
+                resultsList.putClientProperty("Summary-Diff-" + index, bounds); // NOI18N
+
+                bounds = revertLink.getBounds();
+                bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
+                resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
+
+                linkerSupport.computeBounds(textPane, index);
+            }
+
         }
 
-        private void renderRevision(JList list, RepositoryRevision.Event dispRevision, final int index, boolean isSelected) {
-            Style style;
-            StyledDocument sd = textPane.getStyledDocument();
-
-            Color backgroundColor;
-            Color foregroundColor;
-
-            if (isSelected) {
-                foregroundColor = selectionForeground;
-                backgroundColor = selectionBackground;
-                style = selectedStyle;
-            } else {
-                foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
-                backgroundColor = UIManager.getColor("List.background"); // NOI18N
-                style = normalStyle;
-            }
-            textPane.setBackground(backgroundColor);
-            actionsPane.setVisible(false);
-
-            this.index = -1;
-            try {
-                sd.remove(0, sd.getLength());
-                sd.setParagraphAttributes(0, sd.getLength(), indentStyle, false);
-
-                sd.insertString(sd.getLength(), String.valueOf(dispRevision.getChangedPath().getAction()), null);
-                sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getChangedPath().getPath(), null);
-
-                sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
-                resizePane(sd.getText(0, sd.getLength() - 1), list.getFontMetrics(list.getFont()));
-            } catch (BadLocationException e) {
-                Subversion.LOG.log(Level.SEVERE, null, e);
+        private class ChangepathRenderer extends DefaultListCellRenderer {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                RepositoryRevision.Event revisionEvent = (RepositoryRevision.Event) value;
+                StringBuilder sb = new StringBuilder();
+                sb.append(FIELDS_SEPARATOR);
+                sb.append(String.valueOf(revisionEvent.getChangedPath().getAction()));
+                sb.append(FIELDS_SEPARATOR);
+                sb.append(revisionEvent.getChangedPath().getPath());
+                Component renderer = super.getListCellRendererComponent(list, sb.toString(), index, isSelected, isSelected);
+                if(renderer instanceof JLabel) {
+                    ((JLabel) renderer).setToolTipText(sb.toString());
+                }
+                return renderer;
             }
         }
-
-        private void resizePane(String text, FontMetrics fm) {
-            if(text == null) {
-                text = "";
-            }
-            int width = master.getWidth();
-            if (width > 0) {
-                Rectangle2D rect = fm.getStringBounds(text, textPane.getGraphics());
-                int nlc, i;
-                for (nlc = -1, i = 0; i != -1 ; i = text.indexOf('\n', i + 1), nlc++);
-                nlc++;
-                int lines = (int) (rect.getWidth() / (width - 80) + 1);
-                int ph = fm.getHeight() * (lines + nlc) + 0;
-                textPane.setPreferredSize(new Dimension(width - 50, ph));
-            }
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (index == -1) return;
-            Rectangle apb = actionsPane.getBounds();
-
-            Rectangle bounds = diffLink.getBounds();
-            bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-            resultsList.putClientProperty("Summary-Diff-" + index, bounds); // NOI18N
-
-            bounds = revertLink.getBounds();
-            bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-            resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
-
-            linkerSupport.computeBounds(textPane, index);
-        }        
-
     }
 
     private static class HyperlinkLabel extends JLabel {

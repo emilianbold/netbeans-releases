@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -172,6 +173,7 @@ public class VisibilityQueryWorksTest extends NbTestCase {
         assertNodeForDataObject("folder as well", folderDO, true, arr);
     }
 
+    @RandomlyFails // NB-Core-Build #4913: folder as well in []
     public void testHiddenFilesInFoldersAreHidden() throws Exception {
         Node[] arr = FavoritesNode.getNode().getChildren().getNodes(true);
         Node f = assertNodeForDataObject("folder as well", folderDO, true, arr);

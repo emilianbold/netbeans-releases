@@ -148,7 +148,7 @@ public class Reformatter implements ReformatTask {
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             ClasspathInfo cpInfo = ClasspathInfo.create(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(), empty, empty);
-            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null, null);
+            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
@@ -1106,13 +1106,20 @@ public class Reformatter implements ReformatTask {
             }
             List<? extends Tree> targs = node.getTypeArguments();
             if (targs != null && !targs.isEmpty()) {
-                for (Iterator<? extends Tree> it = targs.iterator(); it.hasNext();) {
-                    Tree targ = it.next();
+                Iterator<? extends Tree> it = targs.iterator();
+                Tree targ = it.hasNext() ? it.next() : null;
+                while (true) {
                     scan(targ, p);
-                    if (it.hasNext()) {
+                    targ = it.hasNext() ? it.next() : null;
+                    if (targ == null)
+                        break;
+                    if (targ.getKind() != Tree.Kind.ERRONEOUS || !((ErroneousTree)targ).getErrorTrees().isEmpty() || it.hasNext()) {
                         spaces(cs.spaceBeforeComma() ? 1 : 0);
                         accept(COMMA);
                         spaces(cs.spaceAfterComma() ? 1 : 0);
+                    } else {
+                        scan(targ, p);
+                        return true;
                     }
                 }
             }
@@ -2305,16 +2312,23 @@ public class Reformatter implements ReformatTask {
             for (Tree tree : node.getErrorTrees()) {
                 int pos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                 do {
+                    if (tokens.offset() >= pos)
+                        break;
                     col += tokens.token().length();
-                } while (tokens.moveNext() && tokens.offset() < pos);
+                } while (tokens.moveNext());
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;
                 scan(tree, p);
             }
             do {
-                col += tokens.token().length();
-            } while (tokens.moveNext() && tokens.offset() < endPos);
+                if (tokens.offset() >= endPos)
+                    break;
+                int len = tokens.token().length();
+                if (tokens.token().id() == WHITESPACE && tokens.offset() + len >= endPos)
+                    break;
+                col += len;
+            } while (tokens.moveNext());
             lastBlankLines = -1;
             lastBlankLinesTokenIndex = -1;
             lastBlankLinesDiff = null;

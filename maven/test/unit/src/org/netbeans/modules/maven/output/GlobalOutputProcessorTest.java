@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.maven.output;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  *
@@ -54,11 +52,6 @@ public class GlobalOutputProcessorTest extends TestCase {
 
     public GlobalOutputProcessorTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(GlobalOutputProcessorTest.class);
-        return suite;
     }
 
     /**

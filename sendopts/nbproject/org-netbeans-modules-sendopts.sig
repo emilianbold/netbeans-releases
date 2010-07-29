@@ -1,18 +1,18 @@
 #Signature file v4.1
-#Version 2.7
+#Version 2.9
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public java.lang.Exception
-cons public Exception()
-cons public Exception(java.lang.String)
-cons public Exception(java.lang.String,java.lang.Throwable)
-cons public Exception(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Throwable
 hfds serialVersionUID
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -26,10 +26,10 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
-cons public Throwable()
-cons public Throwable(java.lang.String)
-cons public Throwable(java.lang.String,java.lang.Throwable)
-cons public Throwable(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 intf java.io.Serializable
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
@@ -46,8 +46,8 @@ supr java.lang.Object
 hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
 
 CLSS public final org.netbeans.api.sendopts.CommandException
-cons public CommandException(int)
-cons public CommandException(int,java.lang.String)
+cons public init(int)
+cons public init(int,java.lang.String)
 meth public int getExitCode()
 meth public java.lang.String getLocalizedMessage()
 supr java.lang.Exception
@@ -59,7 +59,7 @@ meth public void process(java.lang.String[]) throws org.netbeans.api.sendopts.Co
 meth public void process(java.lang.String[],java.io.InputStream,java.io.OutputStream,java.io.OutputStream,java.io.File) throws org.netbeans.api.sendopts.CommandException
 meth public void usage(java.io.PrintWriter)
 supr java.lang.Object
-hfds $assertionsDisabled,ERROR_BASE,class$org$netbeans$api$sendopts$CommandLine,class$org$netbeans$spi$sendopts$OptionProcessor
+hfds ERROR_BASE
 
 CLSS public final org.netbeans.spi.sendopts.Env
 meth public java.io.File getCurrentDirectory()
@@ -83,18 +83,18 @@ meth public static org.netbeans.spi.sendopts.Option requiredArgument(char,java.l
 meth public static org.netbeans.spi.sendopts.Option shortDescription(org.netbeans.spi.sendopts.Option,java.lang.String,java.lang.String)
 meth public static org.netbeans.spi.sendopts.Option withoutArgument(char,java.lang.String)
 supr java.lang.Object
-hfds EMPTY,bundles,class$java$lang$ClassLoader,impl,keys,longName,shortName
+hfds EMPTY,bundles,impl,keys,longName,shortName
 
 CLSS public final org.netbeans.spi.sendopts.OptionGroups
-meth public static org.netbeans.spi.sendopts.Option allOf(org.netbeans.spi.sendopts.Option[])
-meth public static org.netbeans.spi.sendopts.Option anyOf(org.netbeans.spi.sendopts.Option[])
-meth public static org.netbeans.spi.sendopts.Option oneOf(org.netbeans.spi.sendopts.Option[])
-meth public static org.netbeans.spi.sendopts.Option someOf(org.netbeans.spi.sendopts.Option[])
+meth public !varargs static org.netbeans.spi.sendopts.Option allOf(org.netbeans.spi.sendopts.Option[])
+meth public !varargs static org.netbeans.spi.sendopts.Option anyOf(org.netbeans.spi.sendopts.Option[])
+meth public !varargs static org.netbeans.spi.sendopts.Option oneOf(org.netbeans.spi.sendopts.Option[])
+meth public !varargs static org.netbeans.spi.sendopts.Option someOf(org.netbeans.spi.sendopts.Option[])
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.sendopts.OptionProcessor
-cons protected OptionProcessor()
-meth protected abstract java.util.Set getOptions()
-meth protected abstract void process(org.netbeans.spi.sendopts.Env,java.util.Map) throws org.netbeans.api.sendopts.CommandException
+cons protected init()
+meth protected abstract java.util.Set<org.netbeans.spi.sendopts.Option> getOptions()
+meth protected abstract void process(org.netbeans.spi.sendopts.Env,java.util.Map<org.netbeans.spi.sendopts.Option,java.lang.String[]>) throws org.netbeans.api.sendopts.CommandException
 supr java.lang.Object
 

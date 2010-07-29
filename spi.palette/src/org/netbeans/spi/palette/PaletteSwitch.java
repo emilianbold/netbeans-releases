@@ -226,22 +226,12 @@ final class PaletteSwitch implements Runnable, LookupListener {
     private void showHidePaletteTopComponent(PaletteController newPalette, boolean isNewVisible) {
         PaletteController oldPalette = currentPalette;
         currentPalette = newPalette;
-        WindowManager wm = WindowManager.getDefault();
-        TopComponent palette = wm.findTopComponent("CommonPalette"); // NOI18N
-        if( null == palette ) {
-            Logger.getLogger( getClass().getName() ).log( Level.INFO, "Cannot find CommonPalette component." ); // NOI18N
-                
-            //for unit-testing
-            palette = PaletteTopComponent.getDefault();
-        }
         
         if (isNewVisible) {
-            if( !palette.isOpened() )
-                palette.open();
+            PaletteTopComponent.showPalette();
             PaletteVisibility.setVisible(newPalette, true);
         } else {
-            if( palette.isOpened() )
-                palette.close();
+            PaletteTopComponent.hidePalette();
         }
 
         propertySupport.firePropertyChange( PROP_PALETTE_CONTENTS, oldPalette, currentPalette );

@@ -90,6 +90,7 @@ import org.xml.sax.SAXException;
 /**
  *
  * @author Milan Kubec
+ * @author Tomas Zezula
  */
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="Application", position=200)
 public class JWSCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
@@ -106,10 +107,11 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
     private static final String PREVIEW_NAME_APPLET = "preview-applet.html"; // NOI18N
 
     private static final String JWS_ANT_TASKS_LIB_NAME = "JWSAntTasks"; // NOI18N
-
-    private static final String PREVIOUS_JNLP_IMPL_CRC32 = "3528ef9f"; // NOI18N
+    private static final String BUILD_TEMPLATE = "Templates/JWS/jnlp-impl.xml"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(JWSCompositeCategoryProvider.class.getName());
+
+    private static volatile String currentJnlpImplCRCCache;
 
     public JWSCompositeCategoryProvider() {}
     
@@ -296,7 +298,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
     }
     
     private static class SavePropsListener implements ActionListener {
-        
+
         private JWSProjectProperties jwsProps;
         private Project j2seProject;
         
@@ -344,24 +346,29 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 }
             }
         }
-        
+
         private void copyTemplate(Project proj) throws IOException {
             FileObject projDir = proj.getProjectDirectory();
             FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N
-            
-            if (jnlpBuildFile != null && isJnlpImplPreviousVer(computeCrc32(jnlpBuildFile.getInputStream()))) {
+
+            if (jnlpBuildFile != null && !isJnlpImplCurrentVer(computeCrc32(jnlpBuildFile.getInputStream()))) {
                 // try to close the file just in case the file is already opened in editor
                 DataObject dobj = DataObject.find(jnlpBuildFile);
                 CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
                 if (closeCookie != null) {
                     closeCookie.close();
                 }
-                FileUtil.moveFile(jnlpBuildFile, projDir.getFileObject("nbproject"), "jnlp-impl_backup");
+                final FileObject nbproject = projDir.getFileObject("nbproject");                    //NOI18N
+                final FileObject backupFile = nbproject.getFileObject("jnlp-impl_backup", "xml");   //NOI18N
+                if (backupFile != null) {
+                    backupFile.delete();
+                }
+                FileUtil.moveFile(jnlpBuildFile, nbproject, "jnlp-impl_backup");                    //NOI18N
                 jnlpBuildFile = null;
             }
-            
+
             if (jnlpBuildFile == null) {
-                FileObject templateFO = FileUtil.getConfigFile("Templates/JWS/jnlp-impl.xml"); // NOI18N
+                FileObject templateFO = FileUtil.getConfigFile(BUILD_TEMPLATE);
                 if (templateFO != null) {
                     FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jnlp-impl"); // NOI18N
                 }
@@ -505,8 +512,18 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         return hex;
     }
 
-    static boolean isJnlpImplPreviousVer(String crc) {
-        return PREVIOUS_JNLP_IMPL_CRC32.equals(crc);
+    static boolean isJnlpImplCurrentVer(String crc) throws IOException {
+        String _currentJnlpImplCRC = currentJnlpImplCRCCache;
+        if (_currentJnlpImplCRC == null) {
+            final FileObject template = FileUtil.getConfigFile(BUILD_TEMPLATE);
+            final InputStream in = template.getInputStream();
+            try {
+                currentJnlpImplCRCCache = _currentJnlpImplCRC = computeCrc32(in);
+            } finally {
+                in.close();
+            }
+        }
+        return _currentJnlpImplCRC.equals(crc);
     }
-    
+
 }

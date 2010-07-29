@@ -45,20 +45,10 @@
 package org.openide.explorer.propertysheet;
 
 import java.awt.BorderLayout;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.KeyboardFocusManager;
-import javax.swing.JFrame;
-import java.util.StringTokenizer;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Window;
-import org.openide.explorer.propertysheet.PropertySheet;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -67,27 +57,18 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
-import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.explorer.propertysheet.*;
-import org.openide.explorer.propertysheet.editors.*;
 import java.beans.*;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.*;
 import javax.swing.*;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import junit.framework.*;
-import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 import org.openide.ErrorManager;
-import org.openide.util.Lookup;
 
 /* A comprehensive test of CustomEditorDisplayer */
 public class CustomEditorDisplayerTest extends NbTestCase {
@@ -100,20 +81,18 @@ public class CustomEditorDisplayerTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String args[]) {
+//    public static void main(String args[]) {
 //        LookAndFeel lf = UIManager.getLookAndFeel();
 /*        try {
             UIManager.setLookAndFeel(new com.jgoodies.plaf.plastic.Plastic3DLookAndFeel());
         } catch (Exception e) {
             e.printStackTrace();
         }
- */
         
         
         TestRunner.run(suite ());
         
         
-        /*
         boolean go=false;
         try {
             UIManager.setLookAndFeel(new PseudoWindowsLookAndFeel());
@@ -145,27 +124,14 @@ public class CustomEditorDisplayerTest extends NbTestCase {
         } catch (Exception e) {
             //highly unlikely 
         }
-         */
         try {
 //        new CustomEditorDisplayerTest("goo").setUp();
         } catch (Exception e){}
  
     }
+         */
 
     static int idx = -1;
-    public static Test suite() {
-        return new CustomEditorDisplayerSuite ();
-    }
-    
-    private static class CustomEditorDisplayerSuite extends NbTestSuite {
-        public CustomEditorDisplayerSuite () {
-            super (CustomEditorDisplayerTest.class);
-        }
-        
-        public void run (final TestResult tr) {
-            super.run (tr);
-        }
-    }    
 /*
  * This test creates a Property, Editor and Node. First test checks if initialized
  * editor contains the same value as property. The second checks if the property

@@ -60,8 +60,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.sun.dlight.bridge</friend>
-                <friend>com.sun.dlight.targets</friend>
+                <friend>com.sun.tools.dlight.bridge</friend>
+                <friend>com.sun.tools.dlight.targets</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
@@ -90,8 +90,8 @@
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
-                <friend>com.sun.dlight.amp</friend>
-                <friend>com.sun.dlight.spi.impl</friend>
+                <friend>com.sun.tools.dlight.amp</friend>
+                <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>org.netbeans.modules.dlight.xml</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
                 <package>org.netbeans.modules.dlight.util</package>

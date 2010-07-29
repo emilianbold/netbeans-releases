@@ -116,6 +116,55 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="deploymentDescriptorConfiguration">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Added SPI interface through which plugin may indicate it requires
+                deployment descriptor.
+	    </summary>
+	    <version major="1" minor="69"/>
+	    <date day="28" month="7" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                The SPI interface DeploymentDescriptorConfiguration may be
+                implemented by the server plugin in order to indicate the
+                server needs deployment descriptor.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="DeploymentDescriptorConfiguration"/>
+            <issue number="189012"/>
+	 </change>
+
+        <change id="serverLibraries">
+	    <summary>
+                Implemented support for handling the server libraries.
+	    </summary>
+	    <version major="1" minor="68"/>
+	    <date day="9" month="6" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                Implemented both SPI and API to provide support for server
+                libraries management.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.common.api" name="Version"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ServerLibrary"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ServerLibraryDependency"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="OptionalDeploymentManagerFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerLibraryFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerLibraryImplementation"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerLibraryManager"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="ServerLibraryConfiguration"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyOptionalFactory"/>
+            <issue number="182282"/>
+	 </change>
+
         <change id="optionalFactoryProxy">
 	    <api name="support"/>
 	    <summary>

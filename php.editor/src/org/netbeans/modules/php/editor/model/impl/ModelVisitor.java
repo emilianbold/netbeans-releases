@@ -55,6 +55,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
@@ -149,6 +150,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private final ModelBuilder modelBuilder;
     private final ParserResult info;
     private boolean  askForEditorExtensions = true;
+    private List<PhpBaseElement> baseElements;
 
 
     public ModelVisitor(final ParserResult info) {
@@ -158,6 +160,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         markerBuilder = new CodeMarkerBuilder();
         this.modelBuilder = new ModelBuilder(this.fileScope);
         this.info = info;
+        this.baseElements = new ArrayList<PhpBaseElement>();
     }
 
     public ParserResult getCompilationInfo() {
@@ -169,20 +172,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.scan(node);
     }
 
-    public void extendModel() {
+    public List<PhpBaseElement> extendedElements() {
         synchronized(this) {
             if (!askForEditorExtensions) {
-                return;
+                return new ArrayList<PhpBaseElement>(baseElements);
             }
             askForEditorExtensions = false;
         }
-
+        baseElements.clear();
         final FileObject fileObject = fileScope.getFileObject();
         EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
         final List<PhpBaseElement> elements = editorExtender.getElementsForCodeCompletion(fileObject);
+        baseElements.addAll(elements);
         if (elements.size() > 0) {
             for (PhpBaseElement element : elements) {
                 if (element instanceof PhpVariable) {
+                    assert element != null;
                     PhpVariable phpVariable = (PhpVariable) element;
                     Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
                     for (NamespaceScope namespace : declaredNamespaces) {
@@ -190,15 +195,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         if (namespaceScope != null) {
                             final String varName = phpVariable.getName();
                             VariableNameImpl variable = findVariable(namespace, varName);
+                            final PhpClass type = phpVariable.getType();
                             if (variable != null) {
                                 variable.indexedElement = VariableElementImpl.create(
                                          varName, phpVariable.getOffset(), phpVariable.getFile(),
-                                        null, TypeResolverImpl.parseTypes(phpVariable.getFullyQualifiedName()));
+                                        null, type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet());
                             } else {
                                 int offset = namespaceScope.getOffset();
                                 VariableElementImpl var = VariableElementImpl.create(
                                          varName, offset, phpVariable.getFile(),
-                                        null, TypeResolverImpl.parseTypes(phpVariable.getFullyQualifiedName()));
+                                        null, type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet());
                                 namespaceScope.createElement(var);
                             }
                         }
@@ -206,6 +212,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
             }
         }
+        return new ArrayList<PhpBaseElement>(baseElements);
     }
 
     @Override
@@ -220,6 +227,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ReturnStatement node) {
+        super.visit(node);
         final ScopeImpl currentScope = modelBuilder.getCurrentScope();
         markerBuilder.prepare(node,currentScope);        
         String typeName = null;
@@ -266,8 +274,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     functionScope.returnType += "|" + tp;//NOI18N
                 }
             }
-        }
-        super.visit(node);
+        }        
     }
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868

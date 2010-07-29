@@ -5558,3 +5558,16 @@ org.netbeans.spi.debugger.ActionsProvider$ContextAware
 org.netbeans.spi.debugger.ActionsProvider$ContextAware$ContextDispatcherListener
 org.openide.awt.AcceleratorBinding
 org.openide.filesystems.FSException
+
+# OK on May 28, 2010:
+javax.swing.ScrollPaneLayout
+org.netbeans.modules.cnd.debug.DebugUtils
+org.netbeans.modules.project.libraries.LibrariesStorage$Libs
+org.openide.awt.AcceleratorBinding$Iter
+org.openide.awt.Actions$ButtonActionConnectorGetter
+org.openide.awt.MenuBar$LazySeparator
+org.openide.util.CharSequences
+
+# OK on Jun 30, 2010:
+org.openide.actions.UndoRedoAction
+org.openide.awt.UndoRedo$Provider

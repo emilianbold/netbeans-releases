@@ -45,6 +45,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -231,14 +232,18 @@ class RfsLocalController extends NamedRunnable {
         }
     }
 
-    private void initNewFilesDiscovery() {
+    private boolean initNewFilesDiscovery() {
         String remoteSyncRoot = RemotePathMap.getRemoteSyncRoot(execEnv);
         ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", "-p", remoteSyncRoot); // NOI18N
         if (res.isOK()) {
            timeStampFile = res.output.trim();
+           return true;
         } else {
             timeStampFile = null;
-            logger.log(Level.INFO, "Error invoking mktemp -p %s at %s; %s; rc=%d.", remoteSyncRoot, execEnv, res.error, res.exitCode);
+            String errMsg = NbBundle.getMessage(getClass(), "MSG_Error_Running_Command", "mktemp -p " + remoteSyncRoot, execEnv, res.error, res.exitCode);
+            logger.log(Level.INFO, errMsg);
+            err.printf("%s\n", errMsg); // NOI18N
+            return false;
         }
     }
 
@@ -378,8 +383,10 @@ class RfsLocalController extends NamedRunnable {
 
     /**
      * Feeds remote controller with the list of files and their lengths
+     * @return true in the case of success, otherwise false
+     * NB: in the case false is returned, no shutdown will be called
      */
-    void init() {
+    boolean init() {
 
         char version = USE_TIMESTAMPS ? '2' : '1';
         logger.log(Level.FINE, "Initialization. Version=%c", version);
@@ -461,10 +468,14 @@ class RfsLocalController extends NamedRunnable {
             logger.log(Level.FINE, "reading initial response took %d ms", System.currentTimeMillis() - time);
         } catch (IOException ex) {
             err.printf("%s\n", ex.getMessage());
+            return false;
         }
         fileData.store();
-        initNewFilesDiscovery();
+        if (!initNewFilesDiscovery()) {
+            return false;
+        }
         logger.log(Level.FINE, "the entire initialization took %d ms", System.currentTimeMillis() - timeTotal);
+        return true;
     }
 
     private Collection<File> gatherParents(Collection<File> files) {

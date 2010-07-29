@@ -97,9 +97,9 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
     abstract String getPID();
 
     @Override
-    public abstract void requestPrivileges(
+    public abstract boolean requestPrivileges(
             Collection<String> requestedPrivileges,
-            String root, char[] passwd) throws NotOwnerException, CancellationException;
+            String root, char[] passwd) throws NotOwnerException, CancellationException, InterruptedException;
 
     @Override
     public void requestPrivileges(

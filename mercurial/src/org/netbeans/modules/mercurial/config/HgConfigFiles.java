@@ -56,7 +56,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.ini4j.Config;
 import org.ini4j.Ini;
-import org.ini4j.InvalidIniFormatException;
+import org.ini4j.InvalidFileFormatException;
+import org.ini4j.Profile.Section;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -96,7 +97,7 @@ public class HgConfigFiles {
     private static final String WINDOWS_HG_RC_FILE = "Mercurial.ini";                                 // NOI18N
     private static final String WINDOWS_DEFAULT_MECURIAL_INI_PATH = "C:\\Mercurial\\Mercurial.ini";                                 // NOI18N
     private boolean bIsProjectConfig;
-    private InvalidIniFormatException initException;
+    private IOException initException;
     /**
      * fileName of the configuration file
      */
@@ -345,14 +346,14 @@ public class HgConfigFiles {
             }
         } catch (FileNotFoundException ex) {
             // ignore
-        } catch (InvalidIniFormatException ex) {
+        } catch (InvalidFileFormatException ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot parse configuration file", ex); // NOI18N
             initException = ex;
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
         } catch (Exception ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot parse configuration file", ex); // NOI18N
-            initException = new InvalidIniFormatException(ex);
+            initException = new IOException(ex);
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }

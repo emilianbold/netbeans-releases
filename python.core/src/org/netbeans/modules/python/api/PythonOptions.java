@@ -27,6 +27,7 @@ public class PythonOptions {
     public static String PYTHON_NATIVE = "python.native" ;
     public static String PYTHON_CONSOLE = "python.console";
     public static String PROMPT_FOR_ARGS = "prompt.for.args";
+    public static String PYTHON_DEFAULT = "python.default";
     // debugger's options
     public static String DBG_LISTENING_PORT = "dbg.listening.port";
     public static String STOP_AT_FIRST_LINE = "dbg.stopatfirstline";
@@ -89,7 +90,13 @@ public class PythonOptions {
     public void setPythonCommand(String command){
         pref.put(PYTHON_COMMAND, command);
     }
+    public String getPythonDefault(){
+        return pref.get(PYTHON_DEFAULT, defaultPython);
+    }
     
+    public void setPythonDefault(String command){
+        pref.put(PYTHON_DEFAULT, command);
+    }
     public boolean getNative(){
         return pref.getBoolean(PYTHON_NATIVE, false);
     }

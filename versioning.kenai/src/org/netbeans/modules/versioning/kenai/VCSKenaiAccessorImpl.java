@@ -46,10 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -63,6 +61,7 @@ import javax.swing.JLabel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiActivity;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiNotification;
@@ -131,7 +130,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             KenaiProject kp = KenaiProject.forRepository(url);
             return kp != null ? kp.getKenai().getPasswordAuthentication() != null : false;
         } catch (KenaiException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.log(Level.WARNING, "isLogged: Cannot load kenai project for {0}", url); //NOI18N
+            LOG.log(Level.FINE, null, ex);
         }
         return false;
     }
@@ -228,6 +228,32 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
         }
     }
 
+    @Override
+    public boolean isAuthorized (String repositoryURL, RepositoryActivity activity) {
+        boolean authorized = true;
+        Kenai kenai = getKenai(repositoryURL);
+        if (kenai != null) {
+            try {
+                KenaiProject kp = KenaiProject.forRepository(repositoryURL);
+                if (kp != null) {
+                    authorized = kenai.isAuthorized(kp, getKenaiActivity(activity));
+                }
+            } catch (KenaiException ex) {
+                Logger.getLogger(VCSKenaiAccessorImpl.class.getName()).log(Level.INFO, null, ex);
+                authorized = false;
+            }
+        }
+        return authorized;
+    }
+
+    private KenaiActivity getKenaiActivity (RepositoryActivity repositoryActivity) {
+        if (RepositoryActivity.WRITE.equals(repositoryActivity)) {
+            return KenaiActivity.SOURCE_WRITE;
+        } else {
+            return KenaiActivity.SOURCE_READ;
+        }
+    }
+
     /**
      * Attaches a listener to the kenai dashboard if immediate is set to true or user is logged into kenai
      * @param immediate
@@ -282,7 +308,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             KenaiProject kp = KenaiProject.forRepository(sourcesUrl);
             return kp != null ? kp.getWebLocation().toString() : null;
         } catch (KenaiException ex) {
-            LOG.log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, "getProjectUrl: Cannot load kenai project for {0}", sourcesUrl); //NOI18N
+            LOG.log(Level.FINE, null, ex);
             return null;
         }
     }
@@ -441,6 +468,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             this.m = m;
         }
 
+        @Override
         public Type getType() {
             switch(m.getType()) {
                 case NEW:
@@ -454,10 +482,12 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             }
         }
 
+        @Override
         public String getResource() {
             return m.getResource();
         }
 
+        @Override
         public String getId() {
             return m.getId();
         }
@@ -470,6 +500,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             this.kp = kp;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             handleKenaiProjectEvent(evt, kp.getName());
         }
@@ -500,7 +531,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
                 try {
                     kp = KenaiProject.forRepository(url);
                 } catch (KenaiException ex) {
-                    LOG.log(Level.WARNING, null, ex);
+                    LOG.log(Level.WARNING, "handleKenaiProjectEvent: Cannot load kenai project for {0}", url); //NOI18N
+                    LOG.log(Level.FINE, null, ex);
                     return;
                 }
                 String name = kp.getName();

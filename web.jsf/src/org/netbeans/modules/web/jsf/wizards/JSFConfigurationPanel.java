@@ -55,9 +55,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.HelpCtx;
 
@@ -75,9 +77,12 @@ public class JSFConfigurationPanel extends WebModuleExtender {
 
     private Preferences preferences;
 
-    public enum LibraryType {USED, NEW, NONE};
+    private Library jsfComponentsLibrary;
+
+    public enum LibraryType {USED, NEW, SERVER};
     private LibraryType libraryType;
     private Library jsfCoreLibrary;
+    private ServerLibrary serverLibrary;
     private String newLibraryName;
     private File installedFolder;
 
@@ -128,6 +133,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     private boolean customizer;
     
+    @Override
     public JSFConfigurationPanelVisual getComponent() {
         if (component == null)
             component = new JSFConfigurationPanelVisual(this, customizer);
@@ -135,6 +141,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(JSFConfigurationPanel.class);
     }
@@ -151,10 +158,12 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         this.facesMapping = facesMapping;
     }
 
+    @Override
     public void update() {
         component.update();
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         if (component.valid()) {
@@ -164,6 +173,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return false;
     }
     
+    @Override
     public Set extend(WebModule webModule) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
         preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
@@ -174,7 +184,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         }
         return framework.extendImpl(webModule);
     }
-    
+
     public ExtenderController getController() {
         return controller;
     }
@@ -321,6 +331,22 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     protected void setLibrary(Library library){
         this.jsfCoreLibrary = library;
         fireChangeEvent();
+    }
+
+    public ServerLibrary getServerLibrary() {
+        return serverLibrary;
+    }
+
+    protected void setServerLibrary(ServerLibrary library){
+        this.serverLibrary = library;
+        fireChangeEvent();
+    }
+    void setJsfComponentsLibrary(Library library) {
+        this.jsfComponentsLibrary = library;
+    }
+
+    public Library getJsfComponentsLibrary() {
+        return jsfComponentsLibrary;
     }
 
     protected static class PreferredLanguage {
