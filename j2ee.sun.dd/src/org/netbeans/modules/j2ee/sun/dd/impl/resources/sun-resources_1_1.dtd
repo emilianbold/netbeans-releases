@@ -1,29 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
-  The contents of this file are subject to the terms
- of the Common Development and Distribution License
- (the License).  You may not use this file except in
- compliance with the License.
- You can obtain a copy of the license at
-
- https://glassfish.dev.java.net/public/CDDLv1.0.html or
- glassfish/bootstrap/legal/CDDLv1.0.txt.
- See the License for the specific language governing
+<!--
+ The contents of this file are subject to the terms 
+ of the Common Development and Distribution License 
+ (the "License").  You may not use this file except 
+ in compliance with the License.
+ 
+ You can obtain a copy of the license at 
+ glassfish/bootstrap/legal/CDDLv1.0.txt or 
+ https://glassfish.dev.java.net/public/CDDLv1.0.html. 
+ See the License for the specific language governing 
  permissions and limitations under the License.
-
- When distributing Covered Code, include this CDDL
-
- Header Notice in each file and include the License file
- at glassfish/bootstrap/legal/CDDLv1.0.txt. 
- If applicable, add the following below the CDDL Header,
- with the fields enclosed by brackets [] replaced by
- you own identifying information:
- "Portions Copyrighted [year] [name of copyright owner]"
-
- Copyright 2006 Sun Microsystems, Inc. All rights reserved.-->
-<!--  
-  A resources instance document referring to this DTD should have a DOCTYPE as follows:
- <!DOCTYPE resources PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN" "http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd">-->
+ 
+ When distributing Covered Code, include this CDDL 
+ HEADER in each file and include the License file at 
+ glassfish/bootstrap/legal/CDDLv1.0.txt.  If applicable, 
+ add the following below this CDDL HEADER, with the 
+ fields enclosed by brackets "[]" replaced with your 
+ own identifying information: Portions Copyright [yyyy] 
+ [name of copyright owner]
+-->
 <!-- ENTITIES -->
 <!-- boolean
 
@@ -44,6 +39,10 @@
     "(read-uncommitted | read-committed | repeatable-read | serializable)">    
 
 
+<!-- validation-level
+-->
+<!ENTITY % validation-level "(full | parsing | none)">
+
 <!-- object-type
     defines the type of the resource. It can be:                      
     system-all                                                                 
@@ -61,6 +60,63 @@
     persistence-manager-factory-resource, resource-adapter-config     
 -->
 <!ENTITY % object-type "(system-all | system-admin | system-instance | user)">
+
+<!-- rjmx-protocol
+    SE/EE related ENTITIES: This will define the available JSR 160    
+    connector transport protocols.                                    
+-->
+<!ENTITY % rjmx-protocol "(rmi_jrmp | rmi_iiop | jmxmp)">
+
+<!-- monitoring-level
+    monitoring-level controls the amount of monitoring data collected 
+    and exposed to clients                                            
+    OFF                                                                        
+        no monitoring/statistical data is exposed to the clients.     
+    LOW                                                                        
+        SE/EE only                                                    
+    HIGH                                                                       
+        maximum data is gathered and released.                        
+-->
+<!ENTITY % monitoring-level "(OFF | LOW | HIGH)">
+
+<!-- persistence-type
+    SE/EE related ENTITIES                                            
+-->
+<!ENTITY % persistence-type "(memory | file | ha)">
+
+<!-- session-save-frequency
+-->
+<!ENTITY % session-save-frequency "(web-method | time-based | on-demand)">
+
+<!-- session-save-scope
+-->
+<!ENTITY % session-save-scope
+    "(session | modified-session | modified-attribute)">                       
+
+
+<!-- sfsb-persistence-type
+-->
+<!ENTITY % sfsb-persistence-type "(file | ha)">
+
+<!-- apply-to-type
+-->
+<!ENTITY % apply-to-type "(request | response | both)">
+
+<!-- lb-policy-type
+-->
+<!ENTITY % lb-policy-type
+    "(round-robin | weighted-round-robin | user-defined)">                     
+
+
+<!-- event-type
+-->
+<!ENTITY % event-type
+    "(log | timer | trace | monitor | cluster | lifecycle | notification)">    
+
+
+<!-- message-layer
+-->
+<!ENTITY % message-layer "(SOAP | HttpServlet)">
 
 <!-- ELEMENTS -->
 
@@ -320,33 +376,6 @@
         obtained by non-component callers are not automatically       
         cleaned at the end of a transaction by the container. They    
         need to be explicitly closed by the the caller.               
-    associate-with-thread                                                      
-        Associate a connection with the thread such that when the     
-        same thread is in need of a connection, it can reuse the      
-        connection already associated with that thread, thereby not   
-        incurring the overhead of getting a connection from the pool. 
-        Default value is false.                                       
-    connection-creation-retry-attempts                                         
-        The number of attempts to create a new connection. Default is 
-        0, which implies no retries.                                  
-    connection-creation-retry-interval-in-seconds                              
-        The time interval between retries while attempting to create  
-        a connection. Default is 10 seconds. Effective when           
-        connection-creation-retry-attempts is greater than 0.         
-    connection-leak-reclaim                                                    
-        If enabled, connection will be reusable (put back into pool)  
-        after connection-leak-timeout-in-seconds occurs. Default      
-        value is false.                                               
-    connection-leak-timeout-in-seconds                                         
-        To aid user in detecting potential connection leaks by the    
-        application. When a connection is not returned back to the    
-        pool by the application within the specified period, it is    
-        assumed to be a potential leak and stack trace of the caller  
-        will be logged. Default is 0, which implies there is no leak  
-        detection, by default. A positive non-zero value turns on     
-        leak detection. Note however that, this attribute only        
-        detects if there is a connection leak. The connection can be  
-        reclaimed only if connection-leak-reclaim is set to true.     
     connection-validation-method                                               
         specifies the type of validation to be performed when         
         is-connection-validation-required is true. The following      
@@ -391,29 +420,6 @@
         by that administrator when they are certain that the          
         application does not change the isolation level before        
         returning the connection.                                     
-    lazy-connection-association                                                
-        Connections are lazily associated when an operation is        
-        performed on them. Also, they are disassociated when the      
-        transaction is completed and a component method ends, which   
-        helps reuse of the physical connections. Default value is     
-        false.                                                        
-    lazy-connection-enlistment                                                 
-        Enlist a resource to the transaction only when it is actually 
-        used in a method, which avoids enlistment of connections that 
-        are not used in a transaction. This also prevents unnecessary 
-        enlistment of connections cached in the calling components.   
-        Default value is false.                                       
-    match-connections                                                          
-        To switch on/off connection matching for the pool. It can be  
-        set to false if the administrator knows that the connections  
-        in the pool will always be homogeneous and hence a connection 
-        picked from the pool need not be matched by the resource      
-        adapter. Default value is false.                              
-    max-connection-usage-count                                                 
-        When specified, connections will be re-used by the pool for   
-        the specified number of times after which it will be closed.  
-        This is useful for instance, to avoid statement-leaks.        
-        Default value is 0, which implies the feature is not enabled. 
     max-pool-size                                                              
         maximum number of conections that can be created              
     max-wait-time-in-millis                                                    
@@ -441,10 +447,6 @@
         produced when this attribute has a legal value and the        
         indicated interface is not implemented by the datasource      
         class. This attribute has no default value.                   
-    statement-timeout-in-seconds                                               
-        Sets the timeout property of a connection to enable           
-        termination of abnormally long running queries. Default value 
-        of -1 implies that it is not enabled.                         
     steady-pool-size                                                           
         minimum and initial number of connections maintained in the   
         pool.                                                         
@@ -460,10 +462,6 @@
         programmatically, risk polluting the pool and this could lead to       
         program errors. Also see: is-isolation-level-guaranteed                
 
-    validate-atmost-once-period-in-seconds                                     
-        Used to set the time-interval within which a connection is    
-        validated atmost once. Default is 0 which implies that it is  
-        not enabled. TBD: Documentation is to be corrected.           
     validation-table-name                                                      
         specifies the table name to be used to perform a query to     
         validate a connection. This parameter is mandatory, if        
@@ -471,10 +469,6 @@
         accessing a user specified table may become necessary for     
         connection validation, particularly if database driver caches 
         calls to setAutoCommit() and getMetaData().                   
-    wrap-jdbc-objects                                                          
-        When set to true, application will get wrapped jdbc objects   
-        for Statement, PreparedStatement, CallableStatement,          
-        ResultSet, DatabaseMetaData. Defaults to false.               
 
   Used in:
     resources                                                         
@@ -497,19 +491,7 @@
     validation-table-name CDATA #IMPLIED
     fail-all-connections %boolean; "false"
     non-transactional-connections %boolean; "false"
-    allow-non-component-callers %boolean; "false"
-    validate-atmost-once-period-in-seconds CDATA "0"
-    connection-leak-timeout-in-seconds CDATA "0"
-    connection-leak-reclaim %boolean; "false"
-    connection-creation-retry-attempts CDATA "0"
-    connection-creation-retry-interval-in-seconds CDATA "10"
-    statement-timeout-in-seconds CDATA "-1"
-    lazy-connection-enlistment %boolean; "false"
-    lazy-connection-association %boolean; "false"
-    associate-with-thread %boolean; "false"
-    match-connections %boolean; "false"
-    max-connection-usage-count CDATA "0"
-    wrap-jdbc-objects %boolean; "false">
+    allow-non-component-callers %boolean; "false">
 
 
 <!-- connector-connection-pool
@@ -539,36 +521,9 @@
 
 
   attributes
-    associate-with-thread                                                      
-        Associate a connection with the thread such that when the     
-        same thread is in need of a connection, it can reuse the      
-        connection already associated with that thread, thereby not   
-        incurring the overhead of getting a connection from the pool. 
-        Default value is false.                                       
-    connection-creation-retry-attempts                                         
-        The number of attempts to create a new connection. Default is 
-        0, which implies no retries.                                  
-    connection-creation-retry-interval-in-seconds                              
-        The time interval between retries while attempting to create  
-        a connection. Default is 10 seconds. Effective when           
-        connection-creation-retry-attempts is greater than 0.         
     connection-definition-name                                                 
         unique name, identifying one connection-definition in a       
         Resource Adapter. Currently this is ConnectionFactory type.   
-    connection-leak-reclaim                                                    
-        If enabled, connection will be reusable (put back into pool)  
-        after connection-leak-timeout-in-seconds occurs. Default      
-        value is false.                                               
-    connection-leak-timeout-in-seconds                                         
-        To aid user in detecting potential connection leaks by the    
-        application. When a connection is not returned back to the    
-        pool by the application within the specified period, it is    
-        assumed to be a potential leak and stack trace of the caller  
-        will be logged. Default is 0, which implies there is no leak  
-        detection, by default. A positive non-zero value turns on     
-        leak detection. Note however that, this attribute only        
-        detects if there is a connection leak. The connection can be  
-        reclaimed only if connection-leak-reclaim is set to true.     
     fail-all-connections                                                       
         indicates if all connections in the pool must be closed       
         should a single connection fail validation. The default is    
@@ -586,29 +541,6 @@
     is-connection-validation-required                                          
         This attribute specifies if the connection that is about to   
         be returned is to be validated by the container,              
-    lazy-connection-association                                                
-        Connections are lazily associated when an operation is        
-        performed on them. Also, they are disassociated when the      
-        transaction is completed and a component method ends, which   
-        helps reuse of the physical connections. Default value is     
-        false.                                                        
-    lazy-connection-enlistment                                                 
-        Enlist a resource to the transaction only when it is actually 
-        used in a method, which avoids enlistment of connections that 
-        are not used in a transaction. This also prevents unnecessary 
-        enlistment of connections cached in the calling components.   
-        Default value is false.                                       
-    match-connections                                                          
-        To switch on/off connection matching for the pool. It can be  
-        set to false if the administrator knows that the connections  
-        in the pool will always be homogeneous and hence a connection 
-        picked from the pool need not be matched by the resource      
-        adapter. Default value is true.                               
-    max-connection-usage-count                                                 
-        When specified, connections will be re-used by the pool for   
-        the specified number of times after which it will be closed.  
-        This is useful for instance, to avoid statement-leaks.        
-        Default value is 0, which implies the feature is not enabled. 
     max-pool-size                                                              
         maximum number of conections that can be created              
     max-wait-time-in-millis                                                    
@@ -637,10 +569,6 @@
         Adapter in a downward compatible way, i.e it can support a    
         lower/equal transaction level than specified in the RA, but   
         not a higher level.                                           
-    validate-atmost-once-period-in-seconds                                     
-        Used to set the time-interval within which a connection is    
-        validated atmost once. Default is 0 which implies that it is  
-        not enabled. TBD: Documentation is to be corrected.           
 
   Used in:
     resources                                                         
@@ -658,17 +586,7 @@
     idle-timeout-in-seconds CDATA "300"
     fail-all-connections %boolean; "false"
     transaction-support (XATransaction | LocalTransaction | NoTransaction) #IMPLIED
-    is-connection-validation-required %boolean; "false"
-    validate-atmost-once-period-in-seconds CDATA "0"
-    connection-leak-timeout-in-seconds CDATA "0"
-    connection-leak-reclaim %boolean; "false"
-    connection-creation-retry-attempts CDATA "0"
-    connection-creation-retry-interval-in-seconds CDATA "10"
-    lazy-connection-enlistment %boolean; "false"
-    lazy-connection-association %boolean; "false"
-    associate-with-thread %boolean; "false"
-    match-connections %boolean; "true"
-    max-connection-usage-count CDATA "0">
+    is-connection-validation-required %boolean; "false">
 
 
 <!-- property
