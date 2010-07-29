@@ -42,8 +42,12 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
@@ -59,6 +63,8 @@ import org.apache.maven.execution.MavenExecutionRequestPopulationException;
 import org.apache.maven.execution.MavenExecutionRequestPopulator;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.lifecycle.LifecycleExecutor;
+import org.apache.maven.lifecycle.mapping.Lifecycle;
+import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.io.ModelReader;
 import org.apache.maven.model.io.ModelWriter;
@@ -84,15 +90,13 @@ import org.openide.util.Exceptions;
  * @author mkleint
  */
 public final class MavenEmbedder {
-    public static final String userHome = System.getProperty( "user.home" );
-    public static final File userMavenConfigurationHome = new File( userHome, ".m2" );
-    public static final File defaultUserLocalRepository = new File( userMavenConfigurationHome, "repository" );
-    public static final File DEFAULT_USER_SETTINGS_FILE = new File( userMavenConfigurationHome, "settings.xml" );
+
+    public static final String userHome = System.getProperty("user.home");
+    public static final File userMavenConfigurationHome = new File(userHome, ".m2");
+    public static final File defaultUserLocalRepository = new File(userMavenConfigurationHome, "repository");
+    public static final File DEFAULT_USER_SETTINGS_FILE = new File(userMavenConfigurationHome, "settings.xml");
     public static final File DEFAULT_GLOBAL_SETTINGS_FILE =
-        new File( System.getProperty( "maven.home", System.getProperty( "user.dir", "" ) ), "conf/settings.xml" );
-
-
-
+            new File(System.getProperty("maven.home", System.getProperty("user.dir", "")), "conf/settings.xml");
     private final PlexusContainer plexus;
     private final Maven maven;
     private final ProjectBuilder projectBuilder;
@@ -161,18 +165,18 @@ public final class MavenEmbedder {
         }
     }
 
-  public Settings getSettings() {
-    SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
-    req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
-    req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
-    req.setSystemProperties(request.getSystemProperties());
-    try {
-      return settingsBuilder.build(req).getEffectiveSettings();
-    } catch(SettingsBuildingException ex) {
-        Exceptions.printStackTrace(ex);
-        return new Settings();
+    public Settings getSettings() {
+        SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
+        req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
+        req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
+        req.setSystemProperties(request.getSystemProperties());
+        try {
+            return settingsBuilder.build(req).getEffectiveSettings();
+        } catch (SettingsBuildingException ex) {
+            Exceptions.printStackTrace(ex);
+            return new Settings();
+        }
     }
-  }
 
 // Can this be removed?
 //    public SettingsValidationResult validateSettings(File settingsFile) {
@@ -191,7 +195,6 @@ public final class MavenEmbedder {
 //
 //        return result;
 //    }
-
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
@@ -216,14 +219,14 @@ public final class MavenEmbedder {
     //TODO maybe remove in favour of the Request one
     public MavenProject readProject(File fallback) {
         try {
-          MavenExecutionRequest req = new DefaultMavenExecutionRequest();
-          populator.populateDefaults(req);
-          ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
-          configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-          return projectBuilder.build(fallback, configuration).getProject();
-        } catch(ProjectBuildingException ex) {
+            MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+            populator.populateDefaults(req);
+            ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
+            configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            return projectBuilder.build(fallback, configuration).getProject();
+        } catch (ProjectBuildingException ex) {
             return new MavenProject();
-        } catch(MavenExecutionRequestPopulationException ex) {
+        } catch (MavenExecutionRequestPopulationException ex) {
             Exceptions.printStackTrace(ex);
             return new MavenProject();
         }
@@ -232,12 +235,12 @@ public final class MavenEmbedder {
     public Artifact createArtifactWithClassifier(String groupId, String artifactId, String version, String type, String classifier) {
         return repositorySystem.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
     }
-    
+
     public Artifact createArtifact(String groupId, String artifactId, String version, String extension, String type) {
         return repositorySystem.createArtifact(groupId, artifactId, version, type);
     }
 
-    public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException{
+    public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
 
         ArtifactResolutionRequest req = new ArtifactResolutionRequest();
         req.setLocalRepository(localRepository);
@@ -251,7 +254,6 @@ public final class MavenEmbedder {
 //        setLastUpdated(localRepository, req.getRemoteRepositories(), sources);
     }
 
-
     //TODO possibly rename.. build sounds like something else..
     public ProjectBuildingResult buildProject(Artifact art, ProjectBuildingRequest req) throws ProjectBuildingException {
         try {
@@ -261,7 +263,7 @@ public final class MavenEmbedder {
             }
             //TODO some default population of request?
             req.setProcessPlugins(false);
-            
+
             return bldr.build(art, req);
         } catch (ComponentLookupException ex) {
 //            Exceptions.printStackTrace(ex);
@@ -269,19 +271,31 @@ public final class MavenEmbedder {
         }
     }
 
-    public List<String> getLifecyclePhases() {
-        ///TODO
-        return Arrays.asList(new String[] {
-            "phase1",
-            "phase2",
-            "phasefoo",
-            "changeme"
-        });
-    }
-
     public MavenExecutionResult execute(MavenExecutionRequest req) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
     
+    public List<String> getLifecyclePhases() {
 
+        LifecycleMapping lifecycleMapping = lookupComponent(LifecycleMapping.class);
+        if (lifecycleMapping != null) {
+            List<String> phases = new ArrayList<String>();
+            Map<String, Lifecycle> lifecycles = lifecycleMapping.getLifecycles();
+            for (Lifecycle lifecycle : lifecycles.values()) {
+                phases.addAll(lifecycle.getPhases().values());
+            }
+            return phases;
+        }
+
+        return Collections.<String>emptyList();
+    }
+
+    private <T> T lookupComponent(Class<T> clazz) {
+        try {
+            return getPlexusContainer().lookup(clazz);
+        } catch (ComponentLookupException ex) {
+            Logger.getLogger(MavenEmbedder.class.getName()).warning(ex.getMessage());
+        }
+        return null;
+    }
 }
