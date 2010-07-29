@@ -95,7 +95,6 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import org.netbeans.modules.maven.execute.JarPackagingRunChecker;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
@@ -106,7 +105,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -921,7 +919,6 @@ public final class NbMavenProjectImpl implements Project {
 
     private Lookup createBasicLookup() {
         CPExtender extender = new CPExtender(this);
-        @SuppressWarnings("deprecation")
         Lookup staticLookup = Lookups.fixed(new Object[]{
                     projectInfo,
                     this,
@@ -965,7 +962,6 @@ public final class NbMavenProjectImpl implements Project {
                     new CPModifierLookupMerger(extender),
 
                     new BackwardCompatibilityWithMevenideChecker(),
-                    new JarPackagingRunChecker(),
                     new DebuggerChecker(),
                     new CosChecker(this),
                     CosChecker.createResultChecker(),
