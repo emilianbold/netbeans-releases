@@ -406,7 +406,7 @@ public class WLPluginProperties {
         String sunJavaHome = null; 
         properties.put( JAVA_HOME, javaHomeVendors );
         try {
-            if (Utilities.isWindows()) {
+            if ( Utilities.isWindows()) {
                 String setDomainEnv = domainPath + "/bin/setDomainEnv.cmd"; // NOI18N
                 File file = new File(setDomainEnv);
                 if (!file.exists()) {
