@@ -48,12 +48,15 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -62,6 +65,26 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=org.netbeans.modules.web.el.spi.ELVariableResolver.class)
 public final class JsfELVariableResolver implements ELVariableResolver {
+
+    @Override
+    public String getBeanClass(String beanName, FileObject context) {
+        for (FacesManagedBean bean : getManagedBeans(context)) {
+            if (bean.getManagedBeanName().equals(beanName)) {
+                return bean.getManagedBeanClass();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getBeanName(String clazz, FileObject context) {
+        for (FacesManagedBean bean : getManagedBeans(context)) {
+            if (bean.getManagedBeanClass().equals(clazz)) {
+                return bean.getManagedBeanName();
+            }
+        }
+        return null;
+    }
 
     @Override
     public String getReferredExpression(Snapshot snapshot, final int offset) {
@@ -87,4 +110,10 @@ public final class JsfELVariableResolver implements ELVariableResolver {
         return result[0];
     }
 
+    private List<FacesManagedBean> getManagedBeans(FileObject context) {
+        WebModule webModule = WebModule.getWebModule(context);
+        return webModule != null 
+                ? JSFBeanCache.getBeans(webModule)
+                : Collections.<FacesManagedBean>emptyList();
+    }
 }

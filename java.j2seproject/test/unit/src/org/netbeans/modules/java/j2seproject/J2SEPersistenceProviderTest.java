@@ -96,6 +96,10 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
         return System.err;
     }
 
+    protected @Override int timeOut() {
+        return 300000;
+    }
+
     public void setUp() throws Exception {
         // in an attempt to find the cause of issue 90762
         Logger.getLogger(PersistenceScopesHelper.class.getName()).setLevel(Level.FINEST);

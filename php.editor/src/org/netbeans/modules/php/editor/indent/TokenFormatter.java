@@ -1568,7 +1568,11 @@ public class TokenFormatter {
 
             private int startOffset = -1;
             private int endOffset = -1;
-            private int previousLineIndent = 0;
+            // prviousIndentDelta keeps information, when a template is inserted and
+            // the code is not formatted according setted rules. Like initial indentation, etc.
+            // Basically it contain difference between number of spaces in document and 
+            // the position if the document will be formatted according our rules.
+            private int previousIndentDelta = 0;
             private String previousOldIndentText = "";
             private String previousNewIndentText = "";
 
@@ -1578,11 +1582,13 @@ public class TokenFormatter {
 		}
 
                 if(startOffset == -1) {
+                    // set the range, where the formatting should be done
                     startOffset = formatContext.startOffset();
                     endOffset = formatContext.endOffset();
                 }
                 if (startOffset > 0 && (startOffset - oldText.length()) > offset
                         && newText != null && newText.indexOf('\n') > -1) {
+                    // will be formatted new line that the first one has to be special 
                     previousNewIndentText = newText;
                     previousOldIndentText = oldText;
                 }
@@ -1590,35 +1596,37 @@ public class TokenFormatter {
                         || (startOffset > 0 && (startOffset - oldText.length()) == offset))) {
                     int realOffset = offset + delta;
                     if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
+                        // this should be a line with a place, where the template is inserted.
                         if (previousOldIndentText.length() == 0 && previousNewIndentText.length() == 0) {
                             // probably we are at the begining of file, so keep the current possition
                             previousOldIndentText = oldText;
                             previousNewIndentText = newText;
                         }
+                        // find difference between the new text and old text of the previous formatting rule
                         int indexOldTextLine = previousOldIndentText.lastIndexOf('\n');
                         int indexNewTextLine = previousNewIndentText.lastIndexOf('\n');
-                        if (indexOldTextLine > -1 && indexNewTextLine > -1) {
-                            int addToLength = 0;
-                            int indexOldText = indexOldTextLine;
-                            while (indexOldText < previousOldIndentText.length()
-                                    && (indexOldText =previousOldIndentText.indexOf('\t', indexOldText)) != -1) {
-                                addToLength += docOptions.tabSize - 1;
-                                indexOldText++;
-                            }
-                            previousLineIndent = previousNewIndentText.length() - indexNewTextLine - previousOldIndentText.length() - addToLength + indexOldTextLine;
-                        }
 
-                        indexOldTextLine = oldText.lastIndexOf('\n');
+                        previousNewIndentText = indexNewTextLine == -1 ? previousNewIndentText : previousNewIndentText.substring(indexNewTextLine + 1);
+                        previousOldIndentText = indexOldTextLine == -1 ? previousOldIndentText : previousOldIndentText.substring(indexOldTextLine + 1);
+
+                        previousIndentDelta = countOfSpaces(previousOldIndentText, docOptions.tabSize)
+                                - countOfSpaces(previousNewIndentText, docOptions.tabSize);
+
+                        // find the indent of the new text
                         indexNewTextLine = newText.lastIndexOf('\n');
                         String replaceNew = indexNewTextLine == -1 ? newText : newText.substring(indexNewTextLine + 1);
-                        if (previousLineIndent != 0 && indexNewTextLine > -1 && (replaceNew.length()) >= 0) {
-                            int newSpaces = replaceNew.length() - previousLineIndent;
-                            replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
-                        }
-                        String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
-                        
+                        int replaceNewLength = countOfSpaces(replaceNew, docOptions.tabSize);
 
-                        if (!replaceOld.equals(replaceNew)) {
+                        // if there was a difference on the previous line, apply the difference for the current line as well.
+                        if (previousIndentDelta != 0 && indexNewTextLine > -1 && (replaceNewLength >= 0)) {
+                            replaceNewLength += previousIndentDelta;
+                            replaceNew = createWhitespace(document, 0, Math.max(0, replaceNewLength));
+                        }
+                        indexOldTextLine = oldText.lastIndexOf('\n');
+                        String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
+                        int replaceOldLength = countOfSpaces(replaceOld, docOptions.tabSize);
+
+                        if (replaceOldLength != replaceNewLength) {
                             delta = replaceSimpleString(document, realOffset + indexOldTextLine + 1, replaceOld, replaceNew, delta);
                         }
                     }
@@ -1650,10 +1658,10 @@ public class TokenFormatter {
                                         indexNewTextLine = newText.length();
                                     replaceOld = indexOldText == indexOldTextLine && oldText.length() > 0 ? "\n" : oldText.substring(indexOldText, indexOldTextLine); // NOI18N
                                     replaceNew = indexNewText == indexNewTextLine ? "\n" : newText.substring(indexNewText, indexNewTextLine); // NOI18N
-                                    if (previousLineIndent != 0 && indexNewText != indexNewTextLine 
+                                    if (previousIndentDelta != 0 && indexNewText != indexNewTextLine
                                             && indexNewText > 0
                                             && indexNewTextLine > -1 && (replaceNew.length()) > 0) {
-                                        int newSpaces = replaceNew.length() - previousLineIndent;
+                                        int newSpaces = countOfSpaces(replaceNew, docOptions.tabSize) + previousIndentDelta;
                                         replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
                                     }
                                     if (!replaceOld.equals(replaceNew)
@@ -1680,10 +1688,11 @@ public class TokenFormatter {
                                             indexNewTextLine = newText.length();
                                         }
                                         replaceNew = newText.substring(indexNewText, indexNewTextLine == -1 ? newText.length() : indexNewTextLine); // NOI18N
-                                        if (previousLineIndent != 0 && indexNewText != indexNewTextLine
+                                        int newSpaces = countOfSpaces(replaceNew, docOptions.tabSize);
+                                        if (previousIndentDelta != 0 && indexNewText != indexNewTextLine
                                                 && indexNewText > 0
-                                                && indexNewTextLine > -1 && (replaceNew.length()) > 0) {
-                                            int newSpaces = replaceNew.length() - previousLineIndent;
+                                                && indexNewTextLine > -1 && (newSpaces > 0)) {
+                                            newSpaces = newSpaces + previousIndentDelta;
                                             replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
                                         }
                                         sb.append(replaceNew);
@@ -1781,6 +1790,20 @@ public class TokenFormatter {
 	    token = tokens.get(++index);
 	}
 	return token.getId() == FormatToken.Kind.LINE_COMMENT;
+    }
+
+    private int countOfSpaces(String text, int tabSize) {
+        int spaces = 0;
+        int index = 0;
+        while (index < text.length()) {
+            if (text.charAt(index) == '\t') {
+                spaces += tabSize;
+            } else {
+                spaces++;
+            }
+            index++;
+        }
+        return spaces;
     }
 
     private FormatToken getPreviousNonWhite(List<FormatToken> tokens, int index) {

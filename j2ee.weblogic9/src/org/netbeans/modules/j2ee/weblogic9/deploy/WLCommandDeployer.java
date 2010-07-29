@@ -899,11 +899,13 @@ public final class WLCommandDeployer {
 
     private static class LastLineProcessor implements LineProcessor {
 
+        private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+at.*$"); // NOI18N
+
         private String last = "";
 
         @Override
         public synchronized void processLine(String line) {
-            if (!"".equals(line)) {
+            if (line.length() != 0 && !STACK_TRACE_PATTERN.matcher(line).matches()) {
                 last = line;
             }
         }

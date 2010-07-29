@@ -1353,11 +1353,21 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement) {
-        return new TypeTreeElementImpl(typeElement);
+        return new TypeTreeElementImpl(typeElement, true);
     }
 
     @Override
     public TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement, Set<TypeElement> preferredTypes) {
-        return new TypeTreeElementImpl(typeElement, preferredTypes);
+        return new TypeTreeElementImpl(typeElement, preferredTypes, true);
+    }
+
+    @Override
+    public TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement) {
+                return new TypeTreeElementImpl(typeElement, false);
+    }
+
+    @Override
+    public TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement, Set<TypeElement> preferredTypes) {
+                return new TypeTreeElementImpl(typeElement, preferredTypes, false);
     }
 }

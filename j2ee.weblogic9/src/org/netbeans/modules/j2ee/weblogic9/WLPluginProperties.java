@@ -125,6 +125,7 @@ public class WLPluginProperties {
     
     public static final String BEA_JAVA_HOME="bea_java_home";           // NOI18N
     public static final String SUN_JAVA_HOME="sun_java_home";           // NOI18N
+    public static final String JAVA_HOME ="java_home";                  // NOI18N
     
     private static final Pattern WIN_BEA_JAVA_HOME_PATTERN = 
         Pattern.compile("\\s*set BEA_JAVA_HOME\\s*=(.*)");
@@ -132,11 +133,29 @@ public class WLPluginProperties {
     private static final Pattern WIN_SUN_JAVA_HOME_PATTERN = 
         Pattern.compile("\\s*set SUN_JAVA_HOME\\s*=(.*)");
     
+    private static final Pattern WIN_JAVA_VENDOR_CHECK_PATTERN = 
+        Pattern.compile("\\s*if\\s+\"%JAVA_VENDOR%\"\\s*==\\s*\"([^\"]+)\".*");
+    
+    private static final Pattern WIN_JAVA_HOME_PATTERN = 
+        Pattern.compile("\\s*set JAVA_HOME\\s*=(.*)");
+    
+    private static final Pattern WIN_DEFAULT_VENDOR_PATTERN = 
+        Pattern.compile("\\s*set JAVA_VENDOR\\s*=(.*)");
+    
+    private static final Pattern SHELL_JAVA_VENDOR_CHECK_PATTERN = 
+        Pattern.compile("\\s*if\\s+\\[\\s+\"\\$\\{JAVA_VENDOR\\}\"\\s*=\\s*\"([^\"]+)\"\\s*\\].*");
+    
     private static final Pattern SHELL_BEA_JAVA_HOME_PATTERN = 
         Pattern.compile("\\s*(export)?\\s*BEA_JAVA_HOME\\s*=(.*)");
     
     private static final Pattern SHELL_SUN_JAVA_HOME_PATTERN = 
         Pattern.compile("\\s*(export)?\\s*SUN_JAVA_HOME\\s*=(.*)");
+    
+    private static final Pattern SHELL_JAVA_HOME_PATTERN = 
+        Pattern.compile("\\s*(export)?\\s*JAVA_HOME\\s*=(.*)");
+    
+    private static final Pattern SHELL_DEFAULT_VENDOR_PATTERN = 
+        Pattern.compile("\\s*(export)?\\s*JAVA_VENDOR\\s*=(.*)");
     
     private static final Pattern LISTEN_ADDRESS_PATTERN = 
         Pattern.compile("(?:[a-z]+\\:)?listen-address");            // NOI18N
@@ -382,8 +401,10 @@ public class WLPluginProperties {
      */
     public static Properties getRuntimeProperties(String domainPath){
         Properties properties = new Properties();
+        Properties javaHomeVendors = new Properties();
         String beaJavaHome = null;
         String sunJavaHome = null; 
+        properties.put( JAVA_HOME, javaHomeVendors );
         try {
             if (Utilities.isWindows()) {
                 String setDomainEnv = domainPath + "/bin/setDomainEnv.cmd"; // NOI18N
@@ -398,10 +419,39 @@ public class WLPluginProperties {
                 }
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 String line;
+                String vendorName = null;
+                boolean vendorsSection = false;
+                boolean defaultVendorInit = false;
                 while ((line = reader.readLine()) != null) {
                     Matcher bea = WIN_BEA_JAVA_HOME_PATTERN.matcher(line);
                     Matcher sun = WIN_SUN_JAVA_HOME_PATTERN.matcher(line);
+                    Matcher vendor = WIN_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
+                    Matcher javaHomeMatcher = WIN_JAVA_HOME_PATTERN.matcher(line);
+                    Matcher defaultVendor = WIN_DEFAULT_VENDOR_PATTERN.matcher(line);
 
+                    if ( vendor.matches()){
+                        vendorsSection = true;
+                        vendorName = line.substring(vendor.start(1), vendor.end(1))
+                            .trim(); 
+                        continue;
+                    }
+                    else if ( javaHomeMatcher.matches()){
+                        if ( vendorName != null ){
+                            javaHomeVendors.put(vendorName, line.substring(
+                                    javaHomeMatcher.start(1), javaHomeMatcher.end(1))
+                                    .trim() );
+                        }
+                        else if (defaultVendorInit){
+                            javaHomeVendors.put("", line.substring(
+                                    javaHomeMatcher.start(1), javaHomeMatcher.end(1))
+                                    .trim() );
+                            defaultVendorInit = false;
+                        }
+                        continue;
+                    }
+                    else {
+                        vendorName = null;
+                    }
                     if (bea.matches()) {
                         beaJavaHome = line.substring(bea.start(1), bea.end(1))
                                 .trim();
@@ -409,6 +459,10 @@ public class WLPluginProperties {
                     else if (sun.matches()) {
                         sunJavaHome = line.substring(sun.start(1), sun.end(1))
                                 .trim();
+                    }
+                    else if ( vendorsSection && defaultVendor.matches( )){
+                        defaultVendorInit = true;
+                        vendorsSection = false;
                     }
                 }
             }
@@ -425,9 +479,39 @@ public class WLPluginProperties {
                 }
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 String line;
+                String vendorName = null;
+                boolean vendorsSection = false;
+                boolean defaultVendorInit = false;
                 while ((line = reader.readLine()) != null) {
                     Matcher bea = SHELL_BEA_JAVA_HOME_PATTERN.matcher(line);
                     Matcher sun = SHELL_SUN_JAVA_HOME_PATTERN.matcher(line);
+                    Matcher vendor = SHELL_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
+                    Matcher javaHomeMatcher = SHELL_JAVA_HOME_PATTERN.matcher(line);
+                    Matcher defaultVendor = SHELL_DEFAULT_VENDOR_PATTERN.matcher(line);
+                    
+                    if ( vendor.matches()){
+                        vendorsSection = true;
+                        vendorName = line.substring(vendor.start(1), vendor.end(1))
+                            .trim(); 
+                        continue;
+                    }
+                    else if ( javaHomeMatcher.matches()){
+                        if ( vendorName != null ){
+                            javaHomeVendors.put(vendorName, unquote(line.substring(
+                                    javaHomeMatcher.start(2), javaHomeMatcher.end(2))
+                                    .trim() ));
+                        }
+                        else if (defaultVendorInit){
+                            javaHomeVendors.put("", unquote(line.substring(
+                                    javaHomeMatcher.start(2), javaHomeMatcher.end(2))
+                                    .trim() ));
+                            defaultVendorInit = false;
+                        }
+                        continue;
+                    }
+                    else {
+                        vendorName = null;
+                    }
                     if (bea.matches()) {
                         beaJavaHome = line.substring(bea.start(2), bea.end(2))
                                 .trim();
@@ -435,6 +519,10 @@ public class WLPluginProperties {
                     else if (sun.matches()) {
                         sunJavaHome = line.substring(sun.start(2), sun.end(2))
                                 .trim();
+                    }
+                    else if ( vendorsSection && defaultVendor.matches( )){
+                        defaultVendorInit = true;
+                        vendorsSection = false;
                     }
                 }
             }
@@ -446,12 +534,24 @@ public class WLPluginProperties {
             Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
         }
         if ( beaJavaHome != null ){
-            properties.put( BEA_JAVA_HOME , beaJavaHome );
+            properties.put( BEA_JAVA_HOME , unquote(beaJavaHome) );
         }
         if ( sunJavaHome != null ){
-            properties.put( SUN_JAVA_HOME, sunJavaHome);
+            properties.put( SUN_JAVA_HOME, unquote(sunJavaHome));
         }
         return properties;
+    }
+    
+    private static String unquote(String value ){
+        String quote = "\"";            // NOI18N
+        String result = value ;
+        if ( result.startsWith(quote)){
+            result = result.substring(1);
+        }
+        if (result.endsWith(quote)){
+            result = result.substring(0, result.length()-1);
+        }
+        return result;
     }
 
     /** Creates a new instance of */
