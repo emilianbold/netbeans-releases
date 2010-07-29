@@ -157,20 +157,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, username, password, displayName, props);
         
-        Properties runtimeProps = WLPluginProperties.getRuntimeProperties(domainRoot);
-        String beaHome = runtimeProps.getProperty( WLPluginProperties.BEA_JAVA_HOME);
-        String sunHome = runtimeProps.getProperty( WLPluginProperties.SUN_JAVA_HOME);
-        String vendor = null;
-        if ( beaHome!= null && beaHome.trim().length()>0) {
-            vendor = WLPluginProperties.Vendor.ORACLE.toString();
-            ip.setProperty( WLPluginProperties.BEA_JAVA_HOME , beaHome.trim());
-        }
-        if ( sunHome!= null && sunHome.trim().length() >0 ) {
-            vendor = WLPluginProperties.Vendor.SUN.toString();
-            ip.setProperty( WLPluginProperties.SUN_JAVA_HOME , sunHome.trim());
-        }
-        ip.setProperty( WLPluginProperties.VENDOR , vendor );
-
         // add the created instance properties to the result set
         result.add(ip);
 
@@ -194,6 +180,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String url;
     private String domainName;
     private String port;
+    private String host;
 
 
     /**
@@ -203,6 +190,15 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public void setUrl(String url) {
         this.url = url;
+    }
+    
+    /**
+     * Setter for the instance host.
+     *
+     * @param url the new instance host
+     */
+    public void setHost(String host) {
+        this.host = host;
     }
     
     /**
@@ -249,6 +245,15 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public String getPort(){
         return port;
+    }
+    
+    /**
+     * Getter for the host
+     *
+     * @return the host
+     */
+    public String getHost(){
+        return host;
     }
     
     /**

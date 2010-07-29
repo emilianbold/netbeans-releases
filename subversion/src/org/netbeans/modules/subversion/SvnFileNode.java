@@ -152,4 +152,11 @@ public class SvnFileNode {
         }
         return mimeType;
     }
+
+    public void initializeProperties() {
+        getLocation();
+        getCopy();
+        isFile();
+        getMimeType();
+    }
 }
