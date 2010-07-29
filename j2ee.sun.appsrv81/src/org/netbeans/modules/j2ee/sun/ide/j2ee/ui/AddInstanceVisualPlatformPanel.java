@@ -299,7 +299,6 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         instanceTypeButtonGroup.add(registerDefault);
         org.openide.awt.Mnemonics.setLocalizedText(registerDefault, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerDeafult")); // NOI18N
         registerDefault.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        registerDefault.setMargin(new java.awt.Insets(0, 0, 0, 0));
         registerDefault.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 registerDefaultItemStateChanged(evt);
@@ -317,7 +316,6 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         instanceTypeButtonGroup.add(registerLocal);
         org.openide.awt.Mnemonics.setLocalizedText(registerLocal, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerLocal")); // NOI18N
         registerLocal.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        registerLocal.setMargin(new java.awt.Insets(0, 0, 0, 0));
         registerLocal.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 registerLocalItemStateChanged(evt);
@@ -327,7 +325,6 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         instanceTypeButtonGroup.add(registerRemote);
         org.openide.awt.Mnemonics.setLocalizedText(registerRemote, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerRemote")); // NOI18N
         registerRemote.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        registerRemote.setMargin(new java.awt.Insets(0, 0, 0, 0));
         registerRemote.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 registerRemoteItemStateChanged(evt);
@@ -337,7 +334,6 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         instanceTypeButtonGroup.add(createPersonal);
         org.openide.awt.Mnemonics.setLocalizedText(createPersonal, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_createPersonal")); // NOI18N
         createPersonal.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        createPersonal.setMargin(new java.awt.Insets(0, 0, 0, 0));
         createPersonal.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 createPersonalItemStateChanged(evt);
@@ -360,70 +356,70 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(platformFieldLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(platformField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(openDirectoryCooser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(instanceSelectorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(instanceSelector, 0, 305, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(registerLocal, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                .add(247, 247, 247))
-            .add(layout.createSequentialGroup()
-                .add(registerRemote, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                .add(247, 247, 247))
-            .add(layout.createSequentialGroup()
-                .add(createPersonal, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                .add(247, 247, 247))
-            .add(layout.createSequentialGroup()
-                .add(1, 1, 1)
-                .add(registerDefault, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                .add(246, 246, 246))
-            .add(description, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(profileSelectorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(profileSelector, 0, 305, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(platformFieldLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 96, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(platformField, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(openDirectoryCooser, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(instanceSelectorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(instanceSelector, 0, 305, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(registerLocal, javax.swing.GroupLayout.PREFERRED_SIZE, 170, Short.MAX_VALUE)
+                .addGap(247, 247, 247))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(registerRemote, javax.swing.GroupLayout.PREFERRED_SIZE, 170, Short.MAX_VALUE)
+                .addGap(247, 247, 247))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(createPersonal, javax.swing.GroupLayout.PREFERRED_SIZE, 170, Short.MAX_VALUE)
+                .addGap(247, 247, 247))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(1, 1, 1)
+                .addComponent(registerDefault, javax.swing.GroupLayout.PREFERRED_SIZE, 170, Short.MAX_VALUE)
+                .addGap(246, 246, 246))
+            .addComponent(description, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(profileSelectorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(profileSelector, 0, 305, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(description)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(platformFieldLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(platformField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(11, 11, 11)
-                        .add(registerDefault)
-                        .add(11, 11, 11)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(instanceSelectorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(instanceSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(11, 11, 11)
-                        .add(registerLocal)
-                        .add(11, 11, 11)
-                        .add(registerRemote)
-                        .add(11, 11, 11)
-                        .add(createPersonal)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(profileSelectorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(profileSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(openDirectoryCooser))
-                .addContainerGap())
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(description, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(platformFieldLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(platformField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(11, 11, 11)
+                        .addComponent(registerDefault)
+                        .addGap(11, 11, 11)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(instanceSelectorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(instanceSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(11, 11, 11)
+                        .addComponent(registerLocal)
+                        .addGap(11, 11, 11)
+                        .addComponent(registerRemote)
+                        .addGap(11, 11, 11)
+                        .addComponent(createPersonal)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(profileSelectorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(profileSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(openDirectoryCooser))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {openDirectoryCooser, platformField}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {openDirectoryCooser, platformField});
 
         platformFieldLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "ACSD_InstallRoot")); // NOI18N
         platformField.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_platformField")); // NOI18N

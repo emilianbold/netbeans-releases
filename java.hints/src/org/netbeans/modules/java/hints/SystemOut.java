@@ -133,7 +133,7 @@ public class SystemOut {
                     for (StatementTree statement : statements)
                         if (statement != statementPath.getLeaf ())
                             newStatements.add (statement);
-                    BlockTree newBlockTree = wc.getTreeMaker ().Block (newStatements, true);
+                    BlockTree newBlockTree = wc.getTreeMaker ().Block (newStatements, blockTree.isStatic());
                     wc.rewrite (blockTree, newBlockTree);
                 }
             }).commit ();

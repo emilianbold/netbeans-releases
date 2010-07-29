@@ -89,10 +89,6 @@ public class ChildrenKeysTest extends NbTestCase {
         return false;
     }
 
-//    public static ChildrenKeysTest suite() {
-//        return new ChildrenKeysTest("testEventsCausedBySetChildren");
-//    }
-
     @Override
     protected Level logLevel() {
         return Level.FINEST;

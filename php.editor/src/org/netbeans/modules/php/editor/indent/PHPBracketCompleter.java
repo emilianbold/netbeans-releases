@@ -493,25 +493,29 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             
             if (isEmptyComment) {
                 final int indent = GsfUtilities.getLineIndent(doc, ts.offset());
-                try {
-                    //XXX: workaround for issue #133210:
-                    final long currentTimeMillis = System.currentTimeMillis();
-                    ParserManager.parseWhenScanFinished(Collections.<Source>singleton(Source.create(document)), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            if (System.currentTimeMillis() - currentTimeMillis < 1500) {
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
+
+                //XXX: workaround for issue #133210:
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        final long currentTimeMillis = System.currentTimeMillis();
+                        try {
+                            ParserManager.parseWhenScanFinished(Collections.<Source>singleton(Source.create(doc)), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    if (System.currentTimeMillis() - currentTimeMillis < 1500) {
                                         GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
                                     }
-                                });
-                            }
+                                }
+                            });
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                    });
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                    }
+                });
+
+
             }
             
             return (Integer) ret[0];

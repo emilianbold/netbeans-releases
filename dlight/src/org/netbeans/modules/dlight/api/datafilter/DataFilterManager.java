@@ -48,6 +48,8 @@ import java.util.Collection;
  *
  */
 public interface DataFilterManager {
+    void cleanAllDataFilter(boolean notify);
+    void cleanAllDataFilter(Class<?> clazz, boolean notify);    
     void cleanAllDataFilter();
     void cleanAllDataFilter(Class<?> clazz);
     boolean removeDataFilter(DataFilter filter);

@@ -62,12 +62,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
+import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
 import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
@@ -85,10 +88,13 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.ChangeSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
+import org.openide.util.test.MockPropertyChangeListener;
 
 public class ProjectsRootNodeTest extends NbTestCase {
     
@@ -347,6 +353,54 @@ public class ProjectsRootNodeTest extends NbTestCase {
         assertEquals("Prj <mod>", node.getHtmlDisplayName());
         assertTrue(node.getIcon(BeanInfo.ICON_COLOR_16x16) instanceof BadgedImage);
         assertEquals(new HashSet<FileObject>(Arrays.asList(k1, k2, k3)), fs.badgedFiles);
+    }
+
+    public void testIconAnnotated() throws IOException, Exception {
+        final Image icon1 = ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/icon-1.png");
+        final Image icon2 = ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/icon-2.png");
+        final Image icon3 = ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/icon-3.png");
+        class ProjectIconAnnotatorImpl implements ProjectIconAnnotator {
+            private final ChangeSupport cs = new ChangeSupport(this);
+            boolean enabled = true;
+            public @Override Image annotateIcon(Project p, Image original, boolean openedNode) {
+                if (!enabled) {
+                    return icon1;
+                } else if (openedNode) {
+                    return icon2;
+                } else {
+                    return icon3;
+                }
+            }
+            public @Override void addChangeListener(ChangeListener listener) {
+                cs.addChangeListener(listener);
+            }
+            public @Override void removeChangeListener(ChangeListener listener) {
+                cs.removeChangeListener(listener);
+            }
+            void disable() {
+                enabled = false;
+                cs.fireChange();
+            }
+        }
+        Project prj = new TestProject(FileUtil.createMemoryFileSystem().getRoot(), null);
+        ProjectIconAnnotatorImpl annotator = new ProjectIconAnnotatorImpl();
+        MockLookup.setInstances(annotator);
+        System.setProperty("test.nodelay", "true");
+        ProjectsRootNode.BadgingNode node = new ProjectsRootNode.BadgingNode(null, new ProjectsRootNode.ProjectChildren.Pair(prj),
+                new AbstractNode(Children.LEAF, Lookups.singleton(prj)), false, true);
+        assertEquals(icon3, node.getIcon(BeanInfo.ICON_COLOR_16x16));
+        assertEquals(icon2, node.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
+        final MockPropertyChangeListener listener = new MockPropertyChangeListener();
+        node.addNodeListener(new NodeAdapter() {
+            public @Override void propertyChange(PropertyChangeEvent ev) {
+                listener.propertyChange(ev);
+            }
+        });
+        annotator.disable();
+        listener.assertEvents(Node.PROP_ICON, Node.PROP_OPENED_ICON);
+        assertEquals(icon1, node.getIcon(BeanInfo.ICON_COLOR_16x16));
+        MockLookup.setInstances();
+        listener.assertEvents(Node.PROP_ICON, Node.PROP_OPENED_ICON);
     }
 
 }

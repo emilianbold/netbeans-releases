@@ -116,6 +116,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="deploymentDescriptorConfiguration">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Added SPI interface through which plugin may indicate it requires
+                deployment descriptor.
+	    </summary>
+	    <version major="1" minor="69"/>
+	    <date day="28" month="7" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                The SPI interface DeploymentDescriptorConfiguration may be
+                implemented by the server plugin in order to indicate the
+                server needs deployment descriptor.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="DeploymentDescriptorConfiguration"/>
+            <issue number="189012"/>
+	 </change>
+
         <change id="serverLibraries">
 	    <summary>
                 Implemented support for handling the server libraries.

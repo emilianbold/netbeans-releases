@@ -1,9 +1,0 @@
-Enumeration Declaration
- Modifiers
- { EnumWithLiteralTestFile, Name }
- Realization
- Body
-  Enum Member
-   { Literal1, Name }
-  Enum Member
-   { Literal2, Name }

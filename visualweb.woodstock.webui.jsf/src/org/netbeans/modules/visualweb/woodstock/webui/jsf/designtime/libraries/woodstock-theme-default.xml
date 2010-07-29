@@ -51,10 +51,10 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.libraries.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/webui-jsf-suntheme.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.webui.jsf.defaulttheme/modules/ext/webui-jsf-suntheme.jar!/</resource>
     </volume>
     <volume>
         <type>runtime</type>
-        <resource>jar:nbinst:///modules/ext/webui-jsf-suntheme.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.webui.jsf.defaulttheme/modules/ext/webui-jsf-suntheme.jar!/</resource>
     </volume>
 </library>

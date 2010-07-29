@@ -45,9 +45,7 @@ package org.netbeans;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -59,12 +57,6 @@ public class StampsTimeShiftTest extends NbTestCase implements Stamps.Updater{
     private File platform;
     private File install;
     private File extra;
-    
-    
-    public static Test suite() {
-        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
-        return new NbTestSuite(StampsTimeShiftTest.class);
-    }
     
     public StampsTimeShiftTest(String testName) {
         super(testName);

@@ -118,6 +118,21 @@ public class ValidateUpdateCenterTest extends NbTestCase {
             fail("Some regular modules (that no one depends on) neither AutoUpdate-Show-In-Client=true nor AutoUpdate-Essential-Module=true (thus unreachable through Plugin Manager)" + auVisibilityProblems);
         }
     }
+    
+    public void testPluginDisplay() throws Exception {
+        StringBuilder problems = new StringBuilder();
+        for (Module mod : Main.getModuleSystem().getManager().getModules()) {
+            if ("false".equals(mod.getAttribute("AutoUpdate-Show-In-Client"))) {
+                continue;
+            }
+            if (mod.getLocalizedAttribute("OpenIDE-Module-Display-Category") == null) {
+                problems.append('\n').append(mod.getCodeNameBase());
+            }
+        }
+        if (problems.length() > 0) {
+            fail("Some modules are AutoUpdate-Show-In-Client=true but have no specified OpenIDE-Module-Display-Category" + problems);
+        }
+    }
 
     public void testConsistency() throws Exception {
         Set<Manifest> manifests = loadManifests();

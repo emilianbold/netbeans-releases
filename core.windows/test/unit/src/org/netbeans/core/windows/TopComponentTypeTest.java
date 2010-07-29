@@ -48,7 +48,6 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -65,19 +64,6 @@ public class TopComponentTypeTest extends NbTestCase {
 
     public TopComponentTypeTest (String name) {
         super (name);
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TopComponentTypeTest.class);
-        
-        return suite;
     }
 
     protected boolean runInEQ () {

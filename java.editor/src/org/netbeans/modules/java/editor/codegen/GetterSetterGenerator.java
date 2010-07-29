@@ -120,7 +120,7 @@ public class GetterSetterGenerator implements CodeGenerator {
             for (VariableElement variableElement : ElementFilter.fieldsIn(elements.getAllMembers(typeElement))) {
                 if (ERROR.contentEquals(variableElement.getSimpleName()))
                     continue;
-                ElementNode.Description description = ElementNode.Description.create(variableElement, null, true, false);
+                ElementNode.Description description = ElementNode.Description.create(controller, variableElement, null, true, false);
                 boolean hasGetter = GeneratorUtils.hasGetter(controller, variableElement, methods);
                 boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods);
                 if (!hasGetter) {
@@ -151,23 +151,23 @@ public class GetterSetterGenerator implements CodeGenerator {
             if (!gDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : gDescriptions.entrySet())
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                    descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
             }
             if (!sDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : sDescriptions.entrySet())
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                    descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
             }
             if (!gsDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : gsDescriptions.entrySet())
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                    descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), 0));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), 0));
             }
             return ret;
         }

@@ -30,6 +30,11 @@
             <folder name="x-php5">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/editor/resources/php16.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/php/editor/resources/php16.png"/>
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-csl-core-GsfDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

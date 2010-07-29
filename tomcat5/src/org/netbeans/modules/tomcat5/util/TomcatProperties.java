@@ -290,6 +290,10 @@ public class TomcatProperties {
         String prefix;
         String serverID;
         switch (tm.getTomcatVersion()) {
+            case TOMCAT_70:
+                prefix = "tomcat70"; // NIO18N
+                serverID = TomcatFactory.SERVER_ID_70;
+                break;
             case TOMCAT_60:
                 prefix = "tomcat60"; // NIO18N
                 serverID = TomcatFactory.SERVER_ID_60;
@@ -359,7 +363,7 @@ public class TomcatProperties {
         if (tm.isBundledTomcat()) {
             return new File(baseDir, "nblib"); // NOI18N
         }
-        return tm.isTomcat60() ? new File(homeDir, "lib") // NOI18N
+        return tm.isTomcat60() || tm.isTomcat70() ? new File(homeDir, "lib") // NOI18N
                                : new File(homeDir, "common/lib"); // NOI18N
     }
     
@@ -367,7 +371,8 @@ public class TomcatProperties {
      * Return the default Tomcat Java endorsed directory.
      */
     public File getJavaEndorsedDir() {
-        if (TomcatVersion.TOMCAT_60 == tm.getTomcatVersion()) {
+        if (TomcatVersion.TOMCAT_60 == tm.getTomcatVersion()
+                || TomcatVersion.TOMCAT_70 == tm.getTomcatVersion()) {
             return new File(getCatalinaHome(), "endorsed"); // NOI18N
         } else {
             return new File(getCatalinaHome(), "common/endorsed"); // NOI18N

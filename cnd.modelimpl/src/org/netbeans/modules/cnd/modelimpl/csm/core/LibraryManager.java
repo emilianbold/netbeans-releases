@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -228,7 +229,7 @@ public final class LibraryManager {
         }
         set.add(baseProject);
         baseProject.ensureFilesCreated();
-        FileImpl file = baseProject.getFile(searchFor, true);
+        CsmUID<CsmFile> file = baseProject.getFileUID(searchFor, true);
         if (file != null) {
             return baseProject;
         }

@@ -1157,7 +1157,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             info.releaseDate = "2010-05-12"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.5.1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.5.1", "org.jruby.distro", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N

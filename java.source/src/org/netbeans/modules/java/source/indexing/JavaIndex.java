@@ -95,7 +95,7 @@ public final class JavaIndex {
     }
     
     public static File getClassFolder(Context c, boolean onlyIfExists) {
-        return processCandidate(new File(getIndex(c), CLASSES), onlyIfExists);
+        return processCandidate(new File(getIndex(c), CLASSES), onlyIfExists, true);
     }
 
     public static File getClassFolder(File root) throws IOException {
@@ -103,11 +103,15 @@ public final class JavaIndex {
     }
 
     public static File getClassFolder(URL url) throws IOException {
-        return getClassFolder(url, false);
+        return getClassFolder(url, false, true);
+    }
+    
+    public static File getClassFolder(URL url, boolean onlyIfExists) throws IOException {
+        return getClassFolder(url, onlyIfExists, true);
     }
 
-    public static File getClassFolder(URL url, boolean onlyIfExists) throws IOException {
-        return processCandidate(new File(getIndex(url), CLASSES), onlyIfExists);
+    public static File getClassFolder(URL url, boolean onlyIfExists, boolean create) throws IOException {
+        return processCandidate(new File(getIndex(url), CLASSES), onlyIfExists, create);
     }
 
     public static File getAptFolder(final URL sourceRoot, final boolean create) throws IOException {
@@ -210,7 +214,7 @@ public final class JavaIndex {
         return new File(JavaIndex.getIndex(root), ATTR_FILE_NAME);
     }
 
-    private static File processCandidate(File result, boolean onlyIfExists) {
+    private static File processCandidate(File result, boolean onlyIfExists, boolean create) {
         if (onlyIfExists) {
             if (!result.exists()) {
                 return null;
@@ -218,7 +222,9 @@ public final class JavaIndex {
                 return result;
             }
         }
-        result.mkdirs();
+        if (create) {
+            result.mkdirs();
+        }
         return result;
     }
 

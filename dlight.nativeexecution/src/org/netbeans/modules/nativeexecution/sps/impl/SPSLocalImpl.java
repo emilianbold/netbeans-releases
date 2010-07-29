@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
@@ -118,12 +119,13 @@ public final class SPSLocalImpl extends SPSCommonImpl {
         return new SPSLocalImpl(execEnv, privpCmd);
     }
 
-    public void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
+    @Override
+    public boolean requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
         PrintWriter w = null;
 
         try {
             // Construct privileges list
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             for (String priv : requestedPrivileges) {
                 sb.append(priv).append(","); // NOI18N
@@ -138,20 +140,25 @@ public final class SPSLocalImpl extends SPSCommonImpl {
             int result = process.waitFor();
 
             if (result != 0) {
-                Logger.getInstance().fine("privp returned " + result); // NOI18N
+                Logger.getInstance().log(Level.FINE, "privp returned {0}", result); // NOI18N
                 throw new NotOwnerException();
             }
+
+            return true;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (IOException ex) {
-            Logger.getInstance().fine("IOException in requestPrivileges : " + ex); // NOI18N
+            Logger.getInstance().log(Level.FINE, "IOException in requestPrivileges : {0}", ex); // NOI18N
         } finally {
             if (w != null) {
                 w.close();
             }
         }
+
+        return false;
     }
 
+    @Override
     synchronized String getPID() {
         if (pid != null) {
             return pid;

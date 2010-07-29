@@ -57,11 +57,9 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.*;
@@ -103,14 +101,6 @@ public class FolderChildrenTest extends NbTestCase {
         return Level.FINE;
     }
 
-    public static Test suite() {
-        Test t = null;
-//        t = new FolderChildrenTest("testALotOfHiddenEntries");
-        if (t == null) {
-            t = new NbTestSuite(FolderChildrenTest.class);
-        }
-        return t;
-    }
     protected void assertChildrenType(Children ch) {
         assertEquals("Use lazy children by default", FolderChildren.class, ch.getClass());
     }
@@ -779,6 +769,7 @@ public class FolderChildrenTest extends NbTestCase {
      * data object are garbage collected. It caused collapsing of tree.
      */
     public void testNodeKeysNotChanged() throws Exception {
+        LOG.info("testNodeKeysNotChanged starting");
         FileObject rootFolder = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo1 = rootFolder.createData("file1.java");
         assertNotNull(fo1);
@@ -786,24 +777,31 @@ public class FolderChildrenTest extends NbTestCase {
         DataObject do2 = DataObject.find(fo2);
         assertNotNull(fo2);
         Node folderNode = DataFolder.findFolder(rootFolder).getNodeDelegate();
+        LOG.log(Level.INFO, "testNodeKeysNotChanged folderNode: {0}", folderNode);
         final AtomicInteger removedEventCount = new AtomicInteger(0);
         folderNode.addNodeListener(new NodeAdapter() {
 
             @Override
             public void childrenRemoved(NodeMemberEvent ev) {
                 removedEventCount.incrementAndGet();
+                LOG.log(Level.INFO, "testNodeKeysNotChanged childrenRemoved: {0}", ev);
             }
         });
+        LOG.info("testNodeKeysNotChanged addNodeListener");
         if (folderNode.getChildren().getClass().equals(FolderChildrenEager.class)) {
             // TODO - investigate further why assertGC("Cannot GC childNode2", ref) fails
+            LOG.info("testNodeKeysNotChanged TODO return");
             return;
         }
 
         // refresh children
+        LOG.info("testNodeKeysNotChanged about to getNodes");
         folderNode.getChildren().getNodes(true);
         Node childNode1 = folderNode.getChildren().getNodeAt(0);
+        LOG.log(Level.INFO, "testNodeKeysNotChanged child0{0}", childNode1);
         assertNotNull(childNode1);
         Node childNode2 = folderNode.getChildren().getNodeAt(1);
+        LOG.log(Level.INFO, "testNodeKeysNotChanged child1{0}", childNode2);
         assertNotNull(childNode2);
 
         // GC node 2
@@ -818,10 +816,15 @@ public class FolderChildrenTest extends NbTestCase {
         // add new data object
         FileObject fo3 = rootFolder.createData("file3.java");
         assertNotNull(fo3);
+        LOG.log(Level.INFO, "testNodeKeysNotChanged fo3: {0}", fo3);
         // refresh children
         folderNode.getChildren().getNodes(true);
-        assertNotSame("Node 2 should not be the same when GC'd before.", childNode2, folderNode.getChildren().getNodeAt(1));
+        LOG.info("after get children");
+        Node childNodeX = folderNode.getChildren().getNodeAt(1);
+        LOG.log(Level.INFO, "childeNodeX: {0}", childNodeX);
+        assertNotSame("Node 2 should not be the same when GC'd before.", childNode2, childNodeX);
         assertEquals("No node should be removed.", 0, removedEventCount.intValue());
+        LOG.info("done");
     }
 
     public static final class VisQ implements VisibilityQueryImplementation, DataFilter.FileBased {

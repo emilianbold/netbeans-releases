@@ -47,7 +47,6 @@ package org.netbeans.modules.j2ee.earproject.ui.customizer;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,7 +85,6 @@ import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.Web;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -94,7 +92,6 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun.ApplicationUrisComboBoxModel;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
@@ -113,7 +110,6 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -403,6 +399,8 @@ public final class EarProjectProperties {
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
+
+                    setupDeploymentDescriptor(project);
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);
                 }
@@ -871,6 +869,7 @@ public final class EarProjectProperties {
                     if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
                         DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, null, true); // NOI18N
                     }
+                    setupDeploymentDescriptor(project);
                     return true;
                 }
             });
@@ -884,7 +883,13 @@ public final class EarProjectProperties {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
+    private static void setupDeploymentDescriptor(EarProject project) {
+        if (project.getAppModule().getConfigSupport().isDescriptorRequired()) {
+            project.getAppModule().getMetadataModel();
+        }
+    }
+
     private static void setAppClientPrivateProperties(final J2eePlatform j2eePlatform,
             final String serverInstanceID, final EditableProperties ep) {
         // XXX rather hotfix for #75518. Get rid of it with fixing or #75574

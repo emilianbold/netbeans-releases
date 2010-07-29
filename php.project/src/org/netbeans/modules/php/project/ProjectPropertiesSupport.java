@@ -99,6 +99,18 @@ public final class ProjectPropertiesSupport {
         project.addWeakIgnoredFilesListener(listener);
     }
 
+    public static boolean addWeakPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        return project.addWeakPropertyChangeListener(listener);
+    }
+
+    public static void addPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        project.addPropertyChangeListener(listener);
+    }
+
+    public static void removePropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        project.removePropertyChangeListener(listener);
+    }
+
     public static FileObject getProjectDirectory(PhpProject project) {
         return project.getProjectDirectory();
     }
@@ -210,7 +222,7 @@ public final class ProjectPropertiesSupport {
     }
 
     public static PhpLanguageOptions.PhpVersion getDefaultPhpVersion() {
-        return getPhpVersion((String) null);
+        return PhpLanguageOptions.PhpVersion.PHP_53;
     }
 
     public static PhpLanguageOptions.PhpVersion getPhpVersion(String value) {

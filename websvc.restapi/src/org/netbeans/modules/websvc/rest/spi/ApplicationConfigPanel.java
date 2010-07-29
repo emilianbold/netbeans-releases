@@ -59,7 +59,7 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
 
     /** Creates new form RestSupportPanel */
 
-    public ApplicationConfigPanel(String configType, String resourcesPath, boolean annotationConfigAvailable) {
+    public ApplicationConfigPanel(String configType, String resourcesPath, boolean isJerseyLib, boolean annotationConfigAvailable) {
         initComponents();
         if (!annotationConfigAvailable) {
             jRadioButton1.setVisible(false);
@@ -67,9 +67,15 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
             if (annotationConfigAvailable) jRadioButton1.setSelected(true);
             else jRadioButton3.setSelected(true);
+            if (!isJerseyLib) {
+                jCheckBox1.setSelected(false);
+            }
         } else if (WebRestSupport.CONFIG_TYPE_USER.equals(configType)) {
             jRadioButton2.setSelected(true);
             jTextField1.setEnabled(false);
+            if (!isJerseyLib) {
+                jCheckBox1.setSelected(false);
+            }
         } else {
             jRadioButton3.setSelected(true);
         }
@@ -96,13 +102,21 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
 
     private class MyItemListener implements ItemListener {
 
+        @Override
         public void itemStateChanged(ItemEvent e) {
-            if (jRadioButton2.isSelected()) {
-                jLabel1.setEnabled(false);
-                jTextField1.setEnabled(false);
-            } else {
+            if (jRadioButton1.isSelected()) {
                 jLabel1.setEnabled(true);
                 jTextField1.setEnabled(true);
+                jCheckBox1.setEnabled(true);
+            } else if (jRadioButton2.isSelected()) {
+                jLabel1.setEnabled(false);
+                jTextField1.setEnabled(false);
+                jCheckBox1.setEnabled(true);
+            } else if (jRadioButton3.isSelected()){
+                jLabel1.setEnabled(true);
+                jTextField1.setEnabled(true);
+                jCheckBox1.setSelected(true);
+                jCheckBox1.setEnabled(false);
             }
         }
 
@@ -112,6 +126,10 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         if (jRadioButton1.isSelected()) return WebRestSupport.CONFIG_TYPE_IDE;
         else if (jRadioButton2.isSelected()) return WebRestSupport.CONFIG_TYPE_USER;
         else return WebRestSupport.CONFIG_TYPE_DD;
+    }
+
+    public boolean isJerseyLibSelected() {
+        return jCheckBox1.isSelected();
     }
 
     public String getApplicationPath() {
@@ -134,6 +152,8 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         jRadioButton3 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
         jRadioButton1 = new javax.swing.JRadioButton();
+        jCheckBox1 = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
         jLabel2 = new javax.swing.JLabel();
 
         jLabel1.setLabelFor(jTextField1);
@@ -158,11 +178,19 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         jRadioButton1.setVerifyInputWhenFocusTarget(false);
         jRadioButton1.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
+        jCheckBox1.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jCheckBox1.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 546, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jCheckBox1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE))
+                .addContainerGap())
             .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
@@ -174,16 +202,21 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 170, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(152, Short.MAX_VALUE)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
             .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
-                    .add(jRadioButton1)
+                    .add(jRadioButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(jRadioButton2)
+                    .add(jRadioButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                     .add(jRadioButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(29, Short.MAX_VALUE)))
+                    .addContainerGap(53, Short.MAX_VALUE)))
         );
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel2.text")); // NOI18N
@@ -197,8 +230,8 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabel2)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 175, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 361, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -210,26 +243,28 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel1))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        getAccessibleContext().setAccessibleName("null");
-        getAccessibleContext().setAccessibleDescription("null");
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "TTL_ApplicationConfigPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationConfigPanel.class, "ApplicationConfigPanel.jLabel2.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JRadioButton jRadioButton3;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 

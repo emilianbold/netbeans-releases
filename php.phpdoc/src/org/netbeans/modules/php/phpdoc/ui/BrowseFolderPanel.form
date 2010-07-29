@@ -18,11 +18,11 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="docFolderLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="targetFolderLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="docFolderTextField" pref="252" max="32767" attributes="0"/>
+              <Component id="targetFolderTextField" pref="201" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="browseDocFolderButton" min="-2" max="-2" attributes="0"/>
+              <Component id="browseTargetFolderButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -32,35 +32,35 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="docFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="docFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="browseDocFolderButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browseTargetFolderButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="docFolderLabel">
+    <Component class="javax.swing.JLabel" name="targetFolderLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="docFolderTextField"/>
+          <ComponentRef name="targetFolderTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/Bundle.properties" key="BrowseFolderPanel.docFolderLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/Bundle.properties" key="BrowseFolderPanel.targetFolderLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="docFolderTextField">
+    <Component class="javax.swing.JTextField" name="targetFolderTextField">
     </Component>
-    <Component class="javax.swing.JButton" name="browseDocFolderButton">
+    <Component class="javax.swing.JButton" name="browseTargetFolderButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/Bundle.properties" key="BrowseFolderPanel.browseDocFolderButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/Bundle.properties" key="BrowseFolderPanel.browseTargetFolderButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseDocFolderButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseTargetFolderButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

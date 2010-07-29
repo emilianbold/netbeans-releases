@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/mobility/antext/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/org-netbeans-modules-mobility-antext.jar!/</resource>
-        <resource>jar:nbinst:///modules/org-netbeans-modules-classfile.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.mobility.antext/modules/org-netbeans-modules-mobility-antext.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.classfile/modules/org-netbeans-modules-classfile.jar!/</resource>
     </volume>
 </library>

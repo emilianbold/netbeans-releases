@@ -104,8 +104,8 @@ made subject to such option by the copyright holder.
     <target name="jnlp-init" depends="jnlp-init-generate-master">
         <fail unless="app.name">Must have set at least an application name ('app.name')</fail>
         
-        <property name="jnlp.dest.dir" location="build/jnlp"/>
-        <property name="jnlp.master.dir" location="build/tmp/master-jnlp"/>
+        <property name="jnlp.dest.dir" location="${suite.build.dir}/jnlp"/>
+        <property name="jnlp.master.dir" location="${suite.build.dir}/tmp/master-jnlp"/>
         <mkdir dir="${jnlp.master.dir}"/>
         
         <property name="dist.dir" location="dist"/>
@@ -132,7 +132,7 @@ made subject to such option by the copyright holder.
             </and>
         </pathfileset>
         <property name="jnlp.sign.jars" value="true"/>
-        <property name="jnlp.signjar.keystore" location="build/default.keystore"/>
+        <property name="jnlp.signjar.keystore" location="${suite.build.dir}/default.keystore"/>
         <property name="jnlp.signjar.alias" value="jnlp"/>
         <property name="jnlp.signjar.password" value="netbeans"/>
         <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
@@ -215,7 +215,7 @@ made subject to such option by the copyright holder.
             </condition>
         </fail>
         
-        <echo file="build/tmp/web.xml"><![CDATA[
+        <echo file="${suite.build.dir}/tmp/web.xml"><![CDATA[
 <web-app>
  <servlet>
     <servlet-name>JnlpDownloadServlet</servlet-name>
@@ -228,7 +228,7 @@ made subject to such option by the copyright holder.
 </web-app>         
 ]]></echo>
         <mkdir dir="${dist.dir}"/>
-        <war basedir="${jnlp.dest.dir}" destfile="${dist.dir}/${app.name}.war" webxml="build/tmp/web.xml">
+        <war basedir="${jnlp.dest.dir}" destfile="${dist.dir}/${app.name}.war" webxml="${suite.build.dir}/tmp/web.xml">
             <zipfileset dir="${jnlp.servlet.jar}/.." file="${jnlp.servlet.jar}" prefix="WEB-INF/lib"/>
         </war>
     </target>
@@ -241,16 +241,16 @@ made subject to such option by the copyright holder.
         
         <makeurl property="build.jnlp.local.url" file="${build.jnlp.local.dir}"/>
         <copy todir="${build.jnlp.local.dir}">
-            <fileset dir="build/jnlp">
+            <fileset dir="${suite.build.dir}/jnlp">
                 <include name="*.jnlp"/>
             </fileset>
             <filterchain>
                 <replacestring from="$$$$codebase" to="${build.jnlp.local.url}"/>
             </filterchain>
         </copy>
-        <mkdir dir="build/jnlp/netbeans"/> <!-- else fileset will croak -->
+        <mkdir dir="${suite.build.dir}/jnlp/netbeans"/> <!-- else fileset will croak -->
         <copy todir="${build.jnlp.local.dir}/netbeans/">
-            <fileset dir="build/jnlp/netbeans">
+            <fileset dir="${suite.build.dir}/jnlp/netbeans">
                 <include name="**/*.jnlp"/>
             </fileset>
             <filterchain>
@@ -258,7 +258,7 @@ made subject to such option by the copyright holder.
             </filterchain>
         </copy>
         <copy todir="${build.jnlp.local.dir}/app/">
-            <fileset dir="build/jnlp/app">
+            <fileset dir="${suite.build.dir}/jnlp/app">
                 <include name="**/*.jnlp"/>
             </fileset>
             <filterchain>
@@ -266,7 +266,7 @@ made subject to such option by the copyright holder.
             </filterchain>
         </copy>
         <copy todir="${build.jnlp.local.dir}">
-            <fileset dir="build/jnlp">
+            <fileset dir="${suite.build.dir}/jnlp">
                 <exclude name="**/*.jnlp"/>
             </fileset>
         </copy>

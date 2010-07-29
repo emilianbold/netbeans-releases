@@ -503,18 +503,41 @@ public final class DLightSession implements
     }
 
     public void cleanAllDataFilter() {
+        cleanAllDataFilter(true);
+    }
+
+    @Override
+    public void cleanAllDataFilter(boolean notify) {
         dataFiltersSupport.cleanAll();
+        if (!notify){
+            return;
+        }
         for (Visualizer<?> v : getVisualizers()) {
             v.refresh();
         }
     }
 
-    public void cleanAllDataFilter(Class<?> clazz) {
+    @Override
+    public void cleanAllDataFilter(Class<?> clazz, boolean notify) {
         dataFiltersSupport.cleanAll(clazz);
+        if (!notify){
+            return;
+        }
         for (Visualizer<?> v : getVisualizers()) {
             v.refresh();
         }
     }
+    
+    
+    
+    
+
+    @Override
+    public void cleanAllDataFilter(Class<?> clazz) {
+        cleanAllDataFilter(clazz, true);
+    }
+    
+
 
     public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
         return dataFiltersSupport.getDataFilter(clazz);

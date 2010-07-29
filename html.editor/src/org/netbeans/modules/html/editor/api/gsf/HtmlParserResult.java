@@ -50,21 +50,21 @@ import java.util.Map;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNode.Description;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.spi.ParseResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,13 +80,17 @@ public class HtmlParserResult extends ParserResult {
     public static final String FALLBACK_DTD_PROPERTY_NAME = "fallbackDTD";
     private static final String UNEXPECTED_TOKEN = "unexpected_token"; //NOI18N
     
-    private SyntaxParserResult result;
+    private SyntaxAnalyzerResult result;
     private List<Error> errors;
     private boolean isValid = true;
 
-    private HtmlParserResult(Snapshot snapshot, SyntaxParserResult result) {
-        super(snapshot);
+    private HtmlParserResult(SyntaxAnalyzerResult result) {
+        super(result.getSource().getSnapshot());
         this.result = result;
+    }
+
+    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
+        return result;
     }
 
     /** The parser result may be invalidated by the parsing infrastructure.
@@ -106,30 +110,7 @@ public class HtmlParserResult extends ParserResult {
      *
      */
     public HtmlVersion getHtmlVersion() {
-        String publicId = result.getPublicID();
-        if(publicId == null) {
-            FileObject fo = getSnapshot().getSource().getFileObject();
-            if(fo != null) {
-                if("text/xhtml".equals(fo.getMIMEType())) { //NOI18N
-                    //TODO resolve the xhtml version once we support more than 1.0
-                    return HtmlVersion.XHTML10;
-                } else {
-                    //is there an xhtml namespace declared in the file?
-                    if(result.getDeclaredNamespaces().containsKey(HtmlVersion.XHTML10.getDefaultNamespace())) {
-                        return HtmlVersion.XHTML10;
-                    }
-                }
-            }
-            return HtmlVersion.UNKNOWN;
-        } else {
-            return HtmlVersion.findHtmlVersion(publicId);
-        }
-
-    }
-
-    /** @return an instance of DTD for the parser input. */
-    public DTD dtd() {
-        return result.getDTD();
+        return result.getHtmlVersion();
     }
 
     /** @return a root node of the hierarchical parse tree of the document.
@@ -139,27 +120,36 @@ public class HtmlParserResult extends ParserResult {
      * the postprocessing takes some time and is done lazily.
      */
     public AstNode root() {
-        return root(getHtmlVersion().getDefaultNamespace());
+        try {
+            return result.parseHtml().root();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    public AstNode rootOfUndeclaredTagsParseTree() {
+        try {
+            return result.parseUndeclaredEmbeddedCode().root();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     /** returns a parse tree for non-html content */
     public AstNode root(String namespace) {
-        DTD dtd = null;
-        if(namespace == null || namespace != null && namespace.equals(getHtmlVersion().getDefaultNamespace())) {
-            //html content, use fallback dtd
-            dtd = getFallbackDTD(getHtmlVersion());
+        try {
+            ParseResult pr = result.parseEmbeddedCode(namespace);
+            assert pr != null : "Cannot get ParseResult for " + namespace; //NOI18N
+            return pr.root();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        return result.getASTRoot(namespace, dtd);
+        return null;
     }
 
-    private DTD getFallbackDTD(HtmlVersion version) {
-        String fallbackPublicID = version == HtmlVersion.UNKNOWN ?
-            HtmlVersion.HTML41.getFallbackPublicId() :
-            version.getFallbackPublicId();
-
-        return org.netbeans.editor.ext.html.dtd.Registry.getDTD(fallbackPublicID, null);
-    }
+    
 
     /** returns a map of all namespaces to astnode roots.*/
     public Map<String, AstNode> roots() {
@@ -237,11 +227,6 @@ public class HtmlParserResult extends ParserResult {
         return mostLeaf;
     }
 
-    /** @return a list of SyntaxElement-s representing parse elements of the html source. */
-    public List<SyntaxElement> elementsList() {
-        return result.getElements();
-    }
-
     @Override
     public synchronized List<? extends Error> getDiagnostics() {
         if (errors == null) {
@@ -298,8 +283,8 @@ public class HtmlParserResult extends ParserResult {
                         || node.type() == AstNode.NodeType.ENDTAG
                         || node.type() == AstNode.NodeType.UNKNOWN_TAG) {
 
-                    for (Description desc : node.getDescriptions()) {
-                        if (desc.getType() < Description.WARNING) {
+                    for (ProblemDescription desc : node.getDescriptions()) {
+                        if (desc.getType() < ProblemDescription.WARNING) {
                             continue;
                         }
                         //some error in the node, report
@@ -311,7 +296,7 @@ public class HtmlParserResult extends ParserResult {
                                 desc.getFrom(),
                                 desc.getTo(),
                                 false /* not line error */,
-                                desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
+                                desc.getType() == ProblemDescription.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
 
                         error.setParameters(new Object[]{node});
 
@@ -324,7 +309,7 @@ public class HtmlParserResult extends ParserResult {
 
         Collection<AstNode> roots = new ArrayList<AstNode>();
         roots.addAll(roots().values());
-        roots.add(root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE));
+        roots.add(rootOfUndeclaredTagsParseTree());
         for(AstNode root : roots) {
             AstNodeUtils.visitChildren(root, errorsCollector);
         }
@@ -350,8 +335,8 @@ public class HtmlParserResult extends ParserResult {
     private static class Accessor extends HtmlParserResultAccessor {
 
         @Override
-        public HtmlParserResult createInstance(Snapshot snapshot, SyntaxParserResult result) {
-            return new HtmlParserResult(snapshot, result);
+        public HtmlParserResult createInstance(SyntaxAnalyzerResult result) {
+            return new HtmlParserResult(result);
         }
     }
 }

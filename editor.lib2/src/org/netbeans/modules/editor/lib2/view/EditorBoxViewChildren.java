@@ -211,7 +211,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         // so later children initialization would double the boxView's length.
         // Also this must be done after updateSpans() was called since it updates
         // relative offsets of the local views necessary for proper getLength() result.
-        boxView.setLength(getLength());
+        boxView.setLength(getLength(), 0, 0);
         return result;
     }
 

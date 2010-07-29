@@ -52,17 +52,24 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,9 +83,15 @@ import org.netbeans.modules.glassfish.common.actions.RestartAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
+import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOProvider;
@@ -185,7 +198,7 @@ public class LogViewMgr {
         return logViewMgr;
     }
     
-    public void ensureActiveReader(List<Recognizer> recognizers, File serverLog) {
+    public void ensureActiveReader(List<Recognizer> recognizers, InputStream serverLog) {
         synchronized (readers) {
             boolean activeReader = false;
             for(WeakReference<LoggerRunnable> ref: readers) {
@@ -197,7 +210,7 @@ public class LogViewMgr {
             }
 
             if(!activeReader && serverLog != null) {
-                readFiles(recognizers, serverLog);
+                readInputStreams(recognizers, serverLog instanceof FileInputStream, serverLog);
             }
         }
     }
@@ -209,41 +222,19 @@ public class LogViewMgr {
      *
      * @param inputStreams InputStreams to read
      */
-    public void readInputStreams(List<Recognizer> recognizers, InputStream... inputStreams) {
+    public void readInputStreams(List<Recognizer> recognizers, boolean fromFile, InputStream... inputStreams) {
         synchronized (readers) {
             stopReaders();
 
             for(InputStream inputStream : inputStreams){
                 // LoggerRunnable will close the stream if necessary.
-                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, false); 
+                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
                 RP.post(logger);
             }
         }
     }
-    
-    /**     
-     * Reads a newly included Files
-     * 
-     * @param files Files to read
-     */
-    public void readFiles(List<Recognizer> recognizers, File... files) {
-        synchronized (readers) {
-            stopReaders();
-            
-            for(File file : files) {
-                try {
-                    // LoggerRunnable will close the stream.
-                    LoggerRunnable logger = new LoggerRunnable(recognizers, new FileInputStream(file), true);
-                    readers.add(new WeakReference<LoggerRunnable>(logger));
-                    RP.post(logger);
-                } catch (FileNotFoundException ex) {
-                    LOGGER.log(Level.FINE, ex.getLocalizedMessage());
-                }
-            }
-        }
-    }
-    
+        
     public void stopReaders() {
         synchronized (readers) {
             for(WeakReference<LoggerRunnable> ref: readers) {
@@ -304,13 +295,13 @@ public class LogViewMgr {
         }
         OutputWriter writer = error ? io.getErr() : io.getOut();
         if(LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "getIOWriter: closed = " + io.isClosed() + " [ " + (error ? "STDERR" : "STDOUT") + " ]" + ", output error flag = " + writer.checkError()); // NOI18N
+            LOGGER.log(Level.FINEST, "getIOWriter: closed = {0} [ {1}" + " ]" + ", output error flag = " + "{2}", new Object[]{io.isClosed(), error ? "STDERR" : "STDOUT", writer.checkError()}); // NOI18N
         }
         if(writer.checkError() == true) {
             InputOutput newIO = getServerIO(uri);
             if(newIO == null) {
                 if(LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO, "Unable to recreate I/O for " + uri + ", still in error state"); // NOI18N
+                    LOGGER.log(Level.INFO, "Unable to recreate I/O for {0}, still in error state", uri); // NOI18N
                 }
                 writer = null;
             } else {
@@ -364,9 +355,9 @@ public class LogViewMgr {
     /**
      * Selects output panel
      */
-    public synchronized void selectIO() {
+    public synchronized void selectIO(boolean force) {
         if(LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "selectIO: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError()); // NOI18N
+            LOGGER.log(Level.FINEST, "selectIO: closed = {0}, output error flag = {1}", new Object[]{io.isClosed(), io.getOut().checkError()}); // NOI18N
         }
 
         // Only select the output window if it's closed.  This makes sure it's
@@ -377,6 +368,10 @@ public class LogViewMgr {
 
             // Horrible hack.  closed flag is never reset, so reset it after reopening.
             invokeSetClosed(io, false);
+        }
+
+        if (force) {
+            lastVisibleCheck = 0;
         }
 
         // If the user happened to close the OutputWindow TopComponent, reopen it.
@@ -482,7 +477,7 @@ public class LogViewMgr {
                 // ignoreEof is true for log files and false for process streams.
                 // FIXME Should differentiate filter types more cleanly.
                 Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : 
-                    (uri.contains("]deployer:gfv3ee6:") ? new LogFileFilter(localizedLevels) :new StreamFilter());
+                    (uri.contains("]deployer:gfv3ee6") ? new LogFileFilter(localizedLevels) :new StreamFilter());
                 
                 // read from the input stream and put all the changes to the I/O window
                 char [] chars = new char[1024];
@@ -553,7 +548,7 @@ public class LogViewMgr {
 
         private void processLine(String line) {
             if(LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "processing text: '" + line + "'"); // NOI18N
+                LOGGER.log(Level.FINEST, "processing text: ''{0}''", line); // NOI18N
             }
             // XXX sort of a hack to eliminate specific glassfish messages that
             // ought not to be printed at their current level (INFO vs FINE+).
@@ -564,7 +559,7 @@ public class LogViewMgr {
             Message message = new Message(line);
             message.process(recognizers);
                 message.print();
-                selectIO();
+                selectIO(false);
             if (shutdown) {
                 // some messages get processed after the server has 'stopped'
                 //    prevent new stars on the output caption.
@@ -695,7 +690,7 @@ public class LogViewMgr {
                 ;
     }
 
-    private static final String stripNewline(String s) {
+    private static String stripNewline(String s) {
         int len = s.length();
         if(len > 0 && '\n' == s.charAt(len-1)) {
             s = s.substring(0, len-1);
@@ -1005,18 +1000,18 @@ public class LogViewMgr {
                 boolean valid = true;
                 if(serverIO.isClosed()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Output window for " + uri + " is closed."); // NOI18N
+                        LOGGER.log(Level.FINE, "Output window for {0} is closed.", uri); // NOI18N
                     }
                 }
                 if(serverIO.getOut().checkError()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Standard out for " + uri + " is in error state."); // NOI18N
+                        LOGGER.log(Level.FINE, "Standard out for {0} is in error state.", uri); // NOI18N
                     }
                     valid = false;
                 }
                 if(serverIO.getErr().checkError()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Standard error for " + uri + " is in error state."); // NOI18N
+                        LOGGER.log(Level.FINE, "Standard error for {0} is in error state.", uri); // NOI18N
                     }
                     valid = false;
                 }
@@ -1063,5 +1058,125 @@ public class LogViewMgr {
             }
         }
         return newIO;
+    }
+
+    static public void displayOutput(Map<String,String> properties, Lookup lookup) {
+        String uri = properties.get(GlassfishModule.URL_ATTR);
+        LogViewMgr mgr = LogViewMgr.getInstance(uri);
+        List<Recognizer> recognizers = new ArrayList<Recognizer>();
+        if (null != lookup) {
+            recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
+        }
+        mgr.ensureActiveReader(recognizers, getServerLogStream(properties));
+        mgr.selectIO(true);
+    }
+
+    static private List<Recognizer> getRecognizers(Collection<? extends RecognizerCookie> cookies) {
+        List<Recognizer> recognizers;
+        if(!cookies.isEmpty()) {
+            recognizers = new LinkedList<Recognizer>();
+            for(RecognizerCookie cookie: cookies) {
+                recognizers.addAll(cookie.getRecognizers());
+            }
+            recognizers = Collections.unmodifiableList(recognizers);
+        } else {
+            recognizers = Collections.emptyList();
+        }
+        return recognizers;
+    }
+
+    private static final Map<String,PipedInputStream> remoteInputStreams = new HashMap<String,PipedInputStream>();
+
+    static private InputStream getServerLogStream(Map<String, String> ip) {
+        InputStream result = null;
+        String domainsFolder = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+        String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
+        if (null != domainsFolder && null != domainName) {
+            File domainFolder = new File(domainsFolder, domainName);
+
+            // domain folder must exist.
+            if(domainFolder.exists()) {
+                    try {
+                        // however, logs folder or server.log does not have to exist yet.
+                        result = new FileInputStream(new File(domainFolder, "logs" + File.separatorChar + "server.log"));
+                    } catch (FileNotFoundException ex) {
+                    }
+            } else {
+                Logger.getLogger("glassfish").log(Level.WARNING, NbBundle.getMessage(
+                        LogViewMgr.class, "MSG_DomainFolderNotFound", domainFolder.getAbsolutePath()));
+            }
+            return result;
+        } else {
+            PipedInputStream pis = null;
+            synchronized (remoteInputStreams) {
+                String key = ip.get(GlassfishModule.HOSTNAME_ATTR)+":"+ip.get(GlassfishModule.ADMINPORT_ATTR);
+                pis = remoteInputStreams.get(key);
+                if (null == pis) {
+                    final PipedOutputStream pos = new PipedOutputStream();
+                    try {
+                        pis = new PipedInputStream(pos);
+                        remoteInputStreams.put(key, pis);
+                        RequestProcessor RLRRP = new RequestProcessor("Remote log reader for "+ key);
+                        RLRRP.post(new FetchLogEntries(pos,ip));
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+            }
+            return pis;
+        }
+    }
+
+    static private class FetchLogEntries implements Runnable {
+
+        final OutputStream os;
+        final Map<String, String> ip;
+
+        FetchLogEntries(OutputStream os, Map<String, String> ip) {
+            this.os = os;
+            this.ip = ip;
+        }
+
+        @Override
+        public void run() {
+            CommandRunner cmd = new CommandRunner(true, null, ip, new OperationStateListener() {
+
+                @Override
+                public void operationStateChanged(OperationState newState, String message) {
+                }
+            });
+
+            Commands.FetchLogData fld = new Commands.FetchLogData(null);
+            Future<OperationState> result = cmd.execute(fld);
+            OperationState state = null;
+            try {
+                state = result.get();
+
+                if (state == OperationState.COMPLETED) {
+                    // now we start to actually put data into the pipe
+                    while (true) {
+                        String newQuery = fld.getNextQuery();
+                        fld = new Commands.FetchLogData(newQuery);
+                        result = cmd.execute(fld);
+                        state = result.get();
+                        if (state == OperationState.COMPLETED) {
+                            String s = fld.getLines();
+                            os.write(s.getBytes());
+                            os.flush();
+                        } else {
+                            break;
+                        }
+                        Thread.sleep(1000);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+            }
+        }
     }
 }

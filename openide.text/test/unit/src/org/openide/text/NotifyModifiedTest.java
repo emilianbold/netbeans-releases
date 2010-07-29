@@ -97,12 +97,6 @@ implements CloneableEditorSupport.Env {
         return 20000;
     }
   
-//    public static Test suite() {
-//        return new NotifyModifiedTest("testUndoDoesMarkFileAsDirtyIssue56963");
-//    }
-
-
-    
     @Override
     protected void setUp () {
         ic = new InstanceContent ();

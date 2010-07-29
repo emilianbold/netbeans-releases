@@ -80,6 +80,8 @@ public final class PhpDocs {
     /**
      * Add {@link LookupListener listener} to be notified when documentation providers change
      * (new provider added, existing removed).
+     * <p>
+     * To avoid memory leaks, do not forget to {@link #removeDocumentationsListener(LookupListener) remove} the listener.
      * @param listener {@link LookupListener listener} to be added
      * @see #removeDocumentationsListener(LookupListener)
      */

@@ -43,7 +43,6 @@
 package org.netbeans.nbbuild;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,6 +70,8 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Get;
 import org.apache.tools.ant.types.FileSet;
 import org.netbeans.nbbuild.AutoUpdateCatalogParser.ModuleItem;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -225,14 +226,14 @@ public class AutoUpdate extends Task {
                     }
                 }
 
-                File tracking = new File(new File(whereTo, "update_tracking"), dash + ".xml");
-                log("Writing tracking file " + tracking, Project.MSG_VERBOSE);
-                tracking.getParentFile().mkdirs();
-                OutputStream config = new BufferedOutputStream(new FileOutputStream(tracking));
-                config.write(("<?xml version='1.0' encoding='UTF-8'?>\n" +
-                    "<module codename='" + uu.getCodeName() + "'>\n").getBytes("UTF-8"));
-                config.write(("  <module_version install_time='" + System.currentTimeMillis() + "' last='true' origin='Ant'" +
-                        " specification_version='" + uu.getSpecVersion() + "'>\n").getBytes("UTF-8"));
+                Document doc = XMLUtil.createDocument("module");
+                Element module = doc.getDocumentElement();
+                module.setAttribute("codename", uu.getCodeName());
+                Element module_version = (Element) module.appendChild(doc.createElement("module_version"));
+                module_version.setAttribute("install_time", String.valueOf(System.currentTimeMillis()));
+                module_version.setAttribute("last", "true");
+                module_version.setAttribute("origin", "Ant"); // XXX set to URL origin
+                module_version.setAttribute("specification_version", uu.getSpecVersion());
 
                 ZipFile  zf = new ZipFile(tmp);
                 Enumeration<? extends ZipEntry> en = zf.entries();
@@ -277,10 +278,19 @@ public class AutoUpdate extends Task {
                         crcValue = getFileCRC(dest);
                         relName = relName.substring(0, relName.length() - 8);
                     }
-                    config.write(("    <file crc='" + crcValue + "' name='" + relName + "'/>\n").getBytes("UTF-8"));
+                    Element file = (Element) module_version.appendChild(doc.createElement("file"));
+                    file.setAttribute("crc", String.valueOf(crcValue));
+                    file.setAttribute("name", relName);
                 }
-                config.write("  </module_version>\n</module>\n".getBytes("UTF-8"));
-                config.close();
+                File tracking = new File(new File(whereTo, "update_tracking"), dash + ".xml");
+                log("Writing tracking file " + tracking, Project.MSG_VERBOSE);
+                tracking.getParentFile().mkdirs();
+                OutputStream config = new FileOutputStream(tracking);
+                try {
+                    XMLUtil.write(doc, config);
+                } finally {
+                    config.close();
+                }
             } catch (IOException ex) {
                 throw new BuildException(ex);
             } finally {

@@ -565,21 +565,111 @@ public class ETable extends JTable {
     public void createDefaultColumnsFromModel() {
         TableModel model = getModel();
         if (model != null) {
-            int modelColumnCount = model.getColumnCount();
-            TableColumn newColumns[] = new TableColumn[modelColumnCount];
-            for (int i = 0; i < newColumns.length; i++) {
-                newColumns[i] = createColumn(i);
-            }
             TableColumnModel colModel = getColumnModel();
+            int modelColumnCount = model.getColumnCount();
+            List<TableColumn> oldHiddenColumns = null;
+            int[] hiddenColumnIndexes = null;
+            int[] sortedColumnIndexes = null;
+            if (colModel instanceof ETableColumnModel) {
+                ETableColumnModel etcm = (ETableColumnModel)colModel;
+                oldHiddenColumns = etcm.hiddenColumns;
+                hiddenColumnIndexes = new int[oldHiddenColumns.size()];
+                for (int hci = 0; hci < hiddenColumnIndexes.length; hci++) {
+                    Object name = oldHiddenColumns.get(hci).getHeaderValue();
+                    int index = -1;
+                    if (name != null) {
+                        for (int i = 0; i < modelColumnCount; i++) {
+                            if (name.equals(model.getColumnName(i))) {
+                                index = i;
+                                break;
+                            }
+                        }
+                    }
+                    hiddenColumnIndexes[hci] = index;
+                }
+                List<TableColumn> sortedColumns = etcm.getSortedColumns();
+                int ns = sortedColumns.size();
+                if (ns > 0) {
+                    sortedColumnIndexes = new int[ns];
+                    for (int sci = 0; sci < ns; sci++) {
+                        Object name = sortedColumns.get(sci).getHeaderValue();
+                        int index = -1;
+                        if (name != null) {
+                            for (int i = 0; i < modelColumnCount; i++) {
+                                if (name.equals(model.getColumnName(i))) {
+                                    index = i;
+                                    break;
+                                }
+                            }
+                        }
+                        sortedColumnIndexes[sci] = index;
+                    }
+                }
+            }
+            TableColumn newColumns[] = new TableColumn[modelColumnCount];
+            int oi = 0;
+            class Sorting {
+                boolean ascending;
+                int sortRank;
+                Sorting(boolean ascending, int sortRank) {
+                    this.ascending = ascending;
+                    this.sortRank = sortRank;
+                }
+            }
+            Sorting[] columnSorting = new Sorting[modelColumnCount];
+            for (int i = 0; i < modelColumnCount; i++) {
+                newColumns[i] = createColumn(i);
+                boolean isHidden = false;
+                for (int hci = 0; hci < hiddenColumnIndexes.length; hci++) {
+                    if (hiddenColumnIndexes[hci] == i) {
+                        isHidden = true;
+                    }
+                }
+                if (!isHidden && oi < colModel.getColumnCount()) {
+                    TableColumn tc = colModel.getColumn(oi++);
+                    newColumns[i].setPreferredWidth(tc.getPreferredWidth());
+                    newColumns[i].setWidth(tc.getWidth());
+                    if (tc instanceof ETableColumn && newColumns[i] instanceof ETableColumn) {
+                        ETableColumn etc = (ETableColumn) tc;
+                        ETableColumn enc = (ETableColumn) newColumns[i];
+                        if (enc.isSortingAllowed()) {
+                            columnSorting[i] = new Sorting(etc.isAscending(), etc.getSortRank());
+                        }
+                    }
+                }
+            }
             while (colModel.getColumnCount() > 0) {
                 colModel.removeColumn(colModel.getColumn(0));
             }
             if (colModel instanceof ETableColumnModel) {
                 ETableColumnModel etcm = (ETableColumnModel)colModel;
                 etcm.hiddenColumns = new ArrayList<TableColumn>();
+                etcm.clearSortedColumns();
             }
+
             for (int i = 0; i < newColumns.length; i++) {
                 addColumn(newColumns[i]);
+            }
+            if (colModel instanceof ETableColumnModel) {
+                ETableColumnModel etcm = (ETableColumnModel) colModel;
+                if (hiddenColumnIndexes != null) {
+                    for (int hci = 0; hci < hiddenColumnIndexes.length; hci++) {
+                        int index = hiddenColumnIndexes[hci];
+                        if (index >= 0) {
+                            etcm.setColumnHidden(newColumns[index], true);
+                        }
+                    }
+                }
+                if (sortedColumnIndexes != null) {
+                    for (int sci = 0; sci < sortedColumnIndexes.length; sci++) {
+                        int index = sortedColumnIndexes[sci];
+                        Sorting sorting = columnSorting[index];
+                        if (index >= 0 && newColumns[index] instanceof ETableColumn && sorting != null) {
+                            ETableColumn etc = (ETableColumn) newColumns[index];
+                            etcm.setColumnSorted(etc, sorting.ascending, sorting.sortRank);
+                        }
+                    }
+                }
             }
         }
     }
@@ -1314,7 +1404,8 @@ public class ETable extends JTable {
         
         String s = MessageFormat.format(text, new Object[] { columnName, value});
         JMenuItem res = new JMenuItem(s);
-        res.addActionListener(new EqualsQuickFilter(column, value, equals));
+        int modelColumn = convertColumnIndexToModel(column);
+        res.addActionListener(new EqualsQuickFilter(modelColumn, value, equals));
         return res;
     }
     
@@ -1372,7 +1463,8 @@ public class ETable extends JTable {
         
         String s = MessageFormat.format(text, new Object[] { columnName, value});
         JMenuItem res = new JMenuItem(s);
-        res.addActionListener(new CompareQuickFilter(column, value, greater, equalsCounts));
+        int modelColumn = convertColumnIndexToModel(column);
+        res.addActionListener(new CompareQuickFilter(modelColumn, value, greater, equalsCounts));
         return res;
     }
     

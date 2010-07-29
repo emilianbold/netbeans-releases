@@ -1115,7 +1115,10 @@ public final class OpenProjectList {
                 ok = false;
             }
         }
-        prepareTemplates(null, null, null, null, p, p.getLookup());
+        if (System.getProperty("test.whitelist.stage") == null) { // NOI18N
+            // disable warming up of templates when running ide.kit/test/whitelist
+            prepareTemplates(null, null, null, null, p, p.getLookup());
+        }
         return ok;
     }
     

@@ -65,9 +65,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.openide.explorer.PropertyPanelBridge;
 
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
 
@@ -303,6 +306,8 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         //involves an API change (some package private methods of PropertyEnv need to be accessible to
         //the editor classes), this will have to wait for after 4.0 - Tim
         getActionMap().put("invokeCustomEditor", new CustomEditorProxyAction()); //NOI18N
+
+        PropertyPanelBridge.register(this, new BridgeAccessor(this));
     }
 
     public void setBackground(Color c) {
@@ -444,6 +449,23 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         }
 
         return displayer;
+    }
+
+    /**
+     * Writes the edited value to the property.
+     * @return <code>true</code> when the value was successfully written, <code>false</code> otherwise.
+     */
+    private boolean commit() {
+        if (displayer instanceof PropertyDisplayer_Editable) {
+            try {
+                return ((PropertyDisplayer_Editable) displayer).commit();
+            } catch (IllegalArgumentException iae) {
+                PropertyDialogManager.notify(iae);
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /** Installs the component we will embed to display the property */
@@ -980,11 +1002,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
             }
 
             if (!changeImmediate) {
-                try {
-                    ((PropertyDisplayer_Editable) displayer).commit();
-                } catch (IllegalArgumentException iae) {
-                    PropertyDialogManager.notify(iae);
-                }
+                commit();
             }
         }
     }
@@ -1272,5 +1290,25 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
                 }
             }
         }
+    }
+
+    private static final class BridgeAccessor implements PropertyPanelBridge.Accessor {
+
+        private final Reference<PropertyPanel> panelRef;
+
+        public BridgeAccessor(PropertyPanel panel) {
+            this.panelRef = new WeakReference<PropertyPanel>(panel);
+        }
+
+        @Override
+        public boolean commit() {
+            PropertyPanel panel = panelRef.get();
+            if (panel != null) {
+                return panel.commit();
+            } else {
+                return false;
+            }
+        }
+
     }
 }

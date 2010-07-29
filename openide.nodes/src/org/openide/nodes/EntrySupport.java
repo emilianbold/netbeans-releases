@@ -396,8 +396,10 @@ abstract class EntrySupport {
             }
             
             // empty the list of nodes so it has to be recreated again
-            clearNodes();
-            notifyRemove(nodes, current);
+            if (!nodes.isEmpty()) {
+                clearNodes();
+                notifyRemove(nodes, current);
+            }
         }
 
         /** Updates the order of entries.
@@ -528,8 +530,10 @@ abstract class EntrySupport {
             this.entries = entries;
             checkConsistency();
 
-            clearNodes();
-            notifyAdd(nodes);
+            if (!nodes.isEmpty()) {
+                clearNodes();
+                notifyAdd(nodes);
+            }
         }
 
         /** Refreshes content of one entry. Updates the state of children

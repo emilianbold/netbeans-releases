@@ -95,7 +95,7 @@ import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.mercurial.ui.diff.MultiDiffPanel;
-import org.netbeans.modules.mercurial.ui.diff.Setup;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
@@ -327,9 +327,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             Runnable inAWT = new Runnable() {
+                @Override
                 public void run() {
                     commitTable.dataChanged();
                     listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
@@ -344,6 +346,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
@@ -516,7 +519,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             File file = node.getFile();
             MultiDiffPanel panel = displayedDiffs.get(file);
             if (panel == null) {
-                panel = new MultiDiffPanel(file, Setup.REVISION_BASE, Setup.REVISION_CURRENT, false); // switch the last parameter to true if editable diff works poorly
+                panel = new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
                 displayedDiffs.put(file, panel);
                 tabbedPane.addTab(file.getName(), panel);
             }

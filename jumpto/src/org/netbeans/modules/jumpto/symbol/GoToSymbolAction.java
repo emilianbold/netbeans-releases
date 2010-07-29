@@ -94,6 +94,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -155,9 +156,9 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             if (arr.length > 0) {
                 EditorCookie ec = arr[0].getCookie (EditorCookie.class);
                 if (ec != null) {
-                    JEditorPane[] openedPanes = ec.getOpenedPanes ();
-                    if (openedPanes != null) {
-                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(openedPanes [0]);
+                    JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
+                    if (recentPane != null) {
+                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(recentPane);
                         if (initSearchText != null && org.openide.util.Utilities.isJavaIdentifier(initSearchText)) {
                             panel.setInitialText(initSearchText);
                         }

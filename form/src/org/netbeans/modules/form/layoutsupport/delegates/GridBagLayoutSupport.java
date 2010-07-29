@@ -61,6 +61,8 @@ import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.FormPropertyContext;
+import org.netbeans.modules.form.RADVisualContainer;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesigner;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
 
@@ -85,12 +87,16 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         return GridBagLayout.class;
     }
 
+    private boolean isGridDesignerEnabled() {
+        return Boolean.getBoolean("netbeans.modules.form.griddesigner"); // NOI18N
+    }
+    
     /** Returns a class of customizer for GridBagLayout.
      * @return layout customizer class
      */
     @Override
     public Class getCustomizerClass() {
-        return GridBagCustomizer.Window.class;
+        return isGridDesignerEnabled() ? GridDesigner.class : GridBagCustomizer.Window.class;
     }
 
     /** Creates an instance of customizer for GridBagLayout.
@@ -98,15 +104,22 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
      */
     @Override
     public Component getSupportCustomizer() {
-        GridBagCustomizer.Window customizer = null;
-        if (customizerRef != null)
-            customizer = customizerRef.get();
-        if (customizer == null) {
-            customizer = new GridBagCustomizer.Window();
-            customizerRef = new WeakReference<GridBagCustomizer.Window>(customizer);
+        if (isGridDesignerEnabled()) {
+            GridDesigner designer = new GridDesigner();
+            RADVisualContainer container = ((LayoutSupportManager)getLayoutContext()).getMetaContainer();
+            designer.setObject(container);
+            return designer;            
+        } else {
+            GridBagCustomizer.Window customizer = null;
+            if (customizerRef != null)
+                customizer = customizerRef.get();
+            if (customizer == null) {
+                customizer = new GridBagCustomizer.Window();
+                customizerRef = new WeakReference<GridBagCustomizer.Window>(customizer);
+            }
+            customizer.setObject(this);
+            return customizer;   
         }
-        customizer.setObject(this);
-        return customizer;
     }
 
     /** This method is called when switching layout - giving an opportunity to

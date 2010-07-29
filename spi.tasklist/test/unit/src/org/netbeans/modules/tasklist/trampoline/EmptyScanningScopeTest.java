@@ -47,7 +47,6 @@ package org.netbeans.modules.tasklist.trampoline;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,24 +67,6 @@ public class EmptyScanningScopeTest extends NbTestCase {
 
     public EmptyScanningScopeTest (String name) {
         super (name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(EmptyScanningScopeTest.class);
-        
-        return suite;
     }
 
     public void testIterator() {

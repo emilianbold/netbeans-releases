@@ -44,22 +44,14 @@
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.security.AllPermission;
-import java.security.CodeSource;
-import java.security.PermissionCollection;
-import java.security.Permissions;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -74,7 +66,9 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLClassLoader;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
@@ -144,6 +138,14 @@ public class WLDeploymentManager implements DeploymentManager {
         return port;
     }
 
+    public void addDomainChangeListener(ChangeListener listener) {
+        mutableState.addDomainChangeListener(listener);
+    }
+
+    public void removeDomainChangeListener(ChangeListener listener) {
+        mutableState.removeDomainChangeListener(listener);
+    }
+
     public boolean isRestartNeeded() {
         return mutableState.isRestartNeeded();
     }
@@ -155,7 +157,7 @@ public class WLDeploymentManager implements DeploymentManager {
     /**
      * Returns the InstanceProperties object for the current server instance.
      */
-    public synchronized InstanceProperties getInstanceProperties() {
+    public final synchronized InstanceProperties getInstanceProperties() {
         if (instanceProperties == null) {
             this.instanceProperties = InstanceProperties.getInstanceProperties(uri);
 
@@ -299,7 +301,8 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getAvailableModules(moduleType, translateTargets(manager, target));
+                        return translateTargetModuleIDs(
+                                manager.getAvailableModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -324,7 +327,8 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getNonRunningModules(moduleType, translateTargets(manager, target));
+                        return translateTargetModuleIDs(
+                                manager.getNonRunningModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -349,7 +353,8 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getRunningModules(moduleType, translateTargets(manager, target));
+                        return translateTargetModuleIDs(
+                                manager.getRunningModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -445,38 +450,63 @@ public class WLDeploymentManager implements DeploymentManager {
         return deployTargets.toArray(new Target[deployTargets.size()]);
     }
 
+    private static TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
+        if (ids == null) {
+            return null;
+        }
+
+        TargetModuleID[] mapped = new TargetModuleID[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            mapped[i] = new ServerTargetModuleID(ids[i]);
+        }
+        return mapped;
+    }
+
     private static interface Action<T> {
 
          T execute(DeploymentManager manager) throws ExecutionException;
     }
 
-    private static class WLClassLoader extends URLClassLoader {
+    private static class ServerTargetModuleID implements TargetModuleID {
 
-        public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException {
-            super(urls, parent);
-        }
+        private final TargetModuleID moduleId;
 
-        public void addURL(File f) throws MalformedURLException {
-            if (f.isFile()) {
-                addURL(f.toURL());
-            }
+        public ServerTargetModuleID(TargetModuleID moduleId) {
+            this.moduleId = moduleId;
         }
 
         @Override
-        protected PermissionCollection getPermissions(CodeSource codeSource) {
-            Permissions p = new Permissions();
-            p.add(new AllPermission());
-            return p;
+        public String toString() {
+            return getModuleID();
         }
 
         @Override
-        public Enumeration<URL> getResources(String name) throws IOException {
-            // get rid of annoying warnings
-            if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
-                return Collections.enumeration(Collections.<URL>emptyList());
-            }
+        public String getWebURL() {
+            return moduleId.getWebURL();
+        }
 
-            return super.getResources(name);
+        @Override
+        public Target getTarget() {
+            return moduleId.getTarget();
+        }
+
+        @Override
+        public TargetModuleID getParentTargetModuleID() {
+            if (moduleId.getParentTargetModuleID() == null) {
+                return null;
+            }
+            return new ServerTargetModuleID(moduleId.getParentTargetModuleID());
+        }
+
+        @Override
+        public String getModuleID() {
+            return moduleId.getModuleID();
+        }
+
+        @Override
+        public TargetModuleID[] getChildTargetModuleID() {
+            return translateTargetModuleIDs(moduleId.getChildTargetModuleID());
         }
     }
+
 }

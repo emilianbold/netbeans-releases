@@ -53,6 +53,7 @@ import com.sun.javadoc.AnnotationDesc.ElementValuePair;
 import com.sun.source.util.Trees;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -121,7 +122,21 @@ public class ElementJavadoc {
      * @return ElementJavadoc describing the javadoc
      */
     public static final ElementJavadoc create(CompilationInfo compilationInfo, Element element) {
-        return new ElementJavadoc(compilationInfo, element, null);
+        return create (compilationInfo, element, null);
+    }
+
+    /** Creates an object describing the Javadoc of given element. The object
+     * is capable of getting the text formated into HTML, resolve the links,
+     * jump to external javadoc.
+     *
+     * @param compilationInfo CompilationInfo
+     * @param element Element the javadoc is required for
+     * @param cancel a {@link Callable} to signal the cancel request
+     * @return ElementJavadoc describing the javadoc
+     * @since 1.15
+     */
+    public static final ElementJavadoc create(CompilationInfo compilationInfo, Element element, final Callable<Boolean> cancel) {
+        return new ElementJavadoc(compilationInfo, element, null, cancel);
     }
     
     /** Gets the javadoc comment formated as HTML.      
@@ -167,7 +182,7 @@ public class ElementJavadoc {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         if (linkDoc != null) {
-                            ret[0] = new ElementJavadoc(controller, linkDoc.resolve(controller), null);
+                            ret[0] = new ElementJavadoc(controller, linkDoc.resolve(controller), null, null);
                         } else {
                             int idx = link.indexOf('#'); //NOI18N
                             URI uri = null;
@@ -197,7 +212,7 @@ public class ElementJavadoc {
                                             }
                                         }
                                     }
-                                    ret[0] = new ElementJavadoc(controller, e, new URL(docURL, link));
+                                    ret[0] = new ElementJavadoc(controller, e, new URL(docURL, link), null);
                                 } else {
                                     //external URL
                                     if( uri.isAbsolute() ) {
@@ -230,7 +245,7 @@ public class ElementJavadoc {
         return goToSource;
     }
     
-    private ElementJavadoc(CompilationInfo compilationInfo, Element element, URL url) {
+    private ElementJavadoc(CompilationInfo compilationInfo, Element element, URL url, final Callable<Boolean> cancel) {
         this.trees = compilationInfo.getTrees();
         this.eu = compilationInfo.getElementUtilities();
         this.cpInfo = compilationInfo.getClasspathInfo();
@@ -240,7 +255,7 @@ public class ElementJavadoc {
         JavadocHelper.TextStream page = null;
         if (element != null) {
             // XXX would be better to avoid testing network connections in case we get a source fo anyway
-            page = JavadocHelper.getJavadoc(element);
+            page = JavadocHelper.getJavadoc(element, cancel);
             if (page != null) {
                 docURL = page.getLocation();
             }

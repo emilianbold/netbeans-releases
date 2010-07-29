@@ -267,10 +267,10 @@ public final class ViewUpdates implements DocumentListener {
                     }
                     if (!rebuildNecessary) { // Attempt to update just a single view locally
                         // Just inform the view at the offset to contain more data
-                        // Use rebuildEndOffset if there was a move inside views
-                        int childViewIndex = paragraphView.getViewIndex(rEndOffset);
+                        int childViewIndex = paragraphView.getViewIndex(insertOffset);
                         EditorView childView = paragraphView.getEditorView(childViewIndex);
-                        if (insertOffset == childView.getStartOffset()) { // View starting right at insertOffset => use previous
+                        int childStartOffset = childView.getStartOffset();
+                        if (insertOffset == childStartOffset) { // View starting right at insertOffset => use previous
                             childViewIndex--;
                             if (childViewIndex < 0) {
                                 rebuildNecessary = true;
@@ -278,17 +278,22 @@ public final class ViewUpdates implements DocumentListener {
                                 childView = paragraphView.getEditorView(childViewIndex); // re-get childView at new index
                             }
                         }
+                        if (rStartOffset < childStartOffset) {
+                            rebuildNecessary = true;
+                        }
                         if (!rebuildNecessary) {
                             // Possibly clear text layout for the child view
                             if (childView instanceof TextLayoutView) {
                                 documentView.getTextLayoutCache().put(paragraphView, (TextLayoutView)childView, null);
                             }
                             // View may refuse length setting in which case it must be rebuilt
-                            rebuildNecessary = !childView.setLength(childView.getLength() + insertLength);
+                            rebuildNecessary = !childView.setLength(childView.getLength() + insertLength,
+                                    insertOffset, insertLength);
                             // Update offsets of the views that follow the modified one
                             if (!rebuildNecessary) {
                                 // Update length of paragraph view as well
-                                paragraphView.setLength(paragraphView.getLength() + insertLength);
+                                paragraphView.setLength(paragraphView.getLength() + insertLength,
+                                        insertOffset, insertLength);
                                 double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
                                         paragraphView.getViewMajorAxisSpan(childViewIndex);
                                 // [TODO] fix line wrap info
@@ -413,7 +418,7 @@ public final class ViewUpdates implements DocumentListener {
                 if (!rebuildNecessary) {
                     // Just inform the view at the offset to contain more data
                     // Use rebuildEndOffset if there was a move inside views
-                    int childViewIndex = paragraphView.getViewIndex(rEndOffset);
+                    int childViewIndex = paragraphView.getViewIndex(removeOffset);
                     EditorView childView = paragraphView.getEditorView(childViewIndex);
                     int childStartOffset = childView.getStartOffset();
                     int childEndOffset = childView.getEndOffset();
@@ -426,11 +431,13 @@ public final class ViewUpdates implements DocumentListener {
                             documentView.getTextLayoutCache().put(paragraphView, (TextLayoutView)childView, null);
                         }
                         // View may refuse length setting in which case it must be rebuilt
-                        rebuildNecessary = !childView.setLength(childView.getLength() - removeLength);
+                        rebuildNecessary = !childView.setLength(childView.getLength() - removeLength,
+                                removeOffset, -removeLength);
                         // Update offsets of the views that follow the modified one
                         if (!rebuildNecessary) {
                             // Update length of paragraph view as well
-                            paragraphView.setLength(paragraphView.getLength() - removeLength);
+                            paragraphView.setLength(paragraphView.getLength() - removeLength,
+                                    removeOffset, -removeLength);
                             double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
                                     paragraphView.getViewMajorAxisSpan(childViewIndex);
                             // [TODO] fix line wrap info

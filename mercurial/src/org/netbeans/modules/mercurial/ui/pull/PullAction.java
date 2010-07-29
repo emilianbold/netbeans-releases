@@ -58,7 +58,6 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
-import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
@@ -95,16 +94,26 @@ public class PullAction extends ContextAction {
         return HgUtils.isFromHgRepository(context);
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_PullLocal";                                //NOI18N
     }
 
+    @Override
+    public String getName(String role, Node[] activatedNodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        String name = roots.size() == 1 ? "CTL_MenuItem_PullRoot" : "CTL_MenuItem_PullLocal"; //NOI18N
+        return roots.size() == 1 ? NbBundle.getMessage(PullAction.class, name, roots.iterator().next().getName()) : NbBundle.getMessage(PullAction.class, name);
+    }
+    
     @Override
     protected void performContextAction(Node[] nodes) {
         final VCSContext context = HgUtils.getCurrentContext(nodes);
         final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
         // run the whole bulk operation in background
         Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 for (File repositoryRoot : repositoryRoots) {
                     final File repository = repositoryRoot;
@@ -112,6 +121,7 @@ public class PullAction extends ContextAction {
                     // run every repository fetch in its own support with its own output window
                     RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
                     HgProgressSupport support = new HgProgressSupport() {
+                        @Override
                         public void perform() {
                             getDefaultAndPerformPull(context, repository, this.getLogger());
                             canceled[0] = isCanceled();

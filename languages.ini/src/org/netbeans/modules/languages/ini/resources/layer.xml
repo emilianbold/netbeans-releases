@@ -125,6 +125,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 <folder name="Factories">
                     <file name="IniDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.ini.resources.Bundle"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.languages.ini.IniDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/ini/resources/ini_file_16.png"/>

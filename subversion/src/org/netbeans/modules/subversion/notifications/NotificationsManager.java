@@ -68,7 +68,6 @@ import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSNotificationDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -156,11 +155,12 @@ public class NotificationsManager {
         pane.setText(msg);
 
         pane.addHyperlinkListener(new HyperlinkListener() {
+            @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
                     if(CMD_DIFF.equals(e.getDescription())) {
                         Context ctx = new Context(files);
-                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(NotificationsManager.class, "LBL_Remote_Changes", projectDir.getName()));  // NOI18N
+                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(NotificationsManager.class, "LBL_Remote_Changes", projectDir.getName()), false); //NOI18N
                     } else if (revision != null) {
                         try {
                             SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
@@ -180,7 +180,7 @@ public class NotificationsManager {
     private boolean isEnabled() {
         if (enabled == null) {
             // let's leave a possibility to disable the notifications
-            enabled = new Boolean(!"false".equals(System.getProperty("subversion.notificationsEnabled", "true"))); //NOI18N
+            enabled = !"false".equals(System.getProperty("subversion.notificationsEnabled", "true")); //NOI18N
         }
         return enabled.booleanValue() && kenaiAccessor.isLogged(null);
     }
@@ -200,6 +200,7 @@ public class NotificationsManager {
 
     private class NotificationTask extends VCSNotificationDisplayer implements Runnable {
 
+        @Override
         public void run() {
             HashSet<File> filesToScan;
             synchronized (files) {
@@ -208,11 +209,12 @@ public class NotificationsManager {
             }
             removeDirectories(filesToScan);
             removeSeenFiles(filesToScan);
-            if (filesToScan.size() != 0) {
+            if (!filesToScan.isEmpty()) {
                 scanFiles(filesToScan);
             }
         }
 
+        @Override
         protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {
             NotificationsManager.this.setupPane(pane, files, getFileNames(files), projectDir, url, revision);
         }

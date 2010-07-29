@@ -252,6 +252,7 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
     // Don't edit the test file in NetBeans!!!
     public void testIssue185435_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.expandTabToSpaces, true);
         reformatFileContents("testfiles/formatting/templates/issue185435_01.php", options, true);
     }
 
@@ -326,6 +327,87 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
     public void testIssue187665_02() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/templates/issue187665_02.php", options, true);
+    }
+
+    public void testIssue188656_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue188656_01.php", options, true);
+    }
+
+    public void testIssue188656_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue188656_02.php", options, true);
+    }
+
+    public void testIssue188656_03() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue188656_03.php", options, true);
+    }
+
+    public void testIssue188656_04() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.tabSize, 4);
+        options.put(FmtOptions.expandTabToSpaces, true);
+        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.indentSize, 4);
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.spacesPerTab, 4);
+        reformatFileContents("testfiles/formatting/templates/issue188656_04.php", options, true);
+    }
+
+    public void testIssue188656_05() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.tabSize, 4);
+        options.put(FmtOptions.expandTabToSpaces, true);
+        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.indentSize, 4);
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.spacesPerTab, 4);
+        reformatFileContents("testfiles/formatting/templates/issue188656_05.php", options, true);
+    }
+
+    public void testIssue188656_06() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.tabSize, 4);
+        options.put(FmtOptions.expandTabToSpaces, true);
+        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.indentSize, 4);
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.spacesPerTab, 4);
+        reformatFileContents("testfiles/formatting/templates/issue188656_06.php", options, true);
+    }
+
+    public void testIssue188656_07() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.tabSize, 4);
+        options.put(FmtOptions.expandTabToSpaces, true);
+        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.indentSize, 4);
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.spacesPerTab, 4);
+        reformatFileContents("testfiles/formatting/templates/issue188656_07.php", options, true);
+    }
+
+    public void testIssue188656_08() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.tabSize, 4);
+        options.put(FmtOptions.expandTabToSpaces, true);
+        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.indentSize, 4);
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.spacesPerTab, 4);
+        reformatFileContents("testfiles/formatting/templates/issue188656_08.php", options, true);
+    }
+
+    public void testIssue188656_09() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.tabSize, 4);
+        options.put(FmtOptions.expandTabToSpaces, true);
+        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.indentSize, 4);
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.spacesPerTab, 4);
+        reformatFileContents("testfiles/formatting/templates/issue188656_09.php", options, true);
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {

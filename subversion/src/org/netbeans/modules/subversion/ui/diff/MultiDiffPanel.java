@@ -157,6 +157,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private JComponent              diffView;
     private DiffFileTable           fileTable;
     private boolean                 dividerSet;
+    private boolean                 remoteStatusCalled;
+    private boolean                 initialRefreshDisabled;
 
     /**
      * panel that is used for displaying the diff if {@code JSplitPane}
@@ -170,11 +172,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     /**
      * Creates diff panel and immediatelly starts loading...
      */
-    public MultiDiffPanel(Context context, int initialType, String contextName) {
+    public MultiDiffPanel(Context context, int initialType, String contextName, boolean initialRefreshDisabled) {
         assert EventQueue.isDispatchThread();
         this.context = context;
         this.diffedFile = null;
         this.contextName = contextName;
+        this.initialRefreshDisabled = initialRefreshDisabled;
         currentType = initialType;
         initComponents();
         initFileTable();
@@ -183,7 +186,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         diffViewPanel = null;
         refreshComponents();
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
-        onRefreshButton();
+        if (initialRefreshDisabled) {
+            refreshTask.schedule(0);
+        } else {
+            onRefreshButton(); // refresh statuses for the first time
+        }
     }
 
     /**
@@ -618,8 +625,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
         executeStatusSupport = new SvnProgressSupport() {
             @Override
-            public void perform() {                                                
-                StatusAction.executeStatus(context, this);
+            public void perform() {                                         
+                // remote status is called when we're either in a remote mode or the refresh is manually started (refresh button)
+                remoteStatusCalled |= currentType != Setup.DIFFTYPE_LOCAL;
+                StatusAction.executeStatus(context, this, remoteStatusCalled);
                 if (!isCanceled()) {
                     refreshTask.schedule(50);
                 }
@@ -906,7 +915,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             currentType = Setup.DIFFTYPE_ALL;
         }
         SvnModuleConfig.getDefault().setLastUsedModificationContext(currentType);
-        refreshTask.schedule(0);
+        if (!initialRefreshDisabled && !remoteStatusCalled && currentType != Setup.DIFFTYPE_LOCAL) {
+            // current mode is not local and remote status has not yet been called, so remote statuses need to be refreshed
+            onRefreshButton();
+        } else {
+            // local and remote statuses already refreshed, no need to call status action
+            refreshTask.schedule(0);
+        }
     }
 
     @Override
@@ -1230,6 +1245,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }//GEN-LAST:event_updateButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        remoteStatusCalled = true; // manual click always triggers also remote status refresh
         onRefreshButton();
     }//GEN-LAST:event_refreshButtonActionPerformed
     

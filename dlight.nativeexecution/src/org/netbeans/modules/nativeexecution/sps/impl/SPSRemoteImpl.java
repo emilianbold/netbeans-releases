@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.sps.impl;
 
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -118,14 +117,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
     }
 
     @Override
-    public synchronized void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
-        final Session session = ConnectionManagerAccessor.getDefault().
-                getConnectionSession(execEnv, true);
-
-        if (session == null) {
-            return;
-        }
-
+    public synchronized boolean requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException, InterruptedException {
         // Construct privileges list
         StringBuilder sb = new StringBuilder();
 
@@ -150,7 +142,11 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         int status = 1;
 
         try {
-            channel = (ChannelShell) session.openChannel("shell"); // NOI18N
+            channel = (ChannelShell) ConnectionManagerAccessor.getDefault().openAndAcquireChannel(execEnv, "shell", true); // NOI18N+
+            if (channel == null) {
+                return false;
+            }
+
             channel.setPty(true);
             channel.setPtyType("ldterm"); // NOI18N
 
@@ -171,6 +167,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             String exitStatus = expect(in, "ExitStatus:%"); // NOI18N
             status = Integer.valueOf(exitStatus).intValue();
 
+            return status == 0;
         } catch (InterruptedIOException ex) {
             throw new CancellationException();
         } catch (IOException ex) {
@@ -209,6 +206,8 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
                 w.close();
             }
         }
+
+        return false;
     }
 
     /**
@@ -217,7 +216,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
      * @param expectedString
      * @return
      */
-    private final static String expect(
+    private static String expect(
             final InputStream in,
             final String expectedString) throws IOException {
 

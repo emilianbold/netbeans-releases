@@ -73,7 +73,6 @@ import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -1093,6 +1092,10 @@ public final class ModuleList {
         defaults.put("module.jar.dir", "modules"); // NOI18N
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
+        defaults.put("build.dir", "build"); // NOI18N
+        if (type == NbModuleType.SUITE_COMPONENT) {
+            defaults.put("suite.build.dir", "${suite.dir}/build"); // NOI18N
+        }
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         defaults.put("cluster", findClusterLocation(basedir, root, type));
         return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
@@ -1217,10 +1220,10 @@ public final class ModuleList {
         String cluster;
         switch (type) {
             case SUITE_COMPONENT:
-                cluster = "${suite.dir}/" + SuiteProperties.CLUSTER_DIR; // NOI18N
+                cluster = "${suite.build.dir}/cluster"; // NOI18N
                 break;
             case STANDALONE:
-                cluster = PropertyUtils.resolveFile(basedir, SuiteProperties.CLUSTER_DIR).getAbsolutePath();
+                cluster = "${build.dir}/cluster"; // NOI18N
                 break;
             case NETBEANS_ORG:
             default:

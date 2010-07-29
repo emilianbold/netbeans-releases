@@ -97,6 +97,7 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 
 
@@ -131,6 +132,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             treeTable.setHorizontalScrollBarPolicy 
                 (JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            treeTable.setTreeHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add (treeTable, "Center");  //NOI18N
         treeTable.getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
 
@@ -661,6 +663,9 @@ ExplorerManager.Provider, PropertyChangeListener {
 
     private void updateTableColumns(Property[] columnsToSet) {
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
+        int tableModelColumnCount = tcm.getColumnCount();
+        int modelColumnCount = treeTable.getTable().getModel().getColumnCount();
+        boolean hiddenRemoved = tableModelColumnCount < modelColumnCount;
         ETableColumnModel ecm = (ETableColumnModel) tcm;
         //int d = (isDefaultColumnAdded) ? 1 : 0;
         int ci = 0;
@@ -669,7 +674,15 @@ ExplorerManager.Provider, PropertyChangeListener {
         if (defaultColumnIndex > 0) tci++;
         for (int i = 0; i < columns.length; i++) {
             if (ci < columnsToSet.length && columns[i] == columnsToSet[ci] && i != defaultColumnIndex) {
+                if (tci >= tcm.getColumnCount()) {
+                    ci++;
+                    continue;
+                }
                 TableColumn tc = tcm.getColumn(tci);
+                if (hiddenRemoved && !columns[i].getDisplayName().equals(tc.getHeaderValue())) {
+                    ci++;
+                    continue;
+                }
                 tableColumns[i] = tc;
                 if (columns[i] instanceof Column) {
                     tableColumns[i].setCellEditor(new DelegatingCellEditor(
@@ -753,8 +766,11 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
 
     private boolean isHiddenColumn(int index) {
-        if (tableColumns == null || tableColumns[index] == null) {
+        if (tableColumns == null) {
             return false;
+        }
+        if (tableColumns[index] == null) {
+            return true;
         }
         ETableColumnModel ecm = (ETableColumnModel) treeTable.getTable().getColumnModel();
         return ecm.isColumnHidden(tableColumns[index]);

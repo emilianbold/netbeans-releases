@@ -77,6 +77,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
@@ -135,7 +136,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
      * @exception IOException if the object cannot be written
      */
     public void write(Writer w, Object inst) throws IOException {
-        XMLSettingsSupport.storeToXML10(inst, w, ModuleInfoManager.getDefault().getModuleInfo(inst.getClass()));
+        XMLSettingsSupport.storeToXML10(inst, w, Modules.getDefault().ownerOf(inst.getClass()));
     }
     
     /** delegate to SaveSupport to handle an unfired setting object change

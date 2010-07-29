@@ -57,14 +57,10 @@ public class JumpToCallStackAction extends AbstractAction {
     public JumpToCallStackAction(String callstackFrameInfo) {
         assert callstackFrameInfo != null;
         this.callstackFrameInfo = callstackFrameInfo;
-    }
 
-    @Override
-    public Object getValue(String key) {
-        if (NAME.equals(key)) {
-            return NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
-        }
-        return super.getValue(key);
+        String name = NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
+        putValue(NAME, name);
+        putValue(SHORT_DESCRIPTION, name);
     }
 
     @Override

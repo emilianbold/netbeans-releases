@@ -44,7 +44,6 @@
 
 package org.netbeans.junit;
 
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
@@ -60,11 +59,6 @@ public class AssertInstancesTest extends NbTestCase {
     
     public AssertInstancesTest(String testName) {
         super(testName);
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(AssertInstancesTest.class);
-        return suite;
     }
 
     @Override
