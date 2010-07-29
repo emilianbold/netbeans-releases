@@ -49,6 +49,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -241,6 +243,10 @@ public class TreeModelHyperNode extends TreeModelNode {
                             0,
                             count
                         );
+                        if (mch == null) {
+                            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+tf+"\nreturned null children for parent '"+object+"'");
+                            mch = new Object[] {};
+                        }
                     } else {
                         int count = m.getChildrenCount (object);
                         mch = m.getChildren (
@@ -248,6 +254,10 @@ public class TreeModelHyperNode extends TreeModelNode {
                             0,
                             count
                         );
+                        if (mch == null) {
+                            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+m+"\nreturned null children for parent '"+object+"'");
+                            mch = new Object[] {};
+                        }
                     }
                     synchronized (rootModelsByChildren) {
                         for (Object o : mch) {
