@@ -11,6 +11,11 @@
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
         </folder>
+        <folder name="Edit">
+            <file name="org-netbeans-modules-php-editor-nav-hierarchy-ShowPhpClassHierarchyAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.nav.hierarchy.Bundle"/>
+            </file>
+        </folder>
     </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
@@ -128,6 +133,11 @@
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                         <attr name="position" intvalue="500"/>
+                        <file name="org-netbeans-modules-php-editor-nav-hierarchy-ShowPhpClassHierarchyAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-php-editor-nav-hierarchy-ShowPhpClassHierarchyAction.instance"/>
+                            <attr name="position" intvalue="1200"/>
+                        </file>
+
                     </folder>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
@@ -290,6 +300,18 @@
                         <file name="org-netbeans-modules-php-editor-verification-UnknownFunctionRule.instance"/>
                     </folder>
                 </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="PhpHierarchyTopComponent.settings" url="PhpHierarchyTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="navigator">
+                <file name="PhpHierarchyTopComponent.wstcref" url="PhpHierarchyTopComponentWstcref.xml">
+                    <attr name="position" intvalue="1100"/>
+                </file>
             </folder>
         </folder>
     </folder>
