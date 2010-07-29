@@ -58,7 +58,7 @@ class ResourceChildren extends WLNodeChildren<ResourceNode> {
     } 
 
     private ResourceNode createJDBCNode( Lookup lookup ) {
-        return new ResourceNode(new JDBCChildren(lookup) , ResourceNodeType.JDBC,
+        return new ResourceNode(new JdbcChildren(lookup) , ResourceNodeType.JDBC,
                 NbBundle.getMessage(ResourceChildren.class, "LBL_JDBC"));   // NOI18N
     }
 }

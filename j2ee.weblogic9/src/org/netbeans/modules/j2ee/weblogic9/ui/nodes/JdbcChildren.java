@@ -50,18 +50,18 @@ import org.openide.util.Lookup;
  * @author ads
  *
  */
-class JDBCChildren extends WLNodeChildren<JDBCRetriever> {
+class JdbcChildren extends WLNodeChildren<JdbcRetriever> {
     
-    JDBCChildren(Lookup lookup ){
-        setKeys( new JDBCRetriever[] { new JDBCRetriever( lookup )});
+    JdbcChildren(Lookup lookup ){
+        setKeys( new JdbcRetriever[] { new JdbcRetriever( lookup )});
     }
 
     /* (non-Javadoc)
      * @see org.openide.nodes.Children.Keys#createNodes(java.lang.Object)
      */
     @Override
-    protected Node[] createNodes( JDBCRetriever key ) {
-        JDBCRetriever retriever = (JDBCRetriever) key;
+    protected Node[] createNodes( JdbcRetriever key ) {
+        JdbcRetriever retriever = (JdbcRetriever) key;
         retriever.clean();
         return new Node[] { retriever.createJDBCResourcesNode(),
                 retriever.createJDBCPoolsNode() };
