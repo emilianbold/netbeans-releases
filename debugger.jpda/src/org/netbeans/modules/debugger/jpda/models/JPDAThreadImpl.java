@@ -151,6 +151,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private boolean             doKeepLastOperations;
     private ReturnVariableImpl  returnVariable;
     private PropertyChangeSupport pch = new PropertyChangeSupport(this);
+    // There's a caching mechanism in ThreadReferenceImpl in JDK 7
+    // However, the stack depth query is not synchronized, therefore we cache it
+    // for efficiency here.
+    private int                 stackDepth = -1;
     private CallStackFrame[]    cachedFrames;
     private int                 cachedFramesFrom = -1;
     private int                 cachedFramesTo = -1;
@@ -246,10 +250,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @see  CallStackFrame
     */
     public int getLineNumber (String stratum) {
+        accessLock.readLock().lock();
         try {
-            if (ThreadReferenceWrapper.frameCount0(threadReference) < 1) return -1;
-            return LocationWrapper.lineNumber(StackFrameWrapper.location(
-                    ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+            if (suspended || suspendedNoFire) {
+                synchronized (cachedFramesLock) {
+                    if (stackDepth < 0) {
+                        stackDepth = ThreadReferenceWrapper.frameCount0(threadReference);
+                    }
+                    if (stackDepth < 1) return -1;
+                }
+                return LocationWrapper.lineNumber(StackFrameWrapper.location(
+                        ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+            }
         } catch (ObjectCollectedExceptionWrapper ex) {
         } catch (InvalidStackFrameExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
@@ -257,10 +269,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             // Thrown when thread has exited
         } catch (VMDisconnectedExceptionWrapper ex) {
         } catch (InternalExceptionWrapper ex) {
+        } finally {
+            accessLock.readLock().unlock();
         }
         return -1;
     }
-    
+
     public synchronized Operation getCurrentOperation() {
         return currentOperation;
     }
@@ -366,10 +380,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     * @return class name where this thread is stopped.
     */
     public String getClassName () {
+        accessLock.readLock().lock();
         try {
-            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return "";
-            return ReferenceTypeWrapper.name(LocationWrapper.declaringType(
-                    StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0))));
+            if (suspended || suspendedNoFire) {
+                synchronized (cachedFramesLock) {
+                    if (stackDepth < 0) {
+                        stackDepth = ThreadReferenceWrapper.frameCount0(threadReference);
+                    }
+                    if (stackDepth < 1) return "";
+                }
+                return ReferenceTypeWrapper.name(LocationWrapper.declaringType(
+                        StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0))));
+            }
         } catch (InternalExceptionWrapper ex) {
         } catch (ObjectCollectedExceptionWrapper ex) {
         } catch (InvalidStackFrameExceptionWrapper ex) {
@@ -377,6 +399,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
         } catch (VMDisconnectedExceptionWrapper ex) {
+        } finally {
+            accessLock.readLock().unlock();
         }
         return "";
     }
@@ -387,10 +411,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     * @return method name where this thread is stopped.
     */
     public String getMethodName () {
+        accessLock.readLock().lock();
         try {
-            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return "";
-            return TypeComponentWrapper.name(LocationWrapper.method(
-                    StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0))));
+            if (suspended || suspendedNoFire) {
+                synchronized (cachedFramesLock) {
+                    if (stackDepth < 0) {
+                        stackDepth = ThreadReferenceWrapper.frameCount0(threadReference);
+                    }
+                    if (stackDepth < 1) return "";
+                }
+                return TypeComponentWrapper.name(LocationWrapper.method(
+                        StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0))));
+            }
         } catch (InternalExceptionWrapper ex) {
         } catch (ObjectCollectedExceptionWrapper ex) {
         } catch (InvalidStackFrameExceptionWrapper ex) {
@@ -398,6 +430,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
         } catch (VMDisconnectedExceptionWrapper ex) {
+        } finally {
+            accessLock.readLock().unlock();
         }
         return "";
     }
@@ -408,9 +442,17 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     * @return Returns name of file of this frame.
     */
     public String getSourceName (String stratum) throws AbsentInformationException {
+        accessLock.readLock().lock();
         try {
-            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return "";
-            return LocationWrapper.sourceName(StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+            if (suspended || suspendedNoFire) {
+                synchronized (cachedFramesLock) {
+                    if (stackDepth < 0) {
+                        stackDepth = ThreadReferenceWrapper.frameCount0(threadReference);
+                    }
+                    if (stackDepth < 1) return "";
+                }
+                return LocationWrapper.sourceName(StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+            }
         } catch (ObjectCollectedExceptionWrapper ex) {
         } catch (InvalidStackFrameExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
@@ -418,6 +460,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             // Thrown when thread has exited
         } catch (VMDisconnectedExceptionWrapper ex) {
         } catch (InternalExceptionWrapper ex) {
+        } finally {
+            accessLock.readLock().unlock();
         }
         return "";
     }
@@ -429,9 +473,17 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     */
     public String getSourcePath (String stratum) 
     throws AbsentInformationException {
+        accessLock.readLock().lock();
         try {
-            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return "";
-            return LocationWrapper.sourcePath(StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+            if (suspended || suspendedNoFire) {
+                synchronized (cachedFramesLock) {
+                    if (stackDepth < 0) {
+                        stackDepth = ThreadReferenceWrapper.frameCount0(threadReference);
+                    }
+                    if (stackDepth < 1) return "";
+                }
+                return LocationWrapper.sourcePath(StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)), stratum);
+            }
         } catch (ObjectCollectedExceptionWrapper ex) {
         } catch (InvalidStackFrameExceptionWrapper ex) {
         } catch (IncompatibleThreadStateException ex) {
@@ -439,6 +491,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             // Thrown when thread has exited
         } catch (VMDisconnectedExceptionWrapper ex) {
         } catch (InternalExceptionWrapper ex) {
+        } finally {
+            accessLock.readLock().unlock();
         }
         return "";
     }
@@ -480,9 +534,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     throws AbsentInformationException {
         accessLock.readLock().lock();
         try {
+            if (!(suspended || suspendedNoFire)) {
+                return new CallStackFrame[0];
+            }
             List l;
             CallStackFrame[] theCachedFrames = null;
-                int max = ThreadReferenceWrapper.frameCount(threadReference);
+                int max;
+                synchronized (cachedFramesLock) {
+                    if (stackDepth < 0) {
+                        stackDepth = ThreadReferenceWrapper.frameCount(threadReference);
+                    }
+                    max = stackDepth;
+                }
                 if (to < 0) to = max; // Fight strange negative frame counts from http://www.netbeans.org/issues/show_bug.cgi?id=162448
                 from = Math.min(from, max);
                 to = Math.min(to, max);
@@ -603,6 +666,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
 
     private void cleanCachedFrames() {
         synchronized (cachedFramesLock) {
+            stackDepth = -1;
             cachedFrames = null;
             cachedFramesFrom = -1;
             cachedFramesTo = -1;
@@ -617,7 +681,14 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public int getStackDepth () {
         accessLock.readLock().lock();
         try {
-            return ThreadReferenceWrapper.frameCount0 (threadReference);
+            if (suspended || suspendedNoFire) {
+                synchronized (cachedFramesLock) {
+                    if (stackDepth < 0) {
+                        stackDepth = ThreadReferenceWrapper.frameCount0(threadReference);
+                    }
+                    return stackDepth;
+                }
+            }
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
         } catch (IncompatibleThreadStateException e) {
@@ -850,6 +921,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         suspendCount = 0;
         //System.err.println("resume("+getName()+") suspended = false");
         suspended = false;
+        suspendedNoFire = false;
         methodInvokingDisabledUntilResumed = false;
     }
 

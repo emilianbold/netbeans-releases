@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,6 +75,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     private Stack<AstNode> stack = new Stack<AstNode>();
     Queue<AstNode> physicalEndTagsQueue = new LinkedList<AstNode>();
     private ElementName startTag;
+
+    private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
 
     private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
 

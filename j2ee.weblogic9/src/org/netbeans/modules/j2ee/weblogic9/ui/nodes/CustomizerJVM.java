@@ -50,13 +50,21 @@ package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Vector;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.swing.DefaultComboBoxModel;
 
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.Vendor;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,55 +82,81 @@ class CustomizerJVM extends javax.swing.JPanel {
     }
 
     private void initValues() {
-        String beaHome = manager.getInstanceProperties().getProperty(
-                WLPluginProperties.BEA_JAVA_HOME);
-        String sunHome = manager.getInstanceProperties().getProperty(
-                WLPluginProperties.SUN_JAVA_HOME);
-        String vendor = manager.getInstanceProperties().getProperty(
+        Object vendor = manager.getInstanceProperties().getProperty(
                 WLPluginProperties.VENDOR);
-        boolean beaFound = false;
-        boolean sunFound = false;
-        if ( beaHome == null && sunHome == null ){
-            Properties runtimeProps = WLPluginProperties.getRuntimeProperties( 
-                    manager.getInstanceProperties().getProperty( 
-                            WLPluginProperties.DOMAIN_ROOT_ATTR));
-            beaHome = runtimeProps.getProperty( WLPluginProperties.BEA_JAVA_HOME);
-            sunHome = runtimeProps.getProperty( WLPluginProperties.SUN_JAVA_HOME);
-        }
+        List<Object> vendors = new LinkedList<Object>();
+        Properties runtimeProps = WLPluginProperties
+                .getRuntimeProperties(manager.getInstanceProperties()
+                        .getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR));
+        final String beaHome = runtimeProps.getProperty(WLPluginProperties.
+                BEA_JAVA_HOME);
+        final String sunHome = runtimeProps.getProperty(WLPluginProperties.
+                SUN_JAVA_HOME);
+        final Properties javaHomeProps = 
+            (Properties)runtimeProps.get(WLPluginProperties.JAVA_HOME);
         if ( beaHome != null && beaHome.trim().length()>0 ){
-            beaFound = true;
-            vendor = WLPluginProperties.Vendor.ORACLE.toString();
+            vendors.add( WLPluginProperties.Vendor.ORACLE.toString() );
         }
         if ( sunHome!= null && sunHome.trim().length() >0 ){
-            sunFound = true;
-            vendor = WLPluginProperties.Vendor.SUN.toString();
+            vendors.add( WLPluginProperties.Vendor.SUN.toString() );
         }
-        if ( !beaFound){
-            oracleVendor.setEnabled( false );
+        if ( vendor == null || vendor.toString().trim().length() == 0 ){
+            vendor = DEFAULT_VENDOR;
         }
-        if ( !sunFound ){
-            sunVendor.setEnabled( false );
-        }
-        oracleVendor.setSelected( Vendor.ORACLE.toString().equals( vendor) );
-        sunVendor.setSelected( Vendor.SUN.toString().equals( vendor) );
-        javaHome.setText( oracleVendor.isSelected()? beaHome.trim() : sunHome.trim());
+        vendors.add( DEFAULT_VENDOR );// NOI18N
         
-        ActionListener listener = new ActionListener() {
+        Enumeration<Object> keys = javaHomeProps.keys();
+        while ( keys.hasMoreElements()){
+            String key = (String)keys.nextElement();
+            if ( key.length() > 0 && !key.equals(Vendor.SUN.toString()) && 
+                    !key.equals(Vendor.ORACLE.toString()))
+            {
+                vendors.add( key );
+            }
+        }
+        
+        vendorName.setModel( new DefaultComboBoxModel(vendors.toArray( )));
+        vendorName.setSelectedItem(vendor);
+        
+        if (vendor == DEFAULT_VENDOR) {
+            javaHome.setText(javaHomeProps.getProperty(""));
+        }
+        else if (vendor.equals(Vendor.ORACLE.toString())) {
+            javaHome.setText(beaHome);
+        }
+        else if (vendor.equals(Vendor.SUN.toString())) {
+            javaHome.setText(sunHome);
+        }
+        else {
+            javaHome.setText(javaHomeProps.getProperty(vendor.toString()));
+        }
+        
+        vendorName.addItemListener( new ItemListener() {
             
             @Override
-            public void actionPerformed( ActionEvent e ) {
-                if ( e.getSource().equals( oracleVendor )){
-                    manager.getInstanceProperties().setProperty( WLPluginProperties.VENDOR, 
-                            Vendor.ORACLE.toString());
+            public void itemStateChanged( ItemEvent event ) {
+                Object item = event.getItem();
+                if ( item == DEFAULT_VENDOR ){
+                    javaHome.setText(javaHomeProps.getProperty(""));
+                    manager.getInstanceProperties().setProperty(
+                            WLPluginProperties.VENDOR, "");
                 }
                 else {
-                    manager.getInstanceProperties().setProperty( WLPluginProperties.VENDOR, 
-                            Vendor.SUN.toString());
+                    String vendor = event.getItem().toString();
+                    if ( vendor.equals( Vendor.ORACLE.toString())){
+                        javaHome.setText(beaHome);
+                    }
+                    else if ( vendor.equals( Vendor.SUN.toString())){
+                        javaHome.setText(sunHome);
+                    }
+                    else {
+                        javaHome.setText(javaHomeProps.getProperty(vendor));
+                    }
+                    manager.getInstanceProperties().setProperty(
+                            WLPluginProperties.VENDOR, vendor );
                 }
             }
-        };
-        oracleVendor.addActionListener( listener );
-        sunVendor.addActionListener(listener);
+        });
         
         String javaOpts = manager.getInstanceProperties().getProperty(
                 WLPluginProperties.JAVA_OPTS);
@@ -142,16 +176,14 @@ class CustomizerJVM extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        vmVendorGroup = new javax.swing.ButtonGroup();
         javaHomeLabel = new javax.swing.JLabel();
         javaHome = new javax.swing.JTextField();
         vmOptionsLabel = new javax.swing.JLabel();
-        NoteChangesLabel = new javax.swing.JLabel();
+        noteChangesLabel = new javax.swing.JLabel();
         vmOptions = new javax.swing.JTextField();
         vmOptionsSampleLabel = new javax.swing.JLabel();
-        javaVendorPanel = new javax.swing.JPanel();
-        oracleVendor = new javax.swing.JRadioButton();
-        sunVendor = new javax.swing.JRadioButton();
+        vendorLabel = new javax.swing.JLabel();
+        vendorName = new javax.swing.JComboBox();
 
         javaHomeLabel.setLabelFor(javaHome);
         org.openide.awt.Mnemonics.setLocalizedText(javaHomeLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JavaHome")); // NOI18N
@@ -161,71 +193,43 @@ class CustomizerJVM extends javax.swing.JPanel {
         vmOptionsLabel.setLabelFor(vmOptions);
         org.openide.awt.Mnemonics.setLocalizedText(vmOptionsLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_VmOptions")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(NoteChangesLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.NoteChangesLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(noteChangesLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.noteChangesLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(vmOptionsSampleLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_VmOptionsSample")); // NOI18N
 
-        javaVendorPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JvmVendor"))); // NOI18N
-
-        vmVendorGroup.add(oracleVendor);
-        org.openide.awt.Mnemonics.setLocalizedText(oracleVendor, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_Oracle")); // NOI18N
-
-        vmVendorGroup.add(sunVendor);
-        org.openide.awt.Mnemonics.setLocalizedText(sunVendor, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_Sun")); // NOI18N
-
-        javax.swing.GroupLayout javaVendorPanelLayout = new javax.swing.GroupLayout(javaVendorPanel);
-        javaVendorPanel.setLayout(javaVendorPanelLayout);
-        javaVendorPanelLayout.setHorizontalGroup(
-            javaVendorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javaVendorPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(javaVendorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javaVendorPanelLayout.createSequentialGroup()
-                        .addComponent(oracleVendor)
-                        .addContainerGap(349, Short.MAX_VALUE))
-                    .addGroup(javaVendorPanelLayout.createSequentialGroup()
-                        .addComponent(sunVendor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(363, 363, 363))))
-        );
-        javaVendorPanelLayout.setVerticalGroup(
-            javaVendorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javaVendorPanelLayout.createSequentialGroup()
-                .addComponent(oracleVendor)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(sunVendor))
-        );
-
-        oracleVendor.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_Oracle")); // NOI18N
-        oracleVendor.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_Oracle")); // NOI18N
-        sunVendor.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_Sun")); // NOI18N
-        sunVendor.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_Sun")); // NOI18N
+        vendorLabel.setLabelFor(vendorName);
+        org.openide.awt.Mnemonics.setLocalizedText(vendorLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JvmVendor")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(noteChangesLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(NoteChangesLabel))
+                        .addComponent(vendorLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(javaHomeLabel)
-                            .addComponent(vmOptionsLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(vmOptionsLabel)
+                            .addComponent(javaHomeLabel))
+                        .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(vmOptionsSampleLabel)
-                            .addComponent(vmOptions, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                            .addComponent(javaHome, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)))
-                    .addComponent(javaVendorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                            .addComponent(vmOptionsSampleLabel))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(javaVendorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(vendorLabel)
+                    .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(javaHomeLabel)
@@ -236,8 +240,8 @@ class CustomizerJVM extends javax.swing.JPanel {
                     .addComponent(vmOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(vmOptionsSampleLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
-                .addComponent(NoteChangesLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 172, Short.MAX_VALUE)
+                .addComponent(noteChangesLabel)
                 .addContainerGap())
         );
 
@@ -246,26 +250,44 @@ class CustomizerJVM extends javax.swing.JPanel {
         javaHome.getAccessibleContext().setAccessibleDescription(javaHomeLabel.getAccessibleContext().getAccessibleDescription());
         vmOptionsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_VmOptions")); // NOI18N
         vmOptionsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_VmOptions")); // NOI18N
-        NoteChangesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_Note")); // NOI18N
-        NoteChangesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_Note")); // NOI18N
+        noteChangesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_Note")); // NOI18N
+        noteChangesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_Note")); // NOI18N
         vmOptions.getAccessibleContext().setAccessibleName(vmOptionsLabel.getAccessibleContext().getAccessibleName());
         vmOptions.getAccessibleContext().setAccessibleDescription(vmOptionsLabel.getAccessibleContext().getAccessibleDescription());
         vmOptionsSampleLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_VmOptionsSample")); // NOI18N
         vmOptionsSampleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_VmOptionsSample")); // NOI18N
+        vendorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_Vendor")); // NOI18N
+        vendorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_Vendor")); // NOI18N
+        vendorName.getAccessibleContext().setAccessibleName(vendorLabel.getAccessibleContext().getAccessibleName());
+        vendorName.getAccessibleContext().setAccessibleDescription(vendorLabel.getAccessibleContext().getAccessibleDescription());
     }// </editor-fold>//GEN-END:initComponents
+    
+    private static final class DefaultVendor{
+        private DefaultVendor(){
+            
+        }
+        
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CustomizerJVM.class, "TXT_VendorDefaultItem");   // NOI18N
+        }
+        
+    }
 
+    private static final DefaultVendor DEFAULT_VENDOR = new DefaultVendor();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel NoteChangesLabel;
     private javax.swing.JTextField javaHome;
     private javax.swing.JLabel javaHomeLabel;
-    private javax.swing.JPanel javaVendorPanel;
-    private javax.swing.JRadioButton oracleVendor;
-    private javax.swing.JRadioButton sunVendor;
+    private javax.swing.JLabel noteChangesLabel;
+    private javax.swing.JLabel vendorLabel;
+    private javax.swing.JComboBox vendorName;
     private javax.swing.JTextField vmOptions;
     private javax.swing.JLabel vmOptionsLabel;
     private javax.swing.JLabel vmOptionsSampleLabel;
-    private javax.swing.ButtonGroup vmVendorGroup;
     // End of variables declaration//GEN-END:variables
     
     private WLDeploymentManager manager;

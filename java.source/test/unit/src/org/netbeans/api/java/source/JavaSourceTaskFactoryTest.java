@@ -384,7 +384,7 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
     
     private class AccessorImpl implements JavaSourceTaskFactory.Accessor2 {
         
-        public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) throws IOException {
+        public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) {
             addedTasks.put(js.getFileObjects().iterator().next(), task);
         }
 

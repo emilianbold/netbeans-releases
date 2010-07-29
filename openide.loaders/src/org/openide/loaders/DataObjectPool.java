@@ -447,12 +447,12 @@ implements ChangeListener {
     * @return set of DataObjects that refused to be revalidated
     */
     public Set<DataObject> revalidate () {
-        Set<FileObject> files;
+        Set<Item> set;
         synchronized (this) {
-            files = createSetOfAllFiles (map.values ());
+            // copy the values synchronously
+            set = new HashSet<Item>(map.values());
         }
-
-        return revalidate (files);
+        return revalidate(createSetOfAllFiles(set));
     }
 
     /** Notifies that an object has been created.
@@ -602,7 +602,7 @@ implements ChangeListener {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileChanged: " + fe); // NOI18N
             }
-            for (Item item : getTargets(fe)) {
+            for (Item item : getTargets(fe, false)) {
                 DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
@@ -616,7 +616,7 @@ implements ChangeListener {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileRenamed: " + fe); // NOI18N
             }
-            for (Item item : getTargets(fe)) {
+            for (Item item : getTargets(fe, false)) {
                 DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
@@ -630,7 +630,7 @@ implements ChangeListener {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileDeleted: " + fe); // NOI18N
             }
-            for (Item item : getTargets(fe)) {
+            for (Item item : getTargets(fe, true)) {
                 DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
@@ -644,7 +644,7 @@ implements ChangeListener {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileDataCreated: " + fe); // NOI18N
             }
-            for (Item item : getTargets(fe)) {
+            for (Item item : getTargets(fe, true)) {
                 DataObject dobj = item.getDataObjectOrNull();
                 if (LISTENER.isLoggable(Level.FINE)) {
                     LISTENER.fine("  to: " + dobj); // NOI18N
@@ -668,7 +668,7 @@ implements ChangeListener {
         }
     }
     
-    static private Collection<Item> getTargets(FileEvent fe) {
+    static private Collection<Item> getTargets(FileEvent fe, boolean checkSiblings) {
         FileObject fo = fe.getFile();
         // The FileSystem notifying us about the changes should
         // not hold any lock so we're safe here
@@ -680,6 +680,9 @@ implements ChangeListener {
                 List<Item> arr = DataObjectPool.POOL.children.get(fo.getParent());
                 if (arr != null) {
                     return new ArrayList<Item>(arr);
+                }
+                if (!checkSiblings) {
+                    return Collections.emptySet();
                 }
                 List<Item> toNotify = new LinkedList<Item>();
                 FileObject parent = fo.getParent();
@@ -709,7 +712,7 @@ implements ChangeListener {
         if (LISTENER.isLoggable(Level.FINE)) {
             LISTENER.fine("fileAttributeChanged: " + fe); // NOI18N
         }
-        for (Item item : getTargets(fe)) {
+        for (Item item : getTargets(fe, false)) {
             DataObject dobj = item.getDataObjectOrNull();
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("  to: " + dobj); // NOI18N
@@ -859,13 +862,9 @@ implements ChangeListener {
 
     /** When the loader pool is changed, then all objects are rescanned.
     */
+    @Override
     public void stateChanged (javax.swing.event.ChangeEvent ev) {
-        Set<Item> set;
-        synchronized (this) {
-            // copy the values synchronously
-            set = new HashSet<Item>(map.values());
-        }
-        revalidate(createSetOfAllFiles(set));
+        revalidate();
     }
     
     /** Create list of all files for given collection of data objects.
