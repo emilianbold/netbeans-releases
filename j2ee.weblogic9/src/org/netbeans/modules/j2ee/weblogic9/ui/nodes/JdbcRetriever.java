@@ -75,16 +75,16 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class JDBCRetriever {
+class JdbcRetriever {
     
-    private static final Logger LOGGER = Logger.getLogger(JDBCRetriever.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JdbcRetriever.class.getName());
     
     enum JdbcNodeTypes {
         RESOURCES,
         POOL;
     }
     
-    JDBCRetriever(Lookup lookup) {
+    JdbcRetriever(Lookup lookup) {
         data = new AtomicReference<List<JDBCDataBean>>();
         this.lookup = lookup;
     }
@@ -94,14 +94,14 @@ class JDBCRetriever {
         JDBCResourcesChildFactory factory = new JDBCResourcesChildFactory( 
                 JdbcNodeTypes.POOL);
         return new ResourceNode( factory, ResourceNodeType.JDBC_POOL,
-                NbBundle.getMessage(JDBCRetriever.class, "LBL_JDBCPools"));
+                NbBundle.getMessage(JdbcRetriever.class, "LBL_JDBCPools"));
     }
 
     Node createJDBCResourcesNode() {
         JDBCResourcesChildFactory factory = new JDBCResourcesChildFactory(
                 JdbcNodeTypes.RESOURCES);
         return new ResourceNode(factory,ResourceNodeType.JDBC_RESOURCES ,
-                NbBundle.getMessage(JDBCRetriever.class, "LBL_JDBCResources"));
+                NbBundle.getMessage(JdbcRetriever.class, "LBL_JDBCResources"));
     }
     
     void clean() {
@@ -217,10 +217,10 @@ class JDBCRetriever {
          */
         @Override
         protected boolean createKeys( List<ResourceNode> children ) {
-            synchronized (JDBCRetriever.this) {
+            synchronized (JdbcRetriever.this) {
                 while (isRetrieveStarted) {
                     try {
-                        JDBCRetriever.this.wait();
+                        JdbcRetriever.this.wait();
                     }
                     catch (InterruptedException e) {
                     }
