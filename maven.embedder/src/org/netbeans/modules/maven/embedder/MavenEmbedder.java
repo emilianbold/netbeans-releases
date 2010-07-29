@@ -234,9 +234,18 @@ public final class MavenEmbedder {
         return repositorySystem.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
     }
 
-    public Artifact createArtifact(String groupId, String artifactId, String version, String extension, String type) {
-        return repositorySystem.createArtifact(groupId, artifactId, version,extension, type);
+    public Artifact createArtifact(String groupId, String artifactId, String version, String packaging ){
+         return repositorySystem.createArtifact(groupId,  artifactId,  version,  packaging);
     }
+
+    public Artifact createArtifact(String groupId, String artifactId, String version, String scope, String type ){
+         return repositorySystem.createArtifact( groupId,  artifactId,  version,   scope,  type);
+    }
+
+    public Artifact createProjectArtifact(String groupId, String artifactId, String version ){
+        return repositorySystem.createProjectArtifact(groupId, artifactId, version);
+    }
+
 
     public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
 

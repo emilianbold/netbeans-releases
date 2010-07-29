@@ -1175,7 +1175,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
-                        null,
                         null);
                 DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
                 dpbr.setLocalRepository(getEmbedder().getLocalRepository());
