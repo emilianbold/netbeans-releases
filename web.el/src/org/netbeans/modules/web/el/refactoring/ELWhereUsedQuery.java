@@ -68,7 +68,6 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELIndex;
 import org.netbeans.modules.web.el.ELIndexer.Fields;
@@ -145,7 +144,10 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         // logic: first try to find all properties for which can resolve the type directly,
         // then search for occurrences in variables
         for (ELElement each : getMatchingElements(result)) {
-            List<Node> matchingNodes = findMatchingPropertyNodes(each.getNode(), propertyName, targetType.getEnclosingElement().asType());
+            List<Node> matchingNodes = findMatchingPropertyNodes(each.getNode(),
+                    propertyName,
+                    targetType.getEnclosingElement().asType(),
+                    each.getParserResult().getFileObject());
             addElements(each, matchingNodes, refactoringElementsBag);
             handleVariableReferences(each, targetType, refactoringElementsBag);
         }
@@ -171,7 +173,9 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                         elElement.getOriginalOffset().getStart() + n.startOffset());
                 if (expression != null) {
                     Node expressionNode = ELParser.parse(expression);
-                    if (refersToType(expressionNode, targetType.getEnclosingElement().asType())) {
+                    if (refersToType(expressionNode, 
+                            targetType.getEnclosingElement().asType(),
+                            elElement.getParserResult().getFileObject())) {
                         addElements(elElement, Collections.singletonList(n), refactoringElementsBag);
                     }
                 }
@@ -183,9 +187,9 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return Lookup.getDefault().lookupAll(ELVariableResolver.class);
     }
 
-    private String findBeanClass(String beanName) {
+    private String findBeanClass(String beanName, FileObject context) {
         for (ELVariableResolver resolver : getResolvers()) {
-            String beanClass = resolver.getBeanClass(beanName, getFileObject());
+            String beanClass = resolver.getBeanClass(beanName, context);
             if (beanClass != null) {
                 return beanClass;
             }
@@ -201,7 +205,10 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         }
     }
 
-    private List<Node> findMatchingPropertyNodes(Node root, final String targetName, final TypeMirror targetType) {
+    private List<Node> findMatchingPropertyNodes(Node root,
+            final String targetName,
+            final TypeMirror targetType,
+            final FileObject context) {
 
         final List<Node> result = new ArrayList<Node>();
         root.accept(new NodeVisitor() {
@@ -210,7 +217,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    String beanClass = findBeanClass(node.getImage());
+                    String beanClass = findBeanClass(node.getImage(), context);
                     if (beanClass == null) {
                         return;
                     }
@@ -243,7 +250,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
      * @param targetType
      * @return
      */
-    private boolean refersToType(Node root, final TypeMirror targetType) {
+    private boolean refersToType(Node root, final TypeMirror targetType, final FileObject context) {
 
         final boolean[] result = new boolean[1];
         root.accept(new NodeVisitor() {
@@ -252,7 +259,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    String beanClass = findBeanClass(node.getImage());
+                    String beanClass = findBeanClass(node.getImage(), context);
                     if (beanClass == null) {
                         return;
                     }
