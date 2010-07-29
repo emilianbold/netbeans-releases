@@ -112,6 +112,8 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     private List<FacesManagedBean> getManagedBeans(FileObject context) {
         WebModule webModule = WebModule.getWebModule(context);
-        return JSFBeanCache.getBeans(webModule);
+        return webModule != null 
+                ? JSFBeanCache.getBeans(webModule)
+                : Collections.<FacesManagedBean>emptyList();
     }
 }
