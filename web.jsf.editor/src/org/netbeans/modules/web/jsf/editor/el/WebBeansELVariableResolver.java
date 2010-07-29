@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsf.editor.el;
 
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
@@ -83,7 +84,9 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
 
     private List<WebBean> getWebBeans(FileObject context) {
         JsfSupport jsfSupport = JsfSupport.findFor(context);
-        return WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel());
+        return jsfSupport != null 
+                ? WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel())
+                : Collections.<WebBean>emptyList();
     }
 
 }
