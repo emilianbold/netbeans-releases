@@ -592,8 +592,10 @@ public final class WLStartServer extends StartServer {
                         javaOpts.trim());
             }
             String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
+            if (vendor != null) {
+                result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
                         vendor);
+            }
             return result;
         }
 
