@@ -21,20 +21,20 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="noteChangesLabel" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="vendorLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="vendorName" min="-2" pref="106" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="vendorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="vmOptionsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="javaHomeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="javaHome" alignment="0" pref="350" max="32767" attributes="1"/>
-                          <Component id="vmOptions" alignment="0" pref="350" max="32767" attributes="0"/>
-                          <Component id="vmOptionsSampleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Component id="vmOptionsSampleLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="vendorName" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
+                          <Component id="javaHome" alignment="0" pref="356" max="32767" attributes="1"/>
+                          <Component id="vmOptions" alignment="0" pref="356" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

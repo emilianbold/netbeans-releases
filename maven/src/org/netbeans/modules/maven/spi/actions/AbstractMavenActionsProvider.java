@@ -293,8 +293,11 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
     /**
      * takes the input stream and a map, and for each occurence of ${<mapKey>}, replaces it with map entry value..
      */
-    protected Reader performDynamicSubstitutions(final Map replaceMap, final String in) throws IOException {
-        StringBuffer buf = new StringBuffer(in);
+    protected Reader performDynamicSubstitutions(Map<String,String> replaceMap, String in) throws IOException {
+        return new StringReader(dynamicSubstitutions(replaceMap, in));
+    }
+    public static String dynamicSubstitutions(Map<String,String> replaceMap, String in) {
+        StringBuilder buf = new StringBuilder(in);
         Iterator it = replaceMap.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry elem = (Map.Entry) it.next();
@@ -310,6 +313,6 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                 index = buf.indexOf(replaceItem);
             }
         }
-        return new StringReader(buf.toString());
+        return buf.toString();
     }
 }
