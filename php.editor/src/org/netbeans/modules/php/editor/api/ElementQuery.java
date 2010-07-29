@@ -174,6 +174,8 @@ public interface ElementQuery {
         LinkedHashSet<TypeElement> getInheritedTypes(TypeElement typeElement);
         TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement);
         TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement, final Set<TypeElement> preferredTypes);
+        TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement);
+        TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement, final Set<TypeElement> preferredTypes);
         /**
          * @return all extended classes recursively
          */
