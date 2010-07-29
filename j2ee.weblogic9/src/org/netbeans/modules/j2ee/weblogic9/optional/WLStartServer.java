@@ -400,8 +400,10 @@ public final class WLStartServer extends StartServer {
         protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
             String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,          
-                        vendor);
+            if ( vendor != null && vendor.trim().length() >0 ){
+                result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,          
+                        vendor.trim());
+            }
             /*JavaPlatform javaPlatform = getSettings().getJavaPlatform();
             vendor = javaPlatform.getVendor();
 
@@ -417,8 +419,10 @@ public final class WLStartServer extends StartServer {
             for (int i = 0; i < profJvmArgs.length; i++) {
                 javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
             }
-            result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,          // NOI18N
+            if ( profJvmArgs.length >0 ){
+                result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE, 
                     javaOptsBuilder.toString());
+            }
             return result;
         }
 
@@ -592,9 +596,9 @@ public final class WLStartServer extends StartServer {
                         javaOpts.trim());
             }
             String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            if (vendor != null) {
+            if ( vendor != null && vendor.trim().length() >0 ){
                 result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
-                        vendor);
+                        vendor.trim());
             }
             return result;
         }
