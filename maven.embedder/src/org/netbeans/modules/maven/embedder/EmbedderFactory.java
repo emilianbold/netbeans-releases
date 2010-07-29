@@ -500,38 +500,26 @@ public final class EmbedderFactory {
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
         try {
-            ArtifactRepositoryFactory fact = embedder.getPlexusContainer().lookup(ArtifactRepositoryFactory.class);
+            ArtifactRepositoryFactory fact = embedder.lookupComponent(ArtifactRepositoryFactory.class);
+            assert fact!=null : "ArtifactRepositoryFactory component not found in maven";
             ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
             ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
             return fact.createArtifactRepository(id, url, ArtifactRepositoryFactory.DEFAULT_LAYOUT_ID, snapshotsPolicy, releasesPolicy);
         } catch (UnknownRepositoryLayoutException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ComponentLookupException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;
     }
 
     public static List<Model> createModelLineage(File pom, MavenEmbedder embedder) throws ModelBuildingException {
-        ModelBuilder mb;
-        try {
-            mb = embedder.getPlexusContainer().lookup(ModelBuilder.class);
-        } catch (ComponentLookupException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.<Model>emptyList();
-        }
+        ModelBuilder mb = embedder.lookupComponent(ModelBuilder.class);
+        assert mb!=null : "ModelBuilder component not found in maven";
         ModelBuildingRequest req = new DefaultModelBuildingRequest();
         req.setPomFile(pom);
         req.setProcessPlugins(false);
         req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        req.setModelResolver(new NBRepositoryModelResolver(embedder.lookupComponent(RepositorySystem.class)));
         
-        try {
-            req.setModelResolver(new NBRepositoryModelResolver(embedder.getPlexusContainer().lookup(RepositorySystem.class)));
-        } catch (ComponentLookupException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.<Model>emptyList();
-        }
-
         ModelBuildingResult res = mb.build(req);
         List<Model> toRet = new ArrayList<Model>();
 

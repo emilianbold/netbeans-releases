@@ -1171,15 +1171,20 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
             try {
-                ArtifactFactory artifactFactory = getEmbedder().getPlexusContainer().lookup(ArtifactFactory.class);
-                Artifact projectArtifact = artifactFactory.createProjectArtifact(
+                Artifact projectArtifact = getEmbedder().createArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
+                        null,
                         null);
                 DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
                 dpbr.setLocalRepository(getEmbedder().getLocalRepository());
-                dpbr.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
+                if(repository ==null || repository.equals(getEmbedder().getLocalRepository())) {
+                    dpbr.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
+                }else{
+                    dpbr.setRemoteRepositories(Arrays.asList(repository));
+                }
+                
                 ProjectBuildingResult res = getEmbedder().buildProject(projectArtifact, dpbr);
                 if (res.getProject() != null) {
                     return res.getProject();

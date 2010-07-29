@@ -246,37 +246,37 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         for (Plugin plug : plugins) {
             if (Constants.PLUGIN_CHECKSTYLE.equals(plug.getArtifactId()) &&
                     Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId())) {
-                try {
-                    List<Dependency> deps = plug.getDependencies();
-                    final MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                    ArtifactFactory artifactFactory = (ArtifactFactory) online.getPlexusContainer().lookup(ArtifactFactory.class);
-                    final MavenProjectBuilder builder = (MavenProjectBuilder) online.getPlexusContainer().lookup(MavenProjectBuilder.class);
-                    for (Dependency d : deps) {
-                        final Artifact projectArtifact = artifactFactory.createArtifactWithClassifier(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getType(), d.getClassifier());
-                        String localPath = online.getLocalRepository().pathOf(projectArtifact);
-                        File f = FileUtil.normalizeFile(new File(online.getLocalRepository().getBasedir(), localPath));
-                        if (f.exists()) {
-                            cpFiles.add(f);
-                        } else {
-                            RP.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        //TODO add progress bar.
-                                        builder.buildFromRepository(projectArtifact, p.getMavenProject().getRemoteArtifactRepositories(), online.getLocalRepository());
-                                        synchronized (AuxPropsImpl.this) {
-                                            recheck = true;
-                                        }
-                                    } catch (ProjectBuildingException ex) {
-                                        ex.printStackTrace();
-//                                        Exceptions.printStackTrace(ex);
+
+                List<Dependency> deps = plug.getDependencies();
+                final MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+
+                //TODO: check alternative for deprecated maven components
+                final MavenProjectBuilder builder = (MavenProjectBuilder) online.lookupComponent(MavenProjectBuilder.class);
+                assert builder !=null : "MavenProjectBuilder component not found in maven";
+
+                for (Dependency d : deps) {
+                    final Artifact projectArtifact = online.createArtifactWithClassifier(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getType(), d.getClassifier());
+                    String localPath = online.getLocalRepository().pathOf(projectArtifact);
+                    File f = FileUtil.normalizeFile(new File(online.getLocalRepository().getBasedir(), localPath));
+                    if (f.exists()) {
+                        cpFiles.add(f);
+                    } else {
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    //TODO add progress bar.
+                                    builder.buildFromRepository(projectArtifact, p.getMavenProject().getRemoteArtifactRepositories(), online.getLocalRepository());
+                                    synchronized (AuxPropsImpl.this) {
+                                        recheck = true;
                                     }
+                                } catch (ProjectBuildingException ex) {
+                                    ex.printStackTrace();
+//                                        Exceptions.printStackTrace(ex);
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
-                } catch (ComponentLookupException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
         }

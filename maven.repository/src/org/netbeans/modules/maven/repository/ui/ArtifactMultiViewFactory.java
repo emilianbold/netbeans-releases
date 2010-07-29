@@ -176,22 +176,24 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                             profileIds.add(p.getId());
                         }
                         mvnprj = im.loadAlternateMavenProject(embedder, profileIds, new Properties());
-                    FileObject fo = prj.getLookup().lookup(FileObject.class);
-                    if (fo != null) {
-                        ModelSource ms = Utilities.createModelSource(fo);
-                        if (ms.isEditable()) {
-                            POMModel model = POMModelFactory.getDefault().getModel(ms);
-                            if (model != null) {
-                                ic.add(model);
+                        FileObject fo = prj.getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            ModelSource ms = Utilities.createModelSource(fo);
+                            if (ms.isEditable()) {
+                                POMModel model = POMModelFactory.getDefault().getModel(ms);
+                                if (model != null) {
+                                    ic.add(model);
+                                }
                             }
                         }
                     }
+
+                    if(mvnprj != null){
+                        ic.add(mvnprj);
+                        DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
+                        ic.add(root);
                     }
-                    ic.add(mvnprj);
-                    DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
-                    ic.add(root);
-                } catch (ComponentLookupException ex) {
-                    Exceptions.printStackTrace(ex); //this should not happen, if it does, report.
+
                 } catch (ProjectBuildingException ex) {
                     ErrorPanel pnl = new ErrorPanel(ex);
                     DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ArtifactMultiViewFactory.class, "TIT_Error"));
@@ -237,10 +239,11 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         return tc;
     }
 
-    private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws ComponentLookupException, ProjectBuildingException {
+    private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws  ProjectBuildingException {
         //TODO rewrite
-        MavenProjectBuilder bldr = embedder.getPlexusContainer().lookup(MavenProjectBuilder.class);
-        return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
+        MavenProjectBuilder bldr = embedder.lookupComponent(MavenProjectBuilder.class);
+        assert bldr !=null : "MavenProjectBuilder component not found in maven";
+        return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository()) ;
     }
     
     private static final String MAVEN_TC_PROPERTY = "mvn_tc_id";

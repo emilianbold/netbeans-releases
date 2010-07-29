@@ -609,18 +609,18 @@ public final class NbMavenProjectImpl implements Project {
      * @return
      */
     public @CheckForNull String getTestArtifactRelativeRepositoryPath() {
-        Artifact main = getOriginalMavenProject().getArtifact();
-        if (main == null) {
-            return null;
-        }
-        try {
-            ArtifactHandlerManager artifactHandlerManager = getEmbedder().getPlexusContainer().lookup(ArtifactHandlerManager.class);
-            Artifact test = new DefaultArtifact(main.getGroupId(), main.getArtifactId(), main.getVersionRange(),
-                            Artifact.SCOPE_TEST, "test-jar", "tests", artifactHandlerManager.getArtifactHandler("test-jar"));
-            return getArtifactRelativeRepositoryPath(test);
-        } catch (ComponentLookupException ex) {
-            throw new IllegalStateException("Cannot lookup ArtifactHandlerManager, broken plexus container.", ex);
-        }
+       Artifact main = getOriginalMavenProject().getArtifact();
+       if (main == null) {
+             return null;
+       }
+       
+       ArtifactHandlerManager artifactHandlerManager = getEmbedder().lookupComponent(ArtifactHandlerManager.class);
+       assert artifactHandlerManager !=null : "ArtifactHandlerManager component not found in maven";
+
+       Artifact test = new DefaultArtifact(main.getGroupId(), main.getArtifactId(), main.getVersionRange(),
+                        Artifact.SCOPE_TEST, "test-jar", "tests", artifactHandlerManager.getArtifactHandler("test-jar"));
+       return getArtifactRelativeRepositoryPath(test);
+
     }
 
     public String getArtifactRelativeRepositoryPath(@NonNull Artifact artifact) {

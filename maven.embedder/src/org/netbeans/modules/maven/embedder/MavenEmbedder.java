@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +87,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author mkleint
+ * @author anuradha 
  */
 public final class MavenEmbedder {
 
@@ -123,9 +123,7 @@ public final class MavenEmbedder {
         this.lifecycleExecutor = plexus.lookup(LifecycleExecutor.class);
     }
 
-    public PlexusContainer getPlexusContainer() {
-        return plexus;
-    }
+
 
     public MavenExecutionResult readProject(MavenExecutionRequest request) {
         File pomFile = request.getPom();
@@ -237,7 +235,7 @@ public final class MavenEmbedder {
     }
 
     public Artifact createArtifact(String groupId, String artifactId, String version, String extension, String type) {
-        return repositorySystem.createArtifact(groupId, artifactId, version, type);
+        return repositorySystem.createArtifact(groupId, artifactId, version,extension, type);
     }
 
     public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
@@ -256,19 +254,17 @@ public final class MavenEmbedder {
 
     //TODO possibly rename.. build sounds like something else..
     public ProjectBuildingResult buildProject(Artifact art, ProjectBuildingRequest req) throws ProjectBuildingException {
-        try {
-            DefaultProjectBuilder bldr = getPlexusContainer().lookup(DefaultProjectBuilder.class);
-            if (req.getLocalRepository() == null) {
-                req.setLocalRepository(getLocalRepository());
-            }
-            //TODO some default population of request?
-            req.setProcessPlugins(false);
 
-            return bldr.build(art, req);
-        } catch (ComponentLookupException ex) {
-//            Exceptions.printStackTrace(ex);
-            throw new ProjectBuildingException(art.getId(), "Component lookup failed", ex);
+        DefaultProjectBuilder bldr =lookupComponent(DefaultProjectBuilder.class);
+        assert bldr!=null : "DefaultProjectBuilder component not found in maven";
+
+        if (req.getLocalRepository() == null) {
+           req.setLocalRepository(getLocalRepository());
         }
+        
+        //TODO some default population of request?
+        req.setProcessPlugins(false);
+        return bldr.build(art, req);
     }
 
     public MavenExecutionResult execute(MavenExecutionRequest req) {
@@ -290,9 +286,9 @@ public final class MavenEmbedder {
         return Collections.<String>emptyList();
     }
 
-    private <T> T lookupComponent(Class<T> clazz) {
+    public  <T> T lookupComponent(Class<T> clazz) {
         try {
-            return getPlexusContainer().lookup(clazz);
+            return plexus.lookup(clazz);
         } catch (ComponentLookupException ex) {
             Logger.getLogger(MavenEmbedder.class.getName()).warning(ex.getMessage());
         }
