@@ -43,6 +43,8 @@ package org.netbeans.modules.html.parser;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
@@ -51,6 +53,7 @@ import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.SAXException;
@@ -71,6 +74,7 @@ public class Html5ParserTest extends NbTestCase {
 //        String code = "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"><section><p id=\"my\">cau<p><p class=\"klasa\">ahoj</section>";
 //        String code = "<!DOCTYPE html><html xmlns:myns=\"http://marek.org/\"><myns:section><p id=\"my\">cau<p><p class=\"klasa\">ahoj</myns:section></html>";
 //        AstNodeUtils.dumpTree(root);
+    
     public void testBasic() throws SAXException, IOException, ParseException {
         HtmlParseResult result = parse("<!doctype html><section><div></div></section>");
         AstNode root = result.root();
@@ -136,7 +140,7 @@ public class Html5ParserTest extends NbTestCase {
 //        AstNodeUtils.dumpTree(result.root());
     }
 
-    public void testGetPossibleTagsInContext() throws ParseException {
+    public void testGetPossibleOpenTagsInContext() throws ParseException {
         HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
 
         assertNotNull(result.root());
@@ -151,6 +155,51 @@ public class Html5ParserTest extends NbTestCase {
 
         assertTrue(possible.contains(divTag));
         assertFalse(possible.contains(headTag));
+
+        AstNode head = AstNodeUtils.query(result.root(), "html/head");
+        possible = result.getPossibleTagsInContext(head, HtmlTagType.OPEN_TAG);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag titleTag = new HtmlTagImpl("title");
+        assertTrue(possible.contains(titleTag));
+        assertFalse(possible.contains(headTag));
+
+        AstNode html = AstNodeUtils.query(result.root(), "html");
+        possible = result.getPossibleTagsInContext(html, HtmlTagType.OPEN_TAG);
+        assertTrue(!possible.isEmpty());
+        assertTrue(possible.contains(divTag));
+
+    }
+
+    public void testGetPossibleEndTagsInContext() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
+
+        assertNotNull(result.root());
+
+        AstNode body = AstNodeUtils.query(result.root(), "html/body");
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, HtmlTagType.END_TAG);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag htmlTag = new HtmlTagImpl("html");
+        HtmlTag bodyTag = new HtmlTagImpl("body");
+        HtmlTag divTag = new HtmlTagImpl("div");
+
+        Iterator<HtmlTag> possibleItr = possible.iterator();
+        assertEquals(htmlTag, possibleItr.next());
+        assertEquals(bodyTag, possibleItr.next());
+
+        assertFalse(possible.contains(divTag));
+
+//        AstNode head = AstNodeUtils.query(result.root(), "html/head");
+//        possible = result.getPossibleTagsInContext(head, HtmlTagType.OPEN_TAG);
+//
+//        assertTrue(!possible.isEmpty());
+//
+//        HtmlTag titleTag = new HtmlTagImpl("title");
+//        assertTrue(possible.contains(titleTag));
+//        assertFalse(possible.contains(headTag));
 
     }
 
@@ -196,5 +245,27 @@ public class Html5ParserTest extends NbTestCase {
             hash = 67 * hash + (this.name != null ? this.name.hashCode() : 0);
             return hash;
         }
+
+        @Override
+        public String toString() {
+            return "HtmlTagImpl{" + "name=" + name + '}';
+        }
+
+        public Collection<HtmlTagAttribute> getAttributes() {
+            return Collections.emptyList();
+        }
+
+        public boolean isEmpty() {
+            return false;
+        }
+
+        public boolean hasOptionalOpenTag() {
+            return false;
+        }
+
+        public boolean hasOptionalEndTag() {
+            return false;
+        }
+        
     }
 }

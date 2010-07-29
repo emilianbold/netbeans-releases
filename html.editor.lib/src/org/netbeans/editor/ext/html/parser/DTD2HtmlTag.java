@@ -39,25 +39,77 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.editor.ext.html.parser;
 
-package org.netbeans.editor.ext.html.parser.spi;
-
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 
 /**
  *
+ * XXX Maybe the DTD.Element could implement HtmlTag directly instead of the wrapping
+ *
  * @author marekfukala
  */
-public interface HtmlTag {
+public class DTD2HtmlTag {
 
-    public String getName();
+    private static HashMap<DTD.Element, HtmlTag> MAP = new HashMap<DTD.Element, HtmlTag>();
 
-    public Collection<HtmlTagAttribute> getAttributes();
+    public static synchronized HtmlTag getTagForElement(DTD.Element elementName) {
+        HtmlTag impl = MAP.get(elementName);
+        if (impl == null) {
+            impl = new DTDElement2HtmlTagAdapter(elementName);
+            MAP.put(elementName, impl);
+        }
+        return impl;
+    }
 
-    public boolean isEmpty(); //forbidden end tag
+    public static synchronized Collection<HtmlTag> convert(Collection<DTD.Element> elements) {
+        Collection<HtmlTag> converted = new ArrayList<HtmlTag>();
+        for(DTD.Element element : elements) {
+            converted.add(getTagForElement(element));
+        }
+        return converted;
+    }
 
-    public boolean hasOptionalOpenTag();
 
-    public boolean hasOptionalEndTag();
+    private static class DTDElement2HtmlTagAdapter implements HtmlTag {
 
+        private DTD.Element element;
+
+        public DTDElement2HtmlTagAdapter(Element element) {
+            this.element = element;
+        }
+
+        @Override
+        public String getName() {
+            return element.getName();
+        }
+
+        //TODO implement
+        @Override
+        public Collection<HtmlTagAttribute> getAttributes() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return element.isEmpty();
+        }
+
+        @Override
+        public boolean hasOptionalOpenTag() {
+            return element.hasOptionalStart();
+        }
+
+        @Override
+        public boolean hasOptionalEndTag() {
+            return element.hasOptionalEnd();
+        }
+    }
 }
