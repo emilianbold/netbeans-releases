@@ -42,31 +42,24 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Hashtable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLClassLoader;
+import org.netbeans.modules.j2ee.weblogic9.WLClassLoaderSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
@@ -115,20 +108,6 @@ class JDBCRetriever {
         data.set(null);
     }
     
-    private synchronized ClassLoader getWLClassLoader( String serverRoot) {
-        if (classLoader == null) {
-            try {
-                URL[] urls = new URL[] {new File(serverRoot + 
-                        "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
-                classLoader = new WLClassLoader(urls, 
-                        JDBCRetriever.class.getClassLoader());
-            } catch (MalformedURLException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            }
-        }
-        return classLoader;
-    }
-    
     private void retrieve(){
         synchronized (this){
             if ( isRetrieveStarted ){
@@ -137,7 +116,7 @@ class JDBCRetriever {
             isRetrieveStarted = true;
         }
         data.set(null);
-        StringBuilder builder  = new StringBuilder("service:jmx:iiop://");  // NOI18N
+        final StringBuilder builder  = new StringBuilder("service:jmx:iiop://");  // NOI18N
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
         InstanceProperties instanceProperties = manager.getInstanceProperties();
         String host = instanceProperties.getProperty(WLPluginProperties.HOST_ATTR);
@@ -155,7 +134,7 @@ class JDBCRetriever {
         builder.append(port.trim());
         builder.append( "/jndi/weblogic.management.mbeanservers.domainruntime");//  NOI18N
         
-        Hashtable<String,String> env = new Hashtable<String,String>();
+        final HashMap<String, String> env = new HashMap<String, String>();
         env.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES, 
                      "weblogic.management.remote");         // NOI18M
         env.put(javax.naming.Context.SECURITY_PRINCIPAL, manager.
@@ -165,66 +144,55 @@ class JDBCRetriever {
                 getInstanceProperties().getProperty(
                         InstanceProperties.PASSWORD_ATTR).toString());
 
-        List<JDBCDataBean> list = new LinkedList<JDBCDataBean>();
-        ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(getWLClassLoader(
-                    manager.getInstanceProperties().getProperty(
-                            WLPluginProperties.SERVER_ROOT_ATTR)));
-            JMXServiceURL serviceUrl = new JMXServiceURL(builder.toString());
-            JMXConnector jmxConnector = JMXConnectorFactory.newJMXConnector(
-                    serviceUrl, env);
-            jmxConnector.connect();
-            MBeanServerConnection con = jmxConnector.getMBeanServerConnection();
+        WLClassLoaderSupport support = new WLClassLoaderSupport(manager);
+        List<JDBCDataBean> list = Collections.emptyList();
 
-            ObjectName service = new ObjectName(
-                    "com.bea:Name=DomainRuntimeService,"
-                            + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");//  NOI18N
-            ObjectName objectName  = (ObjectName)con.getAttribute(service, 
-                    "DomainConfiguration");                         //  NOI18N
-            ObjectName objectNames[]  = (ObjectName[] )con.getAttribute(objectName, 
-                    "SystemResources");                             //  NOI18N
-            for (ObjectName resource : objectNames) {
-                String type = con.getAttribute(resource, "Type").toString();//  NOI18N                     
-                if ( "JDBCSystemResource".equals(type)){            //  NOI18N
-                    ObjectName dataSource = (ObjectName)con.getAttribute( 
-                            resource, "JDBCResource");              //  NOI18N
-                    String name = con.getAttribute(dataSource, 
-                             "Name").toString();                    //  NOI18N 
-                     ObjectName dataSourceParams = (ObjectName)con.getAttribute(dataSource, 
-                             "JDBCDataSourceParams");               //  NOI18N
-                     String jndiNames[] = (String[])con.getAttribute(dataSourceParams, 
-                             "JNDINames");                          //  NOI18N
-                     JDBCDataBean bean = new JDBCDataBean(name, jndiNames);
-                     list.add( bean );
+        try {
+            list = support.executeAction(new Callable<List<JDBCDataBean>>() {
+
+                @Override
+                public List<JDBCDataBean> call() throws Exception {
+                    JMXServiceURL serviceUrl = new JMXServiceURL(builder.toString());
+                    JMXConnector jmxConnector = JMXConnectorFactory.newJMXConnector(
+                            serviceUrl, env);
+                    jmxConnector.connect();
+                    MBeanServerConnection con = jmxConnector.getMBeanServerConnection();
+
+                    ObjectName service = new ObjectName(
+                            "com.bea:Name=DomainRuntimeService,"
+                                    + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");//  NOI18N
+                    ObjectName objectName  = (ObjectName)con.getAttribute(service,
+                            "DomainConfiguration");                         //  NOI18N
+                    ObjectName objectNames[]  = (ObjectName[] )con.getAttribute(objectName,
+                            "SystemResources");                             //  NOI18N
+
+                    List<JDBCDataBean> list = new LinkedList<JDBCDataBean>();
+                    for (ObjectName resource : objectNames) {
+                        String type = con.getAttribute(resource, "Type").toString();//  NOI18N
+                        if ( "JDBCSystemResource".equals(type)){            //  NOI18N
+                            ObjectName dataSource = (ObjectName)con.getAttribute(
+                                    resource, "JDBCResource");              //  NOI18N
+                            String name = con.getAttribute(dataSource,
+                                     "Name").toString();                    //  NOI18N
+                             ObjectName dataSourceParams = (ObjectName)con.getAttribute(dataSource,
+                                     "JDBCDataSourceParams");               //  NOI18N
+                             String jndiNames[] = (String[])con.getAttribute(dataSourceParams,
+                                     "JNDINames");                          //  NOI18N
+                             JDBCDataBean bean = new JDBCDataBean(name, jndiNames);
+                             list.add( bean );
+                        }
+                    }
+                    return list;
                 }
-            }
-        }
-        catch (IOException e) {
+            });
+        } catch (Exception e) {
             LOGGER.log(Level.INFO, null, e);
-        }
-        catch (MalformedObjectNameException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-        catch (AttributeNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-        catch (InstanceNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-        catch (MBeanException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-        catch (ReflectionException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-        finally{
+        } finally {
             data.compareAndSet(null , list);
             synchronized (this) {
                 isRetrieveStarted = false;
                 notifyAll();
             }
-            Thread.currentThread().setContextClassLoader(originalLoader);
         }
     }
     
@@ -314,5 +282,4 @@ class JDBCRetriever {
     private AtomicReference<List<JDBCDataBean>> data;
     private boolean isRetrieveStarted;
     private Lookup lookup;
-    private WLClassLoader classLoader;
 }
