@@ -69,9 +69,9 @@ public class AstNodeUtilsTest extends TestBase {
         super(testName);
     }
 
-    public static Test xsuite() {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new AstNodeUtilsTest("testIssue169206"));
+        suite.addTest(new AstNodeUtilsTest("testFindDescendantInASTWithVirtualNodes"));
         return suite;
     }
 
@@ -95,6 +95,21 @@ public class AstNodeUtilsTest extends TestBase {
 
         assertDescendant(root, 17, "p", NodeType.OPEN_TAG, 0, 18);
 
+    }
+
+    public void testFindDescendantInASTWithVirtualNodes() throws Exception {
+        String code = "<!doctype html><p><a>text</a></p>";
+        //             0123456789012345678901234567890123
+        //             0         1         2         3
+
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+        AstNodeUtils.dumpTree(root);
+
+        assertDescendant(root, 15, "p", NodeType.OPEN_TAG, 0, 18);
+        assertDescendant(root, 18, "a", NodeType.OPEN_TAG, 3, 14);
     }
 
     public void testQuery() throws Exception {

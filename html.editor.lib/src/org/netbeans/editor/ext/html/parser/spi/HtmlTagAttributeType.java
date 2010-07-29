@@ -42,22 +42,12 @@
 
 package org.netbeans.editor.ext.html.parser.spi;
 
-import java.util.Collection;
-
 /**
  *
  * @author marekfukala
  */
-public interface HtmlTag {
+public enum HtmlTagAttributeType {
 
-    public String getName();
-
-    public Collection<HtmlTagAttribute> getAttributes();
-
-    public boolean isEmpty(); //forbidden end tag
-
-    public boolean hasOptionalOpenTag();
-
-    public boolean hasOptionalEndTag();
+    GENERIC, BOOLEAN, URL, CSS_CLASS, CSS_ID, SET
 
 }

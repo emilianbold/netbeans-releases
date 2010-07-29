@@ -144,9 +144,10 @@ public class Html5Parser implements HtmlParser {
     public static StateSnapshot makeTreeBuilderSnapshot(AstNode node) {
         int treeBuilderState = node.treeBuilderState;
         List<StackNode> stack = new ArrayList<StackNode>();
-        do {
+        while(node != null && !node.isRootNode()) {
             stack.add(0, new StackNode("http://www.w3.org/1999/xhtml", (ElementName)node.elementName, node));
-        } while((node = node.parent()) != null && !node.isRootNode());
+            node = node.parent();
+        }
 
         StateSnapshot snapshot = new StateSnapshot(stack.toArray(new StackNode[]{}),
                 new StackNode[]{}, null, treeBuilderState);
@@ -159,11 +160,11 @@ public class Html5Parser implements HtmlParser {
             super(source, root, problems, version);
         }
 
-        public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type) {
-            Collection<HtmlTag> possible = new ArrayList<HtmlTag>();
+        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, HtmlTagType type) {
+            List<HtmlTag> possible = new ArrayList<HtmlTag>();
             if(type == HtmlTagType.OPEN_TAG) {
                 //open tags
-                StateSnapshot snapshot = makeTreeBuilderSnapshot(afterNode);
+                StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
                 ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);
 
                 HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
@@ -178,14 +179,14 @@ public class Html5Parser implements HtmlParser {
                         //will be the same for all members of one group????
                         
 //                        System.out.print("element " + element + "...");
-                        enabled = builder.canFollow(afterNode, element);
+                        enabled = builder.canFollow(node, element);
 //                        System.out.println(enabled ? "+" : "-");
                         enabledGroups.put(group, enabled);
 
                         if(enabled.booleanValue()) {
                             //add all element from the group as possible
                             for(ElementName member : ElementNameGroups.getElementForTreeBuilderGroup(group)) {
-                                possible.add(new HtmlElement2HtmlTagWrapper(member));
+                                possible.add(HtmlTagProvider.getTagForElement(member));
                             }
 
                         }
@@ -197,47 +198,18 @@ public class Html5Parser implements HtmlParser {
 
             } else {
                 //end tags
-                //TODO implement
+                do {
+                    ElementName element = (ElementName)node.elementName;
+                    if(element != null) {
+                        //TODO if(element is not empty tag (end tag forbidden) {
+                            possible.add(0, HtmlTagProvider.getTagForElement(element));
+                        //}
+                    }
+                } while((node = node.parent()) != null && !node.isRootNode());
+
             }
 
             return possible;
-        }
-
-    }
-
-    //XXX not nice, multiple new instances can be created for each ElementName
-    private static final class HtmlElement2HtmlTagWrapper implements HtmlTag {
-
-        private String name;
-
-        public HtmlElement2HtmlTagWrapper(ElementName element) {
-            this.name = element.name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if(!(obj instanceof HtmlTag)) {
-                return false;
-            }
-            final HtmlTag other = (HtmlTag) obj;
-            if ((this.name == null) ? (other.getName() != null) : !this.name.equals(other.getName())) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 47 * hash + (this.name != null ? this.name.hashCode() : 0);
-            return hash;
         }
 
     }

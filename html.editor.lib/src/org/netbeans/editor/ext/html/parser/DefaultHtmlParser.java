@@ -44,6 +44,7 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
@@ -94,8 +95,12 @@ public class DefaultHtmlParser implements HtmlParser {
 
             @Override
             public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type) {
-                //TODO implement
-                return Collections.emptyList();
+                if(type == HtmlTagType.OPEN_TAG) {
+                    return DTD2HtmlTag.convert(AstNodeUtils.getPossibleOpenTagElements(afterNode));
+                } else {
+                    //TODO implement
+                    return Collections.emptyList();
+                }
             }
 
         };

@@ -44,6 +44,9 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.ParseResult;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.*;
@@ -58,6 +61,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.html.editor.HtmlPreferences;
@@ -73,6 +77,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Html completion results finder
@@ -304,12 +309,21 @@ public class HtmlCompletionQuery extends UserTask {
             result = new ArrayList<CompletionItem>();
 
             if (queryHtmlContent) {
-                Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
+                //                Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
+                //
+                //                result.addAll(translateTags(documentItemOffset - 1,
+                //                        filterElements(openTags, preText),
+                //                        filterElements(dtd.getElementList(null),
+                //                        preText)));
+                try {
+                    HtmlParseResult htmlResult = parserResult.getSyntaxAnalyzerResult().parseHtml();
+                    Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, HtmlTagType.OPEN_TAG);
+                    Collection<HtmlTag> filteredByPrefix = filterHtmlElements(possibleOpenTags, preText);
+                    result.addAll(translateHtmlTags(documentItemOffset - 1, filteredByPrefix));
+                } catch (org.netbeans.editor.ext.html.parser.api.ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 
-                result.addAll(translateTags(documentItemOffset - 1,
-                        filterElements(openTags, preText),
-                        filterElements(dtd.getElementList(null),
-                        preText)));
             }
 
             //extensions
@@ -326,8 +340,18 @@ public class HtmlCompletionQuery extends UserTask {
             result = new ArrayList<CompletionItem>();
 
             if (queryHtmlContent) {
-                Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
-                result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
+//                Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
+//                result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
+//
+                 try {
+                    HtmlParseResult htmlResult = parserResult.getSyntaxAnalyzerResult().parseHtml();
+                    Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, HtmlTagType.OPEN_TAG);
+                    result.addAll(translateHtmlTags(offset - 1, possibleOpenTags));
+                } catch (org.netbeans.editor.ext.html.parser.api.ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+
                 if(HtmlPreferences.completionOffersEndTagAfterLt()) {
                     result.addAll(getPossibleEndTags(node, undeclaredTagsLeafNode, offset, ""));
                 }
@@ -607,6 +631,17 @@ public class HtmlCompletionQuery extends UserTask {
         return filtered;
     }
 
+    private Collection<HtmlTag> filterHtmlElements(Collection<HtmlTag> elements, String elementNamePrefix) {
+        List<HtmlTag> filtered = new ArrayList<HtmlTag>();
+        elementNamePrefix = elementNamePrefix.toLowerCase(Locale.ENGLISH);
+        for (HtmlTag e : elements) {
+            if (e.getName().toLowerCase(Locale.ENGLISH).startsWith(elementNamePrefix)) {
+                filtered.add(e);
+            }
+        }
+        return filtered;
+    }
+
     List<CompletionItem> translateTags(int offset, Collection<DTD.Element> possible, Collection<DTD.Element> all) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(all.size());
         all.removeAll(possible); //remove possible elements
@@ -619,7 +654,23 @@ public class HtmlCompletionQuery extends UserTask {
         return result;
     }
 
+    //TODO add the "all" support once the metadata are exposed somewhere
+    List<CompletionItem> translateHtmlTags(int offset, Collection<HtmlTag> possible/*, Collection<DTD.Element> all*/) {
+        List<CompletionItem> result = new ArrayList<CompletionItem>(possible.size());
+//        all.removeAll(possible); //remove possible elements
+        for (HtmlTag e : possible) {
+            result.add(item4HtmlTag(e, offset, true));
+        }
+        return result;
+    }
+
     private HtmlCompletionItem item4Element(DTD.Element e, int offset, boolean possible) {
+        String name = e.getName();
+        name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase(Locale.ENGLISH));
+        return HtmlCompletionItem.createTag(name, offset, name, possible);
+    }
+
+    private HtmlCompletionItem item4HtmlTag(HtmlTag e, int offset, boolean possible) {
         String name = e.getName();
         name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase(Locale.ENGLISH));
         return HtmlCompletionItem.createTag(name, offset, name, possible);

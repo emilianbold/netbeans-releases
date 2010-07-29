@@ -56,6 +56,7 @@ import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.ParseResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
@@ -111,6 +112,34 @@ public class HtmlParserResult extends ParserResult {
     public HtmlVersion getHtmlVersion() {
         return result.getHtmlVersion();
     }
+
+//    //kinda hacky method
+//    public ParseResult getParseResultForRootTag(AstNode root) {
+//        try {
+//            if (!root.isRootNode()) {
+//                throw new IllegalArgumentException("AstNode " + root + " is not a root node!"); //NOI18N
+//            }
+//            if (result.parseHtml().root() == root) {
+//                return result.parseHtml();
+//            }
+//            if(result.parseUndeclaredEmbeddedCode().root() == root) {
+//                return result.parseUndeclaredEmbeddedCode();
+//            }
+//
+//            for(String ns : result.getAllDeclaredNamespaces().keySet()) {
+//                ParseResult pr = result.parseEmbeddedCode(ns);
+//                if(pr.root() == root) {
+//                    return pr;
+//                }
+//            }
+//
+//        } catch (ParseException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//
+//        throw new IllegalArgumentException("The AstNode " + root
+//                + " doesn't belong to " + this + " HtmlParserResult!");//NOI18N
+//    }
 
     /** @return a root node of the hierarchical parse tree of the document.
      * basically the tree structure is done by postprocessing the flat parse tree

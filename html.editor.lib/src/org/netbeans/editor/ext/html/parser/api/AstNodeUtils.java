@@ -156,33 +156,41 @@ public class AstNodeUtils {
         int so = nodeRange[0];
         int eo = nodeRange[1];
 
+        if(!node.isVirtual()) {
 
-        if (astOffset < so || astOffset > eo) {
-            //we are out of the scope - may happen just with the first client call
-            return node;
-        }
+            if (astOffset < so || astOffset > eo) {
+                //we are out of the scope - may happen just with the first client call
+                return node;
+            }
 
-        if (exclusiveStartOffset) {
-            so++;
-        }
+            if (exclusiveStartOffset) {
+                so++;
+            }
 
-        if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
-            //if the node matches and has no children we found it
-            return node;
+            if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
+                //if the node matches and has no children we found it
+                return node;
+            }
+
         }
 
         for (AstNode child : node.children()) {
-            int[] childNodeRange = child.getLogicalRange();
-            int ch_so = childNodeRange[0];
-
-            if (exclusiveStartOffset) {
-                ch_so++;
-            }
-
-            int ch_eo = childNodeRange[1];
-            if (astOffset >= ch_so && astOffset < ch_eo) {
-                //the child is or contains the searched node
+            if(child.isVirtual()) {
                 return findDescendant(child, astOffset, exclusiveStartOffset);
+            } else {
+
+                int[] childNodeRange = child.getLogicalRange();
+                int ch_so = childNodeRange[0];
+
+                if (exclusiveStartOffset) {
+                    ch_so++;
+                }
+
+                int ch_eo = childNodeRange[1];
+                if (astOffset >= ch_so && astOffset < ch_eo) {
+                    //the child is or contains the searched node
+                    return findDescendant(child, astOffset, exclusiveStartOffset);
+                }
             }
 
         }
@@ -319,13 +327,25 @@ public class AstNodeUtils {
         return null;
     }
 
+
+
     public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode root, int astPosition) {
-        HashSet<DTD.Element> elements = new HashSet<DTD.Element>();
-
-        assert root.type() == AstNode.NodeType.ROOT;
-
         //exlusive to start offset so |<div> won't return the div tag but <|div> will
         AstNode leafNodeForPosition = AstNodeUtils.findDescendant(root, astPosition, true);
+        //check if the ast offset falls into the node range (not logical range!!!)
+        if (leafNodeForPosition.startOffset() <= astPosition && leafNodeForPosition.endOffset() > astPosition) {
+            //if so return empty list - nothing is allowed inside tag content
+            return Collections.EMPTY_LIST;
+        }
+        return getPossibleOpenTagElements(leafNodeForPosition);
+
+    }
+
+    public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode leafNodeForPosition) {
+        HashSet<DTD.Element> elements = new HashSet<DTD.Element>();
+
+        int astPosition = leafNodeForPosition.startOffset();
+        AstNode root = leafNodeForPosition.getRootNode();
 
         //search first dtd element node in the tree path
         while (leafNodeForPosition.getDTDElement() == null &&
@@ -340,11 +360,6 @@ public class AstNodeUtils {
             return root.getAllPossibleElements();
         }
 
-        //check if the ast offset falls into the node range (not logical range!!!)
-        if (leafNodeForPosition.startOffset() <= astPosition && leafNodeForPosition.endOffset() > astPosition) {
-            //if so return empty list - nothing is allowed inside tag content
-            return Collections.EMPTY_LIST;
-        }
 
         assert leafNodeForPosition.type() == AstNode.NodeType.OPEN_TAG; //nothing else than open tag can contain non-tag content
 

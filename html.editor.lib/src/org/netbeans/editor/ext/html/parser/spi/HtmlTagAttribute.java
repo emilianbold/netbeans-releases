@@ -48,16 +48,14 @@ import java.util.Collection;
  *
  * @author marekfukala
  */
-public interface HtmlTag {
+public interface HtmlTagAttribute {
 
     public String getName();
 
-    public Collection<HtmlTagAttribute> getAttributes();
+    public boolean isRequired();
 
-    public boolean isEmpty(); //forbidden end tag
+    public HtmlTagAttributeType getType();
 
-    public boolean hasOptionalOpenTag();
-
-    public boolean hasOptionalEndTag();
+    public Collection<String> getPossibleValues();
 
 }
