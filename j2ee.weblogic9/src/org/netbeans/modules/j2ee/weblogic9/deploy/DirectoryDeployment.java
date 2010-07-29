@@ -143,4 +143,15 @@ public class DirectoryDeployment extends IncrementalDeployment {
                 dm.getInstanceProperties());
         return deployer.directoryDeploy(target, name, dir, dm.getHost(), dm.getPort(), app.getType());
     }
+
+    @Override
+    public boolean isDeployOnSaveSupported() {
+        return true;
+    }
+
+    @Override
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
+
 }

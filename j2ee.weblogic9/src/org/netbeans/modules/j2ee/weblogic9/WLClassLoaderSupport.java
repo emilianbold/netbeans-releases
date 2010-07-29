@@ -39,54 +39,65 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.el;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
-import org.netbeans.modules.web.el.spi.ELVariableResolver;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.j2ee.weblogic9;
 
-// TODO web.beans would be a better module for this, but
-// that would cause cyclic dependencies due to JsfSupport - perhaps
-// there is another way to get named beans?
-@ServiceProvider(service=org.netbeans.modules.web.el.spi.ELVariableResolver.class)
-public final class WebBeansELVariableResolver implements ELVariableResolver {
+import java.util.concurrent.Callable;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.openide.util.Exceptions;
 
-    @Override
-    public String getBeanClass(String beanName, FileObject context) {
-        for (WebBean bean : getWebBeans(context)) {
-            if (beanName.equals(bean.getName())) {
-                return bean.getBeanClassName();
+/**
+ *
+ * @author Petr Hejl
+ */
+public final class WLClassLoaderSupport {
+
+    private final WLDeploymentManager deploymentManager;
+
+    public WLClassLoaderSupport(WLDeploymentManager deploymentManager) {
+        this.deploymentManager = deploymentManager;
+    }
+
+    public <T> T executeAction(Callable<T> action) throws Exception {
+        synchronized (deploymentManager) {
+            ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+
+            Thread.currentThread().setContextClassLoader(
+                    WLDeploymentManagerAccessor.getDefault().getWLClassLoader(deploymentManager));
+            try {
+                return action.call();
+            } finally {
+                Thread.currentThread().setContextClassLoader(originalLoader);
             }
         }
-        return null;
     }
-    
-    @Override
-    public String getBeanName(String clazz, FileObject context) {
-        for (WebBean bean : getWebBeans(context)) {
-            if (clazz.equals(bean.getBeanClassName())) {
-                return bean.getName();
+
+    public static abstract class WLDeploymentManagerAccessor {
+
+        private static volatile WLDeploymentManagerAccessor accessor;
+
+        public static void setDefault(WLDeploymentManagerAccessor accessor) {
+            if (WLDeploymentManagerAccessor.accessor != null) {
+                throw new IllegalStateException("Already initialized accessor"); // NOI18N
             }
+            WLDeploymentManagerAccessor.accessor = accessor;
         }
-        return null;
-    }
 
-    @Override
-    public String getReferredExpression(Snapshot snapshot, int offset) {
-        return null;
-    }
+        public static WLDeploymentManagerAccessor getDefault() {
+            if (accessor != null) {
+                return accessor;
+            }
 
-    private List<WebBean> getWebBeans(FileObject context) {
-        JsfSupport jsfSupport = JsfSupport.findFor(context);
-        return jsfSupport != null 
-                ? WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel())
-                : Collections.<WebBean>emptyList();
-    }
+            Class c = WLClassLoaderSupport.class;
+            try {
+                Class.forName(c.getName(), true, WLDeploymentManagerAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException cnf) {
+                Exceptions.printStackTrace(cnf);
+            }
 
+            return accessor;
+        }
+
+        public abstract ClassLoader getWLClassLoader(WLDeploymentManager manager);
+    }
 }

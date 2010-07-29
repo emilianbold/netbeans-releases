@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.elements;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -59,16 +60,31 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
     private final TypeElement delegate;
     private final Set<TypeElement> preferredTypes;
-    TypeTreeElementImpl(final TypeElement delegate) {
-        this(delegate, new HashSet<TypeElement>());
+    private final boolean superTypesAsChildren;
+    private volatile Set<TreeElement<TypeElement>> children;
+
+    TypeTreeElementImpl(final TypeElement delegate, final boolean superTypesAsChildren) {
+        this(delegate, new HashSet<TypeElement>(), superTypesAsChildren);
     }
-    TypeTreeElementImpl(final TypeElement delegate, final Set<TypeElement> preferredTypes) {
+    TypeTreeElementImpl(final TypeElement delegate, final Set<TypeElement> preferredTypes, boolean superTypesAsChildren) {
         this.delegate = delegate;
         this.preferredTypes = preferredTypes;
+        this.superTypesAsChildren = superTypesAsChildren;
     }    
 
     @Override
     public Set<TreeElement<TypeElement>> children() {
+        if (children == null) {
+            if (superTypesAsChildren) {
+                children = childrenForSuperTypes();
+            } else {
+                children = childrenForSubTypes();
+            }
+        }
+        return children;
+    }
+
+    private Set<TreeElement<TypeElement>> childrenForSuperTypes() {
         final HashSet<TreeElement<TypeElement>> directTypes = new HashSet<TreeElement<TypeElement>>();
         if (delegate instanceof ClassElement) {
             final QualifiedName superClassName = ((ClassElement) delegate).getSuperClassName();
@@ -77,10 +93,10 @@ final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
                 Set<TypeElement> types = forName.filter(preferredTypes);
                 if (types.isEmpty()) {
                     Index index = getIndex();
-                    types= index.getTypes(NameKind.exact(superClassName));
+                    types = index.getTypes(NameKind.exact(superClassName));
                 }
                 for (TypeElement typeElementImpl : types) {
-                    directTypes.add(new TypeTreeElementImpl(typeElementImpl, preferredTypes));
+                    directTypes.add(new TypeTreeElementImpl(typeElementImpl, preferredTypes, superTypesAsChildren));
                 }
             }
         }
@@ -92,9 +108,21 @@ final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
                 types = index.getTypes(NameKind.exact(iface));
             }
             for (TypeElement typeElementImpl : types) {
-                directTypes.add(new TypeTreeElementImpl(typeElementImpl, preferredTypes));
+                directTypes.add(new TypeTreeElementImpl(typeElementImpl, preferredTypes, superTypesAsChildren));
             }
         }
+        return directTypes;
+    }
+
+    private Set<TreeElement<TypeElement>> childrenForSubTypes() {
+        final HashSet<TreeElement<TypeElement>> directTypes = new HashSet<TreeElement<TypeElement>>();
+
+        Index index = getIndex();
+        LinkedHashSet<TypeElement> directInheritedByTypes = index.getDirectInheritedByTypes(delegate);
+        for (TypeElement typeElement : directInheritedByTypes) {
+            directTypes.add(new TypeTreeElementImpl(typeElement, preferredTypes, superTypesAsChildren));
+        }
+
         return directTypes;
     }
 
