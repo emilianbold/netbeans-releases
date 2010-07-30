@@ -72,6 +72,8 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.ErrorManager;
 
 public final class DataSourceWizard implements WizardDescriptor.InstantiatingIterator, ChangeListener, WizardConstants{
+
+    private Project project;
     
     /** An array of all wizard panels */
        
@@ -129,9 +131,9 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
                 this.helper.getData().setString(__PoolName, poolName);
                 this.cphelper.getData().setTargetFile(poolName);
                 this.cphelper.getData().setTargetFileObject(this.helper.getData().getTargetFileObject());
-                ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), this.cphelper.getData());
+                ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), this.cphelper.getData(),Util.getBaseName(project));
             }else{
-                ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), null);
+                ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), null,Util.getBaseName(project));
             }    
         }catch (Exception ex){
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
@@ -149,7 +151,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(ConnPoolWizard.class, "Templates/SunResources/JDBC_Resource")); //NOI18N
         index = 0;
                 
-        Project project = Templates.getProject(wiz);
+        project = Templates.getProject(wiz);
         
         panels = createPanels();
         // Make sure list of steps is accurate.

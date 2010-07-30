@@ -40,8 +40,7 @@
   Used in:
     jdbc-connection-pool                                              
 -->
-<!ENTITY % isolation
-    "(read-uncommitted | read-committed | repeatable-read | serializable)">    
+<!ENTITY % isolation "(read-uncommitted | read-committed | repeatable-read | serializable)">
 
 
 <!-- object-type
@@ -800,10 +799,10 @@
 <!ELEMENT work-security-map (description?, (principal-map*, group-map*)+) >
 
 <!ATTLIST work-security-map 
-name CDATA #REQUIRED
-resource-adapter-name CDATA #REQUIRED
-object-type %object-type; "user"
-enabled %boolean; "true">
+    name CDATA #REQUIRED
+    resource-adapter-name CDATA #REQUIRED
+    object-type %object-type; "user"
+    enabled %boolean; "true">
 
 <!-- principal-map
   Performs mapping from a Principal in the EIS security domain to
@@ -822,8 +821,8 @@ enabled %boolean; "true">
 <!ELEMENT principal-map EMPTY >
 
 <!ATTLIST principal-map
-eis-principal CDATA #REQUIRED
-mapped-principal CDATA #REQUIRED>
+    eis-principal CDATA #REQUIRED
+    mapped-principal CDATA #REQUIRED>
 
 <!-- group-map
   Group map to map eis-group name to application server domain's group name
@@ -841,6 +840,6 @@ mapped-principal CDATA #REQUIRED>
 <!ELEMENT group-map EMPTY >
 
 <!ATTLIST group-map
-eis-group CDATA #REQUIRED
-mapped-group CDATA #REQUIRED>
+    eis-group CDATA #REQUIRED
+    mapped-group CDATA #REQUIRED>
 

@@ -40,8 +40,7 @@
   Used in:
     jdbc-connection-pool                                              
 -->
-<!ENTITY % isolation
-    "(read-uncommitted | read-committed | repeatable-read | serializable)">    
+<!ENTITY % isolation "(read-uncommitted | read-committed | repeatable-read | serializable)">
 
 
 <!-- object-type

@@ -115,6 +115,7 @@ public class ResourceUtils implements WizardConstants{
     static final String SAMPLE_DATASOURCE = "jdbc/sample";
     static final String SAMPLE_CONNPOOL = "SamplePool";
     static final String SUN_RESOURCE_FILENAME = "sun-resources.xml"; //NOI18N
+    static final String GF_RESOURCE_FILENAME = "glassfish-resources.xml"; //NOI18N
     private static final Logger LOG = Logger.getLogger(ResourceUtils.class.getName());
 
     //FIXME: should not the constructor be private? (all methods are static)
@@ -544,12 +545,12 @@ public class ResourceUtils implements WizardConstants{
         return targets;
     }
     
-    public static void saveConnPoolDatatoXml(ResourceConfigData data) {
+    public static void saveConnPoolDatatoXml(ResourceConfigData data,String baseName) {
         Resources res = getServerResourcesGraph(data.getTargetFileObject());
-        saveConnPoolDatatoXml(data, res);
+        saveConnPoolDatatoXml(data, res,baseName);
     }
     
-    public static void saveConnPoolDatatoXml(ResourceConfigData data, Resources res) {
+    public static void saveConnPoolDatatoXml(ResourceConfigData data, Resources res,String baseName) {
         try{
             JdbcConnectionPool connPool = res.newJdbcConnectionPool();
             
@@ -609,13 +610,13 @@ public class ResourceUtils implements WizardConstants{
                 
             } //for
             res.addJdbcConnectionPool(connPool);
-            createFile(data.getTargetFileObject(), res);
+            createFile(data.getTargetFileObject(), res,baseName);
         }catch(Exception ex){
             LOG.log(Level.SEVERE, "Unable to saveConnPoolDatatoXml", ex);
         }
     }
     
-    public static void saveJDBCResourceDatatoXml(ResourceConfigData dsData, ResourceConfigData cpData) {
+    public static void saveJDBCResourceDatatoXml(ResourceConfigData dsData, ResourceConfigData cpData, String baseName) {
         try{
             Resources res = getServerResourcesGraph(dsData.getTargetFileObject());
             JdbcResource datasource = res.newJdbcResource();
@@ -649,15 +650,15 @@ public class ResourceUtils implements WizardConstants{
             } //for
             res.addJdbcResource(datasource);
             if(cpData != null){
-                saveConnPoolDatatoXml(cpData, res);
+                saveConnPoolDatatoXml(cpData, res,baseName);
             }
-            createFile(dsData.getTargetFileObject(), res);
+            createFile(dsData.getTargetFileObject(), res,baseName);
         }catch(Exception ex){
             LOG.log(Level.SEVERE, "Unable to saveJDBCResourceDatatoXml", ex);
         }
     }
     
-    public static void savePMFResourceDatatoXml(ResourceConfigData pmfData, ResourceConfigData dsData, ResourceConfigData cpData) {
+    public static void savePMFResourceDatatoXml(ResourceConfigData pmfData, ResourceConfigData dsData, ResourceConfigData cpData,String baseName) {
         try{
             Resources res = getServerResourcesGraph(pmfData.getTargetFileObject());
             PersistenceManagerFactoryResource pmfresource = res.newPersistenceManagerFactoryResource();
@@ -690,17 +691,17 @@ public class ResourceUtils implements WizardConstants{
 
             } //for
             res.addPersistenceManagerFactoryResource(pmfresource);
-            createFile(pmfData.getTargetFileObject(), res);
+            createFile(pmfData.getTargetFileObject(), res,baseName);
             
             if(dsData != null){
-                saveJDBCResourceDatatoXml(dsData, cpData);
+                saveJDBCResourceDatatoXml(dsData, cpData,baseName);
             }
         }catch(Exception ex){
             LOG.log(Level.SEVERE, "Unable to savePMFResourceDatatoXml", ex);
         }
     }
     
-    public static void saveJMSResourceDatatoXml(ResourceConfigData jmsData) {
+    public static void saveJMSResourceDatatoXml(ResourceConfigData jmsData,String baseName) {
         try{
             Resources res = getServerResourcesGraph(jmsData.getTargetFileObject());
             String type = jmsData.getString(__ResType);
@@ -744,13 +745,13 @@ public class ResourceUtils implements WizardConstants{
                 res.addConnectorConnectionPool(connpoolresource);
             }
             
-            createFile(jmsData.getTargetFileObject(), res);
+            createFile(jmsData.getTargetFileObject(), res,baseName);
         }catch(Exception ex){
             LOG.log(Level.SEVERE, "Unable to saveJMSResourceDatatoXml", ex);
         }
     }
     
-    public static void saveMailResourceDatatoXml(ResourceConfigData data) {
+    public static void saveMailResourceDatatoXml(ResourceConfigData data, String baseName) {
         try{
             Vector vec = data.getProperties();
             Resources res = getServerResourcesGraph(data.getTargetFileObject());
@@ -794,7 +795,7 @@ public class ResourceUtils implements WizardConstants{
             } //for
             
             res.addMailResource(mlresource);
-            createFile(data.getTargetFileObject(), res);
+            createFile(data.getTargetFileObject(), res,baseName);
         }catch(Exception ex){
             LOG.log(Level.SEVERE, "Unable to saveMailResourceDatatoXml", ex);
         }
@@ -1690,11 +1691,11 @@ public class ResourceUtils implements WizardConstants{
         return res;
     }
     
-    public static void createFile(File targetFolder, final Resources res){
-        createFile(FileUtil.toFileObject(targetFolder), res);
+    public static void createFile(File targetFolder, final Resources res, String baseName){
+        createFile(FileUtil.toFileObject(targetFolder), res, baseName);
     }
     
-    public static void createFile(FileObject targetFolder, final Resources res){
+    public static void createFile(FileObject targetFolder, final Resources res, String baseName){
         targetFolder = setUpExists(targetFolder);
         File sunResource = getServerResourcesFile(targetFolder);
         if((sunResource != null) && sunResource.exists()){
@@ -1704,17 +1705,17 @@ public class ResourceUtils implements WizardConstants{
                 LOG.log(Level.SEVERE, "createFile failed", ex);
             }
         }else{
-            writeServerResource(targetFolder, res);
+            writeServerResource(targetFolder, res, baseName);
         }
     }
         
-    private static void writeServerResource(FileObject targetFolder, final Resources res){
+    private static void writeServerResource(FileObject targetFolder, final Resources res, final String baseName){
         try {
             final FileObject resTargetFolder  = targetFolder;
             FileSystem fs = targetFolder.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws java.io.IOException {
-                    FileObject newfile = resTargetFolder.createData("sun-resources", "xml"); //NOI18N
+                    FileObject newfile = resTargetFolder.createData(baseName, "xml"); //NOI18N
                     FileLock lock = newfile.lock();
                     Writer w = null;
                     try {
@@ -1751,6 +1752,10 @@ public class ResourceUtils implements WizardConstants{
                 if(resource.getName().equals(SUN_RESOURCE_FILENAME)){
                     serverResource = resource;
                 }
+                if(resource.getName().equals(GF_RESOURCE_FILENAME)){
+                    serverResource = resource;
+                    break;
+                }
             }
         }
         return serverResource;
@@ -1761,8 +1766,8 @@ public class ResourceUtils implements WizardConstants{
      * Called by registerResources in Utils (appsrv81 module)
      * sun-resources.xml is created once.
      */
-    public static void migrateResources(File resourceDir) {
-        migrateResources(FileUtil.toFileObject(resourceDir));
+    public static void migrateResources(File resourceDir,String baseName) {
+        migrateResources(FileUtil.toFileObject(resourceDir),baseName);
     }
     
     /*
@@ -1770,7 +1775,7 @@ public class ResourceUtils implements WizardConstants{
      * Called by SunResourceDataObject by the .sun-resource
      * loader. sun-resources.xml is created once.
      */
-    public static void migrateResources(FileObject targetFolder){
+    public static void migrateResources(FileObject targetFolder,String baseName){
         targetFolder = setUpExists(targetFolder);
         File sunResource = getServerResourcesFile(targetFolder);
         if((sunResource == null) || (! sunResource.exists())){
@@ -1789,7 +1794,7 @@ public class ResourceUtils implements WizardConstants{
                             LOG.log(Level.INFO, "Unable to delete *.sun-resource file(s)");
                         }
                     }
-                    createFile(targetFolder, newGraph);
+                    createFile(targetFolder, newGraph,baseName);
                 } catch (Exception ex) {
                     LOG.log(Level.SEVERE, "migrateResources failed", ex);
                 }
@@ -1816,11 +1821,11 @@ public class ResourceUtils implements WizardConstants{
             currMailBean.getBeanInGraph(consolidatedGraph);
         }
         
-        JmsResource[] jmsResources = existResource.getJmsResource();
-        if(jmsResources.length != 0){
-            JMSBean jmsBean = JMSBean.createBean(jmsResources[0]);
-            jmsBean.getAdminObjectBeanInGraph(consolidatedGraph);
-        }
+//        JmsResource[] jmsResources = existResource.getJmsResource();
+//        if(jmsResources.length != 0){
+//            JMSBean jmsBean = JMSBean.createBean(jmsResources[0]);
+//            jmsBean.getAdminObjectBeanInGraph(consolidatedGraph);
+//        }
         
         AdminObjectResource[] aoResources = existResource.getAdminObjectResource();
         if(aoResources.length != 0){

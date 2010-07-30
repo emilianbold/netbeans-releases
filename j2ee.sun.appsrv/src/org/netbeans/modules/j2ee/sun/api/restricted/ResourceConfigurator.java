@@ -149,7 +149,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     }
 
     @Override
-    public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir) {
+    public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir, String baseName) {
         SunMessageDestination msgDest = null;
         if(! jndiName.startsWith(JMS_PREFIX)){ 
             jndiName = JMS_PREFIX + jndiName;
@@ -196,7 +196,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         resources.addConnectorResource(connresource);
         resources.addConnectorConnectionPool(connpoolresource);
-        ResourceUtils.createFile(dir, resources);
+        ResourceUtils.createFile(dir, resources, baseName);
         msgDest = new SunMessageDestination(jndiName, type);
         return msgDest;
     }
@@ -209,7 +209,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @param dir Folder where the resource should be stored.  Should not be null.
      */
     @Override
-    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir) {
+    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir, String baseName) {
         FileObject location = FileUtil.toFileObject(dir);
         Resources resources = ResourceUtils.getServerResourcesGraph(location);
         AdminObjectResource aoresource = resources.newAdminObjectResource();
@@ -248,7 +248,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         resources.addConnectorResource(connresource);
         resources.addConnectorConnectionPool(connpoolresource);
         
-        ResourceUtils.createFile(location, resources);
+        ResourceUtils.createFile(location, resources, baseName);
     }
     
     @Override
@@ -881,7 +881,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @param dir File providing location of the project's server resource directory
      */
     @Override
-    public Datasource createDataSource(String jndiName, String url, String username, String password, String driver, File dir) throws DatasourceAlreadyExistsException {
+    public Datasource createDataSource(String jndiName, String url, String username, String password, String driver, File dir, String baseName) throws DatasourceAlreadyExistsException {
         SunDatasource ds = null;
         try {
             if(isDataSourcePresent(jndiName, dir)){
@@ -900,12 +900,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 }
                 ensureFolderExists(dir);
                 // Is connection pool already defined, if not create
-                String poolName = createCheckForConnectionPool(vendorName, url, username, password, driver, dir);
+                String poolName = createCheckForConnectionPool(vendorName, url, username, password, driver, dir, baseName);
                 boolean jdbcExists = requiredResourceExists(jndiName, dir, JDBC_RESOURCE);
                 if (jdbcExists) {
                     ds = null;
                 } else {
-                    createJDBCResource(jndiName, poolName, dir);
+                    createJDBCResource(jndiName, poolName, dir, baseName);
                     ds = new SunDatasource(jndiName, url, username, password, driver);
                 }
             }
@@ -915,7 +915,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return ds;
     }    
 
-    private void createCPPoolResource(String name, String databaseUrl, String username, String password, String driver, File resourceDir) throws IOException {
+    private void createCPPoolResource(String name, String databaseUrl, String username, String password, String driver, File resourceDir, String baseName) throws IOException {
         FileObject location = FileUtil.toFileObject(resourceDir);
         Resources resources = ResourceUtils.getServerResourcesGraph(location);
         JdbcConnectionPool jdbcConnectionPool = resources.newJdbcConnectionPool();
@@ -981,7 +981,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         jdbcConnectionPool.addPropertyElement(driverClass);
         resources.addJdbcConnectionPool(jdbcConnectionPool);
         
-        ResourceUtils.createFile(location, resources);
+        ResourceUtils.createFile(location, resources, baseName);
         try{
             Thread.sleep(1000);
         }catch(Exception ex){
@@ -989,14 +989,14 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
     }
     
-    private void createJDBCResource(String jndiName, String poolName, File resourceDir) throws IOException {
+    private void createJDBCResource(String jndiName, String poolName, File resourceDir, String baseName) throws IOException {
         FileObject location = FileUtil.toFileObject(resourceDir);
         Resources resources = ResourceUtils.getServerResourcesGraph(location);
         JdbcResource jdbcResource = resources.newJdbcResource();
         jdbcResource.setPoolName(poolName);
         jdbcResource.setJndiName(jndiName);
         resources.addJdbcResource(jdbcResource);
-        ResourceUtils.createFile(location, resources);
+        ResourceUtils.createFile(location, resources, baseName);
     }
     
     private static File getServerResourceFiles(File resourceDir) {
@@ -1085,7 +1085,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * unique Connection PoolName.
      *    
      */
-    private String createCheckForConnectionPool(String vendorName, String url, String username, String password, String driver, File dir){
+    private String createCheckForConnectionPool(String vendorName, String url, String username, String password, String driver, File dir, String baseName){
         boolean createResource = true;
         String poolName = createPoolName(url, vendorName, username);
         File resourceFile = getServerResourceFiles(dir);
@@ -1116,7 +1116,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         if (createResource) {
             try {
-                createCPPoolResource(poolName, url, username, password, driver, dir);
+                createCPPoolResource(poolName, url, username, password, driver, dir, baseName);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             }

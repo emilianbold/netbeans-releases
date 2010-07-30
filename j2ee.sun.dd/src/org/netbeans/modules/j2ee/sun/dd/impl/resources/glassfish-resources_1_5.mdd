@@ -20,6 +20,45 @@
                     public boolean isEventSource(org.netbeans.modules.j2ee.sun.dd.api.RootInterface rootDD) {
                         return this == rootDD;
                     }
+    @Override
+    public void setPersistenceManagerFactoryResource(int index, org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource value) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource getPersistenceManagerFactoryResource(int index) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int sizePersistenceManagerFactoryResource() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setPersistenceManagerFactoryResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource[] value) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource[] getPersistenceManagerFactoryResource() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int addPersistenceManagerFactoryResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource value) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int removePersistenceManagerFactoryResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource value) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource newPersistenceManagerFactoryResource() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
                 </user-code>
 	</meta-element>
 	<meta-element>

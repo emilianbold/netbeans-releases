@@ -473,6 +473,11 @@ public final class DDProvider {
                 DTDRegistry.SUN_RESOURCE_13_DTD_PUBLIC_ID, DTDRegistry.SUN_RESOURCE_13_DTD_SYSTEM_ID
             ));
         
+        sunResourcesVersionMap.put(Resources.VERSION_1_5, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class, ResourcesProxy.class,
+                DTDRegistry.GLASSFISH_RESOURCE_15_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_RESOURCE_15_DTD_SYSTEM_ID
+            ));
+
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp.class, sunWebAppVersionMap);
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar.class, sunEjbJarVersionMap);
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication.class, sunApplicationVersionMap);
@@ -1133,6 +1138,10 @@ public final class DDProvider {
                 Resources.VERSION_1_3, ResourcesProxy.class, Resources.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-resources_1_3.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.GLASSFISH_RESOURCE_15_DTD_PUBLIC_ID, new DocTypeInfo(
+                Resources.VERSION_1_5, ResourcesProxy.class, Resources.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/glassfish-resources_1_5.dtd")); // NOI18N
         
     }
 }
