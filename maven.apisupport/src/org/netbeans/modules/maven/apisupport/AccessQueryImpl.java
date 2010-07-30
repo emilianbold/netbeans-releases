@@ -54,6 +54,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -62,6 +63,7 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=AccessibilityQueryImplementation.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class AccessQueryImpl implements AccessibilityQueryImplementation {
     private NbMavenProject mavenProject;
     private Project project;

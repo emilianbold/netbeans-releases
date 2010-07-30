@@ -47,12 +47,14 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -91,7 +93,6 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import org.netbeans.modules.maven.execute.JarPackagingRunChecker;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
@@ -818,7 +819,7 @@ public final class NbMavenProjectImpl implements Project {
                 initialized = true;
                 lookup = createBasicLookup();
                 setLookups(lookup);
-                Lookup lkp = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-maven/Lookup");
+                Lookup lkp = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, lookup), "Projects/org-netbeans-modules-maven/Lookup");
                 assert checkForForbiddenMergers(lkp) : "Cannot have a LookupMerger for ProjectInformation or SharabilityQueryImplementation";
                 setLookups(lkp); //NOI18N
                 
@@ -826,6 +827,34 @@ public final class NbMavenProjectImpl implements Project {
             super.beforeLookup(template);
         }
 
+    }
+
+    private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
+        private final NbMavenProject watcher;
+        private final Lookup lookup;
+        private String packaging;
+        @SuppressWarnings("LeakingThisInConstructor")
+        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup lookup) {
+            this.watcher = watcher;
+            this.lookup = lookup;
+            check();
+            watcher.addPropertyChangeListener(this);
+        }
+        private void check() {
+            String newPackaging = watcher.getPackagingType();
+            if (newPackaging == null) {
+                newPackaging = NbMavenProject.TYPE_JAR;
+            }
+            if (!newPackaging.equals(packaging)) {
+                packaging = newPackaging;
+                setLookups(LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-maven/" + packaging + "/Lookup"));
+            }
+        }
+        public @Override void propertyChange(PropertyChangeEvent evt) {
+            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                check();
+            }
+        }
     }
 
     //to be called from assert,
@@ -851,7 +880,6 @@ public final class NbMavenProjectImpl implements Project {
 
     private Lookup createBasicLookup() {
         CPExtender extender = new CPExtender(this);
-        @SuppressWarnings("deprecation")
         Lookup staticLookup = Lookups.fixed(new Object[]{
                     projectInfo,
                     this,
@@ -895,7 +923,6 @@ public final class NbMavenProjectImpl implements Project {
                     new CPModifierLookupMerger(extender),
 
                     new BackwardCompatibilityWithMevenideChecker(),
-                    new JarPackagingRunChecker(),
                     new DebuggerChecker(),
                     new CosChecker(this),
                     CosChecker.createResultChecker(),
