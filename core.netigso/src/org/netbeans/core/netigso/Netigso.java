@@ -138,15 +138,16 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     @Override
     protected Set<String> start(Collection<? extends Module> allModules) {
-        if (framework.getState() == Bundle.ACTIVE) {
-            return toActivate(framework, allModules);
-        }
+        return toActivate(framework, allModules);
+    }
+
+    @Override
+    protected void start() {
         try {
             framework.start();
         } catch (BundleException ex) {
             LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
         }
-        return toActivate(framework, allModules);
     }
 
     private static Set<String> toActivate(Framework f, Collection<? extends Module> allModules) {
@@ -158,6 +159,11 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         if (pkgAdm == null) {
             return null;
         }
+        Set<String> allCnbs = new HashSet<String>(allModules.size() * 2);
+        for (ModuleInfo m : allModules) {
+            allCnbs.add(m.getCodeNameBase());
+        }
+        
         Set<String> needEnablement = new HashSet<String>();
         for (Bundle b : f.getBundleContext().getBundles()) {
             String loc = b.getLocation();
@@ -169,7 +175,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             RequiredBundle[] arr = pkgAdm.getRequiredBundles(loc);
             for (RequiredBundle rb : arr) {
                 for (Bundle n : rb.getRequiringBundles()) {
-                    if (n.getState() == Bundle.ACTIVE) {
+                    if (allCnbs.contains(n.getSymbolicName().replace('-', '_'))) {
                         needEnablement.add(loc);
                     }
                 }
