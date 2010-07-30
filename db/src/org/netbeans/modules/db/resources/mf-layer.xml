@@ -66,6 +66,13 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
+                <folder name="PredefinedConnection">
+                    <folder name="Actions">
+                        <file name="org-netbeans-modules-db-explorer-oracle-CreateConnectionWizard.instance">  
+                            <attr name="position" intvalue="100"/>  
+                        </file>
+                    </folder>
+                </folder>
                 <folder name="Actions">
                     <file name="org-netbeans-modules-db-explorer-action-AddConnectionAction.instance">  
                         <attr name="position" intvalue="100"/>  

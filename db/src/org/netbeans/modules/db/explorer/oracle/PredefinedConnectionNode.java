@@ -42,25 +42,30 @@
 
 package org.netbeans.modules.db.explorer.oracle;
 
+import java.util.Arrays;
+import javax.swing.Action;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.node.NodeDataLookup;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author jirka
+ * @author Jiri Rechtacek
  */
-public class PredefinedConnectionNode extends BaseNode {
+public class PredefinedConnectionNode extends BaseNode implements Comparable<Node> {
 
-    private static final String PREDEFINED_CONNECTION_BASE = "org/netbeans/modules/db/resources/connection.gif"; // NOI18N
-    private static final String FOLDER = "Connection"; // NOI18N
+    private static final String PREDEFINED_CONNECTION_BASE = "org/netbeans/modules/db/resources/addConnection.png"; // NOI18N
+    private static final String FOLDER = "Root/PredefinedConnection"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(PredefinedConnectionNode.class.getName());
-    private final PredefinedConnectionNode connection;
+    private final PredefinedConnectionProvider.PredefinedConnection connection;
+    private String dn;
    
     private PredefinedConnectionNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
-        connection = getLookup().lookup(PredefinedConnectionNode.class);
+        connection = getLookup().lookup(PredefinedConnectionProvider.PredefinedConnection.class);
         //lookup.add(DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(connection));
         
         // XXX: allow to add non-connection nodes for predefined templates
@@ -74,20 +79,13 @@ public class PredefinedConnectionNode extends BaseNode {
     
     @Override
     protected void initialize() {
-//        // listen for change events
-//        connection.addPropertyChangeListener(
-//            new PropertyChangeListener() {
-//            @Override
-//                public void propertyChange(PropertyChangeEvent evt) {
-//                    if (evt.getPropertyName().equals("connectionComplete") || // NOI18N
-//                            evt.getPropertyName().equals("disconnected")) { // NOI18N
-//                        updateModel();
-//                    }
-//                }
-//            }
-//        );
-//
-//        updateModel();
+        if (connection instanceof PredefinedConnectionProvider.OracleConnection) {
+            dn = NbBundle.getMessage(PredefinedConnectionNode.class, "OracleConnectionName");
+        } else if (connection instanceof PredefinedConnectionProvider.MySQLConnection) {
+            dn = NbBundle.getMessage(PredefinedConnectionNode.class, "MySQLConnectionName");
+        } else {
+            assert false : "No PredefinedConnection found in lookup.";
+        }
     }
 
     @Override
@@ -97,12 +95,24 @@ public class PredefinedConnectionNode extends BaseNode {
 
     @Override
     public String getName() {
-        return this.toString();
+        return dn;
     }
     
     @Override
-    public String toString() {
-        return "Create new connection to Oracle DB...";
+    public Action[] getActions(boolean context) {
+        return super.getActions(context);
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        assert getActions(false) != null : "Some action found.";
+        assert getActions(false).length == 1 : "Only one action found, but " + Arrays.asList(getActions(false));
+        return getActions(false) [0];
+    }
+
+    @Override
+    public int compareTo(Node o) {
+        return o.getName().compareTo(this.getName());
     }
 
 }

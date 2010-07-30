@@ -39,58 +39,51 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.explorer.oracle;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.db.explorer.node.NodeProvider;
-import org.netbeans.api.db.explorer.node.NodeProviderFactory;
-import org.netbeans.modules.db.explorer.node.NodeDataLookup;
+import org.netbeans.modules.db.explorer.action.*;
+import org.netbeans.modules.db.explorer.oracle.PredefinedConnectionProvider.PredefinedConnection;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class PredefinedConnectionProvider extends NodeProvider {
+public class CreateConnectionWizard extends BaseAction {
 
-    // lazy initialization holder class idiom for static fields is used
-    // for retrieving the factory
-    public static NodeProviderFactory getFactory() {
-        return FactoryHolder.FACTORY;
-    }
-
-    private static class FactoryHolder {
-        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
-            @Override
-            public PredefinedConnectionProvider createInstance(Lookup lookup) {
-                PredefinedConnectionProvider provider = new PredefinedConnectionProvider(lookup);
-                provider.initialize();
-                return provider;
-            }
-        };
-    }
-    
     @Override
-    protected void initialize() {
-        List<Node> newList = new ArrayList<Node>();
-        NodeDataLookup ol = new NodeDataLookup();
-        ol.add(new OracleConnection() {});
-        newList.add(PredefinedConnectionNode.create(ol, this));
-        NodeDataLookup myl = new NodeDataLookup();
-        myl.add(new MySQLConnection() {});
-        newList.add(PredefinedConnectionNode.create(myl, this));
-        setNodes(newList);
+    public String getName() {
+        return NbBundle.getMessage(CreateConnectionWizard.class, "CreateConnectionWizard"); // NOI18N
     }
 
-    private PredefinedConnectionProvider(Lookup lookup) {
-        super(lookup);
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return activatedNodes.length == 1;
     }
-    
-    public interface PredefinedConnection {}
-    public interface OracleConnection extends PredefinedConnection {}
-    public interface MySQLConnection extends PredefinedConnection {}
 
+    @Override
+    public void performAction(Node[] activatedNodes) {
+        Node n = activatedNodes[0];
+        PredefinedConnection conn = n.getLookup().lookup(PredefinedConnectionProvider.PredefinedConnection.class);
+        if (conn instanceof PredefinedConnectionProvider.OracleConnection) {
+            new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog("ojdbc6.jar",
+                    "oracle.jdbc.OracleDriver",
+                    "jdbc:oracle:thin:@rechtacek-db:1521:XE",
+                    "hr", "hr");
+        } else if (conn instanceof PredefinedConnectionProvider.MySQLConnection) {
+            new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog("ojdbc6.jar",
+                    "oracle.jdbc.OracleDriver",
+                    "jdbc:oracle:thin:@rechtacek-db:1521:XE",
+                    "hr", "hr");
+        } else {
+            assert false : "No known type of node.";
+        }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CreateConnectionWizard.class);
+    }
 }
