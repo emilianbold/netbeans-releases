@@ -1283,11 +1283,16 @@ public class TreeModelNode extends AbstractNode {
         protected Object[] getModelChildren(RefreshingInfo refreshInfo) throws UnknownTypeException {
             //System.err.println("! getModelChildren("+object+", "+getNode()+")");
             int count = model.getChildrenCount (object);
-            return model.getChildren (
+            Object[] ch = model.getChildren (
                 object,
                 0,
                 count
             );
+            if (ch == null) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model+"\nreturned null children for parent '"+object+"'");
+                ch = new Object[] {};
+            }
+            return ch;
         }
 
         protected Executor getModelAsynchronous() {

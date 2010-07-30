@@ -71,27 +71,21 @@ public class LookupMergerSupport {
     }
     
     private static class WebServiceDataProviderMerger implements LookupMerger<WebServiceDataProvider> {
-        private WebServiceDataProviderImpl merger;
-        
         public Class<WebServiceDataProvider> getMergeableClass() {
             return WebServiceDataProvider.class;
         }
 
         public WebServiceDataProvider merge(Lookup lookup) {
-            if (merger == null) {
-                merger = new WebServiceDataProviderImpl();
-            } 
-            merger.setLookup(lookup);
-            return merger;
+            return new WebServiceDataProviderImpl(lookup);
         }
     }
     
     private static class WebServiceDataProviderImpl implements WebServiceDataProvider, LookupListener {
         private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-        private Lookup.Result<WebServiceDataProvider> delegates;
+        private final Lookup.Result<WebServiceDataProvider> delegates;
         private Collection<WebServiceDataProvider> wsDataProviders = new ArrayList<WebServiceDataProvider>();
 
-        private void setLookup(Lookup lookup) {
+        WebServiceDataProviderImpl(Lookup lookup) {
             // clearing WebServiceDataProvider collection
             if (wsDataProviders.size() > 0) {
                 for (WebServiceDataProvider old : wsDataProviders) {
@@ -103,9 +97,6 @@ public class LookupMergerSupport {
             }
             
             // create delegates and new WebServiceDataProvider collection 
-            if (delegates != null) {
-                delegates.removeLookupListener(this);
-            }
             Lookup.Result<WebServiceDataProvider> srcs = lookup.lookupResult(WebServiceDataProvider.class);
             for (WebServiceDataProvider ns : srcs.allInstances()) {
                 for (PropertyChangeListener pcl:changeSupport.getPropertyChangeListeners()) {

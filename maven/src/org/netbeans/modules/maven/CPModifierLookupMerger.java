@@ -70,7 +70,6 @@ import org.openide.util.Lookup;
 public class CPModifierLookupMerger implements LookupMerger<ProjectClassPathModifierImplementation>{
     
     private CPExtender fallback;
-    private Extender instance;
     
     /** Creates a new instance of CPExtenderLookupMerger */
     public CPModifierLookupMerger(CPExtender fallbck) {
@@ -83,21 +82,14 @@ public class CPModifierLookupMerger implements LookupMerger<ProjectClassPathModi
     }
 
     public synchronized ProjectClassPathModifierImplementation merge(Lookup lookup) {
-        if (instance == null) {
-            instance =  new Extender();
-        }
-        instance.setLookup(lookup);
-        return instance;
+        return new Extender(lookup);
     }
 
     private class Extender extends ProjectClassPathModifierImplementation {
         
-        private Lookup context;
+        private final Lookup context;
         
-        private Extender() {
-            this.context = context;
-        }
-        private void setLookup(Lookup context) {
+        private Extender(Lookup context) {
             this.context = context;
         }
     
