@@ -164,7 +164,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
 //        GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, cpProvider.getProjectClassPaths(ClassPath.EXECUTE));
     }
    
-    private void attachUpdater() {
+    void attachUpdater() {
         FileObject fo = project.getProjectDirectory();
         FileObject userFo = project.getHomeDirectory();
         project.getProjectFolderUpdater().attachAll(fo);

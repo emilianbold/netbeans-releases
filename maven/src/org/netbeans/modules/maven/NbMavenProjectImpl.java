@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven;
 
+import java.beans.PropertyChangeEvent;
 import java.net.MalformedURLException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -886,7 +887,7 @@ public final class NbMavenProjectImpl implements Project {
                 initialized = true;
                 lookup = createBasicLookup();
                 setLookups(lookup);
-                Lookup lkp = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-maven/Lookup");
+                Lookup lkp = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, lookup), "Projects/org-netbeans-modules-maven/Lookup");
                 assert checkForForbiddenMergers(lkp) : "Cannot have a LookupMerger for ProjectInformation or SharabilityQueryImplementation";
                 setLookups(lkp); //NOI18N
                 
@@ -894,6 +895,34 @@ public final class NbMavenProjectImpl implements Project {
             super.beforeLookup(template);
         }
 
+    }
+
+    private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
+        private final NbMavenProject watcher;
+        private final Lookup lookup;
+        private String packaging;
+        @SuppressWarnings("LeakingThisInConstructor")
+        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup lookup) {
+            this.watcher = watcher;
+            this.lookup = lookup;
+            check();
+            watcher.addPropertyChangeListener(this);
+        }
+        private void check() {
+            String newPackaging = watcher.getPackagingType();
+            if (newPackaging == null) {
+                newPackaging = NbMavenProject.TYPE_JAR;
+            }
+            if (!newPackaging.equals(packaging)) {
+                packaging = newPackaging;
+                setLookups(LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-maven/" + packaging + "/Lookup"));
+            }
+        }
+        public @Override void propertyChange(PropertyChangeEvent evt) {
+            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                check();
+            }
+        }
     }
 
     //to be called from assert,
