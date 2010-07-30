@@ -46,6 +46,7 @@ import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 
 
 /**
@@ -78,5 +79,10 @@ public abstract class FullyQualifiedElementImpl extends PhpElementImpl implement
     static boolean isDefaultNamespaceName(String namespaceName) {
         boolean isDefaultNamespace = namespaceName == null || NamespaceElement.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
         return isDefaultNamespace;
+    }
+
+    @Override
+    public final boolean isAliased() {
+        return (this instanceof AliasedElement);
     }
 }

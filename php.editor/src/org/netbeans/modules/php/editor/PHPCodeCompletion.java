@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor;
 
 import org.netbeans.modules.php.editor.PHPCompletionItem.BasicFieldItem;
+import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -473,7 +474,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) :
             NameKind.prefix(prefix);
 
-        Set<MethodElement> constructors = request.index.getConstructors(query);
+        Model model = request.result.getModel();
+        Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
+        Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames);
         if (!constructors.isEmpty()) {
             completionResult.setFilterable(false);
         }
@@ -492,14 +495,23 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
-
-        Set<ClassElement> classes = request.index.getClasses(nameQuery);
+        Set<ClassElement> classes = getClasses(request, nameQuery);
         if (!classes.isEmpty()) {
             completionResult.setFilterable(false);
         }
         for (ClassElement clazz : classes) {
             completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
         }
+    }
+
+    private Set<ClassElement> getClasses(CompletionRequest request, final NameKind nameQuery) {
+        Model model = request.result.getModel();
+        return request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor));
+    }
+
+    private Set<InterfaceElement> getInterfaces(CompletionRequest request, final NameKind nameQuery) {
+        Model model = request.result.getModel();
+        return request.index.getInterfaces(nameQuery, ModelUtils.getAliasedNames(model, request.anchor));
     }
 
     private void autoCompleteInterfaceNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
@@ -509,8 +521,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
-
-        Set<InterfaceElement> interfaces = request.index.getInterfaces(nameQuery);
+        Set<InterfaceElement> interfaces = getInterfaces(request, nameQuery);
         if (!interfaces.isEmpty()) {
             completionResult.setFilterable(false);
         }
@@ -519,29 +530,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
         }
     }
+    
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
         autoCompleteTypeNames(completionResult, request, null, false);
     }
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {
         if (request.prefix.trim().length() > 0) {
-            final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
-            final NameKind nameQuery = NameKind.create(request.prefix,
-                    isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
-
-            Set<InterfaceElement> interfaces = request.index.getInterfaces(nameQuery);
-            if (!interfaces.isEmpty()) {
-                completionResult.setFilterable(false);
-            }
-
-            for (InterfaceElement iface : interfaces) {
-                completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, endWithDoubleColon));
-            }
-            Set<ClassElement> classes = request.index.getClasses(nameQuery);
-            for (ClassElement clazz : classes) {
-                completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
-            }
+            autoCompleteClassNames(completionResult, request, endWithDoubleColon, kind);
+            autoCompleteInterfaceNames(completionResult, request, kind);
         } else {
-            Collection<PhpElement> allTopLevel = request.index.getTopLevelElements(NameKind.empty());
+            Model model = request.result.getModel();
+            Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
+            Collection<PhpElement> allTopLevel = request.index.getTopLevelElements(NameKind.empty(), aliasedNames);
             for (PhpElement element : allTopLevel) {
                 if (element instanceof ClassElement) {
                     completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, endWithDoubleColon, kind));
@@ -550,7 +550,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
-
     }
 
     private void autoCompleteKeywords(final PHPCompletionResult completionResult,
@@ -818,8 +817,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
 
         final Set<VariableElement> globalVariables = new HashSet<VariableElement>();
-       
-        for (final PhpElement element : request.index.getTopLevelElements(prefix)) {
+
+        Model model = request.result.getModel();
+        Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
+
+        for (final PhpElement element : request.index.getTopLevelElements(prefix, aliasedNames)) {
             if (element instanceof FunctionElement) {
                 for (final PHPCompletionItem.FunctionElementItem functionItem :
                     PHPCompletionItem.FunctionElementItem.getItems((FunctionElement) element, request)) {
@@ -827,7 +829,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             } else if (element instanceof ClassElement) {
                 completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, true, null));
-            } else if (element instanceof InterfaceElement) {
+            } else if (element instanceof InterfaceElement) {                
                 completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, true));
             } else if (offerGlobalVariables && element instanceof VariableElement) {
                 globalVariables.add((VariableElement)element);

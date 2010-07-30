@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletion
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
@@ -178,7 +179,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     @Override
     public boolean isSmart() {
         String url = getFileNameURL();
-        return url != null && url.equals(request.currentlyEditedFileURL);
+        return (url != null && url.equals(request.currentlyEditedFileURL)) || (element instanceof AliasedElement);
     }
 
 
@@ -252,7 +253,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 case UNQUALIFIED:
                     boolean fncFromDefaultNamespace = ((ifq instanceof FunctionElement) && ifq.getIn() == null
                             && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
-                    if (!fncFromDefaultNamespace) {
+                    if (!fncFromDefaultNamespace && !ifq.isAliased()) {
                         Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
@@ -353,6 +354,11 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public ElementKind getKind() {
             return ElementKind.CONSTRUCTOR;
+        }
+
+        @Override
+        public boolean isSmart() {
+            return (getElement() instanceof AliasedElement) ? true : super.isSmart();
         }
     }
 
