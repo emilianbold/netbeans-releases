@@ -59,6 +59,7 @@ import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -231,7 +232,7 @@ public final class NbMavenProject {
      * a project change the correct instance changes as the embedder reloads it.
      * 
      */ 
-    public MavenProject getMavenProject() {
+    public @NonNull MavenProject getMavenProject() {
         return project.getOriginalMavenProject();
     }
 

@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven;
 
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import java.awt.Image;
@@ -54,7 +53,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -352,14 +350,14 @@ public final class NbMavenProjectImpl implements Project {
      * getter for the maven's own project representation.. this instance is cached but gets reloaded
      * when one the pom files have changed.
      */
-    public synchronized MavenProject getOriginalMavenProject() {
+    public @NonNull synchronized MavenProject getOriginalMavenProject() {
         if (project == null) {
             project = loadOriginalMavenProject();
         }
         return project;
     }
 
-    private MavenProject loadOriginalMavenProject() {
+    private @NonNull MavenProject loadOriginalMavenProject() {
         long startLoading = System.currentTimeMillis();
         MavenProject newproject = null;
         try {
@@ -431,12 +429,15 @@ public final class NbMavenProjectImpl implements Project {
 
             if (newproject == null) {
                 File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
-                try {
-                    newproject = getEmbedder().readProject(fallback);
-                } catch (Exception x) {
-                    // oh well..
-                    //NOPMD
+                if (fallback != null) {
+                    try {
+                        newproject = getEmbedder().readProject(fallback);
+                    } catch (Exception x) {
+                        throw new AssertionError(x);
                     }
+                } else { // from a unit test
+                    newproject = new MavenProject();
+                }
             }
             long endLoading = System.currentTimeMillis();
             Logger logger = Logger.getLogger(NbMavenProjectImpl.class.getName());
@@ -445,6 +446,7 @@ public final class NbMavenProjectImpl implements Project {
                 logger.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
             }
 
+            assert newproject != null;
             return newproject;
 
         }
