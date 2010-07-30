@@ -82,6 +82,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -96,6 +97,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=NbModuleProvider.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class MavenNbModuleImpl implements NbModuleProvider {
     private Project project;
     private DependencyAdder dependencyAdder = new DependencyAdder();

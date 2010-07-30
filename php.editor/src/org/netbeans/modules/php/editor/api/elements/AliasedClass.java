@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,32 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.websvc.wsitconf.projects;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-
-/** Lookup Provider for WSIT
  *
- * @author Martin Grebac
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
-public class MavenLookupProvider implements LookupProvider {
 
-    /** Creates a new instance of MavenLookupProvider */
-    public MavenLookupProvider() {
+package org.netbeans.modules.php.editor.api.elements;
+
+import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+
+/**
+ *
+ * @author Radek Matous
+ */
+public final class AliasedClass extends AliasedType implements ClassElement {
+    public AliasedClass(final AliasedName aliasedName, final ClassElement clz) {
+        super(aliasedName, clz);
     }
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        final Project project = baseContext.lookup(Project.class);
-        MavenWsitProvider wsitProvider = new MavenWsitProvider(project);
+    @Override
+    public QualifiedName getSuperClassName() {
+        return getClassElement().getSuperClassName();
+    }
 
-        return Lookups.fixed(new Object[] {
-            wsitProvider,
-            });
+    @Override
+    public boolean isFinal() {
+        return getClassElement().isFinal();
+    }
+
+    @Override
+    public boolean isAbstract() {
+        return getClassElement().isAbstract();
+    }
+
+    private ClassElement getClassElement() {
+        return (ClassElement) type;
     }
 }
