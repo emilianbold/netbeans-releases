@@ -44,6 +44,7 @@ package org.netbeans.modules.maven;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -64,16 +65,20 @@ public class NbMavenProjectImplTest extends NbTestCase {
         clearWorkDir();
     }
 
+    protected @Override Level logLevel() {
+        return Level.FINE;
+    }
+
     public void testPackagingTypeSpecificLookup() throws Exception {
         assertLookupObject("[base, jar]", "jar");
-        assertLookupObject("[base, osgi]", "osgi");
-        assertLookupObject("[base]", "nbm");
+        assertLookupObject("[base, war]", "war");
+        assertLookupObject("[base]", "ear");
         // Now test dynamic changes to packaging:
-        FileObject pd = FileUtil.toFileObject(getWorkDir()).getFileObject("prj-osgi");
+        FileObject pd = FileUtil.toFileObject(getWorkDir()).getFileObject("prj-war");
         Project prj = ProjectManager.getDefault().findProject(pd);
         prj.getLookup().lookup(ProjectOpenedHookImpl.class).attachUpdater(); // begin listening to pom.xml changes
         TestFileUtils.writeFile(pd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
-                + "<groupId>test</groupId><artifactId>prj-osgi</artifactId>"
+                + "<groupId>test</groupId><artifactId>prj-war</artifactId>"
                 + "<packaging>jar</packaging><version>1.0</version></project>");
         assertEquals("[base, jar]", prj.getLookup().lookup(I.class).m());
     }
@@ -100,10 +105,10 @@ public class NbMavenProjectImplTest extends NbTestCase {
             return "jar";
         }
     }
-    @ProjectServiceProvider(service=I.class, projectType="org-netbeans-modules-maven/osgi")
-    public static class OSGiPackagingImpl implements I {
+    @ProjectServiceProvider(service=I.class, projectType="org-netbeans-modules-maven/war")
+    public static class WarPackagingImpl implements I {
         public @Override String m() {
-            return "osgi";
+            return "war";
         }
     }
     @LookupMerger.Registration(projectType="org-netbeans-modules-maven")
