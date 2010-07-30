@@ -45,7 +45,6 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,15 +65,30 @@ public final class JschSupport {
     private JschSupport() {
     }
 
+    /**
+     * Starts the specified command (executable + params) on the specified ExecutionEnvironment.
+     *
+     * @param env - environment to execute in
+     * @param command - executable + params to execute
+     * @param params - (optional) channel params. May be null.
+     * @return I/O streams and opened execution JSch channel. Never returns NULL.
+     * @throws IOException - if unable to aquire an execution channel
+     * @throws JSchException - if JSch exception occured
+     * @throws InterruptedException - if the thread was interrupted
+     */
     public static ChannelStreams startCommand(final ExecutionEnvironment env, final String command, final ChannelParams params)
-            throws IOException, JSchException {
+            throws IOException, JSchException, InterruptedException {
 
         JSchWorker<ChannelStreams> worker = new JSchWorker<ChannelStreams>() {
 
             @Override
-            public ChannelStreams call() throws JSchException, IOException {
-                Session session = ConnectionManagerAccessor.getDefault().getConnectionSession(env, true);
-                ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
+            public ChannelStreams call() throws JSchException, IOException, InterruptedException {
+                ChannelExec echannel = (ChannelExec) ConnectionManagerAccessor.getDefault().openAndAcquireChannel(env, "exec", true); // NOI18N
+
+                if (echannel == null) {
+                    throw new IOException("Cannot open exec channel on " + env + " for " + command); // NOI18N
+                }
+
                 echannel.setCommand(command);
                 echannel.setXForwarding(params == null ? false : params.x11forward);
                 echannel.connect(JSCH_CONNECTION_TIMEOUT);
@@ -94,13 +108,17 @@ public final class JschSupport {
         return start(worker, env, 2);
     }
 
-    public static ChannelStreams startLoginShellSession(final ExecutionEnvironment env) throws IOException, JSchException {
+    public static ChannelStreams startLoginShellSession(final ExecutionEnvironment env) throws IOException, JSchException, InterruptedException {
         JSchWorker<ChannelStreams> worker = new JSchWorker<ChannelStreams>() {
 
             @Override
-            public ChannelStreams call() throws JSchException, IOException {
-                Session session = ConnectionManagerAccessor.getDefault().getConnectionSession(env, true);
-                ChannelShell shell = (ChannelShell) session.openChannel("shell"); // NOI18N
+            public ChannelStreams call() throws InterruptedException, JSchException, IOException {
+                ChannelShell shell = (ChannelShell) ConnectionManagerAccessor.getDefault().openAndAcquireChannel(env, "shell", true); // NOI18N
+
+                if (shell == null) {
+                    throw new IOException("Cannot open shell channel on " + env); // NOI18N
+                }
+
                 shell.setPty(false);
                 shell.connect(JSCH_CONNECTION_TIMEOUT);
 
@@ -119,7 +137,7 @@ public final class JschSupport {
         return start(worker, env, 2);
     }
 
-    private static ChannelStreams start(final JSchWorker<ChannelStreams> worker, final ExecutionEnvironment env, final int attempts) throws IOException, JSchException {
+    private synchronized static ChannelStreams start(final JSchWorker<ChannelStreams> worker, final ExecutionEnvironment env, final int attempts) throws IOException, JSchException, InterruptedException {
         int retry = attempts;
 
         while (retry-- > 0) {
@@ -143,7 +161,8 @@ public final class JschSupport {
                     log.log(Level.INFO, "JSch exception opening channel to " + env + ". Reconnecting and retrying", ex); // NOI18N
                     // Looks like in this case an attempt to
                     // just re-open a channel will fail - so create a new session
-                    ConnectionManagerAccessor.getDefault().reconnect(env);
+//                    ConnectionManagerAccessor.getDefault().reconnect(env);
+
                 } else {
                     throw ex;
                 }
@@ -183,6 +202,6 @@ public final class JschSupport {
 
     private static interface JSchWorker<T> {
 
-        T call() throws JSchException, IOException;
+        T call() throws InterruptedException, IOException, JSchException;
     }
 }

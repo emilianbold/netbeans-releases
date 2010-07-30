@@ -51,8 +51,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -60,25 +64,32 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
+import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
+import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -108,8 +119,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         private final Set<Profile> PROFILES = new HashSet<Profile>();
-        
-//        private String platformRoot = WLPluginProperties.getInstance().getInstallLocation();
+
         private String platformRoot;
         
         private LibraryImplementation[] libraries = null;
@@ -124,7 +134,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          * The server's deployment manager, to be exact the plugin's wrapper for
          * it
          */
-        WLDeploymentManager dm;
+        private final WLDeploymentManager dm;
+
+        private final ChangeListener domainChangeListener;
         
         public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
@@ -138,6 +150,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (version != null && version.contains("10")) { // NOI18N
                 PROFILES.add(Profile.JAVA_EE_5);
             }
+
+            domainChangeListener = new DomainChangeListener(this);
+            dm.addDomainChangeListener(WeakListeners.change(domainChangeListener, dm));
         }
         
         public boolean isToolSupported(String toolName) {
@@ -183,7 +198,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public java.io.File[] getPlatformRoots() {
-            return new File[]{new File(getPlatformRoot())};
+            File server = new File(getPlatformRoot());
+            File domain = new File(dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.DOMAIN_ROOT_ATTR));
+
+            assert server.isAbsolute();
+            assert domain.isAbsolute();
+            
+            return new File[] {server, domain};
         }
         
         public LibraryImplementation[] getLibraries() {
@@ -191,6 +213,60 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 initLibraries();
             }
             return libraries;
+        }
+
+        @Override
+        public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
+            // FIXME cache & listen for file changes
+            String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+            assert domainDir != null;
+            String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+            assert serverDir != null;
+            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir), new File(domainDir));
+
+            Map<ServerLibrary, List<File>> serverLibraries =  null;
+            try {
+                serverLibraries = support.getClasspathEntries(libraries);
+            } catch (ConfigurationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            if (serverLibraries == null || serverLibraries.isEmpty()) {
+                return getLibraries();
+            }
+
+            List<LibraryImplementation> serverImpl = new ArrayList<LibraryImplementation>(Arrays.asList(getLibraries()));
+            for (Map.Entry<ServerLibrary, List<File>> entry : serverLibraries.entrySet()) {
+                LibraryImplementation library = new J2eeLibraryTypeProvider().
+                        createLibrary();
+                ServerLibrary lib = entry.getKey();
+                // really localized ?
+                // FIXME more accurate name needed ?
+                if (lib.getSpecificationTitle() == null && lib.getName() == null) {
+                    library.setName(NbBundle.getMessage(WLJ2eePlatformFactory.class,
+                        "UNKNOWN_SERVER_LIBRARY_NAME"));
+                } else {
+                    library.setName(NbBundle.getMessage(WLJ2eePlatformFactory.class,
+                        "SERVER_LIBRARY_NAME", new Object[] {
+                            lib.getSpecificationTitle() == null ? lib.getName() : lib.getSpecificationTitle(),
+                            lib.getSpecificationVersion() == null ? "" : lib.getSpecificationVersion()}));
+                }
+
+                List<URL> cp = new ArrayList<URL>();
+                for (File file : entry.getValue()) {
+                    try {
+                        cp.add(fileToUrl(file));
+                    } catch (MalformedURLException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                }
+
+                library.setContent(J2eeLibraryTypeProvider.
+                        VOLUME_TYPE_CLASSPATH, cp);
+                serverImpl.add(library);
+            }
+
+            return serverImpl.toArray(new LibraryImplementation[serverImpl.size()]);
         }
         
         private void initLibraries() {
@@ -345,9 +421,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         private String getPlatformRoot() {
-            if (platformRoot == null)
+            if (platformRoot == null) {
                 platformRoot = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-            
+            }
             return platformRoot;
         }
 
@@ -356,7 +432,52 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()));
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
-
-
     }
+
+    private static class DomainChangeListener implements ChangeListener {
+
+        private final J2eePlatformImplImpl platform;
+
+        private Set<WLServerLibrary> oldLibraries = Collections.emptySet();
+
+        public DomainChangeListener(J2eePlatformImplImpl platform) {
+            this.platform = platform;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            Set<WLServerLibrary> tmpNewLibraries =
+                    new WLServerLibrarySupport(platform.dm).getDeployedLibraries();
+            Set<WLServerLibrary> tmpOldLibraries = null;
+            synchronized (this) {
+                tmpOldLibraries = new HashSet<WLServerLibrary>(oldLibraries);
+                oldLibraries = tmpNewLibraries;
+            }
+
+            if (fireChange(tmpOldLibraries, tmpNewLibraries)) {
+                LOGGER.log(Level.FINE, "Firing server libraries change");
+                platform.firePropertyChange(J2eePlatformImpl.PROP_SERVER_LIBRARIES, null, null);
+            }
+        }
+
+        private boolean fireChange(Set<WLServerLibrary> paramOldLibraries, Set<WLServerLibrary> paramNewLibraries) {
+            if (paramOldLibraries.size() != paramNewLibraries.size()) {
+                return true;
+            }
+
+            Set<WLServerLibrary> newLibraries = new HashSet<WLServerLibrary>(paramNewLibraries);
+            for (Iterator<WLServerLibrary> it = newLibraries.iterator(); it.hasNext();) {
+                WLServerLibrary newLib = it.next();
+                for (WLServerLibrary oldLib : paramOldLibraries) {
+                    if (WLServerLibrarySupport.sameLibraries(newLib, oldLib)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+
+            return !newLibraries.isEmpty();
+        }
+    }
+
 }

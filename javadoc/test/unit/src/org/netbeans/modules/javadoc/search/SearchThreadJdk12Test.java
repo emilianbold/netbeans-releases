@@ -45,11 +45,11 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.LinkedList;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -73,8 +73,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK14_Class() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "DataFlavor";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -100,8 +99,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
     
     public void testSearchInJDK14_Interface() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "DatabaseMetaData";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -120,8 +118,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK14_Exception() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "DataFormatException";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -148,8 +145,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK14_Method() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "damageLineRange";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -168,8 +164,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK14_Variables() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "darkShadow";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -196,8 +191,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK15_Class() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DataFlavor";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -224,8 +218,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
 
     public void testSearchInJDK15_GenericClass_54244() throws Exception {
         // see issue #54244
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DemoHashMap";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -251,8 +244,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK15_Method() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "damageLineRange";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -271,8 +263,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK15_Variables() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "darkShadow";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -299,8 +290,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK15_Exception() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DataFormatException";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -327,8 +317,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
     
     public void testSearchInJDK15_Interface() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DatabaseMetaData";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -347,8 +336,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
     
     public void testSearchInJDK15_Enum() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DemoMemoryType";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -367,8 +355,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
     
     public void testSearchInJDK15_AnnotationType() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "Deprecated";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();

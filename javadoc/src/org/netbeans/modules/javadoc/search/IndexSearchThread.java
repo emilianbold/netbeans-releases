@@ -44,10 +44,10 @@
 
 package org.netbeans.modules.javadoc.search;
 
+import java.net.URL;
 import java.util.StringTokenizer;
 
 import org.openide.util.RequestProcessor;
-import org.openide.filesystems.FileObject;
 
 /** Abstract class for thread which searches for documentation
  *
@@ -62,7 +62,7 @@ public abstract class IndexSearchThread implements Runnable  {
     //protected String                toFind;
 
     // documentation index file (or foldee for splitted index)
-    protected FileObject            indexRoot;
+    protected URL            indexRoot;
     private   DocIndexItemConsumer  ddiConsumer;
     private final RequestProcessor.Task rpTask;
     private boolean isFinished = false;
@@ -80,7 +80,7 @@ public abstract class IndexSearchThread implements Runnable  {
     abstract void stopSearch();
 
     @SuppressWarnings("LeakingThisInConstructor")
-    public IndexSearchThread( String toFind, FileObject fo, DocIndexItemConsumer ddiConsumer, boolean caseSensitive ) {
+    public IndexSearchThread(String toFind, URL fo, DocIndexItemConsumer ddiConsumer, boolean caseSensitive) {
         this.ddiConsumer = ddiConsumer;
         this.indexRoot = fo;
         this.caseSensitive = caseSensitive;

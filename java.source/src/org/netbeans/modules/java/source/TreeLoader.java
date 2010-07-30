@@ -181,9 +181,9 @@ public class TreeLoader extends LazyTreeLoader {
     public boolean loadParamNames(ClassSymbol clazz) {
         assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         if (clazz != null) {
-            URL url = SourceUtils.getJavadoc(clazz, cpInfo);
-            if (url != null) {
-                if (getParamNamesFromJavadocText(url, clazz)) {
+            JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
+            if (page != null) {
+                if (getParamNamesFromJavadocText(page, clazz)) {
                     return true;
                 }
             }
@@ -319,10 +319,15 @@ public class TreeLoader extends LazyTreeLoader {
                     writer.println(String.format("class file %s", cfURI)); //NOI18N
                     writer.println(String.format("source file %s", sfURI)); //NOI18N
                     writer.println("----- Source file content: ----------------------------------------"); // NOI18N
-                    if (sourceFile != null)
-                        writer.println(sourceFile.getCharContent(true));
-                    else
-                        writer.println("<unknown>");
+                    if (sourceFile != null) {
+                        try {
+                            writer.println(sourceFile.getCharContent(true));
+                        } catch (UnsupportedOperationException uoe) {
+                            writer.println("<unknown>"); //NOI18N
+                        }
+                    } else {
+                        writer.println("<unknown>"); //NOI18N
+                    }
                     writer.print("----- Trees: -------------------------------------------------------"); // NOI18N
                     writer.println(treeInfo);
                     writer.println("----- Stack trace: ---------------------------------------------"); // NOI18N
@@ -335,7 +340,7 @@ public class TreeLoader extends LazyTreeLoader {
                 LOGGER.log(Level.INFO, "Error when writing coupling error dump file!", ioe); // NOI18N
             }
         }
-        LOGGER.log(Level.WARNING, "Coupling error:\nclass file: {0}\nsource file: {1}{2}\n", new Object[] {cfURI, sfURI, treeInfo});
+        LOGGER.log(Level.WARNING, "Coupling error:\nclass file: {0}\nsource file: {1}{2}\n", new Object[] {cfURI, sfURI, treeInfo}); //NOI18N
         if (!dumpSucceeded) {
             LOGGER.log(Level.WARNING,
                     "Dump could not be written. Either dump file could not " + // NOI18N
@@ -369,13 +374,13 @@ public class TreeLoader extends LazyTreeLoader {
         return info;
     }
 
-    private boolean getParamNamesFromJavadocText(final URL url, final ClassSymbol clazz) {
+    private boolean getParamNamesFromJavadocText(final JavadocHelper.TextStream page, final ClassSymbol clazz) {
         HTMLEditorKit.Parser parser;
         InputStream is = null;        
         String charset = null;
         for (;;) {
             try{
-                is = url.openStream();
+                is = page.openStream();
                 Reader reader = charset == null ? new InputStreamReader(is): new InputStreamReader(is, charset);
                 parser = new ParserDelegator();
                 parser.parse(reader, new ParserCallback() {

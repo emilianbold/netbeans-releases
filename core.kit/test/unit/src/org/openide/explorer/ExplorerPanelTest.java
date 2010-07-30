@@ -49,10 +49,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import javax.swing.Action;
 import org.openide.DialogDisplayer;
@@ -92,16 +89,6 @@ public class ExplorerPanelTest extends NbTestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ExplorerPanelTest.class);
-        return suite;
-    }
-
-
     protected boolean runInEQ() {
         return true;
     }

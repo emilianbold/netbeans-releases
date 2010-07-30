@@ -48,6 +48,11 @@ public class XPathVariableReferenceImpl extends XPathExpressionImpl
         mVariableQName = variableQName;
     }
 
+    public void setVariableName(String name) {
+        setVariableName(new QName(name));
+//      setVariableReference(new VariableReference(new org.apache.commons.jxpath.ri.QName(name)));
+    }
+
     public void setVariableName(QName qName) {
         mVariableQName = qName;
     }

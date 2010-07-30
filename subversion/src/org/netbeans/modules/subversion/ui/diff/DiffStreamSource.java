@@ -80,6 +80,7 @@ public class DiffStreamSource extends StreamSource {
      */ 
     private File            remoteFile;
     private MultiDiffPanel.Property propertyValue;
+    private Boolean canWriteBaseFile;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -140,7 +141,15 @@ public class DiffStreamSource extends StreamSource {
 
     @Override
     public boolean isEditable() {
-        return propertyName == null && Setup.REVISION_CURRENT.equals(revision) && isPrimary();
+        return propertyName == null && Setup.REVISION_CURRENT.equals(revision) && isPrimary() && isBaseFileWritable();
+    }
+
+    private boolean isBaseFileWritable () {
+        if (canWriteBaseFile == null) {
+            FileObject fo = FileUtil.toFileObject(baseFile);
+            canWriteBaseFile = fo != null && fo.canWrite();
+        }
+        return canWriteBaseFile;
     }
 
     private boolean isPrimary() {
@@ -228,6 +237,8 @@ public class DiffStreamSource extends StreamSource {
             failure.initCause(e);
             throw failure;
         }
+        FileObject fo = FileUtil.toFileObject(baseFile);
+        canWriteBaseFile = fo != null && fo.canWrite();
     }
 
     private void initProperty() throws IOException {

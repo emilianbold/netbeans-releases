@@ -71,7 +71,7 @@ final class RootNode extends AbstractNode {
     private final RootNodeChildren children;
     /**
      */
-    private volatile boolean filtered;
+    private volatile int filterMask;
     /** */
     private volatile String message;
     private volatile int totalTests = 0;
@@ -88,10 +88,10 @@ final class RootNode extends AbstractNode {
     /**
      * Creates a new instance of RootNode
      */
-    public RootNode(TestSession session, boolean filtered) {
-        super(new RootNodeChildren(session, filtered));
+    public RootNode(TestSession session, int filterMask) {
+        super(new RootNodeChildren(session, filterMask));
         this.session = session;
-        this.filtered = filtered;
+        this.filterMask = filterMask;
         children = (RootNodeChildren) getChildren();
         setName(NbBundle.getMessage(RootNode.class, "MSG_RunningTests"));
 
@@ -204,17 +204,17 @@ final class RootNode extends AbstractNode {
 
     /**
      */
-    void setFiltered(final boolean filtered) {
+    void setFilterMask(final int filterMask) {
         assert EventQueue.isDispatchThread();
 
-        if (filtered == this.filtered) {
+        if (filterMask == this.filterMask) {
             return;
         }
-        this.filtered = filtered;
+        this.filterMask = filterMask;
 
         Children children = getChildren();
         if (children != Children.LEAF) {
-            ((RootNodeChildren) children).setFiltered(filtered);
+            ((RootNodeChildren) children).setFilterMask(filterMask);
         }
     }
 

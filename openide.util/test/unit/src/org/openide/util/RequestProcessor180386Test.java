@@ -54,9 +54,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 
 /**
@@ -67,14 +65,6 @@ public class RequestProcessor180386Test extends NbTestCase {
 
     public RequestProcessor180386Test(java.lang.String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        Test t = null;
-        if (t == null) {
-            t = new NbTestSuite(RequestProcessor180386Test.class);
-        }
-        return t;
     }
 
     public void testSubmit() throws Exception {

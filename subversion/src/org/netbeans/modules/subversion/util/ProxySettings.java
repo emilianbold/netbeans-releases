@@ -44,6 +44,7 @@
 package org.netbeans.modules.subversion.util;
 
 import java.util.prefs.Preferences;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
  *
@@ -98,7 +99,7 @@ public class ProxySettings {
         } else if(isManualSetProxy()) {
             useAuth             = prefs.getBoolean ( USE_PROXY_AUTHENTICATION,       false );                               // NOI18N            
             username            = prefs.get        ( PROXY_AUTHENTICATION_USERNAME,  ""    );                               // NOI18N
-            password            = prefs.get        ( PROXY_AUTHENTICATION_PASSWORD,  ""    );                               // NOI18N                
+            password            = getProxyPassword(prefs);
 
             notProxyHosts       = prefs.get        ( NOT_PROXY_HOSTS,                ""    ).replace("|", " ,");            // NOI18N                
             httpHost            = prefs.get        ( PROXY_HTTP_HOST,                ""    );                               // NOI18N                
@@ -214,5 +215,12 @@ public class ProxySettings {
         return toString().hashCode();
     }
     
-    
+    private String getProxyPassword (Preferences prefs) {
+        String retval = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (retval == null) {
+            char[] pwd = KeyringSupport.read(PROXY_AUTHENTICATION_PASSWORD, null);
+            retval = pwd == null ? "" : new String(pwd); //NOI18N
+        }
+        return retval;
+    }
 }

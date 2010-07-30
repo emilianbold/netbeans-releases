@@ -89,6 +89,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
@@ -106,6 +107,8 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -206,7 +209,13 @@ public class JaxWsUtils {
         String artifactsPckg = "service." + targetName.toLowerCase(); //NOI18N
         ClassPath classPath = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(targetFolder, '.', false);
-        jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109Supported, false);
+
+        boolean jsr109 = true;
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+        if (jaxWsModel != null) {
+            jsr109 = isJsr109(jaxWsModel);
+        }
+        jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109, false);
     }
 
     private static void generateProviderImplClass(Project project, FileObject targetFolder, FileObject implClass,
@@ -336,8 +345,15 @@ public class JaxWsUtils {
         DataObject.find(implClassFo).setValid(false);
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
+
+        boolean jsr109 = true;
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+        if (jaxWsModel != null) {
+            jsr109 = isJsr109(jaxWsModel);
+        }
+
         String serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(),
-                port.getName(), artifactsPckg, jsr109Supported, true);
+                port.getName(), artifactsPckg, jsr109, true);
 
         generateProviderImplClass(project, targetFolder, implClassFo, targetName, service, port, serviceID, isStatelessSB);
 
@@ -359,7 +375,12 @@ public class JaxWsUtils {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
         if (addService) {
-            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported, false);
+            boolean jsr109 = true;
+            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                jsr109 = isJsr109(jaxWsModel);
+            }
+            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109, false);
             if (serviceID == null) {
                 Logger.getLogger(JaxWsUtils.class.getName()).log(Level.WARNING, "Failed to add service element to nbproject/jax-ws.xml. Either problem with downloading wsdl file or problem with writing into nbproject/jax-ws.xml.");
                 return;
@@ -1474,5 +1495,44 @@ public class JaxWsUtils {
             return "J2SE"; //NOI18N
         }
 
+    }
+
+    public static boolean askForSunJaxWsConfig(JaxWsModel jaxWsModel) {
+        NotifyDescriptor desc =
+               new DialogDescriptor.Confirmation(
+               NbBundle.getMessage(JaxWsUtils.class, "MSG_USE_METRO"),
+               DialogDescriptor.YES_NO_OPTION);
+        DialogDisplayer.getDefault().notify(desc);
+        boolean jsr109 = true;
+        if (desc.getValue().equals(DialogDescriptor.YES_OPTION)) {
+            // NON JSR 109
+            jaxWsModel.setJsr109(Boolean.FALSE);
+            try {
+                jaxWsModel.write();
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.FINE,"jax-ws.xml not yet exists",ex);
+            }
+            jsr109 = false;
+        } else {
+            // JSR 109
+            jaxWsModel.setJsr109(Boolean.TRUE);
+            try {
+                jaxWsModel.write();
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.FINE,"jax-ws.xml not yet exists",ex);
+            }
+            jsr109 = true;
+       }
+       return jsr109;
+    }
+
+    private static boolean isJsr109 (JaxWsModel jaxWsModel) {
+        if (jaxWsModel.getJsr109() != null) {
+            return jaxWsModel.getJsr109();
+        } else if (!jsr109Supported) {
+            return askForSunJaxWsConfig(jaxWsModel);
+        } else {
+            return true;
+        }
     }
 }

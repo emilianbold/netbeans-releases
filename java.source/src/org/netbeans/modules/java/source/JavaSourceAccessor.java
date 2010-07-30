@@ -51,6 +51,7 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,7 +89,7 @@ import org.openide.util.Mutex;
  */
 public abstract class JavaSourceAccessor {
 
-    private Map<CancellableTask<CompilationInfo>,ParserResultTask<?>>tasks = new HashMap<CancellableTask<CompilationInfo>,ParserResultTask<?>>();
+    private Map<CancellableTask<CompilationInfo>,ParserResultTask<?>>tasks = new IdentityHashMap<CancellableTask<CompilationInfo>,ParserResultTask<?>>();
         
     public static synchronized JavaSourceAccessor getINSTANCE () {
         if (INSTANCE == null) {
@@ -182,7 +183,9 @@ public abstract class JavaSourceAccessor {
         final Collection<Source> sources = getSources(js);
         assert sources.size() == 1;
         final int pp = translatePriority(priority);
-        assert !tasks.keySet().contains(task);
+        if (tasks.keySet().contains(task)) {
+            throw new IllegalArgumentException(String.format("Task: %s is already scheduled", task.toString()));   //NOI18N
+        }
         final ParserResultTask<?> hanz = new CancelableTaskWrapper(task, pp, phase, js);
         tasks.put(task, hanz);
         Utilities.addParserResultTask(hanz, sources.iterator().next());
@@ -193,7 +196,9 @@ public abstract class JavaSourceAccessor {
         final Collection<Source> sources = getSources(js);
         assert sources.size() == 1;
         final ParserResultTask<?> hanz = tasks.remove(task);
-        if (hanz == null) throw new NullPointerException ();
+        if (hanz == null) {
+            throw new IllegalArgumentException(String.format("Task: %s is not scheduled", task.toString()));    //NOI18N
+        }
         Utilities.removeParserResultTask(hanz, sources.iterator().next());
     }
     

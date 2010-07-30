@@ -69,6 +69,7 @@ import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.InputReaderTask;
 import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
@@ -79,6 +80,7 @@ import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.Vendor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -330,9 +332,11 @@ public final class WLStartServer extends StartServer {
         io.select();
 
         service.submit(InputReaderTask.newTask(InputReaders.forStream(
-                process.getInputStream(), Charset.defaultCharset()), InputProcessors.printing(io.getOut(), true)));
+                process.getInputStream(), Charset.defaultCharset()), 
+                InputProcessors.printing(io.getOut(), new ErrorLineConvertor(), true)));
         service.submit(InputReaderTask.newTask(InputReaders.forStream(
-                process.getErrorStream(), Charset.defaultCharset()), InputProcessors.printing(io.getErr(), false)));
+                process.getErrorStream(), Charset.defaultCharset()), 
+                InputProcessors.printing(io.getErr(), new ErrorLineConvertor(), false)));
     }
 
     private static void stopService(final ExecutorService service) {
@@ -394,25 +398,31 @@ public final class WLStartServer extends StartServer {
 
         @Override
         protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
-
             ExternalProcessBuilder result = builder;
-            JavaPlatform javaPlatform = getSettings().getJavaPlatform();
-            String vendor = javaPlatform.getVendor();
+            String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
+            if ( vendor != null && vendor.trim().length() >0 ){
+                result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,          
+                        vendor.trim());
+            }
+            /*JavaPlatform javaPlatform = getSettings().getJavaPlatform();
+            vendor = javaPlatform.getVendor();
 
             String javaHome = getJavaHome(javaPlatform);
-            result = result.addEnvironmentVariable("JAVA_HOME", javaHome);  // NOI18N
+            result = result.addEnvironmentVariable("JAVA_HOME", javaHome); // NOI18N
             if (SUN.equals(vendor)) {
-                result = result.addEnvironmentVariable("SUN_JAVA_HOME",     // NOI18N
+                result = result.addEnvironmentVariable("SUN_JAVA_HOME", // NOI18N
                         javaHome);
-            }
+            }*/
 
             StringBuilder javaOptsBuilder = new StringBuilder();
             String[] profJvmArgs = getSettings().getJvmArgs();
             for (int i = 0; i < profJvmArgs.length; i++) {
                 javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
             }
-            result = result.addEnvironmentVariable("JAVA_OPTIONS",          // NOI18N
+            if ( profJvmArgs.length >0 ){
+                result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE, 
                     javaOptsBuilder.toString());
+            }
             return result;
         }
 
@@ -451,7 +461,7 @@ public final class WLStartServer extends StartServer {
             debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DEBUGGER_PORT_ATTR));
 
-            ExternalProcessBuilder result = builder.addEnvironmentVariable("JAVA_OPTIONS",
+            ExternalProcessBuilder result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,
                     "-Xdebug -Xnoagent -Djava.compiler=none " +
                     "-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="
                     + debugPort);   //NOI18N
@@ -460,6 +470,10 @@ public final class WLStartServer extends StartServer {
     }
 
     private class WLStartTask implements Runnable {
+
+        static final String JAVA_VENDOR_VARIABLE = "JAVA_VENDOR";    // NOI18N
+
+        static final String JAVA_OPTIONS_VARIABLE = "JAVA_OPTIONS";  // NOI18N
 
         /**
          * The amount of time in milliseconds during which the server should
@@ -575,7 +589,18 @@ public final class WLStartServer extends StartServer {
         }
 
         protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder){
-            return builder;
+            ExternalProcessBuilder result = builder;
+            String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
+            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
+                result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,          
+                        javaOpts.trim());
+            }
+            String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
+            if ( vendor != null && vendor.trim().length() >0 ){
+                result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
+                        vendor.trim());
+            }
+            return result;
         }
 
         protected boolean isRunning(){

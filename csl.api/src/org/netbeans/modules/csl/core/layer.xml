@@ -2,19 +2,37 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Editors">
-        <file name="org-netbeans-modules-csl-hints-GsfHintsFactory.instance"/>
-        <file name="org-netbeans-modules-csl-hints-infrastructure-HintsTaskFactory.instance"/>
-        <file name="org-netbeans-modules-csl-hints-infrastructure-SelectionHintsTaskFactory.instance"/>
-        <file name="org-netbeans-modules-csl-hints-infrastructure-SuggestionsTaskFactory.instance"/>
+        <file name="org-netbeans-modules-csl-hints-GsfHintsFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
+        <file name="org-netbeans-modules-csl-hints-infrastructure-HintsTaskFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
+        <file name="org-netbeans-modules-csl-hints-infrastructure-SelectionHintsTaskFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
+        <file name="org-netbeans-modules-csl-hints-infrastructure-SuggestionsTaskFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
         <file name="org-netbeans-modules-csl-navigation-ClassMemberNavigatorSourceFactory.instance">
             <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.navigation.ClassMemberNavigatorSourceFactory.getInstance"/>
         </file>
-        <file name="org-netbeans-modules-csl-editor-semantic-SemanticHighlighterFactory.instance"/>
-        <file name="org-netbeans-modules-csl-editor-semantic-MarkOccurrencesHighlighterFactory.instance"/>
-        <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerTaskFactory.instance"/>
-        <file name="org-netbeans-modules-csl-navigation-CaretListeningFactory.instance"/>
-        <file name="org-netbeans-modules-csl-editor-overridden-ComputeAnnotations$FactoryImpl.instance"/>
+        <file name="org-netbeans-modules-csl-editor-semantic-SemanticHighlighterFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
+        <file name="org-netbeans-modules-csl-editor-semantic-MarkOccurrencesHighlighterFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
+        <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerTaskFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
+        <file name="org-netbeans-modules-csl-navigation-CaretListeningFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
+        <file name="org-netbeans-modules-csl-editor-overridden-ComputeAnnotations$FactoryImpl.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+        </file>
         <folder name="GlyphGutterActions">
             <file name="org-netbeans-modules-csl-editor-overridden-IsOverriddenAnnotationAction.instance">
                 <attr name="position" intvalue="110"/>

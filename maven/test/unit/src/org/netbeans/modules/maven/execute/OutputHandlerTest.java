@@ -61,12 +61,6 @@ public class OutputHandlerTest extends TestCase {
         super(testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite(OutputHandlerTest.class);
-
-        return suite;
-    }
-
     public void testSequence() {
         HashMap procs = new HashMap();
         HashSet set = new HashSet();

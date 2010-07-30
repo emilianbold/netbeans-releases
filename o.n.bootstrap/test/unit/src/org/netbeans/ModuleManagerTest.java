@@ -77,6 +77,7 @@ import java.util.logging.Level;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -111,12 +112,6 @@ public class ModuleManagerTest extends SetupHid {
     public ModuleManagerTest(String name) {
         super(name);
     }
-
-    /*
-    public static Test suite() {
-        return new ModuleManagerTest("test...");
-    }
-     */
 
     @Override
     protected Level logLevel() {
@@ -2538,6 +2533,8 @@ public class ModuleManagerTest extends SetupHid {
         TestFileUtils.writeFile(new File(data, "mod2/pkg/C3.java"), "package pkg; class C3 {}");
         File mod2JAR = createTestJAR(data, jars, "mod2", null);
         ModuleManager mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
+        Modules modules = mgr.getModuleLookup().lookup(Modules.class);
+        assertNotNull(modules);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             Module mod1 = mgr.create(mod1JAR, null, false, false, false);
@@ -2553,10 +2550,16 @@ public class ModuleManagerTest extends SetupHid {
             assertFalse(mod2.owns(c1));
             assertFalse(mod2.owns(c2));
             assertTrue(mod2.owns(c3));
+            assertEquals(mod1, modules.ownerOf(c1));
+            assertEquals(mod1, modules.ownerOf(c2));
+            assertEquals(mod2, modules.ownerOf(c3));
+            assertNull(modules.ownerOf(String.class));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
         mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
+        modules = mgr.getModuleLookup().lookup(Modules.class);
+        assertNotNull(modules);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             ClassLoader l = new URLClassLoader(new URL[] {mod1JAR.toURI().toURL(), mod2JAR.toURI().toURL()});
@@ -2575,6 +2578,10 @@ public class ModuleManagerTest extends SetupHid {
             assertFalse(mod2.owns(c1));
             assertFalse(mod2.owns(c2));
             assertTrue(mod2.owns(c3));
+            assertEquals(mod1, modules.ownerOf(c1));
+            assertEquals(mod1, modules.ownerOf(c2));
+            assertEquals(mod2, modules.ownerOf(c3));
+            assertNull(modules.ownerOf(String.class));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }

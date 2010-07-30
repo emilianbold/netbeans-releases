@@ -242,4 +242,34 @@ public abstract class RemoteFileObjectBase extends FileObject {
     public String toString() {
         return execEnv.toString() + ":" + remotePath; //NOI18N
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RemoteFileObjectBase other = (RemoteFileObjectBase) obj;
+        if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+            return false;
+        }
+        if (this.execEnv != other.execEnv && (this.execEnv == null || !this.execEnv.equals(other.execEnv))) {
+            return false;
+        }
+        if (this.cache != other.cache && (this.cache == null || !this.cache.equals(other.cache))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 11 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
+        hash = 11 * hash + (this.execEnv != null ? this.execEnv.hashCode() : 0);
+        hash = 11 * hash + (this.cache != null ? this.cache.hashCode() : 0);
+        return hash;
+    }
 }

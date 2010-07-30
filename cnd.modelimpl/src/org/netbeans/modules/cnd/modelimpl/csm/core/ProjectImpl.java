@@ -336,6 +336,13 @@ public final class ProjectImpl extends ProjectBase {
         return false;
     }
 
+    @Override
+    protected boolean hasEditedFiles() {
+        synchronized (editedFiles) {
+            return !editedFiles.isEmpty();
+        }
+    }
+
     private final static class EditingTask {
         // field is synchronized by editedFiles lock
         private RequestProcessor.Task task;

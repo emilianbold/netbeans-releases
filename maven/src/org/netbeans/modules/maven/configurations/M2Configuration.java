@@ -170,7 +170,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
         try {
             List<NetbeansActionMapping> toRet = new ArrayList<NetbeansActionMapping>();
             // just a converter for the To-Object reader..
-            Reader read = performDynamicSubstitutions(Collections.EMPTY_MAP, getRawMappingsAsString());
+            Reader read = performDynamicSubstitutions(Collections.<String,String>emptyMap(), getRawMappingsAsString());
             // basically doing a copy here..
             ActionToGoalMapping mapping = reader.read(read);    
             List lst = mapping.getActions();

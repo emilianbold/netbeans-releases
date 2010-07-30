@@ -47,7 +47,6 @@ package org.netbeans.spi.navigator;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.navigator.NavigatorTC;
 import org.netbeans.modules.navigator.UnitTestUtils;
@@ -66,23 +65,6 @@ public class NavigatorHandlerTest extends NbTestCase {
     
     public NavigatorHandlerTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(NavigatorHandlerTest.class);
-        return suite;
     }
     
     @SuppressWarnings("UseOfSystemOutOrSystemErr")

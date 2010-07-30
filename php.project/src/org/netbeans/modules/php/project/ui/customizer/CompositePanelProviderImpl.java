@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
@@ -63,8 +64,6 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik, Radek Matous
  */
 public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
-
-    public static final String CUSTOMIZER_FOLDER = "org-netbeans-modules-php-project"; // NOI18N
 
     public static final String SOURCES = "Sources"; // NOI18N
     public static final String RUN = "Run"; // NOI18N
@@ -165,7 +164,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        projectType = UiUtils.CUSTOMIZER_PATH,
         position = 100
     )
     public static CompositePanelProviderImpl createSources() {
@@ -173,7 +172,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        projectType = UiUtils.CUSTOMIZER_PATH,
         position = 150
     )
     public static CompositePanelProviderImpl createRunConfig() {
@@ -181,7 +180,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        projectType = UiUtils.CUSTOMIZER_PATH,
         position = 200
     )
     public static CompositePanelProviderImpl createPhpIncludePath() {
@@ -189,7 +188,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        projectType = UiUtils.CUSTOMIZER_PATH,
         position = 250
     )
     public static CompositePanelProviderImpl createIgnorePath() {
@@ -197,7 +196,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        projectType = UiUtils.CUSTOMIZER_PATH,
         position = 300
     )
     public static CompositePanelProviderImpl createFrameworks() {
@@ -205,7 +204,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        projectType = UiUtils.CUSTOMIZER_PATH,
         position = 350
     )
     public static CompositePanelProviderImpl createPhpUnit() {
@@ -216,7 +215,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 //o.n.m.web.client.tools.impl    Projects/o-n-m-php-project/Customizer/o-n-m-web-client-tools-impl-projects-DebugCustomizerPanelProvider-createPhpProjectDebug.instance @400
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        projectType = UiUtils.CUSTOMIZER_PATH,
         position = 1000
     )
     public static ProjectCustomizer.CompositeCategoryProvider createFormatting() {

@@ -547,7 +547,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     FileObject fo = null;
                     try {
                         fo = "file".equals(url.getProtocol()) ? //NOI18N
-                                FileUtil.toFileObject(new File(url.toURI())) : URLMapper.findFileObject(url);
+                                FileUtil.toFileObject(new java.io.File(url.toURI())) : URLMapper.findFileObject(url);
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -1339,13 +1339,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private static String prepareIdxQuery(String textForQuery, Kind kind) {
         String query = textForQuery.toLowerCase();
         if (kind.equals(QuerySupport.Kind.CAMEL_CASE)) {
-            final char charAt = textForQuery.charAt(0);
             final int length = textForQuery.length();
-            if (Character.isLetter(charAt) && length > 0) {
+            if (length > 0 && Character.isLetter(textForQuery.charAt(0))) {
                 query = query.substring(0, 1);//NOI18N
-            } else if (charAt == '$' && length > 1) {
+            } else if (length > 1 && textForQuery.charAt(0) == '$') {//NOI18N
                 query = query.substring(0, 1);//NOI18N
-            }else {
+            } else {
                 query = "";//NOI18N
             }
         }
@@ -1354,11 +1353,21 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement) {
-        return new TypeTreeElementImpl(typeElement);
+        return new TypeTreeElementImpl(typeElement, true);
     }
 
     @Override
     public TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement, Set<TypeElement> preferredTypes) {
-        return new TypeTreeElementImpl(typeElement, preferredTypes);
+        return new TypeTreeElementImpl(typeElement, preferredTypes, true);
+    }
+
+    @Override
+    public TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement) {
+                return new TypeTreeElementImpl(typeElement, false);
+    }
+
+    @Override
+    public TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement, Set<TypeElement> preferredTypes) {
+                return new TypeTreeElementImpl(typeElement, preferredTypes, false);
     }
 }

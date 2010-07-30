@@ -58,6 +58,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
@@ -83,19 +84,21 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private static final int MAX_INCLUDE_DEEP = 5;    
     private LinkedList<IncludeInfo> inclStack = null;
     private StartEntry startFile;
+    private final APTFileSearch fileSearch;
     
     /*package*/ APTIncludeHandlerImpl(StartEntry startFile) {
-        this(startFile, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0));
+        this(startFile, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), startFile.getFileSearch());
     }
     
     public APTIncludeHandlerImpl(StartEntry startFile,
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths,
-                                    List<IncludeDirEntry> userIncludeFilePaths) {
+                                    List<IncludeDirEntry> userIncludeFilePaths, APTFileSearch fileSearch) {
         this.startFile =startFile;
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.userIncludeFilePaths = userIncludeFilePaths;
+        this.fileSearch = fileSearch;
     }
 
     @Override
@@ -111,7 +114,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     @Override
     public APTIncludeResolver getResolver(CharSequence path) {
         return new APTIncludeResolverImpl(path, getCurDirIndex(),
-                systemIncludePaths, userIncludePaths);
+                systemIncludePaths, userIncludePaths, fileSearch);
     }
     
     @Override
@@ -172,6 +175,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         private final Map<CharSequence, Integer> recurseIncludes;
         private final LinkedList<IncludeInfo> inclStack;
+        private int hashCode = 0;
         
         protected StateImpl(APTIncludeHandlerImpl handler) {
             this.systemIncludePaths = handler.systemIncludePaths;
@@ -383,9 +387,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
 
         @Override
         public int hashCode() {
-            int hash = 5;
-            hash = 67 * hash + (this.startFile != null ? this.startFile.hashCode() : 0);
-            hash = 67 * hash + (this.inclStack != null ? this.inclStack.hashCode() : 0);
+            int hash = hashCode;
+            if (hash == 0) {
+                hash = 5;
+                hash = 67 * hash + (this.startFile != null ? this.startFile.hashCode() : 0);
+                hash = 67 * hash + (this.inclStack != null ? this.inclStack.hashCode() : 0);
+                hashCode = hash;
+            }
             return hash;
         }
         

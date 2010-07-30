@@ -93,7 +93,7 @@ public class SymfonyOptionsPanel extends JPanel {
         initComponents();
 
         // not set in Design because of windows (panel too wide then)
-        symfonyScriptUsageLabel.setText(NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyUsage"));
+        symfonyScriptUsageLabel.setText(NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyUsage", SymfonyScript.SCRIPT_NAME_LONG));
         errorLabel.setText(" "); // NOI18N
 
         symfonyTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -403,7 +403,7 @@ public class SymfonyOptionsPanel extends JPanel {
          String symfonyScript = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
             @Override
             public List<String> detect() {
-                return FileUtils.findFileOnUsersPath(SymfonyScript.SCRIPT_NAME);
+                return FileUtils.findFileOnUsersPath(SymfonyScript.SCRIPT_NAME, SymfonyScript.SCRIPT_NAME_LONG);
             }
 
             @Override

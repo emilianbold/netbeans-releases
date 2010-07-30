@@ -236,8 +236,8 @@ public class CollectionRemove {
                 String warning = NbBundle.getMessage(CollectionRemove.class,
                                                      warningKey,
                                                      semiFQN,
-                                                     Utilities.getTypeName(actualParam, false),
-                                                     Utilities.getTypeName(designedType, false));
+                                                     Utilities.getTypeName(ctx.getInfo(), actualParam, false),
+                                                     Utilities.getTypeName(ctx.getInfo(), designedType, false));
 
                 result.add(ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), warning));
             }

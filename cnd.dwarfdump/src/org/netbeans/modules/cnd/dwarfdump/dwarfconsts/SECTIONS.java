@@ -52,10 +52,12 @@ public interface SECTIONS {
 
     String DEBUG_INFO = ".debug_info"; // NOI18N
     String DEBUG_STR = ".debug_str"; // NOI18N
+    String DYN_STR = ".dynstr"; // NOI18N
     String DEBUG_LINE = ".debug_line"; // NOI18N
     String DEBUG_MACINFO = ".debug_macinfo"; // NOI18N
     String DEBUG_ABBREV = ".debug_abbrev"; // NOI18N
     String DEBUG_ARANGES = ".debug_aranges"; // NOI18N
     String DEBUG_PUBNAMES = ".debug_pubnames"; // NOI18N
     String RELA_DEBUG_INFO = ".rela.debug_info"; // NOI18N
+
 }

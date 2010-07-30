@@ -241,7 +241,7 @@ public class ModelUnit {
 
     private void fireChange() {
         // reset list of config files to be re-read:
-        setConfigFiles(null, Collections.EMPTY_LIST);
+        setConfigFiles(null, new LinkedList<FileObject>());
         
         changeSupport.firePropertyChange(PROP_CONFIG_FILES, null, null);
     }

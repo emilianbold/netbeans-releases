@@ -55,6 +55,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
@@ -73,6 +74,7 @@ import org.openide.windows.InputOutput;
  */
 public class SymfonyScript extends PhpProgram {
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
+    public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
     public static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
 
@@ -80,7 +82,7 @@ public class SymfonyScript extends PhpProgram {
     public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N
     public static final String CMD_INIT_APP = "generate:app"; // NOI18N
 
-    public SymfonyScript(String command) {
+    SymfonyScript(String command) {
         super(command);
     }
 
@@ -137,21 +139,7 @@ public class SymfonyScript extends PhpProgram {
 
     @Override
     public String validate() {
-        if (!StringUtils.hasText(getProgram())) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_NoSymfony");
-        }
-
-        File file = new File(getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyCannotRead");
-        }
-        return null;
+        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(SymfonyScript.class, "LBL_SymfonyScript"));
     }
 
     public static String validate(String command) {

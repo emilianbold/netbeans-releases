@@ -58,7 +58,7 @@
             <pathelement location="${soa.module.install.dir}/org-netbeans-modules-compapp-projects-jbi.jar"/>
             <pathelement location="${soa.module.install.dir}/org-netbeans-modules-compapp-manager-jbi.jar"/>
             <pathelement location="${soa.module.install.dir}/org-netbeans-soa-libs-xmlbeans.jar"/>
-            <pathelement location="${soa.module.install.dir}/ext/jbi/jbi-admin-common.jar"/>
+            <pathelement location="${soa.module.install.dir}/ext/jbi-admin-common.jar"/>
             <pathelement location="${soa.module.install.dir}/../ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
             <pathelement location="${esb.netbeans.platform}/lib/org-openide-util.jar"/>
             <pathelement location="${esb.netbeans.platform}/lib/org-openide-modules.jar"/>
@@ -235,8 +235,8 @@
         <path id="unit.test.classpath">
             <pathelement path="${soa.module.install.dir}/org-netbeans-modules-compapp-manager-jbi.jar"/>
             <pathelement path="${soa.module.install.dir}/org-netbeans-modules-compapp-projects-jbi.jar"/>
-            <pathelement path="${soa.module.install.dir}/ext/jbi/jbi-admin-common.jar"/>
-            <pathelement path="${soa.module.install.dir}/ext/jbi/catd.jar"/>
+            <pathelement path="${soa.module.install.dir}/ext/jbi-admin-common.jar"/>
+            <pathelement path="${soa.module.install.dir}/ext/catd.jar"/>
             <pathelement path="${java.module.install.dir}/ext/junit-3.8.2.jar"/>
             <pathelement path="${java.module.install.dir}/ext/jaxws21/api/saaj-api.jar"/>
             <pathelement path="${java.module.install.dir}/ext/jaxws21/saaj-impl.jar"/>

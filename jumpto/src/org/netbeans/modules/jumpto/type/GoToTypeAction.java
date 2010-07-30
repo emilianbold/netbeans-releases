@@ -97,6 +97,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -127,38 +128,40 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private Collection<? extends TypeProvider> typeProviders;
     private final TypeBrowser.Filter typeFilter;
     private final String title;
+    private final boolean multiSelection;
 
     /** Creates a new instance of OpenTypeAction */
     public GoToTypeAction() {
         this(
             NbBundle.getMessage( GoToTypeAction.class, "DLG_GoToType" ),
-            null
+            null,
+            true
         );
     }
     
-    public GoToTypeAction(String title, TypeBrowser.Filter typeFilter, TypeProvider... typeProviders) {
+    public GoToTypeAction(String title, TypeBrowser.Filter typeFilter, boolean multiSelection, TypeProvider... typeProviders) {
         super( NbBundle.getMessage( GoToTypeAction.class,"TXT_GoToType") );
         putValue("PopupMenuText", NbBundle.getBundle(GoToTypeAction.class).getString("editor-popup-TXT_GoToType")); // NOI18N
         this.title = title;
         this.typeFilter = typeFilter;
         this.typeProviders = typeProviders.length == 0 ? null : Arrays.asList(typeProviders);
+        this.multiSelection = multiSelection;
     }
     
     public void actionPerformed( ActionEvent e ) {
-        TypeDescriptor typeDescriptor = getSelectedType();
-        if (typeDescriptor != null) {
-            typeDescriptor.open();
+        for (TypeDescriptor td : getSelectedTypes()) {
+            td.open();
         }
     }
             
-    public TypeDescriptor getSelectedType() {
-        return getSelectedType(true);
+    public Iterable<? extends TypeDescriptor> getSelectedTypes() {
+        return getSelectedTypes(true);
     }
     
-    public TypeDescriptor getSelectedType(final boolean visible) {
-        TypeDescriptor result = null;
+    public Iterable<? extends TypeDescriptor> getSelectedTypes(final boolean visible) {
+        Iterable<? extends TypeDescriptor> result = Collections.emptyList();
         try {
-            panel = new GoToPanel(this);
+            panel = new GoToPanel(this, multiSelection);
             dialog = createDialog(panel);
             
             Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
@@ -166,9 +169,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if (arr.length > 0) {
                 EditorCookie ec = arr[0].getCookie (EditorCookie.class);
                 if (ec != null) {
-                    JEditorPane[] openedPanes = ec.getOpenedPanes ();
-                    if (openedPanes != null) {
-                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(openedPanes [0]);
+                    JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
+                    if (recentPane != null) {
+                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(recentPane);
                         if (initSearchText != null && org.openide.util.Utilities.isJavaIdentifier(initSearchText)) {
                             panel.setInitialText(initSearchText);
                         }
@@ -177,7 +180,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             }            
             
             dialog.setVisible(visible);
-            result = panel.getSelectedType();
+            result = panel.getSelectedTypes();
 
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -686,7 +689,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         
         public void actionPerformed(ActionEvent e) {            
             if ( e.getSource() == okButton) {
-                panel.setSelectedType();
+                panel.setSelectedTypes();
             }
         }
         

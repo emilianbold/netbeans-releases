@@ -59,10 +59,6 @@ public class SetChildrenTest extends NbTestCase {
         super(name);
     }
     
-//    public static SetChildrenTest suite() {
-//        return new SetChildrenTest("testChldrenEvents");
-//    }    
-
     /** Tests whether the nodes get Changed.
      */
     public void testChldrenEvents () throws Exception {

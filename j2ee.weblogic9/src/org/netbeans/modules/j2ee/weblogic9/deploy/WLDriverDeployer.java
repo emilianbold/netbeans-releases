@@ -71,12 +71,12 @@ import org.netbeans.modules.j2ee.common.DatasourceHelper;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -85,6 +85,8 @@ import org.openide.util.NbBundle;
 public class WLDriverDeployer implements JDBCDriverDeployer {
 
     private static final Logger LOGGER = Logger.getLogger(WLDriverDeployer.class.getName());
+
+    private static final RequestProcessor DRIVER_DEPLOYMENT_RP = new RequestProcessor("Weblogic Driver Deployment", 1); // NOI18N
 
     private final WLDeploymentManager manager;
 
@@ -113,7 +115,7 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
                 NbBundle.getMessage(WLDriverDeployer.class, "MSG_CheckingMissingDrivers")));
 
-        WLDeploymentFactory.getInstance().getExecutorService().submit(new Runnable() {
+        DRIVER_DEPLOYMENT_RP.submit(new Runnable() {
 
             @Override
             public void run() {

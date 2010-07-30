@@ -52,31 +52,15 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 
 import java.awt.Image;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
-import junit.framework.*;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.SourceViewMarker;
-import org.netbeans.junit.*;
-import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.lookup.Lookups;
 
 import org.openide.windows.*;
 
@@ -87,24 +71,10 @@ import org.openide.windows.*;
  */
 public class MultiViewCloneableTopComponentTest extends AbstractMultiViewTopComponentTestCase {
     
-    /** Creates a new instance of SFSTest */
     public MultiViewCloneableTopComponentTest(String name) {
         super (name);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(MultiViewCloneableTopComponentTest.class);
-        
-        return suite;
-    }
-
     protected TopComponent callFactory(MultiViewDescription[] desc, MultiViewDescription def) {
         return MultiViewFactory.createCloneableMultiView(desc, def);
     }    

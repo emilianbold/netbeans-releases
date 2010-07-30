@@ -59,10 +59,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import junit.framework.AssertionFailedError;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
@@ -202,17 +199,6 @@ implements CloneableEditorSupport.Env {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(CloneableEditorSupportTest.class);
-
-        return suite;
-    }
-    
-
     @Override
     protected void setUp () {
         ic = new InstanceContent ();

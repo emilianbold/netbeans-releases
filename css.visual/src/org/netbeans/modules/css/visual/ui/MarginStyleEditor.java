@@ -207,13 +207,13 @@ public class MarginStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
-                    CssEditorSupport.getDefault().firstAggregatedEventWillFire();
+                    startAggregatedEventsSession();
                     //cssPropertyChangeSupport().firePropertyChange(CssProperties.MARGIN, null, evt.getNewValue().toString());
                     topMarginField.setMarginString(evt.getNewValue().toString());
                     bottomMarginField.setMarginString(evt.getNewValue().toString());
                     leftMarginField.setMarginString(evt.getNewValue().toString());
                     rightMarginField.setMarginString(evt.getNewValue().toString());
-                    CssEditorSupport.getDefault().lastAggregatedEventFired();
+                    closeAggregatedEventsSession();
                 }
             });
 
@@ -227,13 +227,13 @@ public class MarginStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
-                    CssEditorSupport.getDefault().firstAggregatedEventWillFire();
+                    startAggregatedEventsSession();
                     //cssPropertyChangeSupport().firePropertyChange(CssProperties.PADDING, null, evt.getNewValue().toString());
                     topPaddingField.setPaddingString(evt.getNewValue().toString());
                     bottomPaddingField.setPaddingString(evt.getNewValue().toString());
                     leftPaddingField.setPaddingString(evt.getNewValue().toString());
                     rightPaddingField.setPaddingString(evt.getNewValue().toString());
-                    CssEditorSupport.getDefault().lastAggregatedEventFired();
+                    closeAggregatedEventsSession();
                 }
             });
 

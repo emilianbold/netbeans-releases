@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeEvent;
@@ -53,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -60,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
@@ -96,10 +100,35 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
     @ForAllEnvironments(section = "remote.platforms")
     public void testListeners() throws Exception {
-        doTestListeners(getTestExecutionEnvironment());
+        int count = 5;
+        RequestProcessor rp = new RequestProcessor("testListeners", 50);
+        final CountDownLatch cdl = new CountDownLatch(count);
+
+        for (int i = 0; i < count; i++) {
+            rp.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    doTestListeners(getTestExecutionEnvironment());
+                    cdl.countDown();
+                }
+            });
+        }
+
+        cdl.await();
+        rp.shutdownNow();
     }
 
     private void doTestListeners(ExecutionEnvironment env) {
+
+        try {
+            ConnectionManager.getInstance().connectTo(env);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable("echo");
         final Counters counters = new Counters();
@@ -110,7 +139,21 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                State state = ((NativeProcessChangeEvent) e).state;
+                if (!(e instanceof NativeProcessChangeEvent)) {
+                    fail("Unexpected event");
+                    return;
+                }
+
+                if (!(e.getSource() instanceof NativeProcess)) {
+                    fail("Unexpected event");
+                    return;
+                }
+
+                final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+                final NativeProcess process = (NativeProcess) event.getSource();
+                final State state = event.state;
+
+                processRef.compareAndSet(null, process);
                 counters.getCounter(state.name()).incrementAndGet();
 
                 if (state == State.FINISHED) {
@@ -137,13 +180,12 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
                         assertEquals(0, counters.getCounter(State.ERROR.name()).get());
                         break;
                 }
-
             }
         });
 
         try {
             NativeProcess process = npb.call();
-            processRef.set(process);
+            assertEquals(process, processRef.get());
             int exitCode = process.waitFor();
             assertTrue(exitCode == result.get());
         } catch (InterruptedException ex) {

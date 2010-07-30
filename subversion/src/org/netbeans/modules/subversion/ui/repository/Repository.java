@@ -73,6 +73,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -115,7 +116,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     private Dimension maxNeededSize;
     private ConnectionType http;
     private ConnectionType file;
-    private ConnectionType svnSSHCli;
+    private ConnectionType svnSSH;
     private ConnectionType invalidUrlPanel;
     
     public Repository(String titleLabel) {
@@ -176,14 +177,20 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         repositoryPanel.connPanel.add(
                 (file = new ConnectionType.FileUrl(this)).getPanel(),
                 FILE_PANEL);
-        repositoryPanel.connPanel.add(
-                (svnSSHCli = new ConnectionType.SvnSSHCli(this)).getPanel(),
-                SSH_PANEL);
+
+        if(SvnClientFactory.isSvnKit()) {
+            svnSSH = new ConnectionType.SvnSSHSvnKit(this);
+        } else {
+            svnSSH = new ConnectionType.SvnSSHCli(this);
+        }
+
+        repositoryPanel.connPanel.add(svnSSH.getPanel(), SSH_PANEL);
+
         repositoryPanel.connPanel.add(
                 (invalidUrlPanel = new ConnectionType.InvalidUrl(this)).getPanel(),
                 INVALID_URL_PANEL);
 
-        svnSSHCli.showHints(isSet(FLAG_SHOW_HINTS));
+        svnSSH.showHints(isSet(FLAG_SHOW_HINTS));
 
         updateVisibility(FILE_PANEL);
         
@@ -423,7 +430,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         if (connPanelTypeId == HTTP_PANEL) {
             currentPanel = http;
         } else if (connPanelTypeId == SSH_PANEL) {
-            currentPanel = svnSSHCli;
+            currentPanel = svnSSH;
         } else if (connPanelTypeId == FILE_PANEL) {
             currentPanel = file;
         } else if (connPanelTypeId == INVALID_URL_PANEL) {

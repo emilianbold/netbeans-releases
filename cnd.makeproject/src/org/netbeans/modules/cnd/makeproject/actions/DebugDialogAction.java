@@ -129,7 +129,7 @@ public class DebugDialogAction extends NodeAction {
         if (runButton == null) {
             init();
         }
-        perform(new RunDialogPanel(executablePath, true, runButton));
+        perform(new RunDialogPanel(executablePath, runButton, true));
     }
 
     protected void perform(RunDialogPanel runDialogPanel) {

@@ -45,8 +45,6 @@
 package org.netbeans.spi.palette;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
-import java.io.IOException;
-import junit.framework.*;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
@@ -64,12 +62,6 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
     
     public DragAndDropHandlerTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DragAndDropHandlerTest.class);
-        
-        return suite;
     }
 
     public void testCustomize() throws Exception {

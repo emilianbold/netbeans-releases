@@ -47,12 +47,14 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -100,14 +102,17 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             final OffsetsBag bagFin = bag;
             DocumentListener l = new DocumentListener() {
 
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                 }
             };
@@ -134,6 +139,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private boolean valid = true;
     // PhaseRunner
 
+    @Override
     public void run(Phase phase) {
         InterrupterImpl interrupter = new InterrupterImpl();
         try {
@@ -234,10 +240,12 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
     }
 
+    @Override
     public boolean isValid() {
         return valid;
     }
 
+    @Override
     public boolean isHighPriority() {
         return true;
     }
@@ -248,6 +256,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         // check if offset is in preprocessor conditional block
         if (isPreprocessorConditionalBlock(doc, position)) {
             return getPreprocReferences(doc, file, position, interrupter);
+        } else {
+            Token<CppTokenId> stringToken = getTokenIfStringLiteral(doc, position);
+            if (stringToken != null) {
+                return getStringReferences(doc, stringToken, interrupter);
+            }
         }
         if (file != null && file.isParsed()) {
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
@@ -290,6 +303,42 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         return false;
     }
 
+    private static Token<CppTokenId> getTokenIfStringLiteral(AbstractDocument doc, int offset) {
+        if (doc == null) {
+            return null;
+        }
+        doc.readLock();
+        try {
+            TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+            if (ts != null) {
+                int move = ts.move(offset);
+                // check previous token as well if on the boundary of two tokens
+                int lastPhase = (move == 0) ? 2 : 1;
+                for (int curPhase = 1; curPhase <= lastPhase; curPhase++) {
+                    if (curPhase == 2) {
+                        ts.move(offset);
+                        if (!ts.movePrevious()) {
+                            // in the begin of all tokens
+                            break;
+                        }
+                    } else if (!ts.moveNext()) {
+                        // at the end of tokens
+                        continue;
+                    }
+                    Token<CppTokenId> token = ts.token();
+                    switch (token.id()) {
+                        case STRING_LITERAL:
+                        case CHAR_LITERAL:
+                            return token;
+                    }
+                }
+            }
+        } finally {
+            doc.readUnlock();
+        }
+        return null;
+    }
+    
     /**
      * returns offset pair (#-start, keyword-end), token stream is positioned on keyword token
      * @param ts
@@ -423,55 +472,113 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         List<int[]> directives = block.getDirectives();
         Collection<CsmReference> out = new ArrayList<CsmReference>(directives.size());
         for (int[] directive : directives) {
-            out.add(new PreprocRef(directive[0], directive[1]));
+            out.add(new TokenRef(directive[0], directive[1]));
         }
         return out;
     }
 
-    private static final class PreprocRef implements CsmReference {
+    private static Collection<CsmReference> getStringReferences(AbstractDocument doc, Token<CppTokenId> stringToken, Interrupter interrupter) {
+        if (stringToken == null) {
+            return Collections.<CsmReference>emptyList();
+        }
+        String tokenText = stringToken.text().toString();
+        doc.readLock();
+        try {
+            Collection<CsmReference> out = new ArrayList<CsmReference>(10);
+            TokenSequence<?> ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
+            if (ts != null) {
+                ts.move(0);
+                LinkedList<TokenSequence<?>> tss = new LinkedList<TokenSequence<?>>();
+                tss.addFirst(ts);
+                while (!tss.isEmpty()) {
+                    ts = tss.removeFirst();
+                    while (ts.moveNext()) {
+                        if (interrupter != null && interrupter.cancelled()) {
+                            return Collections.<CsmReference>emptyList();
+                        }
+                        @SuppressWarnings("unchecked")
+                        Token<CppTokenId> token = (Token<CppTokenId>) ts.token();
+                        switch (token.id()) {
+                            case PREPROCESSOR_DIRECTIVE:
+                                // jump into preprocsessor
+                                TokenSequence<?> embedded = ts.embedded();
+                                embedded.move(0);
+                                tss.addFirst(embedded);
+                                break;
+                            case STRING_LITERAL:
+                            case CHAR_LITERAL:
+                                CharSequence text = token.text();
+                                if (tokenText.contentEquals(text)) {
+                                    out.add(new TokenRef(ts.offset(), ts.offset() + text.length()));
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            return out;
+        } finally {
+            doc.readUnlock();
+        }
+    }
+    
+    private static final class TokenRef implements CsmReference {
         private final int start;
         private final int end;
 
-        public PreprocRef(int start, int end) {
+        public TokenRef(int start, int end) {
             this.start = start;
             this.end = end;
         }
 
+        @Override
         public CsmReferenceKind getKind() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public CsmObject getReferencedObject() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public CsmObject getOwner() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public CsmFile getContainingFile() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public int getStartOffset() {
             return start;
         }
 
+        @Override
         public int getEndOffset() {
             return end;
         }
 
+        @Override
         public Position getStartPosition() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public Position getEndPosition() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public CharSequence getText() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
-        
+
+        @Override
+        public String toString() {
+            return "tokenRef[" + start + "-" + end + "]";//NOI18N
+        }
     }
 }

@@ -81,7 +81,9 @@ public final class AttributesUtilities {
     public static AttributeSet createImmutable(Object... keyValuePairs) {
         assert keyValuePairs.length % 2 == 0 : "There must be even number of prameters. " +
             "They are key-value pairs of attributes that will be inserted into the set.";
-
+        if (true) {
+            return org.netbeans.modules.editor.settings.AttrSet.get(keyValuePairs);
+        }
         HashMap<Object, Object> map = new HashMap<Object, Object>();
         
         for(int i = keyValuePairs.length / 2 - 1; i >= 0 ; i--) {
@@ -107,6 +109,9 @@ public final class AttributesUtilities {
      * @return The new immutable <code>AttributeSet</code>.
      */
     public static AttributeSet createImmutable(AttributeSet... sets) {
+        if (true) {
+            return org.netbeans.modules.editor.settings.AttrSet.merge(sets);
+        }
         HashMap<Object, Object> map = new HashMap<Object, Object>();
         
         for(int i = sets.length - 1; i >= 0; i--) {
@@ -135,6 +140,9 @@ public final class AttributesUtilities {
      *         to the <code>sets</code> passed in.
      */
     public static AttributeSet createComposite(AttributeSet... sets) {
+        if (true) {
+            return org.netbeans.modules.editor.settings.AttrSet.merge(sets);
+        }
         if (sets.length == 0) {
             return SimpleAttributeSet.EMPTY;
         } else if (sets.length == 1) {

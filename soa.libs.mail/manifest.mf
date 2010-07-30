@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
+OpenIDE-Module: org.netbeans.modules.soa.libs.mail
+OpenIDE-Module-Localizing-Bundle: org/netbeans/soa/libs/mail/Bundle.properties

@@ -46,9 +46,7 @@ package org.netbeans.modules.navigator;
 
 import java.util.Collection;
 import javax.swing.JComponent;
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 
@@ -63,22 +61,8 @@ public class ProviderRegistryTest extends NbTestCase {
     private static final String MARVELOUS_DATA_TYPE_NAME = "MarvelousDataType";
     private static final String MARVELOUS_DATA_TYPE = "text/marvelous/data_type";
     
-    /** Creates a new instance of ProviderRegistryTest */
-    public ProviderRegistryTest() {
-        super("");
-    }
-    
     public ProviderRegistryTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(ProviderRegistryTest.class);
-        return suite;
     }
     
     public void testGetProviders () throws Exception {

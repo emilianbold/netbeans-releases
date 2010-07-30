@@ -137,12 +137,14 @@ public class BackgroundImageUrlDialog {
                 }
 
                 imageUrl = encodeURL(relativePath);
+
+                return true;
             }
         } catch (IOException exc) {
             LOGGER.log(Level.WARNING, null, exc);
-            return false;
         }
-        return true;
+        
+        return false;
     }
 
     private String encodeURL(String imageUrl) {

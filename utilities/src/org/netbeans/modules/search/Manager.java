@@ -111,6 +111,10 @@ final class Manager {
 
     private Map<Task, Runnable> tasksMap = new HashMap<Task, Runnable>();
 
+    private static final RequestProcessor RP =
+            new RequestProcessor(Manager.class.getName()); // #186445
+
+
     /**
      */
     static Manager getInstance() {
@@ -589,7 +593,7 @@ final class Manager {
         currentTasks.add(task);
 
         RequestProcessor.Task pTask;
-        pTask = RequestProcessor.getDefault().create(task);
+        pTask = RP.create(task);
         tasksMap.put(pTask, task);
         pTask.addTaskListener(getTaskListener());
         pTask.schedule(0);

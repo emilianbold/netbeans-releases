@@ -216,12 +216,7 @@ public final class TreeUtilities {
             }
 
             if (automap) {
-                try {
-                    TokenSequence<JavaTokenId> seq = ((SourceFileObject) info.getCompilationUnit().getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                    new TranslateIdentifier(info, true, false, seq).translate(tree);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                GeneratorUtilities.importComments(info, tree, info.getCompilationUnit());
             }
         }
     }

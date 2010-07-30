@@ -45,14 +45,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.openide.util.Parameters;
 
 /**
@@ -60,6 +64,7 @@ import org.openide.util.Parameters;
  */
 public class InterfaceElementImpl extends TypeElementImpl implements InterfaceElement {
     public static final String IDX_FIELD = PHPIndexer.FIELD_IFACE;
+
 
     private InterfaceElementImpl(
             final QualifiedName qualifiedName,
@@ -101,6 +106,18 @@ public class InterfaceElementImpl extends TypeElementImpl implements InterfaceEl
                     indexResult.getUrl().toString(), indexScopeQuery);
         }
         return retval;
+    }
+
+    public static InterfaceElement fromNode(final NamespaceElement namespace, final InterfaceDeclaration node, final ElementQuery.File fileQuery) {
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        InterfaceDeclarationInfo info = InterfaceDeclarationInfo.create(node);
+        final QualifiedName fullyQualifiedName = namespace != null ?
+            namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
+        return new InterfaceElementImpl(
+                fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
+                info.getInterfaceNames(),
+                fileQuery.getURL().toExternalForm(), fileQuery);
     }
 
     private static boolean matchesQuery(final NameKind query, InterfaceSignatureParser signParser) {

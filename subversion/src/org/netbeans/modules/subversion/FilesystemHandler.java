@@ -157,6 +157,7 @@ class FilesystemHandler extends VCSInterceptor {
         // there was no doDelete event for the file ->
         // could be deleted externaly, so try to handle it by 'svn rm' too
         Utils.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     File parent = file.getParentFile();
@@ -321,6 +322,7 @@ class FilesystemHandler extends VCSInterceptor {
     public void afterCreate(final File file) {
         Subversion.LOG.fine("afterCreate " + file);
         Utils.post(new Runnable() {
+            @Override
             public void run() {
                 if (file == null) return;
                 // I. refresh cache
@@ -344,6 +346,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
         Subversion.LOG.fine("afterChange " + file);
         Utils.post(new Runnable() {
+            @Override
             public void run() {
                 if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                     cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
@@ -371,7 +374,7 @@ class FilesystemHandler extends VCSInterceptor {
                         SvnClient client = Subversion.getInstance().getClient(file);
                         if (client != null) {
                             Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
-                            StatusAction.executeStatus(file, client, null);
+                            StatusAction.executeStatus(file, client, null, false); // no need to contact server
                         }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);

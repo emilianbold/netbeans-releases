@@ -87,7 +87,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         if ( context == null ) { 
             OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         }
-        refresh( getLookup() );
+        refresh(getLookup(), true);
     }
     
     protected void actionPerformed( Lookup context ) {
@@ -98,9 +98,9 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         
     }
     
-    public void refresh( Lookup context ) {
+    public @Override void refresh(Lookup context, boolean immediate) {
         
-        super.refresh( context );
+        super.refresh(context, immediate);
         
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
         if ( projects.length != 1 /* Some projects have to be open !OpenProjectList.getDefault().isOpen( projects[0] ) */ ) {

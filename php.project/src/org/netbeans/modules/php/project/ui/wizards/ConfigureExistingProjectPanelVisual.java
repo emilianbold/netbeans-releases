@@ -83,7 +83,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         sourcesTextField.getDocument().addDocumentListener(this);
         projectNameTextField.getDocument().addDocumentListener(this);
 
-        phpVersionComboBox.setModel(new PhpVersionComboBoxModel());
+        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(PhpVersion.PHP_5));
 
         encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
         encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());

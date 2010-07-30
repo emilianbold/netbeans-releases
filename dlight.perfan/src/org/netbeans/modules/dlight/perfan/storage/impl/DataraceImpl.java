@@ -98,7 +98,7 @@ public final class DataraceImpl implements Datarace {
 
 
     private static final Pattern RACE_PATTERN = Pattern.compile("Race\\s+#(\\d+),\\s+Vaddr:\\s+(0x(.+)|\\(Multiple\\s+Addresses\\)|Multiple\\s+addresses)"); // NOI18N
-    private static final Pattern DUMP_PATTERN = Pattern.compile("\\s+Trace\\s+\\d+"); // NOI18N
+    private static final Pattern DUMP_PATTERN = Pattern.compile("\\s+.*Trace\\s+\\d+"); // NOI18N
     private static final Pattern SNAPSHOT_PATTERN = Pattern.compile(" *Access +\\d+: +(Read|Write) *"); // NOI18N
 
     public static List<DataraceImpl> fromErprint(String[] lines) {

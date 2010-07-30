@@ -45,7 +45,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.awt.HtmlBrowser;
 
@@ -59,10 +58,6 @@ public class UnixBrowserImplTest extends NbTestCase {
         super(testName);
     }        
         
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     /** Test of backward method, of class org.netbeans.modules.extbrowser.UnixBrowserImpl. */
     public void testBackward () {
         if (!org.openide.util.Utilities.isUnix ())
@@ -127,15 +122,6 @@ public class UnixBrowserImplTest extends NbTestCase {
         testObject.stopLoading ();
     }
     
-    public static Test suite () {
-        TestSuite suite = new NbTestSuite (UnixBrowserImplTest.class);
-        
-        return suite;
-    }
-    
-    // Add test methods here, they have to start with 'test' name.
-    // for example: 
-    // public void testHello() {}
     protected HtmlBrowser.Impl testObject;
     
     protected void setUp () {

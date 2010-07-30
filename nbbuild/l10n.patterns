@@ -14,7 +14,6 @@
 **/*.jar:**/*.url
 **/defaulttheme*.jar:**/messages.properties
 **/org-netbeans-modules-deployment-deviceanywhere.jar:org/netbeans/modules/deployment/deviceanywhere/messages.properties
-**/org-netbeans-modules-uml-tomsawyer.jar:org/netbeans/modules/uml/tomsawyer/LabelBundle.properties
 **/docs/syntaxref20.zip:
 **/docs/GUIExamplesDescription.html:
 **/org-netbeans-modules-apisupport-ant.jar:org/netbeans/modules/apisupport/ant/TemplateNames.properties
@@ -48,14 +47,6 @@ exclude **/prefuse-beta.jar:
 exclude **/httpunit-1.6.2.jar:
 exclude **/wsdl4j-1.5.2.zip:
 exclude **/xmlbeans-2.1.0.zip:
-exclude **/org-netbeans-modules-uml-reporting.jar:org/netbeans/modules/uml/reporting/templates/alldiagrams.html
-exclude **/org-netbeans-modules-uml-reporting.jar:org/netbeans/modules/uml/reporting/templates/allelements.html
-exclude **/org-netbeans-modules-uml-reporting.jar:org/netbeans/modules/uml/reporting/templates/body_template.html
-exclude **/org-netbeans-modules-uml-reporting.jar:org/netbeans/modules/uml/reporting/templates/overview-summary.html
-exclude **/org-netbeans-modules-uml-reporting.jar:org/netbeans/modules/uml/reporting/templates/overview.html
-exclude **/org-netbeans-modules-uml-reporting.jar:org/netbeans/modules/uml/reporting/templates/script_template.html
-exclude **/org-netbeans-modules-uml-reporting.jar:**/generating_model_reports.html
-exclude **/org-netbeans-modules-uml-reporting.jar:**/viewing_reports.html
 exclude **/org-netbeans-modules-html.jar:org/netbeans/modules/html/templates/html.html
 exclude **/org-netbeans-modules-reglib.jar:org/netbeans/modules/servicetag/resources/register*.html
 exclude **/core-renderer.jar:
@@ -64,9 +55,8 @@ exclude **/junit-4.1.jar:
 exclude **/jaxb-xjc.jar:
 exclude **/script-api.jar:
 exclude **/jh-2.0_05.jar:
-exclude uml*/**/modules/ext/**/*.jar:
 exclude **/*jmeter*:
-exclude **/junit-4.5.jar:
+exclude **/junit-*.jar:
 exclude **/svnjavahl-1.5.0.jar:
 exclude **/jtidy-r8-20060801.jar:
 exclude **/hibernate-tools.jar:

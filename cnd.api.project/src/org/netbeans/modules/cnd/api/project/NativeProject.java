@@ -102,7 +102,7 @@ public interface NativeProject {
      public void addProjectItemsListener(NativeProjectItemsListener listener);
 
      /**
-      * Removes a listner.
+      * Removes a listener.
       * @param listener a listener to remove
       */
      public void removeProjectItemsListener(NativeProjectItemsListener listener);
@@ -110,9 +110,15 @@ public interface NativeProject {
      /**
       * Finds a file item in the project.
       * @param file the file item to find
-      * @return the file item if found. Othervise it returns null.
+      * @return the file item if found. Otherwise it returns null.
       */
      public NativeFileItem findFileItem(File file);
+
+     /***
+      * Searcher for find project file by name
+      * @return searcher
+      */
+     public NativeFileSearch getNativeFileSearch();
      
     /**
      * Returns a list <String> of compiler defined include paths used when parsing 'orpan' source files.
@@ -145,8 +151,8 @@ public interface NativeProject {
     public List<String> getUserMacroDefinitions();
     
     /**
-     * Returns a list <NativeProject> of libriries.
-     * @return a list <NativeProject> of libriries.
+     * Returns a list <NativeProject> of libraries.
+     * @return a list <NativeProject> of libraries.
      */
     public List<NativeProject> getDependences();
     

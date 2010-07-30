@@ -70,6 +70,7 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;
@@ -82,6 +83,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=PrerequisitesChecker.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR)
 public class RunJarPrereqChecker implements PrerequisitesChecker {
 
     private String mainClass;
@@ -108,11 +110,10 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
             }
         }
 
+        assert NbMavenProject.TYPE_JAR.equals(config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType());
         if ((ActionProvider.COMMAND_RUN.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG.equals(actionName) ||
-                "profile".equals(actionName)) &&
-                NbMavenProject.TYPE_JAR.equals(
-                config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType())) {
+                "profile".equals(actionName))) {
             String mc = null;
             for (Map.Entry<Object, Object> str : entries) {
                 String val = (String) str.getValue();

@@ -248,6 +248,10 @@ public class CatalogModelImpl implements CatalogModel {
         try {
             ResourceRetriever urlRetriever =
                 ResourceRetrieverFactory.getResourceRetriever(null, strURL);
+
+            if (urlRetriever == null) {
+                return null;
+            }
             Map<String, InputStream> mapInputSources = urlRetriever.retrieveDocument(
                 null, strURL);
             InputStream inputStream = null;

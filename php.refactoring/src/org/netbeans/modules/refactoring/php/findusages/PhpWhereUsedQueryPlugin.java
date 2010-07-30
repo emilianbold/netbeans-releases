@@ -45,9 +45,10 @@ package org.netbeans.modules.refactoring.php.findusages;
 
 import java.util.Collection;
 import java.util.Set;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Results;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -62,15 +63,17 @@ import org.openide.filesystems.FileObject;
  */
 public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
-    private WhereUsedQuery refactoring;
+    protected AbstractRefactoring refactoring;
     private WhereUsedSupport usages;
 
-    public PhpWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
+    public PhpWhereUsedQueryPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
         this.usages = refactoring.getRefactoringSource().lookup(WhereUsedSupport.class);
     }
 
+    @Override
     public Problem prepare(final RefactoringElementsBag elementsBag) {
+        this.usages.clearResults();
         if (isFindOverridingMethods()) {
             usages.overridingMethods();
         }
@@ -90,46 +93,66 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
             }
         }
         Results results = usages.getResults();
-        Collection<WhereUsedElement> resultElements = results.getResultElements();
-        for (WhereUsedElement whereUsedElement : resultElements) {
-            elementsBag.add(refactoring, whereUsedElement);
-        }
+        refactorResults(results, elementsBag);
         fireProgressListenerStop();
         return null;
     }
 
+    protected void refactorResults(Results results, final RefactoringElementsBag elementsBag) {
+        Collection<WhereUsedElement> resultElements = results.getResultElements();
+        for (WhereUsedElement whereUsedElement : resultElements) {
+            elementsBag.add(refactoring, whereUsedElement);
+        }
+    }
+
     private boolean isFindSubclasses() {
-        return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_SUBCLASSES);
+        return (refactoring instanceof WhereUsedQuery) ? ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQueryConstants.FIND_SUBCLASSES)
+                : false;
     }
 
     private boolean isFindUsages() {
-        return refactoring.getBooleanValue(refactoring.FIND_REFERENCES);
+        return (refactoring instanceof WhereUsedQuery) ? ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQuery.FIND_REFERENCES)
+                : true;
     }
 
     private boolean isFindDirectSubclassesOnly() {
-        return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES);
+        return (refactoring instanceof WhereUsedQuery) ? ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES)
+                : false;
     }
 
     private boolean isFindOverridingMethods() {
-        return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS);
+        return (refactoring instanceof WhereUsedQuery) ? ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS)
+                : false;
     }
 
-    private boolean isSearchInComments() {
-        return refactoring.getBooleanValue(refactoring.SEARCH_IN_COMMENTS);
+    protected boolean isSearchInComments() {
+        return (refactoring instanceof WhereUsedQuery) ? ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS)
+                : false;
     }
 
+    @Override
     public Problem preCheck() {
         return null;
     }
 
+    @Override
     public Problem checkParameters() {
         return null;
     }
 
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
 
+    @Override
     public void cancelRequest() {
+    }
+
+    /**
+     * @return the usages
+     */
+    public WhereUsedSupport getUsages() {
+        return usages;
     }
 }

@@ -145,6 +145,57 @@ public class ProvidedExtensions implements InterceptionListener {
     public void beforeDelete(FileObject fo) {}
 
     /**
+     * Called by <code>MasterFileSystem</code> after <code>FileObject</code>
+     * was created externally
+     * @param fo created file
+     * @since 2.27
+     */
+    public void createdExternally(FileObject fo) {}
+
+    /**
+     * Called by <code>MasterFileSystem</code> after <code>FileObject</code>
+     * was deleted externally
+     * @param fo deleted file
+     * @since 2.27
+     */
+    public void deletedExternally(FileObject fo) {}
+
+    /**
+     * Called by <code>MasterFileSystem</code> after <code>FileObject</code>
+     * was changed
+     * @param fo changed file
+     * @since 2.27 
+     */
+    public void fileChanged(FileObject fo) {}
+
+    /**
+     * Called by <code>MasterFileSystem</code> before <code>FileObject</code>
+     * is moved
+     * @param from FileObject to be moved
+     * @param to File target to move this file to
+     * @since 2.27
+     */
+    public void beforeMove(FileObject from, File to) {}
+
+    /**
+     * Called by <code>MasterFileSystem</code> after <code>FileObject</code>
+     * was successfully
+     * @param from FileObject to be moved
+     * @param to File target to move this file to
+     * @since 2.27
+     */
+    public void moveSuccess(FileObject from, File to) {}
+
+    /**
+     * Called by <code>MasterFileSystem</code> after a <code>FileObject</code>
+     * move failed
+     * @param from FileObject to be moved
+     * @param to File target to move this file to
+     * @since 2.27
+     */
+    public void moveFailure(FileObject from, File to) {}
+
+    /**
      * Called by <code>MasterFileSystem</code> when <code>FileObject</code> is queried for writability with the
      * canWrite() method.
      * 

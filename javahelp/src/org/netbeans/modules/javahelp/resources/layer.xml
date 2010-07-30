@@ -50,8 +50,7 @@ made subject to such option by the copyright holder.
           <file name="master-help.xml" url="master-help.xml">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>
           </file>
-          <attr name="HelpShortcuts\SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>
-          </folder>
+        </folder>
     </folder>
     <folder name="Actions">
         <folder name="Help">
