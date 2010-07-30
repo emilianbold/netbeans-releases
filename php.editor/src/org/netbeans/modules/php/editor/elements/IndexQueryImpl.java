@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -61,6 +60,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -80,6 +80,9 @@ import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.AliasedClass;
+import org.netbeans.modules.php.editor.api.elements.AliasedInterface;
+import org.netbeans.modules.php.editor.api.elements.AliasedType;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.openide.filesystems.FileObject;
@@ -132,6 +135,94 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
+    public Set<ClassElement> getClasses(final NameKind query, final Set<AliasedName> aliases) {
+        final Set<ClassElement> classes = new HashSet<ClassElement>();
+        for (ClassElement classElement : getClasses(query)) {
+            classes.add(classElement);
+            if (query.isEmpty()) {
+                for (AliasedName aliasedName : aliases) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    if (nextQuery.matchesName(classElement)) {
+                        classes.add(new AliasedClass(aliasedName, classElement));
+                    }
+                }
+            }
+        }
+        if (!query.isEmpty() && query.getQuery().getKind().isUnqualified()) {
+            for (AliasedName aliasedName : aliases) {
+                if (query.matchesName(PhpElementKind.CLASS, aliasedName.getAliasName())) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    for (ClassElement classElement : getClasses(nextQuery)) {
+                        classes.add(new AliasedClass(aliasedName, classElement));
+                    }
+                }
+            }
+        }
+        return classes;
+    }
+
+    @Override
+    public Set<MethodElement> getConstructors(NameKind typeQuery, Set<AliasedName> aliases) {
+        final Set<MethodElement> constructors = new HashSet<MethodElement>();
+        for (MethodElement meth : getConstructors(typeQuery)) {
+            constructors.add(meth);
+        }
+        if (typeQuery.getQuery().getKind().isUnqualified()) {
+            for (AliasedName aliasedName : aliases) {
+                if (typeQuery.matchesName(PhpElementKind.CLASS, aliasedName.getAliasName())) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    Set<ClassElement> classes = getClasses(nextQuery);
+                    for (ClassElement classElement : classes) {
+                        constructors.addAll(getConstructorsImpl(new AliasedClass(aliasedName, classElement), classElement, new LinkedHashSet<ClassElement>()));
+                    }
+                }
+            }
+        }
+        return constructors;
+    }
+
+    @Override
+    public Set<PhpElement> getTopLevelElements(NameKind query, Set<AliasedName> aliases) {
+        final Set<PhpElement> elemets = new HashSet<PhpElement>();
+        for (PhpElement phpElement : getTopLevelElements(query)) {
+            elemets.add(phpElement);
+            if (query.isEmpty()) {
+                for (AliasedName aliasedName : aliases) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    if (nextQuery.matchesName(phpElement)) {
+                        if (phpElement instanceof ClassElement) {
+                            elemets.add(new AliasedClass(aliasedName, (ClassElement)phpElement));
+                        } else if (phpElement instanceof InterfaceElement) {
+                            elemets.add(new AliasedInterface(aliasedName, (InterfaceElement)phpElement));
+                        }
+                        //TODO: the same for functions && constants
+                    }
+                }
+            }
+        }
+        if (!query.isEmpty() && query.getQuery().getKind().isUnqualified()) {
+            for (AliasedName aliasedName : aliases) {
+                if (query.matchesName(PhpElementKind.CLASS, aliasedName.getAliasName())) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    for (ClassElement classElement : getClasses(nextQuery)) {
+                        elemets.add(new AliasedClass(aliasedName, classElement));
+                    }
+                }
+                if (query.matchesName(PhpElementKind.IFACE, aliasedName.getAliasName())) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    for (InterfaceElement ifaceElement : getInterfaces(nextQuery)) {
+                        elemets.add(new AliasedInterface(aliasedName, ifaceElement));
+                    }
+                }
+                //TODO: the same for functions && constants
+
+            }
+        }
+        return elemets;
+    }
+
+
+    @Override
     public final Set<InterfaceElement> getInterfaces() {
         return getInterfaces(NameKind.empty());
     }
@@ -151,10 +242,64 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
+    public Set<InterfaceElement> getInterfaces(NameKind query, Set<AliasedName> aliases) {
+        final Set<InterfaceElement> ifaces = new HashSet<InterfaceElement>();
+        for (InterfaceElement ifaceElement : getInterfaces(query)) {
+            ifaces.add(ifaceElement);
+            if (query.isEmpty()) {
+                for (AliasedName aliasedName : aliases) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    if (nextQuery.matchesName(ifaceElement)) {
+                        ifaces.add(new AliasedInterface(aliasedName, ifaceElement));
+                    }
+                }
+            }
+        }
+        if (!query.isEmpty() && query.getQuery().getKind().isUnqualified()) {
+            for (AliasedName aliasedName : aliases) {
+                if (query.matchesName(PhpElementKind.IFACE, aliasedName.getAliasName())) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    for (InterfaceElement ifaceElement : getInterfaces(nextQuery)) {
+                        ifaces.add(new AliasedInterface(aliasedName, ifaceElement));
+                    }
+                }
+            }
+        }
+        return ifaces;
+    }
+
+    @Override
     public Set<TypeElement> getTypes(NameKind query) {
         final Set<TypeElement> types = new HashSet<TypeElement>();
         types.addAll(getClasses(query));
         types.addAll(getInterfaces(query));
+        return types;
+    }
+
+    @Override
+    public Set<TypeElement> getTypes(NameKind query, Set<AliasedName> aliases) {
+        final Set<TypeElement> types = new HashSet<TypeElement>();
+        for (TypeElement typeElement : getTypes(query)) {
+            types.add(typeElement);
+            if (query.isEmpty()) {
+                for (AliasedName aliasedName : aliases) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    if (nextQuery.matchesName(typeElement)) {
+                        types.add(new AliasedType(aliasedName, typeElement));
+                    }
+                }
+            }
+        }
+        if (!query.isEmpty() && query.getQuery().getKind().isUnqualified()) {
+            for (AliasedName aliasedName : aliases) {
+                if (query.matchesName(PhpElementKind.CLASS, aliasedName.getAliasName())) {
+                    final NameKind nextQuery = NameKind.exact(aliasedName.getRealName());
+                    for (TypeElement typeElement : getTypes(nextQuery)) {
+                        types.add(new AliasedType(aliasedName, typeElement));
+                    }
+                }
+            }
+        }
         return types;
     }
 
@@ -1231,6 +1376,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         }
     }
 
+    @Override
     public LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement) {
         final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
         final Exact query = NameKind.exact(typeElement.getFullyQualifiedName());

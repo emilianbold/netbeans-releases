@@ -84,11 +84,17 @@ public interface ElementQuery {
 
     Set<ClassElement> getClasses(NameKind query);
 
+    Set<ClassElement> getClasses(NameKind query, Set<AliasedName> aliases);
+
     Set<InterfaceElement> getInterfaces();
 
     Set<InterfaceElement> getInterfaces(NameKind query);
 
+    Set<InterfaceElement> getInterfaces(NameKind query, Set<AliasedName> aliases);
+
     Set<TypeElement> getTypes(NameKind query);
+
+    Set<TypeElement> getTypes(NameKind query, Set<AliasedName> aliases);
     
     Set<FunctionElement> getFunctions();
 
@@ -99,6 +105,8 @@ public interface ElementQuery {
     Set<ConstantElement> getConstants(NameKind query);
 
     Set<MethodElement> getConstructors(NameKind typeQuery);
+
+    Set<MethodElement> getConstructors(NameKind typeQuery, Set<AliasedName> aliases);
 
     Set<TypeMemberElement> getTypeMembers(NameKind.Exact typeQuery, NameKind memberQuery);
 
@@ -142,6 +150,9 @@ public interface ElementQuery {
     
     public interface Index extends ElementQuery {
         Set<PhpElement> getTopLevelElements(NameKind query);
+
+        Set<PhpElement> getTopLevelElements(NameKind query, Set<AliasedName> aliases);
+
         Set<VariableElement> getTopLevelVariables(NameKind query);
 
         Set<MethodElement> getDeclaredConstructors(ClassElement typeElement);

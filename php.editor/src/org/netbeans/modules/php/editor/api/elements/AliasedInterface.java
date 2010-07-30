@@ -40,49 +40,16 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.elements;
+package org.netbeans.modules.php.editor.api.elements;
 
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
-import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.AliasedElement;
-
+import org.netbeans.modules.php.editor.api.AliasedName;
 
 /**
+ *
  * @author Radek Matous
  */
-public abstract class FullyQualifiedElementImpl extends PhpElementImpl implements FullyQualifiedElement {
-    FullyQualifiedElementImpl(final String name, final String in, final String fileUrl,
-            final int offset, final ElementQuery elementQuery) {
-        super(name, in, fileUrl, offset, elementQuery);
-    }
-
-    @Override
-    public final QualifiedName getNamespaceName() {
-        return getFullyQualifiedName().toNamespaceName();
-    }
-
-    @Override
-    public final QualifiedName getFullyQualifiedName() {
-        boolean isDefaultNamespace = isDefaultNamespaceName(getIn());
-        return (isDefaultNamespace) ? QualifiedName.createForDefaultNamespaceName().append(getName()).toFullyQualified()
-                : QualifiedName.createFullyQualified(getName(), getIn());
-    }
-
-    static QualifiedName composeQualifiedName(String namespaceName, String className) {
-        boolean isDefaultNamespace = isDefaultNamespaceName(namespaceName);
-        return (isDefaultNamespace) ? QualifiedName.createForDefaultNamespaceName().append(className)
-                : QualifiedName.createFullyQualified(className, namespaceName);
-    }
-
-    static boolean isDefaultNamespaceName(String namespaceName) {
-        boolean isDefaultNamespace = namespaceName == null || NamespaceElement.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
-        return isDefaultNamespace;
-    }
-
-    @Override
-    public final boolean isAliased() {
-        return (this instanceof AliasedElement);
+public final class AliasedInterface extends AliasedType implements InterfaceElement {
+    public AliasedInterface(final AliasedName aliasedName, final InterfaceElement clz) {
+        super(aliasedName, clz);
     }
 }

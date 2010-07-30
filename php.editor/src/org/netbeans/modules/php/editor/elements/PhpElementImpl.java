@@ -312,6 +312,4 @@ public abstract class PhpElementImpl implements PhpElement {
         }
         return sb.toString();
     }
-
-
 }
