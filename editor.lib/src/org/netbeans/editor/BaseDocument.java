@@ -2161,6 +2161,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         atomicEdits.setSignificant(false);
         return atomicEdits;
     }
+    
+    void clearAtomicEdits() {
+        atomicEdits = null;
+    }
 
     private void ensureAtomicEditsInited() {
         if (atomicEdits == null)
@@ -2511,6 +2515,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         @Override
         public CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc) {
             return doc.markAtomicEditsNonSignificant();
+        }
+
+        @Override
+        public void BaseDocument_clearAtomicEdits(BaseDocument doc) {
+            doc.clearAtomicEdits();
         }
 
         @Override

@@ -85,6 +85,7 @@ public abstract class EditorPackageAccessor {
     }
 
     public abstract CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc);
+    public abstract void BaseDocument_clearAtomicEdits(BaseDocument doc);
     public abstract MarkVector BaseDocument_getMarksStorage(BaseDocument doc);
     public abstract Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark);
     public abstract void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException;
