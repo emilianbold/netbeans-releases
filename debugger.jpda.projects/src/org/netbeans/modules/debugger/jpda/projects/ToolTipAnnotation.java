@@ -88,6 +88,7 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.editor.BaseDocument;
@@ -429,7 +430,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                         }
                         if (kind == Tree.Kind.CLASS && className[0].length() == 0) {
                             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-                            className[0] = typeElement.getQualifiedName().toString();
+                            className[0] = ElementUtilities.getBinaryName(typeElement);
                         }
                         path = path.getParentPath();
                     }
