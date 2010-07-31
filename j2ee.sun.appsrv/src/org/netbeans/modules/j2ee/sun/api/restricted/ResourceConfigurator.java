@@ -102,38 +102,38 @@ import org.netbeans.modules.glassfish.eecommon.api.Utils;
  * @author Nitya Doraisamy
  */
 public class ResourceConfigurator implements ResourceConfiguratorInterface {
-    
+
     public static final String __SunResourceExt = "sun-resource"; // NOI18N
-    
+
     private final static char BLANK = ' ';
     private final static char DOT   = '.';
     private final static char[]	ILLEGAL_FILENAME_CHARS	= {'/', '\\', ':', '*', '?', '"', '<', '>', '|', ',', '=', ';' };
     // private final static char[]	ILLEGAL_RESOURCE_NAME_CHARS	= {':', '*', '?', '"', '<', '>', '|', ',' };
     private final static char REPLACEMENT_CHAR = '_';
     private final static char DASH = '-';
-    
+
     private static final String DATAFILE = "org/netbeans/modules/j2ee/sun/sunresources/beans/CPWizard.xml";  // NOI18N
 
     private DeploymentManager currentDM = null;
-    
+
     public static final String JDBC_RESOURCE = "jdbc"; // NOI18N
     public static final String JMS_RESOURCE = "jms"; // NOI18N
     public static final String JMS_PREFIX = "jms/"; // NOI18N
-        
+
     ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
-    
+
     private static final Logger LOG = Logger.getLogger(ResourceConfigurator.class.getName());
-    
+
     /**
      * Creates a new instance of ResourceConfigurator
      */
     public ResourceConfigurator() {
     }
-    
+
     public void setDeploymentManager(DeploymentManager dm) {
         this.currentDM = dm;
     }
-    
+
     /** Returns whether or not the specific JMS resource alread exists.
      *
      * @param jndiName Jndi name identifying the JMS resource.
@@ -151,7 +151,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     @Override
     public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir, String baseName) {
         SunMessageDestination msgDest = null;
-        if(! jndiName.startsWith(JMS_PREFIX)){ 
+        if(! jndiName.startsWith(JMS_PREFIX)){
             jndiName = JMS_PREFIX + jndiName;
         }
         Resources resources = ResourceUtils.getServerResourcesGraph(dir);
@@ -171,20 +171,20 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         aoresource.setDescription(""); // NOI18N
         aoresource.addPropertyElement(prop);
         resources.addAdminObjectResource(aoresource);
-        
+
         ConnectorResource connresource = resources.newConnectorResource();
         ConnectorConnectionPool connpoolresource = resources.newConnectorConnectionPool();
-        
+
         String connectionFactoryJndiName= jndiName + "Factory"; // NOI18N
         String connectionFactoryPoolName = jndiName + "FactoryPool"; // NOI18N
         connresource.setJndiName(connectionFactoryJndiName);
         connresource.setDescription("");
         connresource.setEnabled("true");
         connresource.setPoolName(connectionFactoryPoolName);
-        
+
         connpoolresource.setName(connectionFactoryPoolName);
         connpoolresource.setResourceAdapterName(WizardConstants.__JmsResAdapter);
-        
+
         if(type.equals(MessageDestination.Type.QUEUE)) {
             connpoolresource.setConnectionDefinitionName(WizardConstants.__QUEUE_CNTN_FACTORY);
         } else {
@@ -211,7 +211,8 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     @Override
     public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir, String baseName) {
         FileObject location = FileUtil.toFileObject(dir);
-        Resources resources = ResourceUtils.getServerResourcesGraph(location);
+        Resources resources = ResourceUtils.getServerResourcesGraph(location,
+                    baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
         AdminObjectResource aoresource = resources.newAdminObjectResource();
         aoresource.setJndiName(jndiName);
         aoresource.setResType(msgDstnType);
@@ -223,19 +224,19 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         prop.setValue(ejbName);
         aoresource.addPropertyElement(prop);
         resources.addAdminObjectResource(aoresource);
-        
+
         ConnectorResource connresource = resources.newConnectorResource();
         ConnectorConnectionPool connpoolresource = resources.newConnectorConnectionPool();
-        
+
         String connectionFactoryJndiName= "jms/" + msgDstnName + "Factory"; // NOI18N
         connresource.setJndiName(connectionFactoryJndiName);
         connresource.setDescription("");
         connresource.setEnabled("true");
         connresource.setPoolName(connectionFactoryJndiName);
-        
+
         connpoolresource.setName(connectionFactoryJndiName);
         connpoolresource.setResourceAdapterName(WizardConstants.__JmsResAdapter);
-        
+
         if(msgDstnType.equals(WizardConstants.__QUEUE)) {
             connpoolresource.setConnectionDefinitionName(WizardConstants.__QUEUE_CNTN_FACTORY);
         } else {
@@ -247,10 +248,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         resources.addConnectorResource(connresource);
         resources.addConnectorConnectionPool(connpoolresource);
-        
+
         ResourceUtils.createFile(location, resources, baseName);
     }
-    
+
     @Override
     public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir) {
         /*try {
@@ -260,13 +261,13 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 if(vendorName != null) {
                     name = vendorName;
                 }
-                
+
                 if(vendorName.equals("derby_embedded")){ //NOI18N
                     NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
                     DialogDisplayer.getDefault().notify(d);
                     return;
                 }
-                
+
                 // Is connection pool already defined
                 String poolName = generatePoolName(name, dir, databaseInfo);
                 if(poolName == null) {
@@ -287,38 +288,38 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         }*/
     }
-    
+
     @Override
     public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir) {
         return null;
     }
-    
+
     private boolean isLegalFilename(String filename) {
         for(int i = 0; i < ILLEGAL_FILENAME_CHARS.length; i++) {
             if(filename.indexOf(ILLEGAL_FILENAME_CHARS[i]) >= 0) {
                 return false;
             }
         }
-        
+
         return true;
     }
-    
+
     private boolean isFriendlyFilename(String filename) {
         if(filename.indexOf(BLANK) >= 0 || filename.indexOf(DOT) >= 0) {
             return false;
         }
-        
+
         return isLegalFilename(filename);
     }
-    
+
     private String makeLegalFilename(String filename) {
         for(int i = 0; i < ILLEGAL_FILENAME_CHARS.length; i++) {
             filename = filename.replace(ILLEGAL_FILENAME_CHARS[i], REPLACEMENT_CHAR);
         }
-        
+
         return filename;
     }
-    
+
     private String makeShorterLegalFilename(String filename) {
         //To clean up the default generation a little
         if(filename.indexOf("://") != -1) { // NOI18N
@@ -330,58 +331,58 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                     filename.substring(filename.indexOf("//")+2, filename.length()); // NOI18N
         }
         filename = makeLegalFilename(filename);
-        
+
         return filename;
     }
-    
+
     private void ensureFolderExists(File folder) throws IOException {
         if(!folder.exists()) {
             FileUtil.createFolder(folder);
         }
     }
-    
+
     private String getFileName(String beanName, String resourceType) {
-        
+
         assert (beanName != null);
         assert (beanName.length() != 0);
-        
+
         assert (resourceType != null);
         assert (resourceType.length() != 0);
-        
+
         String fileName = resourceType;
-        
+
         if(!isFriendlyFilename(beanName)) {
             beanName = makeLegalFilename(beanName);
         }
-        
+
         if(!isFriendlyFilename(fileName)) {
             fileName = makeLegalFilename(fileName);
         }
-        
+
         fileName = fileName + DASH + beanName + DOT + __SunResourceExt;
         return fileName;
     }
-    
+
     private JdbcConnectionPool setDerbyProps(String url, JdbcConnectionPool jdbcConnectionPool){
         UrlData urlData = new UrlData(url);
         String hostName = urlData.getHostName();
         String portNumber = urlData.getPort();
         String databaseName = urlData.getDatabaseName();
-        
+
         url = stripExtraDBInfo(url);
         String workingUrl = url.substring(url.indexOf("//") + 2, url.length()); //NOI18N
         PropertyElement servName = jdbcConnectionPool.newPropertyElement();
         servName.setName(WizardConstants.__ServerName);
         servName.setValue(hostName);
-        
+
         PropertyElement portno = jdbcConnectionPool.newPropertyElement();
         portno.setName(WizardConstants.__DerbyPortNumber);
         portno.setValue(portNumber);
-        
+
         PropertyElement dbName = jdbcConnectionPool.newPropertyElement();
         dbName.setName(WizardConstants.__DerbyDatabaseName);
         dbName.setValue(databaseName);
-        
+
         String connectionAttr = getDerbyConnAttrs(workingUrl);
         if(! connectionAttr.equals("")) { //NOI18N
             PropertyElement connAttr = jdbcConnectionPool.newPropertyElement();
@@ -392,11 +393,11 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         jdbcConnectionPool.addPropertyElement(servName);
         jdbcConnectionPool.addPropertyElement(portno);
         jdbcConnectionPool.addPropertyElement(dbName);
-                    
+
         return jdbcConnectionPool;
     }
-     
-    
+
+
     /**
      * Parses incoming url to create additional properties required by server
      * example of url : jdbc:sun:db2://serverName:portNumber;databaseName=databaseName
@@ -407,7 +408,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         String hostName = urlData.getHostName();
         String portNumber = urlData.getPort();
         String databaseName = urlData.getDatabaseName();
-        
+
         url = stripExtraDBInfo(url);
         String workingUrl = url;
         if(vendorName.equals("sybase2")){ //NOI18N
@@ -441,7 +442,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             servName.setValue(hostName);
         }
         jdbcConnectionPool.addPropertyElement(servName);
-        if (Utils.notEmpty(portNumber)) { 
+        if (Utils.notEmpty(portNumber)) {
             PropertyElement portno = jdbcConnectionPool.newPropertyElement();
             portno.setName(WizardConstants.__PortNumber);
             portno.setValue(portNumber);
@@ -457,20 +458,20 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             if(databaseName != null) {
                 dbName.setValue(databaseName);
                 jdbcConnectionPool.addPropertyElement(dbName);
-            }    
+            }
         }
-        
+
         return jdbcConnectionPool;
     }
-    
+
     private String getDatasourceClassName(String vendorName, boolean isXA, Wizard wizard) {
         if(vendorName == null) {
             return null;
         }
-        
+
         try {
             FieldGroup generalGroup = FieldGroupHelper.getFieldGroup(wizard, WizardConstants.__General);
-            
+
             Field dsField = null;
             if (isXA) {
                 dsField = FieldHelper.getField(generalGroup, WizardConstants.__XADatasourceClassname);
@@ -481,37 +482,37 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         } catch(Exception ex) {
             // This should really a Schema2BeansException, but for classloader and dependency
             // purposes we're catching Exception instead.
-            
+
             // XXX why do we suppress this?
             // Unable to create Wizard object -- supppress.
             LOG.log(Level.SEVERE, "getDatasourceClassName failed", ex);
         }
-        
+
         return null;
     }
-    
-    
+
+
     public static String getDatabaseVendorName(String url, Wizard wizard) {
         String vendorName = "";
         try {
             if(wizard == null) {
                wizard = getWizardInfo();
-            }   
+            }
             FieldGroup propGroup = FieldGroupHelper.getFieldGroup(wizard, WizardConstants.__PropertiesURL);
             Field urlField = FieldHelper.getField(propGroup, "vendorUrls"); // NOI18N
             vendorName = FieldHelper.getOptionNameFromValue(urlField, url);
         } catch(Exception ex) {
             // This should really a Schema2BeansException, but for classloader and dependency
             // purposes we're catching Exception instead.
-            
+
             // XXX why do we suppress this?
             // Unable to create Wizard object -- supppress.
             LOG.log(Level.SEVERE, "getDatabaseVendorName failed", ex);
         }
-        
+
         return vendorName;
     }
-    
+
     private String convertToValidName(String database) {
         database = stripExtraDBInfo(database);
         String vendorName = getDatabaseVendorName(database, null);
@@ -526,7 +527,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return vendorName;
     }
-    
+
     private String isSameDatabaseConnection(JdbcConnectionPool connPool, String databaseUrl, String username, String password) {
         String poolJndiName = null;
         UrlData urlData = new UrlData(databaseUrl);
@@ -555,7 +556,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                     dbPwd = pl[i].getValue();
                 }
             }
-            
+
             if (Utils.strEquivalent(hostName, hostProp) &&
                     Utils.strEquivalent(portNumber, portProp) &&
                     Utils.strEquivalent(databaseName, dbProp)){
@@ -612,14 +613,14 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return poolJndiName;
     }
-    
+
     private String stripExtraDBInfo(String dbConnectionString) {
         if(dbConnectionString.indexOf("[") != -1) { //NOI18N
             dbConnectionString = dbConnectionString.substring(0, dbConnectionString.indexOf("[")).trim(); // NOI18N
         }
         return dbConnectionString;
     }
-    
+
     public static void showInformation(final String msg) {
         // Asynchronous message posting.  Placed on AWT thread automatically by DialogDescriptor.
         RequestProcessor.getDefault().post(new Runnable() {
@@ -630,9 +631,9 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             }
         });
     }
-    
+
     private static Wizard getWizardInfo(){
-        Wizard wizard = null;        
+        Wizard wizard = null;
         try {
             InputStream in = Wizard.class.getClassLoader().getResourceAsStream(DATAFILE);
             wizard = Wizard.createGraph(in);
@@ -644,55 +645,55 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return wizard;
     }
-    
+
     public String getDerbyServerName(String url){
         String hostName = ""; //NOI18N
         int index = url.indexOf(":"); //NOI18N
         if(index != -1) {
-            hostName = url.substring(0, index); 
+            hostName = url.substring(0, index);
         }else{
             index = url.indexOf("/"); //NOI18N
             if(index != -1){
-                hostName = url.substring(0, index); 
-            }    
-        }    
+                hostName = url.substring(0, index);
+            }
+        }
         return hostName;
     }
-    
+
     public String getDerbyPortNo(String url){
         String portNumber = "";  //NOI18N
         int index = url.indexOf(":"); //NOI18N
         if(index != -1) {
             portNumber = url.substring(index + 1, url.indexOf("/")); //NOI18N
-        }    
+        }
         return portNumber;
     }
-    
+
     public String getDerbyDatabaseName(String url){
         String databaseName = ""; //NOI18N
         int index = url.indexOf("/"); //NOI18N
         if(index != -1){
             int colonIndex = url.indexOf(";"); //NOI18N
             if(colonIndex != -1) {
-                databaseName = url.substring(index + 1, colonIndex);        
+                databaseName = url.substring(index + 1, colonIndex);
             } else {
-                databaseName = url.substring(index + 1, url.length());        
-            }    
+                databaseName = url.substring(index + 1, url.length());
+            }
         }
         return databaseName;
     }
-    
+
     private String getDerbyConnAttrs(String url){
         String connAttr = ""; //NOI18N
         int colonIndex = url.indexOf(";"); //NOI18N
         if(colonIndex != -1) {
-            connAttr = url.substring(colonIndex,  url.length());         
-        }    
+            connAttr = url.substring(colonIndex,  url.length());
+        }
         return connAttr;
     }
-            
+
     /**
-     * Get INFORMIXSERVER additional property 
+     * Get INFORMIXSERVER additional property
      * example of url : jdbc:informix-sqli://#HOST$:#PORT$/#DB$:INFORMIXSERVER=#SERVER_NAME$
      */
     private String getInformixServerName(UrlData urlData){
@@ -707,9 +708,9 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return informixServer;
     }
     /***************************************** DS Management API *****************************************************************************/
-    
+
     /**
-     * Returns Set of SunDataSource's(JDBC Resources) that are deployed on the server. 
+     * Returns Set of SunDataSource's(JDBC Resources) that are deployed on the server.
      * Called from SunDataSourceManager.
      * SunDataSource is a combination of JDBC & JDBC Connection Pool Resources.
      * @return Set containing SunDataSource
@@ -736,7 +737,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         File resourceFile = getServerResourceFiles(resourceDir);
         if (resourceFile == null) {
             return serverresources;
-        }    
+        }
 
         HashSet<SunDatasource> dsources = new HashSet<SunDatasource>();
         HashMap connPools = getConnectionPools(resourceFile);
@@ -763,7 +764,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                         String propValue = "";
                         if(val != null) {
                             propValue = val.toString();
-                        }    
+                        }
                         String propName = props[j].getName();
                         if(propName.equalsIgnoreCase(WizardConstants.__DatabaseName)){
                             if(dsClass.indexOf("pointbase") != -1) { //NOI18N
@@ -772,7 +773,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                                 dbName = propValue;
                             } else {
                                 dbName = propValue;
-                            }    
+                            }
                         }else if(propName.equalsIgnoreCase(WizardConstants.__User)) {
                             username = propValue;
                         }else if(propName.equalsIgnoreCase(WizardConstants.__Password)){
@@ -791,7 +792,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                             driverClass = propValue;
                         }
                     }
-                    
+
                     if(url == null || url.equals("")){ //NOI18N
                         if(dsClass.indexOf("derby") != -1){ //NOI18N
                             url = "jdbc:derby://";
@@ -799,21 +800,21 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                                 url = url + serverName;
                                 if(portNo != null  && portNo.length() > 0) {
                                     url = url + ":" + portNo; //NOI18N
-                                }    
+                                }
                                 url = url + "/" + dbName ; //NOI18N
                             }
-                        } else { 
+                        } else {
                             String urlPrefix = DatabaseUtils.getUrlPrefix(dsClass, resType);
                             String vName = getDatabaseVendorName(urlPrefix, null);
                             if(serverName != null){
                                 if(vName.equals("sybase2")){ //NOI18N
-                                    url = urlPrefix + serverName; 
+                                    url = urlPrefix + serverName;
                                 } else {
                                     url = urlPrefix + "//" + serverName; //NOI18N
                                 }
                                 if(portNo != null  && portNo.length() > 0) {
                                     url = url + ":" + portNo; //NOI18N
-                                }    
+                                }
                             }
                             if(vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
                                 url = url + ";SID=" + sid; //NOI18N
@@ -821,10 +822,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                                 url = url + ";databaseName=" + dbName; //NOI18N
                             }else if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
                                 url = url + "/" + dbName ; //NOI18N
-                            }    
-                        }    
+                            }
+                        }
                     }
-                    
+
                     if (!(url == null || url.equals(""))) { //NOI18N
                         if (driverClass == null || driverClass.equals("")) { //NOI18N
                             DatabaseConnection databaseConnection = ResourceUtils.getDatabaseConnection(url);
@@ -866,7 +867,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return dsources;
     }
-    
+
     /**
      * Create SunDataSource object's defined. Called from impl of
      * ConfigurationSupport API (ConfigurationSupportImpl).
@@ -913,15 +914,16 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         }
         return ds;
-    }    
+    }
 
     private void createCPPoolResource(String name, String databaseUrl, String username, String password, String driver, File resourceDir, String baseName) throws IOException {
         FileObject location = FileUtil.toFileObject(resourceDir);
-        Resources resources = ResourceUtils.getServerResourcesGraph(location);
+        Resources resources = ResourceUtils.getServerResourcesGraph(location,
+                    baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
         JdbcConnectionPool jdbcConnectionPool = resources.newJdbcConnectionPool();
         jdbcConnectionPool.setName(name);
         jdbcConnectionPool.setResType(WizardConstants.__Type_Datasource);
-                      
+
         // XXX Refactor database abstractions into own object.  For example,
         // due to lack of member data, we're parsing CPWizard.xml twice here,
         // once in getDatabaseVendorName() and again in getDatasourceClassName()
@@ -931,19 +933,19 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         if(!vendorName.equals("")) { // NOI18N
             datasourceClassName = getDatasourceClassName(vendorName, false, wizard);
         }
-        
+
         if(datasourceClassName.equals("")) { // NOI18N
             datasourceClassName = DatabaseUtils.getDSClassName(databaseUrl);
             if(datasourceClassName == null || datasourceClassName.equals("")) { //NOI18N
                 //String mess = MessageFormat.format(bundle.getString("LBL_NoDSClassName"), new Object [] { name }); // NOI18N
                 //showInformation(mess);
                 datasourceClassName = driver;
-            } 
+            }
         }
         if(datasourceClassName != null) {
             jdbcConnectionPool.setDatasourceClassname(datasourceClassName);
         }
-        
+
         PropertyElement user = jdbcConnectionPool.newPropertyElement();
         user.setName(WizardConstants.__User); // NOI18N
         user.setValue(username);
@@ -970,7 +972,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 }
             }
         }
-        
+
         PropertyElement url = jdbcConnectionPool.newPropertyElement();
         url.setName(WizardConstants.__Url); // NOI18N
         url.setValue(databaseUrl);
@@ -980,7 +982,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         driverClass.setValue(driver);
         jdbcConnectionPool.addPropertyElement(driverClass);
         resources.addJdbcConnectionPool(jdbcConnectionPool);
-        
+
         ResourceUtils.createFile(location, resources, baseName);
         try{
             Thread.sleep(1000);
@@ -988,17 +990,18 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             LOG.log(Level.SEVERE, "createCPPoolResource failed", ex);
         }
     }
-    
+
     private void createJDBCResource(String jndiName, String poolName, File resourceDir, String baseName) throws IOException {
         FileObject location = FileUtil.toFileObject(resourceDir);
-        Resources resources = ResourceUtils.getServerResourcesGraph(location);
+        Resources resources = ResourceUtils.getServerResourcesGraph(location,
+                    baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
         JdbcResource jdbcResource = resources.newJdbcResource();
         jdbcResource.setPoolName(poolName);
         jdbcResource.setJndiName(jndiName);
         resources.addJdbcResource(jdbcResource);
         ResourceUtils.createFile(location, resources, baseName);
     }
-    
+
     private static File getServerResourceFiles(File resourceDir) {
         File resourceFile = null;
         if(resourceDir != null){
@@ -1006,7 +1009,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return resourceFile;
     }
-    
+
     private static HashMap getConnectionPools(File resourceFile) {
         HashMap<String, JdbcConnectionPool> connPools = new HashMap<String, JdbcConnectionPool>();
         Resources resources = getResourcesGraph(resourceFile);
@@ -1017,7 +1020,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return connPools;
     }
-    
+
     private static HashMap getJdbcResources(File resourceFile) {
         HashMap<String, JdbcResource> jdbcResources = new HashMap<String, JdbcResource>();
         Resources resources = getResourcesGraph(resourceFile);
@@ -1028,7 +1031,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return jdbcResources;
     }
-    
+
     private HashMap getAdminObjectResources(File resourceFile) {
         HashMap<String, AdminObjectResource> aoResources = new HashMap<String, AdminObjectResource>();
         Resources resources = getResourcesGraph(resourceFile);
@@ -1039,9 +1042,9 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return aoResources;
     }
-    
+
     private static Resources getResourcesGraph(File resourceFile){
-        Resources resourceGraph = DDProvider.getDefault().getResourcesGraph();
+        Resources resourceGraph = DDProvider.getDefault().getResourcesGraph(Resources.VERSION_1_3);
         try {
             if(! resourceFile.isDirectory()){
                 FileInputStream in = new FileInputStream(resourceFile);
@@ -1054,7 +1057,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return resourceGraph;
     }
-    
+
     private boolean isDataSourcePresent(String jndiName, File dir){
         boolean exists = false;
         HashMap serverResources = getDataSourceMap(getResources(dir));
@@ -1063,7 +1066,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return exists;
     }
-    
+
     private HashMap getDataSourceMap(HashSet resources){
         HashMap<String, SunDatasource> dSources = new HashMap<String, SunDatasource>();
         for (Iterator it = resources.iterator(); it.hasNext();) {
@@ -1072,18 +1075,18 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return dSources;
     }
-    
+
     /**
-     * 
+     *
      * @param vendorName Database vendor name
      * @param url Database url
      * @param username Username for Databse
      * @param password Password for Databse
      * @param driver Driver Class Name of Database
      * @param dir File object of the setup folder where resources are placed
-     * @return Returns null if Connection Pool already exists for this database else returns 
+     * @return Returns null if Connection Pool already exists for this database else returns
      * unique Connection PoolName.
-     *    
+     *
      */
     private String createCheckForConnectionPool(String vendorName, String url, String username, String password, String driver, File dir, String baseName){
         boolean createResource = true;
@@ -1123,7 +1126,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return poolName;
     }
-    
+
     private String createPoolName(String url, String vendorName, String username){
         UrlData urlData = new UrlData(url);
         StringBuffer poolName = new StringBuffer(vendorName);
@@ -1134,8 +1137,8 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         if (username != null) {
             poolName.append("_" + username); //NOI18N
         }
-        poolName.append(WizardConstants.__ConnPoolSuffix); 
-        return poolName.toString(); 
+        poolName.append(WizardConstants.__ConnPoolSuffix);
+        return poolName.toString();
     }
 
     private static String getDatabaseName(UrlData urlData) {
@@ -1146,7 +1149,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
 
         return databaseName;
     }
-    
+
     /**
      * Implementation of Message Destination API in ConfigurationSupport
      * @return returns Set of SunMessageDestination's(JMS Resources) present in this J2EE project
@@ -1158,7 +1161,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         File resourceFile = getServerResourceFiles(resourceDir);
         if (resourceFile == null) {
             return serverresources;
-        }    
+        }
 
         HashSet<SunMessageDestination> destinations = new HashSet<SunMessageDestination>();
         HashMap jmsResources = getAdminObjectResources(resourceFile);
@@ -1174,15 +1177,15 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             }
             sunMessage.setResourceDir(resourceDir);
             destinations.add(sunMessage);
-        }   
+        }
         return destinations;
     }
-    
+
     @Override
     public HashSet getServerDestinations() {
         return ResourceUtils.getServerDestinations(this.currentDM);
     }
-        
+
     private boolean requiredResourceExists(String jndiName, File dir, String resType) {
         boolean resourceExists = false;
         File resourceFile = getServerResourceFiles(dir);
@@ -1202,6 +1205,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             }
         }
         return resourceExists;
-    }    
+    }
 }
 

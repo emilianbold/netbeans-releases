@@ -101,6 +101,7 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JMSBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
+import org.xml.sax.SAXException;
 
 /*
  *
@@ -108,7 +109,7 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
  */
 
 public class ResourceUtils implements WizardConstants{
-    
+
     static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
     static final String[] sysDatasources = {"jdbc/__TimerPool", "jdbc/__CallFlowPool"}; //NOI18N
     static final String[] sysConnpools = {"__CallFlowPool", "__TimerPool"}; //NOI18N
@@ -122,15 +123,15 @@ public class ResourceUtils implements WizardConstants{
     /** Creates a new instance of ResourceUtils */
     public ResourceUtils() {
     }
-    
+
     public static void saveNodeToXml(FileObject resFile, Resources res){
-        try {             
+        try {
             res.write(FileUtil.toFile(resFile));
         }catch(Exception ex){
             LOG.log(Level.SEVERE, "saveNodeToXml failed", ex);
         }
-    } 
-    
+    }
+
     public static void register(Resources resource, SunDeploymentManagerInterface sunDm, boolean update, String resType) throws Exception {
         if(sunDm.isRunning()){
             ServerInterface mejb = sunDm.getManagement();
@@ -156,7 +157,7 @@ public class ResourceUtils implements WizardConstants{
             throw new Exception(bundle.getString("Err_RegResServerStopped")); //NOI18N
         }
     }
-    
+
     public static void register(JdbcConnectionPool resource, ServerInterface mejb, boolean update) throws Exception{
         AttributeList attrList = ResourceUtils.getResourceAttributes(resource, mejb);
         PropertyElement[] props = resource.getPropertyElement();
@@ -167,7 +168,7 @@ public class ResourceUtils implements WizardConstants{
             createResource(__CreateCP, params, mejb);
         }
     }
-    
+
     public static void register(JdbcResource resource, ServerInterface mejb, boolean update) throws Exception{
         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
         PropertyElement[] props = resource.getPropertyElement();
@@ -178,7 +179,7 @@ public class ResourceUtils implements WizardConstants{
             createResource(__CreateDS, params, mejb);
         }
     }
-       
+
      public static void register(PersistenceManagerFactoryResource resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          PropertyElement[] props = resource.getPropertyElement();
@@ -189,7 +190,7 @@ public class ResourceUtils implements WizardConstants{
              createResource(__CreatePMF, params, mejb);
          }
      }
-     
+
      public static void register(AdminObjectResource resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          PropertyElement[] props = resource.getPropertyElement();
@@ -200,7 +201,7 @@ public class ResourceUtils implements WizardConstants{
              createResource(__CreateAdmObj, params, mejb);
          }
      }
-    
+
      public static void register(ConnectorResource resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          Properties propsList = new Properties();
@@ -210,7 +211,7 @@ public class ResourceUtils implements WizardConstants{
              createResource(__CreateConnector, params, mejb);
          }
      }
-     
+
      public static void register(ConnectorConnectionPool resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          PropertyElement[] props = resource.getPropertyElement();
@@ -221,7 +222,7 @@ public class ResourceUtils implements WizardConstants{
              createResource(__CreateConnPool, params, mejb);
          }
      }
-     
+
      public static void register(MailResource resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          PropertyElement[] props = resource.getPropertyElement();
@@ -232,7 +233,7 @@ public class ResourceUtils implements WizardConstants{
              createResource(__CreateMail, params, mejb);
          }
      }
-     
+
      public static void register(JmsResource resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          PropertyElement[] props = resource.getPropertyElement();
@@ -244,8 +245,8 @@ public class ResourceUtils implements WizardConstants{
              createResource(operName, params, mejb);
          }
      }
-    
-     private static boolean isResourceUpdated(String resourceName, ServerInterface mejb, AttributeList attrList, Properties props, String operName ){  
+
+     private static boolean isResourceUpdated(String resourceName, ServerInterface mejb, AttributeList attrList, Properties props, String operName ){
         boolean isResUpdated = false;
         try{
             ObjectName objName = new ObjectName(MAP_RESOURCES);
@@ -274,8 +275,8 @@ public class ResourceUtils implements WizardConstants{
             LOG.log(Level.SEVERE, errorMsg, ex);
         }
         return isResUpdated;
-    }    
-    
+    }
+
     private static ObjectName getResourceDeployed(ObjectName[] resourceObjects, String resourceName, boolean useJndi){
         for(int i=0; i<resourceObjects.length; i++){
             ObjectName resObj = resourceObjects[i];
@@ -284,19 +285,19 @@ public class ResourceUtils implements WizardConstants{
                 jndiName = resObj.getKeyProperty(__JndiName);
             else
                 jndiName = resObj.getKeyProperty(__Name);
-            
+
             if(jndiName.equals(resourceName)){
                 return resObj;
             }
         }
         return null;
     }
-    
+
     public static void updateResourceAttributes(ObjectName objName, AttributeList attrList, ServerInterface mejb) throws Exception {
          try{
              Map attributeInfos = getResourceAttributeNames(objName, mejb);
              String[] attrNames = (String[]) attributeInfos.keySet().toArray(new String[attributeInfos.size()]);
-             
+
              //Attributes from server
              AttributeList existAttrList = mejb.getAttributes(objName, attrNames);
              if (existAttrList != null) {
@@ -331,7 +332,7 @@ public class ResourceUtils implements WizardConstants{
              String[] signature = new String[]{"javax.management.Attribute"};  //NOI18N
              Object[] params = null;
              //Get Extra Properties From Server
-             AttributeList attrList = (AttributeList)mejb.invoke(objName, __GetProperties, null, null);             
+             AttributeList attrList = (AttributeList)mejb.invoke(objName, __GetProperties, null, null);
              for(int i=0; i<attrList.size(); i++){
                  Attribute oldAttr = (Attribute)attrList.get(i);
                  String oldAttrName = oldAttr.getName();
@@ -363,7 +364,7 @@ public class ResourceUtils implements WizardConstants{
              throw new Exception(ex.getLocalizedMessage(), ex);
          }
      }
-     
+
      public static Map getResourceAttributeNames(ObjectName objName, ServerInterface mejb) throws Exception {
          try{
              Map attributeInfos = new java.util.HashMap();
@@ -381,7 +382,7 @@ public class ResourceUtils implements WizardConstants{
              throw new Exception(ex.getLocalizedMessage(), ex);
          }
      }
-     
+
      private static void addNewExtraProperties(ObjectName objName, Properties props, AttributeList attrList, ServerInterface mejb) throws Exception {
          try{
              String[] signature = new String[]{"javax.management.Attribute"};  //NOI18N
@@ -401,7 +402,7 @@ public class ResourceUtils implements WizardConstants{
              throw new Exception(ex.getLocalizedMessage(), ex);
          }
      }
-         
+
      public static void createResource(String operName, Object[] params, ServerInterface mejb) throws Exception{
         try{
             ObjectName objName = new ObjectName(MAP_RESOURCES);
@@ -411,7 +412,7 @@ public class ResourceUtils implements WizardConstants{
             throw new Exception(ex.getLocalizedMessage(), ex);
         }
     }
-    
+
     public static AttributeList getResourceAttributes(JdbcConnectionPool connPool, ServerInterface mejb){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__Name, connPool.getName()));
@@ -424,7 +425,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__IdleTimeoutInSeconds, connPool.getIdleTimeoutInSeconds()));
         String isolation = connPool.getTransactionIsolationLevel();
         String defaultChoice = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default");     //NOI18N
-        if (isolation != null && (isolation.length() == 0 || isolation.equals(defaultChoice)) ){  
+        if (isolation != null && (isolation.length() == 0 || isolation.equals(defaultChoice)) ){
             isolation = null;
         }
         attrs.add(new Attribute(__TransactionIsolationLevel, isolation));
@@ -434,14 +435,14 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__ValidationTableName, connPool.getValidationTableName()));
         attrs.add(new Attribute(__FailAllConnections, connPool.getFailAllConnections()));
         attrs.add(new Attribute(__Description, connPool.getDescription()));
-        
+
         if(is90Server(mejb)){
             attrs.add(new Attribute(__NonTransactionalConnections, connPool.getNonTransactionalConnections()));
             attrs.add(new Attribute(__AllowNonComponentCallers, connPool.getAllowNonComponentCallers()));
         }
         return attrs;
     }
-    
+
     public static AttributeList getResourceAttributes(JdbcResource jdbcResource){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__JndiName, jdbcResource.getJndiName()));
@@ -451,7 +452,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__Description, jdbcResource.getDescription()));
         return attrs;
     }
-    
+
     public static AttributeList getResourceAttributes(PersistenceManagerFactoryResource pmResource){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__JndiName, pmResource.getJndiName()));
@@ -461,7 +462,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__Description, pmResource.getDescription()));
         return attrs;
     }
-    
+
     public static AttributeList getResourceAttributes(AdminObjectResource aoResource){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__JndiName, aoResource.getJndiName()));
@@ -471,7 +472,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__AdminObjResAdapterName, aoResource.getResAdapter()));
         return attrs;
     }
-    
+
     public static AttributeList getResourceAttributes(ConnectorResource connResource){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__JndiName, connResource.getJndiName()));
@@ -480,7 +481,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__Enabled, connResource.getEnabled()));
         return attrs;
     }
-    
+
     public static AttributeList getResourceAttributes(ConnectorConnectionPool connPoolResource){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__Name, connPoolResource.getName()));
@@ -488,7 +489,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__ConnectorPoolConnDefName, connPoolResource.getConnectionDefinitionName()));
         return attrs;
     }
-    
+
     public static AttributeList getResourceAttributes(MailResource mailResource){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__JndiName, mailResource.getJndiName()));
@@ -504,7 +505,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__Description, mailResource.getDescription()));
         return attrs;
     }
-    
+
     public static AttributeList getResourceAttributes(JmsResource jmsResource){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__JavaMessageJndiName, jmsResource.getJndiName()));
@@ -513,7 +514,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__Description, jmsResource.getDescription()));
         return attrs;
     }
-    
+
     private static Properties getProperties(PropertyElement[] props) throws Exception {
         Properties propList = new Properties();
         for(int i=0; i<props.length; i++){
@@ -525,7 +526,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return propList;
     }
-    
+
     //FIXME: this method should be probably static
     public List getTargetServers(){
         String instances [] = InstanceProperties.getInstanceList();
@@ -544,16 +545,17 @@ public class ResourceUtils implements WizardConstants{
         //}
         return targets;
     }
-    
+
     public static void saveConnPoolDatatoXml(ResourceConfigData data,String baseName) {
-        Resources res = getServerResourcesGraph(data.getTargetFileObject());
+        Resources res = getServerResourcesGraph(data.getTargetFileObject(),
+                            baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
         saveConnPoolDatatoXml(data, res,baseName);
     }
-    
+
     public static void saveConnPoolDatatoXml(ResourceConfigData data, Resources res,String baseName) {
         try{
             JdbcConnectionPool connPool = res.newJdbcConnectionPool();
-            
+
             String[] keys = data.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
                 String key = keys[i];
@@ -586,7 +588,7 @@ public class ResourceUtils implements WizardConstants{
                         connPool.setIdleTimeoutInSeconds(value);
                     else if (key.equals(__TransactionIsolationLevel)){
                         String defaultChoice = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default");     //NOI18N
-                        if (value.equals(defaultChoice)){  
+                        if (value.equals(defaultChoice)){
                             value = null;
                         }
                         connPool.setTransactionIsolationLevel(value);
@@ -601,13 +603,13 @@ public class ResourceUtils implements WizardConstants{
                     else if (key.equals(__FailAllConnections))
                         connPool.setFailAllConnections(value);
                     else if (key.equals(__Description))
-                        connPool.setDescription(value); 
+                        connPool.setDescription(value);
                     else if (key.equals(__NonTransactionalConnections))
                         connPool.setNonTransactionalConnections(value);
                     else if (key.equals(__AllowNonComponentCallers))
                         connPool.setAllowNonComponentCallers(value);
                 }
-                
+
             } //for
             res.addJdbcConnectionPool(connPool);
             createFile(data.getTargetFileObject(), res,baseName);
@@ -615,12 +617,13 @@ public class ResourceUtils implements WizardConstants{
             LOG.log(Level.SEVERE, "Unable to saveConnPoolDatatoXml", ex);
         }
     }
-    
+
     public static void saveJDBCResourceDatatoXml(ResourceConfigData dsData, ResourceConfigData cpData, String baseName) {
         try{
-            Resources res = getServerResourcesGraph(dsData.getTargetFileObject());
+            Resources res = getServerResourcesGraph(dsData.getTargetFileObject(),
+                    baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
             JdbcResource datasource = res.newJdbcResource();
-           
+
             String[] keys = dsData.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
                 String key = keys[i];
@@ -644,9 +647,9 @@ public class ResourceUtils implements WizardConstants{
                     else if (key.equals(__Enabled))
                         datasource.setEnabled(value);
                     else if (key.equals(__Description))
-                        datasource.setDescription(value); 
+                        datasource.setDescription(value);
                 }
-                
+
             } //for
             res.addJdbcResource(datasource);
             if(cpData != null){
@@ -657,12 +660,13 @@ public class ResourceUtils implements WizardConstants{
             LOG.log(Level.SEVERE, "Unable to saveJDBCResourceDatatoXml", ex);
         }
     }
-    
+
     public static void savePMFResourceDatatoXml(ResourceConfigData pmfData, ResourceConfigData dsData, ResourceConfigData cpData,String baseName) {
         try{
-            Resources res = getServerResourcesGraph(pmfData.getTargetFileObject());
+            Resources res = getServerResourcesGraph(pmfData.getTargetFileObject(),
+                    baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
             PersistenceManagerFactoryResource pmfresource = res.newPersistenceManagerFactoryResource();
-           
+
             String[] keys = pmfData.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
                 String key = keys[i];
@@ -686,13 +690,13 @@ public class ResourceUtils implements WizardConstants{
                     else if (key.equals(__Enabled))
                         pmfresource.setEnabled(value);
                     else if (key.equals(__Description))
-                        pmfresource.setDescription(value); 
+                        pmfresource.setDescription(value);
                 }
 
             } //for
             res.addPersistenceManagerFactoryResource(pmfresource);
             createFile(pmfData.getTargetFileObject(), res,baseName);
-            
+
             if(dsData != null){
                 saveJDBCResourceDatatoXml(dsData, cpData,baseName);
             }
@@ -700,10 +704,11 @@ public class ResourceUtils implements WizardConstants{
             LOG.log(Level.SEVERE, "Unable to savePMFResourceDatatoXml", ex);
         }
     }
-    
+
     public static void saveJMSResourceDatatoXml(ResourceConfigData jmsData,String baseName) {
         try{
-            Resources res = getServerResourcesGraph(jmsData.getTargetFileObject());
+            Resources res = getServerResourcesGraph(jmsData.getTargetFileObject(),
+                    baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
             String type = jmsData.getString(__ResType);
             if(type.equals(__QUEUE) || type.equals(__TOPIC)){
                 AdminObjectResource aoresource = res.newAdminObjectResource();
@@ -719,7 +724,7 @@ public class ResourceUtils implements WizardConstants{
                     prop = populatePropertyElement(prop, pair);
                     aoresource.addPropertyElement(prop);
                 }
-                
+
                 res.addAdminObjectResource(aoresource);
             }else{
                 ConnectorResource connresource = res.newConnectorResource();
@@ -727,12 +732,12 @@ public class ResourceUtils implements WizardConstants{
                 connresource.setEnabled(jmsData.getString(__Enabled));
                 connresource.setJndiName(jmsData.getString(__JndiName));
                 connresource.setPoolName(jmsData.getString(__JndiName));
-                
+
                 ConnectorConnectionPool connpoolresource = res.newConnectorConnectionPool();
                 connpoolresource.setName(jmsData.getString(__JndiName));
                 connpoolresource.setConnectionDefinitionName(jmsData.getString(__ResType));
                 connpoolresource.setResourceAdapterName(__JmsResAdapter);
-                
+
                 Vector props = (Vector)jmsData.getProperties();
                 for (int j = 0; j < props.size(); j++) {
                     NameValuePair pair = (NameValuePair)props.elementAt(j);
@@ -740,23 +745,24 @@ public class ResourceUtils implements WizardConstants{
                     prop = populatePropertyElement(prop, pair);
                     connpoolresource.addPropertyElement(prop);
                 }
-                
+
                 res.addConnectorResource(connresource);
                 res.addConnectorConnectionPool(connpoolresource);
             }
-            
+
             createFile(jmsData.getTargetFileObject(), res,baseName);
         }catch(Exception ex){
             LOG.log(Level.SEVERE, "Unable to saveJMSResourceDatatoXml", ex);
         }
     }
-    
+
     public static void saveMailResourceDatatoXml(ResourceConfigData data, String baseName) {
         try{
             Vector vec = data.getProperties();
-            Resources res = getServerResourcesGraph(data.getTargetFileObject());
+            Resources res = getServerResourcesGraph(data.getTargetFileObject(),
+                    baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
             MailResource mlresource = res.newMailResource();
-                        
+
             String[] keys = data.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
                 String key = keys[i];
@@ -790,22 +796,22 @@ public class ResourceUtils implements WizardConstants{
                     else if (key.equals(__Debug))
                         mlresource.setDebug(value);
                     else if (key.equals(__Description))
-                        mlresource.setDescription(value); 
-                }    
+                        mlresource.setDescription(value);
+                }
             } //for
-            
+
             res.addMailResource(mlresource);
             createFile(data.getTargetFileObject(), res,baseName);
         }catch(Exception ex){
             LOG.log(Level.SEVERE, "Unable to saveMailResourceDatatoXml", ex);
         }
     }
-    
+
     public static String createUniqueFileName(String in_targetName, FileObject fo, String defName){
         String targetName = in_targetName;
-        if (targetName == null || targetName.length() == 0) 
+        if (targetName == null || targetName.length() == 0)
             targetName = defName;
-        
+
         List resources = getProjectResources(fo, defName);
         if(resources.contains(targetName)){
             targetName = getUniqueResourceName(targetName, resources);
@@ -813,7 +819,7 @@ public class ResourceUtils implements WizardConstants{
 
         return targetName;
     }
-    
+
     public static List getRegisteredConnectionPools(ResourceConfigData data){
         List connPools = new ArrayList();
         try {
@@ -821,15 +827,15 @@ public class ResourceUtils implements WizardConstants{
             InstanceProperties instanceProperties = getTargetServer(data.getTargetFileObject());
             if(instanceProperties != null) {
                 connPools = getResourceNames(instanceProperties, __GetJdbcConnectionPool, keyProp);
-            }    
-            connPools.removeAll(Arrays.asList(sysConnpools)); 
+            }
+            connPools.removeAll(Arrays.asList(sysConnpools));
             FileObject targetFolder = data.getTargetFileObject();
             List projectCP = getProjectResources(targetFolder, __ConnectionPoolResource);
             for(int i=0; i<projectCP.size(); i++){
                 String localCP = projectCP.get(i).toString();
                 if(! connPools.contains(localCP)) {
                     connPools.add(localCP);
-                }   
+                }
             }
         } catch (java.lang.NoClassDefFoundError ncdfe) {
             // this happens durring unit tests for the DataSourceWizard
@@ -837,7 +843,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return connPools;
     }
-    
+
     public static List getRegisteredJdbcResources(ResourceConfigData data){
         List dataSources = new ArrayList();
         try {
@@ -845,7 +851,7 @@ public class ResourceUtils implements WizardConstants{
             InstanceProperties instanceProperties = getTargetServer(data.getTargetFileObject());
             if(instanceProperties != null)
                 dataSources = getResourceNames(instanceProperties, __GetJdbcResource, keyProp);
-            dataSources.removeAll(Arrays.asList(sysDatasources));    
+            dataSources.removeAll(Arrays.asList(sysDatasources));
             FileObject targetFolder = data.getTargetFileObject();
             List projectDS = getProjectResources(targetFolder, __JDBCResource);
             for(int i=0; i<projectDS.size(); i++){
@@ -859,7 +865,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return dataSources;
     }
-    
+
     private static List getResourceNames(InstanceProperties instProps, String query, String keyProperty){
         List retVal = new ArrayList();
         DeploymentManager dm = instProps.getDeploymentManager();
@@ -879,7 +885,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return retVal;
     }
-    
+
     private static List getResourceNames(SunDeploymentManagerInterface eightDM, String query, String keyProperty){
         List resList = new ArrayList();
         try{
@@ -898,7 +904,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return resList;
     }
-    
+
     private static List getProjectResources(FileObject targetFolder, String resourceType){
         List projectResources = new ArrayList();
         if(targetFolder != null){
@@ -916,18 +922,18 @@ public class ResourceUtils implements WizardConstants{
                     projectResources = getPersistenceResources(resource, projectResources);
                 }else {
                     projectResources = getAllResourceNames(resource, projectResources);
-                } 
+                }
             }
         }
         return projectResources;
     }
-    
+
     private static List getConnectionPools(File primaryFile, List projectCP){
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                
+
                 // identify JDBC Connection Pool xml
                 JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
                 for(int i=0; i<pools.length; i++){
@@ -940,13 +946,13 @@ public class ResourceUtils implements WizardConstants{
         }
         return projectCP;
     }
-    
+
     private static List getDataSources(File primaryFile, List projectDS){
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                
+
                 // identify JDBC Resources xml
                 JdbcResource[] dataSources = resources.getJdbcResource();
                 for(int i=0; i<dataSources.length; i++){
@@ -959,13 +965,13 @@ public class ResourceUtils implements WizardConstants{
         }
         return projectDS;
     }
-    
+
     private static List getMailResources(File primaryFile, List projectRes){
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                
+
                 // identify MailResource xml
                 MailResource[] res = resources.getMailResource();
                 for(int i=0; i<res.length; i++){
@@ -977,13 +983,13 @@ public class ResourceUtils implements WizardConstants{
         }
         return projectRes;
     }
-    
+
     private static List getJMSResources(File primaryFile, List projectRes){
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                
+
                 // identify AdminObjectResource xml
                 AdminObjectResource[] aoRes = resources.getAdminObjectResource();
                 for(int i=0; i<aoRes.length; i++){
@@ -1000,13 +1006,13 @@ public class ResourceUtils implements WizardConstants{
         }
         return projectRes;
     }
-    
+
     private static List getPersistenceResources(File primaryFile, List projectRes){
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                
+
                 // identify AdminObjectResource xml
                 PersistenceManagerFactoryResource[] pmfRes = resources.getPersistenceManagerFactoryResource();
                 for(int i=0; i<pmfRes.length; i++){
@@ -1018,31 +1024,31 @@ public class ResourceUtils implements WizardConstants{
         }
         return projectRes;
     }
-    
+
     public static List getAllResourceNames(File primaryFile, List projectRes){
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                
+
                 // identify JDBC Connection Pool xml
                 JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
                 for(int i=0; i<pools.length; i++){
                     projectRes.add(pools[i].getName());
                 }
-                
+
                 // identify JDBC Resources xml
                 JdbcResource[] dataSources = resources.getJdbcResource();
                 for(int i=0; i<dataSources.length; i++){
                     projectRes.add(dataSources[i].getJndiName());
                 }
-                
+
                 // identify MailResource xml
                 MailResource[] mailRes = resources.getMailResource();
                 for(int i=0; i<mailRes.length; i++){
                     projectRes.add(mailRes[i].getJndiName());
                 }
-                
+
                 // identify AdminObjectResource xml
                 AdminObjectResource[] aoRes = resources.getAdminObjectResource();
                 for(int i=0; i<aoRes.length; i++){
@@ -1059,7 +1065,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return projectRes;
     }
-    
+
     public static FileObject setUpExists(FileObject targetFolder){
         FileObject pkgLocation = getResourceDirectory(targetFolder);
         if(pkgLocation == null){
@@ -1069,49 +1075,49 @@ public class ResourceUtils implements WizardConstants{
             return pkgLocation;
         }
     }
-    
-    private static Resources getResourceGraph(){
-        return DDProvider.getDefault().getResourcesGraph();
+
+    private static Resources getResourceGraph(String version){
+        return DDProvider.getDefault().getResourcesGraph(version);
     }
-    
+
     private static PropertyElement populatePropertyElement(PropertyElement prop, NameValuePair pair){
-        prop.setName(pair.getParamName()); 
+        prop.setName(pair.getParamName());
         prop.setValue(pair.getParamValue());
         if ("()".equals(prop.getValue()))  prop.setValue(""); //NOI18N
         return prop;
     }
-    
+
     //Obtained from com.iplanet.ias.util.io.FileUtils - Byron's
     public static boolean isLegalFilename(String filename) {
         for(int i = 0; i < ILLEGAL_FILENAME_CHARS.length; i++)
             if(filename.indexOf(ILLEGAL_FILENAME_CHARS[i]) >= 0)
                 return false;
-        
+
         return true;
     }
-    
+
     public static boolean isFriendlyFilename(String filename) {
         if(filename.indexOf(BLANK) >= 0 || filename.indexOf(DOT) >= 0)
             return false;
-        
+
         return isLegalFilename(filename);
     }
-    
+
     public static String makeLegalFilename(String filename) {
         for(int i = 0; i < ILLEGAL_FILENAME_CHARS.length; i++)
             filename = filename.replace(ILLEGAL_FILENAME_CHARS[i], REPLACEMENT_CHAR);
-        
+
         return filename;
     }
-    
+
     public static boolean isLegalResourceName(String filename) {
         for(int i = 0; i < ILLEGAL_RESOURCE_NAME_CHARS.length; i++)
             if(filename.indexOf(ILLEGAL_RESOURCE_NAME_CHARS[i]) >= 0)
                 return false;
-        
+
         return true;
     }
-    
+
     public static FileObject getResourceDirectory(FileObject fo){
         Project holdingProj = FileOwnerQuery.getOwner(fo);
         FileObject resourceDir = null;
@@ -1134,7 +1140,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return resourceDir;
     }
-    
+
     private static DeploymentManager getDeploymentManager(J2eeModuleProvider provider) {
         DeploymentManager dm = null;
         InstanceProperties ip = provider.getInstanceProperties();
@@ -1143,7 +1149,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return dm;
     }
-    
+
     public static void createSampleDataSource(J2eeModuleProvider provider){
         DeploymentManager dm = getDeploymentManager(provider);
         if ((dm != null) && (dm instanceof SunDeploymentManagerInterface)) {
@@ -1160,9 +1166,9 @@ public class ResourceUtils implements WizardConstants{
             }
         }
     }
-    
+
     /***************************************** DS Management API *****************************************************************************/
-    
+
     public static HashSet getServerDataSources(DeploymentManager dm){
         HashSet datasources = new HashSet();
         try {
@@ -1196,7 +1202,7 @@ public class ResourceUtils implements WizardConstants{
             } else{
                 if(eightDM.isLocal()) {
                     datasources = formatXmlSunDatasources(eightDM.getSunDatasourcesFromXml());
-                }    
+                }
             }// Server Running
         } catch (Exception ex) {
             //Unable to get server datasources
@@ -1204,7 +1210,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return datasources;
     }
-    
+
     private static void updateSampleDatasource(SunDeploymentManagerInterface eightDM, ObjectName configObjName){
         try{
             if(! eightDM.isLocal())
@@ -1221,7 +1227,7 @@ public class ResourceUtils implements WizardConstants{
                     poolAttrs.add(attr);
                     attr = new Attribute("res-type", "javax.sql.DataSource"); //NOI18N
                     poolAttrs.add(attr);
-                    
+
                     Properties propsList = new Properties();
                     propsList.put(__User, "app"); //NOI18N
                     propsList.put(__Password, "app"); //NOI18N
@@ -1232,7 +1238,7 @@ public class ResourceUtils implements WizardConstants{
                     Object[] poolParams = new Object[]{poolAttrs, propsList, null};
                     createResource(__CreateCP, poolParams, mejb);
                 }
-                
+
                 AttributeList attrs = new AttributeList();
                 attrs.add(new Attribute(__JndiName, SAMPLE_DATASOURCE));
                 attrs.add(new Attribute(__PoolName, SAMPLE_CONNPOOL));
@@ -1245,7 +1251,7 @@ public class ResourceUtils implements WizardConstants{
             LOG.log(Level.SEVERE, "updateSampleDatasource failed", ex);
         }
     }
-    
+
     public static HashMap fillInPoolValues(SunDeploymentManagerInterface eightDM, ObjectName configObjName, String poolName) throws Exception {
         HashMap connPoolAttrs = new HashMap();
         ServerInterface mejb = (ServerInterface)eightDM.getManagement();
@@ -1315,7 +1321,7 @@ public class ResourceUtils implements WizardConstants{
                             url = url + derbyConnAttr;
                         }
                     }
-                } else { 
+                } else {
                     String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName, resType);
                     String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
                     if (serverName != null) {
@@ -1372,21 +1378,21 @@ public class ResourceUtils implements WizardConstants{
         }
         return connPoolAttrs;
     }
-    
+
     private static ObjectName getConnectionPoolByName(ServerInterface mejb, ObjectName configObjName, String poolName) throws Exception {
         String[] signature = new String[]{"java.lang.String"};  //NOI18N
         Object[] params = new Object[]{poolName};
         ObjectName connPoolObj = (ObjectName) mejb.invoke(configObjName, __GetJdbcConnectionPoolByName, params, signature);
         return connPoolObj;
     }
-    
+
     private static String getStringVal(Object val){
         String value = null;
         if (val != null)
             value = val.toString();
-        return value; 
+        return value;
     }
-    
+
     private static HashMap getObjMap(AttributeList attrList){
         HashMap attrs = new HashMap();
         for(int k=0; k<attrList.size(); k++){
@@ -1397,7 +1403,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return attrs;
     }
-    
+
     public static String revertToResName(String filename) {
         if(filename.indexOf("jdbc_") != -1)
             filename = filename.replaceFirst("jdbc_", "jdbc/");
@@ -1407,7 +1413,7 @@ public class ResourceUtils implements WizardConstants{
             filename = filename.replaceFirst("jms_", "jms/");
         return filename;
     }
-    
+
     public static boolean isUniqueFileName(String in_targetName, FileObject fo, String defName){
         boolean isUniq = true;
         String targetName = in_targetName;
@@ -1420,7 +1426,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return isUniq;
     }
-    
+
     public static DatabaseConnection getDatabaseConnection(String url) {
         DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
         for(int i=0; i<dbConns.length; i++){
@@ -1430,7 +1436,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return null;
     }
-    
+
     public static InstanceProperties getTargetServer(FileObject fo){
         InstanceProperties serverName = null;
         Project holdingProj = FileOwnerQuery.getOwner(fo);
@@ -1441,7 +1447,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return serverName;
     }
-    
+
     public static HashMap getConnPoolValues(File resourceDir, String poolName){
         HashMap poolValues = new HashMap();
         try{
@@ -1457,16 +1463,16 @@ public class ResourceUtils implements WizardConstants{
                         HashMap reqdPool = (HashMap)poolMap.get(poolName);
                         if (reqdPool != null && (! reqdPool.isEmpty())) {
                             poolValues = formatPoolMap((HashMap)poolMap.get(poolName));
-                        }    
+                        }
                     }
-                }    
+                }
             }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "getConnPoolValues failed", ex);
         }
         return poolValues;
     }
-    
+
     public static HashSet formatXmlSunDatasources(HashMap dsMap){
         HashSet datasources = new HashSet();
         String[] keys = (String[])dsMap.keySet().toArray(new String[dsMap.size()]);
@@ -1474,7 +1480,7 @@ public class ResourceUtils implements WizardConstants{
             String jndiName = keys[i];
             HashMap poolValues = (HashMap)dsMap.get(jndiName);
             poolValues = formatPoolMap(poolValues);
-            
+
             String url = getStringVal(poolValues.get(__Url));
             String username = getStringVal(poolValues.get(__User));
             String password = getStringVal(poolValues.get(__Password));
@@ -1487,7 +1493,7 @@ public class ResourceUtils implements WizardConstants{
 
         return datasources;
     }
-    
+
     private static HashMap formatPoolMap(HashMap poolValues){
         String driverClassName = getStringVal(poolValues.get("dsClassName")); //NOI18N
         String resType = getStringVal(poolValues.get("resType")); //NOI18N
@@ -1561,10 +1567,10 @@ public class ResourceUtils implements WizardConstants{
         }
         poolValues.put(__Url, url);
         poolValues.put(__DriverClass, driverClass);
-        
+
         return poolValues;
     }
-    
+
     public static HashSet getServerDestinations(DeploymentManager dm){
         HashSet destinations = new HashSet();
         try {
@@ -1584,7 +1590,7 @@ public class ResourceUtils implements WizardConstants{
                         sunMessage = new SunMessageDestination(jndiName, MessageDestination.Type.TOPIC);
                     }
                     destinations.add(sunMessage);
-                } // 
+                } //
             } else{
                 if(eightDM.isLocal()) {
                     HashMap aoMap =  eightDM.getAdminObjectResourcesFromXml();
@@ -1600,7 +1606,7 @@ public class ResourceUtils implements WizardConstants{
                         }
                         destinations.add(sunMessage);
                     }
-                }   
+                }
             }// Server Running
         } catch (Exception ex) {
             //Unable to get server datasources
@@ -1608,12 +1614,12 @@ public class ResourceUtils implements WizardConstants{
         }
         return destinations;
     }
-    
+
     public static boolean is90Server(ServerInterface mejb){
         boolean is90Server = true;
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)mejb.getDeploymentManager();
-        if(sunDm.isLocal()){   
-            is90Server = is90ServerLocal(sunDm); 
+        if(sunDm.isLocal()){
+            is90Server = is90ServerLocal(sunDm);
         }else{
             try{
                 ObjectName serverObj = new ObjectName("com.sun.appserv:j2eeType=J2EEServer,name=server,category=runtime"); //NOI18N
@@ -1626,7 +1632,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return is90Server;
     }
-     
+
     private static boolean is90ServerLocal(SunDeploymentManagerInterface sunDm){
         boolean isGlassfish = true;
         try{
@@ -1636,28 +1642,28 @@ public class ResourceUtils implements WizardConstants{
         }
         return isGlassfish;
     }
-     
+
     /*
-     * Create a new sun-resources graph if none exists or obtain the existing 
+     * Create a new sun-resources graph if none exists or obtain the existing
      * graph to add new resource.
-     */     
+     */
     public static Resources getServerResourcesGraph(File targetFolder){
         FileObject location = FileUtil.toFileObject(targetFolder.getParentFile());
         try{
             location = FileUtil.createFolder(targetFolder);
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "getServerResourcesGraph failed", ex);
-        }    
-        return getServerResourcesGraph(location);
+        }
+        return getServerResourcesGraph(location,"");
     }
-    
+
     /*
-     * Create a new sun-resources graph if none exists or obtain the existing 
+     * Create a new sun-resources graph if none exists or obtain the existing
      * graph to add new resource.
-     */     
-    public static Resources getServerResourcesGraph(FileObject targetFolder){
-        Resources res = getResourceGraph();
-        targetFolder = setUpExists(targetFolder);               
+     */
+    public static Resources getServerResourcesGraph(FileObject targetFolder, String version){
+        Resources res = getResourceGraph(version);
+        targetFolder = setUpExists(targetFolder);
         File sunResource = getServerResourcesFile(targetFolder);
         if(sunResource != null){
             res = getResourcesGraph(sunResource);
@@ -1668,7 +1674,7 @@ public class ResourceUtils implements WizardConstants{
     /*
      * Get the resources-graph for a sun-resource.xml
      *
-     */     
+     */
     public static Resources getResourcesGraph(File sunResource){
         Resources res = null;
         if(sunResource != null){
@@ -1677,6 +1683,10 @@ public class ResourceUtils implements WizardConstants{
                 in = new java.io.FileInputStream(sunResource);
                 res = DDProvider.getDefault().getResourcesGraph(in);
             } catch (FileNotFoundException ex) {
+                LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
+            } catch (SAXException ex) {
                 LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
             } finally {
                 try {
@@ -1690,11 +1700,11 @@ public class ResourceUtils implements WizardConstants{
         }
         return res;
     }
-    
+
     public static void createFile(File targetFolder, final Resources res, String baseName){
         createFile(FileUtil.toFileObject(targetFolder), res, baseName);
     }
-    
+
     public static void createFile(FileObject targetFolder, final Resources res, String baseName){
         targetFolder = setUpExists(targetFolder);
         File sunResource = getServerResourcesFile(targetFolder);
@@ -1708,7 +1718,7 @@ public class ResourceUtils implements WizardConstants{
             writeServerResource(targetFolder, res, baseName);
         }
     }
-        
+
     private static void writeServerResource(FileObject targetFolder, final Resources res, final String baseName){
         try {
             final FileObject resTargetFolder  = targetFolder;
@@ -1735,7 +1745,7 @@ public class ResourceUtils implements WizardConstants{
             LOG.log(Level.SEVERE, "writeServerResource failed", ex);
         }
     }
-    
+
     /*
      *  Get sun-resources.xml file if it exists in a given folder.
      *  Returns null if no file exists.
@@ -1744,7 +1754,7 @@ public class ResourceUtils implements WizardConstants{
         File serverResource = null;
         if(targetFolder != null){
             FileObject setUpFolder = setUpExists(targetFolder);
-            
+
             java.util.Enumeration en = setUpFolder.getData(false);
             while(en.hasMoreElements()){
                 FileObject resourceFile = (FileObject)en.nextElement();
@@ -1760,18 +1770,18 @@ public class ResourceUtils implements WizardConstants{
         }
         return serverResource;
     }
-    
+
     /*
-     * Consolidates *.sun-resource into sun-resources.xml 
+     * Consolidates *.sun-resource into sun-resources.xml
      * Called by registerResources in Utils (appsrv81 module)
      * sun-resources.xml is created once.
      */
     public static void migrateResources(File resourceDir,String baseName) {
         migrateResources(FileUtil.toFileObject(resourceDir),baseName);
     }
-    
+
     /*
-     * Consolidates *.sun-resource into sun-resources.xml 
+     * Consolidates *.sun-resource into sun-resources.xml
      * Called by SunResourceDataObject by the .sun-resource
      * loader. sun-resources.xml is created once.
      */
@@ -1782,7 +1792,7 @@ public class ResourceUtils implements WizardConstants{
             File resourceDir = FileUtil.toFile(targetFolder);
             File[] resources = resourceDir.listFiles(new OldResourceFileFilter());
             if (resources.length > 0) {
-                Resources newGraph = DDProvider.getDefault().getResourcesGraph();
+                Resources newGraph = DDProvider.getDefault().getResourcesGraph(Resources.VERSION_1_3);
                 try {
                     for (int i = 0; i < resources.length; i++) {
                         File oldResource = resources[i];
@@ -1801,14 +1811,14 @@ public class ResourceUtils implements WizardConstants{
             }
         }
     }
-    
+
     private static Resources getResourceGraphs(Resources consolidatedGraph, Resources existResource){
         JdbcConnectionPool[] pools = existResource.getJdbcConnectionPool();
         if(pools.length != 0){
             ConnPoolBean currCPBean = ConnPoolBean.createBean(pools[0]);
             currCPBean.getBeanInGraph(consolidatedGraph);
         }
-        
+
         JdbcResource[] dataSources = existResource.getJdbcResource();
         if(dataSources.length != 0){
             DataSourceBean currDSBean = DataSourceBean.createBean(dataSources[0]);
@@ -1820,26 +1830,26 @@ public class ResourceUtils implements WizardConstants{
             JavaMailSessionBean currMailBean = JavaMailSessionBean.createBean(mailResources[0]);
             currMailBean.getBeanInGraph(consolidatedGraph);
         }
-        
+
 //        JmsResource[] jmsResources = existResource.getJmsResource();
 //        if(jmsResources.length != 0){
 //            JMSBean jmsBean = JMSBean.createBean(jmsResources[0]);
 //            jmsBean.getAdminObjectBeanInGraph(consolidatedGraph);
 //        }
-        
+
         AdminObjectResource[] aoResources = existResource.getAdminObjectResource();
         if(aoResources.length != 0){
             JMSBean jmsBean = JMSBean.createBean(aoResources[0]);
             jmsBean.getAdminObjectBeanInGraph(consolidatedGraph);
         }
-        
+
         ConnectorResource[] connResources = existResource.getConnectorResource();
         ConnectorConnectionPool[] connPoolResources = existResource.getConnectorConnectionPool();
         if(connResources.length != 0 && connPoolResources.length != 0){
             JMSBean jmsBean = JMSBean.createBean(existResource);
             jmsBean.getConnectorBeanInGraph(consolidatedGraph);
         }
-        
+
         PersistenceManagerFactoryResource[] pmfResources = existResource.getPersistenceManagerFactoryResource();
         if(pmfResources.length != 0){
             PersistenceManagerBean currPMFBean = PersistenceManagerBean.createBean(pmfResources[0]);
@@ -1847,21 +1857,21 @@ public class ResourceUtils implements WizardConstants{
         }
 
         return consolidatedGraph;
-    }    
-    
+    }
+
     private static class OldResourceFileFilter implements FileFilter {
         public boolean accept(File f) {
             return ((! f.isDirectory()) && f.getName().toLowerCase(Locale.ENGLISH).endsWith(".sun-resource")); //NOI18N
         }
     }
-    
+
     /****************************************Utilities *********************************************/
     /**
-     * 
+     *
      * @param name Resource Name
      * @param resources Map of objects to check Resource Name for duplicate
      * @return Returns unique resource name
-     *    
+     *
      */
     public static String getUniqueResourceName(String name, HashMap resources){
         for (int i = 1;; i++) {
@@ -1871,7 +1881,7 @@ public class ResourceUtils implements WizardConstants{
             }
         }
     }
-    
+
     public static String getUniqueResourceName(String name, List resources){
         for (int i = 1;; i++) {
             String resourceName = name + "_" + i; // NOI18N
@@ -1880,7 +1890,7 @@ public class ResourceUtils implements WizardConstants{
             }
         }
     }
-        
+
     private final static char BLANK = ' ';
     private final static char DOT   = '.';
     private final static char REPLACEMENT_CHAR = '_';

@@ -51,7 +51,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -214,7 +213,7 @@ public final class DDProvider {
         }
     }
     
-    private Map<Object, RootInterface> ddMap = new WeakHashMap<Object, RootInterface>();
+    final private Map<Object, RootInterface> ddMap = new WeakHashMap<Object, RootInterface>();
     private Map<FileObject, DDProviderDataObject> dObjMap = new WeakHashMap<FileObject, DDProviderDataObject>();
 
     /** This method retrieves the root of the XML DOM for a sun-*
@@ -364,12 +363,12 @@ public final class DDProvider {
         }
     }
     
-    private static Map<Class, Map<String, VersionInfo>> apiToVersionMap = new HashMap<Class, Map<String, VersionInfo>>(11);
-    private static Map<String, VersionInfo> sunWebAppVersionMap = new HashMap<String, VersionInfo>(11);
-    private static Map<String, VersionInfo> sunEjbJarVersionMap = new HashMap<String, VersionInfo>(11);
-    private static Map<String, VersionInfo> sunApplicationVersionMap = new HashMap<String, VersionInfo>(11);
-    private static Map<String, VersionInfo> sunAppClientVersionMap = new HashMap<String, VersionInfo>(11);
-    private static Map<String, VersionInfo> sunResourcesVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<Class, Map<String, VersionInfo>> apiToVersionMap = new HashMap<Class, Map<String, VersionInfo>>(11);
+    final private static Map<String, VersionInfo> sunWebAppVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<String, VersionInfo> sunEjbJarVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<String, VersionInfo> sunApplicationVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<String, VersionInfo> sunAppClientVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<String, VersionInfo> sunResourcesVersionMap = new HashMap<String, VersionInfo>(11);
     
     static {
         sunWebAppVersionMap.put(SunWebApp.VERSION_2_3_0, new VersionInfo(
@@ -616,9 +615,8 @@ public final class DDProvider {
      *
      * @param doc XML document representing the .sun-resource file    
      */
-    public Resources getResourcesGraph() {
-        Resources resourcesRoot = (Resources)newGraph(Resources.class, Resources.VERSION_1_3);
-        //Resources resourcesRoot = org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.createGraph();
+    public Resources getResourcesGraph(String version) {
+        Resources resourcesRoot =  (Resources)newGraph(Resources.class, version);
         ResourcesProxy proxy = new ResourcesProxy(resourcesRoot);
         return proxy;
     }
@@ -628,13 +626,38 @@ public final class DDProvider {
      *
      * @param doc XML document representing the .sun-resource file    
      */
-    public Resources getResourcesGraph(InputStream in) {
-        Resources resourcesRoot = org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.createGraph(in);
-        ResourcesProxy proxy = new ResourcesProxy(resourcesRoot);
+    public Resources getResourcesGraph(InputStream in) throws IOException, SAXException {
+        return getResourcesRoot(new InputSource(in));
+    }
+
+    /**
+     * Returns the root of deployment descriptor bean graph for java.io.File object.
+     *
+     * @param is source representing the sun-application.xml file
+     * @return Application object - root of the deployment descriptor bean graph
+     */
+    public Resources getResourcesRoot(InputSource is) throws IOException, SAXException {
+        DDParse parse = new DDParse(is);
+        Resources appRoot = createResources(parse);
+        ResourcesProxy proxy = new ResourcesProxy(appRoot, appRoot.getVersion().toString());
+        setErrorStatus(proxy, parse);
         return proxy;
+    }
+
+    private static Resources createResources(DDParse parse) {
+          Resources app = null;
+          String version = parse.getVersion();
+          if (Resources.VERSION_1_5.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model_1_5.Resources(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+          } else if (Resources.VERSION_1_3.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+          }
+
+          return app;
     }
     
     private class SunDDFileChangeListener extends FileChangeAdapter {
+        @Override
         public void fileChanged(FileEvent evt) {
             FileObject fo = evt.getFile();
             try {
@@ -777,6 +800,7 @@ public final class DDProvider {
             return resolver;
         }
         
+        @Override
         public InputSource resolveEntity(String publicId, String systemId) {
             InputSource source = null;
             
@@ -796,6 +820,7 @@ public final class DDProvider {
         private int errorType = -1;
         SAXParseException error;
 
+        @Override
         public void warning(SAXParseException sAXParseException) throws SAXException {
             if (errorType < 0) {
                 errorType = 0;
@@ -804,6 +829,7 @@ public final class DDProvider {
             //throw sAXParseException;
         }
         
+        @Override
         public void error(SAXParseException sAXParseException) throws SAXException {
             if (errorType < 1) {
                 errorType = 1;
@@ -812,6 +838,7 @@ public final class DDProvider {
             //throw sAXParseException;
         }    
         
+        @Override
         public void fatalError(SAXParseException sAXParseException) throws SAXException {
             errorType = 2;
             throw sAXParseException;
@@ -1002,7 +1029,7 @@ public final class DDProvider {
     
     /* Maps DOCTYPE to { version, proxy class, impl class, dtd path } info.
      */
-    private static Map<String, DocTypeInfo> publicIdToInfoMap = new HashMap<String, DocTypeInfo>(37);
+    final private static Map<String, DocTypeInfo> publicIdToInfoMap = new HashMap<String, DocTypeInfo>(37);
     
     static {
         publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_211_DTD_PUBLIC_ID, new DocTypeInfo(
