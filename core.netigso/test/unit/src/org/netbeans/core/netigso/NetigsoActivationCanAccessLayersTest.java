@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,52 +42,62 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib;
+package org.netbeans.core.netigso;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.undo.CompoundEdit;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.InvalidMarkException;
-import org.netbeans.editor.Mark;
-import org.netbeans.modules.editor.lib.impl.MarkVector;
-import org.netbeans.modules.editor.lib.impl.MultiMark;
-
+import org.netbeans.core.startup.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Locale;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.SetupHid;
 
 /**
- * Accessor for the package-private functionality in org.netbeans.editor package.
+ * Can the BundleActivators access layer entries defined by other (NetBeans) modules?
  *
- * @author Miloslav Metelka
- * @version 1.00
+ * @author Jaroslav Tulach
  */
+public class NetigsoActivationCanAccessLayersTest extends SetupHid {
+    private static Module m1;
+    private static ModuleManager mgr;
 
-public abstract class EditorPackageAccessor {
-
-    private static EditorPackageAccessor ACCESSOR = null;
-
-    public static synchronized void register(EditorPackageAccessor accessor) {
-        assert ACCESSOR == null : "Can't register two package accessors!"; //NOI18N
-        ACCESSOR = accessor;
+    public NetigsoActivationCanAccessLayersTest(String name) {
+        super(name);
     }
 
-    public static synchronized EditorPackageAccessor get() {
-        // Trying to wake up BaseDocument ...
+    protected @Override void setUp() throws Exception {
+        Locale.setDefault(Locale.US);
+        clearWorkDir();
+        File ud = new File(getWorkDir(), "ud");
+        ud.mkdirs();
+        System.setProperty("netbeans.user", ud.getPath());
+        
+        data = new File(getDataDir(), "jars");
+        jars = new File(getWorkDir(), "space in path");
+        jars.mkdirs();
+        File simpleModule = createTestJAR("activate", null);
+    }
+
+    public void testActivation() throws Exception {
+        ModuleSystem ms = Main.getModuleSystem();
+        mgr = ms.getManager();
+        mgr.mutexPrivileged().enterWriteAccess();
         try {
-            Class clazz = Class.forName(BaseDocument.class.getName());
-        } catch (ClassNotFoundException e) {
-            // ignore
+            File simpleModule = new File(jars, "activate.jar");
+            m1 = mgr.create(simpleModule, null, false, false, false);
+            System.setProperty("activate.layer.test", "can-this-file-be-found.txt");
+            mgr.enable(m1);
+
+            Class<?> main = m1.getClassLoader().loadClass("org.activate.Main");
+            Object s = main.getField("start").get(null);
+            assertNotNull("Bundle started, its context provided", s);
+
+            mgr.disable(m1);
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
         }
-
-        assert ACCESSOR != null : "There is no package accessor available!"; //NOI18N
-        return ACCESSOR;
     }
-
-    protected EditorPackageAccessor() {
+    private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
+        return createTestJAR(data, jars, name, srcdir, classpath);
     }
-
-    public abstract CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc);
-    public abstract void BaseDocument_clearAtomicEdits(BaseDocument doc);
-    public abstract MarkVector BaseDocument_getMarksStorage(BaseDocument doc);
-    public abstract Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark);
-    public abstract void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException;
-
 }
