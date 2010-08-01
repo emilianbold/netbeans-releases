@@ -44,10 +44,14 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.search.Query;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClassIndex;
 
 /**
@@ -55,12 +59,7 @@ import org.netbeans.api.java.source.ClassIndex;
  * @author Tomas Zezula
  */
 public abstract class Index {    
-    
-    public enum BooleanOperator {
-        AND,
-        OR
-    };
-        
+            
     public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> () {
         protected synchronized @Override AtomicBoolean initialValue() {
              return new AtomicBoolean ();
@@ -68,15 +67,13 @@ public abstract class Index {
     };    
 
     public abstract boolean exists ();
-    public abstract boolean isValid (boolean tryOpen) throws IOException;   
-    public abstract List<String> getUsagesFQN (String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException, InterruptedException;
-    public abstract <T> void getDeclaredTypes (String simpleName, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Set<? super T> result) throws IOException, InterruptedException;
+    public abstract boolean isValid (boolean tryOpen) throws IOException;
+    public abstract <T> void query (@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<T> convertor, Collection<? super T> result) throws IOException, InterruptedException;
     public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor,Map<T,Set<String>> result) throws IOException, InterruptedException;
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
     public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
     public abstract boolean isUpToDate (String resourceName, long timeStamp) throws IOException;
-    public abstract String getSourceName (String binaryName) throws IOException;
     public abstract void clear () throws IOException;
     public abstract void close () throws IOException;
             
