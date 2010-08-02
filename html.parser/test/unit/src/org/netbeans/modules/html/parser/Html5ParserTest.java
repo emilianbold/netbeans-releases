@@ -76,12 +76,6 @@ public class Html5ParserTest extends NbTestCase {
         suite.addTest(new Html5ParserTest("testParseUnfinishedCode"));
         return suite;
     }
-
-//        String code = "<!DOCTYPE html><body xmlns:f=\"http://sun.com/jsf/core\"></p><section><f:xx></f:xx><p>cau<p>  <p>ahoj</section><section><div></div></section></body>";
-//        String code = "<!DOCTYPE html></p><section><p>cau<p>  <p>ahoj</section><section><div></div></section>";
-//        String code = "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"><section><p id=\"my\">cau<p><p class=\"klasa\">ahoj</section>";
-//        String code = "<!DOCTYPE html><html xmlns:myns=\"http://marek.org/\"><myns:section><p id=\"my\">cau<p><p class=\"klasa\">ahoj</myns:section></html>";
-//        AstNodeUtils.dumpTree(root);
     
     public void testBasic() throws SAXException, IOException, ParseException {
         HtmlParseResult result = parse("<!doctype html><section><div></div></section>");

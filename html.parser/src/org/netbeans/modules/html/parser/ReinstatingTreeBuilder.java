@@ -58,6 +58,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
+ * A class for code completion purposes. Resets the {@link TreeBuilder}
+ * to a particular state representing a position in the source code and
+ * offer the parser various elements. When the parser steps into a new
+ * state w/o any error the element is considered as acceptable in the context.
  *
  * @author marekfukala
  */

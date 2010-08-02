@@ -1,0 +1,2218 @@
+
+Property changes on: .
+___________________________________________________________________
+Modified: svn:ignore
+   - .classpath
+.project
+eclipse-classes
+classes
+dist
+
+   + .classpath
+.project
+eclipse-classes
+classes
+dist
+target
+.patch.swp
+
+
+Index: src/nu/validator/htmlparser/impl/StateSnapshot.java
+===================================================================
+--- src/nu/validator/htmlparser/impl/StateSnapshot.java	(revision 584)
++++ src/nu/validator/htmlparser/impl/StateSnapshot.java	(working copy)
+@@ -30,18 +30,21 @@
+      * @param listOfActiveFormattingElements
+      * @param formPointer
+      */
+-    StateSnapshot(StackNode<T>[] stack,
+-            StackNode<T>[] listOfActiveFormattingElements, T formPointer) {
++    public StateSnapshot(StackNode<T>[] stack,
++            StackNode<T>[] listOfActiveFormattingElements, T formPointer, int mode) {
+         this.stack = stack;
+         this.listOfActiveFormattingElements = listOfActiveFormattingElements;
+         this.formPointer = formPointer;
++        this.mode = mode;
+     }
+ 
+-    final StackNode<T>[] stack;
++    public final StackNode<T>[] stack;
+ 
+-    final StackNode<T>[] listOfActiveFormattingElements;
++    public final StackNode<T>[] listOfActiveFormattingElements;
+ 
+-    final T formPointer;
++    public final T formPointer;
++
++    public final int mode; //tree builder internal state
+     
+     @SuppressWarnings("unused") private void destructor() {
+         for (int i = 0; i < stack.length; i++) {
+Index: src/nu/validator/htmlparser/impl/TreeBuilder.java
+===================================================================
+--- src/nu/validator/htmlparser/impl/TreeBuilder.java	(revision 584)
++++ src/nu/validator/htmlparser/impl/TreeBuilder.java	(working copy)
+@@ -340,7 +340,7 @@
+     
+     // ]NOCPP]
+     
+-    private int mode = INITIAL;
++    protected int mode = INITIAL;
+ 
+     private int originalMode = INITIAL;
+ 
+@@ -1395,7 +1395,7 @@
+         end();
+     }
+ 
+-    public final void startTag(ElementName elementName,
++    public void startTag(ElementName elementName,
+             HtmlAttributes attributes, boolean selfClosing) throws SAXException {
+         // [NOCPP[
+         if (errorHandler != null) {
+@@ -3040,7 +3040,7 @@
+         }
+     }
+ 
+-    public final void endTag(ElementName elementName) throws SAXException {
++    public void endTag(ElementName elementName) throws SAXException {
+         needToDropLF = false;
+         int eltPos;
+         endtagloop: for (;;) {
+@@ -5167,7 +5167,7 @@
+             listCopy[i] = node;
+         }
+         Portability.retainElement(formPointer);
+-        return new StateSnapshot<T>(stackCopy, listCopy, formPointer);
++        return new StateSnapshot<T>(stackCopy, listCopy, formPointer, mode);
+     }
+     
+     public boolean snapshotMatches(StateSnapshot<T> snapshot) {
+@@ -5186,7 +5186,30 @@
+                 return false;
+             }
+         }
++
++        if(snapshot.mode != mode) {
++            return false;
++        }
++        
+         return true;
+     }
++
++    //XXX NO CPP references handling!!!
++    protected void loadSnapshot(StateSnapshot<T> snapshot) {
++        //shallow copy the snapshot; StackNode-s are immutable
++        stack = new StackNode[snapshot.stack.length];
++        for(int i = 0; i < stack.length; i++) {
++            stack[i] = snapshot.stack[i];
++        }
++        currentPtr = stack.length - 1;
++        
++        listOfActiveFormattingElements = new StackNode[snapshot.listOfActiveFormattingElements.length];
++        for(int i = 0; i < listOfActiveFormattingElements.length; i++) {
++            listOfActiveFormattingElements[i] = snapshot.listOfActiveFormattingElements[i];
++        }
++        listPtr = -1;
++
++        mode = snapshot.mode;
++    }
+     
+ }
+Index: src/nu/validator/htmlparser/impl/Tokenizer.java
+===================================================================
+--- src/nu/validator/htmlparser/impl/Tokenizer.java	(revision 584)
++++ src/nu/validator/htmlparser/impl/Tokenizer.java	(working copy)
+@@ -40,7 +40,10 @@
+ import nu.validator.htmlparser.annotation.NoLength;
+ import nu.validator.htmlparser.common.EncodingDeclarationHandler;
+ import nu.validator.htmlparser.common.Interner;
++import nu.validator.htmlparser.common.OffsetLocator;
+ import nu.validator.htmlparser.common.TokenHandler;
++import nu.validator.htmlparser.common.TokenizerState;
++import nu.validator.htmlparser.common.TokenizerStateListener;
+ import nu.validator.htmlparser.common.XmlViolationPolicy;
+ 
+ import org.xml.sax.ErrorHandler;
+@@ -63,128 +66,7 @@
+  * @version $Id$
+  * @author hsivonen
+  */
+-public class Tokenizer implements Locator {
+-
+-    public static final int DATA = 0;
+-
+-    public static final int RCDATA = 1;
+-
+-    public static final int CDATA = 2;
+-
+-    public static final int PLAINTEXT = 3;
+-
+-    private static final int TAG_OPEN = 4;
+-
+-    private static final int CLOSE_TAG_OPEN_PCDATA = 5;
+-
+-    private static final int TAG_NAME = 6;
+-
+-    private static final int BEFORE_ATTRIBUTE_NAME = 7;
+-
+-    private static final int ATTRIBUTE_NAME = 8;
+-
+-    private static final int AFTER_ATTRIBUTE_NAME = 9;
+-
+-    private static final int BEFORE_ATTRIBUTE_VALUE = 10;
+-
+-    private static final int ATTRIBUTE_VALUE_DOUBLE_QUOTED = 11;
+-
+-    private static final int ATTRIBUTE_VALUE_SINGLE_QUOTED = 12;
+-
+-    private static final int ATTRIBUTE_VALUE_UNQUOTED = 13;
+-
+-    private static final int AFTER_ATTRIBUTE_VALUE_QUOTED = 14;
+-
+-    private static final int BOGUS_COMMENT = 15;
+-
+-    private static final int MARKUP_DECLARATION_OPEN = 16;
+-
+-    private static final int DOCTYPE = 17;
+-
+-    private static final int BEFORE_DOCTYPE_NAME = 18;
+-
+-    private static final int DOCTYPE_NAME = 19;
+-
+-    private static final int AFTER_DOCTYPE_NAME = 20;
+-
+-    private static final int BEFORE_DOCTYPE_PUBLIC_IDENTIFIER = 21;
+-
+-    private static final int DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED = 22;
+-
+-    private static final int DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED = 23;
+-
+-    private static final int AFTER_DOCTYPE_PUBLIC_IDENTIFIER = 24;
+-
+-    private static final int BEFORE_DOCTYPE_SYSTEM_IDENTIFIER = 25;
+-
+-    private static final int DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED = 26;
+-
+-    private static final int DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED = 27;
+-
+-    private static final int AFTER_DOCTYPE_SYSTEM_IDENTIFIER = 28;
+-
+-    private static final int BOGUS_DOCTYPE = 29;
+-
+-    private static final int COMMENT_START = 30;
+-
+-    private static final int COMMENT_START_DASH = 31;
+-
+-    private static final int COMMENT = 32;
+-
+-    private static final int COMMENT_END_DASH = 33;
+-
+-    private static final int COMMENT_END = 34;
+-
+-    private static final int COMMENT_END_SPACE = 35;
+-
+-    private static final int COMMENT_END_BANG = 36;
+-
+-    private static final int CLOSE_TAG_OPEN_NOT_PCDATA = 37;
+-
+-    private static final int MARKUP_DECLARATION_HYPHEN = 38;
+-
+-    private static final int MARKUP_DECLARATION_OCTYPE = 39;
+-
+-    private static final int DOCTYPE_UBLIC = 40;
+-
+-    private static final int DOCTYPE_YSTEM = 41;
+-
+-    private static final int CONSUME_CHARACTER_REFERENCE = 42;
+-
+-    private static final int CONSUME_NCR = 43;
+-
+-    private static final int CHARACTER_REFERENCE_LOOP = 44;
+-
+-    private static final int HEX_NCR_LOOP = 45;
+-
+-    private static final int DECIMAL_NRC_LOOP = 46;
+-
+-    private static final int HANDLE_NCR_VALUE = 47;
+-
+-    private static final int SELF_CLOSING_START_TAG = 48;
+-
+-    private static final int CDATA_START = 49;
+-
+-    private static final int CDATA_SECTION = 50;
+-
+-    private static final int CDATA_RSQB = 51;
+-
+-    private static final int CDATA_RSQB_RSQB = 52;
+-
+-    private static final int TAG_OPEN_NON_PCDATA = 53;
+-
+-    private static final int ESCAPE_EXCLAMATION = 54;
+-
+-    private static final int ESCAPE_EXCLAMATION_HYPHEN = 55;
+-
+-    private static final int ESCAPE = 56;
+-
+-    private static final int ESCAPE_HYPHEN = 57;
+-
+-    private static final int ESCAPE_HYPHEN_HYPHEN = 58;
+-
+-    private static final int BOGUS_COMMENT_HYPHEN = 59;
+-
++public class Tokenizer implements Locator, TokenizerState, OffsetLocator {
+     /**
+      * Magic value for UTF-16 operations.
+      */
+@@ -471,6 +353,8 @@
+ 
+     private Interner interner;
+ 
++    private TokenizerStateListener stateListener;
++
+     // [NOCPP[
+ 
+     protected LocatorImpl ampersandLocation;
+@@ -481,6 +365,7 @@
+         this.newAttributesEachTime = newAttributesEachTime;
+         this.bmpChar = new char[1];
+         this.astralChar = new char[2];
++        this.stateListener = getStateListener(tokenHandler);
+     }
+ 
+     // ]NOCPP]
+@@ -499,7 +384,21 @@
+         // ]NOCPP]
+         this.bmpChar = new char[1];
+         this.astralChar = new char[2];
++        this.stateListener = getStateListener(tokenHandler);
+     }
++
++    //TODO update later: quick but not very intuitive solution. Clients will not see the TokenizerStateHandler
++    //in an argument of an API method so it is harder to discover the functionality.
++    private TokenizerStateListener getStateListener(TokenHandler tokenHandler) {
++        return tokenHandler instanceof TokenizerStateListener ? (TokenizerStateListener)tokenHandler : null;
++    }
++
++    private int changeState(int current, int state, int offset) {
++        if(stateListener != null) {
++            stateListener.stateChanged(current, state, offset);
++        }
++        return state;
++    }
+     
+     public void setInterner(Interner interner) {
+         this.interner = interner;
+@@ -1412,8 +1311,8 @@
+                                 flushChars(buf, pos);
+                                 clearStrBufAndAppendCurrentC(c);
+                                 rememberAmpersandLocation('\u0000');
+-                                returnState = state;
+-                                state = Tokenizer.CONSUME_CHARACTER_REFERENCE;
++                                returnState = changeState(state, state, pos);
++                                state = changeState(state, Tokenizer.CONSUME_CHARACTER_REFERENCE, pos);
+                                 continue stateloop;
+                             case '<':
+                                 /*
+@@ -1428,7 +1327,7 @@
+                                  */
+                                 flushChars(buf, pos);
+ 
+-                                state = Tokenizer.TAG_OPEN;
++                                state = changeState(state, Tokenizer.TAG_OPEN, pos);
+                                 break dataloop; // FALL THROUGH continue
+                             // stateloop;
+                             case '\u0000':
+@@ -1479,7 +1378,7 @@
+                              */
+                             clearStrBufAndAppendForceWrite((char) (c + 0x20));
+                             /* then switch to the tag name state. */
+-                            state = Tokenizer.TAG_NAME;
++                            state = changeState(state, Tokenizer.TAG_NAME, pos);
+                             /*
+                              * (Don't emit the token yet; further details will
+                              * be filled in before it is emitted.)
+@@ -1498,7 +1397,7 @@
+                              */
+                             clearStrBufAndAppendCurrentC(c);
+                             /* then switch to the tag name state. */
+-                            state = Tokenizer.TAG_NAME;
++                            state = changeState(state, Tokenizer.TAG_NAME, pos);
+                             /*
+                              * (Don't emit the token yet; further details will
+                              * be filled in before it is emitted.)
+@@ -1512,14 +1411,14 @@
+                                  * U+0021 EXCLAMATION MARK (!) Switch to the
+                                  * markup declaration open state.
+                                  */
+-                                state = Tokenizer.MARKUP_DECLARATION_OPEN;
++                                state = changeState(state, Tokenizer.MARKUP_DECLARATION_OPEN, pos);
+                                 continue stateloop;
+                             case '/':
+                                 /*
+                                  * U+002F SOLIDUS (/) Switch to the close tag
+                                  * open state.
+                                  */
+-                                state = Tokenizer.CLOSE_TAG_OPEN_PCDATA;
++                                state = changeState(state, Tokenizer.CLOSE_TAG_OPEN_PCDATA, pos);
+                                 continue stateloop;
+                             case '?':
+                                 /*
+@@ -1530,7 +1429,7 @@
+                                  * Switch to the bogus comment state.
+                                  */
+                                 clearLongStrBufAndAppendToComment(c);
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+@@ -1545,7 +1444,7 @@
+                                 tokenHandler.characters(Tokenizer.LT_GT, 0, 2);
+                                 /* Switch to the data state. */
+                                 cstart = pos + 1;
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             default:
+                                 /*
+@@ -1561,7 +1460,7 @@
+                                  * the data state.
+                                  */
+                                 cstart = pos;
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                         }
+@@ -1580,7 +1479,7 @@
+                             case '\r':
+                                 silentCarriageReturn();
+                                 strBufToElementNameString();
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                 break stateloop;
+                             case '\n':
+                                 silentLineFeed();
+@@ -1593,7 +1492,7 @@
+                                  * Switch to the before attribute name state.
+                                  */
+                                 strBufToElementNameString();
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                 break tagnameloop;
+                             // continue stateloop;
+                             case '/':
+@@ -1602,7 +1501,7 @@
+                                  * start tag state.
+                                  */
+                                 strBufToElementNameString();
+-                                state = Tokenizer.SELF_CLOSING_START_TAG;
++                                state = changeState(state, Tokenizer.SELF_CLOSING_START_TAG, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+@@ -1610,7 +1509,12 @@
+                                  * tag token.
+                                  */
+                                 strBufToElementNameString();
++
++                                //the change state event needs to be fire before the tag emittion
++                                //the emitCurrentTagToken always return the DATA state, at least for now...
++                                changeState(state, Tokenizer.DATA, pos);
+                                 state = emitCurrentTagToken(false, pos);
++
+                                 if (shouldSuspend) {
+                                     break stateloop;
+                                 }
+@@ -1680,14 +1584,20 @@
+                                  * U+002F SOLIDUS (/) Switch to the self-closing
+                                  * start tag state.
+                                  */
+-                                state = Tokenizer.SELF_CLOSING_START_TAG;
++                                state = changeState(state, Tokenizer.SELF_CLOSING_START_TAG, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+                                  * U+003E GREATER-THAN SIGN (>) Emit the current
+                                  * tag token.
+                                  */
++                                
++
++                                //the change state event needs to be fire before the tag emittion
++                                //the emitCurrentTagToken always return the DATA state, at least for now...
++                                changeState(state, Tokenizer.DATA, pos);
+                                 state = emitCurrentTagToken(false, pos);
++
+                                 if (shouldSuspend) {
+                                     break stateloop;
+                                 }
+@@ -1739,7 +1649,7 @@
+                                 /*
+                                  * Switch to the attribute name state.
+                                  */
+-                                state = Tokenizer.ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.ATTRIBUTE_NAME, pos);
+                                 break beforeattributenameloop;
+                             // continue stateloop;
+                         }
+@@ -1758,7 +1668,7 @@
+                             case '\r':
+                                 silentCarriageReturn();
+                                 attributeNameComplete();
+-                                state = Tokenizer.AFTER_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.AFTER_ATTRIBUTE_NAME, pos);
+                                 break stateloop;
+                             case '\n':
+                                 silentLineFeed();
+@@ -1772,7 +1682,7 @@
+                                  * Switch to the after attribute name state.
+                                  */
+                                 attributeNameComplete();
+-                                state = Tokenizer.AFTER_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.AFTER_ATTRIBUTE_NAME, pos);
+                                 continue stateloop;
+                             case '/':
+                                 /*
+@@ -1781,7 +1691,7 @@
+                                  */
+                                 attributeNameComplete();
+                                 addAttributeWithoutValue();
+-                                state = Tokenizer.SELF_CLOSING_START_TAG;
++                                state = changeState(state, Tokenizer.SELF_CLOSING_START_TAG, pos);
+                                 continue stateloop;
+                             case '=':
+                                 /*
+@@ -1789,7 +1699,7 @@
+                                  * attribute value state.
+                                  */
+                                 attributeNameComplete();
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_VALUE;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_VALUE, pos);
+                                 break attributenameloop;
+                             // continue stateloop;
+                             case '>':
+@@ -1799,7 +1709,13 @@
+                                  */
+                                 attributeNameComplete();
+                                 addAttributeWithoutValue();
++
++
++                                //the change state event needs to be fire before the tag emittion
++                                //the emitCurrentTagToken always return the DATA state, at least for now...
++                                changeState(state, Tokenizer.DATA, pos);
+                                 state = emitCurrentTagToken(false, pos);
++
+                                 if (shouldSuspend) {
+                                     break stateloop;
+                                 }
+@@ -1877,7 +1793,7 @@
+                                  * attribute value (double-quoted) state.
+                                  */
+                                 clearLongStrBufForNextState();
+-                                state = Tokenizer.ATTRIBUTE_VALUE_DOUBLE_QUOTED;
++                                state = changeState(state, Tokenizer.ATTRIBUTE_VALUE_DOUBLE_QUOTED, pos);
+                                 break beforeattributevalueloop;
+                             // continue stateloop;
+                             case '&':
+@@ -1887,7 +1803,7 @@
+                                  * input character.
+                                  */
+                                 clearLongStrBuf();
+-                                state = Tokenizer.ATTRIBUTE_VALUE_UNQUOTED;
++                                state = changeState(state, Tokenizer.ATTRIBUTE_VALUE_UNQUOTED, pos);
+                                 noteUnquotedAttributeValue();
+                                 reconsume = true;
+                                 continue stateloop;
+@@ -1897,7 +1813,7 @@
+                                  * value (single-quoted) state.
+                                  */
+                                 clearLongStrBufForNextState();
+-                                state = Tokenizer.ATTRIBUTE_VALUE_SINGLE_QUOTED;
++                                state = changeState(state, Tokenizer.ATTRIBUTE_VALUE_SINGLE_QUOTED, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+@@ -1908,7 +1824,13 @@
+                                  * Emit the current tag token.
+                                  */
+                                 addAttributeWithoutValue();
++
++
++                                //the change state event needs to be fire before the tag emittion
++                                //the emitCurrentTagToken always return the DATA state, at least for now...
++                                changeState(state, Tokenizer.DATA, pos);
+                                 state = emitCurrentTagToken(false, pos);
++
+                                 if (shouldSuspend) {
+                                     break stateloop;
+                                 }
+@@ -1943,7 +1865,7 @@
+                                  * state.
+                                  */
+ 
+-                                state = Tokenizer.ATTRIBUTE_VALUE_UNQUOTED;
++                                state = changeState(state, Tokenizer.ATTRIBUTE_VALUE_UNQUOTED, pos);
+                                 noteUnquotedAttributeValue();
+                                 continue stateloop;
+                         }
+@@ -1970,7 +1892,7 @@
+                                  */
+                                 addAttributeWithValue();
+ 
+-                                state = Tokenizer.AFTER_ATTRIBUTE_VALUE_QUOTED;
++                                state = changeState(state, Tokenizer.AFTER_ATTRIBUTE_VALUE_QUOTED, pos);
+                                 break attributevaluedoublequotedloop;
+                             // continue stateloop;
+                             case '&':
+@@ -1983,7 +1905,7 @@
+                                 clearStrBufAndAppendCurrentC(c);
+                                 rememberAmpersandLocation('\"');
+                                 returnState = state;
+-                                state = Tokenizer.CONSUME_CHARACTER_REFERENCE;
++                                state = changeState(state, Tokenizer.CONSUME_CHARACTER_REFERENCE, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+@@ -2020,7 +1942,7 @@
+                         switch (c) {
+                             case '\r':
+                                 silentCarriageReturn();
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                 break stateloop;
+                             case '\n':
+                                 silentLineFeed();
+@@ -2033,14 +1955,14 @@
+                                  * (LF) U+000C FORM FEED (FF) U+0020 SPACE
+                                  * Switch to the before attribute name state.
+                                  */
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                 continue stateloop;
+                             case '/':
+                                 /*
+                                  * U+002F SOLIDUS (/) Switch to the self-closing
+                                  * start tag state.
+                                  */
+-                                state = Tokenizer.SELF_CLOSING_START_TAG;
++                                state = changeState(state, Tokenizer.SELF_CLOSING_START_TAG, pos);
+                                 break afterattributevaluequotedloop;
+                             // continue stateloop;
+                             case '>':
+@@ -2048,7 +1970,12 @@
+                                  * U+003E GREATER-THAN SIGN (>) Emit the current
+                                  * tag token.
+                                  */
++
++                                //the change state event needs to be fire before the tag emittion
++                                //the emitCurrentTagToken always return the DATA state, at least for now...
++                                changeState(state, Tokenizer.DATA, pos);
+                                 state = emitCurrentTagToken(false, pos);
++
+                                 if (shouldSuspend) {
+                                     break stateloop;
+                                 }
+@@ -2065,7 +1992,7 @@
+                                  * Reconsume the character in the before
+                                  * attribute name state.
+                                  */
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                         }
+@@ -2089,7 +2016,13 @@
+                             // [NOCPP[
+                             errHtml4XmlVoidSyntax();
+                             // ]NOCPP]
+-                            state = emitCurrentTagToken(true, pos);
++
++
++                                //the change state event needs to be fire before the tag emittion
++                                //the emitCurrentTagToken always return the DATA state, at least for now...
++                                changeState(state, Tokenizer.DATA, pos);
++                                state = emitCurrentTagToken(true, pos);
++
+                             if (shouldSuspend) {
+                                 break stateloop;
+                             }
+@@ -2104,7 +2037,7 @@
+                              * Reconsume the character in the before attribute
+                              * name state.
+                              */
+-                            state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                            state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                             reconsume = true;
+                             continue stateloop;
+                     }
+@@ -2126,7 +2059,7 @@
+                             case '\r':
+                                 silentCarriageReturn();
+                                 addAttributeWithValue();
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                 break stateloop;
+                             case '\n':
+                                 silentLineFeed();
+@@ -2140,7 +2073,7 @@
+                                  * Switch to the before attribute name state.
+                                  */
+                                 addAttributeWithValue();
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                 continue stateloop;
+                             case '&':
+                                 /*
+@@ -2152,7 +2085,7 @@
+                                 clearStrBufAndAppendCurrentC(c);
+                                 rememberAmpersandLocation('>');
+                                 returnState = state;
+-                                state = Tokenizer.CONSUME_CHARACTER_REFERENCE;
++                                state = changeState(state, Tokenizer.CONSUME_CHARACTER_REFERENCE, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+@@ -2160,7 +2093,13 @@
+                                  * tag token.
+                                  */
+                                 addAttributeWithValue();
++                                
++
++                                //the change state event needs to be fire before the tag emittion
++                                //the emitCurrentTagToken always return the DATA state, at least for now...
++                                changeState(state, Tokenizer.DATA, pos);
+                                 state = emitCurrentTagToken(false, pos);
++
+                                 if (shouldSuspend) {
+                                     break stateloop;
+                                 }
+@@ -2232,14 +2171,14 @@
+                                  * start tag state.
+                                  */
+                                 addAttributeWithoutValue();
+-                                state = Tokenizer.SELF_CLOSING_START_TAG;
++                                state = changeState(state, Tokenizer.SELF_CLOSING_START_TAG, pos);
+                                 continue stateloop;
+                             case '=':
+                                 /*
+                                  * U+003D EQUALS SIGN (=) Switch to the before
+                                  * attribute value state.
+                                  */
+-                                state = Tokenizer.BEFORE_ATTRIBUTE_VALUE;
++                                state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_VALUE, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+@@ -2247,7 +2186,13 @@
+                                  * tag token.
+                                  */
+                                 addAttributeWithoutValue();
++                                
++
++                                //the change state event needs to be fire before the tag emittion
++                                //the emitCurrentTagToken always return the DATA state, at least for now...
++                                changeState(state, Tokenizer.DATA, pos);
+                                 state = emitCurrentTagToken(false, pos);
++
+                                 if (shouldSuspend) {
+                                     break stateloop;
+                                 }
+@@ -2294,7 +2239,7 @@
+                                 /*
+                                  * Switch to the attribute name state.
+                                  */
+-                                state = Tokenizer.ATTRIBUTE_NAME;
++                                state = changeState(state, Tokenizer.ATTRIBUTE_NAME, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -2333,11 +2278,11 @@
+                         switch (c) {
+                             case '>':
+                                 emitComment(0, pos);
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '-':
+                                 appendLongStrBuf(c);
+-                                state = Tokenizer.BOGUS_COMMENT_HYPHEN;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT_HYPHEN, pos);
+                                 break boguscommentloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+@@ -2366,25 +2311,25 @@
+                                 maybeAppendSpaceToBogusComment();
+                                 // ]NOCPP]
+                                 emitComment(0, pos);
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '-':
+                                 appendSecondHyphenToBogusComment();
+                                 continue boguscommenthyphenloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 break stateloop;
+                             case '\n':
+                                 appendLongStrBufLineFeed();
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 continue stateloop;
+                             case '\u0000':
+                                 c = '\uFFFD';
+                                 // fall thru
+                             default:
+                                 appendLongStrBuf(c);
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -2427,20 +2372,20 @@
+                         switch (c) {
+                             case '-':
+                                 clearLongStrBufAndAppendToComment(c);
+-                                state = Tokenizer.MARKUP_DECLARATION_HYPHEN;
++                                state = changeState(state, Tokenizer.MARKUP_DECLARATION_HYPHEN, pos);
+                                 break markupdeclarationopenloop;
+                             // continue stateloop;
+                             case 'd':
+                             case 'D':
+                                 clearLongStrBufAndAppendToComment(c);
+                                 index = 0;
+-                                state = Tokenizer.MARKUP_DECLARATION_OCTYPE;
++                                state = changeState(state, Tokenizer.MARKUP_DECLARATION_OCTYPE, pos);
+                                 continue stateloop;
+                             case '[':
+                                 if (tokenHandler.inForeign()) {
+                                     clearLongStrBufAndAppendToComment(c);
+                                     index = 0;
+-                                    state = Tokenizer.CDATA_START;
++                                    state = changeState(state, Tokenizer.CDATA_START, pos);
+                                     continue stateloop;
+                                 } else {
+                                     // fall through
+@@ -2448,7 +2393,7 @@
+                             default:
+                                 errBogusComment();
+                                 clearLongStrBuf();
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                         }
+@@ -2465,12 +2410,12 @@
+                                 break stateloop;
+                             case '-':
+                                 clearLongStrBufForNextState();
+-                                state = Tokenizer.COMMENT_START;
++                                state = changeState(state, Tokenizer.COMMENT_START, pos);
+                                 break markupdeclarationhyphenloop;
+                             // continue stateloop;
+                             default:
+                                 errBogusComment();
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                         }
+@@ -2495,7 +2440,7 @@
+                                  * start dash state.
+                                  */
+                                 appendLongStrBuf(c);
+-                                state = Tokenizer.COMMENT_START_DASH;
++                                state = changeState(state, Tokenizer.COMMENT_START_DASH, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+@@ -2507,15 +2452,15 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 break stateloop;
+                             case '\n':
+                                 appendLongStrBufLineFeed();
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 break commentstartloop;
+                             case '\u0000':
+                                 c = '\uFFFD';
+@@ -2529,7 +2474,7 @@
+                                 /*
+                                  * Switch to the comment state.
+                                  */
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 break commentstartloop;
+                             // continue stateloop;
+                         }
+@@ -2551,7 +2496,7 @@
+                                  * end dash state
+                                  */
+                                 appendLongStrBuf(c);
+-                                state = Tokenizer.COMMENT_END_DASH;
++                                state = changeState(state, Tokenizer.COMMENT_END_DASH, pos);
+                                 break commentloop;
+                             // continue stateloop;
+                             case '\r':
+@@ -2593,16 +2538,16 @@
+                                  * end state
+                                  */
+                                 appendLongStrBuf(c);
+-                                state = Tokenizer.COMMENT_END;
++                                state = changeState(state, Tokenizer.COMMENT_END, pos);
+                                 break commentenddashloop;
+                             // continue stateloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 break stateloop;
+                             case '\n':
+                                 appendLongStrBufLineFeed();
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 continue stateloop;
+                             case '\u0000':
+                                 c = '\uFFFD';
+@@ -2617,7 +2562,7 @@
+                                 /*
+                                  * Switch to the comment state.
+                                  */
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -2642,7 +2587,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '-':
+                                 /* U+002D HYPHEN-MINUS (-) Parse error. */
+@@ -2665,22 +2610,22 @@
+                                  * end space state.
+                                  */
+                                 adjustDoubleHyphenAndAppendToLongStrBufAndErr(c);
+-                                state = Tokenizer.COMMENT_END_SPACE;
++                                state = changeState(state, Tokenizer.COMMENT_END_SPACE, pos);
+                                 break commentendloop;
+                             // continue stateloop;
+                             case '\r':
+                                 adjustDoubleHyphenAndAppendToLongStrBufCarriageReturn();
+-                                state = Tokenizer.COMMENT_END_SPACE;
++                                state = changeState(state, Tokenizer.COMMENT_END_SPACE, pos);
+                                 break stateloop;
+                             case '\n':
+                                 adjustDoubleHyphenAndAppendToLongStrBufLineFeed();
+-                                state = Tokenizer.COMMENT_END_SPACE;
++                                state = changeState(state, Tokenizer.COMMENT_END_SPACE, pos);
+                                 break commentendloop;
+                             // continue stateloop;
+                             case '!':
+                                 errHyphenHyphenBang();
+                                 appendLongStrBuf(c);
+-                                state = Tokenizer.COMMENT_END_BANG;
++                                state = changeState(state, Tokenizer.COMMENT_END_BANG, pos);
+                                 continue stateloop;
+                             case '\u0000':
+                                 c = '\uFFFD';
+@@ -2695,7 +2640,7 @@
+                                 /*
+                                  * Switch to the comment state.
+                                  */
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -2720,7 +2665,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '-':
+                                 /*
+@@ -2731,7 +2676,7 @@
+                                 /*
+                                  * Switch to the comment end dash state.
+                                  */
+-                                state = Tokenizer.COMMENT_END_DASH;
++                                state = changeState(state, Tokenizer.COMMENT_END_DASH, pos);
+                                 continue stateloop;
+                             case ' ':
+                             case '\t':
+@@ -2764,7 +2709,7 @@
+                                 /*
+                                  * Switch to the comment state.
+                                  */
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -2790,7 +2735,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '-':
+                                 /*
+@@ -2802,7 +2747,7 @@
+                                 /*
+                                  * Switch to the comment end dash state.
+                                  */
+-                                state = Tokenizer.COMMENT_END_DASH;
++                                state = changeState(state, Tokenizer.COMMENT_END_DASH, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+@@ -2825,7 +2770,7 @@
+                                 /*
+                                  * Switch to the comment state.
+                                  */
+-                                state = Tokenizer.COMMENT;
++                                state = changeState(state, Tokenizer.COMMENT, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -2847,7 +2792,7 @@
+                              * state
+                              */
+                             appendLongStrBuf(c);
+-                            state = Tokenizer.COMMENT_END;
++                            state = changeState(state, Tokenizer.COMMENT_END, pos);
+                             continue stateloop;
+                         case '>':
+                             errPrematureEndOfComment();
+@@ -2856,15 +2801,15 @@
+                             /*
+                              * Switch to the data state.
+                              */
+-                            state = Tokenizer.DATA;
++                            state = changeState(state, Tokenizer.DATA, pos);
+                             continue stateloop;
+                         case '\r':
+                             appendLongStrBufCarriageReturn();
+-                            state = Tokenizer.COMMENT;
++                            state = changeState(state, Tokenizer.COMMENT, pos);
+                             break stateloop;
+                         case '\n':
+                             appendLongStrBufLineFeed();
+-                            state = Tokenizer.COMMENT;
++                            state = changeState(state, Tokenizer.COMMENT, pos);
+                             continue stateloop;
+                         case '\u0000':
+                             c = '\uFFFD';
+@@ -2879,7 +2824,7 @@
+                             /*
+                              * Switch to the comment state.
+                              */
+-                            state = Tokenizer.COMMENT;
++                            state = changeState(state, Tokenizer.COMMENT, pos);
+                             continue stateloop;
+                     }
+                     // XXX reorder point
+@@ -2898,14 +2843,14 @@
+                                 appendLongStrBuf(c);
+                             } else {
+                                 errBogusComment();
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             }
+                             index++;
+                             continue;
+                         } else {
+-                            state = Tokenizer.DOCTYPE;
++                            state = changeState(state, Tokenizer.DOCTYPE, pos);
+                             reconsume = true;
+                             break markupdeclarationdoctypeloop;
+                             // continue stateloop;
+@@ -2929,7 +2874,7 @@
+                         switch (c) {
+                             case '\r':
+                                 silentCarriageReturn();
+-                                state = Tokenizer.BEFORE_DOCTYPE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_DOCTYPE_NAME, pos);
+                                 break stateloop;
+                             case '\n':
+                                 silentLineFeed();
+@@ -2942,7 +2887,7 @@
+                                  * (LF) U+000C FORM FEED (FF) U+0020 SPACE
+                                  * Switch to the before DOCTYPE name state.
+                                  */
+-                                state = Tokenizer.BEFORE_DOCTYPE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_DOCTYPE_NAME, pos);
+                                 break doctypeloop;
+                             // continue stateloop;
+                             default:
+@@ -2954,7 +2899,7 @@
+                                  * Reconsume the current character in the before
+                                  * DOCTYPE name state.
+                                  */
+-                                state = Tokenizer.BEFORE_DOCTYPE_NAME;
++                                state = changeState(state, Tokenizer.BEFORE_DOCTYPE_NAME, pos);
+                                 reconsume = true;
+                                 break doctypeloop;
+                             // continue stateloop;
+@@ -3007,7 +2952,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '\u0000':
+                                 c = '\uFFFD';
+@@ -3033,7 +2978,7 @@
+                                 /*
+                                  * Switch to the DOCTYPE name state.
+                                  */
+-                                state = Tokenizer.DOCTYPE_NAME;
++                                state = changeState(state, Tokenizer.DOCTYPE_NAME, pos);
+                                 break beforedoctypenameloop;
+                             // continue stateloop;
+                         }
+@@ -3052,7 +2997,7 @@
+                             case '\r':
+                                 silentCarriageReturn();
+                                 strBufToDoctypeName();
+-                                state = Tokenizer.AFTER_DOCTYPE_NAME;
++                                state = changeState(state, Tokenizer.AFTER_DOCTYPE_NAME, pos);
+                                 break stateloop;
+                             case '\n':
+                                 silentLineFeed();
+@@ -3066,7 +3011,7 @@
+                                  * Switch to the after DOCTYPE name state.
+                                  */
+                                 strBufToDoctypeName();
+-                                state = Tokenizer.AFTER_DOCTYPE_NAME;
++                                state = changeState(state, Tokenizer.AFTER_DOCTYPE_NAME, pos);
+                                 break doctypenameloop;
+                             // continue stateloop;
+                             case '>':
+@@ -3079,7 +3024,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '\u0000':
+                                 c = '\uFFFD';
+@@ -3142,18 +3087,18 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case 'p':
+                             case 'P':
+                                 index = 0;
+-                                state = Tokenizer.DOCTYPE_UBLIC;
++                                state = changeState(state, Tokenizer.DOCTYPE_UBLIC, pos);
+                                 break afterdoctypenameloop;
+                             // continue stateloop;
+                             case 's':
+                             case 'S':
+                                 index = 0;
+-                                state = Tokenizer.DOCTYPE_YSTEM;
++                                state = changeState(state, Tokenizer.DOCTYPE_YSTEM, pos);
+                                 continue stateloop;
+                             default:
+                                 /*
+@@ -3169,7 +3114,7 @@
+                                 /*
+                                  * Switch to the bogus DOCTYPE state.
+                                  */
+-                                state = Tokenizer.BOGUS_DOCTYPE;
++                                state = changeState(state, Tokenizer.BOGUS_DOCTYPE, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -3194,14 +3139,14 @@
+                             if (folded != Tokenizer.UBLIC[index]) {
+                                 bogusDoctype();
+                                 // forceQuirks = true;
+-                                state = Tokenizer.BOGUS_DOCTYPE;
++                                state = changeState(state, Tokenizer.BOGUS_DOCTYPE, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             }
+                             index++;
+                             continue;
+                         } else {
+-                            state = Tokenizer.BEFORE_DOCTYPE_PUBLIC_IDENTIFIER;
++                            state = changeState(state, Tokenizer.BEFORE_DOCTYPE_PUBLIC_IDENTIFIER, pos);
+                             reconsume = true;
+                             break doctypeublicloop;
+                             // continue stateloop;
+@@ -3249,7 +3194,7 @@
+                                  * then switch to the DOCTYPE public identifier
+                                  * (double-quoted) state.
+                                  */
+-                                state = Tokenizer.DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
++                                state = changeState(state, Tokenizer.DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED, pos);
+                                 break beforedoctypepublicidentifierloop;
+                             // continue stateloop;
+                             case '\'':
+@@ -3263,7 +3208,7 @@
+                                  * then switch to the DOCTYPE public identifier
+                                  * (single-quoted) state.
+                                  */
+-                                state = Tokenizer.DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
++                                state = changeState(state, Tokenizer.DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /* U+003E GREATER-THAN SIGN (>) Parse error. */
+@@ -3280,7 +3225,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             default:
+                                 bogusDoctype();
+@@ -3292,7 +3237,7 @@
+                                 /*
+                                  * Switch to the bogus DOCTYPE state.
+                                  */
+-                                state = Tokenizer.BOGUS_DOCTYPE;
++                                state = changeState(state, Tokenizer.BOGUS_DOCTYPE, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -3313,7 +3258,7 @@
+                                  * DOCTYPE public identifier state.
+                                  */
+                                 publicIdentifier = longStrBufToString();
+-                                state = Tokenizer.AFTER_DOCTYPE_PUBLIC_IDENTIFIER;
++                                state = changeState(state, Tokenizer.AFTER_DOCTYPE_PUBLIC_IDENTIFIER, pos);
+                                 break doctypepublicidentifierdoublequotedloop;
+                             // continue stateloop;
+                             case '>':
+@@ -3334,7 +3279,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+@@ -3396,7 +3341,7 @@
+                                  * then switch to the DOCTYPE system identifier
+                                  * (double-quoted) state.
+                                  */
+-                                state = Tokenizer.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
++                                state = changeState(state, Tokenizer.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED, pos);
+                                 break afterdoctypepublicidentifierloop;
+                             // continue stateloop;
+                             case '\'':
+@@ -3410,7 +3355,7 @@
+                                  * then switch to the DOCTYPE system identifier
+                                  * (single-quoted) state.
+                                  */
+-                                state = Tokenizer.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
++                                state = changeState(state, Tokenizer.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+@@ -3421,7 +3366,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             default:
+                                 bogusDoctype();
+@@ -3433,7 +3378,7 @@
+                                 /*
+                                  * Switch to the bogus DOCTYPE state.
+                                  */
+-                                state = Tokenizer.BOGUS_DOCTYPE;
++                                state = changeState(state, Tokenizer.BOGUS_DOCTYPE, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -3454,7 +3399,7 @@
+                                  * DOCTYPE system identifier state.
+                                  */
+                                 systemIdentifier = longStrBufToString();
+-                                state = Tokenizer.AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
++                                state = changeState(state, Tokenizer.AFTER_DOCTYPE_SYSTEM_IDENTIFIER, pos);
+                                 continue stateloop;
+                             case '>':
+                                 /*
+@@ -3474,7 +3419,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+@@ -3534,7 +3479,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             default:
+                                 /*
+@@ -3543,7 +3488,7 @@
+                                  * to on.)
+                                  */
+                                 bogusDoctypeWithoutQuirks();
+-                                state = Tokenizer.BOGUS_DOCTYPE;
++                                state = changeState(state, Tokenizer.BOGUS_DOCTYPE, pos);
+                                 break afterdoctypesystemidentifierloop;
+                             // continue stateloop;
+                         }
+@@ -3572,7 +3517,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 silentCarriageReturn();
+@@ -3609,14 +3554,14 @@
+                             }
+                             if (folded != Tokenizer.YSTEM[index]) {
+                                 bogusDoctype();
+-                                state = Tokenizer.BOGUS_DOCTYPE;
++                                state = changeState(state, Tokenizer.BOGUS_DOCTYPE, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             }
+                             index++;
+                             continue stateloop;
+                         } else {
+-                            state = Tokenizer.BEFORE_DOCTYPE_SYSTEM_IDENTIFIER;
++                            state = changeState(state, Tokenizer.BEFORE_DOCTYPE_SYSTEM_IDENTIFIER, pos);
+                             reconsume = true;
+                             break doctypeystemloop;
+                             // continue stateloop;
+@@ -3664,7 +3609,7 @@
+                                  * then switch to the DOCTYPE system identifier
+                                  * (double-quoted) state.
+                                  */
+-                                state = Tokenizer.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
++                                state = changeState(state, Tokenizer.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED, pos);
+                                 continue stateloop;
+                             case '\'':
+                                 /*
+@@ -3677,7 +3622,7 @@
+                                  * then switch to the DOCTYPE system identifier
+                                  * (single-quoted) state.
+                                  */
+-                                state = Tokenizer.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
++                                state = changeState(state, Tokenizer.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED, pos);
+                                 break beforedoctypesystemidentifierloop;
+                             // continue stateloop;
+                             case '>':
+@@ -3695,7 +3640,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             default:
+                                 bogusDoctype();
+@@ -3707,7 +3652,7 @@
+                                 /*
+                                  * Switch to the bogus DOCTYPE state.
+                                  */
+-                                state = Tokenizer.BOGUS_DOCTYPE;
++                                state = changeState(state, Tokenizer.BOGUS_DOCTYPE, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -3728,7 +3673,7 @@
+                                  * DOCTYPE system identifier state.
+                                  */
+                                 systemIdentifier = longStrBufToString();
+-                                state = Tokenizer.AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
++                                state = changeState(state, Tokenizer.AFTER_DOCTYPE_SYSTEM_IDENTIFIER, pos);
+                                 continue stateloop;
+                             case '>':
+                                 errGtInSystemId();
+@@ -3745,7 +3690,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+@@ -3787,7 +3732,7 @@
+                                  * DOCTYPE public identifier state.
+                                  */
+                                 publicIdentifier = longStrBufToString();
+-                                state = Tokenizer.AFTER_DOCTYPE_PUBLIC_IDENTIFIER;
++                                state = changeState(state, Tokenizer.AFTER_DOCTYPE_PUBLIC_IDENTIFIER, pos);
+                                 continue stateloop;
+                             case '>':
+                                 errGtInPublicId();
+@@ -3804,7 +3749,7 @@
+                                 /*
+                                  * Switch to the data state.
+                                  */
+-                                state = Tokenizer.DATA;
++                                state = changeState(state, Tokenizer.DATA, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 appendLongStrBufCarriageReturn();
+@@ -3841,7 +3786,7 @@
+                                 appendLongStrBuf(c);
+                             } else {
+                                 errBogusComment();
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             }
+@@ -3849,7 +3794,7 @@
+                             continue;
+                         } else {
+                             cstart = pos; // start coalescing
+-                            state = Tokenizer.CDATA_SECTION;
++                            state = changeState(state, Tokenizer.CDATA_SECTION, pos);
+                             reconsume = true;
+                             break; // FALL THROUGH continue stateloop;
+                         }
+@@ -3868,7 +3813,7 @@
+                         switch (c) {
+                             case ']':
+                                 flushChars(buf, pos);
+-                                state = Tokenizer.CDATA_RSQB;
++                                state = changeState(state, Tokenizer.CDATA_RSQB, pos);
+                                 break cdatasectionloop; // FALL THROUGH
+                             case '\u0000':
+                                 emitReplacementCharacter(buf, pos);
+@@ -3892,13 +3837,13 @@
+                         c = checkChar(buf, pos);
+                         switch (c) {
+                             case ']':
+-                                state = Tokenizer.CDATA_RSQB_RSQB;
++                                state = changeState(state, Tokenizer.CDATA_RSQB_RSQB, pos);
+                                 break cdatarsqb;
+                             default:
+                                 tokenHandler.characters(Tokenizer.RSQB_RSQB, 0,
+                                         1);
+                                 cstart = pos;
+-                                state = Tokenizer.CDATA_SECTION;
++                                state = changeState(state, Tokenizer.CDATA_SECTION, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                         }
+@@ -3912,12 +3857,12 @@
+                     switch (c) {
+                         case '>':
+                             cstart = pos + 1;
+-                            state = Tokenizer.DATA;
++                            state = changeState(state, Tokenizer.DATA, pos);
+                             continue stateloop;
+                         default:
+                             tokenHandler.characters(Tokenizer.RSQB_RSQB, 0, 2);
+                             cstart = pos;
+-                            state = Tokenizer.CDATA_SECTION;
++                            state = changeState(state, Tokenizer.CDATA_SECTION, pos);
+                             reconsume = true;
+                             continue stateloop;
+ 
+@@ -3944,7 +3889,7 @@
+                                  */
+                                 addAttributeWithValue();
+ 
+-                                state = Tokenizer.AFTER_ATTRIBUTE_VALUE_QUOTED;
++                                state = changeState(state, Tokenizer.AFTER_ATTRIBUTE_VALUE_QUOTED, pos);
+                                 continue stateloop;
+                             case '&':
+                                 /*
+@@ -3956,7 +3901,7 @@
+                                 clearStrBufAndAppendCurrentC(c);
+                                 rememberAmpersandLocation('\'');
+                                 returnState = state;
+-                                state = Tokenizer.CONSUME_CHARACTER_REFERENCE;
++                                state = changeState(state, Tokenizer.CONSUME_CHARACTER_REFERENCE, pos);
+                                 break attributevaluesinglequotedloop;
+                             // continue stateloop;
+                             case '\r':
+@@ -4019,7 +3964,7 @@
+                             if ((returnState & (~1)) == 0) {
+                                 cstart = pos;
+                             }
+-                            state = returnState;
++                            state = changeState(state, returnState, pos);
+                             reconsume = true;
+                             continue stateloop;
+                         case '#':
+@@ -4028,12 +3973,12 @@
+                              * SIGN.
+                              */
+                             appendStrBuf('#');
+-                            state = Tokenizer.CONSUME_NCR;
++                            state = changeState(state, Tokenizer.CONSUME_NCR, pos);
+                             continue stateloop;
+                         default:
+                             if (c == additional) {
+                                 emitOrAppendStrBuf(returnState);
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             }
+@@ -4042,7 +3987,7 @@
+                             hi = (NamedCharacters.NAMES.length - 1);
+                             candidate = -1;
+                             strBufMark = 0;
+-                            state = Tokenizer.CHARACTER_REFERENCE_LOOP;
++                            state = changeState(state, Tokenizer.CHARACTER_REFERENCE_LOOP, pos);
+                             reconsume = true;
+                             // FALL THROUGH continue stateloop;
+                     }
+@@ -4118,7 +4063,7 @@
+                         if ((returnState & (~1)) == 0) {
+                             cstart = pos;
+                         }
+-                        state = returnState;
++                        state = changeState(state, returnState, pos);
+                         reconsume = true;
+                         continue stateloop;
+                     } else {
+@@ -4161,7 +4106,7 @@
+                                      */
+                                     errNoNamedCharacterMatch();
+                                     appendStrBufToLongStrBuf();
+-                                    state = returnState;
++                                    state = changeState(state, returnState, pos);
+                                     reconsume = true;
+                                     continue stateloop;
+                                 }
+@@ -4207,7 +4152,7 @@
+                         if ((returnState & (~1)) == 0) {
+                             cstart = pos;
+                         }
+-                        state = returnState;
++                        state = changeState(state, returnState, pos);
+                         reconsume = true;
+                         continue stateloop;
+                         /*
+@@ -4250,7 +4195,7 @@
+                              * interpret it as a hexadecimal number.
+                              */
+                             appendStrBuf(c);
+-                            state = Tokenizer.HEX_NCR_LOOP;
++                            state = changeState(state, Tokenizer.HEX_NCR_LOOP, pos);
+                             continue stateloop;
+                         default:
+                             /*
+@@ -4261,7 +4206,7 @@
+                              * When it comes to interpreting the number,
+                              * interpret it as a decimal number.
+                              */
+-                            state = Tokenizer.DECIMAL_NRC_LOOP;
++                            state = changeState(state, Tokenizer.DECIMAL_NRC_LOOP, pos);
+                             reconsume = true;
+                             // FALL THROUGH continue stateloop;
+                     }
+@@ -4297,7 +4242,7 @@
+                                 if ((returnState & (~1)) == 0) {
+                                     cstart = pos + 1;
+                                 }
+-                                state = Tokenizer.HANDLE_NCR_VALUE;
++                                state = changeState(state, Tokenizer.HANDLE_NCR_VALUE, pos);
+                                 // FALL THROUGH continue stateloop;
+                                 break decimalloop;
+                             } else {
+@@ -4307,7 +4252,7 @@
+                                 if ((returnState & (~1)) == 0) {
+                                     cstart = pos + 1;
+                                 }
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 continue stateloop;
+                             }
+                         } else {
+@@ -4328,7 +4273,7 @@
+                                 if ((returnState & (~1)) == 0) {
+                                     cstart = pos;
+                                 }
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             } else {
+@@ -4336,7 +4281,7 @@
+                                 if ((returnState & (~1)) == 0) {
+                                     cstart = pos;
+                                 }
+-                                state = Tokenizer.HANDLE_NCR_VALUE;
++                                state = changeState(state, Tokenizer.HANDLE_NCR_VALUE, pos);
+                                 reconsume = true;
+                                 // FALL THROUGH continue stateloop;
+                                 break decimalloop;
+@@ -4348,7 +4293,7 @@
+                     // WARNING previous state sets reconsume
+                     // XXX inline this case if the method size can take it
+                     handleNcrValue(returnState);
+-                    state = returnState;
++                    state = changeState(state, returnState, pos);
+                     continue stateloop;
+                     // XXX reorder point
+                 case HEX_NCR_LOOP:
+@@ -4388,7 +4333,7 @@
+                                 if ((returnState & (~1)) == 0) {
+                                     cstart = pos + 1;
+                                 }
+-                                state = Tokenizer.HANDLE_NCR_VALUE;
++                                state = changeState(state, Tokenizer.HANDLE_NCR_VALUE, pos);
+                                 continue stateloop;
+                             } else {
+                                 errNoDigitsInNCR();
+@@ -4397,7 +4342,7 @@
+                                 if ((returnState & (~1)) == 0) {
+                                     cstart = pos + 1;
+                                 }
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 continue stateloop;
+                             }
+                         } else {
+@@ -4418,7 +4363,7 @@
+                                 if ((returnState & (~1)) == 0) {
+                                     cstart = pos;
+                                 }
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             } else {
+@@ -4426,7 +4371,7 @@
+                                 if ((returnState & (~1)) == 0) {
+                                     cstart = pos;
+                                 }
+-                                state = Tokenizer.HANDLE_NCR_VALUE;
++                                state = changeState(state, Tokenizer.HANDLE_NCR_VALUE, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             }
+@@ -4489,7 +4434,7 @@
+                                 flushChars(buf, pos);
+ 
+                                 returnState = state;
+-                                state = Tokenizer.TAG_OPEN_NON_PCDATA;
++                                state = changeState(state, Tokenizer.TAG_OPEN_NON_PCDATA, pos);
+                                 break cdataloop; // FALL THRU continue
+                             // stateloop;
+                             case '\u0000':
+@@ -4522,7 +4467,7 @@
+                             case '!':
+                                 tokenHandler.characters(Tokenizer.LT_GT, 0, 1);
+                                 cstart = pos;
+-                                state = Tokenizer.ESCAPE_EXCLAMATION;
++                                state = changeState(state, Tokenizer.ESCAPE_EXCLAMATION, pos);
+                                 break tagopennonpcdataloop; // FALL THRU
+                             // continue
+                             // stateloop;
+@@ -4539,7 +4484,7 @@
+                                      */
+                                     index = 0;
+                                     clearStrBufForNextState();
+-                                    state = Tokenizer.CLOSE_TAG_OPEN_NOT_PCDATA;
++                                    state = changeState(state, Tokenizer.CLOSE_TAG_OPEN_NOT_PCDATA, pos);
+                                     continue stateloop;
+                                 } // else fall through
+                             default:
+@@ -4553,7 +4498,7 @@
+                                  * the data state.
+                                  */
+                                 cstart = pos;
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                         }
+@@ -4567,12 +4512,12 @@
+                         c = checkChar(buf, pos);
+                         switch (c) {
+                             case '-':
+-                                state = Tokenizer.ESCAPE_EXCLAMATION_HYPHEN;
++                                state = changeState(state, Tokenizer.ESCAPE_EXCLAMATION_HYPHEN, pos);
+                                 break escapeexclamationloop; // FALL THRU
+                             // continue
+                             // stateloop;
+                             default:
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                         }
+@@ -4586,11 +4531,11 @@
+                         c = checkChar(buf, pos);
+                         switch (c) {
+                             case '-':
+-                                state = Tokenizer.ESCAPE_HYPHEN_HYPHEN;
++                                state = changeState(state, Tokenizer.ESCAPE_HYPHEN_HYPHEN, pos);
+                                 break escapeexclamationhyphenloop;
+                             // continue stateloop;
+                             default:
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                         }
+@@ -4606,20 +4551,20 @@
+                             case '-':
+                                 continue;
+                             case '>':
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 continue stateloop;
+                             case '\u0000':
+                                 emitReplacementCharacter(buf, pos);
+-                                state = Tokenizer.ESCAPE;
++                                state = changeState(state, Tokenizer.ESCAPE, pos);
+                                 break escapehyphenhyphenloop;
+                             case '\r':
+                                 emitCarriageReturn(buf, pos);
+-                                state = Tokenizer.ESCAPE;
++                                state = changeState(state, Tokenizer.ESCAPE, pos);
+                                 break stateloop;
+                             case '\n':
+                                 silentLineFeed();
+                             default:
+-                                state = Tokenizer.ESCAPE;
++                                state = changeState(state, Tokenizer.ESCAPE, pos);
+                                 break escapehyphenhyphenloop;
+                             // continue stateloop;
+                         }
+@@ -4633,7 +4578,7 @@
+                         c = checkChar(buf, pos);
+                         switch (c) {
+                             case '-':
+-                                state = Tokenizer.ESCAPE_HYPHEN;
++                                state = changeState(state, Tokenizer.ESCAPE_HYPHEN, pos);
+                                 break escapeloop; // FALL THRU continue
+                             // stateloop;
+                             case '\u0000':
+@@ -4657,20 +4602,20 @@
+                         c = checkChar(buf, pos);
+                         switch (c) {
+                             case '-':
+-                                state = Tokenizer.ESCAPE_HYPHEN_HYPHEN;
++                                state = changeState(state, Tokenizer.ESCAPE_HYPHEN_HYPHEN, pos);
+                                 continue stateloop;
+                             case '\u0000':
+                                 emitReplacementCharacter(buf, pos);
+-                                state = Tokenizer.ESCAPE;
++                                state = changeState(state, Tokenizer.ESCAPE, pos);
+                                 continue stateloop;
+                             case '\r':
+                                 emitCarriageReturn(buf, pos);
+-                                state = Tokenizer.ESCAPE;
++                                state = changeState(state, Tokenizer.ESCAPE, pos);
+                                 continue stateloop;
+                             case '\n':
+                                 silentLineFeed();
+                             default:
+-                                state = Tokenizer.ESCAPE;
++                                state = changeState(state, Tokenizer.ESCAPE, pos);
+                                 continue stateloop;
+                         }
+                     }
+@@ -4723,7 +4668,7 @@
+                                         0, 2);
+                                 emitStrBuf();
+                                 cstart = pos;
+-                                state = returnState;
++                                state = changeState(state, returnState, pos);
+                                 reconsume = true;
+                                 continue stateloop;
+                             }
+@@ -4738,7 +4683,7 @@
+                             switch (c) {
+                                 case '\r':
+                                     silentCarriageReturn();
+-                                    state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                    state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                     break stateloop;
+                                 case '\n':
+                                     silentLineFeed();
+@@ -4752,14 +4697,19 @@
+                                      * SPACE Switch to the before attribute name
+                                      * state.
+                                      */
+-                                    state = Tokenizer.BEFORE_ATTRIBUTE_NAME;
++                                    state = changeState(state, Tokenizer.BEFORE_ATTRIBUTE_NAME, pos);
+                                     continue stateloop;
+                                 case '>':
+                                     /*
+                                      * U+003E GREATER-THAN SIGN (>) Emit the
+                                      * current tag token.
+                                      */
++
++                                    //the change state event needs to be fire before the tag emittion
++                                    //the emitCurrentTagToken always return the DATA state, at least for now...
++                                    changeState(state, Tokenizer.DATA, pos);
+                                     state = emitCurrentTagToken(false, pos);
++
+                                     if (shouldSuspend) {
+                                         break stateloop;
+                                     }
+@@ -4772,7 +4722,7 @@
+                                      * U+002F SOLIDUS (/) Switch to the
+                                      * self-closing start tag state.
+                                      */
+-                                    state = Tokenizer.SELF_CLOSING_START_TAG;
++                                    state = changeState(state, Tokenizer.SELF_CLOSING_START_TAG, pos);
+                                     continue stateloop;
+                                 default:
+                                     // [NOCPP[
+@@ -4787,7 +4737,7 @@
+                                         cstart = pos; // don't drop the
+                                                       // character
+                                     }
+-                                    state = returnState;
++                                    state = changeState(state, returnState, pos);
+                                     continue stateloop;
+                             }
+                         }
+@@ -4811,7 +4761,7 @@
+                              * Switch to the data state.
+                              */
+                             cstart = pos + 1;
+-                            state = Tokenizer.DATA;
++                            state = changeState(state, Tokenizer.DATA, pos);
+                             continue stateloop;
+                         case '\r':
+                             silentCarriageReturn();
+@@ -4821,7 +4771,7 @@
+                              * Switch to the bogus comment state.
+                              */
+                             clearLongStrBufAndAppendToComment('\n');
+-                            state = Tokenizer.BOGUS_COMMENT;
++                            state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                             break stateloop;
+                         case '\n':
+                             silentLineFeed();
+@@ -4831,7 +4781,7 @@
+                              * Switch to the bogus comment state.
+                              */
+                             clearLongStrBufAndAppendToComment('\n');
+-                            state = Tokenizer.BOGUS_COMMENT;
++                            state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                             continue stateloop;
+                         case '\u0000':
+                             c = '\uFFFD';
+@@ -4856,7 +4806,7 @@
+                                  * emit the token yet; further details will be
+                                  * filled in before it is emitted.)
+                                  */
+-                                state = Tokenizer.TAG_NAME;
++                                state = changeState(state, Tokenizer.TAG_NAME, pos);
+                                 continue stateloop;
+                             } else {
+                                 /* Anything else Parse error. */
+@@ -4865,7 +4815,7 @@
+                                  * Switch to the bogus comment state.
+                                  */
+                                 clearLongStrBufAndAppendToComment(c);
+-                                state = Tokenizer.BOGUS_COMMENT;
++                                state = changeState(state, Tokenizer.BOGUS_COMMENT, pos);
+                                 continue stateloop;
+                             }
+                     }
+@@ -4894,7 +4844,7 @@
+                                 clearStrBufAndAppendCurrentC(c);
+                                 additional = '\u0000';
+                                 returnState = state;
+-                                state = Tokenizer.CONSUME_CHARACTER_REFERENCE;
++                                state = changeState(state, Tokenizer.CONSUME_CHARACTER_REFERENCE, pos);
+                                 continue stateloop;
+                             case '<':
+                                 /*
+@@ -4910,7 +4860,7 @@
+                                 flushChars(buf, pos);
+ 
+                                 returnState = state;
+-                                state = Tokenizer.TAG_OPEN_NON_PCDATA;
++                                state = changeState(state, Tokenizer.TAG_OPEN_NON_PCDATA, pos);
+                                 continue stateloop;
+                             case '\u0000':
+                                 emitReplacementCharacter(buf, pos);
+@@ -5709,6 +5659,12 @@
+         return -1;
+     }
+ 
++    //needs to be overriden, should be abstract, but I have no idea if the Tokenizer is supposed to be
++    //instantialized so using this hack.
++    public int offset() {
++        return -1;
++    }
++
+     public boolean isInDataState() {
+         return (stateSave == DATA);
+     }
+Index: src/nu/validator/htmlparser/impl/StackNode.java
+===================================================================
+--- src/nu/validator/htmlparser/impl/StackNode.java	(revision 584)
++++ src/nu/validator/htmlparser/impl/StackNode.java	(working copy)
+@@ -26,7 +26,7 @@
+ import nu.validator.htmlparser.annotation.Local;
+ import nu.validator.htmlparser.annotation.NsUri;
+ 
+-final class StackNode<T> {
++public final class StackNode<T> {
+     final int group;
+ 
+     final @Local String name;
+@@ -82,7 +82,7 @@
+      *            TODO
+      * @param node
+      */
+-    StackNode(final @NsUri String ns, ElementName elementName, final T node) {
++    public StackNode(final @NsUri String ns, ElementName elementName, final T node) {
+         this.group = elementName.group;
+         this.name = elementName.name;
+         this.popName = elementName.name;
+Index: src/nu/validator/htmlparser/impl/ErrorReportingTokenizer.java
+===================================================================
+--- src/nu/validator/htmlparser/impl/ErrorReportingTokenizer.java	(revision 584)
++++ src/nu/validator/htmlparser/impl/ErrorReportingTokenizer.java	(working copy)
+@@ -70,6 +70,10 @@
+ 
+     private int colPrev;
+ 
++    private int offset;
++
++    private int offsetPrev;
++
+     private boolean nextCharOnNewLine;
+ 
+     private char prev;
+@@ -191,7 +195,14 @@
+     public int getCol() {
+         return col;
+     }
+-    
++
++    @Override
++    public int offset() {
++        return offset;
++    }
++
++
++
+     /**
+      * Returns the nextCharOnNewLine.
+      * 
+@@ -234,11 +245,14 @@
+         if (pos > cstart) {
+             int currLine = line;
+             int currCol = col;
++            int currOffset = offset;
+             line = linePrev;
+             col = colPrev;
++            offset = offsetPrev;
+             tokenHandler.characters(buf, cstart, pos - cstart);
+             line = currLine;
+             col = currCol;
++            offset = currOffset;
+         }
+         cstart = 0x7fffffff;
+     }
+@@ -246,6 +260,8 @@
+     @Override protected char checkChar(@NoLength char[] buf, int pos) throws SAXException {
+         linePrev = line;
+         colPrev = col;
++        offsetPrev = offset;
++        offset = pos;
+         if (nextCharOnNewLine) {
+             line++;
+             col = 1;
+Index: src/nu/validator/htmlparser/impl/ElementName.java
+===================================================================
+--- src/nu/validator/htmlparser/impl/ElementName.java	(revision 584)
++++ src/nu/validator/htmlparser/impl/ElementName.java	(working copy)
+@@ -132,13 +132,14 @@
+ //    /**
+ //     * @see java.lang.Object#toString()
+ //     */
+-//    @Override public String toString() {
++    @Override public String toString() {
++        return name;
+ //        return "(\"" + name + "\", \"" + camelCaseName + "\", TreeBuilder."
+ //                + treeBuilderGroupToName() + ", "
+ //                + (special ? "true" : "false") + ", "
+ //                + (scoping ? "true" : "false") + ", "
+ //                + (fosterParenting ? "true" : "false") + ")";
+-//    }
++    }
+ //
+ //    private String constName() {
+ //        char[] buf = new char[name.length()];
+@@ -723,7 +724,7 @@
+     public static final ElementName FESPECULARLIGHTING = new ElementName("fespecularlighting", "feSpecularLighting", TreeBuilder.OTHER, false, false, false);
+     public static final ElementName DOMAINOFAPPLICATION = new ElementName("domainofapplication", "domainofapplication", TreeBuilder.OTHER, false, false, false);
+     public static final ElementName FECOMPONENTTRANSFER = new ElementName("fecomponenttransfer", "feComponentTransfer", TreeBuilder.OTHER, false, false, false);
+-    private final static @NoLength ElementName[] ELEMENT_NAMES = {
++    public  final static @NoLength ElementName[] ELEMENT_NAMES = {
+     A,
+     B,
+     G,
+Index: src/nu/validator/htmlparser/common/TokenizerStateListener.java
+===================================================================
+--- src/nu/validator/htmlparser/common/TokenizerStateListener.java	(revision 0)
++++ src/nu/validator/htmlparser/common/TokenizerStateListener.java	(revision 0)
+@@ -0,0 +1,16 @@
++/*
++ * To change this template, choose Tools | Templates
++ * and open the template in the editor.
++ */
++
++package nu.validator.htmlparser.common;
++
++/**
++ *
++ * @author marekfukala
++ */
++public interface TokenizerStateListener {
++
++    public abstract void stateChanged(int from, int to, int offset);
++    
++}
+Index: src/nu/validator/htmlparser/common/TokenizerState.java
+===================================================================
+--- src/nu/validator/htmlparser/common/TokenizerState.java	(revision 0)
++++ src/nu/validator/htmlparser/common/TokenizerState.java	(revision 0)
+@@ -0,0 +1,200 @@
++/*
++ * To change this template, choose Tools | Templates
++ * and open the template in the editor.
++ */
++
++package nu.validator.htmlparser.common;
++
++/**
++ * @todo just pulled down from Tokenizer to make it public for TokenizerStateListener, 
++ * it should be converted to an enum.
++ *
++ * @author marekfukala
++ */
++public interface TokenizerState {
++
++    public static final int DATA = 0;
++
++    public static final int RCDATA = 1;
++
++    public static final int CDATA = 2;
++
++    public static final int PLAINTEXT = 3;
++
++    public static final int TAG_OPEN = 4;
++
++    public static final int CLOSE_TAG_OPEN_PCDATA = 5;
++
++    public static final int TAG_NAME = 6;
++
++    public static final int BEFORE_ATTRIBUTE_NAME = 7;
++
++    public static final int ATTRIBUTE_NAME = 8;
++
++    public static final int AFTER_ATTRIBUTE_NAME = 9;
++
++    public static final int BEFORE_ATTRIBUTE_VALUE = 10;
++
++    public static final int ATTRIBUTE_VALUE_DOUBLE_QUOTED = 11;
++
++    public static final int ATTRIBUTE_VALUE_SINGLE_QUOTED = 12;
++
++    public static final int ATTRIBUTE_VALUE_UNQUOTED = 13;
++
++    public static final int AFTER_ATTRIBUTE_VALUE_QUOTED = 14;
++
++    public static final int BOGUS_COMMENT = 15;
++
++    public static final int MARKUP_DECLARATION_OPEN = 16;
++
++    public static final int DOCTYPE = 17;
++
++    public static final int BEFORE_DOCTYPE_NAME = 18;
++
++    public static final int DOCTYPE_NAME = 19;
++
++    public static final int AFTER_DOCTYPE_NAME = 20;
++
++    public static final int BEFORE_DOCTYPE_PUBLIC_IDENTIFIER = 21;
++
++    public static final int DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED = 22;
++
++    public static final int DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED = 23;
++
++    public static final int AFTER_DOCTYPE_PUBLIC_IDENTIFIER = 24;
++
++    public static final int BEFORE_DOCTYPE_SYSTEM_IDENTIFIER = 25;
++
++    public static final int DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED = 26;
++
++    public static final int DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED = 27;
++
++    public static final int AFTER_DOCTYPE_SYSTEM_IDENTIFIER = 28;
++
++    public static final int BOGUS_DOCTYPE = 29;
++
++    public static final int COMMENT_START = 30;
++
++    public static final int COMMENT_START_DASH = 31;
++
++    public static final int COMMENT = 32;
++
++    public static final int COMMENT_END_DASH = 33;
++
++    public static final int COMMENT_END = 34;
++
++    public static final int COMMENT_END_SPACE = 35;
++
++    public static final int COMMENT_END_BANG = 36;
++
++    public static final int CLOSE_TAG_OPEN_NOT_PCDATA = 37;
++
++    public static final int MARKUP_DECLARATION_HYPHEN = 38;
++
++    public static final int MARKUP_DECLARATION_OCTYPE = 39;
++
++    public static final int DOCTYPE_UBLIC = 40;
++
++    public static final int DOCTYPE_YSTEM = 41;
++
++    public static final int CONSUME_CHARACTER_REFERENCE = 42;
++
++    public static final int CONSUME_NCR = 43;
++
++    public static final int CHARACTER_REFERENCE_LOOP = 44;
++
++    public static final int HEX_NCR_LOOP = 45;
++
++    public static final int DECIMAL_NRC_LOOP = 46;
++
++    public static final int HANDLE_NCR_VALUE = 47;
++
++    public static final int SELF_CLOSING_START_TAG = 48;
++
++    public static final int CDATA_START = 49;
++
++    public static final int CDATA_SECTION = 50;
++
++    public static final int CDATA_RSQB = 51;
++
++    public static final int CDATA_RSQB_RSQB = 52;
++
++    public static final int TAG_OPEN_NON_PCDATA = 53;
++
++    public static final int ESCAPE_EXCLAMATION = 54;
++
++    public static final int ESCAPE_EXCLAMATION_HYPHEN = 55;
++
++    public static final int ESCAPE = 56;
++
++    public static final int ESCAPE_HYPHEN = 57;
++
++    public static final int ESCAPE_HYPHEN_HYPHEN = 58;
++
++    public static final int BOGUS_COMMENT_HYPHEN = 59;
++
++    public static String[] STATE_NAMES = new String[]{
++        "DATA",
++        "RCDATA",
++        "CDATA",
++        "PLAINTEXT",
++        "TAG_OPEN",
++        "CLOSE_TAG_OPEN_PCDATA",
++        "TAG_NAME",
++        "BEFORE_ATTRIBUTE_NAME",
++        "ATTRIBUTE_NAME",
++        "AFTER_ATTRIBUTE_NAME",
++        "BEFORE_ATTRIBUTE_VALUE",
++        "ATTRIBUTE_VALUE_DOUBLE_QUOTED",
++        "ATTRIBUTE_VALUE_SINGLE_QUOTED",
++        "ATTRIBUTE_VALUE_UNQUOTED",
++        "AFTER_ATTRIBUTE_VALUE_QUOTED",
++        "BOGUS_COMMENT",
++        "MARKUP_DECLARATION_OPEN",
++        "DOCTYPE",
++        "BEFORE_DOCTYPE_NAME",
++        "DOCTYPE_NAME",
++        "AFTER_DOCTYPE_NAME",
++        "BEFORE_DOCTYPE_PUBLIC_IDENTIFIER",
++        "DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED",
++        "DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED",
++        "AFTER_DOCTYPE_PUBLIC_IDENTIFIER",
++        "BEFORE_DOCTYPE_SYSTEM_IDENTIFIER",
++        "DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED",
++        "DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED",
++        "AFTER_DOCTYPE_SYSTEM_IDENTIFIER",
++        "BOGUS_DOCTYPE",
++        "COMMENT_START",
++        "COMMENT_START_DASH",
++        "COMMENT",
++        "COMMENT_END_DASH",
++        "COMMENT_END",
++        "COMMENT_END_SPACE",
++        "COMMENT_END_BANG",
++        "CLOSE_TAG_OPEN_NOT_PCDATA",
++        "MARKUP_DECLARATION_HYPHEN",
++        "MARKUP_DECLARATION_OCTYPE",
++        "DOCTYPE_UBLIC",
++        "DOCTYPE_YSTEM",
++        "CONSUME_CHARACTER_REFERENCE",
++        "CONSUME_NCR",
++        "CHARACTER_REFERENCE_LOOP",
++        "HEX_NCR_LOOP",
++        "DECIMAL_NRC_LOOP",
++        "HANDLE_NCR_VALUE",
++        "SELF_CLOSING_START_TAG",
++        "CDATA_START",
++        "CDATA_SECTION",
++        "CDATA_RSQB",
++        "CDATA_RSQB_RSQB",
++        "TAG_OPEN_NON_PCDATA",
++        "ESCAPE_EXCLAMATION",
++        "ESCAPE_EXCLAMATION_HYPHEN",
++        "ESCAPE",
++        "ESCAPE_HYPHEN",
++        "ESCAPE_HYPHEN_HYPHEN",
++        "BOGUS_COMMENT_HYPHEN"
++    };
++
++    
++}

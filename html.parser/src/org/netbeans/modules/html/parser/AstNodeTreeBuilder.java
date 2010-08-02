@@ -41,23 +41,27 @@
  */
 package org.netbeans.modules.html.parser;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Queue;
 import java.util.Stack;
 import nu.validator.htmlparser.common.TokenizerState;
 import nu.validator.htmlparser.common.TokenizerStateListener;
 import nu.validator.htmlparser.impl.CoalescingTreeBuilder;
 import nu.validator.htmlparser.impl.ElementName;
 import nu.validator.htmlparser.impl.HtmlAttributes;
+import nu.validator.htmlparser.impl.TreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
 import org.xml.sax.SAXException;
 
 /**
+ * An implementation of {@link TreeBuilder} building a tree of {@link AstNode}s
+ *
+ * In contrary to the default implementations of the {@link TreeBuilder} this
+ * builder also puts end tags to the tree of nodes.
  *
  * @author marekfukala
  */
@@ -65,25 +69,29 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     public static boolean DEBUG = false;
     public static boolean DEBUG_STATES = false;
+
     private final AstNodeFactory factory;
     private AstNode root;
+
     //element's internall offsets
     private int tag_lt_offset;
     private int tag_gt_offset;
-    private boolean isEndTag;
-//    private int open_tag_name_offset;
+    
     private boolean self_closing_starttag;
-    //<<<
+
+    //stack of opened tags
     private Stack<AstNode> stack = new Stack<AstNode>();
+
+    //stack of encountered end tags
     LinkedList<AstNode> physicalEndTagsQueue = new LinkedList<AstNode>();
+
     private ElementName startTag;
 
+    //holds found attributes of an open tag
     private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
 
-//    private int offset;
     public AstNodeTreeBuilder() {
         factory = AstNodeFactory.instance();
-//        root = factory.createRootNode();
     }
 
     public AstNode getRoot() {
@@ -107,10 +115,11 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         AstNode node = physicalEndTagsQueue.peekLast();
         if (node != null) {
             if (node.name().equals(t.name())) {
-
+                //it seems that the end tag corresponds to the popped node
+                
+                //remove the end tag from the queue
                 physicalEndTagsQueue.pollLast();
                 
-                //the popped node closed by physical endtag
                 //add the end tag node to its parent
                 if(!stack.isEmpty()) {
                     stack.peek().addChild(node);
@@ -144,11 +153,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
         }
 
-//        if (!isEndTag && tagBeginningOffset() != -1) {
-//            //set logical range of the current open tag node to the beginning of the current open tag node
-//            t.setLogicalEndOffset(tagBeginningOffset());
-//        }
-
         super.elementPopped(namespace, name, t);
     }
 
@@ -170,36 +174,33 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         while ((head = physicalEndTagsQueue.poll()) != null) {
             stack.peek().addChild(head);
         }
+        
         super.elementPushed(namespace, name, t);
     }
 
     private String dumpStack() {
-        StringBuilder b = new StringBuilder();
-        b.append('[');
-        for (Iterator<AstNode> i = stack.iterator(); i.hasNext();) {
-            AstNode en = i.next();
-            b.append(en.name());
-            b.append(", ");
-        }
-        b.append(']');
-        return b.toString();
+        return collectionOfNodesToString(stack);
     }
 
     private String dumpEndTags() {
+        return collectionOfNodesToString(physicalEndTagsQueue);
+    }
+    
+    private String collectionOfNodesToString(Collection<AstNode> col) {
         StringBuilder b = new StringBuilder();
         b.append('[');
-        for (Iterator<AstNode> i = physicalEndTagsQueue.iterator(); i.hasNext();) {
+        for (Iterator<AstNode> i = col.iterator(); i.hasNext();) {
             AstNode en = i.next();
             b.append(en.name());
             b.append(", ");
         }
         b.append(']');
         return b.toString();
+        
     }
 
     @Override
     public void stateChanged(int from, int to, int offset) {
-//        this.offset = offset;
         if(DEBUG_STATES) {
             System.out.println(STATE_NAMES[from] + " -> " + STATE_NAMES[to] + " at " + offset);
         }
@@ -208,10 +209,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
             case TAG_OPEN:
                 tag_lt_offset = offset;
                 break;
-
-//            case TAG_NAME:
-//                open_tag_name_offset = offset;
-//                break;
 
             case CLOSE_TAG_OPEN_NOT_PCDATA:
                 switch(from) {
@@ -279,7 +276,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
             System.out.println("startTag " + en.name + "(" + tagBeginningOffset() + " - " + tagEndOffset() + ")");
         }
 
-        isEndTag = false;
         startTag = en;
         super.startTag(en, ha, bln);
 
@@ -297,7 +293,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if (DEBUG) {
             System.out.print("endTag " + en.name + "(" + tagBeginningOffset() + " - " + tagEndOffset() + ")");
         }
-        isEndTag = true;
+        
         physicalEndTagsQueue.add(factory.createEndTag(en.name, tagBeginningOffset(), tagEndOffset()));
 
         if(DEBUG) {
@@ -319,7 +315,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     private void resetIntenallPositions() {
         tag_gt_offset = -1;
         tag_lt_offset = -1;
-//        open_tag_name_offset = -1;
         self_closing_starttag = false;
         attrs.clear();
     }
@@ -406,7 +401,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected void insertFosterParentedChild(AstNode t, AstNode t1, AstNode t2) throws SAXException {
-        //????
+        assert false : "lets see when this is called";
     }
 
     @Override
@@ -431,4 +426,5 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
             NONE, SINGLE, DOUBLE;
         }
     }
+    
 }
