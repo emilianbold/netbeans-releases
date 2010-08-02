@@ -70,7 +70,6 @@ import org.apache.maven.model.Profile;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.codehaus.plexus.util.FileUtils;
 import java.util.Collections;
@@ -314,15 +313,6 @@ public class DependencyNode extends AbstractNode {
     }
 
     private String createName() {
-        if (art instanceof NbArtifact) {
-            NbArtifact nb = (NbArtifact)art;
-            if (nb.isFakedSystemDependency()) {
-                return nb.getNonFakedFile().getName();
-            }
-            if (nb.isFakedPomDependency()) {
-                return nb.getNonFakedFile().getName();
-            }
-        }
         return art.getFile().getName();
     }
 
@@ -394,12 +384,6 @@ public class DependencyNode extends AbstractNode {
     }
 
     public boolean isLocal() {
-        if (art instanceof NbArtifact) {
-            NbArtifact nb = (NbArtifact) art;
-            if (nb.isFakedSystemDependency()) {
-                return false;
-            }
-        }
         return art.getFile().exists();
     }
 
