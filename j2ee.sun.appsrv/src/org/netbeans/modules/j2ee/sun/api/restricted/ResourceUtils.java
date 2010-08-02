@@ -908,7 +908,7 @@ public class ResourceUtils implements WizardConstants{
     private static List getProjectResources(FileObject targetFolder, String resourceType){
         List projectResources = new ArrayList();
         if(targetFolder != null){
-            File resource = getServerResourcesFile(targetFolder);
+            File resource = getServerResourcesFile(targetFolder,true);
             if((resource != null) && resource.exists()){
                 if(resourceType.equals(__ConnectionPoolResource)) {
                     projectResources = getConnectionPools(resource, projectResources);
@@ -1664,7 +1664,7 @@ public class ResourceUtils implements WizardConstants{
     public static Resources getServerResourcesGraph(FileObject targetFolder, String version){
         Resources res = getResourceGraph(version);
         targetFolder = setUpExists(targetFolder);
-        File sunResource = getServerResourcesFile(targetFolder);
+        File sunResource = getServerResourcesFile(targetFolder,true);
         if(sunResource != null){
             res = getResourcesGraph(sunResource);
         }
@@ -1707,7 +1707,7 @@ public class ResourceUtils implements WizardConstants{
 
     public static void createFile(FileObject targetFolder, final Resources res, String baseName){
         targetFolder = setUpExists(targetFolder);
-        File sunResource = getServerResourcesFile(targetFolder);
+        File sunResource = getServerResourcesFile(targetFolder,true);
         if((sunResource != null) && sunResource.exists()){
             try {
                 res.write(sunResource);
@@ -1750,10 +1750,31 @@ public class ResourceUtils implements WizardConstants{
      *  Get sun-resources.xml file if it exists in a given folder.
      *  Returns null if no file exists.
      */
-    public static File getServerResourcesFile(FileObject targetFolder){
+    public static File getServerResourcesFile(FileObject targetFolder, boolean search){
         File serverResource = null;
         if(targetFolder != null){
             FileObject setUpFolder = setUpExists(targetFolder);
+            if (search) {
+                // look in the 'web' project place
+                FileObject metaInf = setUpFolder.getParent().getFileObject("web/META-INF");
+                if (null == metaInf) {
+                    // look in the 'ant' project place
+                    metaInf = setUpFolder.getParent().getFileObject("src/java/META-INF");
+                    if (null == metaInf) {
+                        // look in the 'maven' project place
+                        metaInf = targetFolder.getParent().getFileObject("java/META-INF");
+                    }
+                }
+                if (null != metaInf) {
+                    FileObject resourcesFO = metaInf.getFileObject("glassfish-resources", "xml");
+                    if (null == resourcesFO) {
+                        resourcesFO = metaInf.getFileObject("sun-resources","xml");
+                    }
+                    if (null != resourcesFO) {
+                        return FileUtil.toFile(resourcesFO);
+                    }
+                }
+            }
 
             java.util.Enumeration en = setUpFolder.getData(false);
             while(en.hasMoreElements()){
@@ -1787,7 +1808,7 @@ public class ResourceUtils implements WizardConstants{
      */
     public static void migrateResources(FileObject targetFolder,String baseName){
         targetFolder = setUpExists(targetFolder);
-        File sunResource = getServerResourcesFile(targetFolder);
+        File sunResource = getServerResourcesFile(targetFolder,false);
         if((sunResource == null) || (! sunResource.exists())){
             File resourceDir = FileUtil.toFile(targetFolder);
             File[] resources = resourceDir.listFiles(new OldResourceFileFilter());

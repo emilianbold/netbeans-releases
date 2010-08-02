@@ -1005,7 +1005,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     private static File getServerResourceFiles(File resourceDir) {
         File resourceFile = null;
         if(resourceDir != null){
-            resourceFile =  ResourceUtils.getServerResourcesFile(FileUtil.toFileObject(resourceDir));
+            resourceFile =  ResourceUtils.getServerResourcesFile(FileUtil.toFileObject(resourceDir),true);
         }
         return resourceFile;
     }
