@@ -959,6 +959,7 @@ public final class ModuleManager extends Modules {
                 continue;
             }
             installer.load(toEnable);
+            NetigsoFramework.startFramework();
             break;
         }
         {

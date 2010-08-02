@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,40 +41,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.source.usages;
 
+package org.netbeans.core.netigso;
+
+import org.netbeans.core.startup.*;
+import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.search.Query;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.source.ClassIndex;
+import java.util.Locale;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.SetupHid;
 
 /**
- * Index SPI. Represents an index for usages data
- * @author Tomas Zezula
+ * Can the BundleActivators access layer entries defined by other (NetBeans) modules?
+ *
+ * @author Jaroslav Tulach
  */
-public abstract class Index {    
-            
-    public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> () {
-        protected synchronized @Override AtomicBoolean initialValue() {
-             return new AtomicBoolean ();
-         }
-    };    
+public class NetigsoActivationCanAccessLayersTest extends SetupHid {
+    private static Module m1;
+    private static ModuleManager mgr;
 
-    public abstract boolean exists ();
-    public abstract boolean isValid (boolean tryOpen) throws IOException;
-    public abstract <T> void query (@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<T> convertor, Collection<? super T> result) throws IOException, InterruptedException;
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor,Map<T,Set<String>> result) throws IOException, InterruptedException;
-    public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
-    public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
-    public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
-    public abstract boolean isUpToDate (String resourceName, long timeStamp) throws IOException;
-    public abstract void clear () throws IOException;
-    public abstract void close () throws IOException;
-            
+    public NetigsoActivationCanAccessLayersTest(String name) {
+        super(name);
+    }
+
+    protected @Override void setUp() throws Exception {
+        Locale.setDefault(Locale.US);
+        clearWorkDir();
+        File ud = new File(getWorkDir(), "ud");
+        ud.mkdirs();
+        System.setProperty("netbeans.user", ud.getPath());
+        
+        data = new File(getDataDir(), "jars");
+        jars = new File(getWorkDir(), "space in path");
+        jars.mkdirs();
+        File simpleModule = createTestJAR("activate", null);
+    }
+
+    public void testActivation() throws Exception {
+        ModuleSystem ms = Main.getModuleSystem();
+        mgr = ms.getManager();
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            File simpleModule = new File(jars, "activate.jar");
+            m1 = mgr.create(simpleModule, null, false, false, false);
+            System.setProperty("activate.layer.test", "can-this-file-be-found.txt");
+            mgr.enable(m1);
+
+            Class<?> main = m1.getClassLoader().loadClass("org.activate.Main");
+            Object s = main.getField("start").get(null);
+            assertNotNull("Bundle started, its context provided", s);
+
+            mgr.disable(m1);
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
+        return createTestJAR(data, jars, name, srcdir, classpath);
+    }
 }

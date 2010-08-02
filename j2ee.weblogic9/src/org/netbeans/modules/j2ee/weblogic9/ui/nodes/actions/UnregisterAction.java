@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,40 +40,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.source.usages;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.search.Query;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.source.ClassIndex;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
+
 
 /**
- * Index SPI. Represents an index for usages data
- * @author Tomas Zezula
+ * @author ads
+ *
  */
-public abstract class Index {    
-            
-    public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> () {
-        protected synchronized @Override AtomicBoolean initialValue() {
-             return new AtomicBoolean ();
-         }
-    };    
+public class UnregisterAction extends NodeAction {
 
-    public abstract boolean exists ();
-    public abstract boolean isValid (boolean tryOpen) throws IOException;
-    public abstract <T> void query (@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<T> convertor, Collection<? super T> result) throws IOException, InterruptedException;
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor,Map<T,Set<String>> result) throws IOException, InterruptedException;
-    public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
-    public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
-    public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
-    public abstract boolean isUpToDate (String resourceName, long timeStamp) throws IOException;
-    public abstract void clear () throws IOException;
-    public abstract void close () throws IOException;
-            
+    /* (non-Javadoc)
+     * @see org.openide.util.actions.NodeAction#enable(org.openide.nodes.Node[])
+     */
+    @Override
+    protected boolean enable( Node[] nodes ) {
+        for (int i = 0; i < nodes.length; i++) {
+            UnregisterCookie cookie = nodes[i].getCookie(UnregisterCookie.class);
+            if (cookie == null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.util.actions.NodeAction#performAction(org.openide.nodes.Node[])
+     */
+    @Override
+    protected void performAction( Node[] nodes ) {
+        for (int i = 0; i < nodes.length; i++) {
+            UnregisterCookie cookie = nodes[i].getCookie(UnregisterCookie.class);
+            if (cookie != null) {
+                cookie.unregister();
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.util.actions.SystemAction#getHelpCtx()
+     */
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.util.actions.SystemAction#getName()
+     */
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(RefreshModulesAction.class, "LBL_UnregisterAction"); // NOI18N
+    }
+    
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }

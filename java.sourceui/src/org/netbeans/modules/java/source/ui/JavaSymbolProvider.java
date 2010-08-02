@@ -80,7 +80,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.ResultConvertor;
+import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -200,7 +200,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                     final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL());
                     if (impl != null) {
                         final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
-                        impl.getDeclaredElements(ident, kind, ResultConvertor.elementHandleConvertor(),r);
+                        impl.getDeclaredElements(ident, kind, DocumentUtil.elementHandleConvertor(),r);
                         if (!r.isEmpty()) {
                             //final ClasspathInfo cpInfo = ClasspathInfo.create(root);
                             final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(root,null,true,true,false,false);
