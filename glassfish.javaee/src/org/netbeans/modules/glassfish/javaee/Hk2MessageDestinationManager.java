@@ -112,8 +112,8 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
     // ------------------------------------------------------------------------
     //  Used by ModuleConfigurationImpl since
     // ------------------------------------------------------------------------
-    public static Set<MessageDestination> getMessageDestinations(File resourceDir) {
-        File resourcesXml = new File(resourceDir, "sun-resources.xml");
+    public static Set<MessageDestination> getMessageDestinations(File resourceDir, String baseName) {
+        File resourcesXml = new File(resourceDir, baseName+".xml");
         return readMessageDestinations(resourcesXml, "/", resourceDir);
     }
     
@@ -142,7 +142,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         return msgDestinations;
     }
 
-    public static MessageDestination createMessageDestination(String name, MessageDestination.Type type, File resourceDir) throws ConfigurationException {
+    public static MessageDestination createMessageDestination(String name, MessageDestination.Type type, File resourceDir, String baseName) throws ConfigurationException {
         SunMessageDestination msgDest;
         if(! name.startsWith(JMS_PREFIX)){
             name = JMS_PREFIX + name;
@@ -152,7 +152,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         DuplicateConnectorFinder connFinder = new DuplicateConnectorFinder(name);
         ConnectorPoolFinder cpFinder = new ConnectorPoolFinder();
 
-        File xmlFile = new File(resourceDir, "sun-resources.xml");
+        File xmlFile = new File(resourceDir, baseName+".xml");
         if(xmlFile.exists()) {
             List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
             pathList.add(new TreeParser.Path("/resources/admin-object-resource", aoFinder));

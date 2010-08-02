@@ -144,7 +144,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 public String getRestartQuery(int debugPort) {
                     return "";
                 }
-            });
+            },
+                    "sun-resources");
             ee6Provider.init();
         }
         return ee6Provider;
@@ -177,7 +178,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 public String getRestartQuery(int debugPort) {
                     return -1 == debugPort ? "debug=false" : "debug=true";
                 }
-            });
+            },
+                    "glassfish-resources");
             ee6WCProvider.init();
         }
         return ee6WCProvider;
@@ -214,7 +216,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 public String getRestartQuery(int debugPort) {
                     return "";
                 }
-                    });
+                    },
+                    "sun-resources");
             preludeProvider.init();
         }
         return preludeProvider;
@@ -243,13 +246,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private String[] javadocFilenames;
     private List<String> noPasswordOptions;
     private CommandFactory cf;
+    private String resourceXmlName;
 
     private GlassfishInstanceProvider(String[] uriFragments, String[] instancesDirNames,
             String displayName, String propName, String defaultName, String personalName,
             String installName, String direct, String indirect, String prefKey,
             String[] requiredFiles, String[] excludedFiles, boolean needsJdk6,
             String[] javadocFilenames,
-            String[] noPasswordOptionsArray, CommandFactory cf) {
+            String[] noPasswordOptionsArray, CommandFactory cf, String resourceXmlName) {
         this.instancesDirNames = instancesDirNames;
         this.displayName = displayName;
         this.uriFragments = uriFragments;
@@ -269,6 +273,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
         }
         this.cf = cf;
+        this.resourceXmlName = resourceXmlName;
     }
 
     public static synchronized boolean initialized() {
@@ -708,5 +713,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     CommandFactory getCommandFactory() {
        return cf;
+    }
+
+    String getResourcesXmlName() {
+        return resourceXmlName;
     }
 }

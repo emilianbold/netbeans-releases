@@ -109,7 +109,7 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
     
     public Set instantiate(){
         try{
-            ResourceUtils.saveJMSResourceDatatoXml(this.helper.getData());
+            ResourceUtils.saveJMSResourceDatatoXml(this.helper.getData(),Util.getBaseName(project));
         }catch (Exception ex){
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                                         ex);

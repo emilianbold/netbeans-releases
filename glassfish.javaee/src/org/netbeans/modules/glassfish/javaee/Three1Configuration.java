@@ -85,7 +85,7 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
     // ------------------------------------------------------------------------
     @Override
     public Set<Datasource> getDatasources() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory());
+        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory(),"glassfish-resources");
     }
 
     @Override
@@ -106,7 +106,7 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
                     ModuleConfigurationImpl.class, "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
         }
 
-        return Hk2DatasourceManager.createDataSource(jndiName, url, username, password, driver, resourceDir);
+        return Hk2DatasourceManager.createDataSource(jndiName, url, username, password, driver, resourceDir,"glassfish-resources");
     }
 
     // ------------------------------------------------------------------------
@@ -114,7 +114,7 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
     // ------------------------------------------------------------------------
     @Override
     public Set<MessageDestination> getMessageDestinations() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        return Hk2MessageDestinationManager.getMessageDestinations(module.getResourceDirectory());
+        return Hk2MessageDestinationManager.getMessageDestinations(module.getResourceDirectory(),"glassfish-resources");
     }
 
     @Override
@@ -130,9 +130,9 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
                     "Resource Folder " + resourceDir + " does not exist.");
             throw new ConfigurationException(NbBundle.getMessage(
                     ModuleConfigurationImpl.class, "ERR_NoJMSResource", name, type)); // NOI18N
-    }
+        }
 
-        return Hk2MessageDestinationManager.createMessageDestination(name, type, resourceDir);
+        return Hk2MessageDestinationManager.createMessageDestination(name, type, resourceDir,"glassfish-resources");
     }
 
     // ------------------------------------------------------------------------

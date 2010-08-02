@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,44 +34,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-/*
- * ResourceConfigurationInterface.java
  *
- * Created on August 13, 2005, 8:38 AM
- */
-package org.netbeans.modules.j2ee.sun.api;
-
-import java.io.File;
-import java.util.HashSet;
-import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-
-/**
+ * Contributor(s):
  *
- * @author Nitya Doraisamy
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public interface ResourceConfiguratorInterface {
 
-    public boolean isJMSResourceDefined(String jndiName, File dir);
+@Schema2Beans(
+    schema="../../resources/glassfish-resources_1_5.dtd",
+    schemaType=SchemaType.DTD,
+    mddFile="../../resources/glassfish-resources_1_5.mdd",
+    outputType=OutputType.TRADITIONAL_BASEBEAN,
+    docRoot="resources",
+    useInterfaces=true,
+    validate=false,
+    attrProp=true
+)
+package org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model_1_5;
 
-    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir, String resourcesXmlName);
-    
-    public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir, String resourcesXmlName);
-
-    public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir);
-
-    public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir);
-    
-    public Datasource createDataSource(String jndiName, String url, String username, String password, String driver, File dir, String resourcesXmlName) throws DatasourceAlreadyExistsException;
-    
-    public HashSet getServerDataSources();  
-    
-    public HashSet getServerDestinations();  
-    
-    public HashSet getResources(File dir);   
-    
-    public HashSet getMessageDestinations(File dir);   
-    
-}
+import org.netbeans.modules.schema2beans.Schema2Beans;
+import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
+import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
