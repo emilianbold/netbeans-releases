@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
@@ -67,6 +69,12 @@ public class Html5ParserTest extends NbTestCase {
     public Html5ParserTest(String name) {
         super(name);
 //        AstNodeTreeBuilder.DEBUG = true;
+    }
+
+    public static Test xsuite(){
+	TestSuite suite = new TestSuite();
+        suite.addTest(new Html5ParserTest("testBasic"));
+        return suite;
     }
 
 //        String code = "<!DOCTYPE html><body xmlns:f=\"http://sun.com/jsf/core\"></p><section><f:xx></f:xx><p>cau<p>  <p>ahoj</section><section><div></div></section></body>";
