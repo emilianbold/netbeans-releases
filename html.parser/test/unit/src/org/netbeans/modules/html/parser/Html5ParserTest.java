@@ -68,12 +68,12 @@ public class Html5ParserTest extends NbTestCase {
 
     public Html5ParserTest(String name) {
         super(name);
-//        AstNodeTreeBuilder.DEBUG = true;
     }
 
     public static Test xsuite(){
+        AstNodeTreeBuilder.DEBUG = true;
 	TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testBasic"));
+        suite.addTest(new Html5ParserTest("testParseUnfinishedCode"));
         return suite;
     }
 
@@ -148,6 +148,50 @@ public class Html5ParserTest extends NbTestCase {
 //        AstNodeUtils.dumpTree(result.root());
     }
 
+    public void testParseUnfinishedCode() throws ParseException {
+        String code = "<!DOCTYPE HTML>"
+                     +"<html>"
+                         +"<head>"
+                             +"<title>"
+                             +"</title>"
+                         +"</head>"
+                         +"<body>"
+                         +"</table>"
+                    +"</html>";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+        AstNode html = AstNodeUtils.query(root, "html");
+        assertNotNull(html);
+
+        Collection<AstNode> children = html.children();
+        assertEquals(4, children.size()); // <head>, </head>,<body>,</table>
+        Iterator<AstNode> childernItr = children.iterator();
+
+        assertTrue(childernItr.hasNext());
+        AstNode child = childernItr.next();
+        assertEquals("head", child.name());
+        assertEquals(AstNode.NodeType.OPEN_TAG, child.type());
+        assertTrue(childernItr.hasNext());
+        child = childernItr.next();
+        assertEquals("head", child.name());
+        assertEquals(AstNode.NodeType.ENDTAG, child.type());
+        assertTrue(childernItr.hasNext());
+        child = childernItr.next();
+        assertEquals("body", child.name());
+        assertEquals(AstNode.NodeType.OPEN_TAG, child.type());
+        assertTrue(childernItr.hasNext());
+        child = childernItr.next();
+        assertEquals("table", child.name());
+        assertEquals(AstNode.NodeType.ENDTAG, child.type());
+        
+
+//        AstNodeUtils.dumpTree(root);
+
+    }
+
     public void testGetPossibleOpenTagsInContext() throws ParseException {
         HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
 
@@ -191,6 +235,7 @@ public class Html5ParserTest extends NbTestCase {
         assertTrue(!possible.isEmpty());
 
         HtmlTag htmlTag = new HtmlTagImpl("html");
+        HtmlTag headTag = new HtmlTagImpl("head");
         HtmlTag bodyTag = new HtmlTagImpl("body");
         HtmlTag divTag = new HtmlTagImpl("div");
 
@@ -200,14 +245,14 @@ public class Html5ParserTest extends NbTestCase {
 
         assertFalse(possible.contains(divTag));
 
-//        AstNode head = AstNodeUtils.query(result.root(), "html/head");
-//        possible = result.getPossibleTagsInContext(head, HtmlTagType.OPEN_TAG);
-//
-//        assertTrue(!possible.isEmpty());
-//
-//        HtmlTag titleTag = new HtmlTagImpl("title");
-//        assertTrue(possible.contains(titleTag));
-//        assertFalse(possible.contains(headTag));
+        AstNode head = AstNodeUtils.query(result.root(), "html/head");
+        possible = result.getPossibleTagsInContext(head, HtmlTagType.OPEN_TAG);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag titleTag = new HtmlTagImpl("title");
+        assertTrue(possible.contains(titleTag));
+        assertFalse(possible.contains(headTag));
 
     }
 
