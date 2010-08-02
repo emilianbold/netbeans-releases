@@ -44,6 +44,10 @@ package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Image;
 
+import javax.swing.Action;
+
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UnregisterAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UnregisterCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -51,6 +55,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
 
 
 /**
@@ -73,10 +78,20 @@ class ResourceNode extends AbstractItemNode {
     private static final String JDBC_RESOURCE_ICON = 
         "org/netbeans/modules/glassfish/javaee/resources/jdbc.gif"; // NOI18N
 
-    ResourceNode( Children children , ResourceNodeType type , String name ) {
+    ResourceNode( Children children , ResourceNodeType type , String name , 
+            Cookie cookie) 
+    {
         super(children);
         setDisplayName(name);
-        this.resourceType= type; 
+        this.resourceType= type;
+        if ( cookie != null){
+            getCookieSet().add( cookie );
+        }
+    }
+    
+    ResourceNode( Children children , ResourceNodeType type , String name ) 
+    {
+        this( children , type , name , null );
     }
     
     
@@ -107,6 +122,18 @@ class ResourceNode extends AbstractItemNode {
     @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
+    }
+    
+    public Action[] getActions(boolean context) {
+        Action[] actions = super.getActions( context);
+        UnregisterCookie cookie = getCookieSet().getCookie( UnregisterCookie.class );
+        if ( cookie!= null ){
+            Action[] result = new Action[ actions.length +1 ];
+            System.arraycopy(actions, 0, result , 0, actions.length);
+            result[ actions.length  ] = SystemAction.get(UnregisterAction.class);
+            return result;
+        }
+        return actions;
     }
     
     private Node getIconDelegate() {

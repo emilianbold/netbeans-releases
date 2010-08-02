@@ -40,55 +40,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import javax.swing.Action;
-
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesAction;
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UnregisterCookie;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
+import org.openide.nodes.Node.Cookie;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractItemNode extends AbstractNode {
-    
-    AbstractItemNode(final ChildFactory<?> childFactory, String name)
-    {
-        super(Children.create(childFactory, true));
-        this.childFactory = childFactory;
-        setDisplayName(name);
-        if(childFactory instanceof RefreshModulesCookie) {
-            getCookieSet().add((RefreshModulesCookie)childFactory);
-        }
-    }
+public interface UnregisterCookie extends Cookie {
 
-    AbstractItemNode(Children children)
-    {
-        super(children);
-        childFactory = null;
-    }
-
-    public Action[] getActions(boolean context)
-    {
-        if(getChildFactory() instanceof RefreshModulesCookie)
-            return (new SystemAction[] {
-                SystemAction.get(RefreshModulesAction.class)
-            });
-        else
-            return new SystemAction[0];
-    }
-
-    protected ChildFactory<?> getChildFactory()
-    {
-        return childFactory;
-    }
-
-    private final ChildFactory<?> childFactory;
+    public void unregister();
 }
