@@ -54,6 +54,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -92,19 +93,50 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             String id = aid.id().replace('.', '-');
             File f = layer(e).file("Actions/" + aid.category() + "/" + id + ".instance");
             f.bundlevalue("displayName", ar.displayName());
-            if (ar.key().length() == 0) {
+            
+            String key;
+            boolean createDelegate = true;
+            if (e.getKind() == ElementKind.FIELD) {
+                VariableElement var = (VariableElement)e;
+                TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
+                if (
+                    e.asType() != stringType || 
+                    !e.getModifiers().contains(Modifier.PUBLIC) || 
+                    !e.getModifiers().contains(Modifier.STATIC) ||
+                    !e.getModifiers().contains(Modifier.FINAL)
+                ) {
+                    throw new LayerGenerationException("Only static string constant fields can be annotated", e);
+                }
+                if (ar.key().length() != 0) {
+                    throw new LayerGenerationException("When annotating field, one cannot define key()", e);
+                }
+                
+                createDelegate = false;
+                key = var.getConstantValue().toString();
+            } else {
+                key = ar.key();
+            }
+            
+            if (key.length() == 0) {
                 f.methodvalue("instanceCreate", "org.openide.awt.Actions", "alwaysEnabled");
             } else {
                 f.methodvalue("instanceCreate", "org.openide.awt.Actions", "callback");
-                f.methodvalue("fallback", "org.openide.awt.Actions", "alwaysEnabled");
-                f.stringvalue("key", ar.key());
+                if (createDelegate) {
+                    f.methodvalue("fallback", "org.openide.awt.Actions", "alwaysEnabled");
+                }
+                f.stringvalue("key", key);
             }
-            try {
-                f.instanceAttribute("delegate", ActionListener.class);
-            } catch (LayerGenerationException ex) {
-                generateContext(e, f);
+            if (createDelegate) {
+                try {
+                    f.instanceAttribute("delegate", ActionListener.class);
+                } catch (LayerGenerationException ex) {
+                    generateContext(e, f);
+                }
             }
             f.boolvalue("noIconInMenu", !ar.iconInMenu());
+            if (ar.asynchronous()) {
+                f.boolvalue("asynchronous", true);
+            }
             f.write();
         }
         return true;

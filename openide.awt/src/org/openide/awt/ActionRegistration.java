@@ -72,4 +72,8 @@ public @interface ActionRegistration {
      * @return the value of the key to seek in currently selected {@link ActionMap}
      */
     String key() default "";
+    /** Shall the action be performed outside of AWT thread.
+     * @return false, if the action shall run synchronously
+     */
+    boolean asynchronous() default false;
 }

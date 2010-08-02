@@ -117,6 +117,8 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testCallbackAction() throws Exception {
+        Callback.cnt = 0;
+        
         FileObject fo = FileUtil.getConfigFile(
             "Actions/Tools/my-action.instance"
         );
@@ -150,7 +152,54 @@ public class ActionProcessorTest extends NbTestCase {
         ic.remove(m);
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("Local Action stays", 300, my.cnt);
-        assertEquals("Global Action called", 200, Callback.cnt);
+        assertEquals("Global Action ncalled", 200, Callback.cnt);
+    }
+    
+    
+    @ActionRegistration(displayName = "#Key")
+    @ActionID(
+        category = "Edit",
+        id = "my.field.action"
+    )
+    public static final String ACTION_MAP_KEY = "my.action.map.key";
+    
+    public void testCallbackOnFieldAction() throws Exception {
+        Callback.cnt = 0;
+        
+        FileObject fo = FileUtil.getConfigFile(
+            "Actions/Edit/my-field-action.instance"
+        );
+        assertNotNull("File found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Attribute present", obj);
+        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
+        ContextAwareAction a = (ContextAwareAction)obj;
+
+        class MyAction extends AbstractAction {
+            int cnt;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cnt += e.getID();
+            }
+        }
+        MyAction my = new MyAction();
+        ActionMap m = new ActionMap();
+        m.put(ACTION_MAP_KEY, my);
+
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup lkp = new AbstractLookup(ic);
+        Action clone = a.createContextAwareInstance(lkp);
+        ic.add(m);
+
+        assertEquals("I am context", clone.getValue(Action.NAME));
+        clone.actionPerformed(new ActionEvent(this, 300, ""));
+        assertEquals("Local Action called", 300, my.cnt);
+        assertEquals("Global Action not called", 0, Callback.cnt);
+
+        ic.remove(m);
+        clone.actionPerformed(new ActionEvent(this, 200, ""));
+        assertEquals("Local Action stays", 300, my.cnt);
+        assertEquals("Global Action not called, there is no fallback", 0, Callback.cnt);
     }
 
     @ActionID(category = "Tools", id = "on.int")
