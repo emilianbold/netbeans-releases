@@ -42,7 +42,10 @@
 package org.netbeans.core.validation;
 
 import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -55,10 +58,14 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.core.startup.AutomaticDependencies;
 import org.netbeans.core.startup.ConsistencyVerifier;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.Dependency;
 
 /**
  * Checks that all modules in the distribution are suitably visible to Plugin Manager.
@@ -156,6 +163,26 @@ public class ValidateUpdateCenterTest extends NbTestCase {
             if (cluster.isDirectory()) {
                 assertTrue("found a VERSION.txt in " + cluster, new File(cluster, "VERSION.txt").isFile());
             }
+        }
+    }
+
+    public void testAutomaticDependenciesUnused() throws Exception {
+        List<URL> urls = new ArrayList<URL>();
+        for (FileObject kid : FileUtil.getConfigFile("ModuleAutoDeps").getChildren()) {
+            urls.add(kid.getURL());
+        }
+        StringBuilder problems = new StringBuilder();
+        AutomaticDependencies ad = AutomaticDependencies.parse(urls.toArray(new URL[urls.size()]));
+        for (Manifest m : loadManifests()) {
+            String cnb = findCNB(m);
+            AutomaticDependencies.Report r = ad.refineDependenciesAndReport(cnb,
+                    Dependency.create(Dependency.TYPE_MODULE, m.getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies")));
+            if (r.isModified()) {
+                problems.append('\n').append(r);
+            }
+        }
+        if (problems.length() > 0) {
+            fail("Some modules need to upgrade their dependencies" + problems);
         }
     }
 
