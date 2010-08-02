@@ -1,0 +1,15 @@
+<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.net
+beans.org/dtds/annotation-type-1_0.dtd">
+<!--
+glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/CallSite.gif'
+-->
+
+<type
+    name='RTC'
+    description_key='HINT_RTC'
+    localizing_bundle='org.netbeans.modules.cnd.debugger.dbx.resources.Bundle'
+    visible='true' 
+    glyph='nbresloc:/org/netbeans/modules/cnd/debugger/dbx/resources/icons/rtc/memory_access_error_16.png'
+    highlight='0xE7E1EF' 
+    type='line'
+/>
