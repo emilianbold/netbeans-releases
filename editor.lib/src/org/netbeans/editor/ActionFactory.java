@@ -45,6 +45,7 @@
 package org.netbeans.editor;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -1649,65 +1650,79 @@ public class ActionFactory {
                 final Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                final Reformat formatter = Reformat.get(doc);
-                formatter.lock();
                 try {
-                    doc.runAtomicAsUser (new Runnable () {
-                        public void run () {
-                            try {
+                final AtomicBoolean canceled = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    public void run() {
+                        if (canceled.get()) return;
+                        final Reformat formatter = Reformat.get(doc);
+                        formatter.lock();
+                        try {
+                            if (canceled.get()) return;
+                            doc.runAtomicAsUser (new Runnable () {
+                                public void run () {
+                                    try {
 
-                                int startPos;
-                                Position endPosition;
-                                if (Utilities.isSelectionShowing(caret)) {
-                                    startPos = target.getSelectionStart();
-                                    endPosition = doc.createPosition(target.getSelectionEnd());
-                                } else {
-                                    startPos = 0;
-                                    endPosition = doc.createPosition(doc.getLength());
-                                }
-
-                                int pos = startPos;
-                                if (gdoc != null) {
-                                    pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                                }
-
-                                while (pos < endPosition.getOffset()) {
-                                    int stopPos = endPosition.getOffset();
-                                    if (gdoc != null) { // adjust to start of the next guarded block
-                                        stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-                                        if (stopPos == -1 || stopPos > endPosition.getOffset()) {
-                                            stopPos = endPosition.getOffset();
+                                        int startPos;
+                                        Position endPosition;
+                                        if (Utilities.isSelectionShowing(caret)) {
+                                            startPos = target.getSelectionStart();
+                                            endPosition = doc.createPosition(target.getSelectionEnd());
+                                        } else {
+                                            startPos = 0;
+                                            endPosition = doc.createPosition(doc.getLength());
                                         }
-                                    }
 
-                                    if (pos < stopPos) {
-                                        Position stopPosition = doc.createPosition(stopPos);
-                                        formatter.reformat(pos, stopPos);
-                                        pos = pos + Math.max(stopPosition.getOffset() - pos, 0);
-                                    } else {
-                                        pos++; //ensure to make progress
-                                    }
+                                        int pos = startPos;
+                                        if (gdoc != null) {
+                                            pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                                        }
 
-                                    if (gdoc != null) { // adjust to end of current block
-                                        pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                                        if (canceled.get()) return;
+                                        // Once we start formatting, the task can't be canceled
+                                        
+                                        while (pos < endPosition.getOffset()) {
+                                            int stopPos = endPosition.getOffset();
+                                            if (gdoc != null) { // adjust to start of the next guarded block
+                                                stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
+                                                if (stopPos == -1 || stopPos > endPosition.getOffset()) {
+                                                    stopPos = endPosition.getOffset();
+                                                }
+                                            }
+
+                                            if (pos < stopPos) {
+                                                Position stopPosition = doc.createPosition(stopPos);
+                                                formatter.reformat(pos, stopPos);
+                                                pos = pos + Math.max(stopPosition.getOffset() - pos, 0);
+                                            } else {
+                                                pos++; //ensure to make progress
+                                            }
+
+                                            if (gdoc != null) { // adjust to end of current block
+                                                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                                            }
+                                        }
+
+                                    } catch (GuardedException e) {
+                                        target.getToolkit().beep();
+                                    } catch (BadLocationException e) {
+                                        Utilities.annotateLoggable(e);
+                                    } finally {
+                                        target.setCursor(origCursor);
                                     }
                                 }
-
-                            } catch (GuardedException e) {
-                                target.getToolkit().beep();
-                            } catch (BadLocationException e) {
-                                Utilities.annotateLoggable(e);
-                            } finally {
-                                target.setCursor(origCursor);
-                            }
+                            });
+                        } finally {
+                            formatter.unlock();
                         }
-                    });
-                } finally {
-                    formatter.unlock();
+                    }
+                }, NbBundle.getMessage(FormatAction.class, "Format_in_progress"), canceled, false); //NOI18N
+                } catch (Exception e) {
+                    // not sure about this, but was getting j.l.Exception that the operation is too slow - wtf?
+                    Logger.getLogger(FormatAction.class.getName()).log(Level.FINE, null, e);
                 }
             }
         }
-        
     }
 
     @EditorActionRegistrations({

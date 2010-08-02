@@ -62,7 +62,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.GuardedDocument;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -464,10 +463,10 @@ public final class TaskHandler {
                 }
                 
                 // Filter out guarded regions
-                if (indentRegions.size() > 0 && doc instanceof GuardedDocument) {
-                    MutablePositionRegion region = IndentSpiPackageAccessor.get().positionRegion(indentRegions.get(0));
-                    int regionStartOffset = region.getStartOffset();
-                    GuardedDocument gdoc = (GuardedDocument)doc;
+//                if (indentRegions.size() > 0 && doc instanceof GuardedDocument) {
+//                    MutablePositionRegion region = IndentSpiPackageAccessor.get().positionRegion(indentRegions.get(0));
+//                    int regionStartOffset = region.getStartOffset();
+//                    GuardedDocument gdoc = (GuardedDocument)doc;
 //                    int gbStartOffset = guardedBlocks.adjustToBlockEnd(region.getEndOffset());
 //                    MarkBlockChain guardedBlocks = gdoc.getGuardedBlockChain();
 //                    if (guardedBlocks != null && guardedBlocks.getChain() != null) {
@@ -500,7 +499,7 @@ public final class TaskHandler {
 //                            }
 //                        }
 //                    }
-                }
+//                }
             } catch (BadLocationException e) {
                 Exceptions.printStackTrace(e);
                 indentRegions = Collections.emptyList();

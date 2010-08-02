@@ -87,6 +87,10 @@ public final class IndentImpl {
 // XXX: formatting infra cleanup
 //    private Formatter defaultFormatter;
     
+    private Thread lockThread;
+
+    private int lockExtraDepth;
+    
     public IndentImpl(Document doc) {
         this.doc = doc;
     }
