@@ -42,7 +42,15 @@
 
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.util.Exceptions;
 
@@ -50,11 +58,11 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Hejl
  */
-public final class WLClassLoaderSupport {
+public final class WLConnectionSupport {
 
     private final WLDeploymentManager deploymentManager;
 
-    public WLClassLoaderSupport(WLDeploymentManager deploymentManager) {
+    public WLConnectionSupport(WLDeploymentManager deploymentManager) {
         this.deploymentManager = deploymentManager;
     }
 
@@ -70,6 +78,57 @@ public final class WLClassLoaderSupport {
                 Thread.currentThread().setContextClassLoader(originalLoader);
             }
         }
+    }
+
+    public <T> T executeAction(JMXAction<T> action) throws Exception {
+        synchronized (deploymentManager) {
+            ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+
+            Thread.currentThread().setContextClassLoader(
+                    WLDeploymentManagerAccessor.getDefault().getWLClassLoader(deploymentManager));
+            try {
+                InstanceProperties instanceProperties = deploymentManager.getInstanceProperties();
+                String host = instanceProperties.getProperty(WLPluginProperties.HOST_ATTR);
+                String port = instanceProperties.getProperty(WLPluginProperties.PORT_ATTR);
+                if ((host == null || host.trim().length() == 0
+                        && (port == null || port.trim().length() == 0))) {
+                    Properties domainProperties = WLPluginProperties.getDomainProperties(
+                            instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
+                    host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
+                    port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
+                }
+                JMXServiceURL url = new JMXServiceURL("iiop", host.trim(), // NOI18N
+                        Integer.parseInt(port.trim()), action.getPath());
+
+                Map<String, String> env = new HashMap<String, String>();
+                env.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES,
+                             "weblogic.management.remote"); // NOI18N
+                env.put(javax.naming.Context.SECURITY_PRINCIPAL, deploymentManager.
+                        getInstanceProperties().getProperty(
+                                InstanceProperties.USERNAME_ATTR).toString());
+                env.put(javax.naming.Context.SECURITY_CREDENTIALS, deploymentManager.
+                        getInstanceProperties().getProperty(
+                                InstanceProperties.PASSWORD_ATTR).toString());
+
+                JMXConnector jmxConnector = JMXConnectorFactory.newJMXConnector(url, env);
+                jmxConnector.connect();
+                try {
+                    return action.call(jmxConnector.getMBeanServerConnection());
+                } finally {
+                    jmxConnector.close();
+                }
+            } finally {
+                Thread.currentThread().setContextClassLoader(originalLoader);
+            }
+        }
+    }
+
+    public static interface JMXAction<T> {
+
+        T call(MBeanServerConnection connection) throws Exception;
+
+        String getPath();
+
     }
 
     public static abstract class WLDeploymentManagerAccessor {
@@ -88,7 +147,7 @@ public final class WLClassLoaderSupport {
                 return accessor;
             }
 
-            Class c = WLClassLoaderSupport.class;
+            Class c = WLConnectionSupport.class;
             try {
                 Class.forName(c.getName(), true, WLDeploymentManagerAccessor.class.getClassLoader());
             } catch (ClassNotFoundException cnf) {
