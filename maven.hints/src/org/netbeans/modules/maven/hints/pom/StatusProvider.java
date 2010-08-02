@@ -136,6 +136,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 return new ArrayList<ErrorDescription>();
             }
             try {
+                model.getBaseDocument(); // #187615
                 model.sync();
                 // model.refresh();
             } catch (IOException ex) {
