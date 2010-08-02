@@ -901,7 +901,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
         mapp.setProperties(props);
         if (handle != null) {
-            handle.markAsModified(handle.getActionMappings());
+            handle.markAsModified(getActionMappings());
         }
     }
     

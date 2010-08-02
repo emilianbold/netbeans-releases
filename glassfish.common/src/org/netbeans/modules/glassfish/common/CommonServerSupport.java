@@ -680,6 +680,11 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return instanceProvider.getCommandFactory();
     }
 
+    @Override
+    public String getResourcesXmlName() {
+        return instanceProvider.getResourcesXmlName();
+    }
+
     class StartOperationStateListener implements OperationStateListener {
         private ServerState endState;
 

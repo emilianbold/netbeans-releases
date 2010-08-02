@@ -91,7 +91,7 @@ public class ResourceRegistrationHelper {
     private static void deployResources(Set<File> resourceDirs, Hk2DeploymentManager dm)  {
         for(File resourceDir: resourceDirs) {
             try {
-                registerResourceDir(resourceDir,dm);
+                registerResourceDir(resourceDir,dm,dm.getCommonServerSupport().getResourcesXmlName());
             } catch (ConfigurationException ex) {
                 Logger.getLogger("glassfish-javaee").log(Level.INFO, "some data sources may not be deployed", ex);
             }
@@ -116,9 +116,9 @@ public class ResourceRegistrationHelper {
         return retVal;
     }
 
-    private static boolean registerResourceDir(File resourceDir, Hk2DeploymentManager dm) throws ConfigurationException {
+    private static boolean registerResourceDir(File resourceDir, Hk2DeploymentManager dm, String baseName) throws ConfigurationException {
         boolean succeeded = false;
-        File sunResourcesXml = new File(resourceDir, "sun-resources.xml"); //NOI18N
+        File sunResourcesXml = new File(resourceDir, baseName+".xml"); //NOI18N
         if(sunResourcesXml.exists()) {
             checkUpdateServerResources(sunResourcesXml, dm);
             GlassfishModule commonSupport = dm.getCommonServerSupport();
