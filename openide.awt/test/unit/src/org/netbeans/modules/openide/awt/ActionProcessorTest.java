@@ -39,11 +39,11 @@
 
 package org.netbeans.modules.openide.awt;
 
+import java.util.Collections;
 import java.util.List;
 import org.openide.awt.ActionID;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -297,6 +297,52 @@ public class ActionProcessorTest extends NbTestCase {
         assertFalse("It is disabled", clone.isEnabled());
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("No change", 16, MultiContext.cnt);
+    }
+    
+    @ActionRegistration(displayName="somename", surviveFocusChange=true)
+    @ActionID(category="Windows", id="my.survival.action")
+    public static final String SURVIVE_KEY = "somekey";
+
+    public void testSurviveFocusChangeBehavior() throws Exception {
+        class MyAction extends AbstractAction {
+            public int cntEnabled;
+            public int cntPerformed;
+            
+            @Override
+            public boolean isEnabled() {
+                cntEnabled++;
+                return true;
+            }
+            
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                cntPerformed++;
+            }
+        }
+        MyAction myAction = new MyAction();
+        
+        ActionMap disable = new ActionMap();
+        ActionMap enable = new ActionMap();
+        
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup al = new AbstractLookup(ic);
+        
+        FileObject fo = FileUtil.getConfigFile(
+                "Actions/Windows/my-survival-action.instance");
+        assertNotNull("File found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Attribute present", obj);
+        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
+        ContextAwareAction temp = (ContextAwareAction) obj;
+        Action a = temp.createContextAwareInstance(al);
+        
+        enable.put(SURVIVE_KEY, myAction);
+        
+        ic.add(enable);
+        assertTrue("MyAction is enabled", a.isEnabled());
+        ic.set(Collections.singletonList(disable), null);
+        assertTrue("Remains enabled on other component", a.isEnabled());
+        ic.remove(disable);
     }
 
 }

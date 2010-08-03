@@ -137,6 +137,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (ar.asynchronous()) {
                 f.boolvalue("asynchronous", true);
             }
+            if (ar.surviveFocusChange()) {
+                f.boolvalue("surviveFocusChange", true);
+            }
             f.write();
         }
         return true;

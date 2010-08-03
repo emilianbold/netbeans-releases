@@ -79,4 +79,7 @@ public @interface ActionRegistration {
      * @return false, if the action shall run synchronously
      */
     boolean asynchronous() default false;
+    /** Shall the action work on last selection when it was enabled?
+     */
+    boolean surviveFocusChange() default false;
 }

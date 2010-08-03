@@ -171,7 +171,7 @@ class GlobalManager extends Object implements LookupListener {
         
         final ActionMap newMap = newMap(prev, a);
         
-        actionMap = new WeakReference<ActionMap>(a);
+        actionMap = new WeakReference<ActionMap>(newMap);
         
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("clearActionPerformers"); // NOI18N
@@ -262,7 +262,10 @@ class GlobalManager extends Object implements LookupListener {
                 if (all != null) {
                     old.addAll(Arrays.asList(all));
                     if (newMap != null) {
-                        old.removeAll(Arrays.asList(newMap.allKeys()));
+                        Object[] toRem = newMap.allKeys();
+                        if (toRem != null) {
+                            old.removeAll(Arrays.asList(toRem));
+                        }
                     }
                 }
             }
