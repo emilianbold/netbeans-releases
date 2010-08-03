@@ -92,18 +92,22 @@ public class PersistentClassIndex extends ClassIndexImpl {
         this.isSource = source;
     }
     
+    @Override
     public BinaryAnalyser getBinaryAnalyser () {
         return new BinaryAnalyser (this.index, this.cacheRoot);
     }
     
+    @Override
     public SourceAnalyser getSourceAnalyser () {        
         return new SourceAnalyser (this.index);        
     }
 
+    @Override
     public boolean isSource () {
         return this.isSource;
     }
 
+    @Override
     public boolean isEmpty () {
         try {
             return ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Boolean>() {
@@ -120,6 +124,16 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
+    @Override
+    public boolean isValid() {
+        try {
+            return index.isValid(true);
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+    
+    @Override
     public FileObject[] getSourceRoots () {
         FileObject[] rootFos;
         if (isSource) {
@@ -149,6 +163,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
+    @Override
     public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         if (BinaryAnalyser.OBJECT.equals(binaryName)) {
@@ -181,6 +196,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         });
     }
     
+    @Override
     public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -192,6 +208,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     
+    @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
             public Void run () throws IOException, InterruptedException {
@@ -200,13 +217,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
             }
         });        
     }
-    
+        
+    @Override
     public void setDirty (final URL url) {
         this.dirty = url;
     }
     
     public @Override String toString () {
-        return "CompromiseUQ["+this.root.toExternalForm()+"]";     // NOI18N
+        return "PersistentClassIndex["+this.root.toExternalForm()+"]";     // NOI18N
     }
     
     //Unit test methods
@@ -215,11 +233,12 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     //Protected methods --------------------------------------------------------
+    @Override
     protected final void close () throws IOException {
         this.index.close();
     }
     
-    
+        
     // Private methods ---------------------------------------------------------                          
     
     private void updateDirty () {
