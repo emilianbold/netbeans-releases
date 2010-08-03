@@ -81,6 +81,8 @@ public class ValidateModulesTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidateModulesTest("clusterVersions"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).addTest("deprecatedModulesAreDisabled").
+                clusters("(?!extra$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
@@ -184,7 +186,7 @@ public class ValidateModulesTest extends NbTestCase {
         }
     }
 
-    public void testDeprecatedModulesAreDisabled() {
+    public void deprecatedModulesAreDisabled() {
         Set<String> cnbs = new TreeSet<String>();
         for (Module m : Main.getModuleSystem().getManager().getModules()) {
             if ("true".equals(m.getAttribute("OpenIDE-Module-Deprecated"))) {
