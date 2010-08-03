@@ -47,6 +47,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
@@ -66,6 +67,7 @@ import org.netbeans.modules.form.FormLAF;
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.RADComponentNode;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
@@ -228,19 +230,38 @@ public class GridDesigner extends JPanel implements Customizer {
 
     private Node selectedNode;
     private void updatePropertySheet() {
-        if (selectedNode != null) {
-            selectedNode.removePropertyChangeListener(getSelectedNodeListener());
-        }
         Node[] nodes;
         if (selection == null) {
             nodes = new Node[0];
-            selectedNode = null;
+            setSelectedNode(null);
         } else {
-            selectedNode = new LayoutConstraintsNode(selection.getNodeReference());
-            selectedNode.addPropertyChangeListener(getSelectedNodeListener());
-            nodes = new Node[] {selectedNode};
+            RADComponentNode node = selection.getNodeReference();
+            if (node == null) {
+                // "selection" was just added and the node reference is not initialized yet
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setSelectedNode(new LayoutConstraintsNode(selection.getNodeReference()));
+                        sheet.setNodes(new Node[] {selectedNode});
+                    }
+                });
+                return;
+            } else {
+                setSelectedNode(new LayoutConstraintsNode(selection.getNodeReference()));
+                nodes = new Node[] {selectedNode};
+            }
         }
         sheet.setNodes(nodes);
+    }
+
+    void setSelectedNode(Node node) {
+        if (selectedNode != null) {
+            selectedNode.removePropertyChangeListener(getSelectedNodeListener());
+        }
+        this.selectedNode = node;
+        if (selectedNode != null) {
+            selectedNode.addPropertyChangeListener(getSelectedNodeListener());
+        }
     }
 
     void updateCustomizer() {

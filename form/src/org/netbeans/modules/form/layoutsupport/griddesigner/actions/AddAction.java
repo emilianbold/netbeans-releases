@@ -43,6 +43,7 @@
 package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
 import java.awt.Component;
+import java.util.Collections;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
@@ -157,6 +158,7 @@ public class AddAction extends AbstractGridAction {
                 Component comp = (Component)replicator.getClonedComponent(metacomp);
                 gridManager.setGridX(comp, context.getFocusedColumn());
                 gridManager.setGridY(comp, context.getFocusedRow());
+                context.setSelectedComponents(Collections.singleton(comp));
             }
 
             gridManager.updateLayout();
