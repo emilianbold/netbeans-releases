@@ -329,24 +329,33 @@ public final class JavadocImports {
                 scope = javac.getElementUtilities().enclosingTypeElement(el);
             }
 
-            Tag tag = positions.getTag(offset);
+            Tag tag = positions.getTag (offset);
             
-            JavaReference ref = tag != null
-                    ? findReference(tag, positions, jdTokenSequence)
+            List<JavaReference> references = tag != null
+                    ? findReferences (tag, positions, jdTokenSequence)
                     : null;
             
-            if (ref != null && scope != null) {
-                result = ref.getReferencedElement(javac, scope);
-                if (result != null && ref.fqn != null && offset < ref.begin + ref.fqn.length()) {
-                    result = result.getKind().isClass() || result.getKind().isInterface()
-                            ? result
-                            : result.getEnclosingElement();
-                    int elmNameLength = result.getSimpleName().length();
-                    while (result != null && offset < ref.begin + ref.fqn.length() - elmNameLength) {
-                        result = result.getEnclosingElement();
-                        elmNameLength += result != null
-                                ? result.getSimpleName().length() + 1
-                                : 0;
+            if (references != null && scope != null) {
+                for (JavaReference reference : references) {
+                    result = reference.getReferencedElement (javac, scope);
+                    if (result != null &&
+                        reference.fqn != null &&
+                        offset < reference.begin + reference.fqn.length ()
+                    ) {
+                        result = result.getKind ().isClass () ||
+                                 result.getKind ().isInterface ()
+                                    ? result : result.getEnclosingElement ();
+                        int elmNameLength = result.getSimpleName ().length ();
+                        while (
+                            result != null &&
+                            offset < reference.begin + reference.fqn.length () - elmNameLength
+                        ) {
+                            result = result.getEnclosingElement ();
+                            elmNameLength += result != null
+                                    ? result.getSimpleName ().length () + 1
+                                    : 0;
+                        }
+                        if (result != null) break;
                     }
                 }
             } else if (tag instanceof ParamTag && "@param".equals(tag.name())) { // NOI18N
