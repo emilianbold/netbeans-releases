@@ -50,6 +50,23 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="ActionRegistration">
+        <api name="awt"/>
+        <summary>New @ActionRegistration annotations</summary>
+        <version major="7" minor="26"/>
+        <date day="10" month="8" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible"/>
+        <description>
+            <p>Instead of registering actions in layer as advocated by various
+            <a href="@TOP@/org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">
+                action factory methods</a> one can use newly created annotations.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="ActionRegistration"/>
+        <class package="org.openide.awt" name="ActionID"/>
+        <issue number="183794"/>
+    </change>
     <change id="UndoRedo.Provider">
         <api name="awt"/>
         <summary>Introducing UndoRedo.Provider</summary>
