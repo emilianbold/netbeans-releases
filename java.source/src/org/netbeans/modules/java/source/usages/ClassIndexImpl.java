@@ -112,7 +112,7 @@ public abstract class ClassIndexImpl {
     
     public abstract SourceAnalyser getSourceAnalyser ();
     
-    public abstract String getSourceName (String binaryName) throws IOException;
+    public abstract String getSourceName (String binaryName) throws IOException, InterruptedException;
     
     public abstract void setDirty (URL url);
 
