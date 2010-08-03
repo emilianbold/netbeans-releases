@@ -80,7 +80,7 @@ public class GridBagManager implements GridManager {
     private GridBagInfoProvider info;
     private GridCustomizer customizer;
     private VisualReplicator replicator;
-    private Map<Component,RADVisualComponent> componentMap;
+    private Map<Component,RADVisualComponent> componentMap = new IdentityHashMap<Component,RADVisualComponent>();
 
     public GridBagManager(VisualReplicator replicator) {
         this.replicator = replicator;
@@ -91,19 +91,28 @@ public class GridBagManager implements GridManager {
             throw new IllegalArgumentException();
         }
         info = new GridBagInfoProvider(container);
-        initComponentMap();
+        updateComponentMap();
     }
 
-    private void initComponentMap() {
-        componentMap = new IdentityHashMap<Component,RADVisualComponent>();
+    private void updateComponentMap() {
+        componentMap.clear();
         RADVisualContainer metacont = (RADVisualContainer)replicator.getTopMetaComponent();
         for (RADVisualComponent metacomp : metacont.getSubComponents()) {
             componentMap.put((Component)replicator.getClonedComponent(metacomp), metacomp);
         }
     }
+    
+    private RADVisualComponent getMetaComponent(Component component) {
+        RADVisualComponent metacomp = componentMap.get(component);
+        if (metacomp == null) {
+            updateComponentMap();
+            metacomp = componentMap.get(component);
+        }
+        return metacomp;
+    }
 
     private Node.Property getProperty(Component component, String propertyName) {
-        RADVisualComponent metacomp = componentMap.get(component);
+        RADVisualComponent metacomp = getMetaComponent(component);
         for (Node.Property property : metacomp.getConstraintsProperties()) {
             String name = property.getName();
             if (name.endsWith(propertyName)) {
@@ -207,7 +216,7 @@ public class GridBagManager implements GridManager {
     public void removeComponent(Component component) {
         if (!GridUtils.isPaddingComponent(component)) {
             // Padding components are not in the form model
-            RADVisualComponent metacomp = componentMap.get(component);
+            RADVisualComponent metacomp = getMetaComponent(component);
             metacomp.getFormModel().removeComponent(metacomp, true);
         }
         container.remove(component);
