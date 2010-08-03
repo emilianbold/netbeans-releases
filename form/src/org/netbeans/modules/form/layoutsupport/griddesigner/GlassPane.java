@@ -919,7 +919,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                         int height = gridInfo.getHeight();
                         Rectangle rect = new Rectangle(x+shift.x, y+shift.y, width, height);
                         if (rect.contains(point)) {
-                            actions = gridManager.designerActions(GridAction.Context.GRID);
+                            actions = gridManager.designerActions(GridAction.Context.CELL);
                         }
                     }
 

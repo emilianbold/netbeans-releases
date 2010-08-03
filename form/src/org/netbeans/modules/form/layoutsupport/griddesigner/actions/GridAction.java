@@ -54,7 +54,7 @@ import org.netbeans.modules.form.layoutsupport.griddesigner.GridManager;
  */
 public interface GridAction {
     /** Action's context. */
-    public enum Context {COMPONENT, COLUMN, ROW, GRID}
+    public enum Context {COMPONENT, COLUMN, ROW, CELL}
 
     /**
      * Returns attribtue values of this action
