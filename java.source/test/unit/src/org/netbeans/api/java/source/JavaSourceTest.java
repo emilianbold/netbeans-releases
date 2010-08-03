@@ -91,8 +91,6 @@ import java.util.logging.Handler;
 import javax.swing.text.BadLocationException;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.search.Query;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -102,7 +100,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.JavaFileObjectProvider;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
@@ -126,7 +123,6 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.PersistentClassIndex;
@@ -1288,7 +1284,8 @@ public class JavaSourceTest extends NbTestCase {
 
 
     public void testIndexCancel() throws Exception {
-        PersistentClassIndex.setIndexFactory(new TestIndexFactory());
+        final TestIndexFactory factory = new TestIndexFactory();
+        PersistentClassIndex.setIndexFactory(factory);
         try {
             FileObject test = createTestFile ("Test1");
             final ClassPath bootPath = createBootPath ();
@@ -1346,6 +1343,7 @@ public class JavaSourceTest extends NbTestCase {
                     }
 
                 };
+                factory.instance.active=true;
                 JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
                 assertTrue(ready[0].await(5, TimeUnit.SECONDS));
                 NbDocument.runAtomic (doc,
@@ -1924,14 +1922,20 @@ public class JavaSourceTest extends NbTestCase {
     }
 
     private static class TestIndexFactory implements IndexFactory {
+        
+        final TestIndex instance = new TestIndex();
 
         public Index create(File cacheRoot) throws IOException {
-            return new TestIndex ();
+            return instance;
         }
 
     }
 
     private static class TestIndex extends Index {
+        //Activate the TestIndex.await after scan is done
+        //during the scan the prebuildArgs may call the index
+        //and cause deadlock
+        volatile boolean active;
 
 
         public TestIndex () {
@@ -1971,6 +1975,9 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         private void await () throws InterruptedException {
+            if (!active) {
+                return;
+            }
             AtomicBoolean cancel = this.cancel.get();
             while (true) {
                 if (cancel.get()) {

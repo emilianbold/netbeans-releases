@@ -79,11 +79,9 @@ import org.openide.util.Exceptions;
  */
 public class DocumentUtil {
     
-    private static final String ROOT_NAME="/";                           //NOI18N    
     private static final String FIELD_RESOURCE_NAME = "resName";        //NOI18N
     private static final String FIELD_BINARY_NAME = "binaryName";         //NOI18N
     private static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
-    private static final String FIELD_TIME_STAMP = "timeStamp";         //NOI18N
     private static final String FIELD_REFERENCES = "references";        //NOI18N
     static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
     static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N
@@ -130,7 +128,6 @@ public class DocumentUtil {
         return new SourceNameConvertor();
     }
     
-    
     //Document field getters
     static String getBinaryName (final Document doc) {
         return getBinaryName(doc, null);
@@ -175,17 +172,7 @@ public class DocumentUtil {
         Field field = doc.getField(FIELD_PACKAGE_NAME);
         return field == null ? null : field.stringValue();
     }
-        
-    
-    static long getTimeStamp (final Document doc) throws java.text.ParseException {
-        assert doc != null;
-        Field field = doc.getField(FIELD_TIME_STAMP);
-        assert field != null;
-        String data = field.stringValue();
-        assert data != null;
-        return DateTools.stringToTime(data);
-    }
-    
+                
     
     //Term and query factories
     static Query binaryNameQuery (final String resourceName) {
@@ -266,11 +253,7 @@ public class DocumentUtil {
         assert ident != null;
         return new Term (FIELD_CASE_INSENSItIVE_FEATURE_IDENTS, ident);
     }
-    
-    static Term rootDocumentTerm () {
-        return new Term (FIELD_RESOURCE_NAME,ROOT_NAME);
-    }
-    
+            
     static Term simpleBinaryNameTerm (final String resourceFileName) {
         assert resourceFileName != null;
         return new Term (FIELD_BINARY_NAME, resourceFileName);
@@ -295,7 +278,7 @@ public class DocumentUtil {
     }
         
     //Factories for lucene document
-    static Document createDocument (final String binaryName, final long timeStamp,
+    static Document createDocument (final String binaryName,
             List<String> references,
             String featureIdents,
             String idents,
@@ -325,8 +308,6 @@ public class DocumentUtil {
         doc.add (field);
         field = new Field (FIELD_PACKAGE_NAME,pkgName,Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);
-        field = new Field (FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO);
-        doc.add (field);
         field = new Field (FIELD_SIMPLE_NAME,simpleName, Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);
         field = new Field (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName, Field.Store.YES, Field.Index.NO_NORMS);
@@ -351,16 +332,7 @@ public class DocumentUtil {
         }
         return doc;
     }
-    
-    static Document createRootTimeStampDocument (final long timeStamp) {
-        Document doc = new Document ();
-        Field field = new Field (FIELD_RESOURCE_NAME, ROOT_NAME,Field.Store.YES, Field.Index.NO_NORMS);
-        doc.add (field);        
-        field = new Field (FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO);
-        doc.add (field);
-        return doc;
-    }
-    
+        
     // Functions for encoding and decoding of UsageType
     static StringBuilder createUsage (final String className) {
         Set<ClassIndexImpl.UsageType> EMPTY = Collections.emptySet();
@@ -459,7 +431,7 @@ public class DocumentUtil {
     static FieldSelector sourceNameFieldSelector () {
         return new FieldSelectorImpl(FIELD_SOURCE);
     }
-        
+            
     private static class FieldSelectorImpl implements FieldSelector {
         
         private final Term[] terms;
@@ -604,5 +576,5 @@ public class DocumentUtil {
             Field field = doc.getField(FIELD_SOURCE);
             return field == null ? null : field.stringValue();
         }
-    }
+    }       
 }

@@ -50,12 +50,10 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,7 +67,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.lang.model.element.ElementKind;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
@@ -83,17 +80,11 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DefaultSimilarity;
-import org.apache.lucene.search.Hit;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
@@ -125,7 +116,6 @@ class LuceneIndex extends Index implements Evictable {
     private final File refCacheRoot;
     //@GuardedBy(this)
     private Directory directory;
-    private Long rootTimeStamp;
 
     //@GuardedBy (this)
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
@@ -515,57 +505,6 @@ class LuceneIndex extends Index implements Evictable {
         }
     }
 
-    public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
-        checkPreconditions();
-        final IndexReader in = getReader();
-        if (in == null) {
-            return false;
-        }
-        try {
-            Searcher searcher = new IndexSearcher (in);
-            try {
-                Hits hits;
-                if (resourceName == null) {
-                    synchronized (this) {
-                        if (this.rootTimeStamp != null) {
-                            return rootTimeStamp.longValue() >= timeStamp;
-                        }
-                    }
-                    hits = searcher.search(new TermQuery(DocumentUtil.rootDocumentTerm()));
-                }
-                else {
-                    hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
-                }
-
-                if (hits.length() != 1) {   //0 = not present, 1 = present and has timestamp, >1 means broken index, probably killed IDE, treat it as not up to date and store will fix it.
-                    return false;
-                }
-                else {
-                    try {
-                        Hit hit = (Hit) hits.iterator().next();
-                        long cacheTime = DocumentUtil.getTimeStamp(hit.getDocument());
-                        if (resourceName == null) {
-                            synchronized (this) {
-                                this.rootTimeStamp = new Long (cacheTime);
-                            }
-                        }
-                        return cacheTime >= timeStamp;
-                    } catch (ParseException pe) {
-                        throw new IOException ();
-                    }
-                }
-            } finally {
-                searcher.close();
-            }
-        } catch (java.io.IOException ioe) {
-            //The FileNotFoundException is may be thrown if the index is not fully merged,
-            //also IOException can be thrown when index was not closed on exit.
-            //Both can be caused by killing the IDE.
-            this.clear();
-            return false;
-        }
-    }
-
     public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -585,16 +524,14 @@ class LuceneIndex extends Index implements Evictable {
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !exists();
-        long timeStamp = System.currentTimeMillis();
         final IndexWriter out = getWriter(create);
         try {
             if (!create) {
                 for (Pair<String,String> topLevel : topLevels) {
                     out.deleteDocuments(DocumentUtil.binaryContentNameQuery(topLevel));
                 }
-                out.deleteDocuments (DocumentUtil.rootDocumentTerm());
             }
-            storeData(out, refs, timeStamp, false);
+            storeData(out, refs, false);
         } finally {
             try {
                 out.close();
@@ -624,16 +561,14 @@ class LuceneIndex extends Index implements Evictable {
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !exists();
-        long timeStamp = System.currentTimeMillis();
         final IndexWriter out = getWriter(create);
         try {
             if (!create) {
                 for (Pair<String,String> toDeleteItem : toDelete) {
                     out.deleteDocuments(DocumentUtil.binaryNameSourceNamePairQuery(toDeleteItem));
                 }
-                out.deleteDocuments (DocumentUtil.rootDocumentTerm());
             }
-            storeData(out, refs, timeStamp, true);
+            storeData(out, refs, true);
         } finally {
             try {
                 out.close();
@@ -645,7 +580,6 @@ class LuceneIndex extends Index implements Evictable {
 
     private void storeData (final IndexWriter out,
             final Map<Pair<String,String>, Object[]> refs,
-            final long timeStamp,
             final boolean optimize) throws IOException {
         if (debugIndexMerging) {
             out.setInfoStream (System.err);
@@ -666,7 +600,6 @@ class LuceneIndex extends Index implements Evictable {
             memDir = new RAMDirectory ();
             activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
         }
-        activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
         for (Iterator<Map.Entry<Pair<String,String>,Object[]>> it = refs.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Pair<String,String>,Object[]> refsEntry = it.next();
             it.remove();
@@ -677,7 +610,7 @@ class LuceneIndex extends Index implements Evictable {
             final List<String> cr = (List<String>) data[0];
             final String fids = (String) data[1];
             final String ids = (String) data[2];
-            final Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr,fids,ids,srcName);
+            final Document newDoc = DocumentUtil.createDocument(cn,cr,fids,ids,srcName);
             activeOut.addDocument(newDoc);
             if (memDir != null && lmListener.isLowMemory()) {
                 activeOut.close();
@@ -694,9 +627,6 @@ class LuceneIndex extends Index implements Evictable {
         }
         if (optimize) {
             out.optimize(false);
-        }
-        synchronized (this) {
-            this.rootTimeStamp = new Long (timeStamp);
         }
     }
 

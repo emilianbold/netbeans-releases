@@ -178,7 +178,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                                     return true;
                                 }
                                 try {
-                                    return uq.getBinaryAnalyser().isValid();
+                                    return uq.isValid();
                                 } finally {
                                     uq.setState(ClassIndexImpl.State.INITIALIZED);
                                 }
