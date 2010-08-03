@@ -56,6 +56,7 @@ import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
+import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AddAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteColumnAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteColumnContentAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteComponentAction;
@@ -189,6 +190,9 @@ public class GridBagManager implements GridManager {
             actions.add(action);
         } else if (context == GridAction.Context.COMPONENT) {
             GridAction action = new DeleteComponentAction();
+            actions.add(action);
+        } else if (context == GridAction.Context.GRID) {
+            GridAction action = new AddAction((RADVisualContainer)replicator.getTopMetaComponent());
             actions.add(action);
         }
         return actions;
