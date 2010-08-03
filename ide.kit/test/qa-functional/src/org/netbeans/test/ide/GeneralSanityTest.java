@@ -47,14 +47,10 @@ package org.netbeans.test.ide;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
-import java.util.TreeSet;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 import org.openide.windows.WindowManager;
 
 public class GeneralSanityTest extends NbTestCase {
@@ -78,8 +74,7 @@ public class GeneralSanityTest extends NbTestCase {
             addTest(
                 "testWaitForUIReady",
                 "testNoWrites",
-                "testBlacklistedClassesHandler",
-                "testDeprecatedModulesAreDisabled"
+                "testBlacklistedClassesHandler"
             )
         ));
         return s;
@@ -156,22 +151,6 @@ public class GeneralSanityTest extends NbTestCase {
         } finally {
             bcHandler.unregister();
         }
-    }
-
-    public void testDeprecatedModulesAreDisabled() {
-        Set<String> cnbs = new TreeSet<String>();
-        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if ("true".equals(m.getAttribute("OpenIDE-Module-Deprecated"))) {
-                String cnb = m.getCodeNameBase();
-                if (cnb.equals("org.jdesktop.layout")) {
-                    // Will take a while to fix, don't report as error now.
-                    continue;
-                }
-                cnbs.add(cnb);
-                assertFalse(cnb + " is deprecated and should not be enabled", m.isEnabled());
-            }
-        }
-        System.out.println("Deprecated modules all correctly disabled: " + cnbs);
     }
 
 }
