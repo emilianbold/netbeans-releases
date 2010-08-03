@@ -562,7 +562,6 @@ public class RubyFormatter implements Formatter {
                     try {
                         // Iterate in reverse order such that offsets are not affected by our edits
                         assert indents.size() == offsets.size();
-                        org.netbeans.editor.Formatter editorFormatter = null;
                         for (int i = indents.size() - 1; i >= 0; i--) {
                             int indent = indents.get(i);
                             int lineBegin = offsets.get(i);
@@ -598,15 +597,8 @@ public class RubyFormatter implements Formatter {
                             int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
 
                             if (currentIndent != indent && indent >= 0) {
-                                if (context != null) {
-                                    assert lineBegin == Utilities.getRowStart(doc, lineBegin);
-                                    context.modifyIndent(lineBegin, indent);
-                                } else {
-                                    if (editorFormatter == null) {
-                                         editorFormatter = doc.getFormatter();
-                                    }
-                                    editorFormatter.changeRowIndent(doc, lineBegin, indent);
-                                }
+                                assert lineBegin == Utilities.getRowStart(doc, lineBegin);
+                                context.modifyIndent(lineBegin, indent);
                             }
                         }
 

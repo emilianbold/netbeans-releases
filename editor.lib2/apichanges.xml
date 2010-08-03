@@ -172,6 +172,20 @@ is the proper place.
             <issue number="150875"/>
         </change>
 
+        <change id="typinghooks-spi-added">
+            <summary>Typing Hooks SPI added</summary>
+            <version major="1" minor="9"/>
+            <date day="23" month="10" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                Typing Hooks SPI allows interception of various key typed events
+                that are processed in the editor. The SPI is a replacement for
+                subclassing editor actions such as <code>DefaultKeyTypedAction</code>,
+                <code>InsertBreakAction</code>, etc.
+            </description>
+        </change>
+
         <change id="added-codegen-spi">
             <summary>Code Generation SPI added</summary>
             <version major="1" minor="8"/>
