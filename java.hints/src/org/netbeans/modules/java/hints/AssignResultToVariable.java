@@ -148,8 +148,19 @@ public class AssignResultToVariable extends AbstractHint {
             long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), exprTree);
             long end   = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), exprTree);
 
-            if (verifyOffset && (start == (-1) || end == (-1) || offset < start || offset > end)) {
-                return null;
+            if (verifyOffset) {
+                if (start == (-1) || end == (-1) || offset < start || offset > end)
+                    return null;
+                if (kind == Kind.NEW_CLASS) {
+                    NewClassTree nct = (NewClassTree) exprTree;
+                    if (nct.getClassBody() != null) {
+                        long bodyStart = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), nct.getClassBody());
+                        long bodyEnd = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), nct.getClassBody());
+                        
+                        if (bodyStart != (-1) && bodyEnd != (-1) && offset > bodyStart && offset <= bodyEnd)
+                            return null;
+                    }
+                }
             }
             
             Element elem = info.getTrees().getElement(treePath);
@@ -167,7 +178,7 @@ public class AssignResultToVariable extends AbstractHint {
             List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(info.getFileObject(), info.getDocument(), TreePathHandle.create(treePath, info)));
             String description = NbBundle.getMessage(AssignResultToVariable.class, "HINT_AssignResultToVariable");
             
-            return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), description, fixes, info.getFileObject(), (int) start, (int) end));
+            return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), description, fixes, info.getFileObject(), offset, offset));
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
             return null;
