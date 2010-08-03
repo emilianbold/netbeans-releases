@@ -520,23 +520,6 @@ public final class JavadocImports {
         return false;
     }
 
-    private static JavaReference findReference(Tag tag, DocPositions positions, TokenSequence<JavadocTokenId> jdTokenSequence) {
-        if (tag == null || !isReferenceTag(tag)) {
-            return null;
-        }
-        int[] tagSpan = positions.getTagSpan(tag);
-        jdTokenSequence.move(tagSpan[0] + (JavadocCompletionUtils.isBlockTag(tag)? 0: 1));
-        if (!jdTokenSequence.moveNext() || jdTokenSequence.token().id() != JavadocTokenId.TAG) {
-            return null;
-        }
-        if (!jdTokenSequence.moveNext()
-                || !(JavadocCompletionUtils.isWhiteSpace(jdTokenSequence.token()) || JavadocCompletionUtils.isLineBreak(jdTokenSequence.token()))
-                || !jdTokenSequence.moveNext()) {
-            return null;
-        }
-        return JavaReference.resolve(jdTokenSequence, jdTokenSequence.offset(), tagSpan[1]);
-    }
-
     private static List<JavaReference> findReferences (
         Tag                     tag,
         DocPositions            positions,
