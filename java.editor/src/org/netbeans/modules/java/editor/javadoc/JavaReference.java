@@ -104,17 +104,6 @@ public final class JavaReference {
         return ref;
     }
 
-    public String[] getParameters() {
-        if (paramsText != null) {
-            return new ParameterParseMachine(paramsText).parseParameters();
-        }
-        return null;
-    }
-
-    public List<JavaReference> getParemeterReferences () {
-        return parameters;
-    }
-
     public List<JavaReference> getAllReferences () {
         if (parameters == null)
             return Collections.<JavaReference>singletonList (this);

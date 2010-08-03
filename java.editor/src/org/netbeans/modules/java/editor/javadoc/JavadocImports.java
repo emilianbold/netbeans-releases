@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
@@ -65,6 +64,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner6;
 import javax.swing.text.Document;
+
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
@@ -124,35 +124,26 @@ public final class JavadocImports {
             } else {
                 tags = Collections.emptyList();
             }
-            
             for (Tag tag : tags) {
                 List<JavaReference> refs = findReferences (tag, positions, jdTokenSequence);
                 if (refs != null) {
                     for (JavaReference reference : refs) {
-                        List<CharSequence> fqns = new LinkedList<CharSequence> ();
-                        fqns.add (reference.fqn);
-                        String[] params = reference.getParameters ();
-                        if (params != null) fqns.addAll (Arrays.asList (params));
-                        for (CharSequence fqnSeq : fqns) {
-                           if (reference.fqn != null &&
-                               reference.fqn.length () > 0
-                           ) {
-                                String fqn = fqnSeq.toString ();
-                                TypeMirror type = javac.getTreeUtilities ().parseType (fqn, scope);
-                                if (type != null && 
-                                    ( type.getKind () == TypeKind.DECLARED ||
-                                      type.getKind() == TypeKind.ERROR
-                                    )
+                        if (reference.fqn != null) {
+                            String fqn = reference.fqn.toString ();
+                            TypeMirror type = javac.getTreeUtilities ().parseType (fqn, scope);
+                            if (type != null &&
+                                ( type.getKind () == TypeKind.DECLARED ||
+                                  type.getKind() == TypeKind.ERROR
+                                )
+                            ) {
+                                DeclaredType declaredType = (DeclaredType) type;
+                                TypeElement foundElement = (TypeElement) declaredType.asElement ();
+                                if (
+                                    SourceVersion.isIdentifier (foundElement.getSimpleName ())
                                 ) {
-                                    DeclaredType declaredType = (DeclaredType) type;
-                                    TypeElement foundElement = (TypeElement) declaredType.asElement ();
-                                    if (
-                                        SourceVersion.isIdentifier (foundElement.getSimpleName ())
-                                    ) {
-                                        if (result == null)
-                                            result = new HashSet<TypeElement> ();
-                                        result.add (foundElement);
-                                    }
+                                    if (result == null)
+                                        result = new HashSet<TypeElement> ();
+                                    result.add (foundElement);
                                 }
                             }
                         }
@@ -399,27 +390,37 @@ public final class JavadocImports {
 
             Tag tag = positions.getTag(offset);
             
-            JavaReference ref = tag != null
-                    ? findReference(tag, positions, jdTokenSequence)
+            List<JavaReference> references = tag != null
+                    ? findReferences (tag, positions, jdTokenSequence)
                     : null;
             
-            if (ref != null && scope != null) {
-                Element elm = ref.getReferencedElement(javac, scope);
-                if (elm != null) {
-                    int fqnLength = ref.fqn != null? ref.fqn.length(): 0;
-                    if (ref.fqn != null && offset >= ref.begin && offset < ref.begin + fqnLength
-                            || ref.member != null && offset > ref.begin + fqnLength && offset < ref.end) {
-                        jdTokenSequence.move(offset);
-                        if (jdTokenSequence.moveNext()) {
-                            return jdTokenSequence.token().id() == JavadocTokenId.IDENT
-                                    ? jdTokenSequence.token()
+            if (references != null && scope != null) {
+                for (JavaReference reference : references) {
+                    Element elm = reference.getReferencedElement (javac, scope);
+                    if (elm != null) {
+                        int fqnLength = reference.fqn != null ?
+                            reference.fqn.length () : 0;
+                        if (reference.fqn != null &&
+                            offset >= reference.begin &&
+                            offset < reference.begin + fqnLength ||
+                            reference.member != null &&
+                            offset > reference.begin + fqnLength &&
+                            offset < reference.end
+                        ) {
+                            jdTokenSequence.move (offset);
+                            if (jdTokenSequence.moveNext ()) {
+                                return jdTokenSequence.token ().id () == JavadocTokenId.IDENT
+                                    ? jdTokenSequence.token ()
                                     : null;
+                            }
                         }
                     }
                 }
             } else {
                 // try to resolve @param name
-                Token<JavadocTokenId> token = findNameTokenOfParamTag(tag, positions, jdTokenSequence);
+                Token<JavadocTokenId> token = findNameTokenOfParamTag (
+                    tag, positions, jdTokenSequence
+                );
                 return token;
             }
 
@@ -619,20 +620,22 @@ public final class JavadocImports {
             }
         }
         
-        private void resolveTags(DocPositions positions, TokenSequence<JavadocTokenId> jdTokenSequence, TypeElement scope) {
+        private void resolveTags (
+            DocPositions positions,
+            TokenSequence<JavadocTokenId> jdTokenSequence,
+            TypeElement scope
+        ) {
             for (Tag tag : positions.getTags()) {
-                JavaReference ref = findReference(tag, positions, jdTokenSequence);
-                if (ref != null) {
-                    List<CharSequence> fqns = new LinkedList<CharSequence>();
-                    fqns.add(ref.fqn);
-                    String[] params = ref.getParameters();
-                    if (params != null) fqns.addAll(Arrays.asList(params));
-                    for (CharSequence fqnSeq : fqns) {
-                       if (ref.fqn != null && ref.fqn.length() > 0) {
-                            String fqn = fqnSeq.toString();
-                            TypeMirror type = javac.getTreeUtilities().parseType(fqn, scope);
-                            if (type != null && type.getKind() == TypeKind.ERROR) {
-                                unresolved.add(fqn);
+                List<JavaReference> references = findReferences (tag, positions, jdTokenSequence);
+                if (references != null) {
+                    for (JavaReference reference : references) {
+                        if (reference.fqn != null && reference.fqn.length() > 0) {
+                            String fqn = reference.fqn.toString ();
+                            TypeMirror type = javac.getTreeUtilities ().parseType (fqn, scope);
+                            if (type != null &&
+                                type.getKind () == TypeKind.ERROR
+                            ) {
+                                unresolved.add (fqn);
                             }
                         }
                     }
