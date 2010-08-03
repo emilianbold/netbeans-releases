@@ -113,7 +113,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      */
     @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        return null;
+        return new WLFindJSPServlet((WLDeploymentManager) dm);
     }
 
     @Override
