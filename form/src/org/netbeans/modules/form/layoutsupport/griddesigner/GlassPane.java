@@ -104,6 +104,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private BitSet selectedColumns = new BitSet();
     /** Selected rows. */
     private BitSet selectedRows = new BitSet();
+    /** Row of focused cell - used by actions with CELL context. */
+    private int focusedCellRow;
+    /** Column of focused cell - used by actions with CELL context. */
+    private int focusedCellColumn;
 
     /** The height of the column header. */
     private int headerHeight;
@@ -796,6 +800,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         context.setSelectedRows((BitSet)selectedRows.clone());
         context.setSelectedComponents((selection==null) ? Collections.EMPTY_SET : Collections.singleton(selection));
         context.setGridInfo(gridInfo);
+        context.setFocusedRow(focusedCellRow);
+        context.setFocusedColumn(focusedCellColumn);
         return context;
     }
 
@@ -898,15 +904,15 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
                     // Column actions
                     int column = findColumnHeader(point);
+                    context.setFocusedColumn(column);
                     if (column != -1) {
-                        context.setFocusedColumn(column);
                         actions = gridManager.designerActions(GridAction.Context.COLUMN);
                     }
 
                     // Row actions
                     int row = findRowHeader(point);
+                    context.setFocusedRow(row);
                     if (row != -1) {
-                        context.setFocusedRow(row);
                         actions = gridManager.designerActions(GridAction.Context.ROW);
                     }
 
@@ -919,8 +925,15 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                         int height = gridInfo.getHeight();
                         Rectangle rect = new Rectangle(x+shift.x, y+shift.y, width, height);
                         if (rect.contains(point)) {
+                            focusedCellColumn = gridXLocation(point.x-shift.x, true);
+                            focusedCellRow = gridYLocation(point.y-shift.y, true);
+                            context.setFocusedColumn(focusedCellColumn);
+                            context.setFocusedRow(focusedCellRow);
                             actions = gridManager.designerActions(GridAction.Context.CELL);
                         }
+                    } else {
+                        focusedCellColumn = -1;
+                        focusedCellRow = -1;
                     }
 
                     if (actions != null) {
