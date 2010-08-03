@@ -31,6 +31,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -283,18 +284,37 @@ public abstract class CreateClassFix implements Fix {
         public ChangeInfo implement() throws IOException {
             FileObject pack = FileUtil.createFolder(targetSourceRoot, packageName.replace('.', '/')); // NOI18N
             FileObject classTemplate/*???*/ = FileUtil.getConfigFile(template(kind));
-            DataObject classTemplateDO = DataObject.find(classTemplate);
-            DataObject od = classTemplateDO.createFromTemplate(DataFolder.findFolder(pack), simpleName);
-            FileObject target = od.getPrimaryFile();
+            FileObject target;
+
+            if (classTemplate != null) {
+                DataObject classTemplateDO = DataObject.find(classTemplate);
+                DataObject od = classTemplateDO.createFromTemplate(DataFolder.findFolder(pack), simpleName);
+
+                target = od.getPrimaryFile();
+            } else {
+                target = FileUtil.createData(pack, simpleName + ".java");
+            }
+            
+            final boolean fromTemplate = classTemplate != null;
             
             JavaSource.forFileObject(target).runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED);
+
+                    TreeMaker make = parameter.getTreeMaker();
+                    CompilationUnitTree cut = parameter.getCompilationUnit();
+                    ExpressionTree pack = fromTemplate ? cut.getPackageName() : make.Identifier(packageName);
+                    ClassTree source =   fromTemplate
+                                       ? (ClassTree) cut.getTypeDecls().get(0)
+                                       : make.Class(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
+                                                    simpleName,
+                                                    Collections.<TypeParameterTree>emptyList(),
+                                                    null,
+                                                    Collections.<Tree>emptyList(),
+                                                    Collections.<Tree>emptyList());
+                    ClassTree nue = createConstructor(parameter, new TreePath(new TreePath(cut), source));
                     
-                    ClassTree source = (ClassTree) parameter.getCompilationUnit().getTypeDecls().get(0);
-                    ClassTree nue = createConstructor(parameter, TreePath.getPath(parameter.getCompilationUnit(), source));
-                    
-                    parameter.rewrite(source, nue);
+                    parameter.rewrite(cut, make.CompilationUnit(pack, cut.getImports(), Collections.singletonList(nue), cut.getSourceFile()));
                 }
             }).commit();
             
