@@ -911,7 +911,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     }
 
                     // Grid actions
-                    if ((selection == null) && (column == -1) /* && (row == -1) */) {
+                    if ((selection == null) && (column == -1) && (row == -1)) {
                         Point shift = fromComponentPane(new Point());
                         int x = gridInfo.getX();
                         int y = gridInfo.getY();
