@@ -44,12 +44,14 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WhitespaceTokenizer;
@@ -65,12 +67,17 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-class DocumentUtil {
+public class DocumentUtil {
     
     private static final String ROOT_NAME="/";                           //NOI18N    
     private static final String FIELD_RESOURCE_NAME = "resName";        //NOI18N
@@ -78,8 +85,8 @@ class DocumentUtil {
     private static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
     private static final String FIELD_TIME_STAMP = "timeStamp";         //NOI18N
     private static final String FIELD_REFERENCES = "references";        //NOI18N
-    private static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
-    private static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N
+    static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
+    static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N
     private static final String FIELD_SOURCE = "source";                //NOI18N
     private static final String FIELD_IDENTS = "ids";                           //NOI18N
     private static final String FIELD_FEATURE_IDENTS = "fids";                  //NOI18N
@@ -105,13 +112,31 @@ class DocumentUtil {
     private DocumentUtil () {
     }
     
+    //Convertor factories
+    public static ResultConvertor<FileObject> fileObjectConvertor (final FileObject... roots) {
+        assert roots != null;
+        return new FileObjectConvertor (roots);
+    }
+    
+    public static ResultConvertor<ElementHandle<TypeElement>> elementHandleConvertor () {
+        return new ElementHandleConvertor ();
+    }
+    
+    public static ResultConvertor<String> binaryNameConvertor () {
+        return new BinaryNameConvertor ();
+    }
+    
+    static ResultConvertor<String> sourceNameConvertor () {
+        return new SourceNameConvertor();
+    }
+    
     
     //Document field getters
-    public static String getBinaryName (final Document doc) {
+    static String getBinaryName (final Document doc) {
         return getBinaryName(doc, null);
     }
     
-    public static String getBinaryName (final Document doc, final ElementKind[] kind) {
+    static String getBinaryName (final Document doc, final ElementKind[] kind) {
         assert doc != null;
         final Field pkgField = doc.getField(FIELD_PACKAGE_NAME);
         final Field snField = doc.getField (FIELD_BINARY_NAME);
@@ -134,7 +159,7 @@ class DocumentUtil {
         return  pkg + PKG_SEPARATOR + snName;   //NO I18N
     }
     
-    public static String getSimpleBinaryName (final Document doc) {
+    static String getSimpleBinaryName (final Document doc) {
         assert doc != null;
         Field field = doc.getField(FIELD_BINARY_NAME);
         if (field == null) {
@@ -144,26 +169,15 @@ class DocumentUtil {
             return field.stringValue();
         }
     }
-    
-    public static String getSourceName (final Document doc) {
-        assert doc != null;
-        Field field = doc.getField(FIELD_SOURCE);
-        if (field == null) {
-            return null;
-        }
-        else {
-            return field.stringValue();
-        }
-    }
-    
-    public static String getPackageName (final Document doc) {
+        
+    static String getPackageName (final Document doc) {
         assert doc != null;
         Field field = doc.getField(FIELD_PACKAGE_NAME);
         return field == null ? null : field.stringValue();
     }
         
     
-    public static long getTimeStamp (final Document doc) throws java.text.ParseException {
+    static long getTimeStamp (final Document doc) throws java.text.ParseException {
         assert doc != null;
         Field field = doc.getField(FIELD_TIME_STAMP);
         assert field != null;
@@ -174,7 +188,7 @@ class DocumentUtil {
     
     
     //Term and query factories
-    public static Query binaryNameQuery (final String resourceName) {
+    static Query binaryNameQuery (final String resourceName) {
         final BooleanQuery query = new BooleanQuery ();
         int index = resourceName.lastIndexOf(PKG_SEPARATOR);  // NOI18N
         String pkgName, sName;
@@ -192,7 +206,7 @@ class DocumentUtil {
         return query;
     }
     
-    public static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
+    static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
         assert binaryNameSourceNamePair != null;
         final String binaryName = binaryNameSourceNamePair.first;
         final String sourceName = binaryNameSourceNamePair.second;
@@ -205,7 +219,7 @@ class DocumentUtil {
         return query;
     }
     
-    public static Query binaryContentNameQuery (final Pair<String,String> binaryNameSourceNamePair) {
+    static Query binaryContentNameQuery (final Pair<String,String> binaryNameSourceNamePair) {
         final String resourceName = binaryNameSourceNamePair.first;
         final String sourceName = binaryNameSourceNamePair.second;
         int index = resourceName.lastIndexOf(PKG_SEPARATOR);  // NOI18N
@@ -230,44 +244,44 @@ class DocumentUtil {
         return query;
     }
     
-    public static Term identTerm (final String ident) {
+    static Term identTerm (final String ident) {
         assert ident != null;
         return new Term (FIELD_IDENTS, ident);
     }
     
-    public static Query identQuery (final String ident) {
+    static Query identQuery (final String ident) {
         return new TermQuery(identTerm(ident));
     }
     
-    public static Term featureIdentTerm (final String ident) {
+    static Term featureIdentTerm (final String ident) {
         assert ident != null;
         return new Term (FIELD_FEATURE_IDENTS, ident);
     }
     
-    public static Query featureIdentQuery (final String ident) {
+    static Query featureIdentQuery (final String ident) {
         return new TermQuery(featureIdentTerm(ident));
     }
     
-    public static Term caseInsensitiveFeatureIdentTerm (final String ident) {
+    static Term caseInsensitiveFeatureIdentTerm (final String ident) {
         assert ident != null;
         return new Term (FIELD_CASE_INSENSItIVE_FEATURE_IDENTS, ident);
     }
     
-    public static Term rootDocumentTerm () {
+    static Term rootDocumentTerm () {
         return new Term (FIELD_RESOURCE_NAME,ROOT_NAME);
     }
     
-    public static Term simpleBinaryNameTerm (final String resourceFileName) {
+    static Term simpleBinaryNameTerm (final String resourceFileName) {
         assert resourceFileName != null;
         return new Term (FIELD_BINARY_NAME, resourceFileName);
     }   
     
-    public static Term packageNameTerm (final String packageName) {
+    static Term packageNameTerm (final String packageName) {
         assert packageName != null;
         return new Term (FIELD_PACKAGE_NAME, packageName);
     }
     
-    public static Term referencesTerm (String resourceName, final Set<ClassIndexImpl.UsageType> usageType) {
+    static Term referencesTerm (String resourceName, final Set<ClassIndexImpl.UsageType> usageType) {
         assert resourceName  != null;
         if (usageType != null) {
             resourceName = encodeUsage (resourceName, usageType, WILDCARD).toString();
@@ -279,19 +293,9 @@ class DocumentUtil {
         }
         return new Term (FIELD_REFERENCES, resourceName);
     }
-    
-    public static Term simpleNameTerm (final String resourceSimpleName) {
-        assert resourceSimpleName != null;
-        return new Term (FIELD_SIMPLE_NAME, resourceSimpleName);
-    }
-    
-    public static Term caseInsensitiveNameTerm (final String caseInsensitiveName) {
-        assert caseInsensitiveName != null;
-        return new Term (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName);
-    }    
-    
+        
     //Factories for lucene document
-    public static Document createDocument (final String binaryName, final long timeStamp,
+    static Document createDocument (final String binaryName, final long timeStamp,
             List<String> references,
             String featureIdents,
             String idents,
@@ -348,7 +352,7 @@ class DocumentUtil {
         return doc;
     }
     
-    public static Document createRootTimeStampDocument (final long timeStamp) {
+    static Document createRootTimeStampDocument (final long timeStamp) {
         Document doc = new Document ();
         Field field = new Field (FIELD_RESOURCE_NAME, ROOT_NAME,Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);        
@@ -358,12 +362,12 @@ class DocumentUtil {
     }
     
     // Functions for encoding and decoding of UsageType
-    public static StringBuilder createUsage (final String className) {
+    static StringBuilder createUsage (final String className) {
         Set<ClassIndexImpl.UsageType> EMPTY = Collections.emptySet();
         return encodeUsage (className, EMPTY,NO);
     }
     
-    public static void addUsage (final StringBuilder rawUsage, final ClassIndexImpl.UsageType type) {
+    static void addUsage (final StringBuilder rawUsage, final ClassIndexImpl.UsageType type) {
         assert rawUsage != null;
         assert type != null;
         final int rawUsageLen = rawUsage.length();
@@ -371,7 +375,7 @@ class DocumentUtil {
         rawUsage.setCharAt (startIndex + type.getOffset(),YES);
     }
     
-    public static String encodeUsage (final String className, final Set<ClassIndexImpl.UsageType> usageTypes) {
+    static String encodeUsage (final String className, final Set<ClassIndexImpl.UsageType> usageTypes) {
         return encodeUsage (className, usageTypes, NO).toString();
     }
     
@@ -391,7 +395,7 @@ class DocumentUtil {
         return builder;
     }
     
-    public static String encodeUsage (final String className, final String usageMap) {
+    static String encodeUsage (final String className, final String usageMap) {
         assert className != null;
         assert usageMap != null;
         StringBuilder sb = new StringBuilder ();
@@ -400,7 +404,7 @@ class DocumentUtil {
         return sb.toString();
     }
     
-    public static String decodeUsage (final String rawUsage, final Set<ClassIndexImpl.UsageType> usageTypes) {
+    static String decodeUsage (final String rawUsage, final Set<ClassIndexImpl.UsageType> usageTypes) {
         assert rawUsage != null;
         assert usageTypes != null;
         assert usageTypes.isEmpty();
@@ -417,7 +421,7 @@ class DocumentUtil {
         return className;
     }
     
-    public static ElementKind decodeKind (char kind) {
+    static ElementKind decodeKind (char kind) {
         switch (kind) {
             case EK_CLASS:
                 return ElementKind.CLASS;
@@ -432,7 +436,7 @@ class DocumentUtil {
         }
     }
     
-    public static char encodeKind (ElementKind kind) {
+    static char encodeKind (ElementKind kind) {
         switch (kind) {
             case CLASS:
                 return EK_CLASS;
@@ -448,28 +452,36 @@ class DocumentUtil {
     }       
     
     
-    public static FieldSelector declaredTypesFieldSelector () {
-        return new DeclaredTypesFieldSelector();
+    static FieldSelector declaredTypesFieldSelector () {
+        return new FieldSelectorImpl(FIELD_PACKAGE_NAME,FIELD_BINARY_NAME);
     }
     
-    /**
-     * Expert: Bypass load of non needed fields of document
-     */
-    private static class DeclaredTypesFieldSelector implements FieldSelector {
+    static FieldSelector sourceNameFieldSelector () {
+        return new FieldSelectorImpl(FIELD_SOURCE);
+    }
         
-        private final Term pkgName = new Term (FIELD_PACKAGE_NAME,"");          //NOI18N
-        private final Term binaryName = new Term (FIELD_BINARY_NAME,"");        //NOI18N
-
-        public FieldSelectorResult accept(final String fieldName) {
-            if (fieldName == pkgName.field() || fieldName == binaryName.field()) {
-                return FieldSelectorResult.LOAD;
-            }
-            else {
-                return FieldSelectorResult.NO_LOAD;
+    private static class FieldSelectorImpl implements FieldSelector {
+        
+        private final Term[] terms;
+        
+        FieldSelectorImpl(String... fieldNames) {
+            terms = new Term[fieldNames.length];
+            for (int i=0; i< fieldNames.length; i++) {
+                terms[i] = new Term (fieldNames[i],""); //NOI18N
             }
         }
         
+        @Override
+        public FieldSelectorResult accept(String fieldName) {
+            for (Term t : terms) {
+                if (fieldName == t.field()) {
+                    return FieldSelectorResult.LOAD;
+                }
+            }
+            return FieldSelectorResult.NO_LOAD;
+        }
     }
+        
     
     private static class LCWhitespaceTokenizer extends WhitespaceTokenizer {
         LCWhitespaceTokenizer (final Reader r) {
@@ -481,9 +493,116 @@ class DocumentUtil {
         }        
     }
     
-    public static final class LCWhitespaceAnalyzer extends Analyzer {
+    static final class LCWhitespaceAnalyzer extends Analyzer {
         public TokenStream tokenStream(String fieldName, Reader reader) {
             return new LCWhitespaceTokenizer(reader);
+        }
+    }
+    
+    private static class FileObjectConvertor implements ResultConvertor<FileObject> {                
+        
+        private FileObject[] roots;
+        
+        private FileObjectConvertor (final FileObject... roots) {
+            this.roots = roots;
+        }
+        
+        @Override
+        public FileObject convert (final Document doc) {
+            final String binaryName = getBinaryName(doc, null);
+            return binaryName == null ? null : convert(binaryName);
+        }
+        
+        private FileObject convert(String value) {
+            for (FileObject root : roots) {
+                FileObject result = resolveFile (root, value);
+                if (result != null) {
+                    return result;
+                }
+            }
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            for (FileObject root : roots ) {
+                try {
+                    ClassIndexImpl impl = cim.getUsagesQuery(root.getURL());
+                    if (impl != null) {
+                        String sourceName = impl.getSourceName(value);
+                        if (sourceName != null) {
+                            FileObject result = root.getFileObject(sourceName);
+                            if (result != null) {
+                                return result;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                } catch (InterruptedException ie) {
+                    //Safe to ingnore
+                }               
+            }
+            return null;
+        }
+        
+        private static FileObject resolveFile (final FileObject root, String classBinaryName) {
+            assert classBinaryName != null;
+            classBinaryName = classBinaryName.replace('.', '/');    //NOI18N
+            int index = classBinaryName.lastIndexOf('/');           //NOI18N
+            FileObject folder;
+            String name;
+            if (index<0) {
+                folder = root;
+                name = classBinaryName;
+            }
+            else {
+                assert index>0 : classBinaryName;
+                assert index<classBinaryName.length() - 1 : classBinaryName;
+                folder = root.getFileObject(classBinaryName.substring(0,index));
+                name = classBinaryName.substring(index+1);
+            }
+            if (folder == null) {
+                return null;
+            }
+            index = name.indexOf('$');                              //NOI18N
+            if (index>0) {
+                name = name.substring(0, index);
+            }
+            for (FileObject child : folder.getChildren()) {
+                if (FileObjects.JAVA.equalsIgnoreCase(child.getExt()) && name.equals(child.getName())) {
+                    return child;
+                }
+            }
+            return null;
+        }
+    }
+    
+    private static class ElementHandleConvertor implements ResultConvertor<ElementHandle<TypeElement>> {
+        
+        private final ElementKind[] kindHolder = new ElementKind[1];
+
+        @Override
+        public ElementHandle<TypeElement> convert (final Document doc) {
+            final String binaryName = getBinaryName(doc, kindHolder);
+            return binaryName == null ? null : convert(kindHolder[0], binaryName);
+        }
+
+        private ElementHandle<TypeElement> convert(ElementKind kind, String value) {
+            return ElementHandleAccessor.INSTANCE.create(kind, value);
+        }
+    }
+    
+    private static class BinaryNameConvertor implements ResultConvertor<String> {
+        
+        @Override
+        public String convert (final Document doc) {
+            return getBinaryName(doc, null);
+        }
+    }
+    
+    private static class SourceNameConvertor implements ResultConvertor<String> {
+
+        @Override
+        public String convert(Document doc) {
+            Field field = doc.getField(FIELD_SOURCE);
+            return field == null ? null : field.stringValue();
         }
     }
 }
