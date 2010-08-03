@@ -81,7 +81,6 @@ import org.openide.util.NbBundle;
 class JdbcRetriever {
     
     private static final Logger LOGGER = Logger.getLogger(JdbcRetriever.class.getName());
-    
     private static final int WAIT_TIME = 60000;
     
     private static final int TIMEOUT = 120000;
