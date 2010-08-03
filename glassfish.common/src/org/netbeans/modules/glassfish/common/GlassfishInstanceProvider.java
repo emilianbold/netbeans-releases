@@ -126,7 +126,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     "GlassFish_Server_3", // NOI18N
-                    "http://java.net/download/glassfish/3.0.1/release/glassfish-3_0_1.zip", // NOI18N
+                    "http://java.net/download/glassfish/3.0.1/release/glassfish-3.0.1-ml.zip?nbretriever=fallback", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/post69v3.txt", // NOI18N
                     "last-v3ee6-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
@@ -160,7 +160,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V31_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V31_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     EE6WC_DEFAULT_NAME, // NOI18N
-                    "http://java.net/download/glassfish/3.1/promoted/latest-glassfish.zip", // NOI18N
+                    "http://java.net/download/glassfish/3.1/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/post69v3-1.txt", // NOI18N
                     "last-v3ee6wc-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
@@ -197,7 +197,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     PRELUDE_DEFAULT_NAME, 
-                    "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", // NOI18N
+                    "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip?nbretriever=fallback", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/post69prelude.txt", // NOI18N
                     "last-install-root", // NOI18N
                     new String[0],
