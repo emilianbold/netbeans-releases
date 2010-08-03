@@ -781,7 +781,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     return true;
                                 }
                                 try {
-                                    return uq.getSourceAnalyser().isValid();
+                                    return uq.isValid();
                                 } finally {
                                     uq.setState(ClassIndexImpl.State.INITIALIZED);
                                 }

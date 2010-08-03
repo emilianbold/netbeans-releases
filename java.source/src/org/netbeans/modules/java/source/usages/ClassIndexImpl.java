@@ -95,7 +95,7 @@ public abstract class ClassIndexImpl {
         INITIALIZED,
     }
     
-    
+        
     public static ClassIndexFactory FACTORY;    
     
     public abstract <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
@@ -115,12 +115,14 @@ public abstract class ClassIndexImpl {
     public abstract String getSourceName (String binaryName) throws IOException, InterruptedException;
     
     public abstract void setDirty (URL url);
+    
+    public abstract boolean isValid ();
 
     public abstract boolean isSource ();
 
-    public abstract boolean isEmpty ();
-    
-    protected abstract void close () throws IOException;
+    public abstract boolean isEmpty ();   
+            
+    protected abstract void close () throws IOException;    
     
     public void addClassIndexImplListener (final ClassIndexImplListener listener) {
         assert listener != null;        
