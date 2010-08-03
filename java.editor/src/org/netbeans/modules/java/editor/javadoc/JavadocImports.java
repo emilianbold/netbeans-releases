@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
@@ -126,17 +127,25 @@ public final class JavadocImports {
             
             for (Tag tag : tags) {
                 JavaReference ref = findReference(tag, positions, jdTokenSequence);
-                if (ref != null && ref.fqn != null && ref.fqn.length() > 0) {
-                    String fqn = ref.fqn.toString();
-                    TypeMirror type = javac.getTreeUtilities().parseType(fqn, scope);
-                    if (type != null && (type.getKind() == TypeKind.DECLARED || type.getKind() == TypeKind.ERROR)) {
-                        DeclaredType declaredType = (DeclaredType) type;
-                        TypeElement foundElement = (TypeElement) declaredType.asElement();
-                        if (SourceVersion.isIdentifier(foundElement.getSimpleName())) {
-                            if (result == null) {
-                                result = new HashSet<TypeElement>();
+                if (ref != null) {
+                    List<CharSequence> fqns = new LinkedList<CharSequence>();
+                    fqns.add(ref.fqn);
+                    String[] params = ref.getParameters();
+                    if (params != null) fqns.addAll(Arrays.asList(params));
+                    for (CharSequence fqnSeq : fqns) {
+                       if (ref.fqn != null && ref.fqn.length() > 0) {
+                            String fqn = fqnSeq.toString();
+                            TypeMirror type = javac.getTreeUtilities().parseType(fqn, scope);
+                            if (type != null && (type.getKind() == TypeKind.DECLARED || type.getKind() == TypeKind.ERROR)) {
+                                DeclaredType declaredType = (DeclaredType) type;
+                                TypeElement foundElement = (TypeElement) declaredType.asElement();
+                                if (SourceVersion.isIdentifier(foundElement.getSimpleName())) {
+                                    if (result == null) {
+                                        result = new HashSet<TypeElement>();
+                                    }
+                                    result.add(foundElement);
+                                }
                             }
-                            result.add(foundElement);
                         }
                     }
                 }
@@ -184,42 +193,44 @@ public final class JavadocImports {
             final boolean isTypeParam = toFind.getKind() == ElementKind.TYPE_PARAMETER;
 
             for (Tag tag : tags) {
-                JavaReference ref = findReference(tag, positions, jdTokenSequence);
+                List<JavaReference> references = findReferences (tag, positions, jdTokenSequence);
+                if (references != null) {
+                    for (JavaReference ref : references) {
 
-                if (ref != null) {
-                    Element referenced = ref.getReferencedElement(javac, scope);
-                    while (referenced != null) {
+                        Element referenced = ref.getReferencedElement(javac, scope);
+                        while (referenced != null) {
+                            if (referenced == toFind) {
+                                break;
+                            }
+                            referenced = referenced.getEnclosingElement();
+                        }
                         if (referenced == toFind) {
-                            break;
-                        }
-                        referenced = referenced.getEnclosingElement();
-                    }
-                    if (referenced == toFind) {
-                        int pos = -1;
-                        ElementKind rkind = referenced.getKind();
-                        if (ref.fqn != null && (rkind.isClass() || rkind.isInterface())) {
-                            String fqn = ((TypeElement) referenced).getQualifiedName().toString();
-                            String reffqn = ref.fqn.toString(); // NOI18N
-                            if (reffqn.startsWith(fqn)) {
-                                pos = ref.begin + fqn.length() - 1;
-                            } else {
-                                String simpleName = referenced.getSimpleName().toString();
-                                pos = ref.begin + simpleName.length() - 1;
+                            int pos = -1;
+                            ElementKind rkind = referenced.getKind();
+                            if (ref.fqn != null && (rkind.isClass() || rkind.isInterface())) {
+                                String fqn = ((TypeElement) referenced).getQualifiedName().toString();
+                                String reffqn = ref.fqn.toString(); // NOI18N
+                                if (reffqn.startsWith(fqn)) {
+                                    pos = ref.begin + fqn.length() - 1;
+                                } else {
+                                    String simpleName = referenced.getSimpleName().toString();
+                                    pos = ref.begin + simpleName.length() - 1;
+                                }
+                            } else if (rkind.isField() || rkind == ElementKind.METHOD || rkind == ElementKind.CONSTRUCTOR) {
+                                pos = ref.end - 1;
                             }
-                        } else if (rkind.isField() || rkind == ElementKind.METHOD || rkind == ElementKind.CONSTRUCTOR) {
-                            pos = ref.end - 1;
-                        }
-                        
-                        if (pos < 0) {
-                            continue;
-                        }
-                        
-                        jdTokenSequence.move(pos);
-                        if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.IDENT) {
-                            if (result == null) {
-                                result = new ArrayList<Token>();
+
+                            if (pos < 0) {
+                                continue;
                             }
-                            result.add(jdTokenSequence.token());
+
+                            jdTokenSequence.move(pos);
+                            if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.IDENT) {
+                                if (result == null) {
+                                    result = new ArrayList<Token>();
+                                }
+                                result.add(jdTokenSequence.token());
+                            }
                         }
                     }
                 } else if ((isParam || isTypeParam) && tag != null && "@param".equals(tag.name())) { // NOI18N
@@ -506,6 +517,29 @@ public final class JavadocImports {
         }
         return JavaReference.resolve(jdTokenSequence, jdTokenSequence.offset(), tagSpan[1]);
     }
+
+    private static List<JavaReference> findReferences (
+        Tag                     tag,
+        DocPositions            positions,
+        TokenSequence<JavadocTokenId>
+                                jdTokenSequence
+    ) {
+        if (tag == null || !isReferenceTag(tag)) {
+            return null;
+        }
+        int[] tagSpan = positions.getTagSpan(tag);
+        jdTokenSequence.move(tagSpan[0] + (JavadocCompletionUtils.isBlockTag(tag)? 0: 1));
+        if (!jdTokenSequence.moveNext() || jdTokenSequence.token().id() != JavadocTokenId.TAG) {
+            return null;
+        }
+        if (!jdTokenSequence.moveNext()
+                || !(JavadocCompletionUtils.isWhiteSpace(jdTokenSequence.token()) || JavadocCompletionUtils.isLineBreak(jdTokenSequence.token()))
+                || !jdTokenSequence.moveNext()) {
+            return null;
+        }
+        JavaReference reference = JavaReference.resolve (jdTokenSequence, jdTokenSequence.offset(), tagSpan[1]);
+        return reference.getAllReferences ();
+    }
     
     private static boolean isReferenceTag(Tag tag) {
         String tagName = tag.name();
@@ -570,11 +604,19 @@ public final class JavadocImports {
         private void resolveTags(DocPositions positions, TokenSequence<JavadocTokenId> jdTokenSequence, TypeElement scope) {
             for (Tag tag : positions.getTags()) {
                 JavaReference ref = findReference(tag, positions, jdTokenSequence);
-                if (ref != null && ref.fqn != null && ref.fqn.length() > 0) {
-                    String fqn = ref.fqn.toString();
-                    TypeMirror type = javac.getTreeUtilities().parseType(fqn, scope);
-                    if (type != null && type.getKind() == TypeKind.ERROR) {
-                        unresolved.add(fqn);
+                if (ref != null) {
+                    List<CharSequence> fqns = new LinkedList<CharSequence>();
+                    fqns.add(ref.fqn);
+                    String[] params = ref.getParameters();
+                    if (params != null) fqns.addAll(Arrays.asList(params));
+                    for (CharSequence fqnSeq : fqns) {
+                       if (ref.fqn != null && ref.fqn.length() > 0) {
+                            String fqn = fqnSeq.toString();
+                            TypeMirror type = javac.getTreeUtilities().parseType(fqn, scope);
+                            if (type != null && type.getKind() == TypeKind.ERROR) {
+                                unresolved.add(fqn);
+                            }
+                        }
                     }
                 }
             }

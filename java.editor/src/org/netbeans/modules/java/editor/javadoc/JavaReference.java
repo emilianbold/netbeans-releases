@@ -50,6 +50,7 @@ import com.sun.javadoc.MethodDoc;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -73,6 +74,7 @@ public final class JavaReference {
     CharSequence fqn;
     CharSequence member;
     CharSequence tag;
+    List<JavaReference> parameters;
     int begin = -1; // inclusive
     int end = -1; // exclusive
     private int tagEndPosition;
@@ -101,7 +103,27 @@ public final class JavaReference {
         ref.insideFQN(jdts);
         return ref;
     }
-    
+
+    public String[] getParameters() {
+        if (paramsText != null) {
+            return new ParameterParseMachine(paramsText).parseParameters();
+        }
+        return null;
+    }
+
+    public List<JavaReference> getParemeterReferences () {
+        return parameters;
+    }
+
+    public List<JavaReference> getAllReferences () {
+        if (parameters == null)
+            return Collections.<JavaReference>singletonList (this);
+        List<JavaReference> references = new ArrayList<JavaReference> ();
+        references.add (this);
+        references.addAll (parameters);
+        return references;
+    }
+
     public Element getReferencedElement(CompilationInfo javac, TypeElement scope) {
         if (!isReference()) {
             return null;
@@ -184,6 +206,16 @@ public final class JavaReference {
                     ? token.text()
                     : token.text().subSequence(0, len);
             params.append(cs);
+            if (token.id () == JavadocTokenId.IDENT) {
+                JavaReference parameter = JavaReference.resolve (
+                    jdts,
+                    jdts.offset(),
+                    jdts.offset() + len
+                );
+                if (parameters == null)
+                    parameters = new ArrayList<JavaReference> ();
+                parameters.add (parameter);
+            }
             if (!jdts.moveNext()) {
                 break;
             }
