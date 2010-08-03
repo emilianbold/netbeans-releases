@@ -481,7 +481,7 @@ public class WLDeploymentManager implements DeploymentManager {
         return deployTargets.toArray(new Target[deployTargets.size()]);
     }
 
-    private static TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
+    private TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
         if (ids == null) {
             return null;
         }
@@ -528,7 +528,7 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
 
-    private static class ServerTargetModuleID implements TargetModuleID {
+    private class ServerTargetModuleID implements TargetModuleID {
 
         private final TargetModuleID moduleId;
 
@@ -543,7 +543,11 @@ public class WLDeploymentManager implements DeploymentManager {
 
         @Override
         public String getWebURL() {
-            return moduleId.getWebURL();
+            String url = moduleId.getWebURL();
+            if (url != null) {
+                url = "http://" + getHost() + ":" + getPort() + url; // NOI18N
+            }
+            return url;
         }
 
         @Override

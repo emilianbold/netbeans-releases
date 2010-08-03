@@ -83,7 +83,7 @@ public class JsonLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language getLexerLanguage() {
-        return JsTokenId.language();
+        return JsTokenId.jsonLanguage();
     }
 
     @Override

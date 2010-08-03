@@ -171,6 +171,48 @@ public enum JsTokenId implements TokenId {
         return language;
     }
 
+
+
+    private static final Language<JsTokenId> jsonLanguage = new LanguageHierarchy<JsTokenId>() {
+                protected String mimeType() {
+                    return JsTokenId.JSON_MIME_TYPE;
+                }
+
+                protected Collection<JsTokenId> createTokenIds() {
+                    return EnumSet.allOf(JsTokenId.class);
+                }
+
+                @Override
+                protected Map<String, Collection<JsTokenId>> createTokenCategories() {
+                    Map<String, Collection<JsTokenId>> cats =
+                        new HashMap<String, Collection<JsTokenId>>();
+                    return cats;
+                }
+
+                protected Lexer<JsTokenId> createLexer(LexerRestartInfo<JsTokenId> info) {
+                    return JsLexer.create(info);
+                }
+
+                @Override
+                protected LanguageEmbedding<?> embedding(Token<JsTokenId> token,
+                    LanguagePath languagePath, InputAttributes inputAttributes) {
+                    JsTokenId id = token.id();
+
+                    if (id == STRING_LITERAL) {
+                        return LanguageEmbedding.create(JsStringTokenId.language(), 0, 0);
+                    } else if (id == BLOCK_COMMENT || id == LINE_COMMENT) {
+                        return LanguageEmbedding.create(JsCommentTokenId.language(), 0, 0);
+                    }
+
+                    return null; // No embedding
+                }
+            }.language();
+
+    public static Language<JsTokenId> jsonLanguage() {
+        return jsonLanguage;
+    }
+
+
     /**
      * MIME type for JavaScript. Don't change this without also consulting the various XML files
      * that cannot reference this value directly.
