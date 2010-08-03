@@ -205,6 +205,7 @@ public class Outline extends ETable {
     private RenderDataProvider renderDataProvider = null;
     private ComponentListener componentListener = null;
     private boolean selectionDisabled = false;
+    private boolean rowHeightIsSet = false;
     /** Creates a new instance of Outline */
     public Outline() {
         init();
@@ -307,6 +308,7 @@ public class Outline extends ETable {
     /** Overridden to pass the fixed row height to the tree layout cache */
     @Override
     public void setRowHeight(int val) {
+        rowHeightIsSet = true;
         super.setRowHeight(val);
         if (getLayoutCache() != null) {
             getLayoutCache().setRowHeight(val);
@@ -678,7 +680,9 @@ public class Outline extends ETable {
     @Override
     public void addNotify () {
         super.addNotify ();
-        calcRowHeight();
+        if (!rowHeightIsSet) {
+            calcRowHeight();
+        }
     }
 
     /** Calculate the height of rows based on the current font. */
