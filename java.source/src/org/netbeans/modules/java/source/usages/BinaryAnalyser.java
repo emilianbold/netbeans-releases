@@ -160,6 +160,7 @@ public class BinaryAnalyser {
 
     private static final String ROOT = "/"; //NOI18N
     private static final String TIME_STAMPS = "timestamps.properties";   //NOI18N
+    private static final String CRC = "crc.properties"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(BinaryAnalyser.class.getName());
     static final String OBJECT = Object.class.getName();
 
@@ -306,7 +307,7 @@ public class BinaryAnalyser {
 
     private List<Pair<ElementHandle<TypeElement>,Long>> loadCRCs(final File indexFolder) throws IOException {
         List<Pair<ElementHandle<TypeElement>,Long>> result = new LinkedList<Pair<ElementHandle<TypeElement>, Long>>();
-        final File file = new File (indexFolder,"crc.properties");  //NOI18N
+        final File file = new File (indexFolder,CRC);
         if (file.canRead()) {
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));   //NOI18N
 
@@ -332,7 +333,7 @@ public class BinaryAnalyser {
     }
 
     private void storeCRCs(final File indexFolder, final List<Pair<ElementHandle<TypeElement>,Long>> state) throws IOException {
-        final File file = new File (indexFolder,"crc.properties");  //NOI18N
+        final File file = new File (indexFolder,CRC);
         PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));   //NOI18N
         try {
             for (Pair<ElementHandle<TypeElement>,Long> pair : state) {

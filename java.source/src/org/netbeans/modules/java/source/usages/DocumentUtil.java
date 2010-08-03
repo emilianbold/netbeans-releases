@@ -111,20 +111,20 @@ public class DocumentUtil {
     }
     
     //Convertor factories
-    public static ResultConvertor<FileObject> fileObjectConvertor (final FileObject... roots) {
+    public static ResultConvertor<Document,FileObject> fileObjectConvertor (final FileObject... roots) {
         assert roots != null;
         return new FileObjectConvertor (roots);
     }
     
-    public static ResultConvertor<ElementHandle<TypeElement>> elementHandleConvertor () {
+    public static ResultConvertor<Document,ElementHandle<TypeElement>> elementHandleConvertor () {
         return new ElementHandleConvertor ();
     }
     
-    public static ResultConvertor<String> binaryNameConvertor () {
+    public static ResultConvertor<Document,String> binaryNameConvertor () {
         return new BinaryNameConvertor ();
     }
     
-    static ResultConvertor<String> sourceNameConvertor () {
+    static ResultConvertor<Document,String> sourceNameConvertor () {
         return new SourceNameConvertor();
     }
     
@@ -471,7 +471,7 @@ public class DocumentUtil {
         }
     }
     
-    private static class FileObjectConvertor implements ResultConvertor<FileObject> {                
+    private static class FileObjectConvertor implements ResultConvertor<Document,FileObject> {                
         
         private FileObject[] roots;
         
@@ -546,7 +546,7 @@ public class DocumentUtil {
         }
     }
     
-    private static class ElementHandleConvertor implements ResultConvertor<ElementHandle<TypeElement>> {
+    private static class ElementHandleConvertor implements ResultConvertor<Document,ElementHandle<TypeElement>> {
         
         private final ElementKind[] kindHolder = new ElementKind[1];
 
@@ -561,7 +561,7 @@ public class DocumentUtil {
         }
     }
     
-    private static class BinaryNameConvertor implements ResultConvertor<String> {
+    private static class BinaryNameConvertor implements ResultConvertor<Document,String> {
         
         @Override
         public String convert (final Document doc) {
@@ -569,7 +569,7 @@ public class DocumentUtil {
         }
     }
     
-    private static class SourceNameConvertor implements ResultConvertor<String> {
+    private static class SourceNameConvertor implements ResultConvertor<Document,String> {
 
         @Override
         public String convert(Document doc) {
