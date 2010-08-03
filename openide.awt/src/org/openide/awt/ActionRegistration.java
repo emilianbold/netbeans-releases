@@ -46,7 +46,10 @@ import java.lang.annotation.Target;
 import javax.swing.ActionMap;
 
 /** Registers an action under associated identifier specified by separate
- * {@link ActionID} annotation on the same element.
+ * {@link ActionID} annotation on the same element. Here is few usage examples:
+ * 
+ * XXX: Meanwhile visit project's <a href="http://wiki.netbeans.org/DeclarativeActionRegistration">wiki page</a>.
+ * 
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 7.26
