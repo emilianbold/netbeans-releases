@@ -44,6 +44,7 @@
 
 package org.netbeans.test.ide;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
@@ -112,6 +113,10 @@ public class GeneralSanityTest extends NbTestCase {
     }
 
     public void testWaitForUIReady() throws Exception {
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
+
         class R implements Runnable {
             int countDown = 10;
 
