@@ -73,7 +73,6 @@ public abstract class Index {
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
     public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
-    public abstract boolean isUpToDate (String resourceName, long timeStamp) throws IOException;
     public abstract void clear () throws IOException;
     public abstract void close () throws IOException;
             
