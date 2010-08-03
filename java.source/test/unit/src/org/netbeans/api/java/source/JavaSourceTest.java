@@ -1950,7 +1950,7 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         @Override
-        public <T> void query(Query[] queries, FieldSelector selector, ResultConvertor<T> convertor, Collection<? super T> result) throws IOException, InterruptedException {
+        public <T> void query(Query[] queries, FieldSelector selector, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, Collection<? super T> result) throws IOException, InterruptedException {
             await();
         }
         
@@ -1988,7 +1988,7 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         @Override
-        public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
+        public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
             await();
         }
        

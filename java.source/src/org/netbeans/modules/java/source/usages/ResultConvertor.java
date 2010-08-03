@@ -43,12 +43,10 @@
  */
 package org.netbeans.modules.java.source.usages;
 
-import org.apache.lucene.document.Document;
-
 /**
  *
  * @author Tomas Zezula
  */
-public interface ResultConvertor<T> {
-    public abstract T convert (Document doc);
+public interface ResultConvertor<P,T> {
+    public abstract T convert (P p);
 }
