@@ -108,6 +108,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -121,8 +122,8 @@ public class SourceAnalyser {
     private static final boolean fullIndex = Boolean.getBoolean(SourceAnalyser.class.getName()+".fullIndex");   //NOI18N
     
     /** Creates a new instance of SourceAnalyser */
-    public SourceAnalyser (final Index index) {
-        assert index != null;
+    SourceAnalyser (final @NonNull Index index) {
+        Parameters.notNull("index", index);   //NOI18N
         this.index = index;
         this.references = new HashMap<Pair<String,String>, Object[]> ();
         this.toDelete = new HashSet<Pair<String,String>> ();
@@ -138,11 +139,7 @@ public class SourceAnalyser {
                 this.toDelete.clear();
             }
         }
-    }
-    
-    public boolean isValid () throws IOException {
-        return this.index.isValid(true);
-    }
+    }    
     
     public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
         final CompileTuple tuple,
