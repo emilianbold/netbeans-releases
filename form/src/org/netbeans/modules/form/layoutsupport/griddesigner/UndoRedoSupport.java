@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.form.layoutsupport.griddesigner;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -198,8 +201,20 @@ public class UndoRedoSupport {
             int oldColumns = info.getColumnCount();
             int oldRows = info.getRowCount();
             GridUtils.removePaddingComponents(gridManager);
+
+            // Undo/redo itself
             delegate.actionPerformed(null);
             gridManager.updateLayout();
+            
+            // Remove deleted components from selection
+            Set<Component> newSelection = new HashSet<Component>();
+            for (Component comp : context.getSelectedComponents()) {
+                if (comp.getParent() != null) {
+                    newSelection.add(comp);
+                }
+            }
+            context.setSelectedComponents(newSelection);
+                    
             GridUtils.revalidateGrid(gridManager);
             int newColumns = info.getColumnCount();
             int newRows = info.getRowCount();
