@@ -126,24 +126,33 @@ public final class JavadocImports {
             }
             
             for (Tag tag : tags) {
-                JavaReference ref = findReference(tag, positions, jdTokenSequence);
-                if (ref != null) {
-                    List<CharSequence> fqns = new LinkedList<CharSequence>();
-                    fqns.add(ref.fqn);
-                    String[] params = ref.getParameters();
-                    if (params != null) fqns.addAll(Arrays.asList(params));
-                    for (CharSequence fqnSeq : fqns) {
-                       if (ref.fqn != null && ref.fqn.length() > 0) {
-                            String fqn = fqnSeq.toString();
-                            TypeMirror type = javac.getTreeUtilities().parseType(fqn, scope);
-                            if (type != null && (type.getKind() == TypeKind.DECLARED || type.getKind() == TypeKind.ERROR)) {
-                                DeclaredType declaredType = (DeclaredType) type;
-                                TypeElement foundElement = (TypeElement) declaredType.asElement();
-                                if (SourceVersion.isIdentifier(foundElement.getSimpleName())) {
-                                    if (result == null) {
-                                        result = new HashSet<TypeElement>();
+                List<JavaReference> refs = findReferences (tag, positions, jdTokenSequence);
+                if (refs != null) {
+                    for (JavaReference reference : refs) {
+                        List<CharSequence> fqns = new LinkedList<CharSequence> ();
+                        fqns.add (reference.fqn);
+                        String[] params = reference.getParameters ();
+                        if (params != null) fqns.addAll (Arrays.asList (params));
+                        for (CharSequence fqnSeq : fqns) {
+                           if (reference.fqn != null &&
+                               reference.fqn.length () > 0
+                           ) {
+                                String fqn = fqnSeq.toString ();
+                                TypeMirror type = javac.getTreeUtilities ().parseType (fqn, scope);
+                                if (type != null && 
+                                    ( type.getKind () == TypeKind.DECLARED ||
+                                      type.getKind() == TypeKind.ERROR
+                                    )
+                                ) {
+                                    DeclaredType declaredType = (DeclaredType) type;
+                                    TypeElement foundElement = (TypeElement) declaredType.asElement ();
+                                    if (
+                                        SourceVersion.isIdentifier (foundElement.getSimpleName ())
+                                    ) {
+                                        if (result == null)
+                                            result = new HashSet<TypeElement> ();
+                                        result.add (foundElement);
                                     }
-                                    result.add(foundElement);
                                 }
                             }
                         }
