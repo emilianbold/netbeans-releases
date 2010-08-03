@@ -201,7 +201,7 @@ public class GridBagManager implements GridManager {
             GridAction action = new DeleteComponentAction();
             actions.add(action);
         } else if (context == GridAction.Context.CELL) {
-            GridAction action = new AddAction((RADVisualContainer)replicator.getTopMetaComponent());
+            GridAction action = new AddAction(replicator);
             actions.add(action);
         }
         return actions;

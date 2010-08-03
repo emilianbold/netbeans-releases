@@ -42,9 +42,13 @@
 
 package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
+import java.awt.Component;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.RADComponent;
+import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
+import org.netbeans.modules.form.VisualReplicator;
 import org.netbeans.modules.form.layoutsupport.griddesigner.DesignerContext;
 import org.netbeans.modules.form.layoutsupport.griddesigner.GridInfoProvider;
 import org.netbeans.modules.form.layoutsupport.griddesigner.GridManager;
@@ -60,17 +64,20 @@ import org.openide.nodes.NodeAcceptor;
  * @author Jan Stola
  */
 public class AddAction extends AbstractGridAction {
-    /** The container where the a component should be added. */
-    private RADVisualContainer container;
+    /**
+     * Visual replicator responsible for the replication
+     * of the container with the grid.
+     */
+    private VisualReplicator replicator;
 
     /**
      * Creates new {@code AddAction}.
      * 
-     * @param container the container where a new component
-     * should be added.
+     * @param replicator visual replicator responsible for
+     * the replication of the container with the grid.
      */
-    public AddAction(RADVisualContainer container) {
-        this.container = container;
+    public AddAction(VisualReplicator replicator) {
+        this.replicator = replicator;
     }
 
     @Override
@@ -92,7 +99,7 @@ public class AddAction extends AbstractGridAction {
                 if (paletteItem == null) {
                     return false;
                 }
-                performer.performAction(new AddComponentAction(paletteItem, container));
+                performer.performAction(new AddComponentAction(paletteItem));
                 return true;
             }
         });
@@ -103,21 +110,17 @@ public class AddAction extends AbstractGridAction {
     /**
      * Action that adds one component into the grid.
      */
-    static class AddComponentAction extends AbstractGridAction {
+    class AddComponentAction extends AbstractGridAction {
         /** Palette item that describes the component to add. */
         private PaletteItem pItem;
-        /** The container where the component should be added. */
-        private RADVisualContainer container;
 
         /**
          * Creates new {@code AddComponentAction}.
          * 
          * @param pItem palette item that describes the component to add.
-         * @param container container where the component should be added.
          */
-        AddComponentAction(PaletteItem pItem, RADVisualContainer container) {
+        AddComponentAction(PaletteItem pItem) {
             this.pItem = pItem;
-            this.container = container;
         }
 
         @Override
@@ -127,9 +130,16 @@ public class AddAction extends AbstractGridAction {
             int rows = info.getRowCount();
             GridUtils.removePaddingComponents(gridManager);
             
+            RADVisualContainer container = (RADVisualContainer)replicator.getTopMetaComponent();
             FormModel formModel = container.getFormModel();
-            formModel.getComponentCreator().createComponent(
+            RADComponent metacomp = formModel.getComponentCreator().createComponent(
                     pItem.getComponentClassSource(), container, null);
+            if (metacomp instanceof RADVisualComponent) {
+                replicator.addComponent(metacomp);
+                Component comp = (Component)replicator.getClonedComponent(metacomp);
+                gridManager.setGridX(comp, context.getFocusedColumn());
+                gridManager.setGridY(comp, context.getFocusedRow());
+            }
 
             gridManager.updateLayout();
             GridUtils.revalidateGrid(gridManager);
