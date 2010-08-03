@@ -41,8 +41,6 @@ package org.netbeans.modules.javaee.beanvalidation;
 
 import java.awt.Component;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -54,7 +52,7 @@ import org.openide.util.HelpCtx;
  *
  * @author alexeybutenko
  */
-public class ConstraintPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener{
+public class ConstraintPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener{
 
     private ConstraintPanelVisual component;
     private TemplateWizard wizard;
@@ -78,14 +76,13 @@ public class ConstraintPanel implements WizardDescriptor.Panel, WizardDescriptor
     }
 
     @Override
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         wizard = (TemplateWizard) settings;
     }
 
     @Override
-    public void storeSettings(Object settings) {
-        TemplateWizard d = (TemplateWizard) settings;
-        component.store(d);
+    public void storeSettings(WizardDescriptor d) {
+        component.store((TemplateWizard)d);
     }
 
     @Override

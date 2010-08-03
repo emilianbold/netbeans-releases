@@ -86,7 +86,7 @@ public class BinaryAnalyserTest extends NbTestCase {
                 FileObject indexDir = workDir.createFolder("index");
                 File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
-                Index index = LuceneIndex.create(FileUtil.toFile(indexDir));
+                final Index index = LuceneIndex.create(FileUtil.toFile(indexDir));
                 BinaryAnalyser a = new BinaryAnalyser(index, getWorkDir());
 
                 assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));

@@ -42,28 +42,31 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
+import javax.management.ReflectionException;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLClassLoaderSupport;
-import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UnregisterCookie;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -78,6 +81,10 @@ import org.openide.util.NbBundle;
 class JdbcRetriever {
     
     private static final Logger LOGGER = Logger.getLogger(JdbcRetriever.class.getName());
+    
+    private static final int WAIT_TIME = 60000;
+    
+    private static final int TIMEOUT = 120000;
     
     enum JdbcNodeTypes {
         RESOURCES,
@@ -99,7 +106,7 @@ class JdbcRetriever {
 
     Node createJDBCResourcesNode() {
         JDBCResourcesChildFactory factory = new JDBCResourcesChildFactory(
-                JdbcNodeTypes.RESOURCES);
+                JdbcNodeTypes.RESOURCES );
         return new ResourceNode(factory,ResourceNodeType.JDBC_RESOURCES ,
                 NbBundle.getMessage(JdbcRetriever.class, "LBL_JDBCResources"));
     }
@@ -116,73 +123,74 @@ class JdbcRetriever {
             isRetrieveStarted = true;
         }
         data.set(null);
-        final StringBuilder builder  = new StringBuilder("service:jmx:iiop://");  // NOI18N
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
-        InstanceProperties instanceProperties = manager.getInstanceProperties();
-        String host = instanceProperties.getProperty(WLPluginProperties.HOST_ATTR);
-        String port = instanceProperties.getProperty(WLPluginProperties.PORT_ATTR);
-        if ( (host== null || host.trim().length() ==0 &&  
-                (port== null || port.trim().length() ==0 )))
-        {
-            Properties domainProperties = WLPluginProperties.getDomainProperties( 
-                    instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
-            host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
-            port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
-        }
-        builder.append( host.trim() );
-        builder.append(":");            //  NOI18N
-        builder.append(port.trim());
-        builder.append( "/jndi/weblogic.management.mbeanservers.domainruntime");//  NOI18N
-        
-        final HashMap<String, String> env = new HashMap<String, String>();
-        env.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES, 
-                     "weblogic.management.remote");         // NOI18M
-        env.put(javax.naming.Context.SECURITY_PRINCIPAL, manager.
-                getInstanceProperties().getProperty(
-                        InstanceProperties.USERNAME_ATTR).toString());
-        env.put(javax.naming.Context.SECURITY_CREDENTIALS, manager.
-                getInstanceProperties().getProperty(
-                        InstanceProperties.PASSWORD_ATTR).toString());
 
-        WLClassLoaderSupport support = new WLClassLoaderSupport(manager);
+        WLConnectionSupport support = new WLConnectionSupport(manager);
         List<JDBCDataBean> list = Collections.emptyList();
 
         try {
-            list = support.executeAction(new Callable<List<JDBCDataBean>>() {
+            list = support.executeAction(new WLConnectionSupport.JMXAction<List<JDBCDataBean>>() {
 
                 @Override
-                public List<JDBCDataBean> call() throws Exception {
-                    JMXServiceURL serviceUrl = new JMXServiceURL(builder.toString());
-                    JMXConnector jmxConnector = JMXConnectorFactory.newJMXConnector(
-                            serviceUrl, env);
-                    jmxConnector.connect();
-                    MBeanServerConnection con = jmxConnector.getMBeanServerConnection();
-
+                public List<JDBCDataBean> call(MBeanServerConnection con) throws Exception {
+                    List<JDBCDataBean> list = new LinkedList<JDBCDataBean>();
                     ObjectName service = new ObjectName(
                             "com.bea:Name=DomainRuntimeService,"
-                                    + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");//  NOI18N
-                    ObjectName objectName  = (ObjectName)con.getAttribute(service,
-                            "DomainConfiguration");                         //  NOI18N
-                    ObjectName objectNames[]  = (ObjectName[] )con.getAttribute(objectName,
-                            "SystemResources");                             //  NOI18N
+                                    + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");// NOI18N
+                    ObjectName[] adminServers = (ObjectName[]) con
+                            .getAttribute(service, "ServerRuntimes");
+                    Set<String> adminNames = new HashSet<String>();
+                    for (ObjectName adminServer : adminServers) {
+                        adminNames.add(con
+                                .getAttribute(adminServer, "Name")
+                                .toString());// NOI18N
+                    }
 
-                    List<JDBCDataBean> list = new LinkedList<JDBCDataBean>();
+                    ObjectName objectName = (ObjectName) con.getAttribute(
+                            service, "DomainConfiguration"); // NOI18N
+                    ObjectName objectNames[] = (ObjectName[]) con
+                            .getAttribute(objectName, "SystemResources"); // NOI18N
+
                     for (ObjectName resource : objectNames) {
-                        String type = con.getAttribute(resource, "Type").toString();//  NOI18N
-                        if ( "JDBCSystemResource".equals(type)){            //  NOI18N
-                            ObjectName dataSource = (ObjectName)con.getAttribute(
-                                    resource, "JDBCResource");              //  NOI18N
+                        String type = con.getAttribute(resource, "Type")
+                                .toString();// NOI18N
+                        if ("JDBCSystemResource".equals(type)) { // NOI18N
+                            ObjectName dataSource = (ObjectName) con
+                                    .getAttribute(resource, "JDBCResource"); // NOI18N
+                            ObjectName[] targets = (ObjectName[]) con
+                                    .getAttribute(resource, "Targets"); // NOI18N
+
                             String name = con.getAttribute(dataSource,
-                                     "Name").toString();                    //  NOI18N
-                             ObjectName dataSourceParams = (ObjectName)con.getAttribute(dataSource,
-                                     "JDBCDataSourceParams");               //  NOI18N
-                             String jndiNames[] = (String[])con.getAttribute(dataSourceParams,
-                                     "JNDINames");                          //  NOI18N
-                             JDBCDataBean bean = new JDBCDataBean(name, jndiNames);
-                             list.add( bean );
+                                    "Name").toString(); // NOI18N
+                            boolean foundAdminServer = false;
+                            for (ObjectName target : targets) {
+                                String targetServer = con.getAttribute(
+                                        target, "Name").toString(); // NOI18N
+                                if (adminNames.contains(targetServer)) {
+                                    foundAdminServer = true;
+                                }
+                            }
+                            if (!foundAdminServer) {
+                                continue;
+                            }
+
+                            ObjectName dataSourceParams = (ObjectName) con
+                                    .getAttribute(dataSource,
+                                            "JDBCDataSourceParams"); // NOI18N
+                            String jndiNames[] = (String[]) con
+                                    .getAttribute(dataSourceParams,
+                                            "JNDINames"); // NOI18N
+                            JDBCDataBean bean = new JDBCDataBean(name,
+                                    jndiNames);
+                            list.add(bean);
                         }
                     }
                     return list;
+                }
+
+                @Override
+                public String getPath() {
+                    return "/jndi/weblogic.management.mbeanservers.domainruntime";
                 }
             });
         } catch (Exception e) {
@@ -209,6 +217,7 @@ class JdbcRetriever {
          */
         @Override
         public final void refresh() {
+            clean();
             refresh(false);
         }
 
@@ -231,7 +240,9 @@ class JdbcRetriever {
                 if (type == JdbcNodeTypes.POOL) {
                     for (JDBCDataBean jdbcDataBean : jdbcDataBeans) {
                         children.add(new ResourceNode(Children.LEAF, 
-                                ResourceNodeType.JDBC,jdbcDataBean.getName()));
+                                ResourceNodeType.JDBC,jdbcDataBean.getName(), 
+                                new UnregisterJdbcPool( jdbcDataBean.getName(),
+                                        this , lookup ) ));
                     }
                 }
                 else if (type == JdbcNodeTypes.RESOURCES) {
@@ -239,7 +250,9 @@ class JdbcRetriever {
                         String[] jndiNames = jdbcDataBean.getJndiNames();
                         for (String name : jndiNames) {
                             children.add(new ResourceNode(Children.LEAF, 
-                                    ResourceNodeType.JDBC, name));
+                                    ResourceNodeType.JDBC, name, 
+                                    new UnregisterJdbcJndiName( name ,
+                                            this , lookup) ));
                         }
                     }
                 }
@@ -260,6 +273,210 @@ class JdbcRetriever {
         private JdbcNodeTypes type ;
     }
     
+    private static class UnregisterJdbcJndiName implements UnregisterCookie {
+
+        UnregisterJdbcJndiName( String jndiName , 
+                RefreshModulesCookie cookie, Lookup lookup ) 
+        {
+            this.jndiName = jndiName;
+            this.cookie = cookie;
+            this.lookup = lookup;
+        }
+
+        @Override
+        public void unregister() {
+            WLDeploymentManager manager = lookup
+                    .lookup(WLDeploymentManager.class);
+
+            WLConnectionSupport support = new WLConnectionSupport(manager);
+            try {
+                support.executeAction(new WLConnectionSupport.JMXAction<Void>() {
+
+                    @Override
+                    public Void call(MBeanServerConnection con) throws Exception {
+                        ObjectName service = new ObjectName(
+                                "com.bea:Name=EditService,"
+                                        + "Type=weblogic.management.mbeanservers.edit.EditServiceMBean");// NOI18N
+
+                        ObjectName config = (ObjectName) con.getAttribute(
+                                service, "DomainConfiguration"); // NOI18N
+                        ObjectName resources[] = (ObjectName[]) con
+                                .getAttribute(config, "SystemResources"); // NOI18N
+
+                        ObjectName manager = (ObjectName) con.getAttribute(
+                                service, "ConfigurationManager"); // NOI18N
+                        ObjectName domainConfigRoot = (ObjectName) con.invoke(
+                                manager, "startEdit", new Object[] {
+                                        WAIT_TIME, TIMEOUT }, new String[] {
+                                "java.lang.Integer", "java.lang.Integer" });
+                        if ( domainConfigRoot == null ){
+                            // Couldn't get the lock
+                            throw new UnableLockException();
+                        }
+
+                        for (ObjectName resource : resources) {
+                            String type = con
+                                    .getAttribute(resource, "Type")
+                                    .toString();// NOI18N
+                            if ("JDBCSystemResource".equals(type)) { // NOI18N
+                                ObjectName jdbcResource = (ObjectName) con
+                                        .getAttribute(resource,
+                                                "JDBCResource"); // NOI18N
+                                ObjectName params = (ObjectName) con
+                                        .getAttribute(jdbcResource,
+                                                "JDBCDataSourceParams"); // NOI18N
+                                con.invoke(params, "removeJNDIName",
+                                        new Object[] { jndiName },
+                                        new String[] { "java.lang.String" }); // NOI18N
+                            }
+                        }
+                        con.invoke(manager, "save", null, null); // NOI18N
+                        ObjectName activationTask = (ObjectName) con
+                                .invoke(manager, "activate",
+                                        new Object[] { TIMEOUT },
+                                        new String[] { "java.lang.Long" }); // NOI18N
+                        con.invoke(activationTask, "waitForTaskCompletion", null, null);
+                        return null;
+                    }
+
+                    @Override
+                    public String getPath() {
+                        return "/jndi/weblogic.management.mbeanservers.edit";
+                    }
+
+                });
+            }
+            catch (UnableLockException e ){
+                failNotify();
+            }
+            catch ( MBeanException e ){
+                Exception targetException = e.getTargetException();
+                if ( targetException.getClass().getCanonicalName().equals(
+                        "weblogic.management.mbeanservers.edit.EditTimedOutException"))
+                {
+                    failNotify();
+                }
+            }
+            catch (Exception e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+            cookie.refresh();
+        }
+        
+        private void failNotify(){
+            NotifyDescriptor notDesc = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JdbcRetriever.class, "MSG_UnableUnregister"),
+                    NotifyDescriptor.ERROR_MESSAGE );
+            DialogDisplayer.getDefault().notify(notDesc);
+        }
+        
+        private String jndiName;
+        private RefreshModulesCookie cookie;
+        private Lookup lookup;
+    }
+    
+    private static class UnregisterJdbcPool implements UnregisterCookie {
+
+        UnregisterJdbcPool( String dataSourceName , 
+                RefreshModulesCookie cookie, Lookup lookup ) 
+        {
+            this.dataSource = dataSourceName;
+            this.cookie = cookie;
+            this.lookup = lookup;
+        }
+
+        @Override
+        public void unregister() {
+            WLDeploymentManager manager = lookup
+                    .lookup(WLDeploymentManager.class);
+
+            WLConnectionSupport support = new WLConnectionSupport(manager);
+            try {
+                support.executeAction(new WLConnectionSupport.JMXAction<Void>() {
+
+                    @Override
+                    public Void call(MBeanServerConnection con) throws Exception {
+                        StringBuilder dataSourceCanonicalName = new StringBuilder(
+                                "com.bea:Name="); // NOI18N
+                        dataSourceCanonicalName.append(dataSource);
+                        dataSourceCanonicalName
+                                .append(",Type=JDBCSystemResource");// NOI18N
+                        ObjectName dataSource = new ObjectName(
+                                dataSourceCanonicalName.toString());
+                        remove(con, dataSource);
+                        return null;
+                    }
+
+                    @Override
+                    public String getPath() {
+                        return "/jndi/weblogic.management.mbeanservers.edit";
+                    }
+
+                });
+            }
+            catch ( UnableLockException e ){
+                failNotify();
+            }
+            catch ( MBeanException e ){
+                Exception targetException = e.getTargetException();
+                if ( targetException.getClass().getCanonicalName().equals(
+                        "weblogic.management.mbeanservers.edit.EditTimedOutException"))
+                {
+                    failNotify();
+                }
+            }
+            catch (Exception e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+            cookie.refresh();
+        }
+        
+        private void failNotify(){
+            NotifyDescriptor notDesc = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JdbcRetriever.class, "MSG_UnableUnregister"),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(notDesc);
+        }
+        
+        private void remove( MBeanServerConnection connection,
+                ObjectName dataSource ) throws AttributeNotFoundException,
+                InstanceNotFoundException, MBeanException, ReflectionException,
+                IOException, MalformedObjectNameException, UnableLockException
+        {
+            ObjectName service = new ObjectName(
+                    "com.bea:Name=EditService,"
+                            + "Type=weblogic.management.mbeanservers.edit.EditServiceMBean");// NOI18N
+            ObjectName manager =(ObjectName) connection.getAttribute(service, 
+                            "ConfigurationManager");                // NOI18N
+            ObjectName domainConfigRoot = (ObjectName)connection.invoke(manager, 
+                    "startEdit", new Object[]{ WAIT_TIME, TIMEOUT}, 
+                        new String[]{ "java.lang.Integer", "java.lang.Integer"});
+            if ( domainConfigRoot == null ){
+             // Couldn't get the lock
+                throw new UnableLockException();
+            }
+            
+            ObjectName targets[] = (ObjectName[]) connection.getAttribute(
+                    dataSource, "Targets"); // NOI18N
+            for (ObjectName target : targets) {
+                connection
+                        .invoke(dataSource,
+                                "removeTarget",
+                                new Object[] { target },
+                                new String[] { "javax.management.ObjectName" }); // NOI18N
+            }
+            connection.invoke(manager, "save", null, null);                // NOI18N
+            ObjectName  activationTask = (ObjectName)connection.invoke(manager, 
+                    "activate", new Object[]{TIMEOUT}, 
+                        new String[]{"java.lang.Long"});                // NOI18N
+            connection.invoke(activationTask, "waitForTaskCompletion", null, null);
+        }
+
+        private String dataSource;
+        private RefreshModulesCookie cookie;
+        private Lookup lookup;
+    }
+    
     private static class JDBCDataBean {
         JDBCDataBean( String poolName , String[] jndiNames ){
             name = poolName;
@@ -276,6 +493,12 @@ class JdbcRetriever {
         
         private String name;
         private String  jndiNames[];
+    }
+    
+    private static class UnableLockException extends Exception {
+
+        private static final long serialVersionUID = 1491526792800773444L;
+
     }
     
 

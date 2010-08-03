@@ -136,7 +136,7 @@ public class BaseResource extends Object implements java.io.Serializable {
     }  
     
     public Resources getResourceGraph(){
-        return DDProvider.getDefault().getResourcesGraph();
+        return DDProvider.getDefault().getResourcesGraph(Resources.VERSION_1_3);
     }
     
     public PropertyElement populatePropertyElement(PropertyElement prop, NameValuePair pair){

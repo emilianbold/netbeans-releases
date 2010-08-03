@@ -144,8 +144,8 @@ public class Hk2DatasourceManager implements DatasourceManager {
     // ------------------------------------------------------------------------
     //  Used by ModuleConfigurationImpl since 
     // ------------------------------------------------------------------------
-    public static Set<Datasource> getDatasources(File resourceDir) {
-        File resourcesXml = new File(resourceDir, "sun-resources.xml");
+    public static Set<Datasource> getDatasources(File resourceDir, String baseName) {
+        File resourcesXml = new File(resourceDir, baseName+".xml");
         return readDatasources(resourcesXml, "/", resourceDir);
     }
     
@@ -388,13 +388,13 @@ public class Hk2DatasourceManager implements DatasourceManager {
      *         exist.
      */
     public static Datasource createDataSource(String jndiName, String url, 
-            String username, String password, String driver, File resourceDir) 
+            String username, String password, String driver, File resourceDir, String baseName)
             throws ConfigurationException, DatasourceAlreadyExistsException {
         SunDatasource ds;
         DuplicateJdbcResourceFinder jdbcFinder = new DuplicateJdbcResourceFinder(jndiName);
         ConnectionPoolFinder cpFinder = new ConnectionPoolFinder();
         
-        File xmlFile = new File(resourceDir, "sun-resources.xml");
+        File xmlFile = new File(resourceDir, baseName+".xml");
         if(xmlFile.exists()) {
             List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
             pathList.add(new TreeParser.Path("/resources/jdbc-resource", jdbcFinder));
@@ -718,6 +718,13 @@ public class Hk2DatasourceManager implements DatasourceManager {
             "\"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">\n" +
         "<resources/>";
     
+    private static final String GF_RESOURCES_XML_HEADER =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        "<!DOCTYPE resources PUBLIC " +"\"-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN\" " +
+            "\"http://glassfish.org/dtds/glassfish-resources_1_5.dtd\">\n" +
+//            "\"-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN\" " +
+//            "\"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">\n" +
+        "<resources/>";
 
     private static Document readResourceFile(DocumentBuilder docBuilder, File sunResourcesXml) throws IOException{
         boolean newOne = false;
@@ -728,7 +735,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
         Document doc = null;
         try {
             if(newOne) {
-                doc = docBuilder.parse(new InputSource(new StringReader(SUN_RESOURCES_XML_HEADER)));
+                if (sunResourcesXml.getAbsolutePath().contains("sun-resources.xml"))
+                    doc = docBuilder.parse(new InputSource(new StringReader(SUN_RESOURCES_XML_HEADER)));
+                else
+                    doc = docBuilder.parse(new InputSource(new StringReader(GF_RESOURCES_XML_HEADER)));
             }
             else   {
                 doc = docBuilder.parse(sunResourcesXml);
@@ -933,6 +943,9 @@ public class Hk2DatasourceManager implements DatasourceManager {
             // return a proper input source
             if (systemId!=null && systemId.endsWith("sun-resources_1_3.dtd")) {
                 resource="/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-resources_1_3.dtd"; //NOI18N
+            }
+            if (systemId!=null && systemId.endsWith("glassfish-resources_1_5.dtd")) {
+                resource="/org/netbeans/modules/j2ee/sun/dd/impl/resources/glassfish-resources_1_5.dtd"; //NOI18N
             }
 
             if (resource==null) {
