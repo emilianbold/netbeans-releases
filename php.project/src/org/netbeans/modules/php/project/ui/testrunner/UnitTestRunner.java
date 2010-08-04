@@ -159,7 +159,7 @@ public final class UnitTestRunner {
                     testSession.addOutput("<u>" + kase.getName() + ":</u>"); // NOI18N
                     for (String s : stacktrace) {
                         MANAGER.displayOutput(testSession, s, isError);
-                        testSession.addOutput(s);
+                        testSession.addOutput(s.replace("<", "&lt;")); // NOI18N
                     }
                     MANAGER.displayOutput(testSession, "", false); // NOI18N
                     testSession.addOutput(""); // NOI18N
