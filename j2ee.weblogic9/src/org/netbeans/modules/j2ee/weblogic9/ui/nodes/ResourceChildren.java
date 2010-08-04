@@ -56,7 +56,8 @@ class ResourceChildren extends WLNodeChildren<ResourceNode> {
     ResourceChildren(Lookup lookup){
         setKeys( new ResourceNode[]{ 
                 createJDBCNode(lookup),
-                    createConnectorsNode(lookup)});
+                    createConnectorsNode(lookup),
+                        createJavaMail(lookup)});
     } 
 
     private ResourceNode createConnectorsNode( Lookup lookup ) {
@@ -67,5 +68,11 @@ class ResourceChildren extends WLNodeChildren<ResourceNode> {
     private ResourceNode createJDBCNode( Lookup lookup ) {
         return new ResourceNode(new JdbcChildren(lookup) , ResourceNodeType.JDBC,
                 NbBundle.getMessage(ResourceChildren.class, "LBL_JDBC"));   // NOI18N
+    }
+    
+    private ResourceNode createJavaMail( Lookup lookup ) {
+        return new ResourceNode(new JavaMailChildrenFactory(lookup) , 
+                ResourceNodeType.JAVA_MAIL,
+                    NbBundle.getMessage(ResourceChildren.class, "LBL_JavaMail"));   // NOI18N
     }
 }
