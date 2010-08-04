@@ -270,6 +270,14 @@ made subject to such option by the copyright holder.
                     <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_Quickstart_Archetype"/>
                     <attr name="description" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#HINT_MavenQuickStart"/>
                 </file>
+                <file name="maven-pom-archetype">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
+                    <attr name="artifactId" stringvalue="pom-root"/>
+                    <attr name="version" stringvalue="1.0"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_POM_Archetype"/>
+                    <attr name="description" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#HINT_Maven_POM_Archetype"/>
+                </file>
             </folder>
             <file name="nbactions.xml" url="nbactions.xml"/>
             <folder name="Customizer">
