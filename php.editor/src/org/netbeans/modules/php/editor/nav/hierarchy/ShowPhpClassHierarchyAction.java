@@ -55,6 +55,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -152,7 +153,7 @@ public final class ShowPhpClassHierarchyAction extends CookieAction {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            ParserResult cc = (ParserResult) resultIterator.getParserResult();
+            Parser.Result cc = resultIterator.getParserResult();
             if (cc instanceof PHPParseResult) {
                 model = ((PHPParseResult) cc).getModel();
             }
