@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -67,28 +68,27 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 
-/**
- * Checks that all modules in the distribution are suitably visible to Plugin Manager.
- */
-public class ValidateUpdateCenterTest extends NbTestCase {
+public class ValidateModulesTest extends NbTestCase {
 
     static {
         System.setProperty("java.awt.headless", "true");
     }
 
-    public ValidateUpdateCenterTest(String n) {
+    public ValidateModulesTest(String n) {
         super(n);
     }
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new ValidateUpdateCenterTest("clusterVersions"));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
+        suite.addTest(new ValidateModulesTest("clusterVersions"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).addTest("deprecatedModulesAreDisabled").
+                clusters("(?!extra$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters("platform|harness|ide|websvccommon|java|profiler|nb").enableModules(".*").
                 honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         return suite;
     }
@@ -184,6 +184,22 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         if (problems.length() > 0) {
             fail("Some modules need to upgrade their dependencies" + problems);
         }
+    }
+
+    public void deprecatedModulesAreDisabled() {
+        Set<String> cnbs = new TreeSet<String>();
+        for (Module m : Main.getModuleSystem().getManager().getModules()) {
+            if ("true".equals(m.getAttribute("OpenIDE-Module-Deprecated"))) {
+                String cnb = m.getCodeNameBase();
+                if (cnb.equals("org.jdesktop.layout")) {
+                    // Will take a while to fix, don't report as error now.
+                    continue;
+                }
+                cnbs.add(cnb);
+                assertFalse(cnb + " is deprecated and should not be enabled", m.isEnabled());
+            }
+        }
+        System.out.println("Deprecated modules all correctly disabled: " + cnbs);
     }
 
     private static Set<Manifest> loadManifests() throws Exception {

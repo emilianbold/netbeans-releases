@@ -69,6 +69,10 @@ class ResourceNode extends AbstractItemNode {
         JDBC,
         JDBC_RESOURCES,
         JDBC_POOL,
+        CONNECTORS,
+        CONNECTOR_RESOURCES,
+        CONNECTION_POOLS,
+        ADMIN_OBJ_RESOURCE,
         ;
     }
     
@@ -77,6 +81,10 @@ class ResourceNode extends AbstractItemNode {
     
     private static final String JDBC_RESOURCE_ICON = 
         "org/netbeans/modules/glassfish/javaee/resources/jdbc.gif"; // NOI18N
+    
+    private static final String CONNECTOR_ICON =
+        "org/netbeans/modules/glassfish/javaee/resources/connector.gif"; // NOI18N
+    
 
     ResourceNode( Children children , ResourceNodeType type , String name , 
             Cookie cookie) 
@@ -113,6 +121,9 @@ class ResourceNode extends AbstractItemNode {
         }
         else if (resourceType == ResourceNodeType.JDBC){
             return ImageUtilities.loadImage(JDBC_RESOURCE_ICON);
+        }
+        else if ( resourceType == ResourceNodeType.CONNECTORS ){
+            return ImageUtilities.loadImage(CONNECTOR_ICON);
         }
         else {
             return getIconDelegate().getIcon(type);
