@@ -171,7 +171,7 @@ public class JavaSourceTest extends NbTestCase {
                 "       Class c = table.getModel().getClass();\n"+
                 "       "+REPLACE_PATTERN+"\n"+
                 "   }\n"+
-                "}'\n";
+                "}//end'\n";
 
 
 
@@ -1419,13 +1419,14 @@ public class JavaSourceTest extends NbTestCase {
         final CompilationInfoImpl[] impls = new CompilationInfoImpl[1];
         final Pair[] res = new Pair[1];
         js.runUserActionTask(new Task<CompilationController> () {
-            public void run (final CompilationController c) throws IOException {
+            public void run (final CompilationController c) throws IOException, BadLocationException {
                 c.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cu = c.getCompilationUnit();
                 FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc, c.getTrees().getSourcePositions(), "main");
                 v.visit(cu, null);
                 impls[0] = c.impl;
                 res[0] = v.result;
+                assertEquals("}//end", doc.getText((int) cu.getLineMap().getPosition(7, 0), 6));
             }
         }, true);
         final boolean[] loggerResult = new boolean[1];
@@ -1469,8 +1470,9 @@ public class JavaSourceTest extends NbTestCase {
             impls[0].getParser().setChangedMethod(res[0]);
             //Run sync task
             js.runUserActionTask(new Task<CompilationController> () {
-                public void run (final CompilationController c) throws IOException {
+                public void run (final CompilationController c) throws IOException, BadLocationException {
                     c.toPhase(JavaSource.Phase.PARSED);
+                    assertEquals("}//end", doc.getText((int) c.getCompilationUnit().getLineMap().getPosition(7, 0), 6));
                 }
             }, true);
             //Check that there was an incremental reparse
