@@ -530,8 +530,6 @@ public class SourceUtils {
                 }
             });
         } catch (InterruptedException e) {
-            //Never thrown
-            Exceptions.printStackTrace(e);
             return null;
         }
     }

@@ -119,7 +119,7 @@ public class JDBCResourceNewCPMethods extends NbTestCase implements WizardConsta
             falseProject.createFolder("setup");
             dsdata.setTargetFileObject(falseProject);
             cpdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata);
+            ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata,"sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();

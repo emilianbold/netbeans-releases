@@ -113,6 +113,8 @@ public interface GlassfishModule {
 
     public CommandFactory getCommandFactory();
 
+    public String getResourcesXmlName();
+
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */

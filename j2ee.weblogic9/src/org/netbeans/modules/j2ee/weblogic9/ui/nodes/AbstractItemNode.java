@@ -46,6 +46,7 @@ import javax.swing.Action;
 
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UnregisterCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -58,13 +59,14 @@ import org.openide.util.actions.SystemAction;
  */
 abstract class AbstractItemNode extends AbstractNode {
     
-    AbstractItemNode(ChildFactory<?> childFactory, String name)
+    AbstractItemNode(final ChildFactory<?> childFactory, String name)
     {
         super(Children.create(childFactory, true));
         this.childFactory = childFactory;
         setDisplayName(name);
-        if(childFactory instanceof RefreshModulesCookie)
+        if(childFactory instanceof RefreshModulesCookie) {
             getCookieSet().add((RefreshModulesCookie)childFactory);
+        }
     }
 
     AbstractItemNode(Children children)

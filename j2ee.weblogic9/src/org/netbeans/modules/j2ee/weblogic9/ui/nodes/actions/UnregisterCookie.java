@@ -40,30 +40,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.openide.nodes.Node.Cookie;
 
 
 /**
  * @author ads
  *
  */
-class JDBCChildren extends WLNodeChildren<JDBCRetriever> {
-    
-    JDBCChildren(Lookup lookup ){
-        setKeys( new JDBCRetriever[] { new JDBCRetriever( lookup )});
-    }
+public interface UnregisterCookie extends Cookie {
 
-    /* (non-Javadoc)
-     * @see org.openide.nodes.Children.Keys#createNodes(java.lang.Object)
-     */
-    @Override
-    protected Node[] createNodes( JDBCRetriever key ) {
-        JDBCRetriever retriever = (JDBCRetriever) key;
-        retriever.clean();
-        return new Node[] { retriever.createJDBCResourcesNode(),
-                retriever.createJDBCPoolsNode() };
-    }
+    public void unregister();
 }

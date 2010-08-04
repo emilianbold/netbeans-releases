@@ -164,6 +164,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
     
     public Set instantiate(){
         try{
+            String baseName;
             if(this.holder.hasDSHelper()){
                 FileObject fo = this.helper.getData().getTargetFileObject();
                 String jdbcName = this.dshelper.getData().getString(__JndiName);
@@ -176,14 +177,15 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
                     this.dshelper.getData().setString(__PoolName, poolName);
                     this.cphelper.getData().setTargetFile(poolName);
                     this.cphelper.getData().setTargetFileObject(fo);
-                    ResourceUtils.savePMFResourceDatatoXml(this.helper.getData(), this.dshelper.getData(), this.cphelper.getData());
+                    ResourceUtils.savePMFResourceDatatoXml(this.helper.getData(), this.dshelper.getData(), this.cphelper.getData(),
+                            Util.getBaseName(project));
                 }else{
                     //FIXME
                     //need to check to make sure that dsData has a value for pool name
-                    ResourceUtils.savePMFResourceDatatoXml(this.helper.getData(), this.dshelper.getData(), null);
+                    ResourceUtils.savePMFResourceDatatoXml(this.helper.getData(), this.dshelper.getData(), null,Util.getBaseName(project));
                 }
             }else{
-                ResourceUtils.savePMFResourceDatatoXml(this.helper.getData(), null, null);
+                ResourceUtils.savePMFResourceDatatoXml(this.helper.getData(), null, null,Util.getBaseName(project));
             }
         }catch (Exception ex){
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,

@@ -80,6 +80,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -88,6 +89,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import javax.swing.text.BadLocationException;
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.search.Query;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -1942,21 +1945,13 @@ public class JavaSourceTest extends NbTestCase {
             return true;
         }
 
-        public List<String> getUsagesFQN(String resourceName, Set<UsageType> mask, BooleanOperator operator) throws IOException, InterruptedException {
-            await ();
-            return Collections.<String>emptyList();
+        @Override
+        public <T> void query(Query[] queries, FieldSelector selector, ResultConvertor<T> convertor, Collection<? super T> result) throws IOException, InterruptedException {
+            await();
         }
-
-        public <T> void getDeclaredTypes(String simpleName, NameKind kind, ResultConvertor<T> convertor, Set<? super T> result) throws IOException, InterruptedException {
-            await ();
-        }
-
+        
         public void getPackageNames(String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException {
             await ();
-        }
-
-        public String getSourceName (final String binaryName) {
-            return null;
         }
 
         public void store(Map<Pair<String,String>, Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException {            
@@ -1989,7 +1984,7 @@ public class JavaSourceTest extends NbTestCase {
         public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
             await();
         }
-
+       
     }
 
     private FileObject createTestFile (String className) {

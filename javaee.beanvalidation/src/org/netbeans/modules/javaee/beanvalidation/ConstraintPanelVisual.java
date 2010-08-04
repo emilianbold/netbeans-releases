@@ -81,7 +81,7 @@ public class ConstraintPanelVisual extends javax.swing.JPanel implements Documen
         targetElements.add(FIELD);
         targetElements.add(ANNOTATION_TYPE);
     }
-    private final Set<ChangeListener> listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -109,17 +109,11 @@ public class ConstraintPanelVisual extends javax.swing.JPanel implements Documen
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel4 = new javax.swing.JLabel();
         cbGenerateValidator = new javax.swing.JCheckBox();
         labelClassName = new javax.swing.JLabel();
         validatorClassName = new javax.swing.JTextField();
         labelType = new javax.swing.JLabel();
         validatorType = new javax.swing.JTextField();
-        cbMethodElement = new javax.swing.JCheckBox();
-        cbFieldElement = new javax.swing.JCheckBox();
-        cbAnnotationTypeElement = new javax.swing.JCheckBox();
-
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(ConstraintPanelVisual.class, "ConstraintPanelVisual.jLabel4.text")); // NOI18N
 
         cbGenerateValidator.setText(org.openide.util.NbBundle.getMessage(ConstraintPanelVisual.class, "ConstraintPanelVisual.cbGenerateValidator.text")); // NOI18N
         cbGenerateValidator.addItemListener(new java.awt.event.ItemListener() {
@@ -136,68 +130,28 @@ public class ConstraintPanelVisual extends javax.swing.JPanel implements Documen
 
         validatorType.setColumns(20);
 
-        cbMethodElement.setSelected(true);
-        cbMethodElement.setText(org.openide.util.NbBundle.getMessage(ConstraintPanelVisual.class, "ConstraintPanelVisual.cbMethodElement.text")); // NOI18N
-        cbMethodElement.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbMethodElementItemStateChanged(evt);
-            }
-        });
-
-        cbFieldElement.setSelected(true);
-        cbFieldElement.setText(org.openide.util.NbBundle.getMessage(ConstraintPanelVisual.class, "ConstraintPanelVisual.cbFieldElement.text")); // NOI18N
-        cbFieldElement.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbFieldElementItemStateChanged(evt);
-            }
-        });
-
-        cbAnnotationTypeElement.setSelected(true);
-        cbAnnotationTypeElement.setText(org.openide.util.NbBundle.getMessage(ConstraintPanelVisual.class, "ConstraintPanelVisual.cbAnnotationTypeElement.text")); // NOI18N
-        cbAnnotationTypeElement.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbAnnotationTypeElementItemStateChanged(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbMethodElement)
-                            .addComponent(cbFieldElement)
-                            .addComponent(cbAnnotationTypeElement)))
                     .addComponent(cbGenerateValidator)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(labelClassName)
-                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(validatorType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(validatorClassName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(labelType)))
-                .addContainerGap(61, Short.MAX_VALUE))
+                            .addComponent(labelClassName)
+                            .addComponent(labelType))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(validatorType, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                            .addComponent(validatorClassName, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(cbMethodElement))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbFieldElement)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbAnnotationTypeElement)
-                .addGap(18, 18, 18)
+                .addGap(0, 0, 0)
                 .addComponent(cbGenerateValidator)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -207,7 +161,7 @@ public class ConstraintPanelVisual extends javax.swing.JPanel implements Documen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(labelType)
                     .addComponent(validatorType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(116, Short.MAX_VALUE))
+                .addContainerGap(224, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -217,30 +171,6 @@ public class ConstraintPanelVisual extends javax.swing.JPanel implements Documen
         setValidatorPropertiesVisible(visible);
         fireChangeEvent();
     }//GEN-LAST:event_cbGenerateValidatorItemStateChanged
-
-    private void cbMethodElementItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbMethodElementItemStateChanged
-        if (cbMethodElement.isSelected()) {
-            targetElements.add(METHOD);
-        } else {
-            targetElements.remove(METHOD);
-        }
-    }//GEN-LAST:event_cbMethodElementItemStateChanged
-
-    private void cbFieldElementItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbFieldElementItemStateChanged
-        if (cbFieldElement.isSelected()) {
-            targetElements.add(FIELD);
-        } else {
-            targetElements.remove(FIELD);
-        }
-    }//GEN-LAST:event_cbFieldElementItemStateChanged
-
-    private void cbAnnotationTypeElementItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbAnnotationTypeElementItemStateChanged
-        if (cbAnnotationTypeElement.isSelected()) {
-            targetElements.add(ANNOTATION_TYPE);
-        } else {
-            targetElements.remove(ANNOTATION_TYPE);
-        }
-    }//GEN-LAST:event_cbAnnotationTypeElementItemStateChanged
 
     private void setValidatorPropertiesVisible(boolean visible) {
         labelClassName.setVisible(visible);
@@ -284,11 +214,7 @@ public class ConstraintPanelVisual extends javax.swing.JPanel implements Documen
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbAnnotationTypeElement;
-    private javax.swing.JCheckBox cbFieldElement;
     private javax.swing.JCheckBox cbGenerateValidator;
-    private javax.swing.JCheckBox cbMethodElement;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel labelClassName;
     private javax.swing.JLabel labelType;
     private javax.swing.JTextField validatorClassName;

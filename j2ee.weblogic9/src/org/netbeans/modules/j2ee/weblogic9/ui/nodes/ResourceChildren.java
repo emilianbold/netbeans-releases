@@ -54,11 +54,18 @@ import org.openide.util.NbBundle;
 class ResourceChildren extends WLNodeChildren<ResourceNode> {
     
     ResourceChildren(Lookup lookup){
-        setKeys( new ResourceNode[]{ createJDBCNode(lookup)});
+        setKeys( new ResourceNode[]{ 
+                createJDBCNode(lookup),
+                    createConnectorsNode(lookup)});
     } 
 
+    private ResourceNode createConnectorsNode( Lookup lookup ) {
+        return new ResourceNode( new ConnectorsChildren(lookup), ResourceNodeType.CONNECTORS,
+                NbBundle.getMessage(ResourceChildren.class, "LBL_Connectors") );
+    }
+
     private ResourceNode createJDBCNode( Lookup lookup ) {
-        return new ResourceNode(new JDBCChildren(lookup) , ResourceNodeType.JDBC,
+        return new ResourceNode(new JdbcChildren(lookup) , ResourceNodeType.JDBC,
                 NbBundle.getMessage(ResourceChildren.class, "LBL_JDBC"));   // NOI18N
     }
 }
