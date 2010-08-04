@@ -148,7 +148,7 @@ public class DependencyNode extends AbstractNode {
     private static String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
 
-    private static final RequestProcessor RP = new RequestProcessor("DependencyNode"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("DependencyNode",1); //NOI18N
 
     public static Children createChildren(Lookup look, boolean longLiving) {
         if (!longLiving) {
@@ -577,7 +577,7 @@ public class DependencyNode extends AbstractNode {
 //        }
 //
 //        public void actionPerformed(ActionEvent event) {
-//            RequestProcessor.getDefault().post(this);
+//            RP.post(this);
 //        }
 //
 //        public void run() {
@@ -652,7 +652,7 @@ public class DependencyNode extends AbstractNode {
                     }
                 }
             };
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     FileObject fo = FileUtil.toFileObject(project.getPOMFile());
                     Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
@@ -671,7 +671,7 @@ public class DependencyNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent event) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(project.getOriginalMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
                     DependencyExcludeNodeVisitor nv = new DependencyExcludeNodeVisitor(art.getGroupId(), art.getArtifactId(), art.getType());
@@ -815,7 +815,7 @@ public class DependencyNode extends AbstractNode {
                     }
                 }
             };
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     FileObject fo = FileUtil.toFileObject(project.getPOMFile());
                     org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
@@ -851,7 +851,7 @@ public class DependencyNode extends AbstractNode {
         public void actionPerformed(ActionEvent event) {
             source = InstallDocSourcePanel.showInstallDialog(true);
             if (source != null) {
-                RequestProcessor.getDefault().post(this);
+                RP.post(this);
             }
         }
 
@@ -878,7 +878,7 @@ public class DependencyNode extends AbstractNode {
         public void actionPerformed(ActionEvent event) {
             source = InstallDocSourcePanel.showInstallDialog(false);
             if (source != null) {
-                RequestProcessor.getDefault().post(this);
+                RP.post(this);
             }
         }
 

@@ -124,6 +124,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
     private boolean changedPackage = false;
     
+    private static final RequestProcessor RPgetver = new RequestProcessor("BasicPanelVisual-getCommandLineMavenVersion"); //NOI18N
+    private static final RequestProcessor RPprep = new RequestProcessor("BasicPanelVisual-prepareAdditionalProperties"); //NOI18N
+    
     /** Creates new form PanelProjectLocationVisual */
     public BasicPanelVisual(BasicWizardPanel panel) {
         this.panel = panel;
@@ -522,12 +525,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }
 
     private ArtifactVersion getCommandLineMavenVersion () {
-        if (!askedForVersion) {
-            askedForVersion = true;
-            // obtain version asynchronously, as it takes some time
-            RequestProcessor.getDefault().post(this);
-        }
         synchronized (MAVEN_VERSION_LOCK) {
+            if (!askedForVersion) {
+                askedForVersion = true;
+                // obtain version asynchronously, as it takes some time
+                RPgetver.post(this);
+            }
             return mavenVersion;
         }
     }
@@ -589,7 +592,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             lblAdditionalProps.setVisible(true);
             tblAdditionalProps.setVisible(false);
             jScrollPane1.setVisible(false);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RPprep.post(new Runnable() {
                 public void run() {
                     prepareAdditionalProperties(arch);
                 }
@@ -835,9 +838,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (!EventQueue.isDispatchThread()) {
             // phase one, outside EQ thread
             String version = MavenSettings.getCommandLineMavenVersion();
-            synchronized (MAVEN_VERSION_LOCK) {
-                mavenVersion = version != null ? new DefaultArtifactVersion(version.trim()) : null;
-            }
+            mavenVersion = version != null ? new DefaultArtifactVersion(version.trim()) : null;
             // trigger revalidation -> phase two
             SwingUtilities.invokeLater(this);
         } else {
