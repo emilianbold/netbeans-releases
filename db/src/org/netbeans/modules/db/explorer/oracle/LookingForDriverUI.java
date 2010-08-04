@@ -41,32 +41,69 @@
  */
 package org.netbeans.modules.db.explorer.oracle;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public final class LookingForDriverUI extends JPanel {
+public final class LookingForDriverUI extends JPanel implements DocumentListener {
     
     private String driverName;
     private String driverPath;
     private String downloadFrom;
-    private boolean driverFound;
+    private final LookingForDriverPanel panel;
 
     /** Creates new form LookingForDriverUI */
-    public LookingForDriverUI(String driverName, String driverPath, String downloadFrom, boolean found) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    public LookingForDriverUI(LookingForDriverPanel panel, String driverName, String driverPath, String downloadFrom, boolean found) {
+        this.panel = panel;
         this.driverName = driverName;
         this.driverPath = driverPath;
-        this.driverFound = found;
         this.downloadFrom = downloadFrom;
         initComponents();
         if (found) {
             tfLocation.setText(driverPath + File.separator + driverName);
+        } else {
+            tfLocation.setText(driverPath);
         }
+        updateComponents();
+        lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text", driverName)); // NOI18N
+        lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text.not.found", driverName)); // NOI18N
+        lFound2.setVisible(found);
+        lFound2.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound2.text", tfLocation.getText())); // NOI18N
+        lDownloadInfo1.setVisible(downloadFrom != null && ! downloadFrom.isEmpty());
+        lDownloadInfo2.setVisible(downloadFrom != null && ! downloadFrom.isEmpty());
+        bDownload.setVisible(downloadFrom != null && ! downloadFrom.isEmpty());
+        lUrl.setVisible(downloadFrom != null && ! downloadFrom.isEmpty());
+        tfLocation.getDocument().addDocumentListener(this);
     }
-
+    
+    private void updateComponents() {
+        if (driverFound()) {
+            this.putClientProperty(NotifyDescriptor.PROP_WARNING_NOTIFICATION, NbBundle.getMessage(LookingForDriverUI.class,
+                    "LookingForDriverUI.errorMessage.DriverNotFound", driverName)); // NOI18N
+            lDownloadInfo1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo1.text.found", driverName)); // NOI18N
+        } else {
+            lDownloadInfo1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo1.text", driverName)); // NOI18N
+        }
+        if (lDownloadInfo2.isVisible()) {
+            lDownloadInfo2.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo2.text", tfLocation.getText())); // NOI18N
+        }
+        panel.fireChangeEvent();
+    }
+    
     @Override
     public String getName() {
-        return NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.Name");
+        return NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.Name"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -77,16 +114,19 @@ public final class LookingForDriverUI extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lFound = new javax.swing.JLabel();
+        lFound1 = new javax.swing.JLabel();
         lLocation = new javax.swing.JLabel();
         tfLocation = new javax.swing.JTextField();
         bBrowse = new javax.swing.JButton();
-        lDownloadInfo = new javax.swing.JLabel();
+        lDownloadInfo1 = new javax.swing.JLabel();
         bDownload = new javax.swing.JButton();
         lUrl = new javax.swing.JLabel();
+        lDownloadInfo2 = new javax.swing.JLabel();
+        lFound2 = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(lFound, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound.text", new Object[] {driverName, driverPath})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lFound1, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text", new Object[] {driverName})); // NOI18N
 
+        lLocation.setLabelFor(tfLocation);
         org.openide.awt.Mnemonics.setLocalizedText(lLocation, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lLocation.text")); // NOI18N
 
         tfLocation.setText(org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.tfLocation.text")); // NOI18N
@@ -98,7 +138,7 @@ public final class LookingForDriverUI extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lDownloadInfo, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo.text", new Object[] {driverName, driverPath})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lDownloadInfo1, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo1.text", new Object[] {driverName})); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(bDownload, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.bDownload.text")); // NOI18N
         bDownload.addActionListener(new java.awt.event.ActionListener() {
@@ -108,6 +148,15 @@ public final class LookingForDriverUI extends JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(lUrl, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lUrl.text", new Object[] {downloadFrom})); // NOI18N
+        lUrl.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lUrlMouseClicked(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(lDownloadInfo2, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo2.text", new Object[] {driverPath})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lFound2, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound2.text", new Object[] {driverPath})); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -116,36 +165,42 @@ public final class LookingForDriverUI extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lFound)
-                    .addComponent(lLocation)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(tfLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(bBrowse))
-                    .addComponent(lDownloadInfo)
+                    .addComponent(lFound1)
+                    .addComponent(lDownloadInfo1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bDownload)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)))
+                        .addComponent(lUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
+                    .addComponent(lDownloadInfo2)
+                    .addComponent(lFound2)
+                    .addComponent(lLocation)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(tfLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(bBrowse)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lFound)
+                .addComponent(lFound1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lFound2)
                 .addGap(18, 18, 18)
                 .addComponent(lLocation)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tfLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bBrowse))
-                .addGap(40, 40, 40)
-                .addComponent(lDownloadInfo)
+                .addGap(27, 27, 27)
+                .addComponent(lDownloadInfo1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lDownloadInfo2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bDownload)
-                    .addComponent(lUrl))
+                    .addComponent(lUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -155,16 +210,62 @@ public final class LookingForDriverUI extends JPanel {
     }//GEN-LAST:event_bDownloadActionPerformed
 
     private void bBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bBrowseActionPerformed
-        // TODO add your handling code here:
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new File(tfLocation.getText()));
+        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.locateDriver", driverName)); // NOI18N
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        String path = this.tfLocation.getText();
+        if (path.length() > 0) {
+            File f = new File(path);
+            if (f.exists()) {
+                chooser.setSelectedFile(f);
+            }
+        }
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File driverFile = chooser.getSelectedFile();
+            tfLocation.setText(FileUtil.normalizeFile(driverFile).getAbsolutePath());
+            updateComponents();
+        }
+        panel.fireChangeEvent();
     }//GEN-LAST:event_bBrowseActionPerformed
+
+    private void lUrlMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lUrlMouseClicked
+        URI uri = URI.create(downloadFrom);
+        try {
+            Desktop.getDesktop().browse(uri);
+        } catch (IOException ex) {
+            Logger.getLogger(LookingForDriverUI.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+        }
+    }//GEN-LAST:event_lUrlMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bBrowse;
     private javax.swing.JButton bDownload;
-    private javax.swing.JLabel lDownloadInfo;
-    private javax.swing.JLabel lFound;
+    private javax.swing.JLabel lDownloadInfo1;
+    private javax.swing.JLabel lDownloadInfo2;
+    private javax.swing.JLabel lFound1;
+    private javax.swing.JLabel lFound2;
     private javax.swing.JLabel lLocation;
     private javax.swing.JLabel lUrl;
     private javax.swing.JTextField tfLocation;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        updateComponents();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        updateComponents();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        updateComponents();
+    }
+
+    boolean driverFound() {
+        return new File(tfLocation.getText()).exists() && tfLocation.getText().endsWith(driverName);
+    }
 }

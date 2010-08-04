@@ -42,44 +42,124 @@
 package org.netbeans.modules.db.explorer.oracle;
 
 import java.awt.Component;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.db.explorer.oracle.PredefinedWizard.Type;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 public class LookingForDriverPanel implements PredefinedWizard.Panel {
+
+    private static final String DRIVERS_DIR = "drivers"; // NOI18N
     private final Type type;
-    private static final String ORACLE_DRIVER_NAME = "ojdbc6.jar"; // NOI18N
-    private static final String MYSQL_DRIVER_NAME = "ojdbc6.jar"; // NOI18N
-    
+    private static final String ORACLE_DRIVER_NAME = "oracle.driver.name"; // NOI18N
+    private static final String MYSQL_DRIVER_NAME = "mysql.driver.name"; // NOI18N
+    private static final String ORACLE_DOWNLOAD_FROM = "oracle.from"; // NOI18N
+    private static final String MYSQL_DOWNLOAD_FROM = "mysql.from"; // NOI18N
+
     public LookingForDriverPanel(PredefinedWizard.Type type) {
         this.type = type;
     }
-    
+
     private void init() {
         switch (type) {
             case ORACLE:
-                driverName = ORACLE_DRIVER_NAME;
-                driverPath = "/space/home/jirka/.netbeans/";
-                downloadFrom = "http://www.oracle.com/technology/software/tech/java/sqlj_jdbc/htdocs/jdbc_111060.html";
-                driverFound = false;
+                driverName = NbBundle.getMessage(LookingForDriverPanel.class, ORACLE_DRIVER_NAME);
+                downloadFrom = NbBundle.getMessage(LookingForDriverPanel.class, ORACLE_DOWNLOAD_FROM);
                 break;
             case MYSQL:
-                driverName = "mysql-connector-java-5.1.6-bin.jar";
-                driverPath = "/space/source/nb_all/nbbuild/netbeans/ide/modules/ext/mysql-connector-java-5.1.6-bin.jar";
-                downloadFrom = "http://dev.mysql.com/downloads/connector/j/";
-                driverFound = true;
+                driverName = NbBundle.getMessage(LookingForDriverPanel.class, MYSQL_DRIVER_NAME);
+                downloadFrom = NbBundle.getMessage(LookingForDriverPanel.class, MYSQL_DOWNLOAD_FROM);
                 break;
             default:
                 assert false;
         }
+        FileObject fo = getLibraryFO(driverName);
+        if (fo == null) {
+            fo = getDriverFO(driverName);
+        }
+        driverFound = fo != null;
+        if (driverFound) {
+            driverPath = fo.getParent().getPath();
+        } else {
+            driverPath = getDefaultDriverPath();
+        }
     }
 
+    private static FileObject getLibraryFO(String name) {
+        Library lib = LibraryManager.getDefault().getLibrary(name);
+        if (lib == null) {
+            Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.FINE, "Library not found for driver {0}.", new Object[]{name});
+            return null;
+        }
+        Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.FINE, "Library found for driver {0}.", new Object[]{name});
+        List<FileObject> libs = new ArrayList<FileObject>();
+        for (URL url : lib.getContent("classpath")) { //NOI18N
+            FileObject fo = URLMapper.findFileObject(url);
+            Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.FINE, "Libray {0} for driver {1} has jar: {2}", new Object[]{lib.getName(), name, fo});
+            FileObject jarFO = null;
+            if ("jar".equals(url.getProtocol())) {  //NOI18N
+                jarFO = FileUtil.getArchiveFile(fo);
+            }
+            if (jarFO == null) {
+                throw new IllegalStateException("No file object on " + url);
+            }
+            libs.add(jarFO);
+        }
+        assert libs.size() == 1 : "Only one jar part of library " + lib;
+        return libs.get(0);
+    }
+
+    private static FileObject getDriverFO(String name) {
+        JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
+        URL foundURL = null;
+        for (JDBCDriver d : drivers) {
+            Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.FINEST, "JDBC Driver: {0}.", new Object[]{d});
+            for (URL url : d.getURLs()) {
+                if (url.toExternalForm().endsWith(name)) {
+                    foundURL = url;
+                    break;
+                }
+            }
+        }
+        if (foundURL != null) {
+            try {
+                URI uri = foundURL.toURI();
+                File f = new File(uri);
+                if (f != null && f.exists()) {
+                    return FileUtil.toFileObject(f);
+                }
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+        }
+        return null;
+    }
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private LookingForDriverUI component;
     private String driverName;
     private String driverPath;
     private String downloadFrom;
@@ -93,7 +173,7 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
     public Component getComponent() {
         if (component == null) {
             init();
-            component = new LookingForDriverUI(driverName, driverPath, downloadFrom, driverFound);
+            component = new LookingForDriverUI(this, driverName, driverPath, downloadFrom, driverFound);
         }
         return component;
     }
@@ -108,46 +188,34 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
 
     @Override
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
+        return component.driverFound();
     }
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     @Override
     public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
 
     @Override
     public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
-    
-    /*
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
-    }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
-    }
-    }
+
     protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
     }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
 
     @Override
     public void readSettings(WizardDescriptor settings) {
@@ -159,5 +227,32 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
 
     boolean found() {
         return driverFound;
+    }
+
+    private static File getUserDir() {
+        // bugfix #50242: the property "netbeans.user" can return dir with non-normalized file e.g. duplicate //
+        // and path and value of this property wrongly differs
+        String user = System.getProperty("netbeans.user");
+        File userDir = null;
+        if (user != null) {
+            userDir = new File(user);
+            if (userDir.getPath().startsWith("\\\\")) {
+                // Do not use URI.normalize for UNC paths because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File)
+                try {
+                    userDir = userDir.getCanonicalFile();
+                } catch (IOException ex) {
+                    // fallback when getCanonicalFile fails
+                    userDir = userDir.getAbsoluteFile();
+                }
+            } else {
+                userDir = new File(userDir.toURI().normalize()).getAbsoluteFile();
+            }
+        }
+
+        return userDir;
+    }
+
+    private static String getDefaultDriverPath() {
+        return getUserDir().getPath() + File.separator + DRIVERS_DIR;
     }
 }

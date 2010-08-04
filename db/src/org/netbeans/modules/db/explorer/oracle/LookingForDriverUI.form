@@ -17,23 +17,25 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lFound" min="-2" max="-2" attributes="0"/>
-                  <Component id="lLocation" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="tfLocation" pref="374" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="1"/>
-                      <Component id="bBrowse" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="lDownloadInfo" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lFound1" min="-2" max="-2" attributes="0"/>
+                  <Component id="lDownloadInfo1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="bDownload" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lUrl" pref="313" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="lDownloadInfo2" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lFound2" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lLocation" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="tfLocation" pref="366" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="1"/>
+                      <Component id="bBrowse" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -41,7 +43,9 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="lFound" min="-2" max="-2" attributes="0"/>
+              <Component id="lFound1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="lFound2" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="lLocation" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -49,8 +53,10 @@
                   <Component id="tfLocation" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="bBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-              <Component id="lDownloadInfo" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+              <Component id="lDownloadInfo1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="lDownloadInfo2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="bDownload" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -62,18 +68,20 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="lFound">
+    <Component class="javax.swing.JLabel" name="lFound1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lFound.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lFound1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
             <Argument index="0" javacode="driverName"/>
-            <Argument index="1" javacode="driverPath"/>
           </ResourceString>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lLocation">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="tfLocation"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lLocation.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -96,12 +104,11 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bBrowseActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="lDownloadInfo">
+    <Component class="javax.swing.JLabel" name="lDownloadInfo1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lDownloadInfo.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lDownloadInfo1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
             <Argument index="0" javacode="driverName"/>
-            <Argument index="1" javacode="driverPath"/>
           </ResourceString>
         </Property>
       </Properties>
@@ -121,6 +128,27 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lUrl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
             <Argument index="0" javacode="downloadFrom"/>
+          </ResourceString>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lUrlMouseClicked"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lDownloadInfo2">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lDownloadInfo2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+            <Argument index="0" javacode="driverPath"/>
+          </ResourceString>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lFound2">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lFound2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+            <Argument index="0" javacode="driverPath"/>
           </ResourceString>
         </Property>
       </Properties>
