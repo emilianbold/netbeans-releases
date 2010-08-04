@@ -102,6 +102,7 @@ public abstract class PhpUnit extends PhpProgram {
     private static final String REQUIRE_ONCE_TPL_END = "%s';"; // NOI18N
     // cli options
     public static final String PARAM_VERSION = "--version"; // NOI18N
+    public static final String PARAM_FILTER = "--filter"; // NOI18N
     public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
     // for older PHP Unit versions
