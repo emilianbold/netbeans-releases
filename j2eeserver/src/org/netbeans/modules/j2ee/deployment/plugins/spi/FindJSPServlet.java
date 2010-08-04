@@ -51,6 +51,7 @@ import java.io.File;
  *
  * @author Petr Jiricka
  */
+// FIXME perhaps the better API should pass application name or TargetModuleID
 public interface FindJSPServlet {
 
     /** Returns the temporary directory where the server writes servlets generated

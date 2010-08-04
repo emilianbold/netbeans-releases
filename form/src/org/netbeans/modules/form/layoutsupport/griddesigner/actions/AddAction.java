@@ -43,8 +43,11 @@
 package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
 import java.awt.Component;
+import java.util.Collections;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
@@ -55,6 +58,8 @@ import org.netbeans.modules.form.layoutsupport.griddesigner.GridManager;
 import org.netbeans.modules.form.layoutsupport.griddesigner.GridUtils;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteMenuView;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 
@@ -99,6 +104,20 @@ public class AddAction extends AbstractGridAction {
                 if (paletteItem == null) {
                     return false;
                 }
+                if (PaletteItem.TYPE_CHOOSE_BEAN.equals(paletteItem.getExplicitComponentType())) {
+                    NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
+                        FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
+                        FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
+                    DialogDisplayer.getDefault().notify(desc);
+                    if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+                        FormModel formModel = replicator.getTopMetaComponent().getFormModel();
+                        String chooseBeanType = desc.getInputText();
+                        paletteItem.setClassFromCurrentProject(chooseBeanType,
+                            FormEditor.getFormDataObject(formModel).getPrimaryFile());
+                    } else {
+                        return false;
+                    }
+                }
                 performer.performAction(new AddComponentAction(paletteItem));
                 return true;
             }
@@ -139,6 +158,7 @@ public class AddAction extends AbstractGridAction {
                 Component comp = (Component)replicator.getClonedComponent(metacomp);
                 gridManager.setGridX(comp, context.getFocusedColumn());
                 gridManager.setGridY(comp, context.getFocusedRow());
+                context.setSelectedComponents(Collections.singleton(comp));
             }
 
             gridManager.updateLayout();
