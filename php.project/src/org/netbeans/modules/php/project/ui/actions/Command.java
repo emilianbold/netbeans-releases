@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -96,6 +97,10 @@ public abstract class Command {
         // #156939
         if (fileObj == null) {
             return false;
+        }
+        // #188770
+        if (fileObj.getName().endsWith(PhpUnit.TEST_CLASS_SUFFIX) && ProjectPropertiesSupport.runAllTestFilesUsingPhpUnit(project)) {
+            return true;
         }
         return CommandUtils.isUnderTests(project, fileObj, false);
     }

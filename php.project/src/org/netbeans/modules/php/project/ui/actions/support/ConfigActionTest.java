@@ -116,9 +116,7 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public boolean isRunFileEnabled(Lookup context) {
-        FileObject rootFolder = getTestDirectory(false);
-        assert rootFolder != null : "Test directory not found but isRunFileEnabled() for a test file called?!";
-        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
+        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context);
         return file != null && FileUtils.isPhpFile(file);
     }
 
@@ -191,23 +189,42 @@ class ConfigActionTest extends ConfigAction {
         if (phpUnit == null) {
             return null;
         }
-        FileObject testDirectory = getTestDirectory(true);
-        if (testDirectory == null) {
-            return null;
-        }
+
         if (context == null) {
+            // run project
+            FileObject testDirectory = getTestDirectory(true);
+            if (testDirectory == null) {
+                return null;
+            }
             return getProjectPhpUnitInfo(testDirectory);
         }
-        return getFilePhpUnitInfo(testDirectory, context);
+
+        return getFilePhpUnitInfo(context);
     }
 
     private PhpUnitInfo getProjectPhpUnitInfo(FileObject testDirectory) {
         return new PhpUnitInfo(testDirectory, testDirectory, null);
     }
 
-    private PhpUnitInfo getFilePhpUnitInfo(FileObject testDirectory, Lookup context) {
-        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
-        assert fileObj != null : "Fileobject not found for context: " + context;
+    private PhpUnitInfo getFilePhpUnitInfo(Lookup context) {
+        assert context != null;
+
+        // #188770
+        FileObject testDirectory = null;
+        if (!ProjectPropertiesSupport.runAllTestFilesUsingPhpUnit(project)) {
+            testDirectory = getTestDirectory(true);
+            if (testDirectory == null) {
+                return null;
+            }
+        }
+
+        FileObject fileObj = null;
+        if (testDirectory != null) {
+            fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
+        } else {
+            fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        }
+        assert fileObj != null : "Fileobject not found for context: " + context + " and test directory: " + testDirectory;
         if (!fileObj.isValid()) {
             return null;
         }
@@ -220,7 +237,6 @@ class ConfigActionTest extends ConfigAction {
         public final String testName;
 
         public PhpUnitInfo(FileObject workingDirectory, FileObject startFile, String testName) {
-            assert workingDirectory != null;
             assert startFile != null;
 
             this.workingDirectory = workingDirectory;

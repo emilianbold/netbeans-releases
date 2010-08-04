@@ -92,7 +92,7 @@ public abstract class PhpUnit extends PhpProgram {
     // options
     public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
     // test files suffix
-    private static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
+    public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     private static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
     // suite files suffix
     private static final String SUITE_CLASS_SUFFIX = "Suite"; // NOI18N
