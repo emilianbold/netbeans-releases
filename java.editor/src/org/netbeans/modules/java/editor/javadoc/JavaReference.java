@@ -174,16 +174,16 @@ public final class JavaReference {
             return;
         }
         // member identifier
-        StringBuilder sb = new StringBuilder();
-        member = sb;
-        sb.append(token.text());
+        member = token.text ();
         end = jdts.offset() + token.length();
         
         // params part (int, String)
-        CharSequence cs;
-        if (!jdts.moveNext()
-                || JavadocTokenId.OTHER_TEXT != (token = jdts.token()).id()
-                || (cs = token.text()).length() == 0 || cs.charAt(0) != '(') {
+        if (!jdts.moveNext ()) return;
+        token = jdts.token ();
+        if (JavadocTokenId.OTHER_TEXT != token.id ()) return;
+        CharSequence cs = token.text ();
+        if (cs.length () == 0 ||
+            cs.charAt (0) != '(') {
             // no params
             return;
         }
@@ -205,6 +205,8 @@ public final class JavaReference {
                     parameters = new ArrayList<JavaReference> ();
                 parameters.add (parameter);
             }
+            if (params.indexOf (")") > 0)
+                break;
             if (!jdts.moveNext()) {
                 break;
             }
@@ -213,37 +215,39 @@ public final class JavaReference {
         paramsText = parseParamString(params);
     }
 
-    private void insideFQN(TokenSequence<JavadocTokenId> jdts) {
-        StringBuilder sb = new StringBuilder();
-        STOP: while (jdts.moveNext()) {
-            Token<JavadocTokenId> token = jdts.token();
+    private void insideFQN (
+        TokenSequence<JavadocTokenId> tokenSequence
+    ) {
+        StringBuilder sb = new StringBuilder ();
+        STOP: while (tokenSequence.moveNext ()) {
+            Token<JavadocTokenId> token = tokenSequence.token();
             switch(token.id()) {
                 case IDENT:
                     sb.append(token.text());
                     if (begin < 0) {
-                        begin = jdts.offset();
+                        begin = tokenSequence.offset();
                     }
-                    end = jdts.offset() + token.length();
+                    end = tokenSequence.offset() + token.length();
                     break;
                 case HASH:
                     if (begin < 0) {
-                        begin = jdts.offset();
+                        begin = tokenSequence.offset();
                     }
-                    end = jdts.offset() + token.length();
-                    insideMember(jdts);
+                    end = tokenSequence.offset() + token.length();
+                    insideMember(tokenSequence);
                     break STOP;
                 case DOT:
                     if (sb.length() == 0 || '.' == sb.charAt(sb.length() - 1)) {
                         break STOP;
                     }
                     sb.append('.');
-                    end = jdts.offset() + token.length();
+                    end = tokenSequence.offset() + token.length();
                     break;
                 default:
+                    tokenSequence.movePrevious ();
                     break STOP;
             }
         }
-
         if (sb.length() > 0) {
             fqn = sb;
         }
