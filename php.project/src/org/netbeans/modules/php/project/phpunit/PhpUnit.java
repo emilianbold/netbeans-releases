@@ -88,7 +88,7 @@ import org.openide.windows.InputOutput;
  */
 public abstract class PhpUnit extends PhpProgram {
     // for keeping log files to able to evaluate and fix issues
-    public static final boolean KEEP_LOGS = Boolean.getBoolean(PhpUnit.class.getName() + ".keepLogs"); // NOI18N
+    public static final boolean KEEP_LOGS = Boolean.getBoolean("nb.php.phpunit.keeplogs"); // NOI18N
     // options
     public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
     // test files suffix
