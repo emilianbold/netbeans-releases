@@ -1293,6 +1293,21 @@ public class TreeTableView extends BeanTreeView {
         super.showSelection (modifiedTreePaths);
     }
 
+    @Override
+    public void collapseNode(Node n) {
+        super.collapseNode(getSortedNodeFromOriginal(n));
+    }
+
+    @Override
+    public void expandNode(Node n) {
+        super.expandNode(getSortedNodeFromOriginal(n));
+    }
+
+    @Override
+    public boolean isExpanded(Node n) {
+        return super.isExpanded(getSortedNodeFromOriginal(n));
+    }
+
     private Node getSortedNodeFromOriginal (Node orig) {
         if (getSortedNodeTreeModel () != null) {
             if (getSortedNodeTreeModel ().original2filter != null) {
