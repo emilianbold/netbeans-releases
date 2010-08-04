@@ -128,25 +128,26 @@ class JdbcRetriever {
         List<JDBCDataBean> list = Collections.emptyList();
 
         try {
-            list = support.executeAction(new WLConnectionSupport.JMXAction<List<JDBCDataBean>>() {
+            list = support.executeAction(new WLConnectionSupport.
+                    JMXDomainRuntimeServiceAction<List<JDBCDataBean>>() {
 
                 @Override
                 public List<JDBCDataBean> call(MBeanServerConnection con) throws Exception {
                     List<JDBCDataBean> list = new LinkedList<JDBCDataBean>();
-                    ObjectName service = new ObjectName(
-                            "com.bea:Name=DomainRuntimeService,"
-                                    + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");// NOI18N
+                    
+                    ObjectName service = getRootService();
+                    
                     ObjectName[] adminServers = (ObjectName[]) con
-                            .getAttribute(service, "ServerRuntimes");
+                            .getAttribute(service, "ServerRuntimes");    // NOI18N
                     Set<String> adminNames = new HashSet<String>();
                     for (ObjectName adminServer : adminServers) {
                         adminNames.add(con
                                 .getAttribute(adminServer, "Name")
-                                .toString());// NOI18N
+                                    .toString());// NOI18N
                     }
 
                     ObjectName objectName = (ObjectName) con.getAttribute(
-                            service, "DomainConfiguration"); // NOI18N
+                            service, "DomainConfiguration");            // NOI18N
                     ObjectName objectNames[] = (ObjectName[]) con
                             .getAttribute(objectName, "SystemResources"); // NOI18N
 
@@ -187,10 +188,6 @@ class JdbcRetriever {
                     return list;
                 }
 
-                @Override
-                public String getPath() {
-                    return "/jndi/weblogic.management.mbeanservers.domainruntime";
-                }
             });
         } catch (Exception e) {
             LOGGER.log(Level.INFO, null, e);
@@ -289,13 +286,11 @@ class JdbcRetriever {
 
             WLConnectionSupport support = new WLConnectionSupport(manager);
             try {
-                support.executeAction(new WLConnectionSupport.JMXAction<Void>() {
+                support.executeAction(new WLConnectionSupport.JMXEditAction<Void>() {
 
                     @Override
                     public Void call(MBeanServerConnection con) throws Exception {
-                        ObjectName service = new ObjectName(
-                                "com.bea:Name=EditService,"
-                                        + "Type=weblogic.management.mbeanservers.edit.EditServiceMBean");// NOI18N
+                        ObjectName service = getRootService();
 
                         ObjectName config = (ObjectName) con.getAttribute(
                                 service, "DomainConfiguration"); // NOI18N
@@ -338,10 +333,6 @@ class JdbcRetriever {
                         return null;
                     }
 
-                    @Override
-                    public String getPath() {
-                        return "/jndi/weblogic.management.mbeanservers.edit";
-                    }
 
                 });
             }
@@ -391,7 +382,7 @@ class JdbcRetriever {
 
             WLConnectionSupport support = new WLConnectionSupport(manager);
             try {
-                support.executeAction(new WLConnectionSupport.JMXAction<Void>() {
+                support.executeAction(new WLConnectionSupport.JMXEditAction<Void>() {
 
                     @Override
                     public Void call(MBeanServerConnection con) throws Exception {
@@ -405,11 +396,39 @@ class JdbcRetriever {
                         remove(con, dataSource);
                         return null;
                     }
-
-                    @Override
-                    public String getPath() {
-                        return "/jndi/weblogic.management.mbeanservers.edit";
+                    
+                    private void remove( MBeanServerConnection connection,
+                            ObjectName dataSource ) throws AttributeNotFoundException,
+                            InstanceNotFoundException, MBeanException, ReflectionException,
+                            IOException, MalformedObjectNameException, UnableLockException
+                    {
+                        ObjectName service = getRootService();
+                        ObjectName manager =(ObjectName) connection.getAttribute(service, 
+                                        "ConfigurationManager");                // NOI18N
+                        ObjectName domainConfigRoot = (ObjectName)connection.invoke(manager, 
+                                "startEdit", new Object[]{ WAIT_TIME, TIMEOUT}, 
+                                    new String[]{ "java.lang.Integer", "java.lang.Integer"});
+                        if ( domainConfigRoot == null ){
+                         // Couldn't get the lock
+                            throw new UnableLockException();
+                        }
+                        
+                        ObjectName targets[] = (ObjectName[]) connection.getAttribute(
+                                dataSource, "Targets"); // NOI18N
+                        for (ObjectName target : targets) {
+                            connection
+                                    .invoke(dataSource,
+                                            "removeTarget",
+                                            new Object[] { target },
+                                            new String[] { "javax.management.ObjectName" }); // NOI18N
+                        }
+                        connection.invoke(manager, "save", null, null);                // NOI18N
+                        ObjectName  activationTask = (ObjectName)connection.invoke(manager, 
+                                "activate", new Object[]{TIMEOUT}, 
+                                    new String[]{"java.lang.Long"});                // NOI18N
+                        connection.invoke(activationTask, "waitForTaskCompletion", null, null);
                     }
+
 
                 });
             }
@@ -437,40 +456,6 @@ class JdbcRetriever {
             DialogDisplayer.getDefault().notify(notDesc);
         }
         
-        private void remove( MBeanServerConnection connection,
-                ObjectName dataSource ) throws AttributeNotFoundException,
-                InstanceNotFoundException, MBeanException, ReflectionException,
-                IOException, MalformedObjectNameException, UnableLockException
-        {
-            ObjectName service = new ObjectName(
-                    "com.bea:Name=EditService,"
-                            + "Type=weblogic.management.mbeanservers.edit.EditServiceMBean");// NOI18N
-            ObjectName manager =(ObjectName) connection.getAttribute(service, 
-                            "ConfigurationManager");                // NOI18N
-            ObjectName domainConfigRoot = (ObjectName)connection.invoke(manager, 
-                    "startEdit", new Object[]{ WAIT_TIME, TIMEOUT}, 
-                        new String[]{ "java.lang.Integer", "java.lang.Integer"});
-            if ( domainConfigRoot == null ){
-             // Couldn't get the lock
-                throw new UnableLockException();
-            }
-            
-            ObjectName targets[] = (ObjectName[]) connection.getAttribute(
-                    dataSource, "Targets"); // NOI18N
-            for (ObjectName target : targets) {
-                connection
-                        .invoke(dataSource,
-                                "removeTarget",
-                                new Object[] { target },
-                                new String[] { "javax.management.ObjectName" }); // NOI18N
-            }
-            connection.invoke(manager, "save", null, null);                // NOI18N
-            ObjectName  activationTask = (ObjectName)connection.invoke(manager, 
-                    "activate", new Object[]{TIMEOUT}, 
-                        new String[]{"java.lang.Long"});                // NOI18N
-            connection.invoke(activationTask, "waitForTaskCompletion", null, null);
-        }
-
         private String dataSource;
         private RefreshModulesCookie cookie;
         private Lookup lookup;

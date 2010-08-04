@@ -47,6 +47,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -129,6 +131,32 @@ public final class WLConnectionSupport {
 
         String getPath();
 
+    }
+    
+    public static abstract class JMXDomainRuntimeServiceAction<T> implements JMXAction<T>{
+
+        public String getPath() {
+            return "/jndi/weblogic.management.mbeanservers.domainruntime";// NOI18N
+        }
+        
+        public ObjectName getRootService() throws MalformedObjectNameException{
+            return new ObjectName(
+                    "com.bea:Name=DomainRuntimeService,"
+                            + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");// NOI18N
+        }
+    }
+    
+    public static abstract class JMXEditAction<T> implements JMXAction<T>{
+
+        public String getPath() {
+            return "/jndi/weblogic.management.mbeanservers.edit";         // NOI18N
+        }
+        
+        public ObjectName getRootService() throws MalformedObjectNameException{
+            return new ObjectName(
+                    "com.bea:Name=EditService,"
+                    + "Type=weblogic.management.mbeanservers.edit.EditServiceMBean");// NOI18N
+        }
     }
 
     public static abstract class WLDeploymentManagerAccessor {
