@@ -80,7 +80,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     /** Color of the grid. */
     private static final Color GRID_COLOR = new Color(192, 192, 192, 128);
     /** Color of the highlighted cell. */
-    private static final Color HIGHLIGHT_COLOR = new Color(0,255,0,128);
+    private static final Color HIGHLIGHT_COLOR = new Color(64, 255, 64, 64);
     /** Gap between the grid and the header. */
     static final int HEADER_GAP = 10;
 
