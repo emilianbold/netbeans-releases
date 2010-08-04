@@ -70,6 +70,6 @@ public final class AliasedClass extends AliasedType implements ClassElement {
     }
 
     private ClassElement getClassElement() {
-        return (ClassElement) type;
+        return (ClassElement) element;
     }
 }

@@ -42,39 +42,14 @@
 
 package org.netbeans.modules.php.editor.api.elements;
 
-import java.util.Set;
 import org.netbeans.modules.php.editor.api.AliasedName;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 
 /**
  *
- * @author Raddek Matous
+ * @author Radek Matous
  */
-public class AliasedType extends AliasedElement implements TypeElement {
-    public AliasedType(final AliasedName aliasedName, final TypeElement type) {
-        super(aliasedName, type);
-    }
-
-    protected final TypeElement getRealType() {
-        return (TypeElement) element;
-    }
-    @Override
-    public final String asString(PrintAs as) {
-        return getRealType().asString(as);
-    }
-
-    @Override
-    public final Set<QualifiedName> getSuperInterfaces() {
-        return getRealType().getSuperInterfaces();
-    }
-
-    @Override
-    public final boolean isClass() {
-        return getRealType().isClass();
-    }
-
-    @Override
-    public final boolean isInterface() {
-        return getRealType().isInterface();
+public class AliasedNamespace extends AliasedElement implements NamespaceElement {
+    public AliasedNamespace(final AliasedName aliasedName, final NamespaceElement namespaceElement) {
+        super(aliasedName, namespaceElement);
     }
 }

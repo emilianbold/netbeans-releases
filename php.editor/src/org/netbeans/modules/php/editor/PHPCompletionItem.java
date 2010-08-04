@@ -253,7 +253,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 case UNQUALIFIED:
                     boolean fncFromDefaultNamespace = ((ifq instanceof FunctionElement) && ifq.getIn() == null
                             && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
-                    if (!fncFromDefaultNamespace && !ifq.isAliased()) {
+                    final boolean isUnqualified = ifq.isAliased() &&
+                            (ifq instanceof AliasedElement) && ((AliasedElement)ifq).isNameAliased();
+                    if (!fncFromDefaultNamespace && !isUnqualified) {
                         Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
@@ -987,6 +989,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public boolean isSmart() {
+            if (isSmart == null && getElement() instanceof AliasedElement) {
+                isSmart = true;
+            }
             if (isSmart == null) {
                 QualifiedName namespaceName = getNamespaceElement().getNamespaceName();
                 isSmart =  !(namespaceName == null || !namespaceName.isDefaultNamespace());

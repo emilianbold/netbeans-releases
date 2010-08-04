@@ -42,39 +42,34 @@
 
 package org.netbeans.modules.php.editor.api.elements;
 
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.php.editor.api.AliasedName;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 
 /**
  *
- * @author Raddek Matous
+ * @author Radek Matous
  */
-public class AliasedType extends AliasedElement implements TypeElement {
-    public AliasedType(final AliasedName aliasedName, final TypeElement type) {
-        super(aliasedName, type);
+public class AliasedFunction extends AliasedElement implements FunctionElement {
+    public AliasedFunction(final AliasedName aliasedName, final FunctionElement functionElement) {
+        super(aliasedName, functionElement);
     }
 
-    protected final TypeElement getRealType() {
-        return (TypeElement) element;
+    protected final FunctionElement getRealFunction() {
+        return (FunctionElement) element;
     }
     @Override
-    public final String asString(PrintAs as) {
-        return getRealType().asString(as);
-    }
-
-    @Override
-    public final Set<QualifiedName> getSuperInterfaces() {
-        return getRealType().getSuperInterfaces();
+    public List<ParameterElement> getParameters() {
+        return getRealFunction().getParameters();
     }
 
     @Override
-    public final boolean isClass() {
-        return getRealType().isClass();
+    public Collection<TypeResolver> getReturnTypes() {
+        return getRealFunction().getReturnTypes();
     }
 
     @Override
-    public final boolean isInterface() {
-        return getRealType().isInterface();
+    public String asString(PrintAs as) {
+        return getRealFunction().asString(as);
     }
 }
