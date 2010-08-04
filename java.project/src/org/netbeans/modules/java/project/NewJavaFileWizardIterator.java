@@ -47,6 +47,7 @@ package org.netbeans.modules.java.project;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -120,10 +121,22 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                 return new WizardDescriptor.Panel[] {
                     JavaTemplates.createPackageChooser( project, groups ),
                 };
-            }
-            else {                                
+            } else if (type == Type.PKG_INFO) {
                 return new WizardDescriptor.Panel[] {
-                    new JavaTargetChooserPanel(project, groups, null, this.type, this.type == Type.PKG_INFO),
+                    new JavaTargetChooserPanel(project, groups, null, Type.PKG_INFO, true),
+                };
+            } else {
+                assert type == Type.PACKAGE;
+                SourceGroup[] resources = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+                assert resources != null;
+                if (resources.length > 0) { // #161244
+                    List<SourceGroup> all = new ArrayList<SourceGroup>();
+                    all.addAll(Arrays.asList(groups));
+                    all.addAll(Arrays.asList(resources));
+                    groups = all.toArray(new SourceGroup[all.size()]);
+                }
+                return new WizardDescriptor.Panel[] {
+                    new JavaTargetChooserPanel(project, groups, null, Type.PACKAGE, false),
                 };
             }
         }
