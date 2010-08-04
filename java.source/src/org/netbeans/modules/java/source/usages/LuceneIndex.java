@@ -52,6 +52,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -74,6 +75,7 @@ import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
@@ -83,6 +85,7 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DefaultSimilarity;
 import org.apache.lucene.search.Hit;
 import org.apache.lucene.search.Hits;
@@ -94,6 +97,7 @@ import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.impl.indexing.lucene.IndexCacheFactory;
@@ -147,238 +151,52 @@ class LuceneIndex extends Index implements Evictable {
         _analyzer.addAnalyzer(DocumentUtil.caseInsensitiveFeatureIdentTerm("").field(), new DocumentUtil.LCWhitespaceAnalyzer());
         this.analyzer = _analyzer;
     }
-
-
-    @SuppressWarnings ("unchecked")     // NOI18N, unchecked - lucene has source 1.4
-    public List<String> getUsagesFQN(final String resourceName, final Set<ClassIndexImpl.UsageType>mask, final BooleanOperator operator) throws IOException, InterruptedException {
+    
+    @Override
+    public <T> void query (
+            final @NonNull Query[] queries,
+            final @NonNull FieldSelector selector,
+            final @NonNull ResultConvertor<T> convertor, 
+            final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
+        Parameters.notNull("queries", queries);   //NOI18N
+        Parameters.notNull("selector", selector);   //NOI18N
+        Parameters.notNull("convertor", convertor); //NOI18N
+        Parameters.notNull("result", result);       //NOI18N
         checkPreconditions();
-        final AtomicBoolean cancel = this.cancel.get();
-        assert cancel != null;
-        assert resourceName != null;
-        assert mask != null;
-        assert operator != null;
-        final IndexReader in = getReader();
-        if (in == null) {
-            return null;
-        }
-        final Searcher searcher = new IndexSearcher (in);
-        Query query;
-        try {
-            final List<String> result = new LinkedList<String> ();
-            switch (operator) {
-                case AND:
-                    query = new WildcardQuery(DocumentUtil.referencesTerm (resourceName, mask));
-                    break;
-                case OR:
-                    BooleanQuery booleanQuery = new BooleanQuery ();
-                    for (ClassIndexImpl.UsageType ut : mask) {
-                        final Query subQuery = new WildcardQuery(DocumentUtil.referencesTerm (resourceName, EnumSet.of(ut)));
-                        booleanQuery.add(subQuery, Occur.SHOULD);
-                    }
-                    query = booleanQuery;
-                    break;
-                default:
-                    throw new IllegalArgumentException (operator.toString());
-            }
-            if (cancel.get()) {
-                throw new InterruptedException ();
-            }
-            final Hits hits = searcher.search (query);
-            for (Iterator<Hit> it = (Iterator<Hit>) hits.iterator(); it.hasNext();) {
-                if (cancel.get()) {
-                    throw new InterruptedException ();
-                }
-                final Hit hit = it.next ();
-                final Document doc = hit.getDocument();
-                final String user = DocumentUtil.getBinaryName(doc);
-                result.add (user);
-            }
-            return result;
-        } finally {
-            searcher.close();
-        }
-    }
-
-
-    public String getSourceName (final String resourceName) throws IOException {
-        checkPreconditions();
-        final IndexReader in = getReader();
-        if (in == null) {
-            return null;
-        }
-        Searcher searcher = new IndexSearcher (in);
-        try {
-            Hits hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
-            if (hits.length() == 0) {
-                return null;
-            }
-            else {
-                Hit hit = (Hit) hits.iterator().next();
-                return DocumentUtil.getSourceName(hit.getDocument());
-            }
-        } finally {
-            searcher.close();
-        }
-    }
-
-    @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
-    public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException {
-        checkPreconditions();
+        
         final IndexReader in = getReader();
         if (in == null) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
         }
         final AtomicBoolean cancel = this.cancel.get();
-        assert cancel != null;
-        assert name != null;
-        final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
-        switch (kind) {
-            case SIMPLE_NAME:
-                {
-                    toSearch.add(DocumentUtil.simpleNameTerm(name));
-                    break;
-                }
-            case PREFIX:
-                if (name.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, convertor, result, cancel);
-                    return;
-                }
-                else {
-                    final Term nameTerm = DocumentUtil.simpleNameTerm(name);
-                    prefixSearh(nameTerm, in, toSearch, cancel);
-                    break;
-                }
-            case CASE_INSENSITIVE_PREFIX:
-                if (name.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, convertor, result, cancel);
-                    return;
-                }
-                else {
-                    final Term nameTerm = DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase());     //XXX: I18N, Locale
-                    prefixSearh(nameTerm, in, toSearch, cancel);
-                    break;
-                }
-            case CAMEL_CASE:
-                if (name.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                {
-                    StringBuilder sb = new StringBuilder();
-                    String prefix = null;
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(name, lastIndex + 1);
-                        String token = name.substring(lastIndex, index == -1 ? name.length(): index);
-                        if ( lastIndex == 0 ) {
-                            prefix = token;
-                        }
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    }
-                    while(index != -1);
-
-                    final Pattern pattern = Pattern.compile(sb.toString());
-                    regExpSearch(pattern,DocumentUtil.simpleNameTerm(prefix),in,toSearch,cancel, true);
-                }
-                break;
-            case CASE_INSENSITIVE_REGEXP:
-                if (name.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                else {
-                    final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
-                    if (Character.isJavaIdentifierStart(name.charAt(0))) {
-                        regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch,cancel, false);      //XXX: Locale
-                    }
-                    else {
-                        regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(""), in, toSearch,cancel, false);      //NOI18N
-                    }
-                    break;
-                }
-            case REGEXP:
-                if (name.length() == 0) {
-                    throw new IllegalArgumentException ();
-                } else {
-                    final Pattern pattern = Pattern.compile(name);
-                    if (Character.isJavaIdentifierStart(name.charAt(0))) {
-                        regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch, cancel, true);
-                    }
-                    else {
-                        regExpSearch(pattern, DocumentUtil.simpleNameTerm(""), in, toSearch, cancel, true);             //NOI18N
-                    }
-                    break;
-                }
-            case CAMEL_CASE_INSENSITIVE:
-                if (name.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, convertor, result, cancel);
-                    return;
-                }
-                else {
-                    final Term nameTerm = DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase());     //XXX: I18N, Locale
-                    prefixSearh(nameTerm, in, toSearch, cancel);
-                    StringBuilder sb = new StringBuilder();
-                    String prefix = null;
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(name, lastIndex + 1);
-                        String token = name.substring(lastIndex, index == -1 ? name.length(): index);
-                        if ( lastIndex == 0 ) {
-                            prefix = token;
-                        }
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    }
-                    while(index != -1);
-                    final Pattern pattern = Pattern.compile(sb.toString());
-                    regExpSearch(pattern,DocumentUtil.simpleNameTerm(prefix),in,toSearch,cancel, true);
-                    break;
-                }
-            default:
-                throw new UnsupportedOperationException (kind.toString());
-        }
-        LOGGER.fine(String.format("LuceneIndex.getDeclaredTypes[%s] returned %d elements\n",this.toString(), toSearch.size()));
-        final ElementKind[] kindHolder = new ElementKind[1];
-        final Set<Integer> docNums = new TreeSet<Integer>();
-        final TermDocs tds = in.termDocs();
+        assert cancel != null;        
+        final BitSet bs = new BitSet(in.maxDoc());
+        final Collector c = QueryUtil.createBitSetCollector(bs);
+        final Searcher searcher = new IndexSearcher(in);
         try {
-            int[] docs = new int[25];
-            int[] freq = new int [25];
-            int len;
-            for (Term t : toSearch) {
+            for (Query q : queries) {
                 if (cancel.get()) {
                     throw new InterruptedException ();
                 }
-                tds.seek(t);
-                while ((len = tds.read(docs, freq))>0) {
-                    for (int i = 0; i < len; i++) {
-                        docNums.add (docs[i]);
-                    }
-                }
+                searcher.search(q, c);
             }
         } finally {
-            tds.close();
-        }
-        for (Integer docNum : docNums) {
+            searcher.close();
+        }        
+        for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
             if (cancel.get()) {
                 throw new InterruptedException ();
             }
-            final Document doc = in.document(docNum, DocumentUtil.declaredTypesFieldSelector());
-            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
-            final T value = convertor.convert(kindHolder[0],binaryName);
+            final Document doc = in.document(docNum, selector);
+            final T value = convertor.convert(doc);
             if (value != null) {
                 result.add (value);
             }
         }
     }
 
+    //Todo: replace by query(QueryUtil.createQueries) - needs to collect terms in queries
     public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
         checkPreconditions();
         final IndexReader in = getReader();
@@ -480,7 +298,6 @@ class LuceneIndex extends Index implements Evictable {
                 throw new UnsupportedOperationException (kind.toString());
         }
         LOGGER.fine(String.format("LuceneIndex.getDeclaredElements[%s] returned %d elements\n",this.toString(), toSearch.size()));  //NOI18N
-        final ElementKind[] kindHolder = new ElementKind[1];
         final Map<Integer,Set<String>> docNums = new HashMap<Integer,Set<String>>();   //todo: TreeMap may perform better, ordered according to doc nums => linear IO
         final TermDocs tds = in.termDocs();
         try {
@@ -511,12 +328,20 @@ class LuceneIndex extends Index implements Evictable {
                 throw new InterruptedException ();
             }
             final Document doc = in.document(docNum.getKey(), DocumentUtil.declaredTypesFieldSelector());
-            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
-            final T key = convertor.convert(kindHolder[0],binaryName);
+            final T key = convertor.convert(doc);
             if (key != null) {
                 result.put (key,docNum.getValue());
             }
         }
+    }
+    //where
+    private static int findNextUpper(String text, int offset ) {
+        for( int i = offset; i < text.length(); i++ ) {
+            if ( Character.isUpperCase(text.charAt(i)) ) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     //<editor-fold desc="Implementation of Evictable interface">
@@ -556,15 +381,6 @@ class LuceneIndex extends Index implements Evictable {
         }
     }
 
-    private static int findNextUpper(String text, int offset ) {
-
-        for( int i = offset; i < text.length(); i++ ) {
-            if ( Character.isUpperCase(text.charAt(i)) ) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
     private void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel, boolean caseSensitive) throws IOException, InterruptedException {        
         final String startText = startTerm.text();
@@ -607,33 +423,7 @@ class LuceneIndex extends Index implements Evictable {
             en.close();
         }
     }
-
-    private <T> void emptyPrefixSearch (final IndexReader in, final ResultConvertor<T> convertor, final Set<? super T> result, final AtomicBoolean cancel) throws IOException, InterruptedException {        
-        final int bound = in.maxDoc();
-        final ElementKind[] kindHolder = new ElementKind[1];
-        for (int i=0; i<bound; i++) {
-            if (cancel.get()) {
-                throw new InterruptedException ();
-            }
-            if (!in.isDeleted(i)) {
-                final Document doc = in.document(i, DocumentUtil.declaredTypesFieldSelector());
-                if (doc != null) {
-                    String binaryName = DocumentUtil.getBinaryName (doc, kindHolder);
-                    if (binaryName == null) {
-                        //Root timestamp document
-                        continue;
-                    }
-                    else {
-                        final T value = convertor.convert(kindHolder[0],binaryName);
-                        if (value != null) {
-                            result.add (value);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    
     private void prefixSearh (Term nameTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel) throws IOException, InterruptedException {
         final String prefixField = nameTerm.field();
         final String name = nameTerm.text();
@@ -1231,6 +1021,7 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private static class TermComparator implements Comparator<Term> {
+        @Override
         public int compare (Term t1, Term t2) {
             int ret = t1.field().compareTo(t2.field());
             if (ret == 0) {
@@ -1238,6 +1029,6 @@ class LuceneIndex extends Index implements Evictable {
             }
             return ret;
         }
-    }
+    }    
 
 }

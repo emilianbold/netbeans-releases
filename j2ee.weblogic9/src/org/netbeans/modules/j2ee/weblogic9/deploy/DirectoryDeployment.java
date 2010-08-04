@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
@@ -52,6 +53,8 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -60,6 +63,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -154,4 +158,52 @@ public class DirectoryDeployment extends IncrementalDeployment {
         return incrementalDeploy(module, desc);
     }
 
+    @Override
+    public String getModuleUrl(TargetModuleID module) {
+        assert module != null;
+
+        if (module.getWebURL() == null) {
+            String url = module.getModuleID();
+            return url.startsWith("/") ? url : "/" + url;
+        }
+
+        // TODO is this hack ?
+        // looks like weblogic (TargetModulesIDs returned by server)
+        // is using weburl as moduleID for war in ear
+        // and ejb jar name for ejb in ear, we need moduleURI
+        final String id = module.getModuleID();
+        WLConnectionSupport support = new WLConnectionSupport(dm);
+        String url = null;
+        try {
+            url = support.executeAction(new WLConnectionSupport.JMXAction<String>() {
+
+                @Override
+                public String call(MBeanServerConnection con) throws Exception {
+                    ObjectName pattern = new ObjectName(
+                            "com.bea:Type=WebAppComponentRuntime,*"); // NOI18N
+
+                    Set<ObjectName> runtimes = con.queryNames(pattern, null);
+                    for (ObjectName runtime : runtimes) {
+                        String moduleId = (String) con.getAttribute(runtime, "ModuleId"); // NOI18N
+                        if (id.equals(moduleId)) {
+                            return (String) con.getAttribute(runtime, "ModuleURI"); // NOI18N
+                        }
+                    }
+                    return null;
+                }
+
+                @Override
+                public String getPath() {
+                    return "/jndi/weblogic.management.mbeanservers.domainruntime"; // NOI18N
+                }
+            });
+        } catch (Exception ex) {
+            // pass through
+        }
+        if (url != null) {
+            return url.startsWith("/") ? url : "/" + url;
+        }
+        // will fail probably
+        return module.getModuleID();
+    }
 }

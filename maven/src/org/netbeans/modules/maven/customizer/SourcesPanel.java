@@ -42,26 +42,19 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.IllegalCharsetNameException;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
@@ -77,7 +70,6 @@ public class SourcesPanel extends JPanel {
     
     private String encoding;
     private String defaultEncoding;
-    private String defaultSourceLevel = "1.3";//NOI18N
     private String sourceLevel;
     private ModelHandle handle;
 
@@ -142,11 +134,6 @@ public class SourcesPanel extends JPanel {
     private void handleSourceLevelChange() {
         sourceLevel = (String)comSourceLevel.getSelectedItem();
         ModelUtils.checkSourceLevel(handle, sourceLevel);
-        if (defaultSourceLevel.equals(sourceLevel)) {
-            lblSourceLevel.setFont(lblSourceLevel.getFont().deriveFont(Font.PLAIN));
-        } else {
-            lblSourceLevel.setFont(lblSourceLevel.getFont().deriveFont(Font.BOLD));
-        }
     }
 
     

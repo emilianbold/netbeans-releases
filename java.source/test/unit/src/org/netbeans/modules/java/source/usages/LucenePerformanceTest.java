@@ -122,7 +122,11 @@ public class LucenePerformanceTest extends NbTestCase {
         
         Set<ElementHandle<TypeElement>> result2 = new HashSet<ElementHandle<TypeElement>>();
         startTime = System.currentTimeMillis();
-        index.getDeclaredTypes("", NameKind.PREFIX,ResultConvertor.elementHandleConvertor(),result2);
+        index.query(
+                QueryUtil.createQueries(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"",NameKind.PREFIX),
+                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.elementHandleConvertor(),
+                result2);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("All classes: " + delta);
@@ -131,8 +135,12 @@ public class LucenePerformanceTest extends NbTestCase {
         }
         
         result2 = new TreeSet<ElementHandle<TypeElement>>();
-        startTime = System.currentTimeMillis();
-        index.getDeclaredTypes("Class7", NameKind.PREFIX,ResultConvertor.elementHandleConvertor(),result2);
+        startTime = System.currentTimeMillis(); 
+        index.query(
+                QueryUtil.createQueries(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"Class7",NameKind.PREFIX),
+                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.elementHandleConvertor(),
+                result2);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Prefix classes: " + delta + " size: " + result.size());

@@ -77,7 +77,7 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLClassLoaderSupport;
+import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
@@ -99,7 +99,7 @@ public class WLDeploymentManager implements DeploymentManager {
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentManager.class.getName());
 
     static {
-        WLClassLoaderSupport.WLDeploymentManagerAccessor.setDefault(new WLClassLoaderSupport.WLDeploymentManagerAccessor() {
+        WLConnectionSupport.WLDeploymentManagerAccessor.setDefault(new WLConnectionSupport.WLDeploymentManagerAccessor() {
 
             @Override
             public ClassLoader getWLClassLoader(WLDeploymentManager manager) {
@@ -209,7 +209,7 @@ public class WLDeploymentManager implements DeploymentManager {
     }
 
     private <T> T executeAction(final Action<T> action) throws Exception {
-        WLClassLoaderSupport support = new WLClassLoaderSupport(this);
+        WLConnectionSupport support = new WLConnectionSupport(this);
         return support.executeAction(new Callable<T>() {
 
             @Override
@@ -481,7 +481,7 @@ public class WLDeploymentManager implements DeploymentManager {
         return deployTargets.toArray(new Target[deployTargets.size()]);
     }
 
-    private static TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
+    private TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
         if (ids == null) {
             return null;
         }
@@ -528,7 +528,7 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
 
-    private static class ServerTargetModuleID implements TargetModuleID {
+    private class ServerTargetModuleID implements TargetModuleID {
 
         private final TargetModuleID moduleId;
 
@@ -543,7 +543,11 @@ public class WLDeploymentManager implements DeploymentManager {
 
         @Override
         public String getWebURL() {
-            return moduleId.getWebURL();
+            String url = moduleId.getWebURL();
+            if (url != null) {
+                url = "http://" + getHost() + ":" + getPort() + url; // NOI18N
+            }
+            return url;
         }
 
         @Override

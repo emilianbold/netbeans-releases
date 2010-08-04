@@ -47,13 +47,13 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.lang.model.element.ElementKind;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.Query;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.Task;
@@ -132,8 +132,12 @@ public class PersistentClassIndex extends ClassIndexImpl {
         return rootFos;
     }
     
-    public String getSourceName (final String binaryName) throws IOException {
-        return index.getSourceName(binaryName);        
+    @Override
+    public String getSourceName (final String binaryName) throws IOException, InterruptedException {
+        final Query q = DocumentUtil.binaryNameQuery(binaryName);        
+        Set<String> names = new HashSet<String>();
+        index.query(new Query[]{q}, DocumentUtil.sourceNameFieldSelector(), DocumentUtil.sourceNameConvertor(), names);
+        return names.isEmpty() ? null : names.iterator().next();
     }
     
 
@@ -160,16 +164,20 @@ public class PersistentClassIndex extends ClassIndexImpl {
         });        
     }
     
-    
-               
-    
+                       
+    @Override
     public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            @Override
             public Void run () throws IOException, InterruptedException {
-                index.getDeclaredTypes (simpleName,kind, convertor, result);
+                final Query[] queries =  QueryUtil.createQueries(
+                        Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),
+                        simpleName,
+                        kind);
+                index.query(queries,DocumentUtil.declaredTypesFieldSelector(),convertor, result);
                 return null;
-            }                    
+            }
         });
     }
     
@@ -276,21 +284,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException, IOException {               
-        final List<String> classInternalNames = this.getUsagesFQN(binaryName,usageType, Index.BooleanOperator.OR);
-        for (String classInternalName : classInternalNames) {
-            T value = convertor.convert(ElementKind.OTHER, classInternalName);
-            if (value != null) {                
-                result.add(value);
-            }
-        }
-    }    
-    
-    private List<String> getUsagesFQN (final String binaryName, final Set<UsageType> mask, final Index.BooleanOperator operator) throws InterruptedException, IOException {
-        List<String> result = this.index.getUsagesFQN(binaryName, mask, operator);          
-        if (result == null) {
-            result = Collections.emptyList();
-        }
-        return result;
+    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException, IOException {
+        final Query usagesQuery = QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD);
+        this.index.query(new Query[]{usagesQuery},DocumentUtil.declaredTypesFieldSelector(),convertor,result);                
     }
 }

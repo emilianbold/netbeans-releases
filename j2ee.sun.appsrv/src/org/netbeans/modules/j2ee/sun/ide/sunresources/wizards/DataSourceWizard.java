@@ -72,6 +72,8 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.ErrorManager;
 
 public final class DataSourceWizard implements WizardDescriptor.InstantiatingIterator, ChangeListener, WizardConstants{
+
+    private Project project;
     
     /** An array of all wizard panels */
        
@@ -122,6 +124,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         };
     }
     
+    @Override
     public Set instantiate(){
         try{
             if(this.holder.hasCPHelper()){
@@ -129,9 +132,9 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
                 this.helper.getData().setString(__PoolName, poolName);
                 this.cphelper.getData().setTargetFile(poolName);
                 this.cphelper.getData().setTargetFileObject(this.helper.getData().getTargetFileObject());
-                ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), this.cphelper.getData());
+                ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), this.cphelper.getData(),Util.getBaseName(project));
             }else{
-                ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), null);
+                ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), null,Util.getBaseName(project));
             }    
         }catch (Exception ex){
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
@@ -140,6 +143,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         return java.util.Collections.EMPTY_SET;
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz){
         this.wizardInfo = getWizardInfo(DATAFILE);
         this.holder = new ResourceConfigHelperHolder();
@@ -149,7 +153,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(ConnPoolWizard.class, "Templates/SunResources/JDBC_Resource")); //NOI18N
         index = 0;
                 
-        Project project = Templates.getProject(wiz);
+        project = Templates.getProject(wiz);
         
         panels = createPanels();
         // Make sure list of steps is accurate.
@@ -178,6 +182,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wiz){
         //this.wiz = null;
         panels = null;
@@ -194,18 +199,22 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         return this.wizardInfo;
     }
     
+    @Override
     public String name(){
         return NbBundle.getMessage(DataSourceWizard.class, "Templates/SunResources/JDBC_Resource"); //NOI18N
     }
     
+    @Override
     public boolean hasNext(){
         return index < panels.length - 1;
     }
     
+    @Override
     public boolean hasPrevious(){
         return index > 0;
     }
     
+    @Override
     public synchronized void nextPanel(){
         if (index + 1 == panels.length) {
             throw new java.util.NoSuchElementException();
@@ -224,6 +233,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         index ++;
     }
     
+    @Override
     public synchronized void previousPanel(){
         if (index == 0) {
             throw new java.util.NoSuchElementException();
@@ -232,12 +242,15 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         index--;
     }
     
+    @Override
     public WizardDescriptor.Panel current(){
         return (WizardDescriptor.Panel)panels[index];
     }
     
+    @Override
     public final void addChangeListener(ChangeListener l) {
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
     }
 
@@ -249,6 +262,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         return this.helper;
     }
     
+    @Override
     public void stateChanged(javax.swing.event.ChangeEvent e) {
         if( (e.getSource().getClass() == CommonAttributePanel.class) || (e.getSource().getClass() == CommonAttributeVisualPanel.class) ) {
             CommonAttributePanel commonPane = (CommonAttributePanel)this.current();

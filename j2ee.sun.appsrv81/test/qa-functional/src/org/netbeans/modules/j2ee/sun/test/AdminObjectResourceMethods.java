@@ -99,7 +99,7 @@ public class AdminObjectResourceMethods extends NbTestCase implements WizardCons
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             jmsdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
+            ResourceUtils.saveJMSResourceDatatoXml(jmsdata, "sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
@@ -139,7 +139,7 @@ public class AdminObjectResourceMethods extends NbTestCase implements WizardCons
             if (null == falseProject.createFolder("setup"))
                 fail("falseProject/setup is null");
             jmsdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
+            ResourceUtils.saveJMSResourceDatatoXml(jmsdata,"sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();

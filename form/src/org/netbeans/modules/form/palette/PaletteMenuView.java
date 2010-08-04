@@ -85,12 +85,20 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
         getSubNodes(); // force subnodes creation
     }
 
+    // Allow to disable the popup hack. It doesn't work for popups
+    // in modal dialog. It is better to have the hack switched off
+    // there (than to have a completely broken popup).
+    private boolean shouldHack = true;
+    public void disableHack() {
+        shouldHack = false;
+    }
+
     /** popupMenu field should be set here because getPopupMenu() is called from
      * superclass constructor.
      */
     @Override
     public JPopupMenu getPopupMenu() {
-        if (!hacked) {
+        if (shouldHack && !hacked) {
             try {
                 Field f = JMenu.class.getDeclaredField("popupMenu"); // NOI18N
                 f.setAccessible(true);
@@ -119,10 +127,19 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
 
             Node[] nodes = getSubNodes();
             if (nodes.length > 0) {
-                for (int i=0; i < nodes.length; i++)
-                    add(nodes[i].isLeaf() ?
-                       (JMenuItem) new MenuView.MenuItem(nodes[i], menuAction) :
-                       (JMenuItem) new PaletteMenuView(nodes[i], menuAction, level + 1));
+                for (int i=0; i < nodes.length; i++) {
+                    JMenuItem item;
+                    if (nodes[i].isLeaf()) {
+                        item = new MenuView.MenuItem(nodes[i], menuAction);
+                    } else {
+                        PaletteMenuView view = new PaletteMenuView(nodes[i], menuAction, level+1);
+                        if (!shouldHack) {
+                            view.disableHack();
+                        }
+                        item = view;
+                    }
+                    add(item);
+                }
             }
             else {
                 JMenuItem empty = new JMenuItem(

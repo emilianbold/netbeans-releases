@@ -701,6 +701,8 @@ public abstract class EditorContext {
          * @param endPos Ending position of the argument in the source code
          */
         public MethodArgument(String name, String type, Position startPos, Position endPos) {
+            assert name != null;
+            assert type != null;
             this.name = name;
             this.type = type;
             this.startPos = startPos;

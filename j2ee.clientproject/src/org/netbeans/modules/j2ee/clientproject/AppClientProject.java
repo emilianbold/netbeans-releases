@@ -179,6 +179,7 @@ public final class AppClientProject implements Project, FileChangeListener {
     private final ClassPathModifier cpMod;
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
+    private final AppClientCompilationClassPathModifierImpl libMod;
     
     // use AntBuildExtender to enable Ant Extensibility
     private AntBuildExtender buildExtender;
@@ -196,6 +197,7 @@ public final class AppClientProject implements Project, FileChangeListener {
         jaxWsClientSupport = new AppClientProjectJAXWSClientSupport(this, helper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(carProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
+        libMod = new AppClientCompilationClassPathModifierImpl(this, this.updateHelper, eval, refHelper);
         this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                 ProjectProperties.BUILD_CLASSES_DIR, AppClientProjectProperties.DIST_JAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
                 new String[] {"javac.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
@@ -323,6 +325,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             new RecommendedTemplatesImpl(this.updateHelper),
             classPathExtender,
             cpMod,
+            libMod,
             buildExtender,
             AppClientProject.this, // never cast an externally obtained Project to AppClientProject - use lookup instead
             new AppClientProjectOperations(this),

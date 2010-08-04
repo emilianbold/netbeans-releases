@@ -41,12 +41,15 @@ package org.netbeans.modules.javaee.beanvalidation;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import javax.xml.soap.Node;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -72,12 +75,12 @@ import org.openide.util.NbBundle;
 public abstract class AbstractIterator implements TemplateWizard.Iterator{
 
     private int index;
-    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
 
     public abstract Set<DataObject> instantiate(TemplateWizard wiz) throws IOException;
 
     public void initialize(TemplateWizard wizard) {
-        WizardDescriptor.Panel folderPanel;
+        WizardDescriptor.Panel<WizardDescriptor> folderPanel;
         Project project = Templates.getProject( wizard );
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
@@ -199,7 +202,7 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
         return res;
     }
 
-    private static class ErrorPanel implements WizardDescriptor.Panel {
+    private static class ErrorPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
         public Component getComponent() {
             JPanel panel = new JPanel(true);
@@ -211,10 +214,10 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
             return new HelpCtx(this.getClass());
         }
 
-        public void readSettings(Object settings) {
+        public void readSettings(WizardDescriptor settings) {
         }
 
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor settings) {
         }
 
         public boolean isValid() {

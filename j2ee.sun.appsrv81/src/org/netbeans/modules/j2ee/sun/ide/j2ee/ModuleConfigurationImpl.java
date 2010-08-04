@@ -109,7 +109,7 @@ public class ModuleConfigurationImpl implements
         // Support build extension for new resource persistence strategy
         File f = module.getResourceDirectory();
         if(null != f && f.exists()){
-             ResourceUtils.migrateResources(f);
+             ResourceUtils.migrateResources(f,"sun-resources");
         }
         while (null != f && !f.exists()) {
             f = f.getParentFile();

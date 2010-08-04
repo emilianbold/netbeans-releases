@@ -65,7 +65,7 @@ public class ValidationMappingIterator extends AbstractIterator{
             registerConstraint(fo);
             return Collections.singleton(DataObject.find(fo));
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.<DataObject>emptySet();
         }
     }
 

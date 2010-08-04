@@ -201,6 +201,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
     }
 
+    @Override
     public boolean checkRunConfig(RunConfig config) {
         boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
         if (depl) {

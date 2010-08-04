@@ -179,9 +179,9 @@ public class ResourcesProxy implements Resources, RootInterfaceImpl {
         return resourcesRoot==null?null:resourcesRoot.getMailResource(index);
     }
 
-    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource getJmsResource(int index) {
-        return resourcesRoot==null?null:resourcesRoot.getJmsResource(index);
-    }
+//    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource getJmsResource(int index) {
+//        return resourcesRoot==null?null:resourcesRoot.getJmsResource(index);
+//    }
 
     public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcResource getJdbcResource(int index) {
         return resourcesRoot==null?null:resourcesRoot.getJdbcResource(index);
@@ -231,17 +231,17 @@ public class ResourcesProxy implements Resources, RootInterfaceImpl {
         if (resourcesRoot!=null) resourcesRoot.setValue(name, value);
     }
 
-    public void setJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource[] value) {
-        if (resourcesRoot!=null) resourcesRoot.setJmsResource(value);
-    }
+//    public void setJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource[] value) {
+//        if (resourcesRoot!=null) resourcesRoot.setJmsResource(value);
+//    }
 
     public void setConnectorConnectionPool(org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionPool[] value) {
         if (resourcesRoot!=null) resourcesRoot.setConnectorConnectionPool(value);
     }
 
-    public void setJmsResource(int index, org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value) {
-        if (resourcesRoot!=null) resourcesRoot.setJmsResource(index, value);
-    }
+//    public void setJmsResource(int index, org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value) {
+//        if (resourcesRoot!=null) resourcesRoot.setJmsResource(index, value);
+//    }
 
     public void setResourceAdapterConfig(int index, org.netbeans.modules.j2ee.sun.dd.api.serverresources.ResourceAdapterConfig value) {
         if (resourcesRoot!=null) resourcesRoot.setResourceAdapterConfig(index, value);
@@ -311,13 +311,13 @@ public class ResourcesProxy implements Resources, RootInterfaceImpl {
         return resourcesRoot==null?-1:resourcesRoot.removeJdbcResource(value);
     }
 
-    public int addJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value) {
-        return resourcesRoot==null?-1:resourcesRoot.addJmsResource(value);
-    }
+//    public int addJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value) {
+//        return resourcesRoot==null?-1:resourcesRoot.addJmsResource(value);
+//    }
 
-    public int removeJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value) {
-        return resourcesRoot==null?-1:resourcesRoot.removeJmsResource(value);
-    }
+//    public int removeJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value) {
+//        return resourcesRoot==null?-1:resourcesRoot.removeJmsResource(value);
+//    }
 
     public void setExternalJndiResource(int index, org.netbeans.modules.j2ee.sun.dd.api.serverresources.ExternalJndiResource value) {
         if (resourcesRoot!=null) resourcesRoot.setExternalJndiResource(index, value);
@@ -403,9 +403,9 @@ public class ResourcesProxy implements Resources, RootInterfaceImpl {
         return resourcesRoot==null?-1:resourcesRoot.sizeMailResource();
     }
 
-    public int sizeJmsResource() {
-        return resourcesRoot==null?-1:resourcesRoot.sizeJmsResource();
-    }
+//    public int sizeJmsResource() {
+//        return resourcesRoot==null?-1:resourcesRoot.sizeJmsResource();
+//    }
 
     public int sizeJdbcResource() {
         return resourcesRoot==null?-1:resourcesRoot.sizeJdbcResource();
@@ -463,9 +463,9 @@ public class ResourcesProxy implements Resources, RootInterfaceImpl {
         return resourcesRoot==null?null:resourcesRoot.getMailResource();
     }
 
-    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource[] getJmsResource() {
-        return resourcesRoot==null?null:resourcesRoot.getJmsResource();
-    }
+//    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource[] getJmsResource() {
+//        return resourcesRoot==null?null:resourcesRoot.getJmsResource();
+//    }
 
     public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcResource[] getJdbcResource() {
         return resourcesRoot==null?null:resourcesRoot.getJdbcResource();
@@ -519,9 +519,9 @@ public class ResourcesProxy implements Resources, RootInterfaceImpl {
         return resourcesRoot==null?null:resourcesRoot.newJdbcResource();
     }
 
-    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource newJmsResource() {
-        return resourcesRoot==null?null:resourcesRoot.newJmsResource();
-    }
+//    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource newJmsResource() {
+//        return resourcesRoot==null?null:resourcesRoot.newJmsResource();
+//    }
 
     public org.netbeans.modules.j2ee.sun.dd.api.serverresources.MailResource newMailResource() {
         return resourcesRoot==null?null:resourcesRoot.newMailResource();
