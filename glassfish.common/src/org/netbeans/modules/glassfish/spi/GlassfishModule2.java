@@ -23,13 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,44 +34,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.deployment.execution;
+package org.netbeans.modules.glassfish.spi;
 
-import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
+import java.util.Map;
+import java.util.concurrent.Future;
+
 
 /**
- *
- * @author  gfink
+ * Extended version of GlassfishModule supporting deployment of standalone
+ * EE module with libraries they require.
+ * 
+ * @since org.netbeans.modules.glassfish.common/0 1.9
  */
-// FIXME remove this dummy non-api private interface - replace with normal class
-public interface DeploymentTarget {
+public interface GlassfishModule2 extends GlassfishModule {
 
-    public J2eeModule getModule ();
+    /**
+     * @param libraries array of jar files on which standalone EE module depends
+     *  and which need to be part of deployment
+     */
+    Future<OperationState> deploy(OperationStateListener stateListener,
+            File application, String name, String contextRoot, Map<String,String> properties,
+            File[] libraries);
 
-    public ModuleChangeReporter getModuleChangeReporter ();
-
-    public ResourceChangeReporter getResourceChangeReporter();
-
-    public ServerString getServer();
+    /**
+     * @param libraries array of jar files on which standalone EE module depends
+     *  and which need to be part of deployment
+     */
+    Future<OperationState> redeploy(final OperationStateListener stateListener, 
+            final String name, final String contextRoot, File[] libraries);
     
-    public File getConfigurationFile();
-
-    public String getClientUrl(String partUrl);
-    
-    public TargetModule[] getTargetModules();
-    
-    public void setTargetModules(TargetModule[] targetModules);
-    
-    public ModuleConfigurationProvider getModuleConfigurationProvider();
-    
-    public J2eeModuleProvider.ConfigSupport getConfigSupport();
-    
-    public String getDeploymentName();
 }

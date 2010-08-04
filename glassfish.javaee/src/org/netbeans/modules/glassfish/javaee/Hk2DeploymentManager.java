@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +57,6 @@ import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
@@ -76,8 +76,11 @@ import org.netbeans.modules.glassfish.javaee.ide.UpdateContextRoot;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule2;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
@@ -86,7 +89,7 @@ import org.xml.sax.SAXException;
  * @author Ludovic Champenois
  * @author Peter Williams
  */
-public class Hk2DeploymentManager implements DeploymentManager {
+public class Hk2DeploymentManager implements DeploymentManager2 {
 
     private volatile ServerInstance serverInstance;
     private volatile InstanceProperties instanceProperties;
@@ -118,6 +121,16 @@ public class Hk2DeploymentManager implements DeploymentManager {
     @Override
     public ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan)
             throws IllegalStateException {
+        return distribute(targetList, moduleArchive, deploymentPlan, new File[0]);
+    }
+
+    @Override
+    public ProgressObject distribute(Target[] targets, DeploymentContext context) {
+        return distribute(targets, context.getModuleFile(), context.getDeploymentPlan(), context.getRequiredLibraries());
+    }
+    
+    private ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries)
+            throws IllegalStateException {
         String t = moduleArchive.getName();
         final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(t.substring(0, t.length() - 4));
         // 
@@ -129,6 +142,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
         MonitorProgressObject restartProgress = new MonitorProgressObject(this, moduleId);
 
         final GlassfishModule commonSupport = this.getCommonServerSupport();
+        final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
+            (GlassfishModule2)commonSupport : null);
         boolean restart = false;
         try {
             restart = HttpMonitorHelper.synchronizeMonitor( commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
@@ -155,7 +170,11 @@ public class Hk2DeploymentManager implements DeploymentManager {
             commonSupport.restartServer(restartProgress);
             return updateCRProgress;
         } else {
-            commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+            if (commonSupport2 != null && requiredLibraries.length > 0) {
+                commonSupport2.deploy(deployProgress, moduleArchive, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+            } else {
+                commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+            }
             return updateCRProgress;
         }
     }
@@ -172,9 +191,18 @@ public class Hk2DeploymentManager implements DeploymentManager {
     @Override
     public ProgressObject redeploy(TargetModuleID [] moduleIDList, final File moduleArchive, File deploymentPlan)
             throws UnsupportedOperationException, IllegalStateException {
+        return redeploy(moduleIDList, moduleArchive, deploymentPlan, new File[0]);
+    }
+
+    @Override
+    public ProgressObject redeploy(TargetModuleID[] moduleIDList, DeploymentContext context) {
+        return redeploy(moduleIDList, context.getModuleFile(), context.getDeploymentPlan(), context.getRequiredLibraries());
+    }
+
+    private ProgressObject redeploy(TargetModuleID [] moduleIDList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries)
+            throws UnsupportedOperationException, IllegalStateException {
         final Hk2TargetModuleID moduleId = (Hk2TargetModuleID) moduleIDList[0];
         final String moduleName = moduleId.getModuleID();
-
         final MonitorProgressObject progressObject = new MonitorProgressObject(this,
                 moduleId, CommandType.REDEPLOY);
        MonitorProgressObject restartObject = new MonitorProgressObject(this,moduleId,
@@ -182,6 +210,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
         final MonitorProgressObject updateCRObject = new MonitorProgressObject(this, 
                 moduleId, CommandType.REDEPLOY);
         final GlassfishModule commonSupport = this.getCommonServerSupport();
+        final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
+            (GlassfishModule2)commonSupport : null);
         // FIXME -- broken for remote deploy of web apps
         progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId,getServerInstance(), true));
         boolean restart = false;
@@ -214,7 +244,11 @@ public class Hk2DeploymentManager implements DeploymentManager {
             commonSupport.restartServer(restartObject);
             return updateCRObject;
         } else {
+            if (commonSupport2 != null && requiredLibraries.length > 0) {
+                commonSupport2.deploy(progressObject, moduleArchive, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+            } else {
                 commonSupport.deploy(progressObject, moduleArchive, moduleName);
+            }
             return updateCRObject;
         }
     }

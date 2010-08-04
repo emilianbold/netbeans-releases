@@ -42,42 +42,74 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.deployment.execution;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
-import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 
 /**
+ * Context describing everything necessary for a module deployment.
  *
- * @author  gfink
+ * @since org.netbeans.modules.j2eeserver/4 1.70
  */
-// FIXME remove this dummy non-api private interface - replace with normal class
-public interface DeploymentTarget {
+public final class DeploymentContext {
 
-    public J2eeModule getModule ();
+    static {
+        TargetServer.DeploymentContextAccessor.setDefault(new TargetServer.DeploymentContextAccessor() {
 
-    public ModuleChangeReporter getModuleChangeReporter ();
+            @Override
+            public DeploymentContext createDeploymentContext(J2eeModule module, File moduleArchive,
+                    File deploymentPlan, File[] requiredLibraries, AppChangeDescriptor changes) {
+                return new DeploymentContext(module, moduleArchive, deploymentPlan, requiredLibraries, changes);
+            }
+        });
+    }
 
-    public ResourceChangeReporter getResourceChangeReporter();
+    private final J2eeModule module;
 
-    public ServerString getServer();
-    
-    public File getConfigurationFile();
+    private final File moduleFile;
 
-    public String getClientUrl(String partUrl);
-    
-    public TargetModule[] getTargetModules();
-    
-    public void setTargetModules(TargetModule[] targetModules);
-    
-    public ModuleConfigurationProvider getModuleConfigurationProvider();
-    
-    public J2eeModuleProvider.ConfigSupport getConfigSupport();
-    
-    public String getDeploymentName();
+    private final File deploymentPlan;
+
+    private final File[] requiredLibraries;
+
+    private AppChangeDescriptor changes;
+
+    private DeploymentContext(J2eeModule module, File moduleFile, File deploymentPlan, File[] requiredLibraries, AppChangeDescriptor changes) {
+        assert requiredLibraries != null;
+        this.module = module;
+        this.moduleFile = moduleFile;
+        this.deploymentPlan = deploymentPlan;
+        this.requiredLibraries = requiredLibraries.clone();
+        this.changes = changes;
+    }
+
+    public J2eeModule getModule() {
+        return module;
+    }
+
+    public File getDeploymentPlan() {
+        return deploymentPlan;
+    }
+
+    public File getModuleFile() {
+        return moduleFile;
+    }
+
+    /**
+     * Array of jar files which this EE module depends on and which has to be
+     * deployed with the module.
+     *
+     * @return array of files; never null; array can be empty
+     */
+    public File[] getRequiredLibraries() {
+        return requiredLibraries;
+    }
+
+    public AppChangeDescriptor getChanges() {
+        return changes;
+    }
+
 }

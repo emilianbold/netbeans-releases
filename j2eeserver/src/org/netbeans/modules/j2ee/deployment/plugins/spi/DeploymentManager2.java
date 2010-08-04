@@ -42,42 +42,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.deployment.execution;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
-import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
-import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
+import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
 
 /**
+ * Deployment manager utilizing DeploymentContext to describe
+ * module deployment.
  *
- * @author  gfink
+ * @since org.netbeans.modules.j2eeserver/4 1.70
  */
-// FIXME remove this dummy non-api private interface - replace with normal class
-public interface DeploymentTarget {
+public interface DeploymentManager2 extends DeploymentManager {
 
-    public J2eeModule getModule ();
+    /**
+     * Redeploy given module.
+     */
+    ProgressObject redeploy(TargetModuleID[] tmids, DeploymentContext deployment);
 
-    public ModuleChangeReporter getModuleChangeReporter ();
+    /**
+     * Deploy given module.
+     */
+    ProgressObject distribute(Target[] targets, DeploymentContext deployment);
 
-    public ResourceChangeReporter getResourceChangeReporter();
-
-    public ServerString getServer();
-    
-    public File getConfigurationFile();
-
-    public String getClientUrl(String partUrl);
-    
-    public TargetModule[] getTargetModules();
-    
-    public void setTargetModules(TargetModule[] targetModules);
-    
-    public ModuleConfigurationProvider getModuleConfigurationProvider();
-    
-    public J2eeModuleProvider.ConfigSupport getConfigSupport();
-    
-    public String getDeploymentName();
 }
