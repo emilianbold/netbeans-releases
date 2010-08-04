@@ -357,7 +357,13 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      */
     private void paintSelection(Graphics g) {
         if (animation) return;
-        Rectangle rect = fromComponentPane(selection.getBounds());
+        Rectangle rect = fromComponentPane(selectionResizingBounds());
+        Rectangle inner = fromComponentPane(selection.getBounds());
+        g.setColor(HIGHLIGHT_COLOR);
+        g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
+        g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
+        g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
+        g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
         g.setColor(GridDesigner.SELECTION_COLOR);
         int x = rect.x-1;
         int y = rect.y-1;
@@ -401,6 +407,20 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         int height = extendedBound(rowBounds, newGridY+newGridHeight)-y;
         Point p = fromComponentPane(new Point(x, y));
         g.fillRect(p.x, p.y, width, height);
+    }
+    
+    private Rectangle selectionResizingBounds() {
+        int[] columnBounds = gridInfo.getColumnBounds();
+        int[] rowBounds = gridInfo.getRowBounds();
+        int gridX = gridInfo.getGridX(selection);
+        int gridY = gridInfo.getGridY(selection);
+        int gridWidth = gridInfo.getGridWidth(selection);
+        int gridHeight = gridInfo.getGridHeight(selection);
+        int x = columnBounds[gridX];
+        int width = columnBounds[gridX+gridWidth]-x;
+        int y = rowBounds[gridY];
+        int height = rowBounds[gridY+gridHeight]-y;
+        return new Rectangle(x,y,width,height);
     }
 
     /**
@@ -478,7 +498,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @return resizing rectangle that is used as a part of the resizing feedback.
      */
     Rectangle calculateResizingRectangle(Point resizingEnd) {
-        Rectangle rect = fromComponentPane(selection.getBounds());
+        Rectangle rect = fromComponentPane(selectionResizingBounds());
         int dx = resizingEnd.x - draggingStart.x;
         int dy = resizingEnd.y - draggingStart.y;
         if (isResizingEastward()) {
@@ -593,7 +613,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             Image resizeHandle = GridDesigner.RESIZE_HANDLE;
             int rw = resizeHandle.getWidth(null);
             int rh = resizeHandle.getHeight(null);
-            Rectangle rect = fromComponentPane(selection.getBounds());
+            Rectangle rect = fromComponentPane(selectionResizingBounds());
             boolean w = (rect.x-rw<=x) && (x<=rect.x+rect.width+rw);
             boolean h = (rect.y-rh<=y) && (y<=rect.y+rect.height+rh);
             boolean top = w && (rect.y-rh<=y) && (y<=rect.y+rh);
@@ -872,7 +892,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 } else {
                     // Resizing (start)
                     resizing = true;
-                    draggingRect = fromComponentPane(selection.getBounds());
+                    draggingRect = fromComponentPane(selectionResizingBounds());
                     newGridX = gridInfo.getGridX(selection);
                     newGridY = gridInfo.getGridY(selection);
                     newGridHeight = gridInfo.getGridHeight(selection);
