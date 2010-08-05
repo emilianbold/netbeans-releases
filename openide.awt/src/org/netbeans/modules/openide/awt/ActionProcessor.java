@@ -88,7 +88,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             ActionRegistration ar = e.getAnnotation(ActionRegistration.class);
             ActionID aid = e.getAnnotation(ActionID.class);
             if (aid == null) {
-                throw new LayerGenerationException("@ActionRegistration can only be used together with @ActionID annotation");
+                throw new LayerGenerationException("@ActionRegistration can only be used together with @ActionID annotation", e);
             }
             if (aid.category().contains("/")) {
                 throw new LayerGenerationException("@ActionID category() cannot contain /", e);
@@ -185,7 +185,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     continue;
                 }
                 if (ee != null) {
-                    throw new LayerGenerationException("Only one public constructor allowed in " + e); // NOI18N
+                    throw new LayerGenerationException("Only one public constructor allowed in ", e); // NOI18N
                 }
                 ee = element;
             }
@@ -211,7 +211,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             return;
         }
         if (!dt.getTypeArguments().isEmpty()) {
-            throw new LayerGenerationException("No type parameters allowed in " + ee);
+            throw new LayerGenerationException("No type parameters allowed in ", ee);
         }
 
         f.stringvalue("type", ve.asType().toString());
