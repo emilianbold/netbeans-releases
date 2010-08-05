@@ -74,6 +74,7 @@ class ResourceNode extends AbstractItemNode {
         CONNECTION_POOLS,
         ADMIN_OBJ_RESOURCE,
         JAVA_MAIL,
+        LIBRARY,
         ;
     }
     
@@ -89,21 +90,39 @@ class ResourceNode extends AbstractItemNode {
     private static final String JAVAMAIL_ICON =
         "org/netbeans/modules/glassfish/javaee/resources/javamail.gif"; // NOI18N
     
+    private static final String LIBRARY_ICON =
+        "org/netbeans/modules/project/libraries/resources/libraries.gif"; // NOI18N
+    
 
     ResourceNode( Children children , ResourceNodeType type , String name , 
             Cookie cookie) 
     {
+        this( children , type , name , cookie , null );
+    }
+    
+    ResourceNode( Children children , ResourceNodeType type , String name , 
+            Cookie cookie, String tooltip ) 
+    {
         super(children);
         setDisplayName(name);
+        if ( tooltip != null ){
+            setShortDescription( tooltip );
+        }
         this.resourceType= type;
         if ( cookie != null){
             getCookieSet().add( cookie );
         }
     }
     
+    ResourceNode( Children children , ResourceNodeType type , String name , 
+            String tooltip) 
+    {
+        this( children , type , name , null , tooltip);
+    }
+    
     ResourceNode( Children children , ResourceNodeType type , String name ) 
     {
-        this( children , type , name , null );
+        this( children , type , name , null , null);
     }
     
     
@@ -129,6 +148,8 @@ class ResourceNode extends AbstractItemNode {
                 return ImageUtilities.loadImage(CONNECTOR_ICON);
             case JAVA_MAIL:
                 return ImageUtilities.loadImage(JAVAMAIL_ICON);
+            case LIBRARY:
+                return ImageUtilities.loadImage(LIBRARY_ICON);
             default:
                 return getIconDelegate().getIcon(type);
                 
