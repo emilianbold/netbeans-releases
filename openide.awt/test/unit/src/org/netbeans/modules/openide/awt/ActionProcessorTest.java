@@ -39,11 +39,14 @@
 
 package org.netbeans.modules.openide.awt;
 
+import java.io.IOException;
+import org.openide.util.test.AnnotationProcessorTestUtils;
 import java.util.Collections;
 import java.util.List;
 import org.openide.awt.ActionID;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.ByteArrayOutputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -345,4 +348,41 @@ public class ActionProcessorTest extends NbTestCase {
         ic.remove(disable);
     }
 
+    public void testSubclass() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\") " +
+            "public class A {\n" +
+            "  public A(Integer i) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+        if (!os.toString().contains("ActionListener")) {
+            fail(os.toString());
+        }
+    }
+    
+    public void testNoConstructorIsFine() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\") " +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertTrue("Compilation has to succeed:\n" + os, r);
+    }
+    
+    
 }

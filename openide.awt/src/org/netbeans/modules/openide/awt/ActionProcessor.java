@@ -78,6 +78,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(
         Set<? extends TypeElement> annotations, RoundEnvironment roundEnv
     ) throws LayerGenerationException {
+        TypeMirror actionListener = processingEnv.getElementUtils().getTypeElement(ActionListener.class.getName()).asType();
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionRegistration.class)) {
             ActionRegistration ar = e.getAnnotation(ActionRegistration.class);
             ActionID aid = e.getAnnotation(ActionID.class);
@@ -114,6 +115,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 createDelegate = false;
                 key = var.getConstantValue().toString();
             } else {
+                if (!processingEnv.getTypeUtils().isAssignable(e.asType(), actionListener)) {
+                    throw new LayerGenerationException("Class annotated with @ActionRegistration must implement java.awt.event.ActionListener!", e);
+                }
                 key = ar.key();
             }
             
