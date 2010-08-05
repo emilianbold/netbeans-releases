@@ -60,7 +60,6 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO.Diff;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
@@ -156,7 +155,7 @@ public final class UnitTestRunner {
 
                     Diff diff = kase.getDiff();
                     if (diff.isValid()) {
-                        Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure(diff.expected, diff.actual, FileUtils.PHP_MIME_TYPE);
+                        Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure(diff.expected, diff.actual);
                         trouble.setComparisonFailure(failure);
                     }
                     testCase.setTrouble(trouble);
