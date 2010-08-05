@@ -416,14 +416,12 @@ public class WLDeploymentManager implements DeploymentManager {
             // including for example JMSServer which is not very good for
             // our purposes
             WLConnectionSupport support = new WLConnectionSupport(this);
-            return support.executeAction(new WLConnectionSupport.JMXAction<Target[]>() {
+            return support.executeAction(new WLConnectionSupport.JMXRuntimeAction<Target[]>() {
 
                 @Override
-                public Target[] call(MBeanServerConnection connection) throws Exception {
+                public Target[] call(MBeanServerConnection connection, ObjectName service) throws Exception {
                     List<Target> targets = new ArrayList<Target>();
-                    ObjectName domainRuntime = new ObjectName("com.bea:Name=DomainRuntimeService,"
-                            + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean"); // NOI18N
-                    ObjectName domainPending = (ObjectName) connection.getAttribute(domainRuntime, "DomainPending"); // NOI18N
+                    ObjectName domainPending = (ObjectName) connection.getAttribute(service, "DomainPending"); // NOI18N
                     if (domainPending != null) {
                         ObjectName[] domainTargets = (ObjectName[]) connection.getAttribute(domainPending, "Targets"); // NOI18N
                         if (domainTargets != null) {
@@ -438,12 +436,6 @@ public class WLDeploymentManager implements DeploymentManager {
                     }
                     return targets.toArray(new Target[targets.size()]);
                 }
-
-                @Override
-                public String getPath() {
-                    return "/jndi/weblogic.management.mbeanservers.domainruntime";// NOI18N
-                }
-
             });
         } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex.getCause());

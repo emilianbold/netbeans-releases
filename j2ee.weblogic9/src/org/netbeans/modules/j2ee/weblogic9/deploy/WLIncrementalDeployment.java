@@ -180,10 +180,10 @@ public class WLIncrementalDeployment extends IncrementalDeployment {
         WLConnectionSupport support = new WLConnectionSupport(dm);
         String url = null;
         try {
-            url = support.executeAction(new WLConnectionSupport.JMXAction<String>() {
+            url = support.executeAction(new WLConnectionSupport.JMXRuntimeAction<String>() {
 
                 @Override
-                public String call(MBeanServerConnection con) throws Exception {
+                public String call(MBeanServerConnection con, ObjectName service) throws Exception {
                     ObjectName pattern = new ObjectName(
                             "com.bea:Type=WebAppComponentRuntime,*"); // NOI18N
 
@@ -195,11 +195,6 @@ public class WLIncrementalDeployment extends IncrementalDeployment {
                         }
                     }
                     return null;
-                }
-
-                @Override
-                public String getPath() {
-                    return "/jndi/weblogic.management.mbeanservers.domainruntime"; // NOI18N
                 }
             });
         } catch (Exception ex) {
