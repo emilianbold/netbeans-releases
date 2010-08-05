@@ -282,11 +282,15 @@ public class WLDeploymentManager implements DeploymentManager {
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws  UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException("Redeploy not yet implemented");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException("Redeploy not yet implemented");
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        return wlDeployer.redeploy(targetModuleID, file, file2);
     }
 
     public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws IllegalStateException {
@@ -586,7 +590,7 @@ public class WLDeploymentManager implements DeploymentManager {
         @Override
         public String getWebURL() {
             String url = moduleId.getWebURL();
-            if (url != null) {
+            if (url != null && url.startsWith("/")) { // NOI18N
                 url = "http://" + getHost() + ":" + getPort() + url; // NOI18N
             }
             return url;
