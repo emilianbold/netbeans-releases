@@ -42,6 +42,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -84,6 +85,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporte
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterImplementation;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 
 
 /** A ejb module implementation on top of project.
@@ -187,6 +190,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return project.getClassPathProvider();
     }
     
+    @Override
     public FileObject getArchive() {
         return getFileObject(EjbJarProjectProperties.DIST_JAR);
     }
@@ -475,6 +479,22 @@ public final class EjbJarProvider extends J2eeModuleProvider
             }
             return propertyChangeSupport;
         }
+    }
+
+    @Override
+    public File[] getRequiredLibraries() {
+        ClassPath cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    FileUtil.toFile(project.getProjectDirectory()), project.evaluator(), new String[]{"javac.classpath"}));
+        List<File> files = new ArrayList<File>();
+        for (FileObject fo : cp.getRoots()) {
+            fo = FileUtil.getArchiveFile(fo);
+            if (fo == null) {
+                continue;
+            }
+            files.add(FileUtil.toFile(fo));
+        }
+        return files.toArray(new File[files.size()]);
     }
 
     private class EjbJarResourceChangeReporter implements ResourceChangeReporterImplementation {

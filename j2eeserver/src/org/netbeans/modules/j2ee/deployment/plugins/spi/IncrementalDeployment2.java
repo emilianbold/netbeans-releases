@@ -42,42 +42,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.deployment.execution;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
-import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
-import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 
 /**
+ * Enhanced incremental deployment interface utilizing DeploymentContext to
+ * describe module deployment.
  *
- * @author  gfink
+ * @since org.netbeans.modules.j2eeserver/4 1.70
  */
-// FIXME remove this dummy non-api private interface - replace with normal class
-public interface DeploymentTarget {
+public interface IncrementalDeployment2 {
 
-    public J2eeModule getModule ();
+    /**
+     * Incrementally deploy given module.
+     */
+    ProgressObject initialDeploy(Target target, DeploymentContext context);
 
-    public ModuleChangeReporter getModuleChangeReporter ();
+    /**
+     * Incrementally deploy given module.
+     */
+    ProgressObject incrementalDeploy(TargetModuleID module, DeploymentContext context);
 
-    public ResourceChangeReporter getResourceChangeReporter();
-
-    public ServerString getServer();
-    
-    public File getConfigurationFile();
-
-    public String getClientUrl(String partUrl);
-    
-    public TargetModule[] getTargetModules();
-    
-    public void setTargetModules(TargetModule[] targetModules);
-    
-    public ModuleConfigurationProvider getModuleConfigurationProvider();
-    
-    public J2eeModuleProvider.ConfigSupport getConfigSupport();
-    
-    public String getDeploymentName();
 }

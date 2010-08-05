@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -84,7 +85,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporte
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
@@ -176,6 +179,22 @@ public final class AppClientProvider extends J2eeModuleProvider
         return project.getClassPathProvider();
     }
     
+    @Override
+    public File[] getRequiredLibraries() {
+        ClassPath cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    FileUtil.toFile(project.getProjectDirectory()), project.evaluator(), new String[]{"javac.classpath"}));
+        List<File> files = new ArrayList<File>();
+        for (FileObject fo : cp.getRoots()) {
+            fo = FileUtil.getArchiveFile(fo);
+            if (fo == null) {
+                continue;
+            }
+            files.add(FileUtil.toFile(fo));
+        }
+        return files.toArray(new File[files.size()]);
+    }
+
     public FileObject getArchive() {
         return getFileObject(AppClientProjectProperties.DIST_JAR);
     }
