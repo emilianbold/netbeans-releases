@@ -126,12 +126,14 @@ public final class ELTypeUtilities {
         if (image == null) {
             return false;
         }
+        int methodParams = method.getParameters().size();
         //XXX: need to do type matching here
         if (methodNode instanceof AstMethodSuffix && methodName.equals(image)) {
             int methodNodeParams = ((AstMethodSuffix) methodNode).jjtGetNumChildren();
-            return method.isVarArgs()
-                    ? method.getParameters().size() >= methodNodeParams
-                    : method.getParameters().size() == methodNodeParams;
+            if (method.isVarArgs()) {
+                return methodParams == 1 ? true : methodNodeParams >= methodParams;
+            }
+            return method.getParameters().size() == methodNodeParams;
         }
 
         if (methodNode instanceof AstPropertySuffix
@@ -151,21 +153,12 @@ public final class ELTypeUtilities {
      * @return
      */
     private ExecutableElement getElementForProperty(Node property, Element enclosing) {
-        String name = property.getImage();
         for (ExecutableElement each : ElementFilter.methodsIn(enclosing.getEnclosedElements())) {
             // we're only interested in public methods
             if (!each.getModifiers().contains(Modifier.PUBLIC)) {
                 continue;
             }
-            String methodName = each.getSimpleName().toString();
-
-            if (property instanceof AstMethodSuffix
-                    && methodName.equals(name)
-                    && isSameMethod((AstMethodSuffix) property, each)) {
-
-                return each;
-
-            } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
+            if (isSameMethod(property, each)) {
                 return each;
             }
         }
