@@ -116,6 +116,8 @@ public class ModulesNode extends AbstractNode {
         LogicalViewProvider provider;
         NbMavenProjectImpl proj;
     }
+    
+    private static final RequestProcessor RPloadModules = new RequestProcessor(ModulesNode.ModulesChildren.class.getName(),1);
 
     static class ModulesChildren extends Children.Keys<Wrapper> {
 
@@ -151,7 +153,7 @@ public class ModulesNode extends AbstractNode {
         }
 
         private void loadModules() {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RPloadModules.post(new Runnable() {
                 public void run() {
                     Collection<Wrapper> modules = new ArrayList<Wrapper>();
                     File base = project.getOriginalMavenProject().getBasedir();
