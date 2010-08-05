@@ -58,7 +58,8 @@ import org.openide.WizardDescriptor.Panel;
  *
  * @author Jiri Rechtacek
  */
-public class PredefinedWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<WizardDescriptor> {
+public class PredefinedWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<PredefinedWizard> {
+    private String driverLocation;
 
     private PredefinedWizard(Type type) {
         this.type = type;
@@ -74,7 +75,7 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
         MYSQL
     }
     
-    private WizardDescriptor.Panel<WizardDescriptor>[] panels;
+    private WizardDescriptor.Panel<PredefinedWizard>[] panels;
     private Type type;
     private int index;
     private LookingForDriverPanel driverPanel;
@@ -93,7 +94,7 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
     }
     
     private void openWizard() {
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(this);
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(this, this);
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle("Your wizard dialog title here");
@@ -106,13 +107,13 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
         }
     }
     
-    public static interface Panel extends WizardDescriptor.Panel<WizardDescriptor>{}
+    public static interface Panel extends WizardDescriptor.Panel<PredefinedWizard>{}
     
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
+    private WizardDescriptor.Panel<PredefinedWizard>[] getPanels() {
         if (panels == null) {
             driverPanel = new LookingForDriverPanel(type);
             panels = new Panel[] {
@@ -120,11 +121,6 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
                 new ConnectionPanel(),
                 new ChoosingSchemaPanel(),
             };
-//            List<WizardDescriptor.Panel<WizardDescriptor>> list = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-//            list.add(new LookingForDriverPanel(type));
-//            list.add(new ConnectionPanel());
-//            list.add(new ChoosingSchemaPanel());
-//            panels = list.toArray(new Panel[0]);
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -152,12 +148,13 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
     }
     
     @Override
-    public WizardDescriptor.Panel<WizardDescriptor> current() {
+    public WizardDescriptor.Panel<PredefinedWizard> current() {
         // init panels first
         getPanels();
-        if (driverPanel.found() && ! found) {
+        if (driverPanel.getDriverLocation() != null && ! found) {
             found = true;
             index++;
+            setDriverLocation(driverPanel.getDriverLocation());
         }
                 
         return getPanels()[index];
@@ -200,6 +197,14 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+    }
+
+    void setDriverLocation(String location) {
+        this.driverLocation = location;
+    }
+    
+    String getDriverLocation() {
+        return driverLocation;
     }
 
 }

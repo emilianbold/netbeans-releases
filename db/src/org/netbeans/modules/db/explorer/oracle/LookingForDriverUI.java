@@ -268,4 +268,12 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
     boolean driverFound() {
         return new File(tfLocation.getText()).exists() && tfLocation.getText().endsWith(driverName);
     }
+    
+    String getDriverLocation() {
+        if (driverFound()) {
+            return tfLocation.getText();
+        } else {
+            return null;
+        }
+    }
 }

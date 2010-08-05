@@ -61,7 +61,6 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.db.explorer.oracle.PredefinedWizard.Type;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -97,6 +96,9 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
         FileObject fo = getLibraryFO(driverName);
         if (fo == null) {
             fo = getDriverFO(driverName);
+        }
+        if (fo == null) {
+            fo = findInDriverDir(new File(getDefaultDriverPath()));
         }
         driverFound = fo != null;
         if (driverFound) {
@@ -143,18 +145,42 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
             }
         }
         if (foundURL != null) {
-            try {
-                URI uri = foundURL.toURI();
-                File f = new File(uri);
-                if (f != null && f.exists()) {
-                    return FileUtil.toFileObject(f);
+            URL url = foundURL;
+            if ("nbinst".equals(foundURL.getProtocol())) { // NOI18N
+                // try to get a file: URL for the nbinst: URL
+                FileObject fo = URLMapper.findFileObject(foundURL);
+                if (fo != null) {
+                    URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                    if (localURL != null) {
+                        url = localURL;
+                    }
                 }
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                return fo;
+            } else {
+                if (url.getProtocol().equals("file")) {  //NOI18N
+                    try {
+                        File f = new File(new URI(url.toExternalForm()));
+                        if (f != null && f.exists()) {
+                            return FileUtil.toFileObject(f);
+                        }
+                    } catch (URISyntaxException ex) {
+                        Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.INFO,
+                                "Handling URL " + url + " caused: " + ex.getLocalizedMessage(), ex);
+                    }
+                }
             }
         }
         return null;
     }
+    
+    private static FileObject findInDriverDir(File dir) {
+        // TODO
+        return null;
+    }
+            
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -218,15 +244,20 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
     }
 
     @Override
-    public void readSettings(WizardDescriptor settings) {
+    public void readSettings(PredefinedWizard settings) {
     }
 
     @Override
-    public void storeSettings(WizardDescriptor settings) {
+    public void storeSettings(PredefinedWizard settings) {
+        settings.setDriverLocation(component.getDriverLocation());
     }
 
-    boolean found() {
-        return driverFound;
+    String getDriverLocation() {
+        if (driverFound) {
+            return driverPath + File.separator + driverName;
+        } else {
+            return null;
+        }
     }
 
     private static File getUserDir() {

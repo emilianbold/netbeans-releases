@@ -43,7 +43,6 @@ package org.netbeans.modules.db.explorer.oracle;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
@@ -121,10 +120,10 @@ public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     @Override
-    public void readSettings(WizardDescriptor settings) {
+    public void readSettings(PredefinedWizard settings) {
     }
 
     @Override
-    public void storeSettings(WizardDescriptor settings) {
+    public void storeSettings(PredefinedWizard settings) {
     }
 }

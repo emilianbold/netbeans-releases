@@ -43,7 +43,6 @@ package org.netbeans.modules.db.explorer.oracle;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 public class ConnectionPanel implements PredefinedWizard.Panel {
@@ -53,6 +52,7 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
      * component from this class, just use getComponent().
      */
     private Component component;
+    private String driverLocation;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -121,10 +121,11 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     @Override
-    public void readSettings(WizardDescriptor settings) {
+    public void readSettings(PredefinedWizard settings) {
+        driverLocation = settings.getDriverLocation();
     }
 
     @Override
-    public void storeSettings(WizardDescriptor settings) {
+    public void storeSettings(PredefinedWizard settings) {
     }
 }
