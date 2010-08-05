@@ -98,6 +98,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     
     private Logger LOGGER = Logger.getLogger(MavenCommandLineExecutor.class.getName());
     
+    private static final RequestProcessor RP = new RequestProcessor(MavenCommandLineExecutor.class.getName(),1);
     
     public MavenCommandLineExecutor(RunConfig conf) {
         super(conf);
@@ -214,7 +215,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 ioput.getErr().close();
                 actionStatesAtFinish();
                 markFreeTab();
-                RequestProcessor.getDefault().post(new Runnable() { //#103460
+                RP.post(new Runnable() { //#103460
                     public void run() {
                         if (clonedConfig.getProject() != null) {
                             NbMavenProject.fireMavenProjectReload(clonedConfig.getProject());
@@ -445,7 +446,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             ioput.getErr().println("  This message will show on the next start of the IDE again, to skip it, add -J-Dmaven.run.cmd=true to your etc/netbeans.conf file in your NetBeans installation."); //NOI18N - in maven output
             ioput.getErr().println("The detailed exception output is printed to the IDE's log file."); //NOI18N - in maven output
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     RunConfig newConfig = new BeanRunConfig(config);
                     RunUtils.executeMaven(newConfig);
