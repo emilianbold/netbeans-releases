@@ -196,27 +196,33 @@ public final class TestSessionVO {
                     for (String part : row.split("\r?\n")) { // NOI18N
                         if (diffStarted) {
                             if (part.startsWith(EXPECTED_ROW_START)) {
+                                addSpace(expected);
                                 expected.append(part.substring(EXPECTED_ROW_START.length()));
-                                expected.append("\n"); // NOI18N
                             } else if (part.startsWith(ACTUAL_ROW_START)) {
+                                addSpace(actual);
                                 actual.append(part.substring(ACTUAL_ROW_START.length()));
-                                actual.append("\n"); // NOI18N
                             } else {
                                 String p = part.substring(1); // remove the first space
+                                addSpace(expected);
                                 expected.append(p);
-                                expected.append("\n"); // NOI18N
 
+                                addSpace(actual);
                                 actual.append(p);
-                                actual.append("\n"); // NOI18N
                             }
-                        }
-                        if (!diffStarted && part.equals(DIFF_SECTION_START)) {
+                        } else if (part.equals(DIFF_SECTION_START)) {
                             diffStarted = true;
                         }
                     }
+                    break;
                 }
             }
-            return new Diff(expected.toString().trim(), actual.toString().trim());
+            return new Diff(expected.toString(), actual.toString());
+        }
+
+        private void addSpace(StringBuilder sb) {
+            if (sb.length() > 0) {
+                sb.append("\n"); // NOI18N
+            }
         }
 
         public long getTime() {

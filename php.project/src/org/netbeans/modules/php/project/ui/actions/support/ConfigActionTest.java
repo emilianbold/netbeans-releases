@@ -47,9 +47,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
@@ -236,7 +237,7 @@ class ConfigActionTest extends ConfigAction {
         public final FileObject workingDirectory;
         public final FileObject startFile;
         public final String testName;
-        private final Set<Testcase> customTests = Collections.synchronizedSet(new HashSet<Testcase>());
+        private final List<Testcase> customTests = Collections.synchronizedList(new ArrayList<Testcase>());
 
         public PhpUnitInfo(FileObject workingDirectory, FileObject startFile, String testName) {
             assert startFile != null;
@@ -246,15 +247,15 @@ class ConfigActionTest extends ConfigAction {
             this.testName = testName;
         }
 
-        public Set<Testcase> getCustomTests() {
-            return new HashSet<Testcase>(customTests);
+        public List<Testcase> getCustomTests() {
+            return new ArrayList<Testcase>(customTests);
         }
 
         public void resetCustomTests() {
             customTests.clear();
         }
 
-        public void setCustomTests(Set<Testcase> tests) {
+        public void setCustomTests(Collection<Testcase> tests) {
             resetCustomTests();
             customTests.addAll(tests);
         }
@@ -342,7 +343,7 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
 
-            Set<Testcase> customTests = info.getCustomTests();
+            List<Testcase> customTests = info.getCustomTests();
             if (!customTests.isEmpty()) {
                 StringBuilder buffer = new StringBuilder(200);
                 boolean first = true;
