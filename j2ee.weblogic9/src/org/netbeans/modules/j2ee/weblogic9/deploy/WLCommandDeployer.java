@@ -483,37 +483,6 @@ public final class WLCommandDeployer {
         return progress;
     }
 
-    public TargetModuleID[] getAvailableModules(ModuleType moduleType, Target[] target) {
-
-        assert !SwingUtilities.isEventDispatchThread() : "Should not be executed in EDT";
-
-        ListAppLineProcessor lineProcessor = new ListAppLineProcessor();
-        ExecutionService service = createService("-listapps", lineProcessor);
-        Future<Integer> result = service.run();
-        try {
-            Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-            if (value.intValue() != 0) {
-                return null;
-            } else {
-                List<String> names = lineProcessor.getApps();
-                TargetModuleID[] ret = new TargetModuleID[names.size()];
-                for (int i = 0; i < names.size(); i++) {
-                    ret[i] = new WLTargetModuleID(target[0], names.get(i));
-                }
-                return ret;
-            }
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return null;
-        } catch (TimeoutException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        }
-    }
-
     private ProgressObject deploy(final TargetModuleID moduleId, final File file,
             final String... parameters) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
