@@ -61,7 +61,7 @@ import org.netbeans.modules.editor.lib2.typinghooks.TypingHooksSpiAccessor;
  * all keyboard input received by all documents of the same mime type, which the interceptor
  * instances were registered for (including documents that contain embedded sections
  * of that mime type). As described in the general concepts of Typing Hooks SPI
- * the interceptors are guaranted to be called in AWT thread only, which means that
+ * the interceptors are guaranteed to be called in AWT thread only, which means that
  * they should not need any internal synchronization model.
  *
  * <p><b>Processing rules</b>: If there are multiple instances of <code>TypedTextInterceptor</code> registered
@@ -71,7 +71,7 @@ import org.netbeans.modules.editor.lib2.typinghooks.TypingHooksSpiAccessor;
  *
  * <p>The interceptor has several methods that are called at different stages of
  * the key typed event processing. When processing an event the infrastructure will call
- * the methods in the order as they are listed below. Moreover if there are multiple
+ * the methods in the order as they are listed below. Moreover, if there are multiple
  * interceptors queued up for processing an event each method is first called on
  * all the queued interceptors before moving on to the next stage and calling next
  * method.
@@ -130,7 +130,7 @@ public interface TypedTextInterceptor {
      * the one that terminated the processing). The rest of the interceptors waiting
      * in the queue will not be called at all.
      *
-     * <p><b>Locking</b>: When this method is called called the document is not locked
+     * <p><b>Locking</b>: When this method is called the document is not locked
      * by the infrastructure.
      * 
      * @param context The context object providing information necessary for processing
@@ -165,7 +165,7 @@ public interface TypedTextInterceptor {
      * This method is called after text is inserted into a document and its editor's
      * caret is adjusted.
      *
-     * <p><b>Locking</b>: When this method is called called the document is not locked
+     * <p><b>Locking</b>: When this method is called the document is not locked
      * by the infrastructure.
      *
      * @param context The context object providing information necessary for processing
@@ -266,7 +266,7 @@ public interface TypedTextInterceptor {
 
     /**
      * This context class allows to modify the insertion text and the caret position
-     * after the text is inserted into a document. Besides of that it provides exactly the same
+     * after the text is inserted into a document. Apart from that it provides exactly the same
      * information as its superclass <code>Context</code>.
      */
     public static final class MutableContext extends Context {

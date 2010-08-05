@@ -94,7 +94,12 @@ made subject to such option by the copyright holder.
   in the editor pane's keymap will trigger that <code>Action</code> and will <b>not</b> reach
   registered interceptors of this type.
   </li>
-  <li><span style="color:red;">More types are to come...</span></li>
+  <li><code>TypedBreakInterceptor</code> - processes <code>KeyTyped</code> events
+  that would normally result in inserting a line break in the edited document.
+  </li>
+  <li><code>DeletedTextInterceptor</code> - processes <code>KeyTyped</code> events
+  that would normally remove text from the edited document.
+  </li>
   </ul>
 
 
@@ -218,8 +223,25 @@ made subject to such option by the copyright holder.
   class for more details.
   </p>
 
-<!--
   <h4>Use case 2. - Pair characters completion</h4>
+  
+  <p>
+  It can safe a lot of typing if the editor correctly completes pair characters
+  such as <code>()</code>, <code>{}</code>, <code>""</code>, <code>''</code>, etc.
+  For example when one of the pair character is typed or deleted the editor
+  automatically adds or removes its couterpart. Additionally, the editor may wrap selected text in
+  the pair characters such as quotes <code>""</code> if one of them is typed (eg. in java producing a string literal).
+  </p>
+
+  <p>
+  These features can be implemented by providing specialized
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/TypedTextInterceptor.html">TypedTextInterceptor</a></code>
+  and
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/DeletedTextInterceptor.html">DeletedTextInterceptor</a></code>
+  implementations.
+  </p>
+  
+<!--
   
   
   <h4>Other usecases</h4>

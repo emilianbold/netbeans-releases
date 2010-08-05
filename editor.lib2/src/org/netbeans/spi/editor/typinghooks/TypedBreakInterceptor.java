@@ -49,16 +49,157 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Parameters;
 
 /**
+ * An interceptor which is called when a line break is typed into a document. You should
+ * implement this interface if you want to hook in the keyboard input
+ * processing done in the editor infrastructure that would normally result in inserting a line break
+ * into a document. This is in fact a specialized version of {@link TypedTextInterceptor} interface,
+ * which works the same way, but handles inserting a line break rather than regular characters.
+ * The {@link TypedTextInterceptor} implementations are never called to handle the line break insertion.
+ *
+ * <p><b>Registration</b>: <code>TypedBreakInterceptor</code>s can be plugged in the editor infrastructure
+ * by implementing the {@link Factory} interface and registering it in <code>MimeLookup</code>
+ * under the appropriate mimetype (ie <code>MimePath</code>).
+ *
+ * <p>The instances created from the <code>Factory</code> will be reused for processing
+ * all keyboard input received by all documents of the same mime type, which the interceptor
+ * instances were registered for (including documents that contain embedded sections
+ * of that mime type). As described in the general concepts of Typing Hooks SPI
+ * the interceptors are guaranteed to be called in AWT thread only, which means that
+ * they should not need any internal synchronization model.
+ *
+ * <p><b>Processing rules</b>: If there are multiple instances of <code>TypedBreakInterceptor</code> registered
+ * for the same mime type the infrastructure will queue them up in their registration
+ * order and when processing an event it will call them all until the processing is done
+ * or terminated. 
+ *
+ * <p>The interceptor has several methods that are called at different stages of
+ * the key typed event processing. When processing an event the infrastructure will call
+ * the methods in the order as they are listed below. Moreover, if there are multiple
+ * interceptors queued up for processing an event each method is first called on
+ * all the queued interceptors before moving on to the next stage and calling next
+ * method.
+ *
+ * <ul>
+ * <li>{@link #beforeInsert(Context)} - It's called before a line break is inserted
+ *   into a document. No document lock is held when this method is called. The method
+ *   can't modify the text that will be inserted (and it's not supposed to do any tricks to
+ *   break this rule). An interceptor can stop further processing of the event by returning
+ *   <code>true</code> from this method. If it does so, no other interceptors'
+ *   <code>beforeInsert</code> method will be called and the processing will be terminated
+ *   without inserting any text.
+ *
+ * <li>{@link #insert(MutableContext)} - This method is called during the text
+ *   insertion stage immediately before the text is inserted into a document. At this
+ *   time the document is already write locked, but the interceptors are not expected
+ *   to modify its content directly. Instead they can change the text that will be
+ *   inserted by calling {@link MutableContext#setText(java.lang.String, int)} method.
+ *   The text insertion is strictly controlled by the infrastructure and has to obey some
+ *   additional rules (eg. correctly replacing selected text, handling insert vs override
+ *   modes of the caret, etc). The first interceptor that modifies the insertion text
+ *   will win and no other interceptor's <code>insert</code> method will be called.
+ *   <br/>
+ *   The interceptors are allowed to insert more than just a line break, but the text
+ *   they insert has to contain at least one line break. They can also request the
+ *   inserted text to be reindented. Please see {@link MutableContext#setText(java.lang.String, int, int, int...)}
+ *   for details. 
+ *
+ * <li>{@link #afterInsert(Context)} - This is the last method in the processing
+ *   chain and it will be called when the text is already inserted in the document.
+ *   Similarly as in <code>beforeInsert</code> the document is not locked when
+ *   this method is called.
+ * 
+ * <li>{@link #cancelled(Context)} - This is an additional method that will be called
+ *   when the processing is terminated in the before-insertion stage (ie. by an interceptor
+ *   returning <code>true</code> from its <code>beforeInsert</code> method).
+ *   The infrastructure will only call this method on interceptors that have already
+ *   had their <code>beforeInsert</code> method called, but not on those that
+ *   have not yet been called at all.
+ * </ul>
+ *
+ * <p><b>Errors recovery</b>: If an exception is thrown from any of the methods
+ * when calling an interceptor the infrastructure will catch it and log it,
+ * but it will not stop further processing. The infrastructure may blacklist the offending
+ * interceptor and exclude it from processing future events.
  *
  * @author Vita Stejskal
+ * @since 1.9
  */
 public interface TypedBreakInterceptor {
 
+    /**
+     * This method is called before any text is inserted into a document. The context object
+     * passed to the method provides access to the editor pane and the edited document,
+     * but does not allow to modify the text that will be inserted.
+     *
+     * <p>This method can be used for stopping further processing of the current
+     * key typed event. If this method returns <code>true</code> the processing will
+     * be terminated and {@link #cancelled(Context)} will be called for all the intercetors
+     * that have already had their <code>beforeInsert</code> method called (including
+     * the one that terminated the processing). The rest of the interceptors waiting
+     * in the queue will not be called at all.
+     *
+     * <p><b>Locking</b>: When this method is called the document is not locked
+     * by the infrastructure.
+     * 
+     * @param context The context object providing information necessary for processing
+     *   the event.
+     *
+     * @return If <code>true</code> the further processing will be stopped. Normally
+     *   the method should return <code>false</code>.
+     * @throws BadLocationException Since the document is not locked prior calling this
+     *   method the processing may fail when working with stale context data.
+     */
     boolean beforeInsert(Context context) throws BadLocationException;
+    
+    /**
+     * This method is called immediately before a line break is inserted into a document.
+     * Implementors can use special <code>MutableContext</code> to modify the text
+     * that will be inserted into a document. The first interceptor that sets
+     * the insertion text will win and the method will not be called on the rest
+     * of the queued interceptors. The interceptors are not supposed to modify the
+     * document directly.
+     *
+     * <p><b>Locking</b>: When this method is called the infrastructure has already
+     * write locked the document.
+     *
+     * @param context The context object providing information necessary for processing
+     *   the event and allowing to modify the insertion text.
+     *
+     * @throws BadLocationException If the processing fails.
+     */
     void insert(MutableContext context) throws BadLocationException;
+    
+    /**
+     * This method is called after the text is inserted into a document and its editor's
+     * caret is adjusted.
+     *
+     * <p><b>Locking</b>: When this method is called the document is not locked
+     * by the infrastructure.
+     *
+     * @param context The context object providing information necessary for processing
+     *   the event. The {@link Context#getText()} method will return text that was
+     *   inserted into the document at the end of the text-insertion stage.
+     * 
+     * @throws BadLocationException Since the document is not locked prior calling this
+     *   method the processing may fail when working with stale context data.
+     */
     void afterInsert(Context context) throws BadLocationException;
+    
+    /**
+     * This method is called when the normal processing is terminated by some
+     * interceptor's <code>beforeInsert</code> method. Please note that this
+     * method will not be called if the <code>beforeInsert</code> method was not
+     * called.
+     * 
+     * @param context The context object used for calling the <code>beforeInsert</code>
+     *   method.
+     */
     void cancelled(Context context);
     
+    /**
+     * The context class providing information about the edited document, its
+     * editor pane, caret offset, line break insertion offset and text.
+     */
     public static class Context {
         
         /**
@@ -122,14 +263,58 @@ public interface TypedBreakInterceptor {
         
     } // End of Context class
     
+    /**
+     * This context class allows to modify the insertion text and the caret position
+     * after the text is inserted into a document. Apart from that it provides exactly the same
+     * information as its superclass <code>Context</code>.
+     */
     public static final class MutableContext extends Context {
         
         /**
+         * Sets the insertion text and adjusted caret position. This method can
+         * be used for inserting additional text that accompanies the line break typed
+         * in by a user.
+         *
+         * <p>There is no restriction on the new text
+         * set by this method, except that it must not be <code>null</code> and must contain at least
+         * one line break. It can be of any length and can even span multiple lines.
+         *
+         * <p>It is important to remember that the values of the position parameters are
+         * relative to the new text. Therefore valid values for the <code>caretPosition</code>
+         * parameter, for example, are <code>&lt;0, text.getLength()&gt;</code>! The position parameters
+         * are <b>not</b> document offsets.
          * 
-         * @param text (required)
-         * @param breakInsertPosition
-         * @param caretPosition
-         * @param reindentBlocks
+         * <p>The following rules have to be obeyed otherwise an <code>IllegalArgumentException</code>
+         * will be thrown:
+         * 
+         * <ul>
+         * <li>The <code>text</code> has to contain at least one line break '\n' character.
+         * <li>The <code>breakInsertPosition</code>, if specified, has to point to the most
+         *   important line break character in the <code>text</code> (eg. an interceptor can actually insert
+         *   several lines, but one of them is always considered the most significant and its
+         *   line break character position is where <code>breakInsertPosition</code> should point at.
+         * <li>The <code>caretPosition</code>, if specified, has to point somewhere within the <code>text</code>.
+         * <li>The <code>reindentBlocks</code>, if specified, are pairs of positions within the
+         *   <code>text</code>. In each pair the first number denotes the starting position of a
+         *   region that will be reindented. The ending position of that region is denoted by the
+         *   second number in the pair. Therfore the first number has to be lower or equal to the
+         *   second number.
+         * </ul>
+         * 
+         * @param text The new text that will be inserted to a document. It must contain at least
+         *   one line break '\n' character.
+         * @param breakInsertPosition The position within the <code>text</code> where the most significant
+         *   line break character is. If <code>-1</code>, the position of the first line break character
+         *   in the <code>text</code> will be used.
+         * @param caretPosition The position within the <code>text</code> where the caret will be placed
+         *   after the text is inserted in the document. If <code>-1</code>, the <code>breakInsertPosition + 1</code>
+         *   will be used.
+         * @param reindentBlocks The list of position pairs that determine areas within the <code>text</code>
+         *   that will be reindented after the <code>text</code> is inserted in the document. Can be <code>null</code>
+         *   or zero length array in which case only the line containing the <code>caretPosition</code> will
+         *   be reindented. If specified, it must contain an even number of elements.
+         * 
+         * @throws IllegalArgumentException If the parameters passed in violate the rules specified above.
          */
         public void setText(String text, int breakInsertPosition, int caretPosition, int... reindentBlocks) {
             Parameters.notNull("text", text); //NOI18N
