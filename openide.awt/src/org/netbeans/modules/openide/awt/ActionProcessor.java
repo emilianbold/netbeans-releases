@@ -40,6 +40,7 @@
 package org.netbeans.modules.openide.awt;
 
 import java.awt.event.ActionListener;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.annotation.processing.Processor;
@@ -71,10 +72,17 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes({ "org.openide.awt.ActionRegistration", "org.openide.awt.ActionID" }) // NOI18N
 public final class ActionProcessor extends LayerGeneratingProcessor {
     private static final String IDENTIFIER = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; // NOI18N
     private static final Pattern FQN = Pattern.compile(IDENTIFIER + "(?:[.]" + IDENTIFIER + ")*"); // NOI18N
+
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        Set<String> hash = new HashSet<String>();
+        hash.add(ActionRegistration.class.getCanonicalName());
+        hash.add(ActionID.class.getCanonicalName());
+        return hash;
+    }
     
     @Override
     protected boolean handleProcess(
