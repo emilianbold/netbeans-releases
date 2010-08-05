@@ -59,8 +59,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -101,7 +103,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         this.typeUtilities = ELTypeUtilities.create(info);
         Element element = handle.resolveElement(info);
         if (Kind.METHOD == handle.getKind()) {
-            return handleProperty(refactoringElementsBag, handle, element);
+            return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
         }
         if (Kind.CLASS == handle.getKind()) {
             return handleClass(refactoringElementsBag, handle, element);
@@ -127,19 +129,22 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return null;
     }
 
-    protected Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
+    protected Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, ExecutableElement targetType) {
         String propertyName = RefactoringUtil.getPropertyName(targetType.getSimpleName().toString());
         ELIndex index = ELIndex.get(handle.getFileObject());
         final Set<IndexResult> result = new HashSet<IndexResult>();
-        result.addAll(index.findPropertyReferences(propertyName));
+        // search for property nodes only if the method has no params (or accepts one vararg)
+        if (targetType.getParameters().isEmpty() ||
+                (targetType.getParameters().size() == 1 && targetType.isVarArgs())) {
+            result.addAll(index.findPropertyReferences(propertyName));
+        }
         result.addAll(index.findMethodReferences(propertyName));
 
         // logic: first try to find all properties for which can resolve the type directly,
         // then search for occurrences in variables
         for (ELElement each : getMatchingElements(result)) {
             List<Node> matchingNodes = findMatchingPropertyNodes(each.getNode(),
-                    propertyName,
-                    targetType.getEnclosingElement().asType(),
+                    targetType,
                     each.getParserResult().getFileObject());
             addElements(each, matchingNodes, refactoringElementsBag);
             handleVariableReferences(each, targetType, refactoringElementsBag);
@@ -189,11 +194,11 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     }
 
     private List<Node> findMatchingPropertyNodes(Node root,
-            final String targetName,
-            final TypeMirror targetType,
+            final ExecutableElement targetMethod,
             final FileObject context) {
 
         final List<Node> result = new ArrayList<Node>();
+        final TypeMirror targetType = targetMethod.getEnclosingElement().asType();
         root.accept(new NodeVisitor() {
 
             @Override
@@ -208,16 +213,20 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                     TypeMirror enclosing = fmbType.asType();
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
-                        if (child instanceof AstPropertySuffix || child instanceof AstMethodSuffix) {
-                            if (targetName.equals(child.getImage()) && info.getTypes().isSameType(targetType, enclosing)) {
-                                TypeMirror matching = getTypeForProperty(child, enclosing);
-                                if (matching != null) {
-                                    result.add(child);
-                                }
-                            } else {
-                                enclosing = getTypeForProperty(child, enclosing);
+                        if (!(child instanceof AstPropertySuffix || child instanceof AstMethodSuffix)) {
+                            continue;
+                        }
+                        if (enclosing == null) {
+                            break;
+                        }
+                        if (info.getTypes().isSameType(targetType, enclosing) && ELTypeUtilities.isSameMethod(child, targetMethod)) {
+                            TypeMirror matching = getTypeForProperty(child, enclosing);
+                            if (matching != null) {
+                                result.add(child);
                             }
 
+                        } else {
+                            enclosing = getTypeForProperty(child, enclosing);
                         }
                     }
                 }
@@ -297,19 +306,17 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
      */
     private TypeMirror getTypeForProperty(Node property, TypeMirror enclosing) {
         String name = property.getImage();
-        for (Element each : info.getTypes().asElement(enclosing).getEnclosedElements()) {
+        List<? extends Element> enclosedElements = info.getTypes().asElement(enclosing).getEnclosedElements();
+        for (Element each : ElementFilter.methodsIn(enclosedElements)) {
             // we're only interested in public methods
             // XXX: should probably include public fields too
-            if (each.getKind() != ElementKind.METHOD || !each.getModifiers().contains(Modifier.PUBLIC)) {
+            if (!each.getModifiers().contains(Modifier.PUBLIC)) {
                 continue;
             }
             ExecutableElement methodElem = (ExecutableElement) each;
             String methodName = methodElem.getSimpleName().toString();
 
-            if (property instanceof AstMethodSuffix
-                    && methodName.equals(name)
-                    && ELTypeUtilities.haveSameParameters((AstMethodSuffix) property, methodElem)) {
-
+            if (ELTypeUtilities.isSameMethod(property, methodElem)) {
                 return typeUtilities.getReturnType(methodElem);
 
             } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
