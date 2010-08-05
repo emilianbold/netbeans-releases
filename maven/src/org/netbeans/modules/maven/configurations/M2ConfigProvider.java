@@ -97,6 +97,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     static String CONFIG_PROFILES_ATTR = "profiles"; //NOI18N
     static String CONFIG_ID_ATTR = "id"; //NOI18N
 
+    private static final RequestProcessor RP = new RequestProcessor(M2ConfigProvider.class.getName(),10);
     
     public M2ConfigProvider(NbMavenProjectImpl proj, AuxiliaryConfiguration aux, ProjectProfileHandler prof) {
         project = proj;
@@ -120,7 +121,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                     synchronized (M2ConfigProvider.this) {
                         profiles = null;
                     }
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             checkActiveAgainstAll(getConfigurations(), false);
                             firePropertyChange();
@@ -151,7 +152,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                     }
                 };
             if (async) {
-                RequestProcessor.getDefault().post(dothis);
+                RP.post(dothis);
             } else {
                 dothis.run();
             }
@@ -241,7 +242,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 }
             }
             if (initialActive != null) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     public void run() {
                         try {
                             doSetActiveConfiguration(DEFAULT, null);
