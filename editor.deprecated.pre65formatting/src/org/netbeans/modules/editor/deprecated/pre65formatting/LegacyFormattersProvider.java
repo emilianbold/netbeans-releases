@@ -74,6 +74,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.MimeDataProvider.class)
 public final class LegacyFormattersProvider implements MimeDataProvider {
 
     public LegacyFormattersProvider() {
