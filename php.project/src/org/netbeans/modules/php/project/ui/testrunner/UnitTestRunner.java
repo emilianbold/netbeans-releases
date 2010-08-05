@@ -60,7 +60,9 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO.Diff;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
@@ -151,15 +153,18 @@ public final class UnitTestRunner {
                     boolean isError = kase.isError();
                     Trouble trouble = new Trouble(isError);
                     trouble.setStackTrace(stacktrace);
-                    // XXX will be used with php unit 3.4+
-//                    Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure("abc\na", "abcd\na");
-//                    trouble.setComparisonFailure(failure);
+
+                    Diff diff = kase.getDiff();
+                    if (diff.isValid()) {
+                        Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure(diff.expected, diff.actual, FileUtils.PHP_MIME_TYPE);
+                        trouble.setComparisonFailure(failure);
+                    }
                     testCase.setTrouble(trouble);
                     MANAGER.displayOutput(testSession, suite.getName() + "::"  + kase.getName() + "()", isError); // NOI18N
                     testSession.addOutput("<u>" + kase.getName() + ":</u>"); // NOI18N
                     for (String s : stacktrace) {
                         MANAGER.displayOutput(testSession, s, isError);
-                        testSession.addOutput(s);
+                        testSession.addOutput(s.replace("<", "&lt;")); // NOI18N
                     }
                     MANAGER.displayOutput(testSession, "", false); // NOI18N
                     testSession.addOutput(""); // NOI18N
