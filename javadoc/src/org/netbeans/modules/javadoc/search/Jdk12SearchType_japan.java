@@ -49,8 +49,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import org.openide.util.Exceptions;
-import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /* Base class providing search for JDK1.2/1.3 documentation
@@ -92,13 +92,13 @@ public final class Jdk12SearchType_japan extends Jdk12SearchType {
      * @see IndexSearchThread
      */    
     @Override
-    public IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer ){
+    public IndexSearchThread getSearchThread(String toFind, URL fo, IndexSearchThread.DocIndexItemConsumer diiConsumer) {
         //here you can send one more parameter .. getJapanEncoding
         return new SearchThreadJdk12_japan ( toFind, fo, diiConsumer, isCaseSensitive(), getJapanEncoding() );
     }    
 
     @Override
-    public boolean accepts(org.openide.filesystems.FileObject root, String encoding) {
+    public boolean accepts(URL root, String encoding) {
         if (encoding == null) {
             return false;
         }
@@ -115,11 +115,10 @@ public final class Jdk12SearchType_japan extends Jdk12SearchType {
         
         if ("utf-8".equals(encoding)) { // NOI18N
             try {
-                FileObject fo = root.getFileObject("allclasses-frame.html"); // NOI18N
-                if (fo == null) {
+                InputStream is = URLUtils.open(root, "allclasses-frame.html"); // NOI18N
+                if (is == null) {
                     return false;
                 }
-                InputStream is = fo.getInputStream();
                 boolean jazip = false;
                 try {
                     BufferedReader r = new BufferedReader(new InputStreamReader(is, encoding));

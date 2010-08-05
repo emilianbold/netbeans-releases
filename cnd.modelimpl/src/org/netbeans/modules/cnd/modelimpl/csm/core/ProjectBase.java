@@ -84,12 +84,14 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -140,13 +142,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
-        declarationsSorageKey = new DeclarationContainerKey(getUniqueName().toString());
+        declarationsSorageKey = new DeclarationContainerKey(getUniqueName());
         weakDeclarationContainer = new WeakContainer<DeclarationContainer>(this, declarationsSorageKey);
-        classifierStorageKey = new ClassifierContainerKey(getUniqueName().toString());
+        classifierStorageKey = new ClassifierContainerKey(getUniqueName());
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
-        fileContainerKey = new FileContainerKey(getUniqueName().toString());
+        fileContainerKey = new FileContainerKey(getUniqueName());
         weakFileContainer = new WeakContainer<FileContainer>(this, fileContainerKey);
-        graphStorageKey = new GraphContainerKey(getUniqueName().toString());
+        graphStorageKey = new GraphContainerKey(getUniqueName());
         weakGraphContainer = new WeakContainer<GraphContainer>(this, graphStorageKey);
         initFields();
     }
@@ -213,7 +215,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private static Key createProjectKey(Object platfProj) {
-        return KeyUtilities.createProjectKey(getUniqueName(platfProj).toString());
+        return KeyUtilities.createProjectKey(getUniqueName(platfProj));
     }
 
     protected static ProjectBase readInstance(ModelImpl model, Object platformProject, String name) {
@@ -532,6 +534,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return false;
     }
 
+    protected boolean hasEditedFiles() {
+        return false;
+    }
+
     protected final synchronized void registerProjectListeners() {
         if (platformProject instanceof NativeProject) {
             if (projectListener == null) {
@@ -784,7 +790,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void reopenUnit() {
         setStatus(Status.Initial);
         ParserQueue.instance().clean(this);
-        RepositoryUtils.closeUnit(this.getUniqueName().toString(), null, true);
+        RepositoryUtils.closeUnit(this.getUniqueName(), null, true);
         RepositoryUtils.openUnit(this);
         RepositoryUtils.hang(this);
         initFields();
@@ -1050,7 +1056,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
-        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths);
+        APTFileSearch searcher = APTFileSearch.get(KeyUtilities.createProjectKey(ProjectBase.getUniqueName(getPlatformProject())));
+        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
     }
 
     private APTMacroMap getMacroMap(NativeFileItem nativeFile) {
@@ -1190,29 +1197,40 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, APTMacroMap.State postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
+    public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         FileImpl csmFile = null;
         if (isDisposing()) {
             return null;
         }
         csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
-        if (postIncludeState != null) {
-            // we have post include state => no need to spend time in include walkers
-            preprocHandler.getMacroMap().setState(postIncludeState);
-            return csmFile;
-        }
         if (isDisposing()) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
         PreprocessorStatePair cachedOut = null;
         APTFileCacheEntry aptCacheEntry = null;
-        FilePreprocessorConditionState pcState;
-        if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
-            cachedOut = csmFile.getCachedVisitedState(newState);
+        FilePreprocessorConditionState pcState = null;
+        boolean foundInCache = false;
+        // check post include cache
+        if (postIncludeState != null && postIncludeState.hasDeadBlocks()) {
+            assert postIncludeState.hasPostIncludeMacroState() : "how could it be? " + file;
+            pcState = FilePreprocessorConditionState.Builder.build(file, postIncludeState.getDeadBlocks());
+            preprocHandler.getMacroMap().setState(postIncludeState.getPostIncludeMacroState());
+            foundInCache = true;
         }
-        if (cachedOut == null) {
+        // check visited file cache
+        boolean isFileCacheApplicable = (mode == ProjectBase.GATHERING_TOKENS) && !APTHandlersSupport.extractIncludeStack(newState).isEmpty();
+        if (!foundInCache && isFileCacheApplicable) {
+            cachedOut = csmFile.getCachedVisitedState(newState);
+            if (cachedOut != null) {
+                preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
+                pcState = cachedOut.pcState;
+                foundInCache = true;
+            }
+        }
+        // if not found in caches => visit include file
+        if (!foundInCache) {
             APTFile aptLight = getAPTLight(csmFile);
             if (aptLight == null) {
                 // in the case file was just removed
@@ -1227,12 +1245,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
             walker.visit();
             pcState = pcBuilder.build();
-            if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
-                csmFile.cacheVisitedState(newState, preprocHandler, pcState);
-            }
-        } else {
-            preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
-            pcState = cachedOut.pcState;
+        }
+        // updated caches
+        // update post include cache
+        if (postIncludeState != null && !postIncludeState.hasDeadBlocks()) {
+            // cache info
+            postIncludeState.setDeadBlocks(FilePreprocessorConditionState.Builder.getDeadBlocks(pcState));
+        }
+        // updated visited file cache
+        if (cachedOut == null && isFileCacheApplicable) {
+            csmFile.cacheVisitedState(newState, preprocHandler, pcState);
         }
         boolean updateFileContainer = false;
         try {
@@ -1642,14 +1664,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         // Wait while files are created. Otherwise project file will be recognized as library file.
         ensureFilesCreated();
         File file = new File(absPath.toString());
-        if (getFile(file, false) != null) {
+        if (getFileUID(file, false) != null) {
             return this;
         } else {
             // else check in libs
             for (CsmProject prj : getLibraries()) {
                 // Wait while files are created. Otherwise project file will be recognized as library file.
                 ((ProjectBase) prj).ensureFilesCreated();
-                if (((ProjectBase) prj).getFile(file, false) != null) {
+                if (((ProjectBase) prj).getFileUID(file, false) != null) {
                     return (ProjectBase) prj;
                 }
             }
@@ -1849,6 +1871,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFile(file, treatSymlinkAsSeparateFile);
     }
 
+    public final CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {
+        return getFileContainer().getFileUID(file, treatSymlinkAsSeparateFile);
+    }
+
     protected final void removeFile(CharSequence file) {
         getFileContainer().removeFile(file);
     }
@@ -2019,10 +2045,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected final Set<String> getRequiredUnits() {
-        Set<String> requiredUnits = new HashSet<String>();
+    protected final Set<CharSequence> getRequiredUnits() {
+        Set<CharSequence> requiredUnits = new HashSet<CharSequence>();
         for (Key dependent : this.getLibrariesKeys()) {
-            requiredUnits.add(dependent.getUnit().toString());
+            requiredUnits.add(dependent.getUnit());
         }
         return requiredUnits;
     }
@@ -2121,7 +2147,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             disposeLock.readLock().lock();
 
             if (!isDisposing()) {
-                new FakeRegistrationWorker(this, disposing).fixFakeRegistration(libsAlreadyParsed);
+                if (!hasEditedFiles()) {
+                    new FakeRegistrationWorker(this, disposing).fixFakeRegistration(libsAlreadyParsed);
+                }
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);

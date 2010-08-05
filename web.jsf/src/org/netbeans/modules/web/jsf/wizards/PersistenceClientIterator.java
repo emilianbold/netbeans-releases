@@ -111,7 +111,11 @@ import org.netbeans.modules.web.jsf.palette.items.FromEntityBase;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -146,6 +150,14 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         final boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
 
+        // add framework to project first:
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        JSFFrameworkProvider fp = new JSFFrameworkProvider();
+        if (!fp.isInWebModule(wm)) {    //add jsf if not already present
+            updateWebModuleExtender(project, wm, fp);
+            wme.extend(wm);
+        }
+
         Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
         final String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
 
@@ -163,13 +175,6 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                         Util.addPersistenceUnitToProject( project, punit );
                     }
             }
-        }
-        
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        JSFFrameworkProvider fp = new JSFFrameworkProvider();
-        if (!fp.isInWebModule(wm)) {    //add jsf if not already present
-            updateWebModuleExtender(project, wm, fp);
-            wme.extend(wm);
         }
         
         final JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
@@ -562,8 +567,26 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         } finally {
             model.endTransaction();
             model.sync();
+            saveFacesConfig(fo);
         }
 
+    }
+
+    private static void saveFacesConfig(FileObject fo) {
+        DataObject facesDO;
+        try {
+            facesDO = DataObject.find(fo);
+            if (facesDO !=null) {
+                SaveCookie save = facesDO.getCookie(SaveCookie.class);
+                if (save != null) {
+                    save.save();
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private static ResourceBundle findBundle(JSFConfigModel model, ResourceBundle rb) {

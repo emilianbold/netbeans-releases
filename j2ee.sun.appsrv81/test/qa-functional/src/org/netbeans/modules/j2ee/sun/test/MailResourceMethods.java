@@ -109,7 +109,7 @@ public class MailResourceMethods extends NbTestCase implements WizardConstants{
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             mrdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveMailResourceDatatoXml(mrdata);
+            ResourceUtils.saveMailResourceDatatoXml(mrdata,"sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();

@@ -195,13 +195,6 @@ public class WelcomePanel extends ErrorMessagePanel {
                 if(list.size() == 1) {
                     if(SystemUtils.getCurrentPlatform().isCompatibleWith(list.get(0).getPlatforms())) {
                         File installationLocation = list.get(0).getInstallationLocation();
-                    if(SystemUtils.isMacOS()) {
-                        installationLocation =
-                                installationLocation.
-                                getParentFile().
-                                getParentFile().
-                                getParentFile();
-                    }
                         textPane.setText(
                             StringUtils.format(
                             panel.getProperty(WELCOME_ALREADY_INSTALLED_TEXT_PROPERTY),

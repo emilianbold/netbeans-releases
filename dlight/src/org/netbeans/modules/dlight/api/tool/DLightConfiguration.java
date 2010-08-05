@@ -173,6 +173,7 @@ public final class DLightConfiguration {
      */
     public List<DLightTool> getToolsSet() {
         synchronized (toolsConfiguration) {
+            // FIXME: use getToolsSet(true) ?
             return toolsConfiguration.getToolsSet();
         }
     }
@@ -324,6 +325,7 @@ public final class DLightConfiguration {
 
         public List<DLightTool> getToolsSet() {
             synchronized (toolsConfiguration) {
+                // FIXME: use getToolsSet(true) ?
                 return toolsConfiguration.getToolsSet();
             }
         }

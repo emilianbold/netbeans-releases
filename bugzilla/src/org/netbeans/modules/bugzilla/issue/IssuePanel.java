@@ -2621,7 +2621,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private String getCurrentNetBeansVersion() {
-        return "6.9"; // NOI18N
+        return "dev"; // NOI18N
     }
 
     private void addNetbeansInfo() {

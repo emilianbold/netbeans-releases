@@ -47,12 +47,15 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -284,6 +287,25 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         if (isCancelled())
             return null;
 
+        if (node.getBoolean(MarkOccurencesSettings.EXCEPTIONS, true)) {
+            //detect caret inside catch:
+            if (typePath != null && typePath.getParentPath().getLeaf().getKind() == Kind.VARIABLE
+                    && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH) {
+                    MethodExitDetector med = new MethodExitDetector();
+
+                    setExitDetector(med);
+
+                    try {
+                        return med.process(info, doc, ((TryTree)typePath.getParentPath().getParentPath().getParentPath().getLeaf()).getBlock(), Collections.singletonList(typePath.getLeaf()));
+                    } finally {
+                        setExitDetector(null);
+                    }
+            }
+        }
+
+        if (isCancelled())
+            return null;
+        
         if (node.getBoolean(MarkOccurencesSettings.IMPLEMENTS, true)) {
             //detect caret inside the extends/implements clause:
             if (typePath != null && typePath.getParentPath().getLeaf().getKind() == Kind.CLASS) {
@@ -415,6 +437,36 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             }
         }
 
+        if (tp.getParentPath() != null && tp.getParentPath().getLeaf().getKind() == Kind.IMPORT) {
+            ImportTree it = (ImportTree) tp.getParentPath().getLeaf();
+            if (it.isStatic() && tp.getLeaf().getKind() == Kind.MEMBER_SELECT) {
+                MemberSelectTree mst = (MemberSelectTree) tp.getLeaf();
+                if (!"*".contentEquals(mst.getIdentifier())) {
+                    List<int[]> bag = new ArrayList<int[]>();
+                    Token<JavaTokenId> tok = Utilities.getToken(info, doc, tp);
+                    if (tok != null)
+                        bag.add(new int[] {tok.offset(null), tok.offset(null) + tok.length()});
+                    el = info.getTrees().getElement(new TreePath(tp, mst.getExpression()));
+                    if (el != null) {
+                        FindLocalUsagesQuery fluq = new FindLocalUsagesQuery();
+                        setLocalUsages(fluq);
+                        try {
+                            for (Element element : el.getEnclosedElements()) {
+                                if (element.getModifiers().contains(Modifier.STATIC)) {
+                                    for (Token t : fluq.findUsages(element, info, doc)) {
+                                        bag.add(new int[] {t.offset(null), t.offset(null) + t.length()});
+                                    }
+                                }
+                            }
+                            return bag;
+                        } finally {
+                            setLocalUsages(null);
+                        }
+                    }
+                }
+            }
+        }
+        
         return null;
     }
 

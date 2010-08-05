@@ -46,6 +46,7 @@ import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.actions.BaseAction;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
@@ -67,6 +68,10 @@ public final class ClearCacheAction extends BaseAction {
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
+        if (!SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
+            return;
+        }
+
         FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         Callable<Process> callable = commandSupport.createCommand(SymfonyScript.CMD_CLEAR_CACHE);
         ExecutionDescriptor descriptor = commandSupport.getDescriptor();
@@ -78,5 +83,10 @@ public final class ClearCacheAction extends BaseAction {
     @Override
     protected String getPureName() {
         return NbBundle.getMessage(ClearCacheAction.class, "LBL_ClearCache");
+    }
+
+    @Override
+    protected String getFullName() {
+        return NbBundle.getMessage(ClearCacheAction.class, "LBL_SymfonyAction", getPureName());
     }
 }

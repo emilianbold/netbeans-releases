@@ -81,32 +81,43 @@ public final class FolderImpl implements FolderProperties {
         userMacros.putAll(source.getUserMacros());
     }
     
+    @Override
     public String getItemPath() {
         return path;
     }
     
+    @Override
     public List<SourceFileProperties> getFiles() {
         return files;
     }
     
+    @Override
     public List<String> getUserInludePaths() {
         return new ArrayList<String>(userIncludes);
     }
     
+    @Override
     public List<String> getSystemInludePaths() {
         return new ArrayList<String>(systemIncludes);
     }
     
+    @Override
     public Map<String, String> getUserMacros() {
         return userMacros;
     }
     
+    @Override
     public Map<String, String> getSystemMacros() {
         return null;
     }
     
+    @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
     }
-    
+
+    @Override
+    public String getCompilerName() {
+        return "";
+    }
 }

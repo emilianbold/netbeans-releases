@@ -82,6 +82,7 @@ import org.openide.util.RequestProcessor;
     private NativeProcess remoteControllerProcess;
     private RfsLocalController localController;
     private String remoteDir;
+    private ErrorReader errorReader;
 
     public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
         super(executionEnvironment, out, err, privProjectStorageDir, files);
@@ -108,8 +109,7 @@ import org.openide.util.RequestProcessor;
             if (mkDir.get() != 0) {
                 throw new IOException("Can not create directory " + remoteDir); //NOI18N
             }
-            startupImpl(env2add);
-            success = true;
+            success = startupImpl(env2add);
         } catch (RemoteException ex) {
             printErr(ex);
         } catch (InterruptedException ex) {
@@ -144,7 +144,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private void startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
+    private boolean startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
         String remoteControllerPath;
         String ldLibraryPath;
         try {
@@ -167,7 +167,8 @@ import org.openide.util.RequestProcessor;
         }
         remoteControllerProcess = pb.call();
 
-        RP.post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
+        errorReader = new ErrorReader(remoteControllerProcess.getErrorStream(), err);
+        RP.post(errorReader);
 
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
@@ -177,7 +178,10 @@ import org.openide.util.RequestProcessor;
                 executionEnvironment, files, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
-        localController.init();
+        if (!localController.init()) {
+            remoteControllerProcess.destroy();
+            return false;
+        }
 
         // read port
         String line = rcInputStreamReader.readLine();
@@ -223,6 +227,8 @@ import org.openide.util.RequestProcessor;
         addRemoteEnv(env2add, "cnd.rfs.preload.trace", "RFS_PRELOAD_TRACE"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");
+
+        return true;
     }
 
     private void addRemoteEnv(Map<String, String> env2add, String localJavaPropertyName, String remoteEnvVarName) {
@@ -256,6 +262,10 @@ import org.openide.util.RequestProcessor;
     }
     
     private void remoteControllerCleanup() {
+        ErrorReader r = errorReader;
+        if (r != null) {
+            r.stop();
+        }
         NativeProcess rc;
         synchronized (this) {
             rc = remoteControllerProcess;
@@ -272,16 +282,21 @@ import org.openide.util.RequestProcessor;
 
         private final BufferedReader errorReader;
         private final PrintWriter errorWriter;
+        private boolean stopped;
 
         public ErrorReader(InputStream errorStream, PrintWriter errorWriter) {
             this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
             this.errorWriter = errorWriter;
+            this.stopped = false;
         }
         @Override
         public void run() {
             try {
                 String line;
                 while ((line = errorReader.readLine()) != null) {
+                    if (stopped) {
+                        break;
+                    }
                     if (errorWriter != null) {
                          errorWriter.println(line);
                     }
@@ -291,6 +306,9 @@ import org.openide.util.RequestProcessor;
                 Exceptions.printStackTrace(ex);
             }
         }
-    }
 
+        private void stop() {
+            stopped = true;
+        }
+    }
 }

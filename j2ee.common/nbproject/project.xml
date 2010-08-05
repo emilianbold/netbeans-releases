@@ -193,7 +193,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
-                        <specification-version>1.58</specification-version>
+                        <specification-version>1.68</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -437,6 +437,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.glassfish.eecommon</friend>
+                <friend>org.netbeans.modules.javaee.beanvalidation</friend>
                 <friend>org.netbeans.modules.j2ee.archive</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
@@ -464,6 +465,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.restapi</friend>
+                <friend>org.netbeans.modules.websvc.manager</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.dd</package>
                 <package>org.netbeans.modules.j2ee.common.method</package>

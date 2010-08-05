@@ -138,7 +138,7 @@ public class ServiceNodeManager {
         private ClassDataRegistry activeProfileRegistry, allRegistry;
         private ChangeListener ref1;
         private final HashMap<Object, Object> hookedListeners = new HashMap(); // FileObject or SourceGroup -> listener
-        private final Task refreshTask = RequestProcessor.getDefault().create(this);
+        private final Task refreshTask = new RequestProcessor().create(this);
         private final HashSet<String> selectionSource = new HashSet(); 
        
         public ProjectChildren(Configuration cfg, MethodCheckedTreeBeanView tree) {

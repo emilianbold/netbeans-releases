@@ -46,6 +46,7 @@
 package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.WizardDescriptor;
 
 /**
@@ -179,4 +180,17 @@ public abstract class OptionalDeploymentManagerFactory {
     public void finishServerInitialization() throws ServerInitializationException {
     }
 
+    /**
+     * Return the manager handling the server libraries. May return
+     * <code>null</code> if the functionality is not supported by the plugin.
+     *
+     * @param dm the deployment manager
+     * @return the manager handling the server libraries
+     * @since 1.68
+     * @see ServerLibraryManager
+     */
+    @CheckForNull
+    public ServerLibraryManager getServerLibraryManager(DeploymentManager dm) {
+        return null;
+    }
 }

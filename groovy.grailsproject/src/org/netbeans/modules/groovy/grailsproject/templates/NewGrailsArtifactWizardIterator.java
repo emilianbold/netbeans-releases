@@ -349,10 +349,14 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
         return packageName;
     }
 
+    // FIXME should we give up on detection and leave the input up to the user ?
     private static class DialogLineProcessor implements LineProcessor {
 
         private static final Pattern OVERWRITE_PATTERN =
                 Pattern.compile("^.*\\s([^\\s]+\\.groovy) already exists\\. Overwrite\\? \\[y/n\\]$"); // NOI18N
+
+        private static final Pattern DEFAULT_PACKAGE_PATTERN =
+                Pattern.compile("^WARNING: You have not specified a package\\. .* Do you want to continue\\? \\(y, n\\)$"); // NOI18N
 
         private Writer writer;
 
@@ -378,6 +382,17 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
                         answerWriter.flush();
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    matcher = DEFAULT_PACKAGE_PATTERN.matcher(line);
+                    if (matcher.matches()) {
+                        try {
+                            // user has been warned in wizard
+                            answerWriter.write("y\n"); // NOI18N
+                            answerWriter.flush();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
             }

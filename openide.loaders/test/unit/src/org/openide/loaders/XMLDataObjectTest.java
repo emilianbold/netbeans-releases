@@ -75,14 +75,9 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
     private FileObject data;
     private CharSequence log;
 
-    /** Creates new MultiFileLoaderHid */
     public XMLDataObjectTest (String name) {
         super (name);
     }
-
-//    public static Test suite() {
-//        return new XMLDataObjectTest("testWrongUTFCharacer");
-//    }
 
     @Override
     protected void setUp () throws Exception {

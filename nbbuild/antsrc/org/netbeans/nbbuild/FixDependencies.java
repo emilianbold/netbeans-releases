@@ -366,6 +366,11 @@ public class FixDependencies extends Task {
                 sb.append (stream.substring (from, after));
                 continue;
             }
+            if (dep.indexOf("org.netbeans.libs.javacapi") != -1) {
+                // should be kept even if can compile using rt.jar version
+                sb.append (stream.substring (from, after));
+                continue;
+            }
             
             
             int cnbBeg = dep.indexOf ("<code-name-base>");

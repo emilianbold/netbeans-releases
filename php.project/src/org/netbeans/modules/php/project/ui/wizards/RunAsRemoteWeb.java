@@ -527,6 +527,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         if (RemoteConnections.get().openManager((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())) {
             populateRemoteConnectionComboBox();
             selectRemoteConnection();
+            updateRemoteConnectionHint();
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 

@@ -136,9 +136,13 @@ public class FormatVisitor extends DefaultVisitor {
 	    addFormatToken(beforeTokens);
 	    if (ts.token().id() == PHPTokenId.PHPDOC_COMMENT_START
 		    || (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-		    && "//".equals(ts.token().text().toString())
-		    && indexBeforeLastComment == -1)) {
-		indexBeforeLastComment = beforeTokens.size() - 1;
+		    && "//".equals(ts.token().text().toString()))
+		    && indexBeforeLastComment == -1) {
+                if (ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0) {
+                    // don't change if the line comment or a comment starts on the same line
+                    indexBeforeLastComment = beforeTokens.size() - 1;
+                }
+                ts.moveNext();
 	    }
 	}
 	if (indexBeforeLastComment > 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
@@ -154,7 +158,9 @@ public class FormatVisitor extends DefaultVisitor {
 		includeWSBeforePHPDoc = false;
 	    } else if (node instanceof FieldsDeclaration) {
 		if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
+//                    if (beforeTokens.get(indexBeforeLastComment).getId() != FormatToken.Kind.LINE_COMMENT) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
+//                    }
 		} else {
 		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
 		}
@@ -206,10 +212,21 @@ public class FormatVisitor extends DefaultVisitor {
 	    if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
 		    || path.get(1) instanceof ArrayElement
 		    || path.get(1) instanceof FormalParameter
-		    || path.get(1) instanceof ReturnStatement) {
+		    || path.get(1) instanceof ReturnStatement
+                    || path.get(1) instanceof CastExpression) {
 		// when the array is on the beginning of the line, indent items in normal way
 		delta = options.indentArrayItems;
 	    }
+            if (path.get(1) instanceof FunctionInvocation && ((FunctionInvocation)path.get(1)).getParameters().size() == 1) {
+                int hindex = formatTokens.size() - 1;
+                while (hindex > 0 && formatTokens.get(hindex).getId() != FormatToken.Kind.TEXT
+                        && formatTokens.get(hindex).getId() != FormatToken.Kind.WHITESPACE_INDENT) {
+                    hindex --;
+                }
+                if (hindex > 0 && formatTokens.get(hindex).getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+                    delta = options.indentArrayItems;
+                }
+            }
 	    addFormatToken(formatTokens); // add array keyword
 	}
 	formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
@@ -218,7 +235,6 @@ public class FormatVisitor extends DefaultVisitor {
 	addAllUntilOffset(node.getEndOffset());
     }
 
-    @Override
     public void visit(Assignment node) {
 	scan(node.getLeftHandSide());
 	while (ts.moveNext() && ts.offset() < node.getRightHandSide().getStartOffset()
@@ -257,14 +273,24 @@ public class FormatVisitor extends DefaultVisitor {
 	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE, ts.offset()));
 	    } else if (parent instanceof IfStatement) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_LEFT_BRACE, ts.offset()));
+                IfStatement ifStatement = (IfStatement) parent;
+                if (ifStatement.getFalseStatement() != null
+                        && ifStatement.getFalseStatement().getStartOffset() <= node.getStartOffset()) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ELSE_LEFT_BRACE, ts.offset()));
+                } else {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_LEFT_BRACE, ts.offset()));
+                }
 	    } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_LEFT_BRACE, ts.offset()));
-	    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
+	    } else if (parent instanceof WhileStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof DoStatement) {
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_DO_LEFT_BRACE, ts.offset()));
 	    } else if (parent instanceof SwitchStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_LEFT_BACE, ts.offset()));
-	    } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
+            } else if (parent instanceof TryStatement) {
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_TRY_LEFT_BRACE, ts.offset()));
+	    } else if (parent instanceof CatchClause) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_LEFT_BRACE, ts.offset()));
 	    } else {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_LEFT_BRACE, ts.offset()));
@@ -559,13 +585,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    scan(node.getStatement());
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT, ts.offset()));
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	    scan(body);
-	    addEndOfUnbreakableSequence(body.getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
 	} else {
 	    scan(node.getStatement());
 	}
@@ -607,13 +627,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    scan(node.getBody());
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT, ts.offset()));
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	    scan(body);
-	    addEndOfUnbreakableSequence(body.getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
 	} else {
 	    scan(node.getBody());
 	}
@@ -674,14 +688,65 @@ public class FormatVisitor extends DefaultVisitor {
 
 	}
 	scan(node.getFunctionName());
-	if (node.getParameters() != null && node.getParameters().size() > 0) {
-	    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
-	    scan(node.getParameters());
-	    formatTokens.add(new FormatToken.IndentToken(node.getParameters().get(node.getParameters().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
-	    addAllUntilOffset(node.getEndOffset());
-	} else {
-	    super.visit(node);
+        List<Expression> parameters = node.getParameters();
+	if (parameters != null && parameters.size() > 0) {
+            boolean addIndentation = !(path.get(1) instanceof Assignment);
+            if (addIndentation) {
+                formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
+            }
+	    while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()) {
+		addFormatToken(formatTokens);
+	    }
+	    ts.movePrevious();
+	    addUnbreakalbeSequence(parameters.get(0), true);
+	    for (int i = 1; i < parameters.size(); i++) {
+		if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
+		    addFormatToken(formatTokens);
+		} else {
+		    ts.movePrevious();
+		}
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_ARGUMENT_LIST, ts.offset() + ts.token().length()));
+		addUnbreakalbeSequence(parameters.get(i), false);
+	    }
+            if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                addFormatToken(formatTokens);
+            }
+            if (addIndentation) {
+                List<FormatToken> removed = new ArrayList<FormatToken>();
+                FormatToken ftoken = formatTokens.get(formatTokens.size() - 1);
+                while(ftoken.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
+                        || (ftoken.isWhitespace() && ftoken.getId() != FormatToken.Kind.WHITESPACE_INDENT)
+                        || ftoken.getId() == FormatToken.Kind.COMMENT
+                        || ftoken.getId() == FormatToken.Kind.COMMENT_START
+                        || ftoken.getId() == FormatToken.Kind.COMMENT_END
+                        || (ftoken.getId() == FormatToken.Kind.TEXT && ")".equals(ftoken.getOldText().toString()))) {
+                    formatTokens.remove(formatTokens.size() - 1);
+                    removed.add(ftoken);
+                    ftoken = formatTokens.get(formatTokens.size() - 1);
+                }
+                if (ftoken.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+                    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), -1 * options.continualIndentSize));
+                    for(int i = removed.size() - 1; i > -1; i--) {
+                        formatTokens.add(removed.get(i));
+                    }
+                } else {
+                    for(int i = removed.size() - 1; i > -1; i--) {
+                        formatTokens.add(removed.get(i));
+                    }
+                    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), -1 * options.continualIndentSize));
+                }
+            }
 	}
+        addAllUntilOffset(node.getEndOffset());
+        
+//	if (node.getParameters() != null && node.getParameters().size() > 0) {
+//	    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
+//	    scan(node.getParameters());
+//	    formatTokens.add(new FormatToken.IndentToken(node.getParameters().get(node.getParameters().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
+//	    addAllUntilOffset(node.getEndOffset());
+//	} else {
+//	    super.visit(node);
+//	}
     }
 
     @Override
@@ -722,13 +787,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    isCurly = false;
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT, ts.offset()));
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	    scan(body);
-	    addEndOfUnbreakableSequence(body.getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT);
 	} else {
 	    scan(node.getTrueStatement());
 	}
@@ -922,13 +981,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    scan(node.getBody());
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_STATEMENT, ts.offset()));
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	    scan(body);
-	    addEndOfUnbreakableSequence(body.getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_WHILE_STATEMENT);
 	} else {
 	    scan(node.getBody());
 	}
@@ -984,6 +1037,7 @@ public class FormatVisitor extends DefaultVisitor {
 		}
 		break;
 	    case PHP_OPENTAG:
+            case T_OPEN_TAG_WITH_ECHO:
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
 		tokens.add(new FormatToken(FormatToken.Kind.OPEN_TAG, ts.offset(), ts.token().text().toString()));
 //		tokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.initialIndent));
@@ -1388,6 +1442,24 @@ public class FormatVisitor extends DefaultVisitor {
                     || !((index < statements.size() - 1) && (statements.get(index + 1).getClass().equals(statement.getClass()))));
         }
         return false;
+    }
+
+    private void addNoCurlyBody(ASTNode body, FormatToken.Kind before) {
+        addAllUntilOffset(body.getStartOffset());
+            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString())) {
+                // the body is not defined yet. See issue #187665
+                addFormatToken(formatTokens);
+            } else {
+                ts.movePrevious();
+            }
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            if (!(body instanceof ASTError)) {
+                formatTokens.add(new FormatToken(before, body.getStartOffset()));
+            }
+	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(body.getStartOffset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+	    scan(body);
+	    addEndOfUnbreakableSequence(body.getEndOffset());
+	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
     }
 
     protected static boolean isWhitespace (final CharSequence text) {

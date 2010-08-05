@@ -546,15 +546,12 @@ public final class Util {
     }
     
     private static URL normalizeURL(URL url) {
-        // not sure - in some private tests it seems that input
-        // jar:file:/home/..../NetBeansAPIs.zip!/..../index.html result in:
-        // http://localhost:8082/..../index.html
-//        URL resolvedURL = null;
-//        FileObject fo = URLMapper.findFileObject(url);
-//        if (fo != null) {
-//            resolvedURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-//        }
-        return URLMapper.findFileObject(url) == null ? null : url;
+        FileObject fo = URLMapper.findFileObject(url);
+        if (fo != null) {
+            return URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        } else {
+            return null;
+        }
     }
     
     private static Iterable<String> getPossibleResources(String locBundleResource) {

@@ -53,13 +53,14 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -104,6 +105,27 @@ public abstract class PhpElementImpl implements PhpElement {
     private final int offset;
     private final ElementQuery elementQuery;
     private FileObject fileObject;
+
+    public static PhpElementImpl create(final String variableName, final String in, final int offset, final FileObject fo, final PhpElementKind kind) {
+        return new PhpElementImpl(variableName, in, null, offset, null) {
+
+            @Override
+            public String getSignature() {
+                return "";//NOI18N
+            }
+
+            @Override
+            public PhpElementKind getPhpElementKind() {
+                return kind;
+            }
+
+            @Override
+            public synchronized FileObject getFileObject() {
+                return fo;
+            }
+        };
+    }
+
 
     PhpElementImpl(final String name, final String in, final String fileUrl,
             final int offset, final ElementQuery elementQuery) {
@@ -224,11 +246,8 @@ public abstract class PhpElementImpl implements PhpElement {
     public final boolean isPlatform() {
         FileObject fo = getFileObject();
         if (fo != null) {
-            try {
-                return Repository.getDefault().getDefaultFileSystem().equals(fo.getFileSystem());
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            FileType fileType = PhpSourcePath.getFileType(fo);
+            return fileType.equals(FileType.INTERNAL);
         }
         return false;
     }
@@ -293,6 +312,4 @@ public abstract class PhpElementImpl implements PhpElement {
         }
         return sb.toString();
     }
-
-
 }

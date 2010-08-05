@@ -44,7 +44,6 @@
 
 package org.openide.util;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1413,8 +1412,17 @@ outer:  do {
         @Override
         public void run() {
             try {
+                synchronized (Task.class) {
+                    while (lastThread != null) {
+                        try {
+                            Task.class.wait();
+                        } catch (InterruptedException ex) {
+                            // OK wait again
+                        }
+                    }
+                    lastThread = Thread.currentThread();
+                }
                 notifyRunning();
-                lastThread = Thread.currentThread();
                 run.run();
             } finally {
                 Item scheduled = this.item;
@@ -1423,7 +1431,10 @@ outer:  do {
                 } else {
                     notifyFinished();
                 }
-                lastThread = null;
+                synchronized (Task.class) {
+                    lastThread = null;
+                    Task.class.notifyAll();
+                }
             }
         }
 

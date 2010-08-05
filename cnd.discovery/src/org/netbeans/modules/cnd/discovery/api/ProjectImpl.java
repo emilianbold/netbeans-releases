@@ -138,39 +138,53 @@ public final class ProjectImpl implements ProjectProperties {
         }
     }
     
+    @Override
     public List<FolderProperties> getConfiguredFolders(){
         return new ArrayList<FolderProperties>(folders.values());
     }
     
+    @Override
     public String getMakePath() {
         return null;
     }
     
+    @Override
     public String getBinaryPath() {
         return null;
     }
     
+    @Override
     public ProjectProperties.BinaryKind getBinaryKind() {
         return null;
     }
     
+    @Override
     public List<String> getUserInludePaths() {
         return new ArrayList<String>(userIncludes);
     }
     
+    @Override
     public List<String> getSystemInludePaths() {
         return new ArrayList<String>(systemIncludes);
     }
     
+    @Override
     public Map<String, String> getUserMacros() {
         return userMacros;
     }
     
+    @Override
     public Map<String, String> getSystemMacros() {
         return null;
     }
     
+    @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
+    }
+
+    @Override
+    public String getCompilerName() {
+        return "";
     }
 }

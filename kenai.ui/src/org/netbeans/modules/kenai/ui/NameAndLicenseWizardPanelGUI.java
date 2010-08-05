@@ -371,7 +371,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 0, 5, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 5, 0);
         add(loginButton, gridBagConstraints);
         loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -562,7 +562,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }//GEN-LAST:event_proxyConfigButtonActionPerformed
 
     private void projectLicenseComboBoxPopupMenuWillBecomeVisible(PopupMenuEvent evt) {//GEN-FIRST:event_projectLicenseComboBoxPopupMenuWillBecomeVisible
-        if (projectLicenseComboBox.getSelectedItem().equals(EMPTY_ELEMENT)) {
+        if (EMPTY_ELEMENT.equals(projectLicenseComboBox.getSelectedItem())) {
             projectLicenseComboBox.removeItem(EMPTY_ELEMENT);
         }
     }//GEN-LAST:event_projectLicenseComboBoxPopupMenuWillBecomeVisible

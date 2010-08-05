@@ -43,9 +43,7 @@
 package org.netbeans.modules.quicksearch;
 
 import java.util.List;
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -53,21 +51,8 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class ObsoleteSupportTest extends NbTestCase {
     
-    public ObsoleteSupportTest() {
-        super("");
-    }
-    
     public ObsoleteSupportTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(ObsoleteSupportTest.class);
-        return suite;
     }
     
     public void testObsoleteSupport () throws Exception {

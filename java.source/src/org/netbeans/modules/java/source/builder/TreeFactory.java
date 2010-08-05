@@ -108,7 +108,6 @@ public class TreeFactory {
         make = com.sun.tools.javac.tree.TreeMaker.instance(context);
         elements = JavacElements.instance(context);
         types = JavacTypes.instance(context);
-        make.at(NOPOS); // TODO: is this really neeeded?
         make.toplevel = null;
     }
     
@@ -116,23 +115,23 @@ public class TreeFactory {
         ListBuffer<JCExpression> lb = new ListBuffer<JCExpression>();
         for (ExpressionTree t : arguments)
             lb.append((JCExpression)t);
-        return make.Annotation((JCTree)type, lb.toList());
+        return make.at(NOPOS).Annotation((JCTree)type, lb.toList());
     }
 
     public ArrayAccessTree ArrayAccess(ExpressionTree array, ExpressionTree index) {
-        return make.Indexed((JCExpression)array, (JCExpression)index);
+        return make.at(NOPOS).Indexed((JCExpression)array, (JCExpression)index);
     }
     
     public ArrayTypeTree ArrayType(Tree type) {
-        return make.TypeArray((JCExpression)type);
+        return make.at(NOPOS).TypeArray((JCExpression)type);
     }
     
     public AssertTree Assert(ExpressionTree condition, ExpressionTree detail) {
-        return make.Assert((JCExpression)condition, (JCExpression)detail);
+        return make.at(NOPOS).Assert((JCExpression)condition, (JCExpression)detail);
     }
     
     public AssignmentTree Assignment(ExpressionTree variable, ExpressionTree expression) {
-        return make.Assign((JCExpression)variable, (JCExpression)expression);
+        return make.at(NOPOS).Assign((JCExpression)variable, (JCExpression)expression);
     }
     
     public BinaryTree Binary(Kind operator, ExpressionTree left, ExpressionTree right) {
@@ -160,30 +159,30 @@ public class TreeFactory {
             default:
                 throw new IllegalArgumentException("Illegal binary operator: " + operator);
         }
-        return make.Binary(op, (JCExpression)left, (JCExpression)right);
+        return make.at(NOPOS).Binary(op, (JCExpression)left, (JCExpression)right);
     }
     
     public BlockTree Block(List<? extends StatementTree> statements, boolean isStatic) {
         ListBuffer<JCStatement> lb = new ListBuffer<JCStatement>();
         for (StatementTree t : statements)
             lb.append((JCStatement)t);
-        return make.Block(isStatic ? Flags.STATIC : 0L, lb.toList());
+        return make.at(NOPOS).Block(isStatic ? Flags.STATIC : 0L, lb.toList());
     }
     
     public BreakTree Break(CharSequence label) {
         Name n = label != null ? names.fromString(label.toString()) : null;
-        return make.Break(n);
+        return make.at(NOPOS).Break(n);
     }
     
     public CaseTree Case(ExpressionTree expression, List<? extends StatementTree> statements) {
         ListBuffer<JCStatement> lb = new ListBuffer<JCStatement>();
         for (StatementTree t : statements)
             lb.append((JCStatement)t);
-        return make.Case((JCExpression)expression, lb.toList());
+        return make.at(NOPOS).Case((JCExpression)expression, lb.toList());
     }
     
     public CatchTree Catch(VariableTree parameter, BlockTree block) {
-        return make.Catch((JCVariableDecl)parameter, (JCBlock)block);
+        return make.at(NOPOS).Catch((JCVariableDecl)parameter, (JCBlock)block);
     }
     
     public ClassTree Class(ModifiersTree modifiers, 
@@ -202,7 +201,7 @@ public class TreeFactory {
         ListBuffer<JCTree> defs = new ListBuffer<JCTree>();
         for (Tree t : memberDecls)
             defs.append((JCTree)t);
-        return make.ClassDef((JCModifiers)modifiers, 
+        return make.at(NOPOS).ClassDef((JCModifiers)modifiers,
                              names.fromString(simpleName.toString()),
                              typarams.toList(),
                              (JCTree)extendsClause,
@@ -248,7 +247,7 @@ public class TreeFactory {
         if (typeDecls != null) 
             for (Tree t : typeDecls)
                 defs.append((JCTree)t);
-        JCCompilationUnit unit = make.TopLevel(com.sun.tools.javac.util.List.<JCAnnotation>nil(), 
+        JCCompilationUnit unit = make.at(NOPOS).TopLevel(com.sun.tools.javac.util.List.<JCAnnotation>nil(),
                                                (JCExpression)packageDecl, defs.toList());
         unit.sourcefile = sourceFile;
         return unit;
@@ -273,34 +272,34 @@ public class TreeFactory {
             default:
                 throw new IllegalArgumentException("Illegal binary operator: " + operator);
         }
-        return make.Assignop(op, (JCExpression)variable, (JCExpression)expression);
+        return make.at(NOPOS).Assignop(op, (JCExpression)variable, (JCExpression)expression);
     }
     
     public ConditionalExpressionTree ConditionalExpression(ExpressionTree condition,
                                                            ExpressionTree trueExpression,
                                                            ExpressionTree falseExpression) {
-        return make.Conditional((JCExpression)condition,
+        return make.at(NOPOS).Conditional((JCExpression)condition,
                                 (JCExpression)trueExpression,
                                 (JCExpression)falseExpression);
     }
     
     public ContinueTree Continue(CharSequence label) {
         Name n = label != null ? names.fromString(label.toString()) : null;
-        return make.Continue(n);
+        return make.at(NOPOS).Continue(n);
     }
     
     public DoWhileLoopTree DoWhileLoop(ExpressionTree condition, StatementTree statement) {
-        return make.DoLoop((JCStatement)statement, (JCExpression)condition);
+        return make.at(NOPOS).DoLoop((JCStatement)statement, (JCExpression)condition);
     }
     
     public EmptyStatementTree EmptyStatement() {
-        return make.Skip();
+        return make.at(NOPOS).Skip();
     }
     
     public EnhancedForLoopTree EnhancedForLoop(VariableTree variable, 
                                                ExpressionTree expression,
                                                StatementTree statement) {
-        return make.ForeachLoop((JCVariableDecl)variable,
+        return make.at(NOPOS).ForeachLoop((JCVariableDecl)variable,
                                 (JCExpression)expression,
                                 (JCStatement)statement);
     }
@@ -309,11 +308,11 @@ public class TreeFactory {
         ListBuffer<JCTree> errors = new ListBuffer<JCTree>();
         for (Tree t : errorTrees)
            errors.append((JCTree)t);
-        return make.Erroneous(errors.toList());
+        return make.at(NOPOS).Erroneous(errors.toList());
     }
     
     public ExpressionStatementTree ExpressionStatement(ExpressionTree expression) {
-        return make.Exec((JCExpression)expression);
+        return make.at(NOPOS).Exec((JCExpression)expression);
     }
     
     public ForLoopTree ForLoop(List<? extends StatementTree> initializer, 
@@ -326,60 +325,60 @@ public class TreeFactory {
         ListBuffer<JCExpressionStatement> step = new ListBuffer<JCExpressionStatement>();
         for (ExpressionStatementTree t : update)
             step.append((JCExpressionStatement)t);
-        return make.ForLoop(init.toList(), (JCExpression)condition,
+        return make.at(NOPOS).ForLoop(init.toList(), (JCExpression)condition,
                             step.toList(), (JCStatement)statement);
     }
     
     public IdentifierTree Identifier(CharSequence name) {
-        return make.Ident(names.fromString(name.toString()));
+        return make.at(NOPOS).Ident(names.fromString(name.toString()));
     }
     
     public IdentifierTree Identifier(Element element) {
-        return make.Ident((Symbol)element);
+        return make.at(NOPOS).Ident((Symbol)element);
     }
     
     public IfTree If(ExpressionTree condition, StatementTree thenStatement, StatementTree elseStatement) {
-        return make.If((JCExpression)condition, (JCStatement)thenStatement, (JCStatement)elseStatement);
+        return make.at(NOPOS).If((JCExpression)condition, (JCStatement)thenStatement, (JCStatement)elseStatement);
     }
     
     public ImportTree Import(Tree qualid, boolean importStatic) {
-        return make.Import((JCTree)qualid, importStatic);
+        return make.at(NOPOS).Import((JCTree)qualid, importStatic);
     }
     
     public InstanceOfTree InstanceOf(ExpressionTree expression, Tree type) {
-        return make.TypeTest((JCExpression)expression, (JCTree)type);
+        return make.at(NOPOS).TypeTest((JCExpression)expression, (JCTree)type);
     }
     
     public LabeledStatementTree LabeledStatement(CharSequence label, StatementTree statement) {
-        return make.Labelled(names.fromString(label.toString()), (JCStatement)statement);
+        return make.at(NOPOS).Labelled(names.fromString(label.toString()), (JCStatement)statement);
     }
     
     public LiteralTree Literal(Object value) {
         try {
             if (value instanceof Boolean)  // workaround for javac issue 6504896
-                return make.Literal(TypeTags.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
+                return make.at(NOPOS).Literal(TypeTags.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
             if (value instanceof Character) // looks like world championship in workarounds here ;-)
-                return make.Literal(TypeTags.CHAR, Integer.valueOf((Character) value));
+                return make.at(NOPOS).Literal(TypeTags.CHAR, Integer.valueOf((Character) value));
             if (value instanceof Byte) // #119143: Crystal ball no. 4
-                return make.Literal(TypeTags.INT, ((Byte) value).intValue());
+                return make.at(NOPOS).Literal(TypeTags.INT, ((Byte) value).intValue());
             if (value instanceof Short)
-                return make.Literal(TypeTags.INT, ((Short) value).intValue());
+                return make.at(NOPOS).Literal(TypeTags.INT, ((Short) value).intValue());
             // workaround for making NULL_LITERAL kind.
             if (value == null) {
-                return make.Literal(TypeTags.BOT, value);
+                return make.at(NOPOS).Literal(TypeTags.BOT, value);
             }
-            return make.Literal(value);
+            return make.at(NOPOS).Literal(value);
         } catch (AssertionError e) {
             throw new IllegalArgumentException(e.getMessage());
         }
     }
 
     public MemberSelectTree MemberSelect(ExpressionTree expression, CharSequence identifier) {
-        return make.Select((JCExpression)expression, names.fromString(identifier.toString()));
+        return make.at(NOPOS).Select((JCExpression)expression, names.fromString(identifier.toString()));
     }
     
     public MemberSelectTree MemberSelect(ExpressionTree expression, Element element) {
-        return (MemberSelectTree)make.Select((JCExpression)expression, (Symbol)element);
+        return (MemberSelectTree)make.at(NOPOS).Select((JCExpression)expression, (Symbol)element);
     }
     
     public MethodInvocationTree MethodInvocation(List<? extends ExpressionTree> typeArguments, 
@@ -391,7 +390,7 @@ public class TreeFactory {
         ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
         for (ExpressionTree t : arguments)
             args.append((JCExpression)t);
-        return make.Apply(typeargs.toList(), (JCExpression)method, args.toList());
+        return make.at(NOPOS).Apply(typeargs.toList(), (JCExpression)method, args.toList());
     }
     
     public MethodTree Method(ModifiersTree modifiers,
@@ -421,7 +420,7 @@ public class TreeFactory {
         if (!parameters.isEmpty() && isVarArgs) {
             JCVariableDecl variableDecl = (JCVariableDecl) parameters.get(parameters.size()-1);
             if (variableDecl.getKind() != Kind.ARRAY_TYPE) {                
-                variableDecl.mods = make.Modifiers(variableDecl.mods.flags | Flags.VARARGS);                
+                variableDecl.mods = make.at(NOPOS).Modifiers(variableDecl.mods.flags | Flags.VARARGS);
             } else {
                 throw new IllegalArgumentException("Last parameter isn't array. Can't set varargs flag.");
             }
@@ -434,14 +433,14 @@ public class TreeFactory {
         ListBuffer<JCExpression> throwz = new ListBuffer<JCExpression>();
         for (ExpressionTree t : throwsList)
             throwz.append((JCExpression)t);
-        return make.MethodDef((JCModifiers)modifiers, names.fromString(name.toString()),
+        return make.at(NOPOS).MethodDef((JCModifiers)modifiers, names.fromString(name.toString()),
                               (JCExpression)returnType, typarams.toList(),
                               params.toList(), throwz.toList(),
                               (JCBlock)body, (JCExpression)defaultValue);
     }
     
     public MethodTree Method(ExecutableElement element, BlockTree body) {
-        return make.MethodDef((Symbol.MethodSymbol)element, (JCBlock)body);
+        return make.at(NOPOS).MethodDef((Symbol.MethodSymbol)element, (JCBlock)body);
     }
     
     public ModifiersTree Modifiers(Set<Modifier> flagset, List<? extends AnnotationTree> annotations) {
@@ -452,7 +451,7 @@ public class TreeFactory {
         ListBuffer<JCAnnotation> anns = new ListBuffer<JCAnnotation>();
         for (AnnotationTree t : annotations)
             anns.append((JCAnnotation)t);
-        return make.Modifiers(mods, anns.toList());
+        return make.at(NOPOS).Modifiers(mods, anns.toList());
     }
     
     public static long modifiersToFlags(Set<Modifier> flagset) {
@@ -484,7 +483,7 @@ public class TreeFactory {
         ListBuffer<JCAnnotation> anns = new ListBuffer<JCAnnotation>();
         for (AnnotationTree t : annotations)
             anns.append((JCAnnotation)t);
-        return make.Modifiers(((JCModifiers)oldMods).flags, anns.toList());
+        return make.at(NOPOS).Modifiers(((JCModifiers)oldMods).flags, anns.toList());
     }
     
     public NewArrayTree NewArray(Tree elemtype, 
@@ -499,7 +498,7 @@ public class TreeFactory {
             for (ExpressionTree t : initializers)
                 elems.append((JCExpression)t);
         }
-        return make.NewArray((JCExpression)elemtype, dims.toList(), elems != null ? elems.toList() : null);
+        return make.at(NOPOS).NewArray((JCExpression)elemtype, dims.toList(), elems != null ? elems.toList() : null);
     }
     
     public NewClassTree NewClass(ExpressionTree enclosingExpression, 
@@ -513,7 +512,7 @@ public class TreeFactory {
         ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
         for (ExpressionTree t : arguments)
             args.append((JCExpression)t);
-        return make.NewClass((JCExpression)enclosingExpression, typeargs.toList(),
+        return make.at(NOPOS).NewClass((JCExpression)enclosingExpression, typeargs.toList(),
                              (JCExpression)identifier, args.toList(),
                              (JCClassDecl)classBody);
     }
@@ -523,7 +522,7 @@ public class TreeFactory {
         ListBuffer<JCExpression> typeargs = new ListBuffer<JCExpression>();
         for (Tree t : typeArguments)
             typeargs.append((JCExpression)t);
-        return make.TypeApply((JCExpression)type, typeargs.toList());        
+        return make.at(NOPOS).TypeApply((JCExpression)type, typeargs.toList());
     }
     
     public AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations,
@@ -531,16 +530,16 @@ public class TreeFactory {
         ListBuffer<JCTypeAnnotation> anns = new ListBuffer<JCTypeAnnotation>();
         for (AnnotationTree t : annotations)
             anns.append((JCTypeAnnotation)t);
-        return make.AnnotatedType(anns.toList(), (JCExpression) type);
+        return make.at(NOPOS).AnnotatedType(anns.toList(), (JCExpression) type);
     }
 
     public AnnotationTree TypeAnnotation(AnnotationTree t) {
         JCAnnotation ann = (JCAnnotation) t;
-        return make.TypeAnnotation(ann.getAnnotationType(), ann.getArguments());
+        return make.at(NOPOS).TypeAnnotation(ann.getAnnotationType(), ann.getArguments());
     }
 
     public ParenthesizedTree Parenthesized(ExpressionTree expression) {
-        return make.Parens((JCExpression)expression);
+        return make.at(NOPOS).Parens((JCExpression)expression);
     }
     
     public PrimitiveTypeTree PrimitiveType(TypeKind typekind) {
@@ -576,16 +575,16 @@ public class TreeFactory {
             default:
                 throw new AssertionError("unknown primitive type " + typekind);
         }
-        return make.TypeIdent(typetag);
+        return make.at(NOPOS).TypeIdent(typetag);
     }
     
     public ExpressionTree QualIdentImpl(Element element) {
-        return make.QualIdent((Symbol) element);
+        return make.at(NOPOS).QualIdent((Symbol) element);
     }
     
     public ExpressionTree QualIdent(Element element) {
         Symbol s = (Symbol) element;
-        QualIdentTree result = new QualIdentTree(make.QualIdent(s.owner), s.name, s);
+        QualIdentTree result = new QualIdentTree(make.at(NOPOS).QualIdent(s.owner), s.name, s);
         
         result.setPos(make.pos).setType(s.type);
         
@@ -593,22 +592,22 @@ public class TreeFactory {
     }
     
     public ReturnTree Return(ExpressionTree expression) {
-        return make.Return((JCExpression)expression);        
+        return make.at(NOPOS).Return((JCExpression)expression);
     }
     
     public SwitchTree Switch(ExpressionTree expression, List<? extends CaseTree> caseList) {
         ListBuffer<JCCase> cases = new ListBuffer<JCCase>();
         for (CaseTree t : caseList)
             cases.append((JCCase)t);
-        return make.Switch((JCExpression)expression, cases.toList());
+        return make.at(NOPOS).Switch((JCExpression)expression, cases.toList());
     }
     
     public SynchronizedTree Synchronized(ExpressionTree expression, BlockTree block) {
-        return make.Synchronized((JCExpression)expression, (JCBlock)block);
+        return make.at(NOPOS).Synchronized((JCExpression)expression, (JCBlock)block);
     }
     
     public ThrowTree Throw(ExpressionTree expression) {
-        return make.Throw((JCExpression)expression);
+        return make.at(NOPOS).Throw((JCExpression)expression);
     }
     
     public TryTree Try(BlockTree tryBlock, 
@@ -617,7 +616,7 @@ public class TreeFactory {
         ListBuffer<JCCatch> catches = new ListBuffer<JCCatch>();
         for (CatchTree t : catchList)
             catches.append((JCCatch)t);
-        return make.Try((JCBlock)tryBlock, catches.toList(), (JCBlock)finallyBlock);
+        return make.at(NOPOS).Try((JCBlock)tryBlock, catches.toList(), (JCBlock)finallyBlock);
     }
     
     public com.sun.tools.javac.util.List<JCExpression> Types(List<Type> ts) {
@@ -633,41 +632,41 @@ public class TreeFactory {
         switch (type.getKind()) {
             case WILDCARD: {
                 WildcardType a = ((WildcardType) type);
-                tp = make.Wildcard(make.TypeBoundKind(a.kind), (JCExpression) Type(a.type));
+                tp = make.at(NOPOS).Wildcard(make.at(NOPOS).TypeBoundKind(a.kind), (JCExpression) Type(a.type));
                 break;
             }
             case DECLARED:
                 JCExpression clazz = (JCExpression) QualIdent(t.tsym);
                 tp = t.getTypeArguments().isEmpty()
                 ? clazz
-                        : make.TypeApply(clazz, Types(t.getTypeArguments()));
+                        : make.at(NOPOS).TypeApply(clazz, Types(t.getTypeArguments()));
                 break;
             case ARRAY:
                 
-                tp = make.TypeArray((JCExpression) Type(((ArrayType) type).getComponentType()));
+                tp = make.at(NOPOS).TypeArray((JCExpression) Type(((ArrayType) type).getComponentType()));
                 break;
             case NULL:
-                tp = make.Literal(TypeTags.BOT, null);
+                tp = make.at(NOPOS).Literal(TypeTags.BOT, null);
                 break;
             case ERROR:
-                tp = make.Ident(((ErrorType) type).tsym.name);
+                tp = make.at(NOPOS).Ident(((ErrorType) type).tsym.name);
                 break;
             default:
-                return make.Type((Type)type);
+                return make.at(NOPOS).Type((Type)type);
         }
     
         return tp;
     }
     
     public TypeCastTree TypeCast(Tree type, ExpressionTree expression) {
-        return make.TypeCast((JCTree)type, (JCExpression)expression);
+        return make.at(NOPOS).TypeCast((JCTree)type, (JCExpression)expression);
     }
     
     public TypeParameterTree TypeParameter(CharSequence name, List<? extends ExpressionTree> boundsList) {
         ListBuffer<JCExpression> bounds = new ListBuffer<JCExpression>();
         for (Tree t : boundsList)
             bounds.append((JCExpression)t);
-        return make.TypeParameter(names.fromString(name.toString()), bounds.toList());
+        return make.at(NOPOS).TypeParameter(names.fromString(name.toString()), bounds.toList());
     }
     
     public UnaryTree Unary(Kind operator, ExpressionTree arg) {
@@ -684,23 +683,23 @@ public class TreeFactory {
             default:
                 throw new IllegalArgumentException("Illegal unary operator: " + operator);
         }
-        return make.Unary(op, (JCExpression)arg);
+        return make.at(NOPOS).Unary(op, (JCExpression)arg);
     }
     
     public VariableTree Variable(ModifiersTree modifiers,
                                  CharSequence name,
                                  Tree type,
                                  ExpressionTree initializer) {
-        return make.VarDef((JCModifiers)modifiers, names.fromString(name.toString()),
+        return make.at(NOPOS).VarDef((JCModifiers)modifiers, names.fromString(name.toString()),
                            (JCExpression)type, (JCExpression)initializer);
     }
     
     public VariableTree Variable(VariableElement variable, ExpressionTree initializer) {
-        return make.VarDef((Symbol.VarSymbol)variable, (JCExpression)initializer);
+        return make.at(NOPOS).VarDef((Symbol.VarSymbol)variable, (JCExpression)initializer);
     }
     
     public WhileLoopTree WhileLoop(ExpressionTree condition, StatementTree statement) {
-        return make.WhileLoop((JCExpression)condition, (JCStatement)statement);
+        return make.at(NOPOS).WhileLoop((JCExpression)condition, (JCStatement)statement);
     }
     
     public WildcardTree Wildcard(Kind kind, Tree type) {
@@ -718,8 +717,8 @@ public class TreeFactory {
             default:
                 throw new IllegalArgumentException("Unknown wildcard bound " + kind);
         }
-        TypeBoundKind tbk = make.TypeBoundKind(boundKind);
-        return make.Wildcard(tbk, (JCTree)type);
+        TypeBoundKind tbk = make.at(NOPOS).TypeBoundKind(boundKind);
+        return make.at(NOPOS).Wildcard(tbk, (JCTree)type);
     }
     
     ////////////////////////////////////// makers modification suggested by Tom
@@ -1543,7 +1542,7 @@ public class TreeFactory {
         ListBuffer<JCTree> defs = new ListBuffer<JCTree>();
         for (Tree t : memberDecls)
             defs.append((JCTree)t);
-        return make.ClassDef(make.Modifiers(modifiers, annotations),
+        return make.at(NOPOS).ClassDef(make.at(NOPOS).Modifiers(modifiers, annotations),
                              names.fromString(simpleName.toString()),
                              typarams.toList(),
                              (JCTree)extendsClause,

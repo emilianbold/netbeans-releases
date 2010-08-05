@@ -43,25 +43,20 @@
  */
 package com.sun.collablet.moxc;
 
-import com.sun.collablet.*;
-
-import org.openide.options.*;
-import org.openide.util.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import javax.xml.parsers.*;
-
+import com.sun.collablet.CollabMessage;
+import com.sun.collablet.Collablet;
+import com.sun.collablet.InvalidMessageException;
+import java.io.ByteArrayInputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.collab.core.Debug;
-
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXParseException;
 
 /**
  * Represents a MOXC protocol message

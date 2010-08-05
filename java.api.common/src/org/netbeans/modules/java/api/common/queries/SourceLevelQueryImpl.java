@@ -43,11 +43,7 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -57,7 +53,8 @@ import org.openide.filesystems.FileObject;
  * Returns source level of project Java source files.
  * @author David Konecny
  */
-class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
+@SuppressWarnings("deprecation")
+class SourceLevelQueryImpl implements org.netbeans.spi.java.queries.SourceLevelQueryImplementation {
 
     private final PropertyEvaluator evaluator;
 
@@ -67,16 +64,21 @@ class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
         this.evaluator = evaluator;
     }
     
+    @Override
     public String getSourceLevel(FileObject javaFile) {
-        final String activePlatform = evaluator.getProperty("platform.active"); //NOI18N
+        return findSourceLevel(evaluator);
+    }
+
+    static String findSourceLevel (final PropertyEvaluator eval) {
+        final String activePlatform = eval.getProperty("platform.active"); //NOI18N
         if (CommonProjectUtils.getActivePlatform(activePlatform) != null) {
-            String sl = evaluator.getProperty("javac.source"); //NOI18N
+            String sl = eval.getProperty("javac.source"); //NOI18N
             if (sl != null && sl.length() > 0) {
                 return sl;
             }
             return null;
         }
-        
+
         EditableProperties props = PropertyUtils.getGlobalProperties();
         String sl = props.get("default.javac.source"); //NOI18N
         if (sl != null && sl.length() > 0) {

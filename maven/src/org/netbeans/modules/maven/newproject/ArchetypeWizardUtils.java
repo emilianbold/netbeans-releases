@@ -88,6 +88,7 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -132,8 +133,9 @@ public class ArchetypeWizardUtils {
 
         Archetype arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.2"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("webapp-javaee6"); //NOI18N
+        arch.setRepository("http://repository.codehaus.org");
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
@@ -151,8 +153,9 @@ public class ArchetypeWizardUtils {
         EJB_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.2"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ejb-javaee6"); //NOI18N
+        arch.setRepository("http://repository.codehaus.org");
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
@@ -170,20 +173,23 @@ public class ArchetypeWizardUtils {
         EAR_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-javaee6"); //NOI18N
+        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.1"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-jee5"); //NOI18N
+        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.1"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-j2ee14"); //NOI18N
+        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[2] = arch;
 
         EA_ARCH = new Archetype();
@@ -340,16 +346,16 @@ public class ArchetypeWizardUtils {
                 File rootFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
                         arch, additional, 0); //NOI18N
                 File earFile = createFromArchetype(handle, (File)wiz.getProperty("ear_projdir"), ear_vi, //NOI18N
-                        (Archetype)wiz.getProperty("ear_archetype"), null, 4); //NOI18N
+                        (Archetype)wiz.getProperty("ear_archetype"), null, 4, false); //NOI18N
                 int progressCounter = 6;
                 if (web_vi != null) {
                     createFromArchetype(handle, (File)wiz.getProperty("web_projdir"), web_vi, //NOI18N
-                            (Archetype)wiz.getProperty("web_archetype"), null, progressCounter); //NOI18N
+                            (Archetype)wiz.getProperty("web_archetype"), null, progressCounter, false); //NOI18N
                     progressCounter += 3;
                 }
                 if (ejb_vi != null) {
                     createFromArchetype(handle, (File)wiz.getProperty("ejb_projdir"), ejb_vi, //NOI18N
-                            (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter); //NOI18N
+                            (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter, false); //NOI18N
                     progressCounter += 3;
                 }
                 addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
@@ -383,7 +389,9 @@ public class ArchetypeWizardUtils {
                     //now we have the nbm-archetype (or the netbeans platform one).
                     addNbmPluginOsgiParameter(projFile);
                 }
-                return openProjects(handle, projFile, appDir, nbm_artifactId == null ? 3 : 3 + 3);
+                Set<FileObject> projects = openProjects(handle, projFile, appDir, nbm_artifactId == null ? 3 : 3 + 3);
+                Templates.setDefinesMainProject(wiz, projects.size() > 1);
+                return projects;
             }
         } finally {
             handle.finish();
@@ -434,11 +442,15 @@ public class ArchetypeWizardUtils {
     
     private static File createFromArchetype (ProgressHandle handle, File projDir, ProjectInfo vi,
         Archetype arch, Map<String, String> additional, int progressCounter) throws IOException {
+        return createFromArchetype(handle, projDir, vi, arch, additional, progressCounter, true);
+    }
+    private static File createFromArchetype (ProgressHandle handle, File projDir, ProjectInfo vi,
+        Archetype arch, Map<String, String> additional, int progressCounter, boolean updateLastUsedProjectDir) throws IOException {
         handle.progress(++progressCounter);
 
         final File dirF = FileUtil.normalizeFile(projDir); //NOI18N
         final File parent = dirF.getParentFile();
-        if (parent != null && parent.exists()) {
+        if (updateLastUsedProjectDir && parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
         dirF.getParentFile().mkdirs();

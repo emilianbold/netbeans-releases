@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -53,6 +52,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -80,6 +81,12 @@ import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.AliasedClass;
+import org.netbeans.modules.php.editor.api.elements.AliasedConstant;
+import org.netbeans.modules.php.editor.api.elements.AliasedFunction;
+import org.netbeans.modules.php.editor.api.elements.AliasedInterface;
+import org.netbeans.modules.php.editor.api.elements.AliasedNamespace;
+import org.netbeans.modules.php.editor.api.elements.AliasedType;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.openide.filesystems.FileObject;
@@ -132,6 +139,122 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
+    public Set<ClassElement> getClasses(final NameKind query, final Set<AliasedName> aliasedNames) {
+        final Set<ClassElement> retval = new HashSet<ClassElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
+                for (final ClassElement nextClass : getClasses(nextQuery)) {
+                    retval.add(new AliasedClass(aliasedName, nextClass));
+                }
+            }
+        }
+        retval.addAll(getClasses(query));
+        return retval;
+    }
+
+    @Override
+    public Set<NamespaceElement> getNamespaces(final NameKind query, final Set<AliasedName> aliasedNames) {
+        final Set<NamespaceElement> retval = new HashSet<NamespaceElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.NAMESPACE_DECLARATION)) {
+                for (final NamespaceElement nextNamespace : getNamespaces(nextQuery)) {
+                    retval.add(new AliasedNamespace(aliasedName, nextNamespace));
+                }
+            }
+        }
+        retval.addAll(getNamespaces(query));
+        return retval;
+    }
+
+    private static Set<NameKind> queriesForAlias(final NameKind query, final AliasedName aliasedName, final PhpElementKind elementKind) {
+        final boolean fullyQualified = query.getQuery().getKind().isFullyQualified();
+        final Kind queryKind = query.getQueryKind();
+        final LinkedList<String> segments = query.getQuery().getSegments();
+        final Set<NameKind> aliasQueries = new HashSet<NameKind>();
+        for (int i = 0; i < segments.size(); i++) {
+            final String nextSegment = segments.get(i);
+            if ((i == 0 || (i == segments.size() - 1)) && (!nextSegment.isEmpty() || segments.size() == 1)
+                    && NameKind.create(nextSegment, queryKind).matchesName(elementKind, aliasedName.getAliasName())) {
+                final LinkedList<String> nSegments = new LinkedList<String>();
+                nSegments.addAll(segments.subList(0, i));
+                nSegments.addAll(aliasedName.getRealName().getSegments());
+                if (i + 1 < segments.size()) {
+                    nSegments.addAll(segments.subList(i + 1, segments.size()));
+                }
+                aliasQueries.add(NameKind.create(QualifiedName.create(fullyQualified, nSegments), queryKind));
+            }
+        }
+        return aliasQueries;
+    }
+
+    @Override
+    public Set<FunctionElement> getFunctions(NameKind query, Set<AliasedName> aliasedNames) {
+        final Set<FunctionElement> retval = new HashSet<FunctionElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.FUNCTION)) {
+                for (final FunctionElement nextFunction : getFunctions(nextQuery)) {
+                    retval.add(new AliasedFunction(aliasedName, nextFunction));
+                }
+            }
+        }
+        retval.addAll(getFunctions(query));
+        return retval;
+    }
+
+    @Override
+    public Set<ConstantElement> getConstants(final NameKind query, final Set<AliasedName> aliasedNames) {
+        final Set<ConstantElement> retval = new HashSet<ConstantElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CONSTANT)) {
+                for (final ConstantElement nextConstant : getConstants(nextQuery)) {
+                    retval.add(new AliasedConstant(aliasedName, nextConstant));
+                }
+            }
+        }
+        retval.addAll(getConstants(query));
+        return retval;
+    }
+
+    @Override
+    public Set<MethodElement> getConstructors(final NameKind typeQuery, final Set<AliasedName> aliasedNames) {
+        final Set<MethodElement> retval = new HashSet<MethodElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(typeQuery, aliasedName, PhpElementKind.CLASS)) {
+                for (ClassElement classElement : getClasses(nextQuery)) {
+                    final AliasedClass aliasedClass = new AliasedClass(aliasedName, classElement);
+                    final Set<MethodElement> constructorsImpl = getConstructorsImpl(aliasedClass, classElement, new LinkedHashSet<ClassElement>());
+                    retval.addAll(constructorsImpl.isEmpty() ? getDefaultConstructors(aliasedClass) : constructorsImpl);
+                }
+            }
+        }
+        retval.addAll(getConstructors(typeQuery));
+        return retval;
+    }
+
+    @Override
+    public Set<PhpElement> getTopLevelElements(final NameKind query, final Set<AliasedName> aliasedNames) {
+        final Set<PhpElement> retval = new HashSet<PhpElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
+                for (final PhpElement nextElement : getTopLevelElements(nextQuery)) {
+                    if (nextElement instanceof ConstantElement) {
+                        retval.add(new AliasedConstant(aliasedName, (ConstantElement) nextElement));
+                    } else if (nextElement instanceof FunctionElement) {
+                        retval.add(new AliasedFunction(aliasedName, (FunctionElement) nextElement));
+                    } else if (nextElement instanceof ClassElement) {
+                        retval.add(new AliasedClass(aliasedName, (ClassElement) nextElement));
+                    } else if (nextElement instanceof InterfaceElement) {
+                        retval.add(new AliasedInterface(aliasedName, (InterfaceElement) nextElement));
+                    }
+                }
+            }
+        }
+        retval.addAll(getTopLevelElements(query));
+        return retval;
+    }
+
+
+    @Override
     public final Set<InterfaceElement> getInterfaces() {
         return getInterfaces(NameKind.empty());
     }
@@ -151,11 +274,39 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
+    public Set<InterfaceElement> getInterfaces(final NameKind query, final Set<AliasedName> aliasedNames) {
+        final Set<InterfaceElement> retval = new HashSet<InterfaceElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.IFACE)) {
+                for (final InterfaceElement nextIface : getInterfaces(nextQuery)) {
+                    retval.add(new AliasedInterface(aliasedName, nextIface));
+                }
+            }
+        }
+        retval.addAll(getInterfaces(query));
+        return retval;
+    }
+
+    @Override
     public Set<TypeElement> getTypes(NameKind query) {
         final Set<TypeElement> types = new HashSet<TypeElement>();
         types.addAll(getClasses(query));
         types.addAll(getInterfaces(query));
         return types;
+    }
+
+    @Override
+    public Set<TypeElement> getTypes(final NameKind query, final Set<AliasedName> aliasedNames) {
+        final Set<TypeElement> retval = new HashSet<TypeElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
+                for (final TypeElement nextType : getTypes(nextQuery)) {
+                    retval.add(new AliasedType(aliasedName, nextType));
+                }
+            }
+        }
+        retval.addAll(getTypes(query));
+        return retval;
     }
 
     @Override
@@ -547,7 +698,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     FileObject fo = null;
                     try {
                         fo = "file".equals(url.getProtocol()) ? //NOI18N
-                                FileUtil.toFileObject(new File(url.toURI())) : URLMapper.findFileObject(url);
+                                FileUtil.toFileObject(new java.io.File(url.toURI())) : URLMapper.findFileObject(url);
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -1231,6 +1382,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         }
     }
 
+    @Override
     public LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement) {
         final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
         final Exact query = NameKind.exact(typeElement.getFullyQualifiedName());
@@ -1339,13 +1491,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private static String prepareIdxQuery(String textForQuery, Kind kind) {
         String query = textForQuery.toLowerCase();
         if (kind.equals(QuerySupport.Kind.CAMEL_CASE)) {
-            final char charAt = textForQuery.charAt(0);
             final int length = textForQuery.length();
-            if (Character.isLetter(charAt) && length > 0) {
+            if (length > 0 && Character.isLetter(textForQuery.charAt(0))) {
                 query = query.substring(0, 1);//NOI18N
-            } else if (charAt == '$' && length > 1) {
+            } else if (length > 1 && textForQuery.charAt(0) == '$') {//NOI18N
                 query = query.substring(0, 1);//NOI18N
-            }else {
+            } else {
                 query = "";//NOI18N
             }
         }
@@ -1354,11 +1505,21 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement) {
-        return new TypeTreeElementImpl(typeElement);
+        return new TypeTreeElementImpl(typeElement, true);
     }
 
     @Override
     public TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement, Set<TypeElement> preferredTypes) {
-        return new TypeTreeElementImpl(typeElement, preferredTypes);
+        return new TypeTreeElementImpl(typeElement, preferredTypes, true);
+    }
+
+    @Override
+    public TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement) {
+                return new TypeTreeElementImpl(typeElement, false);
+    }
+
+    @Override
+    public TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement, Set<TypeElement> preferredTypes) {
+                return new TypeTreeElementImpl(typeElement, preferredTypes, false);
     }
 }

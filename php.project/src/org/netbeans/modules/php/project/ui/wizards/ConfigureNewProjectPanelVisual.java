@@ -78,14 +78,14 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton, new BrowseSources(),
                 NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));
         projectFolderPanel.add(BorderLayout.NORTH, projectFolderComponent);
-        init();
+        init(wizardPanel.getWizardType());
     }
 
-    private void init() {
+    private void init(NewPhpProjectWizardIterator.WizardType wizardType) {
         projectNameTextField.getDocument().addDocumentListener(this);
         localServerComponent.addChangeListener(this);
 
-        phpVersionComboBox.setModel(new PhpVersionComboBoxModel());
+        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(wizardType.equals(NewPhpProjectWizardIterator.WizardType.NEW) ? PhpVersion.PHP_53 : PhpVersion.PHP_5));
 
         encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
         encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());

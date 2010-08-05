@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTANonInjectableInWeb;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -87,7 +88,7 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
         
         if (isContainerManaged) { // Container-managed persistence context
             if (isInjectionTarget) { // servlet, JSF managed bean ...
-                return ContainerManagedJTAInjectableInWeb.class;
+                return ContainerManagedJTAInjectableInEJB.class;
             } else { // other classes
                 return ContainerManagedJTANonInjectableInWeb.class;
             }

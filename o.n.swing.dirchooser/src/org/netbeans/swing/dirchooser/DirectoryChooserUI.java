@@ -165,8 +165,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private String upFolderAccessibleName = null;
     
     private String newFolderToolTipText = null;
+    private String newFolderAccessibleName = null;
     
     private String homeFolderTooltipText = null;
+    private String homeFolderAccessibleName = null;
     
     private Action newFolderAction = new NewDirectoryAction();
     
@@ -654,7 +656,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 }
                 homeButton.setToolTipText( tooltip );
             }
-
+            if( null != homeFolderAccessibleName )
+                homeButton.getAccessibleContext().setAccessibleName(homeFolderAccessibleName);
             topPanel.add(homeButton);
         }
         
@@ -676,6 +679,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         newFolderButton.setIcon(newFoldIcon);
         newFolderButton.setToolTipText(newFolderToolTipText);
+        newFolderButton.getAccessibleContext().setAccessibleName(newFolderAccessibleName);
         newFolderButton.setAlignmentX(JComponent.RIGHT_ALIGNMENT);
         newFolderButton.setAlignmentY(JComponent.CENTER_ALIGNMENT);
         
@@ -1180,10 +1184,21 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         filesOfTypeLabelText = UIManager.getString("FileChooser.filesOfTypeLabelText",l);
         
         upFolderToolTipText =  UIManager.getString("FileChooser.upFolderToolTipText",l);
+        if( null == upFolderToolTipText )
+            upFolderToolTipText = NbBundle.getMessage(DirectoryChooserUI.class, "TLTP_UpFolder"); //NOI18N
         upFolderAccessibleName = UIManager.getString("FileChooser.upFolderAccessibleName",l);
+        if( null == upFolderAccessibleName )
+            upFolderAccessibleName = NbBundle.getMessage(DirectoryChooserUI.class, "ACN_UpFolder"); //NOI18N
         
         newFolderToolTipText = UIManager.getString("FileChooser.newFolderToolTipText",l);
+        if( null == newFolderToolTipText )
+            newFolderToolTipText = NbBundle.getMessage(DirectoryChooserUI.class, "TLTP_NewFolder"); //NOI18N
+        newFolderAccessibleName = NbBundle.getMessage(DirectoryChooserUI.class, "ACN_NewFolder"); //NOI18N
+
         homeFolderTooltipText = UIManager.getString("FileChooser.homeFolderToolTipText",l);
+        if( null == homeFolderTooltipText )
+            homeFolderTooltipText = NbBundle.getMessage(DirectoryChooserUI.class, "TLTP_HomeFolder"); //NOI18N
+        homeFolderAccessibleName = NbBundle.getMessage(DirectoryChooserUI.class, "ACN_HomeFolder"); //NOI18N
         
     }
     

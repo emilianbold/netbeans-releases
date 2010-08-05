@@ -23,7 +23,7 @@ import org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask;
 import org.openide.util.Exceptions;
 
 /**
- * Utility class that provides information about particual host.
+ * Utility class that provides information about particular host.
  */
 public final class HostInfoUtils {
 
@@ -81,7 +81,7 @@ public final class HostInfoUtils {
 
     /**
      * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
-     * If execEnv referes to remote host that is not connected yet, a
+     * If execEnv refers to a remote host that is not connected yet, a
      * <tt>ConnectException</tt> is thrown.
      *
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
@@ -165,8 +165,8 @@ public final class HostInfoUtils {
     /**
      * Returns <tt>HostInfo</tt> with information about the host identified
      * by <tt>execEnv</tt>. Invocation of this method may block current thread
-     * for rather significant amount of time or can even initiate UI-user
-     * interraction. This happens when execEnv represents remote host and no
+     * for rather significant amount of time. It can also initiate UI-user
+     * interaction. This happens when execEnv represents remote host and no
      * active connection to that host is available.
      * An attempt to establish new connection will be performed. This may initiate
      * password prompt.
@@ -199,6 +199,19 @@ public final class HostInfoUtils {
 
             if (result == null) {
                 try {
+                    // Must be sure that host is connected.
+                    // It will throw an exception in case if fails to connect
+                    if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                        ConnectionManager.getInstance().connectTo(execEnv);
+                        // connect will recursively call getHostInfo...
+                        // so result will be available already.
+                        result = cache.get(execEnv);
+
+                        if (result != null) {
+                            return result;
+                        }
+                    }
+
                     result = new FetchHostInfoTask().compute(execEnv);
                     if (result == null) {
                         throw new IOException("Error getting host info for " + execEnv); // NOI18N

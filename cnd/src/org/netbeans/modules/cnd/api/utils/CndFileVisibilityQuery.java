@@ -66,6 +66,8 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
     private CndFileVisibilityQuery() {
         MIMEExtensions.get(MIMENames.C_MIME_TYPE).addChangeListener(this);
         MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).addChangeListener(this);
+        MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).addChangeListener(this);
+        MIMEExtensions.get(MIMENames.ASM_MIME_TYPE).addChangeListener(this);
         MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).addChangeListener(this);
     }
 
@@ -124,6 +126,8 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
         List<Collection<String>> suffixes = new ArrayList<Collection<String>>();
         suffixes.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
         suffixes.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        suffixes.add(MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues());
+        suffixes.add(MIMEExtensions.get(MIMENames.ASM_MIME_TYPE).getValues());
         suffixes.add(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
         return suffixes;
     }

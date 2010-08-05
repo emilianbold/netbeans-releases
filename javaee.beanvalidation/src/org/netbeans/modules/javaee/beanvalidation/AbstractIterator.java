@@ -1,0 +1,234 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.javaee.beanvalidation;
+
+import java.awt.Component;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
+import javax.xml.soap.Node;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author alex
+ */
+public abstract class AbstractIterator implements TemplateWizard.Iterator{
+
+    private int index;
+    private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
+
+    public abstract Set<DataObject> instantiate(TemplateWizard wiz) throws IOException;
+
+    public void initialize(TemplateWizard wizard) {
+        WizardDescriptor.Panel<WizardDescriptor> folderPanel;
+        Project project = Templates.getProject( wizard );
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
+        if (sourceGroups.length == 0) {
+            sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        }
+        if (sourceGroups.length == 0) {
+            sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        }
+        folderPanel = Templates.buildSimpleTargetChooser(project, sourceGroups).create();
+
+        Profile profile = null;
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule !=null) {
+            profile = webModule.getJ2eeProfile();
+            if (!profile.equals(Profile.JAVA_EE_6_FULL) && !profile.equals(Profile.JAVA_EE_6_WEB)) {
+                folderPanel = new ErrorPanel();
+            }
+        }
+
+        panels = new WizardDescriptor.Panel[] { folderPanel };
+
+        // Creating steps.
+        Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
+        String[] beforeSteps = null;
+        if (prop != null && prop instanceof String[]) {
+            beforeSteps = (String[])prop;
+        }
+        String[] steps = createSteps(beforeSteps, panels);
+
+        for (int i = 0; i < panels.length; i++) {
+            JComponent jc = (JComponent)panels[i].getComponent ();
+            if (steps[i] == null) {
+                steps[i] = jc.getName ();
+            }
+            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
+            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+        }
+
+        Templates.setTargetName(wizard, getDefaultName());
+        Templates.setTargetFolder(wizard, getTargetFolder(project));
+    }
+
+    public abstract String getDefaultName();
+
+    FileObject getTargetFolder(Project project) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            FileObject webInf = wm.getWebInf();
+            if (webInf == null) {
+                try {
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return webInf;
+        } else {
+            //TODO XXX Need to find META-INF directory not just return a project dir
+//            SourceGroup[] sourceGroup = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
+            return project.getProjectDirectory();
+        }
+    }
+
+    public void uninitialize(TemplateWizard wiz) {
+        panels = null;
+    }
+
+    public Panel<WizardDescriptor> current() {
+        return panels[index];
+    }
+
+    public String name() {
+        return NbBundle.getMessage(ValidationConfigurationIterator.class, "TITLE_x_of_y",
+                index + 1, panels.length);
+    }
+
+    public boolean hasNext() {
+        return index < panels.length - 1;
+    }
+
+    public boolean hasPrevious() {
+        return index > 0;
+    }
+
+    public void nextPanel() {
+        if (! hasNext ()) throw new NoSuchElementException ();
+        index++;
+    }
+
+    public void previousPanel() {
+        if (! hasPrevious ()) throw new NoSuchElementException ();
+        index--;
+    }
+
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+    }
+
+    public static String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
+        //assert panels != null;
+        // hack to use the steps set before this panel processed
+        int diff = 0;
+        if (before == null) {
+            before = new String[0];
+        } else if (before.length > 0) {
+            diff = ("...".equals (before[before.length - 1])) ? 1 : 0; // NOI18N
+        }
+        String[] res = new String[ (before.length - diff) + panels.length];
+        for (int i = 0; i < res.length; i++) {
+            if (i < (before.length - diff)) {
+                res[i] = before[i];
+            } else {
+                res[i] = panels[i - before.length + diff].getComponent ().getName ();
+            }
+        }
+        return res;
+    }
+
+    private static class ErrorPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+
+        public Component getComponent() {
+            JPanel panel = new JPanel(true);
+            panel.add(new JLabel(NbBundle.getMessage(AbstractIterator.class, "ERR_Wrong_JavaEE")));
+            return panel;
+        }
+
+        public HelpCtx getHelp() {
+            return new HelpCtx(this.getClass());
+        }
+
+        public void readSettings(WizardDescriptor settings) {
+        }
+
+        public void storeSettings(WizardDescriptor settings) {
+        }
+
+        public boolean isValid() {
+            return false;
+        }
+
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+        }
+
+    }
+}

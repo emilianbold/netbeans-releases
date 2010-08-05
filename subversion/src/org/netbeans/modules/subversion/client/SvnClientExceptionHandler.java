@@ -109,6 +109,7 @@ public class SvnClientExceptionHandler {
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
     private final boolean commandLine;
+    private String methodName;
     
     private class CertificateFailure {
         int mask;
@@ -197,14 +198,26 @@ public class SvnClientExceptionHandler {
 
         return true;
     }
+    
+    void setMethod (String methodName) {
+        this.methodName = methodName;
+    }
 
-    private boolean handleRepositoryConnectError() {                
+    private boolean handleRepositoryConnectError() throws SVNClientException {
         SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
 
 
         SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
-        if(support.isKenai(url.toString())) {
-            return support.showLogin() && handleKenaiAuthorisation(support, url.toString());
+        String sUrl = url.toString();
+        if(support.isKenai(sUrl)) {
+            if ("commit".equals(methodName)) { //NOI18N
+                if (!support.canWrite(sUrl)) {
+                    throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.write"));//NOI18N
+                }
+            } else if (!support.canRead(sUrl)) {
+                throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"));//NOI18N
+            }
+            return support.showLogin() && handleKenaiAuthorisation(support, sUrl);
         } else {
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
@@ -356,8 +369,11 @@ public class SvnClientExceptionHandler {
     private SSLSocket getSSLSocket(String host, int port, String[] protocols) throws Exception {
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
+            @Override
                 public X509Certificate[] getAcceptedIssuers() { return null; }
+            @Override
                 public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+            @Override
                 public void checkServerTrusted(X509Certificate[] certs, String authType) { }
             }
         };
@@ -618,6 +634,7 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
                msg.indexOf("authentication failed") > - 1 ||                                // NOI18N
+               msg.indexOf("authentication cancelled") > - 1 ||                             // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
                msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
@@ -629,11 +646,11 @@ public class SvnClientExceptionHandler {
     }
     
     public static boolean isWrongUrl(String msg) {
-//      javahl:
-//      org.tigris.subversion.javahl.ClientException: Bad URL passed to RA layer
+//      javahl: org.tigris.subversion.javahl.ClientException: Bad URL passed to RA layer
 //      svn: URL 'file:///data/subversion/dilino' non-existent in revision 88
         msg = msg.toLowerCase();
         return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
+               (msg.indexOf("svn: url") > -1 && msg.indexOf("non-existent in revision") > - 1 ) ||
                (msg.indexOf("bad url passed to ra layer") > - 1 );
     }
 

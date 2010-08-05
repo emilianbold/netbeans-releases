@@ -42,26 +42,32 @@
 package org.netbeans.modules.nativeexecution.api.execution;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.util.Exceptions;
-import org.openide.windows.InputOutput;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.WeakListeners;
 
 /**
  * This is a wrapper over an <tt>Executionservice</tt> that handles running
@@ -81,6 +87,11 @@ public final class NativeExecutionService {
     private final String displayName;
     private final NativeExecutionDescriptor descriptor;
     private static final Charset execCharset;
+    private Runnable postExecutable;
+    private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+    private final AtomicBoolean started = new AtomicBoolean(false);
+    private ProcessChangeListener listener;
+    private long startTimeMillis;
 
     static {
         String charsetName = System.getProperty("org.netbeans.modules.nativeexecution.execcharset", "UTF-8"); // NOI18N
@@ -106,6 +117,18 @@ public final class NativeExecutionService {
     }
 
     public Future<Integer> run() {
+        if (!started.compareAndSet(false, true)) {
+            throw new IllegalStateException("NativeExecutionService state error - cannot be called more than once!"); // NOI18N
+        }
+
+        // FIXME: processBuilder has no removeProcessListener method...
+        // So have to add a weak listener...
+        listener = new ProcessChangeListener();
+        processBuilder.addNativeProcessListener(WeakListeners.create(ChangeListener.class, listener, processBuilder));
+        
+        postExecutable = descriptor.postExecution;
+        descriptor.postExecution(new PostRunnable());
+
         if (IOTerm.isSupported(descriptor.inputOutput)) {
             return runTerm();
         } else {
@@ -122,17 +145,13 @@ public final class NativeExecutionService {
             processBuilder.getEnvironment().put("TERM", "dumb"); // NOI18N
         }
 
-        final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
         Callable<Integer> callable = new Callable<Integer>() {
 
             @Override
             public Integer call() throws Exception {
                 try {
-                    final NativeProcess process;
-                    synchronized (processRef) {
-                        process = processBuilder.call();
-                        processRef.set(process);
-                    }
+                    final NativeProcess process = processBuilder.call();
+
                     if (descriptor.frontWindow) {
                         SwingUtilities.invokeLater(new Runnable() {
 
@@ -163,15 +182,21 @@ public final class NativeExecutionService {
                     // draining...
                     // before starting post execution routine
                     // need to be sure that all process'es output was read
-                    while (true) {
-                        try {
-                            if (processRef.get().getInputStream().available() == 0) {
-                                processRef.get().getInputStream().close();
-                                break;
+                    final NativeProcess p = processRef.get();
+                    if (p != null) {
+                        final InputStream is = p.getInputStream();
+                        if (is != null) {
+                            while (true) {
+                                try {
+                                    if (is.available() == 0) {
+                                        is.close();
+                                        break;
+                                    }
+                                } catch (IOException ex) {
+                                    // already closed ... that's OK
+                                    break;
+                                }
                             }
-                        } catch (IOException ex) {
-                            // already closed ... that's OK
-                            break;
                         }
                     }
 
@@ -202,14 +227,30 @@ public final class NativeExecutionService {
         FutureTask<Integer> runTask = new FutureTask<Integer>(callable) {
 
             @Override
+            /**
+             * @return <tt>true</tt>
+             */
             public boolean cancel(boolean mayInterruptIfRunning) {
                 synchronized (processRef) {
-                    boolean ret = super.cancel(mayInterruptIfRunning);
+                    /* *** Bug 186172 ***
+                     *
+                     * Do NOT call super.cancel() here as it will interrupt
+                     * waiting thread (see callable's that this task is created
+                     * from) and will initiate a postExecutionTask BEFORE the
+                     * process is terminated.
+                     * Just need to terminate the process. The process.waitFor()
+                     * will naturally return then.
+                     *
+                     */
+//                    boolean ret = super.cancel(mayInterruptIfRunning);
+
                     NativeProcess process = processRef.get();
+
                     if (process != null) {
                         process.destroy();
                     }
-                    return ret;
+
+                    return true;
                 }
             }
         };
@@ -228,20 +269,89 @@ public final class NativeExecutionService {
 
         Logger.getInstance().log(Level.FINE, "Input stream charset: {0}", charset);
 
-        ExecutionDescriptor descr = new ExecutionDescriptor()
-                .controllable(descriptor.controllable)
-                .frontWindow(descriptor.frontWindow)
-                .inputVisible(descriptor.inputVisible)
-                .inputOutput(descriptor.inputOutput)
-                .outLineBased(descriptor.outLineBased)
-                .showProgress(descriptor.showProgress)
-                .postExecution(descriptor.postExecution)
-                .noReset(descriptor.noReset)
-                .errConvertorFactory(descriptor.errConvertorFactory)
-                .outConvertorFactory(descriptor.outConvertorFactory)
-                .charset(charset);
+        ExecutionDescriptor descr =
+                new ExecutionDescriptor().controllable(descriptor.controllable).
+                frontWindow(descriptor.frontWindow).
+                inputVisible(descriptor.inputVisible).
+                inputOutput(descriptor.inputOutput).
+                outLineBased(descriptor.outLineBased).
+                showProgress(descriptor.showProgress).
+                postExecution(descriptor.postExecution).
+                noReset(descriptor.noReset).
+                errConvertorFactory(descriptor.errConvertorFactory).
+                outConvertorFactory(descriptor.outConvertorFactory).
+                charset(charset);
 
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
         return es.run();
+    }
+
+    private void closeIO() {
+        descriptor.inputOutput.getErr().close();
+        descriptor.inputOutput.getOut().close();
+        try {
+            descriptor.inputOutput.getIn().close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private final class PostRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            NativeProcess process = processRef.get();
+
+            if (process == null) {
+                return;
+            }
+
+            int rc = -1;
+
+            try {
+                rc = process.waitFor();
+            } catch (InterruptedException ex) {
+//                Exceptions.printStackTrace(ex);
+            } finally {
+                if (descriptor.postMessageDisplayer != null) {
+                    final NativeProcess.State state = process.getState();
+                    final long time = System.currentTimeMillis() - startTimeMillis;
+                    String postMsg = descriptor.postMessageDisplayer.getPostMessage(state, rc, time);
+
+                    PrintWriter pw = (rc == 0)
+                            ? descriptor.inputOutput.getOut()
+                            : descriptor.inputOutput.getErr();
+
+                    // use \n\r to correctly move cursor in terminals as well
+                    pw.printf("\n\r%s\n\r", postMsg); // NOI18N
+
+                    StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(state, rc));
+                }
+                
+                closeIO();
+
+                // Finally, if there was some post executable set before - call it
+                if (postExecutable != null) {
+                    postExecutable.run();
+                }
+            }
+        }
+    }
+
+    private final class ProcessChangeListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (!(e instanceof NativeProcessChangeEvent)) {
+                return;
+            }
+
+            final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+            processRef.compareAndSet(null, (NativeProcess) event.getSource());
+
+            if (event.state == NativeProcess.State.RUNNING) {
+                startTimeMillis = System.currentTimeMillis();
+            }
+        }
     }
 }

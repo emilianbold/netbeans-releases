@@ -48,6 +48,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -55,9 +58,12 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
@@ -389,6 +395,16 @@ class ConfigActionTest extends ConfigAction {
             assert rerunUnitTestHandler instanceof RedebugUnitTestHandler;
             return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler, allTests(info));
         }
+
+        @Override
+        public List<Pair<String, String>> getDebugPathMapping() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Pair<String, Integer> getDebugProxy() {
+            return null;
+        }
     }
 
     private class RerunUnitTestHandler implements RerunHandler {
@@ -412,8 +428,13 @@ class ConfigActionTest extends ConfigAction {
         }
 
         @Override
-        public boolean enabled() {
-            return enabled;
+        public void rerun(Set<Testcase> tests) {
+            //not implemented yet
+        }
+
+        @Override
+        public boolean enabled(RerunType type) {
+            return RerunType.ALL.equals(type) && enabled;
         }
 
         @Override

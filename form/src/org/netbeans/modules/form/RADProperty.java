@@ -64,14 +64,14 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
  * @author Tomas Pavek
  */
 public class RADProperty extends FormProperty {
-
+    private static final Object NOT_INITIALIZED = new Object();
     public static final String SYNTH_PREFIX = "$$$_"; // NOI18N
     public static final String SYNTH_PRE_CODE = SYNTH_PREFIX + PROP_PRE_CODE + "_"; // NOI18N
     public static final String SYNTH_POST_CODE = SYNTH_PREFIX + PROP_POST_CODE + "_"; // NOI18N
 
     private RADComponent component;
     private PropertyDescriptor desc;
-    private Object defaultValue;
+    private Object defaultValue = NOT_INITIALIZED;
 
     public RADProperty(RADComponent metacomp, PropertyDescriptor propdesc) {
         super(new FormPropertyContext.Component(metacomp),
@@ -88,12 +88,16 @@ public class RADProperty extends FormProperty {
         } else if (desc.getReadMethod() == null) {
             setAccessType(DETACHED_READ);
         } // assuming a bean property is at least readable or writeable
+    }
 
-        defaultValue = BeanSupport.NO_VALUE;
-        if (canReadFromTarget()) {
-            try {
-                defaultValue = getTargetValue();
-            } catch (Exception ex) {}
+    private void ensureDefaultValueInitialization() {
+        if (defaultValue == NOT_INITIALIZED) {
+            defaultValue = BeanSupport.NO_VALUE;
+            if (canReadFromTarget()) {
+                try {
+                    defaultValue = getTargetValue();
+                } catch (Exception ex) {}
+            }
         }
     }
 
@@ -119,6 +123,7 @@ public class RADProperty extends FormProperty {
     public void setTargetValue(Object value) throws IllegalAccessException,
                                                  IllegalArgumentException,
                                                  InvocationTargetException {
+        ensureDefaultValueInitialization();
         Method writeMethod = desc.getWriteMethod();
         if (writeMethod == null) {
             throw new IllegalAccessException("Not a writeable property: "+desc.getName()); // NOI18N
@@ -205,11 +210,13 @@ public class RADProperty extends FormProperty {
 
     @Override
     public boolean supportsDefaultValue() {
+        ensureDefaultValueInitialization();
         return defaultValue != BeanSupport.NO_VALUE;
     }
 
     @Override
     public Object getDefaultValue() {
+        ensureDefaultValueInitialization();
         Object specialDefaultValue = FormUtils.getSpecialDefaultPropertyValue(
                 component.getBeanInstance(), getName());
         return specialDefaultValue != BeanSupport.NO_VALUE

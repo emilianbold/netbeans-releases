@@ -61,6 +61,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
@@ -672,6 +673,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                    && checkConstantExpression(info, new TreePath(path, bt.getRightOperand()));
         }
 
+        if (UNARY_OPERATORS_FOR_CONSTANTS.contains(expr.getKind())) {
+            return checkConstantExpression(info, new TreePath(path, ((UnaryTree) expr).getExpression()));
+        }
+
+        if (expr.getKind() == Kind.PARENTHESIZED) {
+            return checkConstantExpression(info, new TreePath(path, ((ParenthesizedTree) expr).getExpression()));
+        }
+
         if (expr.getKind() == Kind.IDENTIFIER || expr.getKind() == Kind.MEMBER_SELECT || expr.getKind() == Kind.METHOD_INVOCATION) {
             Element e = info.getTrees().getElement(path);
 
@@ -720,6 +729,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return LITERALS.contains(expr.getKind());
     }
 
+    private static final Set<Kind> UNARY_OPERATORS_FOR_CONSTANTS = EnumSet.of(Kind.UNARY_MINUS, Kind.UNARY_PLUS, Kind.BITWISE_COMPLEMENT, Kind.LOGICAL_COMPLEMENT);
     private static final Set<Kind> LITERALS = EnumSet.of(Kind.STRING_LITERAL, Kind.CHAR_LITERAL, Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.FLOAT_LITERAL, Kind.DOUBLE_LITERAL);
     private static final Set<ElementKind> LOCAL_VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
 

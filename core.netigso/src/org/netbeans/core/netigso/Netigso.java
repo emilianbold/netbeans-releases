@@ -138,15 +138,16 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     @Override
     protected Set<String> start(Collection<? extends Module> allModules) {
-        if (framework.getState() == Bundle.ACTIVE) {
-            return toActivate(framework, allModules);
-        }
+        return toActivate(framework, allModules);
+    }
+
+    @Override
+    protected void start() {
         try {
             framework.start();
         } catch (BundleException ex) {
             LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
         }
-        return toActivate(framework, allModules);
     }
 
     private static Set<String> toActivate(Framework f, Collection<? extends Module> allModules) {
@@ -158,6 +159,11 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         if (pkgAdm == null) {
             return null;
         }
+        Set<String> allCnbs = new HashSet<String>(allModules.size() * 2);
+        for (ModuleInfo m : allModules) {
+            allCnbs.add(m.getCodeNameBase());
+        }
+        
         Set<String> needEnablement = new HashSet<String>();
         for (Bundle b : f.getBundleContext().getBundles()) {
             String loc = b.getLocation();
@@ -169,7 +175,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             RequiredBundle[] arr = pkgAdm.getRequiredBundles(loc);
             for (RequiredBundle rb : arr) {
                 for (Bundle n : rb.getRequiringBundles()) {
-                    if (n.getState() == Bundle.ACTIVE) {
+                    if (allCnbs.contains(n.getSymbolicName().replace('-', '_'))) {
                         needEnablement.add(loc);
                     }
                 }
@@ -197,6 +203,9 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             assert registered.containsKey(m.getCodeNameBase()) : m.getCodeNameBase();
             Bundle b = findBundle(m.getCodeNameBase());
             if (b == null) {
+                for (Bundle bb : framework.getBundleContext().getBundles()) {
+                    LOG.log(Level.FINE, "Bundle {0}: {1}", new Object[] { bb.getBundleId(), bb.getSymbolicName() });
+                }
                 throw new IOException("Not found bundle:" + m.getCodeNameBase());
             }
             ClassLoader l = new NetigsoLoader(b, m, jar);
@@ -205,13 +214,17 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             if (knownPkgs == EMPTY) {
                 try {
                     SELF_QUERY.set(true);
-                    Enumeration en = b.findEntries("", "", true);
-                    while (en.hasMoreElements()) {
-                        URL url = (URL) en.nextElement();
-                        if (url.getFile().startsWith("/META-INF")) {
-                            continue;
+                    Enumeration en = b.findEntries("", null, true);
+                    if (en == null) {
+                        LOG.log(Level.INFO, "Bundle {0}: {1} is empty", new Object[] { b.getBundleId(), b.getSymbolicName() });
+                    } else {
+                        while (en.hasMoreElements()) {
+                            URL url = (URL) en.nextElement();
+                            if (url.getFile().startsWith("/META-INF")) {
+                                continue;
+                            }
+                            pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                         }
-                        pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                     }
                 } finally {
                     SELF_QUERY.set(false);
@@ -391,6 +404,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 String k = (String)entry.getKey();
                 String v = (String)entry.getValue();
                 registered.put(k, v.split(","));
+                LOG.log(Level.FINE, "readBundle: {0}", k);
             }
         } catch (IOException ex) {
             LOG.log(Level.WARNING, "Cannot read cache", ex);

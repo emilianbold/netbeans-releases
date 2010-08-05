@@ -51,7 +51,6 @@ import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -77,22 +76,6 @@ public class WizardOperatorTest extends JellyTestCase implements PropertyChangeL
      */
     public WizardOperatorTest(java.lang.String testName) {
         super(testName);
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    /** Method used for explicit testsuite definition
-     * @return  created suite
-     */
-    public static NbTestSuite suite() {
-        //NbTestSuite suite = new NbTestSuite(WizardOperatorTest.class);
-        //return suite;
-        return (NbTestSuite) createModuleTest(WizardOperatorTest.class);
     }
     
     /** Redirect output to log files, wait before each test case and

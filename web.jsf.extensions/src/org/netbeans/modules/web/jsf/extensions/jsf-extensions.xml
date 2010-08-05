@@ -51,9 +51,9 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.web.jsf.extensions.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/jsf-extensions-dynamic-faces-0.1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jsf-extensions-common-0.1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jsf-1_2/commons-logging.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/shale-remoting-1.0.4.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.jsf.extensions/modules/ext/jsf-extensions-dynamic-faces-0.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.jsf.extensions/modules/ext/jsf-extensions-common-0.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.jsf12ri/modules/ext/jsf-1_2/commons-logging.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.jsf.extensions/modules/ext/shale-remoting-1.0.4.jar!/</resource>
     </volume>
 </library>

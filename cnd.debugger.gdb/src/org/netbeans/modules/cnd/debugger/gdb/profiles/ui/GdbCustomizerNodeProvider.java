@@ -103,7 +103,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
         @Override
         public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
-            if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_LOAD_ONLY || type == PredefinedType.DEBUG_STEPINTO) {
+            if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
                 return true;
             } else {
                 return false;

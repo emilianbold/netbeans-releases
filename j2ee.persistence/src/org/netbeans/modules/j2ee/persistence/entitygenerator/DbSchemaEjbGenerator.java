@@ -80,6 +80,7 @@ public class DbSchemaEjbGenerator {
     private Set<String> tablesReferecedByOtherTables;
     private final CollectionType colectionType;
     private final static Logger LOGGER = Logger.getLogger(DbSchemaEjbGenerator.class.getName());
+    private boolean useColumNamesInRelations = false;
     //private ArrayList<String> warningMessages;
    
     /**
@@ -89,7 +90,7 @@ public class DbSchemaEjbGenerator {
      * @param schemaElement the dbschema containing the tables to generate beans for.
      */
     public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement) {
-        this(genTables, schemaElement, CollectionType.COLLECTION);
+        this(genTables, schemaElement, CollectionType.COLLECTION, false);
     }
 
     /**
@@ -99,10 +100,11 @@ public class DbSchemaEjbGenerator {
      * @param schemaElement the dbschema containing the tables to generate beans for.
      * @param collectionType collection type is used in some names generation
      */
-    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement, CollectionType collectionType) {
+    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement, CollectionType collectionType, boolean useColumnNamesInRelationships) {
         this.schemaElement = schemaElement;
         this.genTables = genTables;
         this.colectionType = collectionType;
+        this.useColumNamesInRelations = useColumnNamesInRelationships;
         //warningMessages = new ArrayList<String>();
 
         tablesReferecedByOtherTables = getTablesReferecedByOtherTables(schemaElement);
@@ -484,9 +486,10 @@ public class DbSchemaEjbGenerator {
          */
 //        #185253 I don't see a good reason to have one case when it's possible to use column name and anothe case when it's not possible
 //        comment code below for now, may need review or deletion in next release if there will be any negative feedback
-//        if (!containsColumns(key.getColumns(), getPrimaryOrCandidateKey(key.getDeclaringTable()))) {
-//            roleACmr = EntityMember.makeRelationshipFieldName(roleB.getRoleName(), colectionType, false);
-//        }
+//        #188550 add backward compartible option to have column names instead of tables names
+        if (useColumNamesInRelations && !containsColumns(key.getColumns(), getPrimaryOrCandidateKey(key.getDeclaringTable()))) {
+            roleACmr = EntityMember.makeRelationshipFieldName(roleB.getRoleName(), colectionType, false);
+        }
         
         roleACmr = uniqueAlgorithm(getFieldNames(roleAHelper), roleACmr, null);
         

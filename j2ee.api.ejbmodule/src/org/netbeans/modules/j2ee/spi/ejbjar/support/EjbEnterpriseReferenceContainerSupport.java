@@ -120,15 +120,13 @@ public final class EjbEnterpriseReferenceContainerSupport {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
             
             MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
-            final String[] ejbName = new String[1];
-            FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-                public FileObject run(EjbJarMetadata metadata) throws Exception {
-                    ejbName[0] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
-                    return metadata.findResource(ejbReference.getComponentName(refType).replace('.', '/') + ".java");
+            String ejbName = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws Exception {
+                    return metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
                 }
             });
             
-            Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
+            Project project = FileOwnerQuery.getOwner(ejbReference.getComponentFO(refType));
             AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
             boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
             final AntArtifact moduleJarTarget = hasArtifact ? antArtifacts[0] : null;
@@ -139,7 +137,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             }
             
             String jarName = names[names.length - 1] + "#";
-            final String ejbLink = jarName + ejbName[0];
+            final String ejbLink = jarName + ejbName;
             
             final boolean[] write = new boolean[] { false };
             String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
@@ -199,7 +197,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             ProjectManager.getDefault().saveProject(ejbProject);
             return resourceName;
         }
-        
+
         public String getServiceLocatorName() {
             EditableProperties ep =
                     antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

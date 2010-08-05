@@ -79,4 +79,9 @@ public abstract class FullyQualifiedElementImpl extends PhpElementImpl implement
         boolean isDefaultNamespace = namespaceName == null || NamespaceElement.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
         return isDefaultNamespace;
     }
+
+    @Override
+    public final boolean isAliased() {
+        return false;
+    }
 }

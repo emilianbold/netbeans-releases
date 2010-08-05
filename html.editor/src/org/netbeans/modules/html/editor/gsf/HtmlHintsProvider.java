@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -50,8 +51,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.SyntaxTree;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
+//import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.Error;
@@ -65,6 +66,7 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -117,7 +119,15 @@ public class HtmlHintsProvider implements HintsProvider {
         if (isErrorCheckingEnabled(fo)) {
             for (Error e : context.parserResult.getDiagnostics()) {
                     assert e.getDescription() != null;
-                    HintFix disableChecksFix = new DisableErrorChecksFix(snapshot);
+                    List<HintFix> fixes = new ArrayList<HintFix>(3);
+
+                    if(isErrorCheckingEnabledForFile(fo)) {
+                        fixes.add(new DisableErrorChecksFix(snapshot));
+                    }
+
+                    if(isErrorCheckingEnabledForMimetype(fo)) {
+                        fixes.add(new DisableErrorChecksForMimetypeFix(snapshot));
+                    }
 
                     //tweak the error position if close to embedding boundary
                     int astFrom = e.getStartPosition();
@@ -135,13 +145,9 @@ public class HtmlHintsProvider implements HintsProvider {
                         to = from;
                     }
 
-                    List<HintFix> fixes = new ArrayList<HintFix>(3);
                     //add custom hint fixes
                     fixes.addAll(getCustomHintFixesForError(context, e));
                     
-                    //add default disable hints fix
-                    fixes.add(disableChecksFix);
-
                     Hint h = new Hint(getRule(e.getSeverity()),
                             e.getDescription(),
                             e.getFile(),
@@ -153,12 +159,19 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         } else {
             //add a special hint for reenabling disabled error checks
-            HintFix fix = new EnableErrorChecksFix(snapshot);
+            List<HintFix> fixes = new ArrayList<HintFix>(3);
+            if(!isErrorCheckingEnabledForFile(fo)) {
+                fixes.add(new EnableErrorChecksFix(snapshot));
+            }
+            if(!isErrorCheckingEnabledForMimetype(fo)) {
+                fixes.add(new EnableErrorChecksForMimetypeFix(snapshot));
+            }
+
             Hint h = new Hint(new HtmlRule(HintSeverity.WARNING, false),
                     NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR"), //NOI18N
                     fo,
                     new OffsetRange(0, 0),
-                    Collections.singletonList(fix),
+                    fixes,
                     50);
 
             hints.add(h);
@@ -173,7 +186,9 @@ public class HtmlHintsProvider implements HintsProvider {
 
     private static Collection<HintFix> getCustomHintFixesForError(final RuleContext context, final Error e) {
         List<HintFix> fixes = new ArrayList<HintFix>();
-        if(e.getKey().equals(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES)) {
+        //XXX fix
+//        if(e.getKey().equals(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES)) {
+        if(true) {
             fixes.add(new HintFix() {
                 
                 @Override
@@ -184,7 +199,9 @@ public class HtmlHintsProvider implements HintsProvider {
                 @Override
                 public void implement() throws Exception {
                     AstNode node = HtmlParserResult.getBoundAstNode(e);
-                    Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES);
+                    //XXX FIX
+//                    Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES);
+                    Collection<String> missingAttrs = Collections.emptyList();
                     assert missingAttrs != null;
                     int astOffset = node.startOffset() + 1 + node.name().length();
                     int insertOffset = context.parserResult.getSnapshot().getOriginalOffset(astOffset);
@@ -325,7 +342,15 @@ public class HtmlHintsProvider implements HintsProvider {
     static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
 
     public static boolean isErrorCheckingEnabled(FileObject fo) {
+        return isErrorCheckingEnabledForFile(fo) && isErrorCheckingEnabledForMimetype(fo);
+    }
+
+    public static boolean isErrorCheckingEnabledForFile(FileObject fo) {
         return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) == null;
+    }
+
+    public static boolean isErrorCheckingEnabledForMimetype(FileObject fo) {
+        return !HtmlPreferences.isHtmlErrorCheckingDisabledForMimetype(fo.getMIMEType());
     }
 
     private static final class DisableErrorChecksFix implements HintFix {
@@ -404,6 +429,81 @@ public class HtmlHintsProvider implements HintsProvider {
             return false;
         }
     }
+
+    private static final class DisableErrorChecksForMimetypeFix implements HintFix {
+
+        private Snapshot snapshot;
+        private String mime;
+
+        public DisableErrorChecksForMimetypeFix(Snapshot snapshot) {
+            this.snapshot = snapshot;
+            this.mime = snapshot.getSource().getFileObject().getMIMEType();
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_MIMETYPE", mime); //NOI18N
+        }
+
+        @Override
+        public void implement() throws Exception {
+            HtmlPreferences.setHtmlErrorChecking(mime, false);
+
+            //force reparse of *THIS document only* => hints update
+            Document doc = snapshot.getSource().getDocument(false);
+            if (doc != null) {
+                forceReparse(doc);
+            }
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
+    private static final class EnableErrorChecksForMimetypeFix implements HintFix {
+
+        private Snapshot snapshot;
+        private String mime;
+
+        public EnableErrorChecksForMimetypeFix(Snapshot snapshot) {
+            this.snapshot = snapshot;
+            this.mime = snapshot.getSource().getFileObject().getMIMEType();
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_MIMETYPE", mime); //NOI18N
+        }
+
+        @Override
+        public void implement() throws Exception {
+            HtmlPreferences.setHtmlErrorChecking(mime, true);
+
+            //force reparse of *THIS document only* => hints update
+            Document doc = snapshot.getSource().getDocument(false);
+            if (doc != null) {
+                forceReparse(doc);
+            }
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
 
     private static void forceReparse(final Document doc) {
         SwingUtilities.invokeLater(new Runnable() {

@@ -283,6 +283,8 @@ public class Controller {
                 return true;
             }
         }
+        if( version.startsWith("1.6.0_20") && "Aqua".equals( UIManager.getLookAndFeel().getID() ) )
+            return true;
         return false;
     }
 

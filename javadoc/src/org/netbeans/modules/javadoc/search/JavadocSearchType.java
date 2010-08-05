@@ -44,13 +44,13 @@
 
 package org.netbeans.modules.javadoc.search;
 
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
@@ -67,7 +67,7 @@ public abstract class JavadocSearchType {
      * @return File object containing index-files e.g index-files directory
      *         or index-all.html.
      */
-    public abstract FileObject getDocFileObject( FileObject apidocRoot );
+    public abstract URL getDocFileObject(URL apidocRoot);
     
     private Pattern[]  overviewLabelFilters;
 
@@ -117,7 +117,7 @@ public abstract class JavadocSearchType {
      * @param diiConsumer consumer for parse events
      * @return IndexSearchThread
      */    
-    public abstract IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer );
+    public abstract IndexSearchThread getSearchThread(String toFind, URL fo, IndexSearchThread.DocIndexItemConsumer diiConsumer);
     
 
     /**
@@ -125,6 +125,6 @@ public abstract class JavadocSearchType {
      * @param apidocRoot root of the javadoc
      * @param encoding of the javadoc, may be null if the javadoc has no encoding
      */
-    public abstract boolean accepts (FileObject apidocRoot, String encoding);
+    public abstract boolean accepts(URL apidocRoot, String encoding);
 
 }

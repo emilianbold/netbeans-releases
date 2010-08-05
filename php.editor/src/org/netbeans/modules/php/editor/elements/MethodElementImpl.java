@@ -59,7 +59,10 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.openide.util.Parameters;
 
 /**
@@ -100,6 +103,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         retval.add(createMagicMethod(type, "__clone",  Modifier.PUBLIC));//NOI18N
         retval.add(createMagicMethod(type, "__construct",  Modifier.PUBLIC));//NOI18N
         retval.add(createMagicMethod(type, "__destruct",  Modifier.PUBLIC));//NOI18N
+        retval.add(createMagicMethod(type, "__invoke",  Modifier.PUBLIC));//NOI18N
         retval.add(createMagicMethod(type, "__get",  Modifier.PUBLIC, "$name"));//NOI18N
         retval.add(createMagicMethod(type, "__set",  Modifier.PUBLIC, "$name", "$value"));//NOI18N
         retval.add(createMagicMethod(type, "__isset",  Modifier.PUBLIC, "$name"));//NOI18N
@@ -155,6 +159,17 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
                     indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes());
         }
         return retval;
+    }
+
+    public static MethodElement fromNode(final TypeElement type, final MethodDeclaration node, final ElementQuery.File fileQuery) {
+        Parameters.notNull("type", type);
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        MethodDeclarationInfo info = MethodDeclarationInfo.create(fileQuery.getResult().getProgram(), node, type.isInterface());
+        return new MethodElementImpl(
+                type, info.getName(), false, info.getRange().getStart(), info.getAccessModifiers().toFlags(),
+                fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(),
+                TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node.getFunction())));
     }
 
     private static boolean matchesQuery(final NameKind query, MethodSignatureParser signParser) {

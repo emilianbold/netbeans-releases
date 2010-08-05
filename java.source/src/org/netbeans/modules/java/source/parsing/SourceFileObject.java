@@ -456,7 +456,18 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         }
 
         protected String getRelativePath() {
-            return file == null ? null : FileUtil.getRelativePath(root,file);
+            if (file == null) {
+                return null;
+            }
+            final String result = FileUtil.getRelativePath(root,file);
+            assert result != null : String.format("root=%s(%b,%b) file=%s(%b)",
+                    FileUtil.getFileDisplayName(root),
+                    root.isValid(),
+                    root.isFolder(),
+                    FileUtil.getFileDisplayName(file),
+                    file.isValid()
+                    );
+            return result;
         }
 
         @Override

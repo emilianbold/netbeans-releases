@@ -96,6 +96,8 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
      */
     public Collection<HudsonView> getViews();
     
+    HudsonView getPrimaryView();
+    
     /**
      * Register HudsonChangeListener
      *

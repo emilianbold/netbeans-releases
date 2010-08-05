@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.13
+#Version 7.17
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -12,7 +12,7 @@ CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -89,14 +89,15 @@ hfds comparison,name,serialVersionUID,type,version
 hcls DependencyKey
 
 CLSS public abstract org.openide.modules.InstalledFileLocator
-cons protected InstalledFileLocator()
+cons protected init()
 meth public abstract java.io.File locate(java.lang.String,java.lang.String,boolean)
+meth public java.util.Set<java.io.File> locateAll(java.lang.String,java.lang.String,boolean)
 meth public static org.openide.modules.InstalledFileLocator getDefault()
 supr java.lang.Object
 hfds DEFAULT,LOCK,instances,result
 
 CLSS public abstract org.openide.modules.ModuleInfo
-cons protected ModuleInfo()
+cons protected init()
 fld public final static java.lang.String PROP_ENABLED = "enabled"
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth public abstract boolean isEnabled()
@@ -119,7 +120,7 @@ supr java.lang.Object
 hfds changeSupport
 
 CLSS public org.openide.modules.ModuleInstall
-cons public ModuleInstall()
+cons public init()
 meth protected boolean clearSharedData()
 meth public boolean closing()
 meth public void close()
@@ -139,7 +140,7 @@ CLSS public abstract interface !annotation org.openide.modules.PatchedPublic
 intf java.lang.annotation.Annotation
 
 CLSS public final org.openide.modules.SpecificationVersion
-cons public SpecificationVersion(java.lang.String)
+cons public init(java.lang.String)
 intf java.lang.Comparable
 meth public boolean equals(java.lang.Object)
 meth public int compareTo(java.lang.Object)
@@ -149,7 +150,7 @@ supr java.lang.Object
 hfds digits,parseCache
 
 CLSS public abstract org.openide.util.SharedClassObject
-cons protected SharedClassObject()
+cons protected init()
 intf java.io.Externalizable
 meth protected boolean clearSharedData()
 meth protected final java.lang.Object getLock()

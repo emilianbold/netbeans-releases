@@ -74,7 +74,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
- * Rather simple query implemetation based on static Ant introspection info.
+ * Rather simple query implementation based on static Ant introspection info.
  * Hints given by this grammar cannot guarantee that valid XML document is created.
  *
  * @author Petr Kuzel, Jesse Glick
@@ -87,16 +87,26 @@ class AntGrammar implements GrammarQuery {
      * Allow to get names of <b>parsed general entities</b>.
      * @return list of <code>CompletionResult</code>s (ENTITY_REFERENCE_NODEs)
      */
-    public Enumeration<GrammarResult> queryEntities(String prefix) {
+    public @Override Enumeration<GrammarResult> queryEntities(String prefix) {
         List<GrammarResult> list = new ArrayList<GrammarResult>();
 
         // add well-know build-in entity names
 
-        if ("lt".startsWith(prefix)) list.add(new MyEntityReference("lt"));
-        if ("gt".startsWith(prefix)) list.add(new MyEntityReference("gt"));
-        if ("apos".startsWith(prefix)) list.add(new MyEntityReference("apos"));
-        if ("quot".startsWith(prefix)) list.add(new MyEntityReference("quot"));
-        if ("amp".startsWith(prefix)) list.add(new MyEntityReference("amp"));
+        if ("lt".startsWith(prefix)) {
+            list.add(new MyEntityReference("lt"));
+        }
+        if ("gt".startsWith(prefix)) {
+            list.add(new MyEntityReference("gt"));
+        }
+        if ("apos".startsWith(prefix)) {
+            list.add(new MyEntityReference("apos"));
+        }
+        if ("quot".startsWith(prefix)) {
+            list.add(new MyEntityReference("quot"));
+        }
+        if ("amp".startsWith(prefix)) {
+            list.add(new MyEntityReference("amp"));
+        }
 
         LOG.log(Level.FINE, "queryEntities({0}) -> {1}", new Object[] {prefix, list});
         return Collections.enumeration(list);
@@ -152,7 +162,7 @@ class AntGrammar implements GrammarQuery {
      * @param e an element
      * @return a two-element string (kind and details), or null if this element is anomalous
      */
-    static final ElementType typeOf(Element e) {
+    static ElementType typeOf(Element e) {
         String name = e.getNodeName();
         Node p = e.getParentNode();
         if (p == null) {
@@ -236,7 +246,7 @@ class AntGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
      *        Every list member represents one possibility.
      */
-    public Enumeration<GrammarResult> queryAttributes(HintContext ctx) {
+    public @Override Enumeration<GrammarResult> queryAttributes(HintContext ctx) {
 
         Element ownerElement = null;
         // Support both versions of GrammarQuery contract
@@ -323,7 +333,7 @@ class AntGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes
      *        Every list member represents one possibility.
      */
-    public Enumeration<GrammarResult> queryElements(HintContext ctx) {
+    public @Override Enumeration<GrammarResult> queryElements(HintContext ctx) {
 
         Node parent = ((Node)ctx).getParentNode();
         if (parent == null) {
@@ -393,11 +403,11 @@ class AntGrammar implements GrammarQuery {
      * Allow to get names of <b>declared notations</b>.
      * @return list of <code>CompletionResult</code>s (NOTATION_NODEs)
      */
-    public Enumeration<GrammarResult> queryNotations(String prefix) {
+    public @Override Enumeration<GrammarResult> queryNotations(String prefix) {
         return Enumerations.empty();
     }
 
-    public Enumeration<GrammarResult> queryValues(HintContext ctx) {
+    public @Override Enumeration<GrammarResult> queryValues(HintContext ctx) {
         LOG.log(Level.FINE, "queryValues({0})", ctx.getCurrentPrefix());
         // #38341: ctx is apparently instanceof Attr or Text
         // (actually never instanceof Text, just TEXT_NODE: #38339)
@@ -600,7 +610,9 @@ class AntGrammar implements GrammarQuery {
             parent = ((Attr)ctx).getOwnerElement();
         } else if (ctx.getNodeType() == Node.TEXT_NODE) {
             Node p = ctx.getParentNode();
-            if (p != null && p.getNodeType() == Node.ELEMENT_NODE) {
+            if (p == null) {
+                return new String[0];
+            } else if (p.getNodeType() == Node.ELEMENT_NODE) {
                 parent = (Element)p;
             } else {
                 System.err.println("strange parent of text node: " + p.getNodeType() + " " + p);
@@ -719,26 +731,26 @@ class AntGrammar implements GrammarQuery {
     }
 
     // return defaults, no way to query them
-    public GrammarResult queryDefault(final HintContext ctx) {
+    public @Override GrammarResult queryDefault(final HintContext ctx) {
         return null;
     }
 
     // it is not yet implemented
-    public boolean isAllowed(Enumeration<GrammarResult> en) {
+    public @Override boolean isAllowed(Enumeration<GrammarResult> en) {
         return true;
     }
 
     // customizers section ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    public java.awt.Component getCustomizer(HintContext ctx) {
+    public @Override java.awt.Component getCustomizer(HintContext ctx) {
         return null;
     }
 
-    public boolean hasCustomizer(HintContext ctx) {
+    public @Override boolean hasCustomizer(HintContext ctx) {
         return false;
     }
 
-    public org.openide.nodes.Node.Property[] getProperties(HintContext ctx) {
+    public @Override org.openide.nodes.Node.Property<?>[] getProperties(HintContext ctx) {
         return null;
     }
 
@@ -747,20 +759,20 @@ class AntGrammar implements GrammarQuery {
 
     private static abstract class AbstractResultNode extends AbstractNode implements GrammarResult {
 
-        public Icon getIcon(int kind) {
+        public @Override Icon getIcon(int kind) {
             return null;
         }
 
-        public String getDescription() {
+        public @Override String getDescription() {
             return null;
         }
 
-        public String getDisplayName() {
+        public @Override String getDisplayName() {
             return null;
         }
 
         // TODO in MyElement return true for really empty elements such as "pathelement"
-        public boolean isEmptyElement() {
+        public @Override boolean isEmptyElement() {
             return false;
         }
     }
@@ -773,7 +785,7 @@ class AntGrammar implements GrammarQuery {
             this.name = name;
         }
 
-        public short getNodeType() {
+        public @Override short getNodeType() {
             return Node.ENTITY_REFERENCE_NODE;
         }
 
@@ -791,7 +803,7 @@ class AntGrammar implements GrammarQuery {
             this.name = name;
         }
 
-        public short getNodeType() {
+        public @Override short getNodeType() {
             return Node.ELEMENT_NODE;
         }
 
@@ -817,7 +829,7 @@ class AntGrammar implements GrammarQuery {
             this.name = name;
         }
 
-        public short getNodeType() {
+        public @Override short getNodeType() {
             return Node.ATTRIBUTE_NODE;
         }
 
@@ -847,7 +859,7 @@ class AntGrammar implements GrammarQuery {
             this.data = data;
         }
 
-        public short getNodeType() {
+        public @Override short getNodeType() {
             return Node.TEXT_NODE;
         }
 

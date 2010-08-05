@@ -138,12 +138,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.libs.wsdl4j</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

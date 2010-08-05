@@ -52,9 +52,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.test.TestFileUtils;
 /**
  * Test functionality of InstalledFileLocatorImpl.
  * @author Jesse Glick
@@ -69,9 +72,13 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         super(name);
     }
     
+    protected @Override Level logLevel() {
+        return Level.ALL;
+    }
+    
     private File scratch, nbhome, nbuser, nbdir1, nbdir2;
     private InstalledFileLocator ifl;
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
         scratch = getWorkDir();
@@ -102,7 +109,6 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
             // Useless trailing separator intentional:
             nbdirx.getAbsolutePath() + File.pathSeparatorChar);
         NbBundle.setBranding("foo");
-        Locale.setDefault(Locale.JAPAN);
         ifl = new InstalledFileLocatorImpl();
     }
     private static File file(File dir, String path) {
@@ -126,7 +132,10 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
      * properties, so another test in the same VM would not be able to change them.
      */
     public void testLocate() throws Exception {
+        Locale.setDefault(Locale.JAPAN);
+        try {
         InstalledFileLocatorImpl.prepareCache();
+        try {
         assertEquals("[cache] found a simple file", file(nbhome, "d"), ifl.locate("d", null, false));
         assertEquals("[cache] did not find a nonexistent file", null, ifl.locate("d2", null, false));
         assertEquals("[cache] found an override in nbuser", file(nbuser, "a/b"), ifl.locate("a/b", null, false));
@@ -139,7 +148,9 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         assertEquals("[cache] nbdirs can override location of a branded resource", file(nbdir2, "loc/y_foo.html"), ifl.locate("loc/y.html", null, true));
         assertEquals("[cache] but look in all dirs for most specific resource first", file(nbhome, "h_ja"), ifl.locate("h", null, true));
         assertEquals("[cache] localized lookup a no-op for nonlocalized files", file(nbuser, "a/b"), ifl.locate("a/b", null, true));
-        InstalledFileLocatorImpl.discardCache();
+        } finally {
+            InstalledFileLocatorImpl.discardCache();
+        }
         assertEquals("[no cache] found a simple file", file(nbhome, "d"), ifl.locate("d", null, false));
         assertEquals("[no cache] did not find a nonexistent file", null, ifl.locate("d2", null, false));
         touch(file(nbhome, "d2"));
@@ -154,12 +165,18 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         assertEquals("[no cache] nbdirs can override location of a branded resource", file(nbdir2, "loc/y_foo.html"), ifl.locate("loc/y.html", null, true));
         assertEquals("[no cache] but look in all dirs for most specific resource first", file(nbhome, "h_ja"), ifl.locate("h", null, true));
         assertEquals("[no cache] localized lookup a no-op for nonlocalized files", file(nbuser, "a/b"), ifl.locate("a/b", null, true));
+        } finally {
+            Locale.setDefault(Locale.ENGLISH);
+        }
     }
 
     public void testLocateAll() throws Exception {
         InstalledFileLocatorImpl.prepareCache();
+        try {
         doTestLocateAll();
-        InstalledFileLocatorImpl.discardCache();
+        } finally {
+            InstalledFileLocatorImpl.discardCache();
+        }
         doTestLocateAll();
     }
     private void doTestLocateAll() {
@@ -169,5 +186,39 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         assertEquals(new HashSet<File>(Arrays.asList(file(nbhome, "loc/y.html"), file(nbdir2, "loc/y_foo.html"))), ifl.locateAll("loc/y.html", null, true));
         assertEquals(new HashSet<File>(Arrays.asList(file(nbdir1, "e/f"), file(nbhome, "e/f"))), ifl.locateAll("e/f", null, false));
     }
+    
+    public void testLocateParallel() throws Exception {
+        File x1 = new File(nbdir1, "x");
+        touch(x1);
+        File x2 = new File(nbdir2, "x");
+        touch(x2);
+        TestFileUtils.writeFile(new File(nbdir1, "update_tracking/mod-a.xml"), "<module codename=\"mod.a\">\n<file name=\"x\"/>\n</module>\n");
+        TestFileUtils.writeFile(new File(nbdir2, "update_tracking/mod-b.xml"), "<module codename=\"mod.b\">\n<file name=\"x\"/>\n</module>\n");
+        InstalledFileLocatorImpl.prepareCache();
+        try {
+        assertEquals(x1, ifl.locate("x", "mod.a", false));
+        assertEquals(x2, ifl.locate("x", "mod.b", false));
+        assertEquals(x1, ifl.locate("x", null, false));
+        } finally {
+            InstalledFileLocatorImpl.discardCache();
+        }
+        assertEquals(x1, ifl.locate("x", "mod.a", false));
+        assertEquals(x2, ifl.locate("x", "mod.b", false));
+        assertEquals(x1, ifl.locate("x", null, false));
+    }
+
+    public void testWarnings() throws Exception {
+        CharSequence cs = Log.enable(InstalledFileLocatorImpl.class.getName(), Level.WARNING);
+        File x = new File(nbdir1, "x");
+        touch(x);
+        File y = new File(nbdir1, "y");
+        touch(y);
+        TestFileUtils.writeFile(new File(nbdir1, "update_tracking/mod-a.xml"), "<module codename='mod.a'>\n<file name='x'/>\n</module>\n");
+        assertEquals(x, ifl.locate("x", "mod.a", false));
+        assertEquals(y, ifl.locate("y", "mod.a", false));
+        String log = cs.toString();
+        assertTrue(log, log.contains("does not own y"));
+        assertFalse(log, log.contains("does not own x"));
+    }    
     
 }

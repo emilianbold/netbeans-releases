@@ -42,6 +42,11 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.bridge;
 
+import java.io.File;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +58,7 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -125,7 +131,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                         findPkg = aPkg;
                     }
                     if (readFlags && findPkg != null) {
-                        PkgConfig configs = PkgConfigManager.getDefault().getPkgConfig(conf);
+                        PkgConfig configs = UserOptionsProviderImpl.getPkgConfig(conf);
                         PackageConfiguration config = configs.getPkgConfig(findPkg);
                         if (config != null){
                             res.add(config);
@@ -136,5 +142,33 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             }
             return res;
         }
+    }
+
+    private static PkgConfig pkgConfig;
+    private static PkgConfig getPkgConfig(MakeConfiguration conf){
+        PkgConfig pkg = pkgConfig;
+        if (pkg == null) {
+            pkg = PkgConfigManager.getDefault().getPkgConfig(conf);
+            pkgConfig = pkg;
+        }
+        return pkg;
+    }
+
+    @Override
+    public NativeFileSearch getPackageFileSearch() {
+        final PkgConfig pkg = getPkgConfig(null);
+        return new NativeFileSearch() {
+            @Override
+            public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
+                ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
+                if (resolvedPath != null) {
+                    for(ResolvedPath path : resolvedPath) {
+                        res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
+                    }
+                }
+                return res;
+            }
+        };
     }
 }

@@ -165,7 +165,7 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
             // process all methods from the implementor
-            for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
+            for (ExecutableElement method : ElementFilter.methodsIn(controller.getElements().getAllMembers(type))) {
                 if ((method.getKind() == ElementKind.METHOD) && !method.getModifiers().contains(Modifier.ABSTRACT)) {
                     if (isValid(method)) {
                         try {

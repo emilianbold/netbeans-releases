@@ -44,9 +44,10 @@
 
 package org.netbeans.modules.mercurial.ui.update;
 
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.*;
 import java.util.*;
-import java.awt.*;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import javax.swing.*;
@@ -61,6 +62,7 @@ import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.util.Utils;
 
@@ -146,16 +148,16 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) leftFileRevision = leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision = rightFileRevision.trim();
-        String[] parentRevisions = null;
+        List<HgLogMessage> parentRevisions = null;
         if (leftFileRevision.equals(LOCAL)) {
             try {
-                parentRevisions = HgCommand.getParents(Mercurial.getInstance().getRepositoryRoot(file).getAbsolutePath(), file, null);
+                parentRevisions = HgCommand.getParents(Mercurial.getInstance().getRepositoryRoot(file), file, null);
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.INFO, null, ex);
             }
-            if (parentRevisions != null && parentRevisions.length > 1) {
-                leftFileRevision = parentRevisions[0];
-                rightFileRevision = parentRevisions[1];
+            if (parentRevisions != null && parentRevisions.size() > 1) {
+                leftFileRevision = parentRevisions.get(0).getRevisionNumber();
+                rightFileRevision = parentRevisions.get(1).getRevisionNumber();
             }
         }
         if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)

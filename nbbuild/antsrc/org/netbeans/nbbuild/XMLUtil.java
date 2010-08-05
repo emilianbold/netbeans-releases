@@ -84,7 +84,7 @@ public final class XMLUtil extends Object {
     private XMLUtil() {}
 
     @SuppressWarnings("unchecked")
-    private static final ThreadLocal<DocumentBuilder>[] builderTL = new ThreadLocal[4];
+    private static final ThreadLocal<DocumentBuilder>[] builderTL = (ThreadLocal<DocumentBuilder>[]) new ThreadLocal<?>[4];
     static {
         for (int i = 0; i < 4; i++) {
             builderTL[i] = new ThreadLocal<DocumentBuilder>();
@@ -183,9 +183,9 @@ public final class XMLUtil extends Object {
             Result result = new StreamResult(out);
             t.transform(source, result);
         } catch (Exception e) {
-            throw (IOException)new IOException(e.toString()).initCause(e);
+            throw new IOException(e);
         } catch (TransformerFactoryConfigurationError e) {
-            throw (IOException)new IOException(e.toString()).initCause(e);
+            throw new IOException(e);
         }
     }
 
@@ -199,9 +199,9 @@ public final class XMLUtil extends Object {
             Result result = new StreamResult(out);
             t.transform(source, result);
         } catch (Exception e) {
-            throw (IOException) new IOException(e.toString()).initCause(e);
+            throw new IOException(e);
         } catch (TransformerFactoryConfigurationError e) {
-            throw (IOException) new IOException(e.toString()).initCause(e);
+            throw new IOException(e);
         }
     }
 

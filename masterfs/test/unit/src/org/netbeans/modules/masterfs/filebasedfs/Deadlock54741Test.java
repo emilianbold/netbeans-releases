@@ -45,9 +45,9 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
-import junit.framework.Test;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -60,7 +60,8 @@ import org.openide.filesystems.FileUtil;
  * @author pzajac
  */
 public class Deadlock54741Test extends NbTestCase {
-    
+    private static final Logger LOG = Logger.getLogger(Deadlock54741Test.class.getName());
+
     private static class DelFileChangeListener implements FileChangeListener {
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
@@ -95,7 +96,7 @@ public class Deadlock54741Test extends NbTestCase {
             this.fo = fo;
         }
         public void run() {
-            System.out.println("start delete");
+            LOG.fine("start delete");
             try {
                fo.getFileSystem().addFileChangeListener(new DelFileChangeListener());
                FileSystem fs = fo.getFileSystem(); 
@@ -104,13 +105,18 @@ public class Deadlock54741Test extends NbTestCase {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("end delete");
+            LOG.fine("end delete");
         } 
     }
     
     
     public Deadlock54741Test(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     public void testDeadLock () throws Exception {
@@ -154,10 +160,4 @@ public class Deadlock54741Test extends NbTestCase {
         return t;  
     }  
         
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(Deadlock54741Test.class);
-         
-        return new FileBasedFileSystemTest(suite);
-    }
 }

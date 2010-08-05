@@ -51,10 +51,8 @@ import java.nio.MappedByteBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -67,14 +65,14 @@ public class StampsTest extends NbTestCase {
     private File install;
     
     
-    public static Test suite() {
-        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
-        return new NbTestSuite(StampsTest.class);
-    }
-    
     public StampsTest(String testName) {
         super(testName);
     }            
+    
+    
+    protected File createIdeCluster(File dir) {
+        return new File(dir, "ide");
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -82,7 +80,7 @@ public class StampsTest extends NbTestCase {
         
         install = new File(getWorkDir(), "install");
         platform = new File(install, "platform");
-        ide = new File(install, "ide");
+        ide = createIdeCluster(install);
         userdir = new File(getWorkDir(), "tmp");
         
         System.setProperty("netbeans.home", platform.getPath());
@@ -627,7 +625,7 @@ public class StampsTest extends NbTestCase {
         File globalStamp = new File(cluster, ".lastModified");
 
         File userDir = new File(System.getProperty("netbeans.user"));
-        File localStamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), cluster.getName());
+        File localStamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), Stamps.clusterLocalStamp(cluster));
         
         if (global) {
             assertTrue("File shall exist: " + globalStamp, globalStamp.exists());

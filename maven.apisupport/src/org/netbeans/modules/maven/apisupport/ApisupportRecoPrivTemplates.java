@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.maven.apisupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 
@@ -50,13 +50,8 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  * apisupport specific part of RecommendedTemplates and PrivilegedTemplates,
  * @author Milos Kleint
  */
+@ProjectServiceProvider(service={RecommendedTemplates.class, PrivilegedTemplates.class}, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class ApisupportRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
-    
-    private Project project;
-    
-    ApisupportRecoPrivTemplates(Project proj) {
-        project = proj;
-    }
     
         private static final String[] NBM_PRIVILEGED_NAMES = new String[] {
             "Templates/Classes/Class.java", // NOI18N
@@ -79,35 +74,17 @@ public class ApisupportRecoPrivTemplates implements RecommendedTemplates, Privil
             "XML",                  // NOI18N
             "junit",                // NOI18N                    
             "simple-files",         // NOI18N
+            "REST-clients",         // NOI18N
             "nbm-specific"         // NOI18N
         };
         
     
-    public String[] getRecommendedTypes() {
-        NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-        String packaging = watcher.getPackagingType();
-        if (packaging == null) {
-            packaging = NbMavenProject.TYPE_JAR;
-        }
-        packaging = packaging.trim();
-        if (NbMavenProject.TYPE_NBM.equals(packaging)) {
-            return NBM_TYPES;
-        }
-        return new String[0];
+    public @Override String[] getRecommendedTypes() {
+        return NBM_TYPES;
     }
     
-    public String[] getPrivilegedTemplates() {
-        NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-        String packaging = watcher.getPackagingType();
-        if (packaging == null) {
-            packaging = NbMavenProject.TYPE_JAR;
-        }
-        packaging = packaging.trim();
-        if (NbMavenProject.TYPE_NBM.equals(packaging)) {
-            return NBM_PRIVILEGED_NAMES;
-        }
-        
-        return new String[0];
+    public @Override String[] getPrivilegedTemplates() {
+        return NBM_PRIVILEGED_NAMES;
     }
     
 }

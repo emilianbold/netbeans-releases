@@ -49,6 +49,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,6 +86,7 @@ import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.problems.ProblemsPanel;
+import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
@@ -205,14 +208,7 @@ public class ActionProviderImpl implements ActionProvider {
             convertedAction = action;
         }
 
-        Collection<? extends ReplaceTokenProvider> replacers = project.getLookup().lookupAll(ReplaceTokenProvider.class);
-        HashMap<String, String> replacements = new HashMap<String, String>();
-        for (ReplaceTokenProvider prov : replacers) {
-            replacements.putAll(prov.createReplacements(convertedAction, lookup));
-        }
-
-
-        Lookup enhanced = new ProxyLookup(lookup, Lookups.fixed(replacements));
+        Lookup enhanced = new ProxyLookup(lookup, Lookups.fixed(replacements(convertedAction, lookup)));
         
         RunConfig rc = ActionToGoalUtils.createRunConfig(convertedAction, project, enhanced);
         if (rc == null) {
@@ -231,6 +227,14 @@ public class ActionProviderImpl implements ActionProvider {
             setupTaskName(action, rc, lookup);
             runGoal(rc, true);
         }
+    }
+
+    private Map<String,String> replacements(String action, Lookup lookup) {
+        Map<String,String> replacements = new HashMap<String,String>();
+        for (ReplaceTokenProvider prov : project.getLookup().lookupAll(ReplaceTokenProvider.class)) {
+            replacements.putAll(prov.createReplacements(action, lookup));
+        }
+        return replacements;
     }
 
     private void runGoal(RunConfig config, boolean checkShowDialog) {
@@ -409,6 +413,12 @@ public class ActionProviderImpl implements ActionProvider {
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
+            Map<String,String> replacements = replacements((String) getValue(Action.NAME), /* is there ever a context? */Lookup.EMPTY);
+            Properties mappingProperties = mapping.getProperties();
+            for (Map.Entry<Object,Object> entry : mappingProperties.entrySet()) {
+                mappingProperties.put(entry.getKey(), AbstractMavenActionsProvider.dynamicSubstitutions(replacements, (String) entry.getValue()));
+            }
+
             if (!showUI) {
                 ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null);
                 rc.setShowDebug(MavenSettings.getDefault().isShowDebug());

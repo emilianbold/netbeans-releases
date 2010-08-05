@@ -79,8 +79,7 @@ public class RemoteIndexTransferListener implements TransferListener {
 
 
         if (debug) {
-            io = IOProvider.getDefault().getIO(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer_TAG")//NII18N
-                    + (info.getName()), true);
+            io = IOProvider.getDefault().getIO(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), true);
             writer = io.getOut();
         }
     }
@@ -91,8 +90,7 @@ public class RemoteIndexTransferListener implements TransferListener {
 
     public void transferStarted(TransferEvent arg0) {
         long contentLength = arg0.getResource().getContentLength();
-        this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer_TAG")//NII18N
-                + info.getName());
+        this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()));
         this.units = (int) contentLength / 1024;
         handle.start(units);
         if (debug) {

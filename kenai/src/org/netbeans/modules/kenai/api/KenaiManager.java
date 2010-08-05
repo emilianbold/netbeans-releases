@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -143,7 +144,7 @@ public final class KenaiManager {
      */
     public synchronized Collection<Kenai> getKenais() {
         initInstances();
-        return instances.values();
+        return new ArrayList(instances.values());
     }
 
     private boolean instancesInited = false;

@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 /*package*/
 final class ProjectKey extends ProjectNameBasedKey {    
     
-    public ProjectKey(String projectUniqueName) {
+    public ProjectKey(CharSequence projectUniqueName) {
 	super(projectUniqueName);
     }
     
@@ -74,14 +74,17 @@ final class ProjectKey extends ProjectNameBasedKey {
 	return "ProjectKey " + retValue; // NOI18N
     }
     
+    @Override
     public PersistentFactory getPersistentFactory() {
 	return CsmObjectFactory.instance();
     }
     
+    @Override
     public int getSecondaryDepth() {
 	return 1;
     }
     
+    @Override
     public int getSecondaryAt(int level) {
 	assert (level == 0);
 	return KeyObjectFactory.KEY_PROJECT_KEY;

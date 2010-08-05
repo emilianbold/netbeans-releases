@@ -95,6 +95,11 @@ class EclipseLinkProvider extends Provider {
     }
 
     @Override
+    public String getAnnotationSubPackageProperty() {
+        return "eclipselink.canonicalmodel.subpackage";//NOI18N
+    }
+    
+    @Override
     public String getTableGenerationPropertyName() {
         return "eclipselink.ddl-generation";
     }

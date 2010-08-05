@@ -122,10 +122,10 @@ public class ToStringGenerator implements CodeGenerator {
                         break;
                     case FIELD:
                         if (!ERROR.contentEquals(element.getSimpleName()) && !element.getModifiers().contains(Modifier.STATIC))
-                            descriptions.add(ElementNode.Description.create(element, null, true, true));
+                            descriptions.add(ElementNode.Description.create(controller, element, null, true, true));
                 }
             }
-            ret.add(new ToStringGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false)));
+            ret.add(new ToStringGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false)));
             return ret;
         }
     }
@@ -198,9 +198,15 @@ public class ToStringGenerator implements CodeGenerator {
         ModifiersTree modifiers = make.Modifiers(mods, annotations);
 
         ExpressionTree exp = make.Literal(typeName + '{');
+        boolean first = true;
         for (VariableElement variableElement : fields) {
-            exp = make.Binary(Tree.Kind.PLUS, exp, make.Literal(variableElement.getSimpleName().toString() + '='));
+            StringBuilder sb = new StringBuilder();
+            if (!first)
+                sb.append(", ");
+            sb.append(variableElement.getSimpleName().toString()).append('=');
+            exp = make.Binary(Tree.Kind.PLUS, exp, make.Literal(sb.toString()));
             exp = make.Binary(Tree.Kind.PLUS, exp, make.Identifier(variableElement.getSimpleName()));
+            first = false;
         }
         StatementTree stat = make.Return(make.Binary(Tree.Kind.PLUS, exp, make.Literal('}'))); //NOI18N
         BlockTree body = make.Block(Collections.singletonList(stat), false);

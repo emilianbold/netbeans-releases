@@ -30,8 +30,7 @@
  */
 package org.netbeans.modules.cnd.navigation.services;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 
 /**
@@ -40,5 +39,5 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
  */
 public interface HierarchyModel extends HierarchyActions {
 
-    public Map<CsmClass, Set<CsmClass>> getModel();
+    public Collection<CsmClass> getHierarchy(CsmClass cls);
 }

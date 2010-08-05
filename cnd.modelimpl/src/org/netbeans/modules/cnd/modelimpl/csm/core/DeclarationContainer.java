@@ -91,7 +91,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     private final TreeMap<CharSequence, Object> declarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
-    private final Map<CharSequence, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>();
+    private final Map<CharSequence, Set<CsmUID<CsmFriend>>> friends;
     // empty stub
     private static final DeclarationContainer EMPTY = new DeclarationContainer() {
 
@@ -106,8 +106,9 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
-        super(new DeclarationContainerKey(project.getUniqueName().toString()), false);
+        super(new DeclarationContainerKey(project.getUniqueName()), false);
         declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
+        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
         put();
     }
 
@@ -115,18 +116,23 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
     public DeclarationContainer(CsmNamespace ns) {
         super(new NamespaceDeclarationContainerKey(ns), false);
         declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
+        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
         put();
     }
 
     public DeclarationContainer(DataInput input) throws IOException {
         super(input);
         declarations = UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(input, UniqueNameCache.getManager());
+        int colSize = input.readInt();
+        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>(colSize);
+        UIDObjectFactory.getDefaultFactory().readStringToUIDMapSet(friends, input, UniqueNameCache.getManager(), colSize);
     }
 
     // only for EMPTY static field
     private DeclarationContainer() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
         declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
+        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
     }
 
     public static DeclarationContainer empty() {
@@ -185,9 +191,9 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     private void removeFriend(CsmOffsetableDeclaration decl) {
         if (CsmKindUtilities.isFriendClass(decl)) {
-            CsmFriendClass cls = (CsmFriendClass) decl;
+            CsmFriend cls = (CsmFriend) decl;
             CharSequence name = CharSequences.create(cls.getName());
-            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            Set<CsmUID<CsmFriend>> set = friends.get(name);
             if (set != null) {
                 set.remove(UIDs.get(cls));
                 if (set.isEmpty()) {
@@ -195,9 +201,9 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                 }
             }
         } else if (CsmKindUtilities.isFriendMethod(decl)) {
-            CsmFriendFunction fun = (CsmFriendFunction) decl;
-            CharSequence name = CharSequences.create(fun.getSignature());
-            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            CsmFriend fun = (CsmFriend) decl;
+            CharSequence name = CharSequences.create(((CsmFriendFunction)fun).getSignature());
+            Set<CsmUID<CsmFriend>> set = friends.get(name);
             if (set != null) {
                 set.remove(UIDs.get(fun));
                 if (set.isEmpty()) {
@@ -235,9 +241,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                     @SuppressWarnings("unchecked")
                     CsmUID<CsmOffsetableDeclaration>[] res = new CsmUID[uids.length + 1];
                     res[0] = uid;
-                    for (int i = 0; i < uids.length; i++) {
-                        res[i + 1] = uids[i];
-                    }
+                    System.arraycopy(uids, 0, res, 1, uids.length);
                     declarations.put(name, res);
                 }
             } else if (o instanceof CsmUID<?>) {
@@ -261,20 +265,20 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     private void putFriend(CsmDeclaration decl) {
         if (CsmKindUtilities.isFriendClass(decl)) {
-            CsmFriendClass cls = (CsmFriendClass) decl;
+            CsmFriend cls = (CsmFriend) decl;
             CharSequence name = CharSequences.create(cls.getName());
-            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            Set<CsmUID<CsmFriend>> set = friends.get(name);
             if (set == null) {
-                set = new HashSet<CsmUID<? extends CsmFriend>>();
+                set = new HashSet<CsmUID<CsmFriend>>();
                 friends.put(name, set);
             }
             set.add(UIDs.get(cls));
         } else if (CsmKindUtilities.isFriendMethod(decl)) {
-            CsmFriendFunction fun = (CsmFriendFunction) decl;
-            CharSequence name = CharSequences.create(fun.getSignature());
-            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            CsmFriend fun = (CsmFriend) decl;
+            CharSequence name = CharSequences.create(((CsmFriendFunction)fun).getSignature());
+            Set<CsmUID<CsmFriend>> set = friends.get(name);
             if (set == null) {
-                set = new HashSet<CsmUID<? extends CsmFriend>>();
+                set = new HashSet<CsmUID<CsmFriend>>();
                 friends.put(name, set);
             }
             set.add(UIDs.get(fun));
@@ -325,8 +329,8 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         }
     }
 
-    SortedMap<CharSequence, Set<CsmUID<? extends CsmFriend>>> testFriends(){
-        return new TreeMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>(friends);
+    SortedMap<CharSequence, Set<CsmUID<CsmFriend>>> testFriends(){
+        return new TreeMap<CharSequence, Set<CsmUID<CsmFriend>>>(friends);
     }
 
     /**
@@ -384,7 +388,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             List<CsmUID<? extends CsmFriend>> list = new ArrayList<CsmUID<? extends CsmFriend>>();
             try {
                 declarationsLock.readLock().lock();
-                Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+                Set<CsmUID<CsmFriend>> set = friends.get(name);
                 if (set != null) {
                     list.addAll(set);
                 }
@@ -469,6 +473,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         try {
             declarationsLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeStringToArrayUIDMap(declarations, aStream, false);
+            UIDObjectFactory.getDefaultFactory().writeStringToUIDMapSet(friends, aStream);
         } finally {
             declarationsLock.readLock().unlock();
         }

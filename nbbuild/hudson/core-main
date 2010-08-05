@@ -39,7 +39,7 @@ java.j2seproject,\
 java.platform,\
 java.project,\
 javahelp,\
-keyring,\
+keyring.impl,\
 masterfs,\
 maven,\
 maven.embedder,\
@@ -65,6 +65,7 @@ openide.options,\
 openide.text,\
 openide.util,\
 openide.util.enumerations,\
+openide.util.lookup,\
 openide.windows,\
 options.api,\
 options.keymap,\

@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.php.editor.api;
 
+import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.netbeans.modules.php.editor.api.NameKind.Prefix;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
@@ -56,6 +58,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -82,11 +85,14 @@ public interface ElementQuery {
 
     Set<ClassElement> getClasses(NameKind query);
 
+
     Set<InterfaceElement> getInterfaces();
 
     Set<InterfaceElement> getInterfaces(NameKind query);
 
+
     Set<TypeElement> getTypes(NameKind query);
+
     
     Set<FunctionElement> getFunctions();
 
@@ -112,15 +118,52 @@ public interface ElementQuery {
         
     Set<TypeConstantElement> getTypeConstants(NameKind constantQuery);
 
-    Set<PhpElement> getTopLevelElements(NameKind query);
 
-    Set<VariableElement> getTopLevelVariables(NameKind query);
 
     Set<NamespaceElement> getNamespaces(NameKind query);
 
     QueryScope getQueryScope();
 
+    public interface File extends ElementQuery {
+        FileObject getFileObject();
+        
+        URL getURL();
+
+        PHPParseResult getResult();
+
+        Set<MethodElement> getDeclaredMethods(TypeElement typeElement);
+
+        Set<FieldElement> getDeclaredFields(TypeElement classQuery);
+
+        Set<TypeConstantElement> getDeclaredTypeConstants(TypeElement typeElement);
+
+        Set<VariableElement> getTopLevelVariables();
+
+        Set<VariableElement> getMethodVariables(MethodElement method);
+
+        Set<VariableElement> getFunctionVariables(FunctionElement function);
+    }
+    
     public interface Index extends ElementQuery {
+        Set<PhpElement> getTopLevelElements(NameKind query);
+
+        Set<FunctionElement> getFunctions(NameKind query, Set<AliasedName> aliases);
+
+        Set<ConstantElement> getConstants(NameKind query, Set<AliasedName> aliases);
+
+        Set<ClassElement> getClasses(NameKind query, Set<AliasedName> aliases);
+
+        Set<InterfaceElement> getInterfaces(NameKind query, Set<AliasedName> aliases);
+
+        Set<TypeElement> getTypes(NameKind query, Set<AliasedName> aliases);
+
+        Set<MethodElement> getConstructors(NameKind typeQuery, Set<AliasedName> aliases);
+
+        Set<NamespaceElement> getNamespaces(NameKind query, Set<AliasedName> aliasedNames);
+
+        Set<PhpElement> getTopLevelElements(NameKind query, Set<AliasedName> aliases);
+
+        Set<VariableElement> getTopLevelVariables(NameKind query);
 
         Set<MethodElement> getDeclaredConstructors(ClassElement typeElement);
 
@@ -152,6 +195,8 @@ public interface ElementQuery {
         LinkedHashSet<TypeElement> getInheritedTypes(TypeElement typeElement);
         TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement);
         TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement, final Set<TypeElement> preferredTypes);
+        TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement);
+        TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement, final Set<TypeElement> preferredTypes);
         /**
          * @return all extended classes recursively
          */

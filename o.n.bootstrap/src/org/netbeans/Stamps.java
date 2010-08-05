@@ -80,7 +80,7 @@ public final class Stamps {
     private static final Logger LOG = Logger.getLogger(Stamps.class.getName());
     private static AtomicLong moduleJARs;
     private static File moduleNewestFile;
-    
+
     private Worker worker = new Worker();
 
     private Stamps() {
@@ -378,7 +378,7 @@ public final class Stamps {
         String user = getUserDir();
         if (user != null) {
             File userDir = new File(user);
-            stamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), cluster.getName());
+            stamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), clusterLocalStamp(cluster));
             if (checkStampFile && (time = stamp.lastModified()) > 0) {
                 if (time > result.longValue()) {
                     newestFile.set(stamp);
@@ -779,5 +779,9 @@ public final class Stamps {
             return processing.contains(cache);
         }
         
+    }
+
+    static String clusterLocalStamp(File cluster) {
+        return cluster.getName().replaceAll("\\.\\.", "__");
     }
 }

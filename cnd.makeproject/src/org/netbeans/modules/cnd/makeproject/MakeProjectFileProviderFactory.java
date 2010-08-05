@@ -45,6 +45,8 @@ package org.netbeans.modules.cnd.makeproject;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,11 +59,15 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
@@ -74,7 +80,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.CharSequences;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -84,6 +92,8 @@ import org.openide.util.ImageUtilities;
 public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
     private static final ConcurrentMap<Project, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Project, Map<Folder, List<CharSequence>>>();
+    private static final ConcurrentMap<Project, Map<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<Project, Map<CharSequence, List<CharSequence>>>();
+    private static final UserOptionsProvider packageSearch = Lookup.getDefault().lookup(UserOptionsProvider.class);
 
     /**
      * Store/update/remove list of non cnd files for project folder
@@ -138,7 +148,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         return new FileProviderImpl();
     }
 
-    private class FileProviderImpl implements FileProvider {
+    private class FileProviderImpl implements FileProvider, NativeFileSearch {
         private final AtomicBoolean cancel = new AtomicBoolean();
 
         public FileProviderImpl() {
@@ -164,6 +174,82 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 }
             }
             return false;
+        }
+
+        @Override
+        public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+            if (MakeOptions.getInstance().isFixUnresolvedInclude()) {
+                for(Project p : OpenProjects.getDefault().getOpenProjects()) {
+                    NativeProject np = p.getLookup().lookup(NativeProject.class);
+                    if (np == project) {
+                        Map<CharSequence,List<CharSequence>> projectSearchBase = fileNameSearchBase.get(p);
+                        if (projectSearchBase == null) {
+                            projectSearchBase = computeProjectFiles(p);
+                            fileNameSearchBase.putIfAbsent(p, projectSearchBase);
+                        }
+                        int i = fileName.lastIndexOf('/');
+                        String name = fileName;
+                        if (i >= 0) {
+                            name = fileName.substring(i+1);
+                        }
+                        Collection<CharSequence> res = projectSearchBase.get(CharSequences.create(name));
+                        if (res != null && res.size() > 0) {
+                            return res;
+                        }
+                        res = packageSearch.getPackageFileSearch().searchFile(project, fileName);
+                        if (res != null && res.size() > 0) {
+                            return res;
+                        }
+                    }
+                }
+            }
+            return Collections.<CharSequence>emptyList();
+        }
+
+        private Map<CharSequence,List<CharSequence>> computeProjectFiles(Project project) {
+            Map<CharSequence,List<CharSequence>> result = new ConcurrentHashMap<CharSequence,List<CharSequence>>();
+            ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (provider != null && provider.gotDescriptor()) {
+                MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                for (Item item : descriptor.getProjectItems()) {
+                    CharSequence name = CharSequences.create(item.getName());
+                    List<CharSequence> list = result.get(name);
+                    if (list == null) {
+                        list = new ArrayList<CharSequence>(1);
+                        result.put(name, list);
+                    }
+                    list.add(CharSequences.create(item.getAbsPath()));
+                }
+                if (!MakeOptions.getInstance().isFullFileIndexer()) {
+                    Map<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
+                    if (projectSearchBase != null) {
+                        synchronized (projectSearchBase) {
+                            projectSearchBase = new HashMap<Folder, List<CharSequence>>(projectSearchBase);
+                        }
+                        for (List<CharSequence> files : projectSearchBase.values()) {
+                            if (files != null) {
+                                for(CharSequence path : files) {
+                                    String absPath = path.toString();
+                                    int i = absPath.lastIndexOf('/');
+                                    if (i < 0) {
+                                        i = absPath.lastIndexOf('\\');
+                                    }
+                                    if (i >= 0) {
+                                        CharSequence name = CharSequences.create(absPath.substring(i+1));
+                                        List<CharSequence> list = result.get(name);
+                                        if (list == null) {
+                                            list = new ArrayList<CharSequence>(1);
+                                            result.put(name, list);
+                                        }
+                                        list.add(path);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         @Override

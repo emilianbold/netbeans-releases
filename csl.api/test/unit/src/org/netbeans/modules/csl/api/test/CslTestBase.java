@@ -70,6 +70,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -174,6 +175,7 @@ import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -2109,7 +2111,27 @@ public abstract class CslTestBase extends NbTestCase {
 
         JEditorPane pane = new JEditorPane();
         pane.setContentType(getPreferredMimeType());
-        pane.setEditorKit(getEditorKit(getPreferredMimeType()));
+        final NbEditorKit kit = ((NbEditorKit)getEditorKit(getPreferredMimeType()));
+
+
+        Thread preload = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                // Preload actions and other stuff
+                if (kit instanceof Callable) {
+                    try {
+                        ((Callable) kit).call();
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                kit.getActions();
+            }
+        });
+        preload.start();
+        preload.join();
+        pane.setEditorKit(kit);
         pane.setText(text);
 
         BaseDocument bdoc = (BaseDocument)pane.getDocument();

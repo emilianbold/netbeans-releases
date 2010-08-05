@@ -47,16 +47,18 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.lang.model.element.ElementKind;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.Query;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -75,7 +77,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private final URL root;
     private final File cacheRoot;
     private final boolean isSource;
-    private URL dirty;
+    private volatile URL dirty;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     private static IndexFactory indexFactory = LuceneIndexFactory.getInstance();
     
@@ -90,18 +92,22 @@ public class PersistentClassIndex extends ClassIndexImpl {
         this.isSource = source;
     }
     
+    @Override
     public BinaryAnalyser getBinaryAnalyser () {
         return new BinaryAnalyser (this.index, this.cacheRoot);
     }
     
+    @Override
     public SourceAnalyser getSourceAnalyser () {        
         return new SourceAnalyser (this.index);        
     }
 
+    @Override
     public boolean isSource () {
         return this.isSource;
     }
 
+    @Override
     public boolean isEmpty () {
         try {
             return ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Boolean>() {
@@ -118,6 +124,16 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
+    @Override
+    public boolean isValid() {
+        try {
+            return index.isValid(true);
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+    
+    @Override
     public FileObject[] getSourceRoots () {
         FileObject[] rootFos;
         if (isSource) {
@@ -130,8 +146,12 @@ public class PersistentClassIndex extends ClassIndexImpl {
         return rootFos;
     }
     
-    public String getSourceName (final String binaryName) throws IOException {
-        return index.getSourceName(binaryName);        
+    @Override
+    public String getSourceName (final String binaryName) throws IOException, InterruptedException {
+        final Query q = DocumentUtil.binaryNameQuery(binaryName);        
+        Set<String> names = new HashSet<String>();
+        index.query(new Query[]{q}, DocumentUtil.sourceNameFieldSelector(), DocumentUtil.sourceNameConvertor(), names);
+        return names.isEmpty() ? null : names.iterator().next();
     }
     
 
@@ -143,6 +163,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
+    @Override
     public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         if (BinaryAnalyser.OBJECT.equals(binaryName)) {
@@ -158,19 +179,24 @@ public class PersistentClassIndex extends ClassIndexImpl {
         });        
     }
     
-    
-               
-    
+                       
+    @Override
     public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            @Override
             public Void run () throws IOException, InterruptedException {
-                index.getDeclaredTypes (simpleName,kind, convertor, result);
+                final Query[] queries =  QueryUtil.createQueries(
+                        Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),
+                        simpleName,
+                        kind);
+                index.query(queries,DocumentUtil.declaredTypesFieldSelector(),convertor, result);
                 return null;
-            }                    
+            }
         });
     }
     
+    @Override
     public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -182,6 +208,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     
+    @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
             public Void run () throws IOException, InterruptedException {
@@ -190,13 +217,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
             }
         });        
     }
-    
-    public synchronized void setDirty (final URL url) {
+        
+    @Override
+    public void setDirty (final URL url) {
         this.dirty = url;
     }
     
     public @Override String toString () {
-        return "CompromiseUQ["+this.root.toExternalForm()+"]";     // NOI18N
+        return "PersistentClassIndex["+this.root.toExternalForm()+"]";     // NOI18N
     }
     
     //Unit test methods
@@ -205,18 +233,16 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     //Protected methods --------------------------------------------------------
+    @Override
     protected final void close () throws IOException {
         this.index.close();
     }
     
-    
+        
     // Private methods ---------------------------------------------------------                          
     
     private void updateDirty () {
-        final URL url;
-        synchronized (this) {
-            url = this.dirty;
-        }
+        final URL url = this.dirty;
         if (url != null) {
             final FileObject file = url != null ? URLMapper.findFileObject(url) : null;
             final JavaSource js = file != null ? JavaSource.forFileObject(file) : null;
@@ -232,10 +258,24 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                     ClassIndexManager.getDefault().takeWriteLock(
                                         new ClassIndexManager.ExceptionAction<Void>() {
                                             public Void run () throws IOException {
-                                                controller.toPhase(Phase.RESOLVED);
-                                                final SourceAnalyser sa = getSourceAnalyser();
-                                                sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
-                                                ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                                if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
+                                                    return null;
+                                                }
+                                                try {
+                                                    final SourceAnalyser sa = getSourceAnalyser();
+                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
+                                                    ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                                } catch (IllegalArgumentException ia) {
+                                                    //Debug info for issue #187344
+                                                    //seems that invalid dirty class index is used
+                                                    final ClassPath scp = controller.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                                                    throw new IllegalArgumentException(
+                                                            String.format("Provided source path: %s root: %s cache root: %",    //NOI18N
+                                                                scp == null ? "<null>" : scp.toString(),    //NOI18N
+                                                                root.toExternalForm(),
+                                                                cacheRoot.toURI().toURL())
+                                                                ,ia);
+                                                }
                                                 return null;
                                             }
                                     });
@@ -256,30 +296,15 @@ public class PersistentClassIndex extends ClassIndexImpl {
                         Exceptions.printStackTrace(ioe);
                     }
                 }
-                synchronized (this) {
-                    this.dirty = null;
-                }
+                this.dirty = null;
                 final long endTime = System.currentTimeMillis();
                 LOGGER.fine("PersistentClassIndex.updateDirty took: " + (endTime-startTime)+ " ms");     //NOI18N
             }
         }
     }
     
-    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException, IOException {               
-        final List<String> classInternalNames = this.getUsagesFQN(binaryName,usageType, Index.BooleanOperator.OR);
-        for (String classInternalName : classInternalNames) {
-            T value = convertor.convert(ElementKind.OTHER, classInternalName);
-            if (value != null) {                
-                result.add(value);
-            }
-        }
-    }    
-    
-    private List<String> getUsagesFQN (final String binaryName, final Set<UsageType> mask, final Index.BooleanOperator operator) throws InterruptedException, IOException {
-        List<String> result = this.index.getUsagesFQN(binaryName, mask, operator);          
-        if (result == null) {
-            result = Collections.emptyList();
-        }
-        return result;
+    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException, IOException {
+        final Query usagesQuery = QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD);
+        this.index.query(new Query[]{usagesQuery},DocumentUtil.declaredTypesFieldSelector(),convertor,result);                
     }
 }
