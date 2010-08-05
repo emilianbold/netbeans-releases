@@ -43,10 +43,14 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.openide.filesystems.FileUtil;
 
-/** Identifies one registered action. The action can be placed into 
- * a category under with additional id. In terms of layer based definition,
- * the action is then placed in <code>"Actions/" + category() + "/" + id() + ".instance"</code>
+/** Identifies one registered action. The action ought to be placed into 
+ * a category folder and use additional id identification. 
+ * In terms of {@link FileUtil#getConfigFile(java.lang.String)
+ * layer based definition},
+ * the action ought to be placed in 
+ * <code>"Actions/" + category() + "/" + id().replace('.','-') + ".instance"</code>
  * path.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>

@@ -47,8 +47,11 @@ import javax.swing.ActionMap;
 
 /** Registers an action under associated identifier specified by separate
  * {@link ActionID} annotation on the same element. Here is few usage examples:
- * 
- * XXX: Meanwhile visit project's <a href="http://wiki.netbeans.org/DeclarativeActionRegistration">wiki page</a>.
+ * <ul>
+ *   <li>{@link Actions#alwaysEnabled(java.awt.event.ActionListener, java.lang.String, java.lang.String, boolean) always enabled action}</li>
+ *   <li>{@link Actions#callback(java.lang.String, javax.swing.Action, boolean, java.lang.String, java.lang.String, boolean) callback action}</li>
+ *   <li>{@link Actions#context(java.lang.Class, boolean, boolean, org.openide.util.ContextAwareAction, java.lang.String, java.lang.String, java.lang.String, boolean)  context aware action} </li>
+ * </ul>
  * 
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>

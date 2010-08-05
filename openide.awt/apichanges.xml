@@ -60,7 +60,8 @@ made subject to such option by the copyright holder.
         <description>
             <p>Instead of registering actions in layer as advocated by various
             <a href="@TOP@/org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">
-                action factory methods</a> one can use newly created annotations.
+                action factory methods</a> one can use newly created 
+                <a href="@TOP@/org/openide/awt/ActionRegistration.html">annotations</a>.
             </p>
         </description>
         <class package="org.openide.awt" name="ActionRegistration"/>
