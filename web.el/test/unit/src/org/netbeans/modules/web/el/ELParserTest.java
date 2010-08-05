@@ -136,6 +136,19 @@ public class ELParserTest extends TestCase {
         }
     }
 
+    @Test
+    public void testParseEscaped() {
+        String[] exprs = {"${'${'}cart.numberOfItems}",
+        "${'#{'}cart.numberOfItems}",
+        "\\#{cart.numberOfItems}", "\\${cart.numberOfItems}"};
+        for (String expr : exprs) {
+            Node result = ELParser.parse(expr);
+            assertNull(findIdentifier(result, "cart"));
+            assertNull(findProperty(result, "numberOfItems"));
+            print(expr, result);
+        }
+    }
+
     public void testOffsets() {
         String expr = "#{foo.bar.baz}";
         Node result = ELParser.parse(expr);
