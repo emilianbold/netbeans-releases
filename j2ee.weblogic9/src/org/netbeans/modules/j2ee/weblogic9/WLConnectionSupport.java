@@ -82,13 +82,11 @@ public final class WLConnectionSupport {
         }
     }
 
-    public <T> T executeAction(JMXAction<T> action) throws Exception {
-        synchronized (deploymentManager) {
-            ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+    public <T> T executeAction(final JMXAction<T> action) throws Exception {
+        return executeAction(new Callable<T>() {
 
-            Thread.currentThread().setContextClassLoader(
-                    WLDeploymentManagerAccessor.getDefault().getWLClassLoader(deploymentManager));
-            try {
+            @Override
+            public T call() throws Exception {
                 InstanceProperties instanceProperties = deploymentManager.getInstanceProperties();
                 String host = instanceProperties.getProperty(WLPluginProperties.HOST_ATTR);
                 String port = instanceProperties.getProperty(WLPluginProperties.PORT_ATTR);
@@ -119,10 +117,8 @@ public final class WLConnectionSupport {
                 } finally {
                     jmxConnector.close();
                 }
-            } finally {
-                Thread.currentThread().setContextClassLoader(originalLoader);
             }
-        }
+        });
     }
 
     public static interface JMXAction<T> {
@@ -133,29 +129,37 @@ public final class WLConnectionSupport {
 
     }
     
-    public static abstract class JMXDomainRuntimeServiceAction<T> implements JMXAction<T>{
+    public static abstract class JMXRuntimeAction<T> implements JMXAction<T> {
 
-        public String getPath() {
-            return "/jndi/weblogic.management.mbeanservers.domainruntime";// NOI18N
+        public abstract T call(MBeanServerConnection connection, ObjectName service) throws Exception;
+
+        @Override
+        public final T call(MBeanServerConnection connection) throws Exception {
+            ObjectName service = new ObjectName("com.bea:Name=DomainRuntimeService," // NOI18N
+                    + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean"); // NOI18N
+            return call(connection, service);
         }
-        
-        public ObjectName getRootService() throws MalformedObjectNameException{
-            return new ObjectName(
-                    "com.bea:Name=DomainRuntimeService,"
-                            + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");// NOI18N
+
+        @Override
+        public final String getPath() {
+            return "/jndi/weblogic.management.mbeanservers.domainruntime"; // NOI18N
         }
     }
     
-    public static abstract class JMXEditAction<T> implements JMXAction<T>{
+    public static abstract class JMXEditAction<T> implements JMXAction<T> {
 
-        public String getPath() {
-            return "/jndi/weblogic.management.mbeanservers.edit";         // NOI18N
+        public abstract T call(MBeanServerConnection connection, ObjectName service) throws Exception;
+
+        @Override
+        public final T call(MBeanServerConnection connection) throws Exception {
+            ObjectName service = new ObjectName("com.bea:Name=EditService," // NOI18N
+                    + "Type=weblogic.management.mbeanservers.edit.EditServiceMBean"); // NOI18N
+            return call(connection, service);
         }
-        
-        public ObjectName getRootService() throws MalformedObjectNameException{
-            return new ObjectName(
-                    "com.bea:Name=EditService,"
-                    + "Type=weblogic.management.mbeanservers.edit.EditServiceMBean");// NOI18N
+
+        @Override
+        public final String getPath() {
+            return "/jndi/weblogic.management.mbeanservers.edit"; // NOI18N
         }
     }
 

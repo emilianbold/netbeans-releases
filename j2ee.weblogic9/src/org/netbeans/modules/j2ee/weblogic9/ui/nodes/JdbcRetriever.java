@@ -129,13 +129,11 @@ class JdbcRetriever {
 
         try {
             list = support.executeAction(new WLConnectionSupport.
-                    JMXDomainRuntimeServiceAction<List<JDBCDataBean>>() {
+                    JMXRuntimeAction<List<JDBCDataBean>>() {
 
                 @Override
-                public List<JDBCDataBean> call(MBeanServerConnection con) throws Exception {
+                public List<JDBCDataBean> call(MBeanServerConnection con, ObjectName service) throws Exception {
                     List<JDBCDataBean> list = new LinkedList<JDBCDataBean>();
-                    
-                    ObjectName service = getRootService();
                     
                     ObjectName[] adminServers = (ObjectName[]) con
                             .getAttribute(service, "ServerRuntimes");    // NOI18N
@@ -289,9 +287,7 @@ class JdbcRetriever {
                 support.executeAction(new WLConnectionSupport.JMXEditAction<Void>() {
 
                     @Override
-                    public Void call(MBeanServerConnection con) throws Exception {
-                        ObjectName service = getRootService();
-
+                    public Void call(MBeanServerConnection con, ObjectName service) throws Exception {
                         ObjectName config = (ObjectName) con.getAttribute(
                                 service, "DomainConfiguration"); // NOI18N
                         ObjectName resources[] = (ObjectName[]) con
@@ -385,7 +381,7 @@ class JdbcRetriever {
                 support.executeAction(new WLConnectionSupport.JMXEditAction<Void>() {
 
                     @Override
-                    public Void call(MBeanServerConnection con) throws Exception {
+                    public Void call(MBeanServerConnection con, ObjectName service) throws Exception {
                         StringBuilder dataSourceCanonicalName = new StringBuilder(
                                 "com.bea:Name="); // NOI18N
                         dataSourceCanonicalName.append(dataSource);
@@ -393,16 +389,15 @@ class JdbcRetriever {
                                 .append(",Type=JDBCSystemResource");// NOI18N
                         ObjectName dataSource = new ObjectName(
                                 dataSourceCanonicalName.toString());
-                        remove(con, dataSource);
+                        remove(con, service, dataSource);
                         return null;
                     }
                     
                     private void remove( MBeanServerConnection connection,
-                            ObjectName dataSource ) throws AttributeNotFoundException,
+                            ObjectName service, ObjectName dataSource) throws AttributeNotFoundException,
                             InstanceNotFoundException, MBeanException, ReflectionException,
                             IOException, MalformedObjectNameException, UnableLockException
                     {
-                        ObjectName service = getRootService();
                         ObjectName manager =(ObjectName) connection.getAttribute(service, 
                                         "ConfigurationManager");                // NOI18N
                         ObjectName domainConfigRoot = (ObjectName)connection.invoke(manager, 
