@@ -42,7 +42,12 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import java.util.List;
+
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -51,41 +56,69 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class ResourceChildren extends WLNodeChildren<ResourceNode> {
+class TuxedoChildren extends WLNodeChildren<ResourceNode> {
     
-    ResourceChildren(Lookup lookup){
-        setKeys( new ResourceNode[]{ 
-                createJDBCNode(lookup),
-                    createConnectorsNode(lookup),
-                        createJavaMail(lookup),
-                            createLibraries(lookup)});
-    } 
-
-    private ResourceNode createConnectorsNode( Lookup lookup ) {
-        return new ResourceNode( new ConnectorsChildren(lookup), ResourceNodeType.CONNECTORS,
-                NbBundle.getMessage(ResourceChildren.class, "LBL_Connectors") );
+    TuxedoChildren( Lookup lookup){
+        this.lookup = lookup;
+        ResourceNode wtcServers = new ResourceNode( new WTCServersChildrenFactory(),
+               ResourceNodeType.WTC_SERVER, NbBundle.getMessage(
+                       TuxedoChildren.class, "LBL_WtcServers") );
+        ResourceNode pools = new ResourceNode( new JoltPoolsChildrenFactory(),
+                ResourceNodeType.WTC_SERVER
+                , NbBundle.getMessage(TuxedoChildren.class, "LBL_JoltConnectionPools"));
+        setKeys( new ResourceNode[]{ wtcServers , pools });
     }
 
-    private ResourceNode createJDBCNode( Lookup lookup ) {
-        return new ResourceNode(new JdbcChildren(lookup) , ResourceNodeType.JDBC,
-                NbBundle.getMessage(ResourceChildren.class, "LBL_JDBC"));   // NOI18N
+    /* (non-Javadoc)
+     * @see org.openide.nodes.Children.Keys#createNodes(java.lang.Object)
+     */
+    @Override
+    protected Node[] createNodes( ResourceNode key ) {
+        return new Node[] { key };
     }
     
-    private ResourceNode createJavaMail( Lookup lookup ) {
-        return new ResourceNode(new JavaMailChildrenFactory(lookup) , 
-                ResourceNodeType.JAVA_MAIL,
-                    NbBundle.getMessage(ResourceChildren.class, "LBL_JavaMail"));   // NOI18N
+    private class WTCServersChildrenFactory extends ChildFactory<ResourceNode> 
+        implements RefreshModulesCookie
+    {
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie#refresh()
+         */
+        @Override
+        public void refresh() {
+            refresh( false );
+        }
+
+        /* (non-Javadoc)
+         * @see org.openide.nodes.ChildFactory#createKeys(java.util.List)
+         */
+        @Override
+        protected boolean createKeys( List<ResourceNode> keys ) {
+            // TODO Auto-generated method stub
+            return true;
+        }
+        
     }
     
-    private ResourceNode createLibraries( Lookup lookup ){
-        return new ResourceNode(new LibrariesChildrenFactory(lookup) , 
-                ResourceNodeType.LIBRARY,
-                    NbBundle.getMessage(ResourceChildren.class, "LBL_Libraries"));   // NOI18N
+    private class JoltPoolsChildrenFactory extends ChildFactory<ResourceNode>
+            implements RefreshModulesCookie
+    {
+
+        @Override
+        public void refresh() {
+            refresh(false);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.openide.nodes.ChildFactory#createKeys(java.util.List)
+         */
+        @Override
+        protected boolean createKeys( List<ResourceNode> keys ) {
+            // TODO Auto-generated method stub
+            return true;
+        }
     }
     
-    private ResourceNode createTuxedoResources( Lookup lookup ){
-        return new ResourceNode ( new TuxedoChildren( lookup ) , 
-                ResourceNodeType.TUXEDO, 
-                    NbBundle.getMessage(ResourceChildren.class, "LBL_Interoperability"));   // NOI18N
-    }
+    private Lookup lookup;
+
 }
