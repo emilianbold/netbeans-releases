@@ -117,12 +117,31 @@ public final class ELTypeUtilities {
     }
 
     /**
-     * @return true if {@code methodNode} and {@code method} have the same parameters; 
+     * @return true if {@code methodNode} and {@code method} have matching parameters;
      * false otherwise.
      */
-    public static boolean haveSameParameters(AstMethodSuffix methodNode, ExecutableElement method) {
+    public static boolean isSameMethod(Node methodNode, ExecutableElement method) {
+        String image = methodNode.getImage();
+        String methodName = method.getSimpleName().toString();
+        if (image == null) {
+            return false;
+        }
         //XXX: need to do type matching here
-        return method.getParameters().size() == methodNode.jjtGetNumChildren();
+        if (methodNode instanceof AstMethodSuffix && methodName.equals(image)) {
+            int methodNodeParams = ((AstMethodSuffix) methodNode).jjtGetNumChildren();
+            return method.isVarArgs()
+                    ? method.getParameters().size() >= methodNodeParams
+                    : method.getParameters().size() == methodNodeParams;
+        }
+
+        if (methodNode instanceof AstPropertySuffix
+                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
+        
+            return method.isVarArgs() 
+                    ? method.getParameters().size() == 1
+                    : method.getParameters().isEmpty();
+        }
+        return false;
     }
 
     /**
@@ -142,7 +161,7 @@ public final class ELTypeUtilities {
 
             if (property instanceof AstMethodSuffix
                     && methodName.equals(name)
-                    && haveSameParameters((AstMethodSuffix) property, each)) {
+                    && isSameMethod((AstMethodSuffix) property, each)) {
 
                 return each;
 
