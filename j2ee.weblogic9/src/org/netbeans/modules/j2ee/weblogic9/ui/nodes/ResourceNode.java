@@ -75,6 +75,9 @@ class ResourceNode extends AbstractItemNode {
         ADMIN_OBJ_RESOURCE,
         JAVA_MAIL,
         LIBRARY,
+        TUXEDO,
+        WTC_SERVER,
+        JOLT_CONNECTION_POOL
         ;
     }
     

@@ -99,15 +99,15 @@ class LibrariesChildrenFactory extends ChildFactory<ResourceNode>
         try {
             Map<String,String> libraries = support
                     .executeAction(new WLConnectionSupport.
-                            JMXDomainRuntimeServiceAction<Map<String,String>>()
+                            JMXRuntimeAction<Map<String,String>>()
                     {
 
                         @Override
-                        public Map<String,String> call( MBeanServerConnection con )
+                        public Map<String,String> call( MBeanServerConnection con ,
+                                ObjectName service )
                                 throws Exception
                         {
                             Map<String,String> map = new HashMap<String, String>(); 
-                            ObjectName service = getRootService();
 
                             ObjectName domainConfig = (ObjectName) con
                                     .getAttribute(service,
