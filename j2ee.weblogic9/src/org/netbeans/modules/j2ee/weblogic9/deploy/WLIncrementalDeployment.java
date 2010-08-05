@@ -72,18 +72,23 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class DirectoryDeployment extends IncrementalDeployment {
+public class WLIncrementalDeployment extends IncrementalDeployment {
 
-    private static final Logger LOGGER = Logger.getLogger(DirectoryDeployment.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WLIncrementalDeployment.class.getName());
+
+    private static boolean forbidDirectoryDeployment = Boolean.getBoolean(WLIncrementalDeployment.class.getName() + ".forbidDirectoryDeployment");
 
     private final WLDeploymentManager dm;
 
-    public DirectoryDeployment(WLDeploymentManager dm) {
+    public WLIncrementalDeployment(WLDeploymentManager dm) {
         this.dm = dm;
     }
 
     @Override
     public boolean canFileDeploy(Target target, J2eeModule deployable) {
+        if (forbidDirectoryDeployment) {
+            return false;
+        }
         return deployable != null && !J2eeModule.Type.CAR.equals(deployable.getType())
                 && !J2eeModule.Type.RAR.equals(deployable.getType());
     }
@@ -116,7 +121,7 @@ public class DirectoryDeployment extends IncrementalDeployment {
             WLProgressObject progress = new WLProgressObject(module);
             progress.fireProgressEvent(module, new WLDeploymentStatus(
                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                    NbBundle.getMessage(DirectoryDeployment.class, "MSG_Deployment_Completed")));
+                    NbBundle.getMessage(WLIncrementalDeployment.class, "MSG_Deployment_Completed")));
             return progress;
         }
 
@@ -175,10 +180,10 @@ public class DirectoryDeployment extends IncrementalDeployment {
         WLConnectionSupport support = new WLConnectionSupport(dm);
         String url = null;
         try {
-            url = support.executeAction(new WLConnectionSupport.JMXAction<String>() {
+            url = support.executeAction(new WLConnectionSupport.JMXRuntimeAction<String>() {
 
                 @Override
-                public String call(MBeanServerConnection con) throws Exception {
+                public String call(MBeanServerConnection con, ObjectName service) throws Exception {
                     ObjectName pattern = new ObjectName(
                             "com.bea:Type=WebAppComponentRuntime,*"); // NOI18N
 
@@ -190,11 +195,6 @@ public class DirectoryDeployment extends IncrementalDeployment {
                         }
                     }
                     return null;
-                }
-
-                @Override
-                public String getPath() {
-                    return "/jndi/weblogic.management.mbeanservers.domainruntime"; // NOI18N
                 }
             });
         } catch (Exception ex) {

@@ -117,12 +117,33 @@ public final class ELTypeUtilities {
     }
 
     /**
-     * @return true if {@code methodNode} and {@code method} have the same parameters; 
+     * @return true if {@code methodNode} and {@code method} have matching parameters;
      * false otherwise.
      */
-    public static boolean haveSameParameters(AstMethodSuffix methodNode, ExecutableElement method) {
+    public static boolean isSameMethod(Node methodNode, ExecutableElement method) {
+        String image = methodNode.getImage();
+        String methodName = method.getSimpleName().toString();
+        if (image == null) {
+            return false;
+        }
+        int methodParams = method.getParameters().size();
         //XXX: need to do type matching here
-        return method.getParameters().size() == methodNode.jjtGetNumChildren();
+        if (methodNode instanceof AstMethodSuffix && methodName.equals(image)) {
+            int methodNodeParams = ((AstMethodSuffix) methodNode).jjtGetNumChildren();
+            if (method.isVarArgs()) {
+                return methodParams == 1 ? true : methodNodeParams >= methodParams;
+            }
+            return method.getParameters().size() == methodNodeParams;
+        }
+
+        if (methodNode instanceof AstPropertySuffix
+                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
+        
+            return method.isVarArgs() 
+                    ? method.getParameters().size() == 1
+                    : method.getParameters().isEmpty();
+        }
+        return false;
     }
 
     /**
@@ -132,21 +153,12 @@ public final class ELTypeUtilities {
      * @return
      */
     private ExecutableElement getElementForProperty(Node property, Element enclosing) {
-        String name = property.getImage();
         for (ExecutableElement each : ElementFilter.methodsIn(enclosing.getEnclosedElements())) {
             // we're only interested in public methods
             if (!each.getModifiers().contains(Modifier.PUBLIC)) {
                 continue;
             }
-            String methodName = each.getSimpleName().toString();
-
-            if (property instanceof AstMethodSuffix
-                    && methodName.equals(name)
-                    && haveSameParameters((AstMethodSuffix) property, each)) {
-
-                return each;
-
-            } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
+            if (isSameMethod(property, each)) {
                 return each;
             }
         }

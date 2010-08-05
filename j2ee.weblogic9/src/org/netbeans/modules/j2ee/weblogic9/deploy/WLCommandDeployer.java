@@ -134,24 +134,17 @@ public final class WLCommandDeployer {
     }
 
     public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
-        return redeploy(moduleId, moduleId.getModuleID());
+        return redeploy(new TargetModuleID[] {moduleId});
     }
 
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
-        final TargetModuleID moduleId = createModuleId(new Target() {
-
-            @Override
-            public String getName() {
-                return "default"; // NOI18N
-            }
-
-            @Override
-            public String getDescription() {
-                return "server"; // NOI18N
-            }
-        }, file, host, port, file.getName(), null);
-
+        // TODO is this correct only first server mentioned
+        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, file.getName(), null);
         return deploy(moduleId, file);
+    }
+
+    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) {
+        return redeploy(targetModuleID, "-source", file.getAbsolutePath()); // NOI18N
     }
 
     public ProgressObject undeploy(final TargetModuleID[] targetModuleID) {
@@ -490,37 +483,6 @@ public final class WLCommandDeployer {
         return progress;
     }
 
-    public TargetModuleID[] getAvailableModules(ModuleType moduleType, Target[] target) {
-
-        assert !SwingUtilities.isEventDispatchThread() : "Should not be executed in EDT";
-
-        ListAppLineProcessor lineProcessor = new ListAppLineProcessor();
-        ExecutionService service = createService("-listapps", lineProcessor);
-        Future<Integer> result = service.run();
-        try {
-            Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-            if (value.intValue() != 0) {
-                return null;
-            } else {
-                List<String> names = lineProcessor.getApps();
-                TargetModuleID[] ret = new TargetModuleID[names.size()];
-                for (int i = 0; i < names.size(); i++) {
-                    ret[i] = new WLTargetModuleID(target[0], names.get(i));
-                }
-                return ret;
-            }
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return null;
-        } catch (TimeoutException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        }
-    }
-
     private ProgressObject deploy(final TargetModuleID moduleId, final File file,
             final String... parameters) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
@@ -577,56 +539,74 @@ public final class WLCommandDeployer {
         return progress;
     }
 
-    private ProgressObject redeploy(final TargetModuleID moduleId, final String name,
-            final String... parameters) {
-        final WLProgressObject progress = new WLProgressObject(moduleId);
+    // FIXME we should check the source of module if it differs this should do undeploy/deploy
+    private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final String... parameters) {
+        final WLProgressObject progress = new WLProgressObject(targetModuleID);
 
-        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeploying", name)));
+        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
+                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Started")));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
             @Override
             public void run() {
-                String[] execParams = new String[parameters.length + 2];
-                execParams[0] = "-name"; // NOI18N
-                execParams[1] = name;
-                if (parameters.length > 0) {
-                    System.arraycopy(parameters, 0, execParams, 2, parameters.length);
-                }
-
+                boolean failed = false;
                 LastLineProcessor lineProcessor = new LastLineProcessor();
-                ExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
-                Future<Integer> result = service.run();
-                try {
-                    Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                    if (value.intValue() != 0) {
-                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed",
-                                    lineProcessor.getLastLine())));
-                    } else {
-                        //waitForUrlReady(factory, moduleId, progress);
-                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Completed")));
+                for (TargetModuleID module : targetModuleID) {
+                    String name = module.getModuleID();
+                    String[] execParams = new String[parameters.length + 2];
+                    execParams[0] = "-name"; // NOI18N
+                    execParams[1] = name;
+                    if (parameters.length > 0) {
+                        System.arraycopy(parameters, 0, execParams, 2, parameters.length);
                     }
-                } catch (InterruptedException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_Interrupted")));
-                    result.cancel(true);
-                    Thread.currentThread().interrupt();
-                } catch (TimeoutException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_Timeout")));
-                    result.cancel(true);
-                } catch (ExecutionException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_With_Message")));
+                    ExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeploying", name)));
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value.intValue() != 0) {
+                            failed = true;
+                            progress.fireProgressEvent(module, new WLDeploymentStatus(
+                                    ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed",
+                                        lineProcessor.getLastLine())));
+                            break;
+                        } else {
+                            //waitForUrlReady(factory, moduleId, progress);
+                            continue;
+                        }
+                    } catch (InterruptedException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(module, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_Interrupted")));
+                        result.cancel(true);
+                        Thread.currentThread().interrupt();
+                        break;
+                    } catch (TimeoutException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(module, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_Timeout")));
+                        result.cancel(true);
+                        break;
+                    } catch (ExecutionException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(module, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_With_Message")));
+                        break;
+                    }
+                }
+                if (!failed) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Completed")));
                 }
             }
         });
