@@ -282,11 +282,15 @@ public class WLDeploymentManager implements DeploymentManager {
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws  UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException("Redeploy not yet implemented");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException("Redeploy not yet implemented");
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        return wlDeployer.redeploy(targetModuleID, file, file2);
     }
 
     public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws IllegalStateException {
@@ -412,14 +416,12 @@ public class WLDeploymentManager implements DeploymentManager {
             // including for example JMSServer which is not very good for
             // our purposes
             WLConnectionSupport support = new WLConnectionSupport(this);
-            return support.executeAction(new WLConnectionSupport.JMXAction<Target[]>() {
+            return support.executeAction(new WLConnectionSupport.JMXRuntimeAction<Target[]>() {
 
                 @Override
-                public Target[] call(MBeanServerConnection connection) throws Exception {
+                public Target[] call(MBeanServerConnection connection, ObjectName service) throws Exception {
                     List<Target> targets = new ArrayList<Target>();
-                    ObjectName domainRuntime = new ObjectName("com.bea:Name=DomainRuntimeService,"
-                            + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean"); // NOI18N
-                    ObjectName domainPending = (ObjectName) connection.getAttribute(domainRuntime, "DomainPending"); // NOI18N
+                    ObjectName domainPending = (ObjectName) connection.getAttribute(service, "DomainPending"); // NOI18N
                     if (domainPending != null) {
                         ObjectName[] domainTargets = (ObjectName[]) connection.getAttribute(domainPending, "Targets"); // NOI18N
                         if (domainTargets != null) {
@@ -434,12 +436,6 @@ public class WLDeploymentManager implements DeploymentManager {
                     }
                     return targets.toArray(new Target[targets.size()]);
                 }
-
-                @Override
-                public String getPath() {
-                    return "/jndi/weblogic.management.mbeanservers.domainruntime";// NOI18N
-                }
-
             });
         } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex.getCause());
@@ -586,7 +582,7 @@ public class WLDeploymentManager implements DeploymentManager {
         @Override
         public String getWebURL() {
             String url = moduleId.getWebURL();
-            if (url != null) {
+            if (url != null && url.startsWith("/")) { // NOI18N
                 url = "http://" + getHost() + ":" + getPort() + url; // NOI18N
             }
             return url;

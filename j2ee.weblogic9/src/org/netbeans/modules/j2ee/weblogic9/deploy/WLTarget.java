@@ -68,7 +68,7 @@ public final class WLTarget implements Target {
 
     @Override
     public String toString() {
-        return "WLTarget{" + "name=" + name + '}'; // NOI18N
+        return name;
     }
 
     @Override
