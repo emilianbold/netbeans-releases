@@ -37,79 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+package org.netbeans.modules.j2ee.weblogic9.deploy;
+
+import javax.enterprise.deploy.spi.Target;
 
 /**
- * @author Radek Matous, Tomas Mysik
+ *
+ * @author Petr Hejl
  */
-public abstract class Command {
+public final class WLTarget implements Target {
 
-    private final PhpProject project;
+    private final String name;
 
-    public Command(PhpProject project) {
-        assert project != null;
-        this.project = project;
+    public WLTarget(String name) {
+        this.name = name;
     }
 
-    public abstract String getCommandId();
+    @Override
+    public String getDescription() {
+        return "WebLogic Server instance"; // NOI18N
+    }
 
-    public abstract void invokeAction(Lookup context);
+    @Override
+    public String getName() {
+        return name;
+    }
 
-    public abstract boolean isActionEnabled(Lookup context);
+    @Override
+    public String toString() {
+        return "WLTarget{" + "name=" + name + '}'; // NOI18N
+    }
 
-    public boolean asyncCallRequired() {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WLTarget other = (WLTarget) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
         return true;
     }
 
-    public boolean saveRequired() {
-        return true;
-    }
-
-    public boolean isFileSensitive() {
-        return false;
-    }
-
-    public final PhpProject getProject() {
-        return project;
-    }
-
-    protected boolean isScriptSelected() {
-        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
-        return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
-    }
-
-    protected ConfigAction getConfigAction() {
-        return ConfigAction.get(ConfigAction.convert(ProjectPropertiesSupport.getRunAs(project)), project);
-    }
-
-    protected boolean isTestFile(FileObject fileObj) {
-        // #156939
-        if (fileObj == null) {
-            return false;
-        }
-        // #188770
-        if (fileObj.getName().endsWith(PhpUnit.TEST_CLASS_SUFFIX) && ProjectPropertiesSupport.runAllTestFilesUsingPhpUnit(project)) {
-            return true;
-        }
-        return CommandUtils.isUnderTests(project, fileObj, false);
-    }
-
-    protected boolean isSeleniumFile(FileObject fileObj) {
-        // #156939
-        if (fileObj == null) {
-            return false;
-        }
-        return CommandUtils.isUnderSelenium(project, fileObj, false);
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
     }
 }

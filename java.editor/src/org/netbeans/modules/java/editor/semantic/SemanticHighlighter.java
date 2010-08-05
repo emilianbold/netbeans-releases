@@ -1104,6 +1104,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                             boolean assign = false;
 
                             for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
+                                if (!e.getModifiers().contains(Modifier.STATIC)) continue;
                                 if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
                                     continue;
                                 }

@@ -60,7 +60,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -72,6 +71,8 @@ import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELIndex;
 import org.netbeans.modules.web.el.ELIndexer.Fields;
 import org.netbeans.modules.web.el.ELParser;
+import org.netbeans.modules.web.el.ELTypeUtilities;
+import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -84,6 +85,7 @@ import org.openide.util.Lookup;
 public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
     private CompilationInfo info;
+    private ELTypeUtilities typeUtilities;
 
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
@@ -96,6 +98,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             return null;
         }
         this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
+        this.typeUtilities = ELTypeUtilities.create(info);
         Element element = handle.resolveElement(info);
         if (Kind.METHOD == handle.getKind()) {
             return handleProperty(refactoringElementsBag, handle, element);
@@ -109,7 +112,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
         TypeElement type = (TypeElement) targetType;
         String clazz = type.getQualifiedName().toString();
-        String beanName = findBeanName(clazz);
+        String beanName = ELVariableResolvers.findBeanName(clazz, getFileObject());
         if (beanName != null) {
             ELIndex index = ELIndex.get(handle.getFileObject());
             Collection<? extends IndexResult> result = index.findIdentifierReferences(beanName);
@@ -119,16 +122,6 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                             new WhereUsedQueryElement(elem.getParserResult().getFileObject(), beanName, elem, identifier, getParserResult(elem.getParserResult().getFileObject()));
                     refactoringElementsBag.add(refactoring, wuqe);
                 }
-            }
-        }
-        return null;
-    }
-
-    private String findBeanName(String clazz) {
-        for (ELVariableResolver resolver : getResolvers()) {
-            String beanName = resolver.getBeanName(clazz, getFileObject());
-            if (beanName != null) {
-                return beanName;
             }
         }
         return null;
@@ -187,16 +180,6 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return Lookup.getDefault().lookupAll(ELVariableResolver.class);
     }
 
-    private String findBeanClass(String beanName, FileObject context) {
-        for (ELVariableResolver resolver : getResolvers()) {
-            String beanClass = resolver.getBeanClass(beanName, context);
-            if (beanClass != null) {
-                return beanClass;
-            }
-        }
-        return null;
-    }
-
     protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
         for (Node property : matchingNodes) {
             WhereUsedQueryElement wuqe =
@@ -217,7 +200,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    String beanClass = findBeanClass(node.getImage(), context);
+                    String beanClass = ELVariableResolvers.findBeanClass(node.getImage(), context);
                     if (beanClass == null) {
                         return;
                     }
@@ -259,7 +242,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    String beanClass = findBeanClass(node.getImage(), context);
+                    String beanClass = ELVariableResolvers.findBeanClass(node.getImage(), context);
                     if (beanClass == null) {
                         return;
                     }
@@ -325,29 +308,15 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
             if (property instanceof AstMethodSuffix
                     && methodName.equals(name)
-                    && haveSameParameters((AstMethodSuffix) property, methodElem)) {
+                    && ELTypeUtilities.haveSameParameters((AstMethodSuffix) property, methodElem)) {
 
-                return getReturnType(methodElem);
+                return typeUtilities.getReturnType(methodElem);
 
             } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
-                return getReturnType(methodElem);
+                return typeUtilities.getReturnType(methodElem);
             }
         }
         return null;
-    }
-
-    private TypeMirror getReturnType(ExecutableElement method) {
-        TypeKind returnTypeKind = method.getReturnType().getKind();
-        if (returnTypeKind.isPrimitive()) {
-            return info.getTypes().getPrimitiveType(returnTypeKind);
-        } else {
-            return method.getReturnType();
-        }
-    }
-
-    private static boolean haveSameParameters(AstMethodSuffix methodNode, ExecutableElement method) {
-        //XXX: need to do type matching here
-        return method.getParameters().size() == methodNode.jjtGetNumChildren();
     }
 
     private List<ELElement> getMatchingElements(Collection<? extends IndexResult> indexResult) {

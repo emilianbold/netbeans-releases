@@ -75,6 +75,8 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
@@ -406,14 +408,53 @@ public class WLDeploymentManager implements DeploymentManager {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         try {
-            return executeAction(new Action<Target[]>() {
-                public Target[] execute(DeploymentManager manager) throws ExecutionException {
-                    return manager.getTargets();
+            // we do this magic because default JSR-88 returns all targets
+            // including for example JMSServer which is not very good for
+            // our purposes
+            WLConnectionSupport support = new WLConnectionSupport(this);
+            return support.executeAction(new WLConnectionSupport.JMXAction<Target[]>() {
+
+                @Override
+                public Target[] call(MBeanServerConnection connection) throws Exception {
+                    List<Target> targets = new ArrayList<Target>();
+                    ObjectName domainRuntime = new ObjectName("com.bea:Name=DomainRuntimeService,"
+                            + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean"); // NOI18N
+                    ObjectName domainPending = (ObjectName) connection.getAttribute(domainRuntime, "DomainPending"); // NOI18N
+                    if (domainPending != null) {
+                        ObjectName[] domainTargets = (ObjectName[]) connection.getAttribute(domainPending, "Targets"); // NOI18N
+                        if (domainTargets != null) {
+                            for (ObjectName singleTarget : domainTargets) {
+                                String type = (String) connection.getAttribute(singleTarget, "Type"); // NOI18N
+                                if ("Server".equals(type)) { // NOI18N
+                                    String name = (String) connection.getAttribute(singleTarget, "Name"); // NOI18N
+                                    targets.add(new WLTarget(name));
+                                }
+                            }
+                        }
+                    }
+                    return targets.toArray(new Target[targets.size()]);
                 }
+
+                @Override
+                public String getPath() {
+                    return "/jndi/weblogic.management.mbeanservers.domainruntime";// NOI18N
+                }
+
             });
         } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex.getCause());
-            return new Target[] {};
+
+                // just a fallback
+                try {
+                return executeAction(new Action<Target[]>() {
+                    public Target[] execute(DeploymentManager manager) throws ExecutionException {
+                        return manager.getTargets();
+                    }
+                });
+            } catch (Exception fex) {
+                LOGGER.log(Level.INFO, null, ex.getCause());
+                return new Target[] {};
+            }
         }
     }
 
@@ -460,20 +501,21 @@ public class WLDeploymentManager implements DeploymentManager {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
-    // TODO if possible (due to workflow of j2eeserver) reuse deployment manager
-    // instead of this
     private static Target[] translateTargets(DeploymentManager manager, Target[] originalTargets) {
         Target[] targets = manager.getTargets();
         // WL does not implement equals however implements hashCode
         // it consider two Target instances coming from different
         // deployment managers different
 
+        // moreover we switched to our own targets via JMX
+        // in future we get rid of this by avoiding JSR88 completely
+        // (getXXXModules() and similar)
+
         // perhaps we could share DeploymentManager somehow
         List<Target> deployTargets = new ArrayList<Target>(originalTargets.length);
         for (Target t : targets) {
             for (Target t2 : originalTargets) {
-                if (t.hashCode() == t2.hashCode()
-                        && t.getName().equals(t2.getName())) {
+                if (t.getName().equals(t2.getName())) {
                     deployTargets.add(t);
                 }
             }

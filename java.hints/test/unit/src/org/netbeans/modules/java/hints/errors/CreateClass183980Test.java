@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,40 +41,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.source.usages;
+package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.Collection;
+import org.netbeans.api.java.source.CompilationInfo;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.search.Query;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
- * Index SPI. Represents an index for usages data
- * @author Tomas Zezula
+ *
+ * @author Jan Lahoda
  */
-public abstract class Index {    
-            
-    public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> () {
-        protected synchronized @Override AtomicBoolean initialValue() {
-             return new AtomicBoolean ();
-         }
-    };    
+public class CreateClass183980Test extends ErrorHintsTestBase {
+    
+    public CreateClass183980Test(String name) {
+        super(name);
+    }
+    
+    public void testNoTemplateWhatSoEver183980() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { private St|ate f;}",
+                       "CreateClass:test.State:[]:CLASS",
+                       "test/State.java",
+                       "package test; class State { } "
+                       );
+    }
 
-    public abstract boolean exists ();
-    public abstract boolean isValid (boolean tryOpen) throws IOException;
-    public abstract <T> void query (@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<? super Document, T> convertor, Collection<? super T> result) throws IOException, InterruptedException;
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<? super Document, T> convertor,Map<T,Set<String>> result) throws IOException, InterruptedException;
-    public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
-    public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
-    public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
-    public abstract void clear () throws IOException;
-    public abstract void close () throws IOException;
-            
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
+        List<Fix> fixes = new CreateElement().analyze(info, pos);
+        List<Fix> result=  new LinkedList<Fix>();
+        
+        for (Fix f : fixes) {
+            if (f instanceof CreateClassFix)
+                result.add(f);
+        }
+        
+        return result;
+    }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return ((CreateClassFix) f).toDebugString(info);
+    }
+
 }

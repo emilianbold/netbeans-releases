@@ -216,8 +216,13 @@ class HtmlLabelUI extends LabelUI {
         HtmlRendererImpl h = (HtmlRendererImpl) c;
 
         if (bg != null) {
-            int x = h.isSelected() ? ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap())) : 0;
-            x += h.getIndent();
+            int x;
+            if (h.getType() == HtmlRendererImpl.Type.TABLE) {
+                x = 0; // in a table we want to have the whole row selected
+            } else {
+                x = h.isSelected() ? ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap())) : 0;
+                x += h.getIndent();
+            }
             g.setColor(bg);
             g.fillRect(x, 0, c.getWidth() - x, c.getHeight());
         }
@@ -230,7 +235,12 @@ class HtmlLabelUI extends LabelUI {
             }
 
             if (!isGTK() && !isAqua() && !isNimbus()) {
-                int x = ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap()));
+                int x;
+                if (h.getType() == HtmlRendererImpl.Type.TABLE) {
+                    x = 0; // in a table we want to have the whole row selected
+                } else {
+                    x = ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap()));
+                }
                 g.setColor(focus);
                 g.drawRect(x, 0, c.getWidth() - (x + 1), c.getHeight() - 1);
             }

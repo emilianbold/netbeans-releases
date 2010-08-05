@@ -93,14 +93,13 @@ class JavaMailChildrenFactory extends ChildFactory<ResourceNode>
 
         WLConnectionSupport support = new WLConnectionSupport(manager);
         try {
-             support.executeAction(new WLConnectionSupport.JMXDomainRuntimeServiceAction<Void>()
+             support.executeAction(new WLConnectionSupport.JMXRuntimeAction<Void>()
                     {
 
                         @Override
-                        public Void call( MBeanServerConnection con )
+                        public Void call( MBeanServerConnection con, ObjectName service )
                                 throws Exception
                         {
-                            ObjectName service = getRootService();
                             
                             ObjectName domainConfig  = (ObjectName)con.getAttribute(service, 
                                     "DomainConfiguration");                     // NOI18N
