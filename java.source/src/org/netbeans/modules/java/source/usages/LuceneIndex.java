@@ -146,7 +146,7 @@ class LuceneIndex extends Index implements Evictable {
     public <T> void query (
             final @NonNull Query[] queries,
             final @NonNull FieldSelector selector,
-            final @NonNull ResultConvertor<T> convertor, 
+            final @NonNull ResultConvertor<? super Document, T> convertor, 
             final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
         Parameters.notNull("queries", queries);   //NOI18N
         Parameters.notNull("selector", selector);   //NOI18N
@@ -187,7 +187,7 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     //Todo: replace by query(QueryUtil.createQueries) - needs to collect terms in queries
-    public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
+    public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
         checkPreconditions();
         final IndexReader in = getReader();
         if (in == null) {
