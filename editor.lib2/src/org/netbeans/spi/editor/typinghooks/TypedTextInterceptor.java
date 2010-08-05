@@ -114,7 +114,7 @@ import org.netbeans.modules.editor.lib2.typinghooks.TypingHooksSpiAccessor;
  * interceptor and exclude it from processing future events.
  *
  * @author Vita Stejskal
- * @since 1.9
+ * @since 1.31
  */
 public interface TypedTextInterceptor {
 

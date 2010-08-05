@@ -80,7 +80,13 @@ made subject to such option by the copyright holder.
 
 <ul>
 <li>
+    <api name="editor-code-generator" group="java" type="export" category="official" url="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/package-summary.html">Code Generator SPI</api>
+</li>    
+<li>
     <api name="editor-highlighting" group="java" type="export" category="official" url="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html">Highlighting SPI</api>
+</li>    
+<li>
+    <api name="editor-typing-hooks" group="java" type="export" category="official" url="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/package-summary.html">Typing Hooks SPI</api>
 </li>    
 </ul>
 </answer>
@@ -123,11 +129,11 @@ folding, braces matching, etc.
     At the moment the Editor Library 2 module contains three distinct SPIs. Each SPI lives
     in its own package and the usecases can be found in the packages overview.
     <ul>
-    <li>Highlighting SPI -
-        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html#usecases">org.netbeans.spi.editor.highlighting</a>
-    </li>
     <li>Code Generator SPI -
         <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/package-summary.html#usecases">org.netbeans.spi.editor.codegen</a>
+    </li>
+    <li>Highlighting SPI -
+        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html#usecases">org.netbeans.spi.editor.highlighting</a>
     </li>
     <li>Typing Hooks SPI -
         <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/package-summary.html#usecases">org.netbeans.spi.editor.typinghooks</a>

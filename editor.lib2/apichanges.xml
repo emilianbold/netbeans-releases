@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="typinghooks-spi-added">
+            <summary>Typing Hooks SPI added</summary>
+            <version major="1" minor="31"/>
+            <date day="5" month="8" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                Typing Hooks SPI allows interception of various key typed events
+                that are processed in the editor. The SPI is a replacement for
+                subclassing editor actions such as <code>DefaultKeyTypedAction</code>,
+                <code>InsertBreakAction</code>, etc.
+            </description>
+            <issue number="152655"/>
+        </change>
+
         <change id="added-line-column-based-dialog-bindings">
             <summary>Adding line/column based dialog bindings</summary>
             <version major="1" minor="24"/>
@@ -170,20 +185,6 @@ is the proper place.
             </description>
             <class package="org.netbeans.api.editor" name="EditorActionRegistration"/>
             <issue number="150875"/>
-        </change>
-
-        <change id="typinghooks-spi-added">
-            <summary>Typing Hooks SPI added</summary>
-            <version major="1" minor="9"/>
-            <date day="23" month="10" year="2008"/>
-            <author login="vstejskal"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
-            <description>
-                Typing Hooks SPI allows interception of various key typed events
-                that are processed in the editor. The SPI is a replacement for
-                subclassing editor actions such as <code>DefaultKeyTypedAction</code>,
-                <code>InsertBreakAction</code>, etc.
-            </description>
         </change>
 
         <change id="added-codegen-spi">

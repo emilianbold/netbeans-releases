@@ -111,7 +111,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
  * interceptor and exclude it from processing future events.
  *
  * @author Vita Stejskal
- * @since 1.9
+ * @since 1.31
  */
 public interface DeletedTextInterceptor {
 
