@@ -72,6 +72,8 @@ public class RepositoryNode extends AbstractNode {
 
     private RepositoryInfo info;
 
+    private static final RequestProcessor RPrefreshindex = new RequestProcessor(RefreshIndexAction.class.getName(),1);
+
     public RepositoryNode(RepositoryInfo info) {
         super(new GroupListChildren(info));
         this.info = info;
@@ -184,7 +186,7 @@ public class RepositoryNode extends AbstractNode {
     }
 
     public class RefreshIndexAction extends AbstractAction {
-
+        
         public RefreshIndexAction() {
             putValue(NAME, NbBundle.getMessage(RepositoryNode.class,
                     "LBL_REPO_Update_Index"));//NOI18N
@@ -192,7 +194,7 @@ public class RepositoryNode extends AbstractNode {
 
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RPrefreshindex.post(new Runnable() {
                 public void run() {
                     RepositoryIndexer.indexRepo(info);
                     SwingUtilities.invokeLater(new Runnable() {

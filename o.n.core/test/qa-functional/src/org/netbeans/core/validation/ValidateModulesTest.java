@@ -81,6 +81,8 @@ public class ValidateModulesTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidateModulesTest("clusterVersions"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).addTest("deprecatedModulesAreDisabled").
+                clusters("(?!(extra|python)$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
@@ -184,8 +186,9 @@ public class ValidateModulesTest extends NbTestCase {
         }
     }
 
-    public void testDeprecatedModulesAreDisabled() {
+    public void deprecatedModulesAreDisabled() {
         Set<String> cnbs = new TreeSet<String>();
+        StringBuilder problems = new StringBuilder();
         for (Module m : Main.getModuleSystem().getManager().getModules()) {
             if ("true".equals(m.getAttribute("OpenIDE-Module-Deprecated"))) {
                 String cnb = m.getCodeNameBase();
@@ -194,10 +197,16 @@ public class ValidateModulesTest extends NbTestCase {
                     continue;
                 }
                 cnbs.add(cnb);
-                assertFalse(cnb + " is deprecated and should not be enabled", m.isEnabled());
+                if (m.isEnabled()) {
+                    problems.append('\n').append(cnb).append(" is deprecated and should not be enabled");
+                }
             }
         }
-        System.out.println("Deprecated modules all correctly disabled: " + cnbs);
+        if (problems.length() > 0) {
+            fail("Some deprecated modules are in use" + problems);
+        } else {
+            System.out.println("Deprecated modules all correctly disabled: " + cnbs);
+        }
     }
 
     private static Set<Manifest> loadManifests() throws Exception {

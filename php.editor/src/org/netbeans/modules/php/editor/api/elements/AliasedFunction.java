@@ -37,53 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.newproject;
+package org.netbeans.modules.php.editor.api.elements;
 
-import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.php.editor.api.AliasedName;
 
 /**
- * Archetype provider that lists the 3 basic ones to have something in the list
- * when the user never used any archetypes before..
- * @author mkleint
+ *
+ * @author Radek Matous
  */
-@ServiceProvider(service=ArchetypeProvider.class)
-public class LayerBasedArchetypeProvider implements ArchetypeProvider {
-    
-    public @Override List<Archetype> getArchetypes() {
-        FileObject root = FileUtil.getConfigFile("Projects/org-netbeans-modules-maven/Archetypes"); //NOI18N
-        List<Archetype> toRet = new ArrayList<Archetype>();
-        for (FileObject fo : FileUtil.getOrder(Arrays.asList(root.getChildren()), false)) {
-            String groupId = (String) fo.getAttribute("groupId"); //NOI18N
-            String artifactId = (String) fo.getAttribute("artifactId"); //NOI18N
-            String version = (String) fo.getAttribute("version"); //NOI18N
-            String repository = (String) fo.getAttribute("repository"); //NOI18N
-            String name = (String) fo.getAttribute("displayName"); //NOI18N
-            String desc = (String) fo.getAttribute("description"); //NOI18N
-            if (groupId != null && artifactId != null && version != null) {
-                Archetype simple = new Archetype(false);
-                simple.setGroupId(groupId);
-                simple.setArtifactId(artifactId);
-                simple.setVersion(version);
-                simple.setRepository(repository);
-                if (name == null) {
-                    name = simple.getArtifactId();
-                }
-                simple.setName(name);
-                simple.setDescription(desc);
-                toRet.add(simple);
-            }
-        }
-        return toRet;
+public class AliasedFunction extends AliasedElement implements FunctionElement {
+    public AliasedFunction(final AliasedName aliasedName, final FunctionElement functionElement) {
+        super(aliasedName, functionElement);
     }
-    
+
+    protected final FunctionElement getRealFunction() {
+        return (FunctionElement) element;
+    }
+    @Override
+    public List<ParameterElement> getParameters() {
+        return getRealFunction().getParameters();
+    }
+
+    @Override
+    public Collection<TypeResolver> getReturnTypes() {
+        return getRealFunction().getReturnTypes();
+    }
+
+    @Override
+    public String asString(PrintAs as) {
+        return getRealFunction().asString(as);
+    }
 }

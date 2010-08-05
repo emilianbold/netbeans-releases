@@ -88,6 +88,7 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -388,7 +389,9 @@ public class ArchetypeWizardUtils {
                     //now we have the nbm-archetype (or the netbeans platform one).
                     addNbmPluginOsgiParameter(projFile);
                 }
-                return openProjects(handle, projFile, appDir, nbm_artifactId == null ? 3 : 3 + 3);
+                Set<FileObject> projects = openProjects(handle, projFile, appDir, nbm_artifactId == null ? 3 : 3 + 3);
+                Templates.setDefinesMainProject(wiz, projects.size() > 1);
+                return projects;
             }
         } finally {
             handle.finish();
