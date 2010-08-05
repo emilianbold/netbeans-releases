@@ -46,6 +46,7 @@ package org.netbeans.modules.glassfish.javaee.ide;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.CommandType;
@@ -62,10 +63,13 @@ import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.glassfish.javaee.ResourceRegistrationHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule2;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -76,7 +80,7 @@ import org.xml.sax.SAXException;
  * @author Ludovic Champenois
  * @author Peter Williams
  */
-public class FastDeploy extends IncrementalDeployment {
+public class FastDeploy extends IncrementalDeployment implements IncrementalDeployment2 {
     
     private Hk2DeploymentManager dm;
     
@@ -98,7 +102,18 @@ public class FastDeploy extends IncrementalDeployment {
      * @param file 
      * @return 
      */
-    public ProgressObject initialDeploy(Target target, J2eeModule module, ModuleConfiguration configuration, final File dir) {
+    @Override
+    public ProgressObject initialDeploy(Target target, final J2eeModule module, ModuleConfiguration configuration, final File dir) {
+        return initialDeploy(target, module, dir, new File[0]);
+    }
+
+    @Override
+    public ProgressObject initialDeploy(Target target, DeploymentContext context) {
+        return initialDeploy(target, context.getModule(), context.getModuleFile(), context.getRequiredLibraries());
+    }
+
+
+    private ProgressObject initialDeploy(Target target, J2eeModule module, final File dir, final File[] requiredLibraries) {
         final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(Utils.computeModuleID(module, dir, Integer.toString(hashCode())));
         String contextRoot = null;
         // XXX fix cast -- need error instance for ProgressObject to return errors
@@ -110,6 +125,8 @@ public class FastDeploy extends IncrementalDeployment {
         MonitorProgressObject restartProgress = new MonitorProgressObject(dm, moduleId);
 
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
+        final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
+            (GlassfishModule2)commonSupport : null);
         boolean restart = false;
         try {
             restart = HttpMonitorHelper.synchronizeMonitor(commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
@@ -121,12 +138,16 @@ public class FastDeploy extends IncrementalDeployment {
         } catch (SAXException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
-        ResourceRegistrationHelper.deployResources(dir,dm); 
+        ResourceRegistrationHelper.deployResources(dir,dm);
         if (restart) {
             restartProgress.addProgressListener(new ProgressListener() {
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
-                        commonSupport.deploy(deployProgress, dir, moduleName);
+                        if (commonSupport2 != null && requiredLibraries.length > 0) {
+                            commonSupport2.deploy(deployProgress, dir, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+                        } else {
+                            commonSupport.deploy(deployProgress, dir, moduleName);
+                        }
                     } else {
                         deployProgress.fireHandleProgressEvent(event.getDeploymentStatus());
                     }
@@ -135,7 +156,11 @@ public class FastDeploy extends IncrementalDeployment {
             commonSupport.restartServer(restartProgress);
             return updateCRProgress;
         } else {
-            commonSupport.deploy(deployProgress, dir, moduleName);
+            if (commonSupport2 != null && requiredLibraries.length > 0) {
+                commonSupport2.deploy(deployProgress, dir, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+            } else {
+                commonSupport.deploy(deployProgress, dir, moduleName);
+            }
             return updateCRProgress;
         }
     }
@@ -146,7 +171,17 @@ public class FastDeploy extends IncrementalDeployment {
      * @param appChangeDescriptor 
      * @return 
      */
+    @Override
     public ProgressObject incrementalDeploy(final TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
+        return incrementalDeploy(targetModuleID, appChangeDescriptor, new File[0]);
+    }
+
+    @Override
+    public ProgressObject incrementalDeploy(final TargetModuleID targetModuleID, DeploymentContext context) {
+        return incrementalDeploy(targetModuleID, context.getChanges(), context.getRequiredLibraries());
+    }
+
+    private ProgressObject incrementalDeploy(final TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor, final File[] requiredLibraries) {
         final MonitorProgressObject progressObject = new MonitorProgressObject(dm,
                 (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY);
         MonitorProgressObject restartObject = new MonitorProgressObject(dm, (Hk2TargetModuleID) targetModuleID,
@@ -155,6 +190,8 @@ public class FastDeploy extends IncrementalDeployment {
                 (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY);
         progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,(Hk2TargetModuleID) targetModuleID, dm.getServerInstance(), ! (null == targetModuleID.getWebURL())));
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
+        final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
+            (GlassfishModule2)commonSupport : null);
         boolean restart = false;
         try {
             restart = HttpMonitorHelper.synchronizeMonitor(
@@ -191,7 +228,11 @@ public class FastDeploy extends IncrementalDeployment {
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                         if (hasChanges) {
-                            commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+                            if (commonSupport2 != null && requiredLibraries.length > 0) {
+                                commonSupport2.redeploy(progressObject, targetModuleID.getModuleID(), null, requiredLibraries);
+                            } else {
+                                commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+                            }
                         } else {
                             progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
                         }
@@ -204,7 +245,11 @@ public class FastDeploy extends IncrementalDeployment {
             return updateCRObject;
         } else {
             if (hasChanges) {
-                commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+                if (commonSupport2 != null && requiredLibraries.length > 0) {
+                    commonSupport2.redeploy(progressObject, targetModuleID.getModuleID(), null, requiredLibraries);
+                } else {
+                    commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+                }
             } else {
                 progressObject.operationStateChanged(GlassfishModule.OperationState.COMPLETED,
                         NbBundle.getMessage(FastDeploy.class, "MSG_RedeployUnneeded"));

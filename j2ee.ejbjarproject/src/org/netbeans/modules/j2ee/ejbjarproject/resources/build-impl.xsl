@@ -990,14 +990,14 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="library-inclusion-in-archive" depends="compile">
-                <xsl:for-each select="//ejbjarproject3:included-library">
+<!--                <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
                     <copyfiles todir="${{build.classes.dir}}">
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
                     </copyfiles>
-                </xsl:for-each>   
+                </xsl:for-each>    -->
             </target> 
             
             <target name="library-inclusion-in-manifest" depends="compile">
