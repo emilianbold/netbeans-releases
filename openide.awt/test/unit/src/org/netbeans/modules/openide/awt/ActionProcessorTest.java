@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.openide.awt;
 
+import java.awt.Component;
+import javax.swing.JMenuItem;
+import org.openide.util.actions.Presenter;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import org.openide.util.test.AnnotationProcessorTestUtils;
 import java.util.Collections;
@@ -81,7 +85,14 @@ public class ActionProcessorTest extends NbTestCase {
         id="my.test.Always", category="Tools"
     )
     public static final class Always implements ActionListener {
+        static int created;
+        
+        public Always() {
+            created++;
+        }
+        
         static int cnt;
+        @Override
         public void actionPerformed(ActionEvent e) {
             cnt += e.getID();
         }
@@ -92,13 +103,17 @@ public class ActionProcessorTest extends NbTestCase {
             "Actions/Tools/my-test-Always.instance"
         );
         assertNotNull("File found", fo);
+        assertEquals("Not created yet", 0, Always.created);
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Attribute present", obj);
         assertTrue("It is an action", obj instanceof Action);
         Action a = (Action)obj;
+        assertEquals("Still not created", 0, Always.created);
 
         assertEquals("I am always on!", a.getValue(Action.NAME));
+        assertEquals("Not even now created", 0, Always.created);
         a.actionPerformed(new ActionEvent(this, 300, ""));
+        assertEquals("Created now!", 1, Always.created);
 
         assertEquals("Action called", 300, Always.cnt);
     }
@@ -383,6 +398,96 @@ public class ActionProcessorTest extends NbTestCase {
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertTrue("Compilation has to succeed:\n" + os, r);
     }
+
+    @ActionID(category="eager", id="direct.one")
+    @ActionRegistration(displayName="Direct Action")
+    public static class Direct extends AbstractAction implements Presenter.Menu {
+        static int cnt;
+        public Direct() {
+            cnt++;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+
+        @Override
+        public JMenuItem getMenuPresenter() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+    @ActionID(category="eager", id="direct.two")
+    @ActionRegistration(displayName="Direct Action")
+    public static class Direct2 extends AbstractAction implements Presenter.Toolbar {
+        static int cnt;
+        public Direct2() {
+            cnt++;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+
+        @Override
+        public Component getToolbarPresenter() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    }
+    @ActionID(category="eager", id="direct.three")
+    @ActionRegistration(displayName="Direct Action")
+    public static class Direct3 extends AbstractAction implements Presenter.Popup {
+        static int cnt;
+        public Direct3() {
+            cnt++;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+
+        @Override
+        public JMenuItem getPopupPresenter() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+    public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-one.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertEquals("Direct class is created", Direct.class, obj.getClass());
+    }
+    public void testDirectInstanceIfImplementsToolbarPresenter() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-two.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertEquals("Direct class is created", Direct2.class, obj.getClass());
+    }
+    public void testDirectInstanceIfImplementsPopupPresenter() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-three.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertEquals("Direct class is created", Direct3.class, obj.getClass());
+    }
     
+    public void testNoKeyForDirects() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import org.openide.util.actions.Presenter;\n" +
+            "import java.awt.event.*;\n" +
+            "import javax.swing.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "public class A extends AbstractAction implements Presenter.Menu {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
     
 }

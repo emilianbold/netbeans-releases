@@ -56,11 +56,13 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.Action;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -78,7 +80,10 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(
         Set<? extends TypeElement> annotations, RoundEnvironment roundEnv
     ) throws LayerGenerationException {
-        TypeMirror actionListener = processingEnv.getElementUtils().getTypeElement(ActionListener.class.getName()).asType();
+        TypeMirror actionListener = type(ActionListener.class);
+        TypeMirror p1 = type(Presenter.Menu.class);
+        TypeMirror p2 = type(Presenter.Toolbar.class);
+        TypeMirror p3 = type(Presenter.Popup.class);
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionRegistration.class)) {
             ActionRegistration ar = e.getAnnotation(ActionRegistration.class);
             ActionID aid = e.getAnnotation(ActionID.class);
@@ -99,7 +104,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             boolean createDelegate = true;
             if (e.getKind() == ElementKind.FIELD) {
                 VariableElement var = (VariableElement)e;
-                TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
+                TypeMirror stringType = type(String.class);
                 if (
                     e.asType() != stringType || 
                     !e.getModifiers().contains(Modifier.PUBLIC) || 
@@ -115,38 +120,59 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 createDelegate = false;
                 key = var.getConstantValue().toString();
             } else {
-                if (!processingEnv.getTypeUtils().isAssignable(e.asType(), actionListener)) {
+                if (!isAssignable(e.asType(), actionListener)) {
                     throw new LayerGenerationException("Class annotated with @ActionRegistration must implement java.awt.event.ActionListener!", e);
+                }
+                if (!e.getModifiers().contains(Modifier.PUBLIC)) {
+                    throw new LayerGenerationException("Class has to be public", e);
                 }
                 key = ar.key();
             }
             
-            if (key.length() == 0) {
-                f.methodvalue("instanceCreate", "org.openide.awt.Actions", "alwaysEnabled");
+            boolean direct = 
+                isAssignable(e.asType(), p1) ||
+                isAssignable(e.asType(), p2) ||
+                isAssignable(e.asType(), p3);
+            
+            
+            if (direct) {
+                if (key.length() != 0) {
+                    throw new LayerGenerationException("Cannot specify key and implement Presenter interface", e);
+                }
+                f.instanceAttribute("instanceCreate", Action.class);
             } else {
-                f.methodvalue("instanceCreate", "org.openide.awt.Actions", "callback");
+                if (key.length() == 0) {
+                    f.methodvalue("instanceCreate", "org.openide.awt.Actions", "alwaysEnabled");
+                } else {
+                    f.methodvalue("instanceCreate", "org.openide.awt.Actions", "callback");
+                    if (createDelegate) {
+                        f.methodvalue("fallback", "org.openide.awt.Actions", "alwaysEnabled");
+                    }
+                    f.stringvalue("key", key);
+                }
                 if (createDelegate) {
-                    f.methodvalue("fallback", "org.openide.awt.Actions", "alwaysEnabled");
+                    try {
+                        f.instanceAttribute("delegate", ActionListener.class);
+                    } catch (LayerGenerationException ex) {
+                        generateContext(e, f);
+                    }
                 }
-                f.stringvalue("key", key);
-            }
-            if (createDelegate) {
-                try {
-                    f.instanceAttribute("delegate", ActionListener.class);
-                } catch (LayerGenerationException ex) {
-                    generateContext(e, f);
+                f.boolvalue("noIconInMenu", !ar.iconInMenu());
+                if (ar.asynchronous()) {
+                    f.boolvalue("asynchronous", true);
                 }
-            }
-            f.boolvalue("noIconInMenu", !ar.iconInMenu());
-            if (ar.asynchronous()) {
-                f.boolvalue("asynchronous", true);
-            }
-            if (ar.surviveFocusChange()) {
-                f.boolvalue("surviveFocusChange", true);
+                if (ar.surviveFocusChange()) {
+                    f.boolvalue("surviveFocusChange", true);
+                }
             }
             f.write();
         }
         return true;
+    }
+
+    private TypeMirror type(Class<?> type) {
+        final TypeElement e = processingEnv.getElementUtils().getTypeElement(type.getName().replace('$', '.'));
+        return e == null ? null : e.asType();
     }
 
     private void generateContext(Element e, File f) throws LayerGenerationException {
@@ -193,5 +219,13 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString());
         f.stringvalue("selectionType", "EXACTLY_ONE");
         f.methodvalue("instanceCreate", "org.openide.awt.Actions", "context");
+    }
+
+    private boolean isAssignable(TypeMirror first, TypeMirror snd) {
+        if (snd == null) {
+            return false;
+        } else {
+            return processingEnv.getTypeUtils().isAssignable(first, snd);
+        }
     }
 }
