@@ -91,6 +91,16 @@ public class NameKind {
         return new NameKind(query, queryKind);
     }
 
+    public static NameKind create(QualifiedName query, Kind queryKind) {
+        switch(queryKind) {
+            case PREFIX:
+                return new Prefix(query);
+            case EXACT:
+                return new Exact(query);
+        }
+        return new NameKind(query, queryKind);
+    }
+
     public boolean isPrefix() {
         return getQueryKind().equals(QuerySupport.Kind.PREFIX);
     }
