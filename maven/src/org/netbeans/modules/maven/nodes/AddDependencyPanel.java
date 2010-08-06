@@ -232,11 +232,13 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         } else {
             tabPane.setEnabledAt(1, false);
         }
-        chkNbOnly.setVisible(nbRepo != null);
+        chkNbOnly.setVisible(false);
         if (nbRepo != null) {
             String packaging = mavenProject.getPackaging();
-            chkNbOnly.setSelected(NbMavenProject.TYPE_NBM.equals(packaging) ||
-                    NbMavenProject.TYPE_NBM_APPLICATION.equals(packaging));
+            if (NbMavenProject.TYPE_NBM.equals(packaging) || NbMavenProject.TYPE_NBM_APPLICATION.equals(packaging)) {
+                chkNbOnly.setVisible(true);
+                chkNbOnly.setSelected(true);
+            }
         }
 
         pnlOpenProjects.add(new OpenListPanel(prj), BorderLayout.CENTER);
