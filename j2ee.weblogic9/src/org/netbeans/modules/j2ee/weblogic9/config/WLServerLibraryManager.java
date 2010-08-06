@@ -57,7 +57,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLCommandDeployer;
+import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.util.NbBundle;
 
@@ -159,7 +159,7 @@ public class WLServerLibraryManager implements ServerLibraryManager {
     }
 
     private void deployFiles(Set<File> libraries) throws ConfigurationException {
-        WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
+        CommandBasedDeployer deployer = new CommandBasedDeployer(WLDeploymentFactory.getInstance(),
                 manager.getInstanceProperties());
         ProgressObject po = deployer.deployLibraries(libraries);
         ProgressObjectSupport.waitFor(po);
