@@ -852,31 +852,6 @@ public final class WLCommandDeployer {
         }
     }
 
-    private static class ListAppLineProcessor implements LineProcessor {
-
-        /* GuardedBy("this") */
-        private List<String> apps = new ArrayList<String>();
-
-        public synchronized List<String> getApps() {
-            return apps;
-        }
-
-        public void processLine(String line) {
-            Matcher matcher = LIST_APPS_PATTERN.matcher(line);
-            if (matcher.matches()) {
-                synchronized (this) {
-                    apps.add(matcher.group(1));
-                }
-            }
-        }
-
-        public void reset() {
-        }
-
-        public void close() {
-        }
-    }
-
     private static class LastLineProcessor implements LineProcessor {
 
         private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+at.*$"); // NOI18N
