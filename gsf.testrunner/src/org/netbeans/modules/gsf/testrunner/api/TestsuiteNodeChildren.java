@@ -44,14 +44,10 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.gsf.testrunner.api.Report;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -65,7 +61,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     /** */
     private final Report report;
     /** */
-    private boolean filtered;
+    private int filterMask;
     /** */
     private boolean live = true;         //PENDING - temporary (should be false)
 
@@ -76,9 +72,9 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     /**
      * Creates a new instance of TestsuiteNodeChildren
      */
-    TestsuiteNodeChildren(final Report report, final boolean filtered) {
+    TestsuiteNodeChildren(final Report report, final int filterMask) {
         this.report = report;
-        this.filtered = filtered;
+        this.filterMask = filterMask;
     }
     
     /**
@@ -106,29 +102,32 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     
     /**
      */
+    @Override
     protected Node[] createNodes(final Testcase testcase) {
-        if (filtered && !Status.isFailure(testcase.getStatus())) {
+        if (testcase.getStatus().isMaskApplied(filterMask)){
             return EMPTY_NODE_ARRAY;
         }
+
         return new Node[] {testcase.getSession().getNodeFactory().createTestMethodNode(testcase, report.getProject())};
     }
     
     /**
      */
-    void setFiltered(final boolean filtered) {
-        if (filtered == this.filtered) {
+    void setFilterMask(final int filterMask) {
+        int diff = this.filterMask ^ filterMask;
+        if (filterMask == this.filterMask) {
             return;
         }
-        this.filtered = filtered;
+        this.filterMask = filterMask;
         
-        if ((report.getErrors() + report.getFailures()) == report.getTotalTests()) {
-            return;
-        }
+//        if ((report.getErrors() + report.getFailures()) == report.getTotalTests()) {
+//            return;
+//        }
                 
         if (isInitialized()) {
             for (Testcase testcase : report.getTests()) {
-                if (!Status.isFailure(testcase.getStatus())) {
-                    refreshKey(testcase);
+                if (testcase.getStatus().isMaskApplied(diff)){
+                   refreshKey(testcase);
                 }
             }
         }

@@ -62,9 +62,7 @@ import javax.swing.JEditorPane;
 
 import javax.swing.text.Document;
 import junit.framework.AssertionFailedError;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.CloseCookie;
@@ -117,15 +115,6 @@ public class DataEditorSupportTest extends NbTestCase {
         return Level.FINE;
     }
 
-    public static Test suite() {
-        Test t = null;
-//        t = new DataEditorSupportTest("testChangeFileWhileOpen");
-        if (t == null) {
-            t = new NbTestSuite(DataEditorSupportTest.class);
-        }
-        return t;
-    }
-    
     @Override
     protected void setUp () throws Exception {
         RUNNING = this;

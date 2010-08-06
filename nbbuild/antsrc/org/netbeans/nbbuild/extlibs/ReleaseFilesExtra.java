@@ -44,8 +44,10 @@
 
 package org.netbeans.nbbuild.extlibs;
 
+import java.io.File;
 import java.util.Map;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
 /**
@@ -64,7 +66,12 @@ public class ReleaseFilesExtra extends Task {
         StringBuilder b = new StringBuilder();
         for (Map.Entry<?,?> entry : ((Map<?,?>) getProject().getProperties()).entrySet()) {
             String k = (String) entry.getKey();
-            if (k.startsWith("release.") && getProject().resolveFile(k.substring(8).replaceFirst("!/.+$", "")).isFile()) {
+            if (k.startsWith("release.")) {
+                File f = getProject().resolveFile(k.substring(8).replaceFirst("!/.+$", ""));
+                if (!f.isFile()) {
+                    log("No such release file: " + f, Project.MSG_VERBOSE);
+                    continue;
+                }
                 if (b.length() > 0) {
                     b.append(',');
                 }

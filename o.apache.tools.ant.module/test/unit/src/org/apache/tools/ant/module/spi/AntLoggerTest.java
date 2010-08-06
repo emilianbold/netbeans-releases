@@ -62,7 +62,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 
 // For debugging info, add to nbproject/private/private.properties:
-// test-unit-sys-prop.org.apache.tools.ant.module.bridge.impl.NbBuildLogger.LOG_AT_WARNING=true
+// test-unit-sys-prop.org.apache.tools.ant.module.bridge.impl.NbBuildLogger.level=FINEST
 
 /**
  * Tests functionality of {@link AntLogger}.
@@ -87,6 +87,7 @@ public class AntLoggerTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         AntBridge.NO_MODULE_SYSTEM = true;
+        System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
         MockServices.setServices(IFL.class, TestLogger.class);
         LOGGER = Lookup.getDefault().lookup(TestLogger.class);
         LOGGER.reset();

@@ -815,10 +815,6 @@ exists or setup the property manually. For example like this:
         <ear2:debug-appclient-pregfv3/>
     </target>
     <target name="-debug-appclient" unless="j2ee.appclient.tool.args">
-        <mkdir dir="${{dist.dir}}/{$name}Client"/>
-        <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
-            <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
-        </copy>
         <ear2:debug-appclient subprojectname="${{app.client}}"/>
     </target>
     

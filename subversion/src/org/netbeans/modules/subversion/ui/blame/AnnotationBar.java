@@ -333,18 +333,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         doc.runAtomic(new Runnable() {
             @Override
             public void run() {
-                boolean isKenaiRepository = false;
-                SVNUrl url = null;
-                try {
-                    url = SvnUtils.getRepositoryUrl(file);
-                    isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
-                    if(isKenaiRepository) {
-                        kenaiUsersMap = new HashMap<String, KenaiUser>();
-                    }
-                } catch (SVNClientException ex) {
-                    Subversion.LOG.log(Level.WARNING, null, ex);
-                }
-
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator<AnnotateLine> it = lines.iterator();
                 elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
@@ -353,16 +341,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     int lineNum = ann2editorPermutation[line.getLineNum() -1];
                     try {
                         int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
-                        Element element = sd.getParagraphElement(lineOffset);
-                        if(isKenaiRepository) {
-                            String author = line.getAuthor();
-                            if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                                KenaiUser ku = SvnKenaiAccessor.getInstance().forName(author, url.toString());
-                                if(ku != null) {
-                                    kenaiUsersMap.put(author, ku);
-                                }
-                            }
-                        }
+                        Element element = sd.getParagraphElement(lineOffset);                        
                         elementAnnotations.put(element, line);
                     } catch (IndexOutOfBoundsException ex) {
                         // TODO how could I get line behind document end?
@@ -373,6 +352,30 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         });
 
+        boolean isKenaiRepository = false;
+        SVNUrl url = null;
+        try {
+            url = SvnUtils.getRepositoryUrl(file);
+            isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
+            if(isKenaiRepository) {
+                kenaiUsersMap = new HashMap<String, KenaiUser>();
+                Iterator<AnnotateLine> it = lines.iterator();
+                while (it.hasNext()) {
+                    AnnotateLine line = it.next();
+                    String author = line.getAuthor();
+                    if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
+                        KenaiUser ku = SvnKenaiAccessor.getInstance().forName(author, url.toString());
+                        if(ku != null) {
+                            kenaiUsersMap.put(author, ku);
+                        }
+                    }
+                }
+            }
+        } catch (SVNClientException ex) {
+            Subversion.LOG.log(Level.WARNING, null, ex);
+        }
+        
+                
         // lazy listener registration
         caret.addChangeListener(this);
         this.caretTimer = new Timer(500, this);

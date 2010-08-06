@@ -243,7 +243,7 @@ public class SvnUtils {
                 // tried to get the cached value but it was not present in the cache
                 status = FileInformation.STATUS_VERSIONED_UPTODATE;
             }
-            if (isDirectory == null && file.isDirectory() || isDirectory) {
+            if (Boolean.TRUE.equals(isDirectory) || (isDirectory == null && file.isDirectory())) {
                 if ((status & includingFolderStatus) == 0) return Context.Empty;
             } else {
                 if ((status & includingFileStatus) == 0) return Context.Empty;

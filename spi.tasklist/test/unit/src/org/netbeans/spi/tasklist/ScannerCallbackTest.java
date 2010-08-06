@@ -46,7 +46,6 @@ package org.netbeans.spi.tasklist;
 
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
@@ -87,19 +86,6 @@ public class ScannerCallbackTest extends NbTestCase {
         taskManager = new MyTaskManager();
         fileScanner = new MyFileScanner();
         simpleScanner = new MySimpleScanner();
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ScannerCallbackTest.class);
-        
-        return suite;
     }
 
     public void testFileScanner() {

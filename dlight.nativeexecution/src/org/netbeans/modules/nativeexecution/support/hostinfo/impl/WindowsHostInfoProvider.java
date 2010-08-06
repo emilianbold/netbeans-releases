@@ -46,16 +46,20 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 90)
 public class WindowsHostInfoProvider implements HostInfoProvider {
+
+    private static final java.util.logging.Logger log = Logger.getInstance();
 
     @Override
     public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
@@ -152,33 +156,24 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             String _tmpDir = null;
             String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
 
+            if (checkForNonLatin(ioTmpDir) == false) {
+                log.log(Level.WARNING, "Default tmp dir [{0}] has spaces/non-latin chars in the path. " + // NOI18N
+                        "It is recommended to use a path without spaces/non-latin chars for tmp dir. " + // NOI18N
+                        "Either change TEMP environment variable in System Properties or use " + // NOI18N
+                        "-J-Djava.io.tmpdir=c:\\tmp to change the temp dir.", ioTmpDir); // NOI18N
+            }
+
             /**
              * Some magic with temp dir...
              * In case of non-ascii chars in username use hashcode instead of
              * plain name as in case of MinGW (without cygwin) execution may (will)
              * fail...
              */
+
             String username = environment.get("USERNAME"); // NOI18N
-
-            if (username != null) {
-                for (int i = 0; i < username.length(); i++) {
-                    char c = username.charAt(i);
-
-                    if (Character.isDigit(c) || c == '_') {
-                        continue;
-                    }
-
-                    if (c >= 'A' && c <= 'Z') {
-                        continue;
-                    }
-
-                    if (c >= 'a' && c <= 'z') {
-                        continue;
-                    }
-
-                    username = "" + username.hashCode(); // NOI18N
-                    break;
-                }
+            
+            if (checkForNonLatin(username) == false) {
+                username = "" + username.hashCode(); // NOI18N
             }
 
             _tmpDirFile = new File(ioTmpDir, "dlight_" + username); // NOI18N
@@ -307,6 +302,35 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         @Override
         public Map<String, String> getEnvironment() {
             return environment;
+        }
+
+        private boolean checkForNonLatin(String str) {
+            if (str == null) {
+                // NULL is OK?
+                return true;
+            }
+
+            String okChars = "~-_/\\:"; // NOI18N
+            
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+
+                if (Character.isDigit(c) || okChars.indexOf(c) >= 0) {
+                    continue;
+                }
+
+                if (c >= 'A' && c <= 'Z') {
+                    continue;
+                }
+
+                if (c >= 'a' && c <= 'z') {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -404,7 +404,7 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
     public void undoableEditHappened( UndoableEditEvent e )
     {
         if (!inUndoRedo()) {    // Fix for #77785, #80584
-            assert myLock.getWriteHoldCount() > 0;
+            assert myLock.getWriteHoldCount() >= 0;
             if (!myUndoSupport.editInProgress()) {
                 myUndoSupport.beginUpdate();    
             }
@@ -1046,46 +1046,24 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
     }
 
     private ChangeEventSupport mySupport;
-
     private Lookup.Result innerDispatcherResult;
-
     private InnerEventDispatcher[] myDispatchers;
-
     private final BpelBuilderImpl myBuilder = new BpelBuilderImpl(this);
-
     private ProcessImpl myProcess;
-
     private AtomicLong myNextID = new AtomicLong();
-
     private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
-
     private final Lock readLock = myLock.readLock();
-
     private final Lock writeLock = myLock.writeLock();
-
     private BpelModelUndoableEditSupport myUndoSupport;
-    
     private SyncUpdateVisitor mySyncUpdateVisitor;
-    
     private XDMListener myXDMListener;
-    
     private Transaction myTransaction;
-    
     private PropertyChangeSupport myPropertyChangeSupport;
-    
     private EventListenerList myComponentListeners; 
-    
     private boolean isXamTransaction;
-    
     private UndoableEditListener[] mySavedUndoableEditListeners;
-    
     private ThreadLocal<Boolean> myReadLockObtained = new ThreadLocal<Boolean>();
-    
     private BpelChildEntitiesBuilder myChildBuilder;
-    
     private Element myAnotherRoot;
-
     private RefCacheSupport mRefCacheSupport;
-
-
 }

@@ -343,7 +343,7 @@ public class SolarisLogReader {
     }
     
     private enum CompilerType {
-        CPP, C, UNKNOWN;
+        CPP, C, FORTRAN, UNKNOWN;
     };
     private enum CompilerFamily {
         SUN, GNU, UNKNOWN;
@@ -465,7 +465,15 @@ public class SolarisLogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           return gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP, li.compilerFamily); // NOI18N
+           ItemProperties.LanguageKind lang = ItemProperties.LanguageKind.Unknown;
+           if (li.compilerType == CompilerType.CPP) {
+               lang = ItemProperties.LanguageKind.CPP;
+           } else if (li.compilerType == CompilerType.C) {
+               lang = ItemProperties.LanguageKind.C;
+           } else if (li.compilerType == CompilerType.FORTRAN) {
+               lang = ItemProperties.LanguageKind.C;
+           }
+           return gatherLine(li.compileLine, line.startsWith("+"), lang, li.compilerFamily); // NOI18N
        }
        return false;
     }
@@ -489,7 +497,7 @@ public class SolarisLogReader {
         }
     }
     
-    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP, CompilerFamily compiler) {
+    private boolean gatherLine(String line, boolean isScriptOutput, ItemProperties.LanguageKind lang, CompilerFamily compiler) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
         // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
@@ -559,14 +567,14 @@ public class SolarisLogReader {
                     file = getWorkingDir()+"/"+what;  //NOI18N
                     f = new File(file);
                     if (f.exists() && f.isFile()) {
-                        addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+                        addToResult(new CommandLineSource(lang, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
                         return true;
                     }
                 }
                 String search = findFiles(what, getWorkingDir(), relative);
                 if (search != null) {
                     setWorkingDir(search);
-                    addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+                    addToResult(new CommandLineSource(lang, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
                     if (TRACE) {System.err.println("** Gotcha: " + search + File.separator + what);} //NOI18N
                     // kinda adventure but it works
                     return true;
@@ -575,7 +583,7 @@ public class SolarisLogReader {
             if (TRACE) {System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]");} //NOI18N
             return false;
         } else if (TRACE) {System.err.println("**** Gotcha: " + file);} //NOI18N
-        addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+        addToResult(new CommandLineSource(lang, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
         return true;
     }
     
@@ -811,13 +819,9 @@ public class SolarisLogReader {
         private Set<String> includedFiles = Collections.<String>emptySet();
         private boolean isSunCompiler;
 
-        private CommandLineSource(boolean isCPP, boolean isSunCompiler, String compilePath, String sourcePath, 
+        private CommandLineSource(ItemProperties.LanguageKind lang, boolean isSunCompiler, String compilePath, String sourcePath,
                 List<String> userIncludes, Map<String, String> userMacros) {
-            if (isCPP) {
-                language = ItemProperties.LanguageKind.CPP;
-            } else {
-                language = ItemProperties.LanguageKind.C;
-            }
+            language = lang;
             this.isSunCompiler = isSunCompiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
@@ -833,22 +837,27 @@ public class SolarisLogReader {
             this.userMacros = userMacros;
         }
 
+        @Override
         public String getCompilePath() {
             return compilePath;
         }
 
+        @Override
         public String getItemPath() {
             return fullName;
         }
 
+        @Override
         public String getItemName() {
             return sourceName;
         }
 
+        @Override
         public List<String> getUserInludePaths() {
             return userIncludes;
         }
 
+        @Override
         public List<String> getSystemInludePaths() {
             return systemIncludes;
         }
@@ -857,16 +866,36 @@ public class SolarisLogReader {
             return includedFiles;
         }
 
+        @Override
         public Map<String, String> getUserMacros() {
             return userMacros;
         }
 
+        @Override
         public Map<String, String> getSystemMacros() {
             return systemMacros;
         }
 
+        @Override
         public ItemProperties.LanguageKind getLanguageKind() {
             return language;
+        }
+
+        @Override
+        public String getCompilerName() {
+            if (isSunCompiler) {
+                if (language ==  ItemProperties.LanguageKind.CPP) {
+                    return "CC"; // NOI18N
+                } else {
+                    return "cc"; // NOI18N
+                }
+            } else {
+                if (language ==  ItemProperties.LanguageKind.CPP) {
+                    return "g++"; // NOI18N
+                } else {
+                    return "gcc"; // NOI18N
+                }
+            }
         }
     }
 

@@ -107,6 +107,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="ProjectIconAnnotator">
+            <api name="general"/>
+            <summary>Added <code>ProjectIconAnnotator</code></summary>
+            <version major="1" minor="33"/>
+            <date day="24" month="6" year="2010"/>
+            <author login="jbecicka"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    A mechanism for changing the project node icon.
+                    You can use it for example to add a badge to the project's icon.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project" name="ProjectIconAnnotator"/>
+            <issue number="171516"/>
+        </change>
+
         <change id="MoveOrRenameOperationImplementation">
             <api name="general"/>
             <summary>Added <code>MoveOrRenameOperationImplementation</code></summary>

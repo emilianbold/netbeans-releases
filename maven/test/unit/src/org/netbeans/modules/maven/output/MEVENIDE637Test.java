@@ -57,13 +57,6 @@ public class MEVENIDE637Test extends TestCase {
         super(testName);
     }
    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(MEVENIDE637Test.class);
-        return suite;
-    }
-
-
-
     public void testSeparatorSplit() {
          String aString="Some text \n a and some more .. \n and more..";//linux and unix
          

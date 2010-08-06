@@ -62,7 +62,9 @@ import org.openide.filesystems.FileObject;
  * @see org.netbeans.api.java.classpath.ClassPath#BOOT
  * @author David Konecny
  * @since org.netbeans.api.java/1 1.5
+ * @deprecated use {@link SourceForBinaryQueryImplementation2}
  */
+@Deprecated
 public interface SourceLevelQueryImplementation {
 
     /**

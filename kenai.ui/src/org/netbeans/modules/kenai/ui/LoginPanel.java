@@ -396,7 +396,7 @@ public class LoginPanel extends javax.swing.JPanel {
                 public void run() {
                     new AddInstanceAction().actionPerformed(e);
                     LoginPanel.this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
-                    if (LoginPanel.this.kenai==null)
+                    if (!(kenaiCombo.getSelectedItem() instanceof Kenai) || ((LoginPanel.this.kenai=((Kenai) kenaiCombo.getSelectedItem()))==null))
                         return;
                     for (ActionListener l : forgotPassword.getActionListeners()) {
                         forgotPassword.removeActionListener(l);

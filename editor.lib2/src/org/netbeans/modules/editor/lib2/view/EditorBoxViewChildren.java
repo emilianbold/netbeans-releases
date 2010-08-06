@@ -50,6 +50,7 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.text.Position;
 import javax.swing.text.TabExpander;
 import javax.swing.text.TabableView;
@@ -210,7 +211,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         // so later children initialization would double the boxView's length.
         // Also this must be done after updateSpans() was called since it updates
         // relative offsets of the local views necessary for proper getLength() result.
-        boxView.setLength(getLength());
+        boxView.setLength(getLength(), 0, 0);
         return result;
     }
 
@@ -727,13 +728,25 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
 
     public String getToolTipTextChecked(EditorBoxView boxView, double x, double y, Shape alloc) {
         int index = getViewIndexAtPoint(boxView, x, y, alloc);
-        int offset;
         if (index >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
             V view = getWithChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // forward to the child view
             return view.getToolTipTextChecked(x, y, childAlloc);
+        } else { // at the end
+            return null;
+        }
+    }
+
+    public JComponent getToolTip(EditorBoxView boxView, double x, double y, Shape alloc) {
+        int index = getViewIndexAtPoint(boxView, x, y, alloc);
+        if (index >= 0) {
+            // First find valid child (can lead to change of child allocation bounds)
+            V view = getWithChildrenValid(boxView, index);
+            Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
+            // forward to the child view
+            return view.getToolTip(x, y, childAlloc);
         } else { // at the end
             return null;
         }

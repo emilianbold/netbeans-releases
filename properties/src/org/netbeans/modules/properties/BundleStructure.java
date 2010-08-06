@@ -51,8 +51,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject.Entry;
@@ -612,6 +614,10 @@ public class BundleStructure {
             }
         };
 
+        //Create interim Set as ArrayList.contains is an expensive operation
+        // and can cause delayes on large property files.
+        // See: #188619
+        Set interimSet = new HashSet<String>(keyList);
         // for all entries add all keys
         int entriesCount = getEntryCount();
         for (int index = 0; index < entriesCount; index++) {
@@ -625,14 +631,14 @@ public class BundleStructure {
                             continue;
                         }
                         String key = item.getKey();
-                        if (key != null && !(keyList.contains(key))) {
-                            keyList.add(item.getKey());
+                        if (key != null) {
+                            interimSet.add(key);
                         }
                     }
                 }
             }
         }
-        
+        keyList.addAll(interimSet);
         Collections.sort(keyList, comparator);
         this.keyList = keyList;
     }

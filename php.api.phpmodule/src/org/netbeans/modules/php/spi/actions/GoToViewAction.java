@@ -67,7 +67,9 @@ public abstract class GoToViewAction extends AbstractAction {
     private static final RequestProcessor RP = new RequestProcessor(GoToViewAction.class);
 
     public GoToViewAction() {
-        super(NbBundle.getMessage(GoToViewAction.class, "LBL_GoToView"));
+        String name = NbBundle.getMessage(GoToViewAction.class, "LBL_GoToView");
+        putValue(NAME, name);
+        putValue(SHORT_DESCRIPTION, name);
     }
 
     /**

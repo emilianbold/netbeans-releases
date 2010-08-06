@@ -48,6 +48,10 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.junit.NbTestCase;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  *
@@ -101,7 +105,8 @@ public class AutoUpdateTest extends NbTestCase {
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
-            "netbeans/modules/org-netbeans-api-annotations-common.jar");
+            "netbeans/modules/org-netbeans-api-annotations-common.jar",
+            "netbeans/docs/My Manager's So-Called \"README\"");
 
         File target = new File(getWorkDir(), "target");
         target.mkdirs();
@@ -117,6 +122,10 @@ public class AutoUpdateTest extends NbTestCase {
             "org-netbeans-api-annotations-common.xml"
         );
         assertTrue("xml file created", xml.exists());
+        Document doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, null);
+        NodeList nl = doc.getElementsByTagName("file");
+        assertEquals(3, nl.getLength());
+        assertEquals("docs/My Manager's So-Called \"README\"", ((Element) nl.item(2)).getAttribute("name"));
 
         File jar = new File(
             new File(new File(target, "platform"), "modules"),

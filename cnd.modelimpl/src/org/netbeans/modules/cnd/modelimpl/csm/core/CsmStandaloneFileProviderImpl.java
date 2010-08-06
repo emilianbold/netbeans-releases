@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.File;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -62,13 +63,13 @@ import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -451,6 +452,16 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 }
             }
             return null;
+        }
+
+        @Override
+        public NativeFileSearch getNativeFileSearch() {
+            return new NativeFileSearch() {
+                @Override
+                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                    return Collections.<CharSequence>emptyList();
+                }
+            };
         }
 
         @Override

@@ -47,6 +47,7 @@ package org.netbeans.modules.java.source.usages;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -157,6 +158,9 @@ public class BinaryAnalyser {
 
     }
 
+    private static final String ROOT = "/"; //NOI18N
+    private static final String TIME_STAMPS = "timestamps.properties";   //NOI18N
+    private static final String CRC = "crc.properties"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(BinaryAnalyser.class.getName());
     static final String OBJECT = Object.class.getName();
 
@@ -168,22 +172,16 @@ public class BinaryAnalyser {
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final LMListener lmListener;
     private Continuation cont;
+    private Pair<LongHashMap<String>,Set<String>> timeStamps;
 
-    public BinaryAnalyser (Index index, File cacheRoot) {
-       assert index != null;
+    BinaryAnalyser (final @NonNull Index index, final @NonNull File cacheRoot) {
+       Parameters.notNull("index", index);   //NOI18N
+       Parameters.notNull("cacheRoot", cacheRoot);  //NOI18N
        this.index = index;
        this.cacheRoot = cacheRoot;
        this.lmListener = new LMListener();
     }
 
-    /**
-     * Checks validity of underlying index.
-     * @return
-     * @throws IOException
-     */
-    public boolean isValid() throws IOException {
-        return this.index.isValid(true);
-    }
 
     /** Analyses a classpath root.
      * @param scanning context
@@ -224,13 +222,16 @@ public class BinaryAnalyser {
         cont = null;
         store();
         storeCRCs(cacheRoot, newState);
+        storeTimeStamps(cacheRoot,timeStamps);
+        timeStamps = null;
         return diff(oldState,newState);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Private helper methods">
-    private final Result start (final URL root, final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
+    private Result start (final URL root, final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
         Parameters.notNull("ctx", ctx); //NOI18N
         assert cont == null;
+        timeStamps = loadTimeStamps(this.cacheRoot);
         final String mainP = root.getProtocol();
         if ("jar".equals(mainP)) {          //NOI18N
             URL innerURL = FileUtil.getArchiveFile(root);
@@ -238,7 +239,7 @@ public class BinaryAnalyser {
                 //Fast way
                 File archive = new File (URI.create(innerURL.toExternalForm()));
                 if (archive.exists() && archive.canRead()) {
-                    if (!isUpToDate(null,archive.lastModified())) {
+                    if (!isUpToDate(ROOT,archive.lastModified())) {
                         index.clear();
                         try {
                             final ZipFile zipFile = new ZipFile(archive);
@@ -258,7 +259,7 @@ public class BinaryAnalyser {
             else {
                 FileObject rootFo =  URLMapper.findFileObject(root);
                 if (rootFo != null) {
-                    if (!isUpToDate(null,rootFo.lastModified().getTime())) {
+                    if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {
                         index.clear();
                         Enumeration<? extends FileObject> todo = rootFo.getData(true);
                         cont = new FileObjectContinuation (todo, ctx);
@@ -306,7 +307,7 @@ public class BinaryAnalyser {
 
     private List<Pair<ElementHandle<TypeElement>,Long>> loadCRCs(final File indexFolder) throws IOException {
         List<Pair<ElementHandle<TypeElement>,Long>> result = new LinkedList<Pair<ElementHandle<TypeElement>, Long>>();
-        final File file = new File (indexFolder,"crc.properties");  //NOI18N
+        final File file = new File (indexFolder,CRC);
         if (file.canRead()) {
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));   //NOI18N
 
@@ -332,7 +333,7 @@ public class BinaryAnalyser {
     }
 
     private void storeCRCs(final File indexFolder, final List<Pair<ElementHandle<TypeElement>,Long>> state) throws IOException {
-        final File file = new File (indexFolder,"crc.properties");  //NOI18N
+        final File file = new File (indexFolder,CRC);
         PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));   //NOI18N
         try {
             for (Pair<ElementHandle<TypeElement>,Long> pair : state) {
@@ -344,6 +345,55 @@ public class BinaryAnalyser {
         } finally {
             out.close();
         }
+    }
+    
+    private static Pair<LongHashMap<String>,Set<String>> loadTimeStamps(final File indexFolder) throws IOException {
+        final LongHashMap<String> timestamps = new LongHashMap<String>();        
+        final File f = new File (indexFolder, TIME_STAMPS); //NOI18N
+        if (f.exists()) {
+            final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //NOI18N
+            try {
+                String line;
+                while (null != (line = in.readLine())) {
+                    int idx = line.indexOf('='); //NOI18N
+                    if (idx != -1) {
+                        try {
+                            long ts = Long.parseLong(line.substring(idx + 1));
+                            timestamps.put(line.substring(0, idx), ts);
+                        } catch (NumberFormatException nfe) {
+                            LOGGER.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
+                        }
+                    }
+                }            
+            } finally {
+                in.close();
+            }
+        }
+        return Pair.<LongHashMap<String>,Set<String>>of(timestamps,new HashSet<String>(timestamps.keySet()));
+    }
+    
+    private static void storeTimeStamps(final File indexFolder, Pair<LongHashMap<String>,Set<String>> timestamps) throws IOException {
+        timestamps.first.keySet().removeAll(timestamps.second);
+        final File f = new File (indexFolder, TIME_STAMPS);
+        final BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8")); //NOI18N
+        try {                    
+            // write data
+            for(LongHashMap.Entry<String> entry : timestamps.first.entrySet()) {
+                out.write(entry.getKey());
+                out.write('='); //NOI18N
+                out.write(Long.toString(entry.getValue()));
+                out.newLine();
+            }
+            out.flush();
+        } finally {
+            out.close();
+        }
+    }
+    
+    private boolean isUpToDate(final String resourceName, final long timeStamp) {
+        long oldTime = timeStamps.first.put(resourceName,timeStamp);
+        timeStamps.second.remove(resourceName);
+        return oldTime == timeStamp;
     }
 
     static Changes diff (List<Pair<ElementHandle<TypeElement>,Long>> oldState, List<Pair<ElementHandle<TypeElement>,Long>> newState) {
@@ -433,7 +483,7 @@ public class BinaryAnalyser {
                 ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
                     ClassPathSupport.createClassPath(new URL[0]),
                     ClassPathSupport.createClassPath(new URL[0]));
-                final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null);
+                final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null);
                 TreeLoader.preRegister(jt.getContext(), cpInfo);
                 TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
                 if (jc != null) {
@@ -460,11 +510,7 @@ public class BinaryAnalyser {
             toDelete.clear();
         }
     }
-
-    private final boolean isUpToDate(String resourceName, long resourceMTime) throws IOException {
-        return this.index.isUpToDate(resourceName, resourceMTime);
-    }
-
+    
     private Result deleted () throws IOException {
         return (cont = new DeletedContinuation()).execute();
     }

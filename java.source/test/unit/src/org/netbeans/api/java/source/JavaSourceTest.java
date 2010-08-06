@@ -80,6 +80,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -88,8 +89,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.search.Query;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -99,7 +100,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.JavaFileObjectProvider;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
@@ -123,7 +123,6 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.PersistentClassIndex;
@@ -172,7 +171,7 @@ public class JavaSourceTest extends NbTestCase {
                 "       Class c = table.getModel().getClass();\n"+
                 "       "+REPLACE_PATTERN+"\n"+
                 "   }\n"+
-                "}'\n";
+                "}//end'\n";
 
 
 
@@ -1285,7 +1284,8 @@ public class JavaSourceTest extends NbTestCase {
 
 
     public void testIndexCancel() throws Exception {
-        PersistentClassIndex.setIndexFactory(new TestIndexFactory());
+        final TestIndexFactory factory = new TestIndexFactory();
+        PersistentClassIndex.setIndexFactory(factory);
         try {
             FileObject test = createTestFile ("Test1");
             final ClassPath bootPath = createBootPath ();
@@ -1343,6 +1343,7 @@ public class JavaSourceTest extends NbTestCase {
                     }
 
                 };
+                factory.instance.active=true;
                 JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
                 assertTrue(ready[0].await(5, TimeUnit.SECONDS));
                 NbDocument.runAtomic (doc,
@@ -1418,13 +1419,14 @@ public class JavaSourceTest extends NbTestCase {
         final CompilationInfoImpl[] impls = new CompilationInfoImpl[1];
         final Pair[] res = new Pair[1];
         js.runUserActionTask(new Task<CompilationController> () {
-            public void run (final CompilationController c) throws IOException {
+            public void run (final CompilationController c) throws IOException, BadLocationException {
                 c.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cu = c.getCompilationUnit();
                 FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc, c.getTrees().getSourcePositions(), "main");
                 v.visit(cu, null);
                 impls[0] = c.impl;
                 res[0] = v.result;
+                assertEquals("}//end", doc.getText((int) cu.getLineMap().getPosition(7, 0), 6));
             }
         }, true);
         final boolean[] loggerResult = new boolean[1];
@@ -1468,8 +1470,9 @@ public class JavaSourceTest extends NbTestCase {
             impls[0].getParser().setChangedMethod(res[0]);
             //Run sync task
             js.runUserActionTask(new Task<CompilationController> () {
-                public void run (final CompilationController c) throws IOException {
+                public void run (final CompilationController c) throws IOException, BadLocationException {
                     c.toPhase(JavaSource.Phase.PARSED);
+                    assertEquals("}//end", doc.getText((int) c.getCompilationUnit().getLineMap().getPosition(7, 0), 6));
                 }
             }, true);
             //Check that there was an incremental reparse
@@ -1921,14 +1924,20 @@ public class JavaSourceTest extends NbTestCase {
     }
 
     private static class TestIndexFactory implements IndexFactory {
+        
+        final TestIndex instance = new TestIndex();
 
         public Index create(File cacheRoot) throws IOException {
-            return new TestIndex ();
+            return instance;
         }
 
     }
 
     private static class TestIndex extends Index {
+        //Activate the TestIndex.await after scan is done
+        //during the scan the prebuildArgs may call the index
+        //and cause deadlock
+        volatile boolean active;
 
 
         public TestIndex () {
@@ -1942,21 +1951,13 @@ public class JavaSourceTest extends NbTestCase {
             return true;
         }
 
-        public List<String> getUsagesFQN(String resourceName, Set<UsageType> mask, BooleanOperator operator) throws IOException, InterruptedException {
-            await ();
-            return Collections.<String>emptyList();
+        @Override
+        public <T> void query(Query[] queries, FieldSelector selector, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, Collection<? super T> result) throws IOException, InterruptedException {
+            await();
         }
-
-        public <T> void getDeclaredTypes(String simpleName, NameKind kind, ResultConvertor<T> convertor, Set<? super T> result) throws IOException, InterruptedException {
-            await ();
-        }
-
+        
         public void getPackageNames(String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException {
             await ();
-        }
-
-        public String getSourceName (final String binaryName) {
-            return null;
         }
 
         public void store(Map<Pair<String,String>, Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException {            
@@ -1976,6 +1977,9 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         private void await () throws InterruptedException {
+            if (!active) {
+                return;
+            }
             AtomicBoolean cancel = this.cancel.get();
             while (true) {
                 if (cancel.get()) {
@@ -1986,10 +1990,10 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         @Override
-        public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
+        public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
             await();
         }
-
+       
     }
 
     private FileObject createTestFile (String className) {

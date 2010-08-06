@@ -66,7 +66,6 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
 import org.netbeans.modules.websvc.rest.model.api.RestApplications;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -95,6 +94,14 @@ public abstract class WebRestSupport extends RestSupport {
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
         super(project);
+    }
+
+    @Override
+    public boolean isRestSupportOn() {
+        if (getAntProjectHelper() == null) {
+            return false;
+        }
+        return getProjectProperty(PROP_REST_CONFIG_TYPE) != null;
     }
 
     @Override
@@ -381,7 +388,7 @@ public abstract class WebRestSupport extends RestSupport {
         return Collections.emptyList();
     }
 
-    protected String setApplicationConfigProperty(boolean annotationConfigAvailable) {
+    protected RestConfig setApplicationConfigProperty(boolean annotationConfigAvailable) {
         ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
         DialogDescriptor desc = new DialogDescriptor(configPanel,
                 NbBundle.getMessage(WebRestSupport.class, "TTL_ApplicationConfigPanel"));
@@ -395,11 +402,23 @@ public abstract class WebRestSupport extends RestSupport {
                     applicationPath = applicationPath.substring(1);
                 }
                 setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
+                RestConfig rc = RestConfig.IDE;
+                rc.setResourcePath(applicationPath);
+                rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
+                return rc;
             } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
-                return configPanel.getApplicationPath();
+                RestConfig rc = RestConfig.USER;
+                rc.setResourcePath(configPanel.getApplicationPath());
+                rc.setJerseyLibSelected(true);
+                return rc;
             }
+        } else {
+            setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, WebRestSupport.CONFIG_TYPE_USER);
+            RestConfig rc = RestConfig.USER;
+            rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
+            return rc;
         }
-        return null;
+        return RestConfig.USER;
     }
 
     protected void addJerseySpringJar() throws IOException {
@@ -422,6 +441,32 @@ public abstract class WebRestSupport extends RestSupport {
     @Override
     public int getProjectType() {
         return PROJECT_TYPE_WEB;
+    }
+
+    public static enum RestConfig {
+        IDE,
+        USER,
+        DD;
+
+        private String resourcePath;
+        private boolean jerseyLibSelected;
+
+        public boolean isJerseyLibSelected() {
+            return jerseyLibSelected;
+        }
+
+        public void setJerseyLibSelected(boolean jerseyLibSelected) {
+            this.jerseyLibSelected = jerseyLibSelected;
+        }
+
+        public String getResourcePath() {
+            return resourcePath;
+        }
+
+        public void setResourcePath(String reseourcePath) {
+            this.resourcePath = reseourcePath;
+        }
+
     }
 
 }

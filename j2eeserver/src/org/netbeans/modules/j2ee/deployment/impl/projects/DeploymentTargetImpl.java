@@ -87,6 +87,10 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     public J2eeModule getModule() {
         return moduleProvider.getJ2eeModule ();
     }
+
+    public J2eeModuleProvider getModuleProvider() {
+        return moduleProvider;
+    }
     
     public ModuleChangeReporter getModuleChangeReporter() {
         return moduleProvider.getModuleChangeReporter ();

@@ -386,4 +386,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return indexedElement;
     }
 
+    public final boolean isAliased() {
+        return false;
+    }
 }

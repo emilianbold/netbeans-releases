@@ -1104,6 +1104,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                             boolean assign = false;
 
                             for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
+                                if (!e.getModifiers().contains(Modifier.STATIC)) continue;
                                 if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
                                     continue;
                                 }
@@ -1487,7 +1488,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             }
             return super.visitWildcard(node, p);
         }
-        
+
         private void typeUsed(Element decl, TreePath expr, Collection<UseTypes> type) {
             if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
                 if (decl.asType() != null && decl.asType().getKind() != TypeKind.ERROR) {

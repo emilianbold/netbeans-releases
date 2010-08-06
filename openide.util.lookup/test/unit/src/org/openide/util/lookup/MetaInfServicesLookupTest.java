@@ -463,6 +463,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         class My extends ClassLoader implements Runnable {
             Lookup query;
             Integer value;
+            boolean once;
 
             public void run() {
                 value = query.lookup(Integer.class);
@@ -482,6 +483,10 @@ public class MetaInfServicesLookupTest extends NbTestCase {
             }
 
             private synchronized void waitForTask(String name) {
+                if (once) {
+                    return;
+                }
+                once = true;
                 if (name.startsWith(prefix()) && Thread.currentThread().getName().contains("block")) {
                     try {
                         wait();
@@ -509,6 +514,46 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         t.join();
 
         assertNull("Nothing found", loader.value);
+    }
+    
+    public void testSubTypes() throws Exception {
+        doTestSubTypes(createLookup(c2));
+        doTestSubTypes(new ProxyLookup(createLookup(c2)));
+    }
+    private void doTestSubTypes(Lookup l) throws Exception {
+        final Class<?> xface = c1.loadClass("org.foo.Interface");
+        final Class<?> impl = c1.loadClass("org.foo.impl.Implementation1");
+        
+        Object result = l.lookup(impl);
+        assertNotNull("result found", result);
+        assertTrue("Right class", impl.isInstance(result));
+    }
+    public void testLookupObject() throws Exception {
+        assertNotNull("Object.class can be looked up", createLookup(new ClassLoader() {
+            @Override
+            protected Enumeration<URL> findResources(String name) throws IOException {
+                if (name.equals(prefix() + "java.lang.Object")) {
+                    return singleton(new URL(null, "dummy:stuff", new URLStreamHandler() {
+                        @Override
+                        protected URLConnection openConnection(URL u) throws IOException {
+                            return new URLConnection(u) {
+
+                                @Override
+                                public void connect() throws IOException {
+                                }
+
+                                @Override
+                                public InputStream getInputStream() throws IOException {
+                                    return new ByteArrayInputStream("java.lang.Object\n".getBytes("UTF-8"));
+                                }
+                            };
+                        }
+                    }));
+                } else {
+                    return Collections.enumeration(Collections.<URL>emptyList());
+                }
+            }
+        }).lookup(Object.class));
     }
 
     public void testInitializerRobustness() throws Exception { // #174055

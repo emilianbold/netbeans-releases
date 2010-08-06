@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -122,7 +123,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     System.gc();
                 }
                 if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum, new CancelService() {
+                    jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum, javaContext.fqn2Files, new CancelService() {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
@@ -172,6 +173,8 @@ final class OnePassCompileWorker extends CompileWorker {
         }
 
         CompileTuple active = null;
+        Iterable<? extends Processor> processors = jt != null ? jt.getProcessors() : null;
+        boolean aptEnabled = processors != null && processors.iterator().hasNext();
         try {
             while(!units.isEmpty()) {
                 if (context.isCancelled()) {
@@ -227,12 +230,15 @@ final class OnePassCompileWorker extends CompileWorker {
                     return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
-                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                if (aptEnabled) {
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                }
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();
                     return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
+                javaContext.fqn2Files.set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                     javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);

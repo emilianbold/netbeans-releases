@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -104,6 +104,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
+    @Override
     protected void initialize() {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
@@ -111,8 +112,13 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                    @Override
                         public void run(Metadata metaData) {
                             Table table = tableHandle.resolve(metaData);
+                            if (table == null) {
+                                Logger.getLogger(TableNode.class.getName()).log(Level.INFO, "Cannot get table name for " + tableHandle);
+                                return ;
+                            }
                             name = table.getName();
 
                             updateProperties(table);
@@ -138,10 +144,12 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
         return tableHandle;
     }
 
+    @Override
     public String getCatalogName() {
         return getCatalogName(connection, tableHandle);
     }
 
+    @Override
     public String getSchemaName() {
         return getSchemaName(connection, tableHandle);
     }
@@ -211,6 +219,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
     public Transferable clipboardCopy() throws IOException {
         ExTransferable result = ExTransferable.create(super.clipboardCopy());
         result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.TABLE_FLAVOR) {
+            @Override
             protected Object getData() {
                 return DatabaseMetaDataTransferAccessor.DEFAULT.createTableData(connection.getDatabaseConnection(),
                         connection.findJDBCDriver(), getName());
@@ -226,6 +235,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                @Override
                     public void run(Metadata metaData) {
                         Table table = handle.resolve(metaData);
                         if (table != null) {
@@ -248,6 +258,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                @Override
                     public void run(Metadata metaData) {
                         Table table = handle.resolve(metaData);
                         if (table != null) {

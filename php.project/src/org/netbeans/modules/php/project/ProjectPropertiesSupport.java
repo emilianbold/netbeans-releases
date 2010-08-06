@@ -99,6 +99,18 @@ public final class ProjectPropertiesSupport {
         project.addWeakIgnoredFilesListener(listener);
     }
 
+    public static boolean addWeakPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        return project.addWeakPropertyChangeListener(listener);
+    }
+
+    public static void addPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        project.addPropertyChangeListener(listener);
+    }
+
+    public static void removePropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        project.removePropertyChangeListener(listener);
+    }
+
     public static FileObject getProjectDirectory(PhpProject project) {
         return project.getProjectDirectory();
     }
@@ -210,7 +222,7 @@ public final class ProjectPropertiesSupport {
     }
 
     public static PhpLanguageOptions.PhpVersion getDefaultPhpVersion() {
-        return getPhpVersion((String) null);
+        return PhpLanguageOptions.PhpVersion.PHP_53;
     }
 
     public static PhpLanguageOptions.PhpVersion getPhpVersion(String value) {
@@ -260,6 +272,20 @@ public final class ProjectPropertiesSupport {
      */
     public static String getArguments(PhpProject project) {
         return project.getEvaluator().getProperty(PhpProjectProperties.ARGS);
+    }
+
+    /**
+     * @return PHP arguments or <code>null</code>.
+     */
+    public static String getPhpArguments(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.PHP_ARGS);
+    }
+
+    /**
+     * @return working directory or <code>null</code>.
+     */
+    public static String getWorkDir(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.WORK_DIR);
     }
 
     /**
@@ -402,6 +428,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return {@code true} if all *Test files should be run via PhpUnit (default is {@code false})
+     */
+    public static boolean runAllTestFilesUsingPhpUnit(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.PHP_UNIT_RUN_TEST_FILES, false);
+    }
+
+    /**
      * @return instance of Pair<String, String> or null
      */
     private static Pair<String, String> getCopySupportPair(PhpProject project) {
@@ -421,7 +454,7 @@ public final class ProjectPropertiesSupport {
 
     private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {
         String boolValue = project.getEvaluator().getProperty(property);
-        if (boolValue != null && boolValue.trim().length() > 0) {
+        if (StringUtils.hasText(boolValue)) {
             return Boolean.parseBoolean(boolValue);
         }
         return defaultValue;

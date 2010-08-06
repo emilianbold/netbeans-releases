@@ -265,6 +265,7 @@ public abstract class CLIHandler extends Object {
      */
     static final class Status {
         public static final int CANNOT_CONNECT = -255;
+        public static final int CANNOT_WRITE = -254;
         
         private final File lockFile;
         private final int port;
@@ -493,30 +494,55 @@ public abstract class CLIHandler extends Object {
         if ("memory".equals(home)) { // NOI18N
             return new Status(0);
         }
-        
-        if (runWhenHome != null) {
-            // notify that we have successfully identified the home property
-            runWhenHome.run ();
-        }
-        
-        
+
         File lockFile = new File(home, "lock"); // NOI18N
         
         for (int i = 0; i < 5; i++) {
             // try few times to succeed
             try {
-                if (lockFile.exists()) {
+                if (lockFile.isFile()) {
+                    if (!cleanLockFile && !lockFile.canWrite()) {
+                        return new Status(Status.CANNOT_WRITE);
+                    }
                     enterState(5, block);
+                    if (runWhenHome != null) {
+                        // notify that we have successfully identified the home property
+                        runWhenHome.run();
+                        runWhenHome = null;
+                    }
                     throw new IOException("EXISTS"); // NOI18N
                 }
                 
                 if (i == 0 && checkHelp(args, handlers)) {
+                    if (runWhenHome != null) {
+                        // notify that we have successfully identified the home property
+                        runWhenHome.run();
+                        runWhenHome = null;
+                    }
                     return new Status(2);
                 }
                 
                 lockFile.getParentFile().mkdirs();
-                lockFile.createNewFile();
+                try {
+                    if (!lockFile.createNewFile()) {
+                        if (!cleanLockFile && !lockFile.canWrite()) {
+                            return new Status(Status.CANNOT_WRITE);
+                        }
+                    }
+                } catch (IOException ex) {
+                    if (!cleanLockFile && !lockFile.getParentFile().canWrite()) {
+                        return new Status(Status.CANNOT_WRITE);
+                    }
+                    throw ex;
+                }
                 lockFile.deleteOnExit();
+
+                if (runWhenHome != null) {
+                    // notify that we have successfully identified the home property
+                    runWhenHome.run ();
+                    runWhenHome = null;
+                }
+
                 secureAccess(lockFile);
                 
                 enterState(10, block);

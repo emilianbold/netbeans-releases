@@ -72,7 +72,10 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -113,6 +116,8 @@ public class ModulesNode extends AbstractNode {
         LogicalViewProvider provider;
         NbMavenProjectImpl proj;
     }
+    
+    private static final RequestProcessor RPloadModules = new RequestProcessor(ModulesNode.ModulesChildren.class.getName(),1);
 
     static class ModulesChildren extends Children.Keys<Wrapper> {
 
@@ -148,7 +153,7 @@ public class ModulesNode extends AbstractNode {
         }
 
         private void loadModules() {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RPloadModules.post(new Runnable() {
                 public void run() {
                     Collection<Wrapper> modules = new ArrayList<Wrapper>();
                     File base = project.getOriginalMavenProject().getBasedir();
@@ -196,7 +201,7 @@ public class ModulesNode extends AbstractNode {
         @Override
         public Action[] getActions(boolean b) {
             ArrayList<Action> lst = new ArrayList<Action>();
-            lst.add(new OpenProjectAction(project));
+            lst.add(OpenProjectAction.SINGLETON);
             lst.add(new RemoveModuleAction(parent, project));
 //            lst.addAll(Arrays.asList(super.getActions(b)));
             return lst.toArray(new Action[lst.size()]);
@@ -204,7 +209,7 @@ public class ModulesNode extends AbstractNode {
 
         @Override
         public Action getPreferredAction() {
-            return new OpenProjectAction(project);
+            return OpenProjectAction.SINGLETON;
         }
     }
 
@@ -247,21 +252,23 @@ public class ModulesNode extends AbstractNode {
         }
     }
 
-    private static class OpenProjectAction extends AbstractAction implements Runnable {
+    private static class OpenProjectAction extends AbstractAction implements ContextAwareAction {
 
-        private NbMavenProjectImpl project;
+        static final OpenProjectAction SINGLETON = new OpenProjectAction();
 
-        public OpenProjectAction(NbMavenProjectImpl proj) {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project"));
-            project = proj;
+        private OpenProjectAction() {}
+
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
         }
 
-        public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(this);
-        }
-
-        public void run() {
-            OpenProjects.getDefault().open(new Project[]{project}, false);
+        public @Override Action createContextAwareInstance(final Lookup context) {
+            return new AbstractAction(NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project")) {
+                public @Override void actionPerformed(ActionEvent e) {
+                    Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
+                    OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);
+                }
+            };
         }
     }
 }

@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.queries;
 import java.io.File;
 import java.net.URI;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -89,13 +90,21 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation {
                 goal = "testCompile"; //NOI18N
             } 
         }
-        String toRet = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
+        String sourceLevel = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
                                                               Constants.PLUGIN_COMPILER,  //NOI18N
                                                               "source",  //NOI18N
                                                               goal);
-        //null is allowed to be returned but junit tests module asserts not null
-//        LOG.info("  returning " + toRet);
-        return toRet == null ? "1.3" : toRet; //NOI18N
+        if (sourceLevel != null) {
+            return sourceLevel;
+        }
+        String version = PluginPropertyUtils.getPluginVersion(
+                project.getLookup().lookup(NbMavenProjectImpl.class).getOriginalMavenProject(),
+                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+        if (version != null && new DefaultArtifactVersion(version).compareTo(new DefaultArtifactVersion("2.3")) >= 0) {
+            return "1.5";
+        } else {
+            return "1.3";
+        }
     }
     
 }

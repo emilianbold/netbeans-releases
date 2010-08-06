@@ -46,9 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -60,12 +58,6 @@ public class StampsExtraTest extends NbTestCase {
     private File platform;
     private File install;
     private File extra;
-    
-    
-    public static Test suite() {
-        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
-        return new NbTestSuite(StampsExtraTest.class);
-    }
     
     public StampsExtraTest(String testName) {
         super(testName);

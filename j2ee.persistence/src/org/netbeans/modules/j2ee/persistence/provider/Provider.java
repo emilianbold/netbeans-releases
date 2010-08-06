@@ -206,6 +206,13 @@ public abstract class Provider {
     public String getAnnotationProcessor() {
         return null;
     }
+
+    /**
+     * Return annotation processor subpackage property name for metamodel generation for differet pu in deifferent packages
+     */
+    public String getAnnotationSubPackageProperty() {
+        return null;
+    }
     
     /**
      * @return name of the property representing table generation strategy.

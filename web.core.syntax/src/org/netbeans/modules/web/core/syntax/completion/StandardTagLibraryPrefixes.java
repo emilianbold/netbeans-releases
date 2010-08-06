@@ -61,10 +61,10 @@ public class StandardTagLibraryPrefixes {
     private static Map<String, String> standardPrefixes = new TreeMap<String, String>();
 
     static {
-        standardPrefixes.put("c", "http://java.sun.com/jstl/core");
-        standardPrefixes.put("x", "http://java.sun.com/jstl/xml");
-        standardPrefixes.put("fmt", "http://java.sun.com/jstl/fmt");
-        standardPrefixes.put("sql", "http://java.sun.com/jstl/sql");
+        standardPrefixes.put("c", "http://java.sun.com/jsp/jstl/core");
+        standardPrefixes.put("x", "http://java.sun.com/jsp/jstl/xml");
+        standardPrefixes.put("fmt", "http://java.sun.com/jsp/jstl/fmt");
+        standardPrefixes.put("sql", "http://java.sun.com/jsp/jstl/sql");
     }
 
     public static String get(String prefix){

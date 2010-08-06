@@ -49,6 +49,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.ClassNamesForFileOraculum;
+import com.sun.tools.javac.api.DuplicateClassChecker;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
@@ -61,6 +62,7 @@ import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Position.LineMapImpl;
 import com.sun.tools.javadoc.JavadocClassReader;
 import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
@@ -84,6 +86,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -119,7 +122,9 @@ import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
+import org.netbeans.modules.java.source.indexing.FQN2Files;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
@@ -135,6 +140,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -548,7 +554,6 @@ public class JavacParser extends Parser {
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis();
-                JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(currentInfo.getClasspathInfo());
                 currentInfo.getJavacTask().enter();
                 currentPhase = Phase.ELEMENTS_RESOLVED;
                 long end = System.currentTimeMillis();
@@ -631,18 +636,26 @@ public class JavacParser extends Parser {
                 }
             }
         }
-        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new DefaultCancelService(parser), APTUtils.get(root));
+        FQN2Files dcc = null;
+        if (root != null) {
+            try {
+                dcc = FQN2Files.forRoot(root.getURL());
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
+        }
+        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, dcc, parser == null ? null : new DefaultCancelService(parser), APTUtils.get(root));
         Context context = javacTask.getContext();
         TreeLoader.preRegister(context, cpInfo);
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
 
-    public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, final ClassNamesForFileOraculum cnih, final CancelService cancelService, APTUtils aptUtils) {
-        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih, cancelService, aptUtils);
+    public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, final ClassNamesForFileOraculum cnih, final DuplicateClassChecker dcc, final CancelService cancelService, APTUtils aptUtils) {
+        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih, dcc, cancelService, aptUtils);
     }
 
-    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, final ClassNamesForFileOraculum cnih, final CancelService cancelService, final APTUtils aptUtils) {
+    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, final ClassNamesForFileOraculum cnih, final DuplicateClassChecker dcc, final CancelService cancelService, final APTUtils aptUtils) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
@@ -668,6 +681,12 @@ public class JavacParser extends Parser {
         options.add(validatedSourceLevel.name);
         boolean aptEnabled = aptUtils != null && (backgroundCompilation ? aptUtils.aptEnabledOnScan() : aptUtils.aptEnabledInEditor())
                 && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
+        Collection<? extends Processor> processors = null;
+        if (aptEnabled) {
+            processors = aptUtils.resolveProcessors(backgroundCompilation);
+            if (processors.isEmpty())
+                aptEnabled = false;
+        }
         if (aptEnabled) {
             for (Map.Entry<? extends String, ? extends String> entry : aptUtils.processorOptions().entrySet()) {
                 StringBuilder sb = new StringBuilder();
@@ -680,7 +699,6 @@ public class JavacParser extends Parser {
         } else {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
         }
-        options.add("-XDfindDiamond"); //XXX: should be part of options
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
@@ -692,13 +710,16 @@ public class JavacParser extends Parser {
                     ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
                     diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
             if (aptEnabled) {
-                task.setProcessors(aptUtils.resolveProcessors());
+                task.setProcessors(processors);
             }
             Context context = task.getContext();
             JavadocClassReader.preRegister(context, !backgroundCompilation);
             if (cnih != null) {
                 context.put(ClassNamesForFileOraculum.class, cnih);
             }
+            if (dcc != null) {
+                context.put(DuplicateClassChecker.class, dcc);
+            }                    
             if (cancelService != null) {
                 DefaultCancelService.preRegister(context, cancelService);
             }
@@ -717,6 +738,7 @@ public class JavacParser extends Parser {
 
     private static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(@NullAllowed String sourceLevel, ClasspathInfo cpInfo) {
         ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
+        ClassPath srcClassPath = cpInfo.getClassPath(PathKind.SOURCE);
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         Level warnLevel;
         if (sourceLevel == null) {
@@ -730,20 +752,24 @@ public class JavacParser extends Parser {
             if (source.name.equals(sourceLevel)) {
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
-                        LOGGER.log(warnLevel,
-                                   "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
-                                   "Changing source level to 1.3",
-                                   new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                        return com.sun.tools.javac.code.Source.JDK1_3;
+                        if (srcClassPath != null && srcClassPath.findResource("java/lang/AssertionError.java") == null) {
+                            LOGGER.log(warnLevel,
+                                       "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
+                                       "Changing source level to 1.3",
+                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                            return com.sun.tools.javac.code.Source.JDK1_3;
+                        }
                     }
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/StringBuilder.class") == null) { //NOI18N
-                        LOGGER.log(warnLevel,
-                                   "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
-                                   "Changing source level to 1.4",
-                                   new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                        return com.sun.tools.javac.code.Source.JDK1_4;
+                        if (srcClassPath != null && srcClassPath.findResource("java/lang/StringBuilder.java")==null) {
+                            LOGGER.log(warnLevel,
+                                       "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
+                                       "Changing source level to 1.4",
+                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                            return com.sun.tools.javac.code.Source.JDK1_4;
+                        }
                     }
                 }
                 return source;
@@ -944,6 +970,13 @@ public class JavacParser extends Parser {
                             logTime (fo,Phase.RESOLVED,(end-start));
                         }
                     }
+
+                    //fix CompilationUnitTree.getLineMap:
+                    long startM = System.currentTimeMillis();
+                    char[] chars = snapshot.getText().toString().toCharArray();
+                    ((LineMapImpl) cu.getLineMap()).build(chars, chars.length, '\0');
+                    LOGGER.log(Level.FINER, "Rebuilding LineMap took: {0}", System.currentTimeMillis() - startM);
+
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);
                 } finally {
                     l.endPartialReparse();

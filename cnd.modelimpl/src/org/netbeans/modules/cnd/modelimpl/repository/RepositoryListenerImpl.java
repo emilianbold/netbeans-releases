@@ -64,7 +64,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
     /** Singleton's instance */
     private static final RepositoryListenerImpl instance = new RepositoryListenerImpl();
-    /** Interval, in seconds, after which implicitely opened unit should be closed */
+    /** Interval, in seconds, after which implicitly opened unit should be closed */
     private static final int IMPLICIT_CLOSE_INTERVAL = Integer.getInteger("cnd.implicit.close.interval", 20); // NOI18N
     private static final String TRACE_PROJECT_NAME = System.getProperty("cnd.repository.trace.project"); //NOI18N    
     private static final boolean TRACE_PROJECT = (TRACE_PROJECT_NAME != null && TRACE_PROJECT_NAME.length() > 0);
@@ -84,19 +84,20 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
     /** 
      * A pair of (unit name, timer) 
-     * used to track implicitely opened units
+     * used to track implicitly opened units
      */
     private class UnitTimer implements ActionListener {
 
-        private final String unitName;
+        private final CharSequence unitName;
         private final Timer timer;
 
-        public UnitTimer(String unitName, int interval) {
+        public UnitTimer(CharSequence unitName, int interval) {
             this.unitName = unitName;
             timer = new Timer(interval, this);
             timer.start();
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             timeoutElapsed(unitName);
         }
@@ -112,12 +113,12 @@ public class RepositoryListenerImpl implements RepositoryListener {
      * Implicitly opened units.
      * Access only under the lock!
      */
-    private Map<String, UnitTimer> unitTimers = new HashMap<String, UnitTimer>();
+    private Map<CharSequence, UnitTimer> unitTimers = new HashMap<CharSequence, UnitTimer>();
     /** 
      * Explicitly opened units.
      * Access only under the lock!
      */
-    private Set<String> explicitelyOpened = new HashSet<String>();
+    private Set<CharSequence> explicitelyOpened = new HashSet<CharSequence>();
 
     private RepositoryListenerImpl() {
         Runtime.getRuntime().addShutdownHook(new RepositoryShutdownHook());
@@ -129,7 +130,8 @@ public class RepositoryListenerImpl implements RepositoryListener {
     }
 
     /** RepositoryListener implementation */
-    public boolean unitOpened(final String unitName) {
+    @Override
+    public boolean unitOpened(final CharSequence unitName) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
             trace("RepositoryListener: unitOpened %s\n", unitName); // NOI18N
         }
@@ -148,7 +150,8 @@ public class RepositoryListenerImpl implements RepositoryListener {
     }
 
     /** RepositoryListener implementation */
-    public void unitClosed(final String unitName) {
+    @Override
+    public void unitClosed(final CharSequence unitName) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
             trace("RepositoryListener: unitClosed %s\n", unitName); // NOI18N
         }
@@ -162,7 +165,8 @@ public class RepositoryListenerImpl implements RepositoryListener {
     }
 
     /** RepositoryListener implementation */
-    public void anExceptionHappened(final String unitName, RepositoryException exc) {
+    @Override
+    public void anExceptionHappened(final CharSequence unitName, RepositoryException exc) {
         assert exc != null;
         if (exc.getCause() != null) {
             exc.getCause().printStackTrace(System.err);
@@ -171,7 +175,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
     }
 
     // NB: un-synchronized!
-    private void killTimer(String unitName) {
+    private void killTimer(CharSequence unitName) {
         UnitTimer unitTimer = unitTimers.remove(unitName);
         if (unitTimer != null) {
             if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
@@ -181,7 +185,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
         }
     }
 
-    public void onExplicitOpen(String unitName) {
+    public void onExplicitOpen(CharSequence unitName) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
             trace("RepositoryListener: onExplicitOpen %s\n", unitName); // NOI18N
         }
@@ -191,13 +195,13 @@ public class RepositoryListenerImpl implements RepositoryListener {
         }
     }
 
-    public void onExplicitClose(String unitName) {
+    public void onExplicitClose(CharSequence unitName) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
             trace("RepositoryListener: onExplicitClose %s\n", unitName); // NOI18N
         }
     }
 
-    private void timeoutElapsed(String unitName) {
+    private void timeoutElapsed(CharSequence unitName) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
             trace("RepositoryListener: timeout elapsed for %s\n", unitName); // NOI18N
         }
@@ -208,12 +212,12 @@ public class RepositoryListenerImpl implements RepositoryListener {
                     trace("RepositoryListener: scheduling closure for %s\n", unitName); // NOI18N
                 }
                 unitTimer.cancel();
-                scheduleClosing(unitName, Collections.<String>emptySet());
+                scheduleClosing(unitName, Collections.<CharSequence>emptySet());
             }
         }
     }
 
-    private void scheduleClosing(final String unitName, final Set<String> requiredUnits) {
+    private void scheduleClosing(final CharSequence unitName, final Set<CharSequence> requiredUnits) {
         if (explicitelyOpened.contains(unitName)) {
             if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
                 trace("Cancelling closure (A) for implicitely opened unit %s\n", unitName); // NOI18N
@@ -222,6 +226,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
         }
         ModelImpl.instance().enqueueModelTask(new Runnable() {
 
+            @Override
             public void run() {
                 synchronized (lock) {
                     if (explicitelyOpened.contains(unitName)) {

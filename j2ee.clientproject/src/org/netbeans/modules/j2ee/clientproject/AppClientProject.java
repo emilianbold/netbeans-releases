@@ -88,6 +88,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation2;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
@@ -178,6 +179,7 @@ public final class AppClientProject implements Project, FileChangeListener {
     private final ClassPathModifier cpMod;
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
+    private final AppClientCompilationClassPathModifierImpl libMod;
     
     // use AntBuildExtender to enable Ant Extensibility
     private AntBuildExtender buildExtender;
@@ -195,6 +197,7 @@ public final class AppClientProject implements Project, FileChangeListener {
         jaxWsClientSupport = new AppClientProjectJAXWSClientSupport(this, helper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(carProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
+        libMod = new AppClientCompilationClassPathModifierImpl(this, this.updateHelper, eval, refHelper);
         this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                 ProjectProperties.BUILD_CLASSES_DIR, AppClientProjectProperties.DIST_JAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
                 new String[] {"javac.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
@@ -290,14 +293,13 @@ public final class AppClientProject implements Project, FileChangeListener {
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
-        AppClientSources sources = new AppClientSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
             QuerySupport.createProjectInformation(helper, this, CAR_PROJECT_ICON),
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
             spp,
-            new AppClientActionProvider( this, helper, this.updateHelper ),
+            new AppClientActionProvider( this, this.updateHelper ),
             new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper, appClient),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
@@ -309,9 +311,12 @@ public final class AppClientProject implements Project, FileChangeListener {
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
-            QuerySupport.createSourceLevelQuery(evaluator()),
-            sources,
-            sources.getSourceGroupModifierImplementation(),
+            QuerySupport.createSourceLevelQuery2(evaluator()),
+            QuerySupport.createSources(this, helper, evaluator(),
+                    getSourceRoots(),
+                    getTestSourceRoots(),
+                    Roots.propertyBased(new String[]{AppClientProjectProperties.META_INF}, new String[]{NbBundle.getMessage(AppClientLogicalViewProvider.class, "LBL_Node_ConfFiles")}, false, null, null),
+                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, AppClientProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     AppClientProjectProperties.META_INF),
             QuerySupport.createFileBuiltQuery(helper,  evaluator(), getSourceRoots(), getTestSourceRoots()),
@@ -320,6 +325,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             new RecommendedTemplatesImpl(this.updateHelper),
             classPathExtender,
             cpMod,
+            libMod,
             buildExtender,
             AppClientProject.this, // never cast an externally obtained Project to AppClientProject - use lookup instead
             new AppClientProjectOperations(this),

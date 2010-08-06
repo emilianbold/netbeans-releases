@@ -48,7 +48,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -66,6 +68,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.api.AliasedName;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -74,6 +77,21 @@ import org.openide.filesystems.FileObject;
 public class ModelUtils {
 
     private ModelUtils() {
+    }
+
+    public static Set<AliasedName> getAliasedNames(final Model model, final int offset) {
+        final Set<AliasedName> aliases = new HashSet<AliasedName>();
+        final NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
+        if (namespaceScope != null) {
+            Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
+            for (UseElement useElement : declaredUses) {
+                AliasedName aliasedName = useElement.getAliasedName();
+                if (aliasedName != null) {
+                    aliases.add(aliasedName);
+                }
+            }
+        }
+        return aliases;
     }
 
     public static NamespaceScope getNamespaceScope(NamespaceDeclaration currenNamespace, FileScope fileScope) {

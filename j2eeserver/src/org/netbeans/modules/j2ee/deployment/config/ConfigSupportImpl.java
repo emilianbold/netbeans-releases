@@ -56,6 +56,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -66,6 +69,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
@@ -83,7 +87,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ServerLibraryConfiguration;
 import org.openide.util.Mutex.Action;
 import org.openide.util.Parameters;
 
@@ -334,7 +340,51 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             mappingConfiguration.setCMPResource(ejbName, jndiName);
         }
     }
-    
+
+    @Override
+    public void configureLibrary(@NonNull ServerLibraryDependency library) throws ConfigurationException {
+        ServerLibraryConfiguration libraryConfiguration = getServerLibraryConfiguration();
+        if (libraryConfiguration != null) {
+            libraryConfiguration.configureLibrary(library);
+        }
+    }
+
+    @Override
+    public Set<ServerLibraryDependency> getLibraries() throws ConfigurationException {
+        Set<ServerLibraryDependency> libs = Collections.emptySet();
+
+        ServerLibraryConfiguration libraryConfiguration = getServerLibraryConfiguration();
+        if (libraryConfiguration != null) {
+            libs = libraryConfiguration.getLibraries();
+        }
+        return libs;
+    }
+
+    @Override
+    public void addLibraryChangeListener(ChangeListener listener) {
+        ServerLibraryConfiguration libraryConfiguration = getServerLibraryConfiguration();
+        if (libraryConfiguration != null) {
+            libraryConfiguration.addLibraryChangeListener(listener);
+        }
+    }
+
+    @Override
+    public void removeLibraryChangeListener(ChangeListener listener) {
+        ServerLibraryConfiguration libraryConfiguration = getServerLibraryConfiguration();
+        if (libraryConfiguration != null) {
+            libraryConfiguration.removeLibraryChangeListener(listener);
+        }
+    }
+
+    @Override
+    public boolean isDescriptorRequired() {
+        DeploymentDescriptorConfiguration descriptorConfiguration = getDeploymentDescriptorConfiguration();
+        if (descriptorConfiguration != null) {
+            return descriptorConfiguration.isDescriptorRequired();
+        }
+        return false;
+    }
+
     public Set<Datasource> getDatasources() throws ConfigurationException {
         
         Set<Datasource> projectDS = Collections.<Datasource>emptySet();
@@ -761,6 +811,28 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     
     // private helpers --------------------------------------------------------
     
+    @CheckForNull
+    private ServerLibraryConfiguration getServerLibraryConfiguration() {
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                return config.getLookup().lookup(ServerLibraryConfiguration.class);
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private DeploymentDescriptorConfiguration getDeploymentDescriptorConfiguration() {
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                return config.getLookup().lookup(DeploymentDescriptorConfiguration.class);
+            }
+        }
+        return null;
+    }
+
     /**
      * Return list of server specific configuration files.
      */

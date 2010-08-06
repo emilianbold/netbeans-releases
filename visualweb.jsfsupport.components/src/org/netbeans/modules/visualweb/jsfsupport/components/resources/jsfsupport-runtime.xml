@@ -51,9 +51,9 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.visualweb.jsfsupport.components.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/jsfcl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/appbase.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/dataprovider.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/sqlx.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.jsfsupport.components/modules/ext/jsfcl.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.web.ui.appbase/modules/ext/appbase.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.dataprovider/modules/ext/dataprovider.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.rowset/modules/ext/sqlx.jar!/</resource>
     </volume>
 </library>

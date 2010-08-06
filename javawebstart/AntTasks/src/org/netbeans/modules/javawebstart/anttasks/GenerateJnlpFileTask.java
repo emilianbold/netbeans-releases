@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +33,7 @@ import org.apache.tools.ant.PathTokenizer;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.Path;
 
 import org.w3c.dom.Document;
@@ -499,9 +499,7 @@ public class GenerateJnlpFileTask extends Task {
                     // create new elements
                     String appArgsProp = getProject().getProperty("application.args");
                     if (appArgsProp != null) {
-                        StringTokenizer stok = new StringTokenizer(appArgsProp);
-                        while (stok.hasMoreTokens()) {
-                            String arg = stok.nextToken();
+                        for (String arg : Commandline.translateCommandline(appArgsProp)) {
                             Element argElem = docDom.createElement("argument"); // NOI18N
                             argElem.setTextContent(arg);
                             descElem.appendChild(argElem);

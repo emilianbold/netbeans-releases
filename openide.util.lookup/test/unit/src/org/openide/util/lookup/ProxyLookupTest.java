@@ -52,8 +52,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Executor;
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -69,11 +67,6 @@ implements AbstractLookupBaseHid.Impl {
         super(testName, null);
     }
 
-    public static Test suite() {
-        return new NbTestSuite (ProxyLookupTest.class);
-//        return new ProxyLookupTest("testDuplicatedLookupArrayIndexWithSetLookupAsInIssue123679");
-    }
-    
     /** Creates an lookup for given lookup. This class just returns 
      * the object passed in, but subclasses can be different.
      * @param lookup in lookup
@@ -656,5 +649,27 @@ implements AbstractLookupBaseHid.Impl {
         
         
         pl.setLookups(old);
+    }
+    public void testFrequentSwitching() {
+        Object o1 = new Object();
+        Object o2 = new Object();
+        String s1 = new String("foo");
+        String s2 = new String("bar");
+
+        Lookup l1 = Lookups.fixed(o1, s1);
+        Lookup l2 = Lookups.fixed(o2, s2);
+
+        ProxyLookup lookup = new ProxyLookup(new Lookup[0]);
+
+        Lookup.Result<Object> res1 = lookup.lookupResult(Object.class);
+        Lookup.Result<String> res2 = lookup.lookupResult(String.class);
+
+        assertSize("Lookup is small", 1500, lookup);
+
+        for (int i = 0; i < 100; i++) {
+            lookup.setLookups(l1);
+            lookup.setLookups(l2);
+        }
+        assertSize("Lookup has grown too much", 1500, lookup);
     }
 }

@@ -93,7 +93,7 @@ public class RepositoryRevision {
 
     public String toString() {        
         StringBuffer text = new StringBuffer();
-        text.append(getLog().getRevision());
+        text.append(getLog().getRevisionNumber());
         text.append("\t");
         text.append(getLog().getCSetShortID());
         text.append("\t");

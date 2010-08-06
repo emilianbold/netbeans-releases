@@ -429,7 +429,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <compilerarg value="-processorpath" />
-                            <compilerarg path="@{{processorpath}}" />
+                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
                             <compilerarg line="${{ap.processors.internal}}" />
                             <compilerarg value="-s" />
                             <compilerarg path="@{{apgeneratedsrcdir}}" />
@@ -990,14 +990,14 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="library-inclusion-in-archive" depends="compile">
-                <xsl:for-each select="//ejbjarproject3:included-library">
+<!--                <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
                     <copyfiles todir="${{build.classes.dir}}">
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
                     </copyfiles>
-                </xsl:for-each>   
+                </xsl:for-each>    -->
             </target> 
             
             <target name="library-inclusion-in-manifest" depends="compile">
@@ -1386,6 +1386,17 @@ exists or setup the property manually. For example like this:
                         <include name="**/*.java"/>
                     </fileset>
                 </javadoc>
+                <copy todir="${{dist.javadoc.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
+                        <xsl:with-param name="includes2">**/doc-files/**</xsl:with-param>
+                    </xsl:call-template>
+                    <fileset>
+                        <xsl:attribute name="dir">${build.generated.sources.dir}</xsl:attribute>
+                        <xsl:attribute name="erroronmissingdir">false</xsl:attribute>
+                        <include name="**/doc-files/**"/>
+                    </fileset>
+                </copy>
             </target>
             
             <target name="javadoc-browse">

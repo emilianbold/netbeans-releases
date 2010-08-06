@@ -43,17 +43,21 @@
 package org.netbeans.modules.java.api.common.queries;
 
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -195,11 +199,24 @@ public final class QuerySupport {
      * Create a new query to find out specification source level of Java source files.
      * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
      * @return a {@link SourceLevelQueryImplementation} to find out specification source level of Java source files.
+     * @deprecated Use {@link QuerySupport#createSourceLevelQuery(org.netbeans.spi.project.support.ant.PropertyEvaluator)}
      */
-    public static SourceLevelQueryImplementation createSourceLevelQuery(PropertyEvaluator evaluator) {
+    @Deprecated
+    public static org.netbeans.spi.java.queries.SourceLevelQueryImplementation createSourceLevelQuery(PropertyEvaluator evaluator) {
         Parameters.notNull("evaluator", evaluator); // NOI18N
 
         return new SourceLevelQueryImpl(evaluator);
+    }
+
+    /**
+     * Create a new query to find out source level of Java source files (SourceLevelQueryImplementation2).
+     * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
+     * @return a {@link SourceLevelQueryImplementation2} to find out source level of Java source files.
+     * @since 1.22
+     */
+    public static SourceLevelQueryImplementation2 createSourceLevelQuery2(@NonNull PropertyEvaluator evaluator) {
+        Parameters.notNull("evaluator", evaluator); // NOI18N
+        return new SourceLevelQueryImpl2(evaluator);
     }
 
     /**
@@ -319,6 +336,27 @@ public final class QuerySupport {
 
     public static ProjectInformation createProjectInformation(UpdateHelper updateHelper, Project project, Icon icon) {
         return new QuerySupport.AntUpdateHelper(updateHelper, project, icon, ProjectInfoImpl.DEFAULT_ELEMENT_NAME);
+    }
+
+    /**
+     * Returns {@link Sources} implementation designed for projects that supports adding
+     * or removing of the source roots. The returned instance also implements {@link SourceGroupModifierImplementation}
+     * @param project the {@link Project} for which the {@link Sources} should be created
+     * @param helper the {@link AntProjectHelper} of the project, used only to resolve files
+     * @param evaluator the {@link PropertyEvaluator} to evaluate the properties
+     * @param roots the array of {@link Roots} providing the roots of given type
+     * @return the {@link Sources} instance implementing also the {@link SourceGroupModifierImplementation} interface
+     * @since 1.21
+     */
+    public static Sources createSources(@NonNull final Project project,
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final Roots... roots) {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("helper", helper);   //NOI18N
+        Parameters.notNull("evaluator", evaluator); //NOI18N
+        Parameters.notNull("roots", roots); //NOI18N
+        return new SourcesImpl(project, helper, evaluator, roots);
     }
     
     private static class AntHelper extends ProjectInfoImpl {

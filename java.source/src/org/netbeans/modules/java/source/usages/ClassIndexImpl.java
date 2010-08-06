@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import org.apache.lucene.document.Document;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
 import org.openide.filesystems.FileObject;
@@ -95,14 +96,14 @@ public abstract class ClassIndexImpl {
         INITIALIZED,
     }
     
-    
+        
     public static ClassIndexFactory FACTORY;    
     
-    public abstract <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
+    public abstract <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<? super Document, T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
     
-    public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
+    public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final ResultConvertor<? super Document, T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
     
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException;
+    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException;
     
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     
@@ -112,15 +113,17 @@ public abstract class ClassIndexImpl {
     
     public abstract SourceAnalyser getSourceAnalyser ();
     
-    public abstract String getSourceName (String binaryName) throws IOException;
+    public abstract String getSourceName (String binaryName) throws IOException, InterruptedException;
     
     public abstract void setDirty (URL url);
+    
+    public abstract boolean isValid ();
 
     public abstract boolean isSource ();
 
-    public abstract boolean isEmpty ();
-    
-    protected abstract void close () throws IOException;
+    public abstract boolean isEmpty ();   
+            
+    protected abstract void close () throws IOException;    
     
     public void addClassIndexImplListener (final ClassIndexImplListener listener) {
         assert listener != null;        

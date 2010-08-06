@@ -1,7 +1,6 @@
 Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
 OpenIDE-Module: org.netbeans.modules.compapp.help
 OpenIDE-Module-Layer: org/netbeans/modules/compapp/capshelp/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/compapp/capshelp/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.2.1
-AutoUpdate-Show-In-Client: false
-

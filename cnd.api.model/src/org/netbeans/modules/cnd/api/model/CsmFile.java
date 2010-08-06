@@ -69,7 +69,10 @@ public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable {
     /** Sorted (by start offset) list of #error directives in the file */
     Collection<CsmErrorDirective> getErrors();
     
-    /** Sorted (by start offset) list of declarations in the file */
+    /**
+     * Sorted (by start offset) list of declarations in the file
+     * No order for declarations with same start offset
+     */
     Collection<CsmOffsetableDeclaration> getDeclarations();
     
     /** Sorted (by start offset) list of #define directives in the file */

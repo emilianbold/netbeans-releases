@@ -271,8 +271,6 @@ public class ProxyClassLoader extends ClassLoader {
         return cls; 
     }
     private String diagnosticCNFEMessage(String base, Set<ProxyClassLoader> del) {
-        /* the message collapsing disabled - it heavily reduces usefulness
-           of the diagnostic message
         String parentSetS;
         int size = parentSet.size();
         if (size <= 10) {
@@ -285,13 +283,12 @@ public class ProxyClassLoader extends ClassLoader {
                 b.append(i == 0 ? "[" : ", ");
                 b.append(parentSetI.next());
             }
-            b.append(", ..." + (size - 10) + " more]");
+            b.append(", ...").append(size - 10).append(" more]");
             parentSetS = b.toString();
-        }*/
-
+        }
         return base + " starting from " + this +
                 " with possible defining loaders " + del +
-                " and declared parents " + parentSet;
+                " and declared parents " + parentSetS;
     }
     private static final Set<String> arbitraryLoadWarnings = Collections.synchronizedSet(new HashSet<String>());
 

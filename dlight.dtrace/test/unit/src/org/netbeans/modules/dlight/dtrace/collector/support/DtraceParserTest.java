@@ -56,6 +56,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
@@ -91,6 +92,17 @@ public class DtraceParserTest extends NbTestCase {
     }
 
     @Test
+    public void testStrings() throws IOException {
+        DataTableMetadata metadata = new DataTableMetadata(
+                "strings",
+                Arrays.asList(
+                        new Column("timestamp", Long.class),
+                        new Column("filename", String.class)),
+                null);
+        doTest(getDataFile(), new DtraceParser(metadata));
+    }
+
+    @Test
     public void testMemD() throws IOException {
         DataTableMetadata metadata = new DataTableMetadata(
                 "mem",
@@ -103,6 +115,28 @@ public class DtraceParserTest extends NbTestCase {
                         new Column("stackid", Long.class)),
                 null);
         doTest(getDataFile(), new DtraceDataAndStackParser(metadata, new SDSImpl()));
+    }
+
+    @Test
+    public void testMysql() throws IOException {
+        DataTableMetadata metadata = new DataTableMetadata(
+                "mysql",
+                Arrays.asList(
+                        new Column("timestamp", Time.class),
+                        new Column("query", String.class),
+                        new Column("time", Long.class)),
+                null);
+
+        DtraceParser parser = new DtraceParser(metadata);
+        DataRow row = parser.process("32008075846  \"select md5sum, indexdate from sphider_links where url='http://dptwiki.sfbay.sun.com/twiki/bin/view/Sunstudio/AllAccessKit1206DVDNetBeansIDE?rev=7&amp;sortcol=5;table=1;up=0'\\0\"  121419");
+        assertEquals(
+                Arrays.<Object>asList(
+                        Long.valueOf(32008075846L),
+                        "select md5sum, indexdate from sphider_links where url='http://dptwiki.sfbay.sun.com/twiki/bin/view/Sunstudio/AllAccessKit1206DVDNetBeansIDE?rev=7&amp;sortcol=5;table=1;up=0'",
+                        Long.valueOf(121419)),
+                row.getData());
+
+        assertNull(parser.processClose());
     }
 
     protected File getDataFile() {

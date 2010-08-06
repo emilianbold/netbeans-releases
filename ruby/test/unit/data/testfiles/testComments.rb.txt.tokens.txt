@@ -105,7 +105,7 @@ COMMENT_TEXT    "\n"
 COMMENT_LINK    "MyClass123#my_method", la=1
 COMMENT_TEXT    "\n"
 COMMENT_LINK    "Scanf#foo", la=1
-COMMENT_TEXT    ",", la=1
+COMMENT_TEXT    ",", la=5
 COMMENT_LINK    "File#exists", la=1
 COMMENT_TEXT    "\n"
 COMMENT_LINK    "ActiveRecord::Migration#add", la=1

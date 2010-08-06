@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -75,9 +76,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeModuleProviderAccessor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 
 /** This object must be implemented by J2EE module support and an instance 
  * added into project lookup.
@@ -181,7 +185,7 @@ public abstract class J2eeModuleProvider {
         }
         return si.getStartServer().getDebugInfo(target);
     }
-    
+
     /**
      * Gets the data sources deployed on the target server instance.
      *
@@ -300,6 +304,7 @@ public abstract class J2eeModuleProvider {
      * The setters and getters work with server specific data on the server returned by
      * {@link #getServerID} method.
      */
+    // FIXME replace this with final class - this is not deigned to be implemented by anybody
     public static interface ConfigSupport {
         /**
          * Create an initial fresh configuration for the current module.  Do nothing if configuration already exists.
@@ -483,6 +488,39 @@ public abstract class J2eeModuleProvider {
          * @since 1.25
          */
         public Datasource findDatasource(String jndiName) throws ConfigurationException;
+
+        /**
+         * Configure the library (dependency) the enterprise module needs in order
+         * to work properly.
+         * <p>
+         * Once library is configured it should be present in the result
+         * of the {@link #getRequiredLibraries()} call.
+         *
+         * @param library the library the enterprise module needs in order to work
+         *             properly
+         * @throws ConfigurationException if there was a problem writing
+         *             configuration
+         * @since 1.68
+         */
+        public void configureLibrary(@NonNull ServerLibraryDependency library) throws ConfigurationException;
+
+        /**
+         * Returns the server library dependencies the enterprise module needs
+         * to work properly.
+         *
+         * @return the server library dependencies
+         * @throws ConfigurationException if there was a problem reading
+         *             configuration
+         * @since 1.68
+         */
+        @NonNull
+        public Set<ServerLibraryDependency> getLibraries() throws ConfigurationException;
+
+        public void addLibraryChangeListener(@NonNull ChangeListener listener);
+
+        public void removeLibraryChangeListener(@NonNull ChangeListener listener);
+
+        public boolean isDescriptorRequired();
 
         /**
          * Retrieves message destinations stored in the module.
@@ -715,6 +753,13 @@ public abstract class J2eeModuleProvider {
 
     public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {
         return null;
+    }
+
+    /**
+     * @since org.netbeans.modules.j2eeserver/4 1.70
+     */
+    public File[] getRequiredLibraries() {
+        return new File[] {};
     }
     
     /**

@@ -127,7 +127,7 @@ public class ThreadDumpStack {
                     for (StatementTree statement : statements)
                         if (statement != expressionStatementTree)
                             newStatements.add (statement);
-                    BlockTree newBlockTree = wc.getTreeMaker ().Block (newStatements, true);
+                    BlockTree newBlockTree = wc.getTreeMaker ().Block (newStatements, blockTree.isStatic());
                     wc.rewrite (blockTree, newBlockTree);
                 }
             }).commit ();

@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import junit.framework.Test;
 
 import org.netbeans.junit.*;
 import org.openide.nodes.Index;
@@ -73,11 +72,6 @@ public class DataFolderTest extends LoggingTestCaseHid {
         super (name);
     }
     
-    public static Test suite() {
-        return new NbTestSuite(DataFolderTest.class);
-        //return new DataFolderTest("testMoveFolderWithReadOnlyFile");
-    }
-
     @Override
     protected void setUp () throws Exception {
         clearWorkDir ();

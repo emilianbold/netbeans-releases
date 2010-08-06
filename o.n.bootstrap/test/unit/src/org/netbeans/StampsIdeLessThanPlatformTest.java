@@ -48,9 +48,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -62,11 +60,6 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
     private File platform;
     private File install;
     private File nonexist;
-    
-    
-    public static Test suite() {
-        return new NbTestSuite(StampsIdeLessThanPlatformTest.class);
-    }
     
     public StampsIdeLessThanPlatformTest(String testName) {
         super(testName);

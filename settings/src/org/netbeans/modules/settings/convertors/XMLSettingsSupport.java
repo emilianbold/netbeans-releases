@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -1167,7 +1168,7 @@ final class XMLSettingsSupport {
         }
         
         public void write(java.io.Writer w, Object inst) throws java.io.IOException {
-            XMLSettingsSupport.storeToXML10(inst, w, ModuleInfoManager.getDefault().getModuleInfo(inst.getClass()));
+            XMLSettingsSupport.storeToXML10(inst, w, Modules.getDefault().ownerOf(inst.getClass()));
         }
         
     }

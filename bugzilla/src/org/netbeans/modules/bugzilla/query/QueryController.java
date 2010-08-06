@@ -59,6 +59,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -907,6 +908,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 }
             }
         }
+
+        Collections.sort(newComponents);
+        Collections.sort(newVersions);
 
         componentParameter.setParameterValues(toParameterValues(newComponents));
         versionParameter.setParameterValues(toParameterValues(newVersions));

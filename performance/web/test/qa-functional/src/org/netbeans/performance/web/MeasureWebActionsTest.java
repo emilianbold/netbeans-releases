@@ -65,7 +65,7 @@ public class MeasureWebActionsTest {
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandNodesWebProjectsViewTest.class)
         // needs to be fixed .addTest(FileSwitchingTest.class)
-        .addTest(JSPCompletionInJspEditorTest.class)
+// fix        .addTest(JSPCompletionInJspEditorTest.class)
         .addTest(OpenServletFileTest.class)
         .addTest(OpenServletFileWithOpenedEditorTest.class)
         .addTest(OpenWebFilesTest.class)

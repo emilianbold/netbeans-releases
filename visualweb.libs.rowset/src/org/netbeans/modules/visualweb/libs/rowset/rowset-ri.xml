@@ -51,10 +51,10 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.visualweb.libs.rowset.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/rowset-1.0.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.libs.rowset/modules/ext/rowset-1.0.1.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/rowset-doc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.visualweb.libs.rowset/docs/rowset-doc.zip!/</resource>
     </volume>
 </library>

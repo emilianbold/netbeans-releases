@@ -155,7 +155,7 @@ public class HelpLineProcessorTest extends NbTestCase {
         }
 
         @Override
-        public <T extends PhpFrameworkProvider> Preferences getPreferences(Class<T> clazz, boolean shared) {
+        public Preferences getPreferences(Class<?> clazz, boolean shared) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

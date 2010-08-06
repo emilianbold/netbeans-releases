@@ -51,8 +51,8 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
@@ -86,7 +86,8 @@ public class APTWalkerTest extends APTAbstractWalker {
         super.onIncludeNext(apt);
     }
 
-    protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState) {
+    @Override
+    protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
         resolvingTime += System.currentTimeMillis() - lastTime;
         if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             APTFile apt;
@@ -103,7 +104,7 @@ public class APTWalkerTest extends APTAbstractWalker {
             } finally {
                 getIncludeHandler().popInclude(); 
             }
-            return postIncludeState == null;
+            return (postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState();
         } else {
             return false;
         }

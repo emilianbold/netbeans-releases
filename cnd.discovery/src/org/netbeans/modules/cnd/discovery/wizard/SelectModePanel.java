@@ -67,11 +67,13 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     private void addListeners(){
         simpleMode.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 updateInstruction();
             }
         });
         advancedMode.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 updateInstruction();
             }
@@ -196,7 +198,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     boolean isApplicable(final DiscoveryDescriptor wizardDescriptor){
         if (first && simpleMode.isSelected()) {
-            lastApplicable = new DiscoveryExtension().isApplicable(wizardDescriptor);
+            lastApplicable = new DiscoveryExtension().isApplicable(wizardDescriptor).isApplicable();
             if (!lastApplicable) {
                 wizardDescriptor.setSimpleMode(false);
             }

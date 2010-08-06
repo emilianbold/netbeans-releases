@@ -55,7 +55,7 @@ import static com.sun.source.tree.Tree.Kind;
  * @author  Tomas Hurka
  * @author  Pavel Flaska
  */
-class Measure {
+public class Measure {
 
     /**
      * Prevent instance creation outside the class.
@@ -94,6 +94,19 @@ class Measure {
      * Used for measuring distance of two class members.
      * (for fields, methods, constructors, annotation attributes etc.)
      */
+    static final Comparator<JCTree> REAL_MEMBER = new Comparator<JCTree>() {
+
+        public int compare(JCTree t1, JCTree t2) {
+            int distance = DEFAULT.compare(t1, t2);
+            if (distance == INFINITE_DISTANCE) {
+                if (t1.getKind() == t2.getKind()) {
+                    return (t1.pos == t2.pos) ? ALMOST_THE_SAME : THE_SAME_KIND;
+                }
+            }
+            return distance;
+        }
+    };
+
     static final Comparator<JCTree> MEMBER = new Comparator<JCTree>() {
 
         public int compare(JCTree t1, JCTree t2) {
@@ -133,20 +146,20 @@ class Measure {
      * or greater than this is represented as infinite (i.e. indicates
      * that the compared objects are distinct).
      */
-    static final int INFINITE_DISTANCE = 1000;
+    public static final int INFINITE_DISTANCE = 1000;
 
     /**
      * Objects perfectly matches, they are identical.
      */
-    static final int OBJECTS_MATCH = 0;
+    public static final int OBJECTS_MATCH = 0;
 
     /**
      * Objects are almost the same, kind is the same and pos is the same.
      */
-    static final int ALMOST_THE_SAME = 250;
+    public static final int ALMOST_THE_SAME = 250;
 
     /**
      * Objects are the same kind, but different pos
      */
-    static final int THE_SAME_KIND = 750;
+    public static final int THE_SAME_KIND = 750;
 }

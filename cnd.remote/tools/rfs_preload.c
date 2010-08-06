@@ -345,27 +345,37 @@ rfs_startup(void) {
 //#endif
     //curr_dir = malloc(curr_dir_len = PATH_MAX + 1);
     //getcwd(curr_dir, curr_dir_len);
-    my_dir = getenv("RFS_CONTROLLER_DIR");
-    if (!my_dir) {
-        //my_dir = curr_dir;
+    char* dir = getenv("RFS_CONTROLLER_DIR");
+    if (dir) {
+        dir = strdup(dir);
+    } else {
         char* p = malloc(PATH_MAX + 1);
         getcwd(p, PATH_MAX + 1);
-        my_dir = p;
+        dir = p;
     }
-    my_dir_len = strlen(my_dir);
-    if (my_dir[my_dir_len-1] == '/') {
-        my_dir = strdup(my_dir);
+    char* real_dir = malloc(PATH_MAX + 1);
+    if ( realpath(dir, real_dir)) {
+        char *to_free = dir;
+        dir = real_dir;
+        free(to_free);
+    } else {
+        trace_unresolved_path(dir, "RFS startup");
+    }
+    my_dir_len = strlen(dir);
+    if (dir[my_dir_len-1] == '/') {
+        dir = strdup(dir);
     } else {
         my_dir_len++;
         void *p = malloc(my_dir_len + 1);
-        strcpy(p, my_dir);
+        strcpy(p, dir);
         strcat(p, "/");
-        my_dir = p;
+        dir = p;
     }
+    my_dir = dir;
 
     static int startup_count = 0;
     startup_count++;
-    trace("RFS startup (%d) my dir: %s\n", startup_count, my_dir);
+    trace("RFS startup (%d) my dir: %s\n", startup_count, dir);
 
     release_socket();
     trace_sd("startup");

@@ -93,6 +93,11 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose"};  //NOI18N
     private static final String XNOCOMPILE_OPTION = "xnocompile";  //NOI18N
     private static final String XENDORSED_OPTION = "xendorsed"; //NOI18N
+    private static final String TARGET_OPTION = "target"; //NOI18N
+
+    protected static final String JAVA_EE_VERSION_NONE="java-ee-version-none"; //NOI18N
+    protected static final String JAVA_EE_VERSION_15="java-ee-version-15"; //NOI18N
+    protected static final String JAVA_EE_VERSION_16="java-ee-version-16"; //NOI18N
     
     private Project project;
     private AntProjectHelper antProjectHelper;
@@ -149,21 +154,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
         return antProjectHelper;
     }
     
-    public void addService(String serviceName, String serviceImpl, boolean isJsr109) {
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel!=null) {           
-            Boolean value = jaxWsModel.getJsr109();
-            if((value == null || Boolean.TRUE.equals(value)) && !isJsr109){
-                jaxWsModel.setJsr109(Boolean.FALSE);
-                writeJaxWsModel(jaxWsModel);
-            } else if (Boolean.FALSE.equals(value) && isJsr109) {
-                jaxWsModel.setJsr109(Boolean.TRUE);
-                writeJaxWsModel(jaxWsModel);
-            }
-        }
-        
+    public void addService(String serviceName, String serviceImpl, boolean isJsr109) {  
         if(!isJsr109 ){
-            try{
+            try {
                 addJaxwsArtifacts(project, serviceName, serviceImpl);
             } catch(Exception e){
                 ErrorManager.getDefault().notify(e); //TODO handle this
@@ -237,7 +230,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     }
 
                     Boolean value = jaxWsModel.getJsr109();
-                    if((value == null || Boolean.TRUE.equals(value)) && !isJsr109){
+                    if (value == null) {
+                        jaxWsModel.setJsr109(isJsr109);
+                    } else if (Boolean.TRUE.equals(value) && !isJsr109) {
                         jaxWsModel.setJsr109(Boolean.FALSE);
                     } else if (Boolean.FALSE.equals(value) && isJsr109) {
                         jaxWsModel.setJsr109(Boolean.TRUE);
@@ -272,6 +267,12 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                             WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
                             wsimportOption.setWsimportOptionName(XENDORSED_OPTION);
                             wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                            wsimportOptions.addWsimportOption(wsimportOption);
+                        }
+                        if (JAVA_EE_VERSION_15.equals(getProjectJavaEEVersion())) {
+                            WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
+                            wsimportOption.setWsimportOptionName(TARGET_OPTION);
+                            wsimportOption.setWsimportOptionValue("2.1"); //NOI18N
                             wsimportOptions.addWsimportOption(wsimportOption);
                         }
                     }
@@ -493,4 +494,8 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
      * @return metadata model of a webservices deployment descriptor
      */
     public abstract MetadataModel<WebservicesMetadata> getWebservicesMetadataModel();
+
+    protected String getProjectJavaEEVersion() {
+        return JAVA_EE_VERSION_NONE;
+    }
 }

@@ -108,6 +108,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -121,8 +122,8 @@ public class SourceAnalyser {
     private static final boolean fullIndex = Boolean.getBoolean(SourceAnalyser.class.getName()+".fullIndex");   //NOI18N
     
     /** Creates a new instance of SourceAnalyser */
-    public SourceAnalyser (final Index index) {
-        assert index != null;
+    SourceAnalyser (final @NonNull Index index) {
+        Parameters.notNull("index", index);   //NOI18N
         this.index = index;
         this.references = new HashMap<Pair<String,String>, Object[]> ();
         this.toDelete = new HashSet<Pair<String,String>> ();
@@ -138,11 +139,7 @@ public class SourceAnalyser {
                 this.toDelete.clear();
             }
         }
-    }
-    
-    public boolean isValid () throws IOException {
-        return this.index.isValid(true);
-    }
+    }    
     
     public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
         final CompileTuple tuple,
@@ -307,7 +304,6 @@ public class SourceAnalyser {
         private final Set<CharSequence> importIdents;
         private final Set<CharSequence> packageAnnotationIdents;
         private final boolean virtual;
-        private final boolean storeIndex;
         private boolean isStaticImport;
         private State state;
         private Element enclosingElement = null;
@@ -345,7 +341,6 @@ public class SourceAnalyser {
             this.signatureFiles = true;
             this.manager = manager;
             this.virtual = tuple.virtual;
-            this.storeIndex = tuple.index;
             this.siblingUrl = virtual ? tuple.indexable.getURL() : sibling.toUri().toURL();
             this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = null;
@@ -383,7 +378,6 @@ public class SourceAnalyser {
             this.topLevels = topLevels;
             this.newTypes = null;
             this.virtual = false;
-            this.storeIndex = true;
         }
 
         final Types getTypes() {

@@ -81,10 +81,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
@@ -171,7 +175,8 @@ public class TargetServer {
     }
 
     private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) throws IOException {
-        if (targetz == null || targetz.length != 1) {
+        //if (targetz == null || targetz.length != 1) {
+        if (targetz == null) {
             LOGGER.log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
 
             if (targetz != null && LOGGER.isLoggable(Level.FINE)) {
@@ -392,8 +397,9 @@ public class TargetServer {
     }
 
     private Map<String, TargetModuleID> getAvailableTMIDsMap() {
-        if (availablesMap != null)
+        if (availablesMap != null) {
             return availablesMap;
+        }
 
         // existing TMID's
         DeploymentManager dm = instance.getDeploymentManager();
@@ -408,9 +414,7 @@ public class TargetServer {
                 availablesMap.put(keyOf(ids[i]), ids[i]);
             }
         } catch (TargetException te) {
-            IllegalArgumentException illegalArgumentException = new IllegalArgumentException();
-            illegalArgumentException.initCause(te);
-            throw illegalArgumentException;
+            throw new IllegalArgumentException(te);
         }
         return availablesMap;
     }
@@ -434,9 +438,10 @@ public class TargetServer {
         Set toRedeploy = new HashSet(); //type TargetModule
         for (int i=0; i<targetModules.length; i++) {
             // not my module
-           if (! targetModules[i].getInstanceUrl().equals(instance.getUrl()) ||
-            ! targetNames.contains(targetModules[i].getTargetName()))
+           if (! targetModules[i].getInstanceUrl().equals(instance.getUrl())
+                   || !targetNames.contains(targetModules[i].getTargetName())) {
                 continue;
+            }
 
             TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(targetModules[i].getId());
 
@@ -623,16 +628,29 @@ public class TargetServer {
             if (lincremental != null && hasDirectory && canFileDeploy(targetz, deployable)) {
                 ModuleConfiguration cfg = dtarget.getModuleConfigurationProvider().getModuleConfiguration();
                 File dir = initialDistribute(targetz[0], ui);
-                po = lincremental.initialDeploy(targetz[0], deployable, cfg, dir);
+                if (lincremental instanceof IncrementalDeployment2) {
+                    DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
+                            deployable, dir, null, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                    po = ((IncrementalDeployment2) lincremental).initialDeploy(targetz[0], deployment);
+                } else {
+                    po = lincremental.initialDeploy(targetz[0], deployable, cfg, dir);
+                }
                 trackDeployProgressObject(ui, po, false);
             } else {  // standard DM.distribute
                 if (getApplication() == null) {
-                    throw new RuntimeException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
+                    throw new IllegalArgumentException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
                 }
 
                 ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application, Arrays.asList(targetz)));
                 plan = dtarget.getConfigurationFile();
-                po = instance.getDeploymentManager().distribute(targetz, getApplication(), plan);
+                DeploymentManager dm = instance.getDeploymentManager();
+                if (dm instanceof DeploymentManager2) {
+                    DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
+                            dtarget.getModule(), getApplication(), plan, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                    po = ((DeploymentManager2)dm).distribute(targetz, deployment);
+                } else {
+                    po = dm.distribute(targetz, getApplication(), plan);
+                }
                 trackDeployProgressObject(ui, po, false);
             }
         }
@@ -646,7 +664,13 @@ public class TargetServer {
                 DeploymentChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
                 if (anyChanged(acd)) {
                     ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
-                    po = lincremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
+                    if (lincremental instanceof IncrementalDeployment2) {
+                        DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
+                                deployable, null, null, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), acd);
+                        po = ((IncrementalDeployment2) lincremental).incrementalDeploy(redeployTargetModules[0].delegate(), deployment);
+                    } else {
+                        po = lincremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
+                    }
                     trackDeployProgressObject(ui, po, true);
 
                 } else { // return original target modules
@@ -659,7 +683,14 @@ public class TargetServer {
                 ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Redeploying", application));
                 TargetModuleID[] tmids = TargetModule.toTargetModuleID(redeployTargetModules);
                 if (plan == null) plan = dtarget.getConfigurationFile();
-                po = instance.getDeploymentManager().redeploy(tmids, getApplication(), plan);
+                DeploymentManager dm = instance.getDeploymentManager();
+                if (dm instanceof DeploymentManager2) {
+                    DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
+                            dtarget.getModule(), getApplication(), plan, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                    po = ((DeploymentManager2)dm).redeploy(tmids, deployment);
+                } else {
+                    po = dm.redeploy(tmids, getApplication(), plan);
+                }
                 trackDeployProgressObject(ui, po, false);
             }
         }
@@ -784,7 +815,10 @@ public class TargetServer {
             }
 
             try {
+                // FIXME libraries stored in server specific descriptor
+                // do not match server resources
                 if (serverResources) {
+                    DeploymentHelper.deployServerLibraries(provider);
                     DeploymentHelper.deployDatasources(provider);
                     DeploymentHelper.deployMessageDestinations(provider);
                 }
@@ -892,5 +926,35 @@ public class TargetServer {
         } catch (TimedOutException e) {
             throw new ServerException(NbBundle.getMessage(TargetServer.class, "MSG_DeploymentTimeoutExceeded"));
         }
+    }
+
+    public static abstract class DeploymentContextAccessor {
+
+        private static volatile DeploymentContextAccessor accessor;
+
+        public static void setDefault(DeploymentContextAccessor accessor) {
+            if (DeploymentContextAccessor.accessor != null) {
+                throw new IllegalStateException("Already initialized accessor"); // NOI18N
+            }
+            DeploymentContextAccessor.accessor = accessor;
+        }
+
+        public static DeploymentContextAccessor getDefault() {
+            if (accessor != null) {
+                return accessor;
+            }
+
+            Class c = DeploymentContext.class;
+            try {
+                Class.forName(c.getName(), true, DeploymentContextAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException cnf) {
+                Exceptions.printStackTrace(cnf);
+            }
+
+            return accessor;
+        }
+
+        public abstract DeploymentContext createDeploymentContext(J2eeModule module, File moduleFile,
+                    File deploymentPlan, File[] requiredLibraries, AppChangeDescriptor changes);
     }
 }

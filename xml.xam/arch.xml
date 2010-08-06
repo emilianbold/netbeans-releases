@@ -79,11 +79,11 @@ Isloation and Durability (to the extent possible) by allowing a single writer an
 deferring dispatching of events to the end of the transaction, lazy initialization,
 , inter/intra model references, and model creation. 
 
-<api name="org.netbeans.modules.xml.xam" group="java" type="export" category="friend">
+<api name="org.netbeans.modules.xml.xam" group="java" type="export" category="devel">
 Represents a domain independent model and associated artifacts such as
  a factory, source, and the concept of a reference. 
 </api>
-<api name="org.netbeans.modules.xml.xam.dom" group="java" type="export" category="friend">
+<api name="org.netbeans.modules.xml.xam.dom" group="java" type="export" category="devel">
 Provides entities for working on XML based models. This package
 depends on org.w3c packages and assumes a mapping between an xml tree and a 
 strongly typed binding. This package also provides the ability to resolve other 

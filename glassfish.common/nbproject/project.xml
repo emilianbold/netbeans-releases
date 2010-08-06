@@ -6,10 +6,11 @@
             <code-name-base>org.netbeans.modules.glassfish.common</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.derby</code-name-base>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <release-version>1</release-version>
                         <specification-version>1.12</specification-version>
                     </run-dependency>
                 </dependency>
@@ -23,21 +24,19 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <code-name-base>org.netbeans.modules.derby</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
+                        <specification-version>1.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.12</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -152,14 +151,6 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.19</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

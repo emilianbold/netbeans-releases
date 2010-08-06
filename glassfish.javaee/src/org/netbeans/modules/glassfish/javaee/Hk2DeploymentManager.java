@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +57,6 @@ import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
@@ -76,8 +76,11 @@ import org.netbeans.modules.glassfish.javaee.ide.UpdateContextRoot;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule2;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
@@ -86,7 +89,7 @@ import org.xml.sax.SAXException;
  * @author Ludovic Champenois
  * @author Peter Williams
  */
-public class Hk2DeploymentManager implements DeploymentManager {
+public class Hk2DeploymentManager implements DeploymentManager2 {
 
     private volatile ServerInstance serverInstance;
     private volatile InstanceProperties instanceProperties;
@@ -115,7 +118,18 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan)
+            throws IllegalStateException {
+        return distribute(targetList, moduleArchive, deploymentPlan, new File[0]);
+    }
+
+    @Override
+    public ProgressObject distribute(Target[] targets, DeploymentContext context) {
+        return distribute(targets, context.getModuleFile(), context.getDeploymentPlan(), context.getRequiredLibraries());
+    }
+    
+    private ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries)
             throws IllegalStateException {
         String t = moduleArchive.getName();
         final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(t.substring(0, t.length() - 4));
@@ -128,6 +142,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
         MonitorProgressObject restartProgress = new MonitorProgressObject(this, moduleId);
 
         final GlassfishModule commonSupport = this.getCommonServerSupport();
+        final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
+            (GlassfishModule2)commonSupport : null);
         boolean restart = false;
         try {
             restart = HttpMonitorHelper.synchronizeMonitor( commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
@@ -142,6 +158,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         ResourceRegistrationHelper.deployResources(moduleArchive,this);
         if (restart) {
             restartProgress.addProgressListener(new ProgressListener() {
+                @Override
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                         commonSupport.deploy(deployProgress, moduleArchive, moduleName);
@@ -153,7 +170,11 @@ public class Hk2DeploymentManager implements DeploymentManager {
             commonSupport.restartServer(restartProgress);
             return updateCRProgress;
         } else {
-            commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+            if (commonSupport2 != null && requiredLibraries.length > 0) {
+                commonSupport2.deploy(deployProgress, moduleArchive, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+            } else {
+                commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+            }
             return updateCRProgress;
         }
     }
@@ -167,11 +188,21 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws java.lang.UnsupportedOperationException
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject redeploy(TargetModuleID [] moduleIDList, final File moduleArchive, File deploymentPlan)
+            throws UnsupportedOperationException, IllegalStateException {
+        return redeploy(moduleIDList, moduleArchive, deploymentPlan, new File[0]);
+    }
+
+    @Override
+    public ProgressObject redeploy(TargetModuleID[] moduleIDList, DeploymentContext context) {
+        return redeploy(moduleIDList, context.getModuleFile(), context.getDeploymentPlan(), context.getRequiredLibraries());
+    }
+
+    private ProgressObject redeploy(TargetModuleID [] moduleIDList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries)
             throws UnsupportedOperationException, IllegalStateException {
         final Hk2TargetModuleID moduleId = (Hk2TargetModuleID) moduleIDList[0];
         final String moduleName = moduleId.getModuleID();
-
         final MonitorProgressObject progressObject = new MonitorProgressObject(this,
                 moduleId, CommandType.REDEPLOY);
        MonitorProgressObject restartObject = new MonitorProgressObject(this,moduleId,
@@ -179,6 +210,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
         final MonitorProgressObject updateCRObject = new MonitorProgressObject(this, 
                 moduleId, CommandType.REDEPLOY);
         final GlassfishModule commonSupport = this.getCommonServerSupport();
+        final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
+            (GlassfishModule2)commonSupport : null);
         // FIXME -- broken for remote deploy of web apps
         progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId,getServerInstance(), true));
         boolean restart = false;
@@ -199,6 +232,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 
+                @Override
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                             commonSupport.deploy(progressObject, moduleArchive, moduleName);
@@ -210,7 +244,11 @@ public class Hk2DeploymentManager implements DeploymentManager {
             commonSupport.restartServer(restartObject);
             return updateCRObject;
         } else {
+            if (commonSupport2 != null && requiredLibraries.length > 0) {
+                commonSupport2.deploy(progressObject, moduleArchive, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+            } else {
                 commonSupport.deploy(progressObject, moduleArchive, moduleName);
+            }
             return updateCRObject;
         }
     }
@@ -221,6 +259,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException
      */
+    @Override
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject)
             throws InvalidModuleException {
         return new Hk2Configuration(deployableObject);
@@ -235,6 +274,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject distribute(Target [] targetList, InputStream moduleArchive, InputStream deploymentPlan)
             throws IllegalStateException {
         throw new UnsupportedOperationException(
@@ -250,6 +290,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject distribute(Target [] targetList, ModuleType type, InputStream moduleArchive, InputStream deploymentPlan)
             throws IllegalStateException {
         throw new UnsupportedOperationException(
@@ -265,6 +306,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws java.lang.UnsupportedOperationException
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject redeploy(TargetModuleID [] moduleIDList, InputStream moduleArchive, InputStream deploymentPlan) 
             throws UnsupportedOperationException, IllegalStateException {
         throw new UnsupportedOperationException(
@@ -277,6 +319,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public ProgressObject undeploy(TargetModuleID [] targetModuleIDs) 
             throws IllegalStateException {
         // !PW FIXME handle arrays with length > 1 (EARs?)
@@ -297,6 +340,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public ProgressObject stop(TargetModuleID[] moduleIDList) throws IllegalStateException {
         return new DummyProgressObject(moduleIDList[0]);
     }
@@ -307,6 +351,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public ProgressObject start(TargetModuleID [] moduleIDList) throws IllegalStateException {
         return new DummyProgressObject(moduleIDList[0]);
     }
@@ -316,6 +361,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param locale 
      * @throws java.lang.UnsupportedOperationException 
      */
+    @Override
     public void setLocale(java.util.Locale locale) throws UnsupportedOperationException {
     }
 
@@ -324,6 +370,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param locale 
      * @return 
      */
+    @Override
     public boolean isLocaleSupported(java.util.Locale locale) {
         return false;
     }
@@ -336,6 +383,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public TargetModuleID [] getAvailableModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
         return getDeployedModules(moduleType, targetList);
@@ -350,6 +398,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public TargetModuleID [] getNonRunningModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
         Logger.getLogger("glassfish-javaee").log(Level.WARNING,
@@ -365,6 +414,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public TargetModuleID [] getRunningModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
         return getDeployedModules(moduleType, targetList);
@@ -400,6 +450,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param dConfigBeanVersionType 
      * @throws javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException 
      */
+    @Override
     public void setDConfigBeanVersion(DConfigBeanVersionType version) throws DConfigBeanVersionUnsupportedException {
     }
 
@@ -408,6 +459,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param dConfigBeanVersionType 
      * @return 
      */
+    @Override
     public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType version) {
         return false;
     }
@@ -415,6 +467,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
     /**
      * 
      */
+    @Override
     public void release() {
     }
 
@@ -422,6 +475,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public boolean isRedeploySupported() {
         return isLocal();
     }
@@ -430,6 +484,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public java.util.Locale getCurrentLocale() {
         return null;
     }
@@ -438,6 +493,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public DConfigBeanVersionType getDConfigBeanVersion() {
         return null;
     }
@@ -446,6 +502,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public java.util.Locale getDefaultLocale() {
         return null;
     }
@@ -454,6 +511,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public java.util.Locale[] getSupportedLocales() {
         return new java.util.Locale[] { java.util.Locale.getDefault() };
     }
@@ -463,6 +521,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public Target[] getTargets() throws IllegalStateException {
         InstanceProperties ip = getInstanceProperties();
         if (null == ip) {
@@ -534,7 +593,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return si.getBasicNode().getLookup().lookup(GlassfishModule.class);
     }
     
-    private final String constructServerUri(String host, String port, String path) {
+    private String constructServerUri(String host, String port, String path) {
         StringBuilder builder = new StringBuilder(128);
         builder.append(Utils.getHttpListenerProtocol(host, port));
         builder.append("://"); // NOI18N

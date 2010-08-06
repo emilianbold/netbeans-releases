@@ -51,7 +51,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -214,7 +213,7 @@ public final class DDProvider {
         }
     }
     
-    private Map<Object, RootInterface> ddMap = new WeakHashMap<Object, RootInterface>();
+    final private Map<Object, RootInterface> ddMap = new WeakHashMap<Object, RootInterface>();
     private Map<FileObject, DDProviderDataObject> dObjMap = new WeakHashMap<FileObject, DDProviderDataObject>();
 
     /** This method retrieves the root of the XML DOM for a sun-*
@@ -364,12 +363,12 @@ public final class DDProvider {
         }
     }
     
-    private static Map<Class, Map<String, VersionInfo>> apiToVersionMap = new HashMap<Class, Map<String, VersionInfo>>(11);
-    private static Map<String, VersionInfo> sunWebAppVersionMap = new HashMap<String, VersionInfo>(11);
-    private static Map<String, VersionInfo> sunEjbJarVersionMap = new HashMap<String, VersionInfo>(11);
-    private static Map<String, VersionInfo> sunApplicationVersionMap = new HashMap<String, VersionInfo>(11);
-    private static Map<String, VersionInfo> sunAppClientVersionMap = new HashMap<String, VersionInfo>(11);
-    private static Map<String, VersionInfo> sunResourcesVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<Class, Map<String, VersionInfo>> apiToVersionMap = new HashMap<Class, Map<String, VersionInfo>>(11);
+    final private static Map<String, VersionInfo> sunWebAppVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<String, VersionInfo> sunEjbJarVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<String, VersionInfo> sunApplicationVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<String, VersionInfo> sunAppClientVersionMap = new HashMap<String, VersionInfo>(11);
+    final private static Map<String, VersionInfo> sunResourcesVersionMap = new HashMap<String, VersionInfo>(11);
     
     static {
         sunWebAppVersionMap.put(SunWebApp.VERSION_2_3_0, new VersionInfo(
@@ -392,6 +391,10 @@ public final class DDProvider {
                 org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp.class, SunWebAppProxy.class,
                 DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_300_DTD_SYSTEM_ID
             ));
+        sunWebAppVersionMap.put(SunWebApp.VERSION_3_0_1, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_1.GlassFishWebApp.class, SunWebAppProxy.class,
+                DTDRegistry.GLASSFISH_WEBAPP_301_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_WEBAPP_301_DTD_SYSTEM_ID
+            ));
 
         sunEjbJarVersionMap.put(SunEjbJar.VERSION_2_0_0, new VersionInfo(
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_0_0.SunEjbJar.class, SunEjbJarProxy.class,
@@ -413,6 +416,10 @@ public final class DDProvider {
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar.class, SunEjbJarProxy.class,
                 DTDRegistry.SUN_EJBJAR_310_DTD_PUBLIC_ID, DTDRegistry.SUN_EJBJAR_310_DTD_SYSTEM_ID
             ));
+        sunEjbJarVersionMap.put(SunEjbJar.VERSION_3_1_1, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_1.GlassFishEjbJar.class, SunEjbJarProxy.class,
+                DTDRegistry.GLASSFISH_EJBJAR_311_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_EJBJAR_311_DTD_SYSTEM_ID
+            ));
 
         sunApplicationVersionMap.put(SunApplication.VERSION_1_3_0, new VersionInfo(
                 org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication.class, SunApplicationProxy.class,
@@ -429,6 +436,10 @@ public final class DDProvider {
         sunApplicationVersionMap.put(SunApplication.VERSION_6_0_0, new VersionInfo(
                 org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication.class, SunApplicationProxy.class,
                 DTDRegistry.SUN_APPLICATION_60_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_60_DTD_SYSTEM_ID
+            ));
+        sunApplicationVersionMap.put(SunApplication.VERSION_6_0_1, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_1.GlassFishApplication.class, SunApplicationProxy.class,
+                DTDRegistry.GLASSFISH_APPLICATION_601_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_APPLICATION_601_DTD_SYSTEM_ID
             ));
 
         sunAppClientVersionMap.put(SunApplicationClient.VERSION_1_3_0, new VersionInfo(
@@ -447,12 +458,25 @@ public final class DDProvider {
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient.class, SunApplicationClientProxy.class,
                 DTDRegistry.SUN_APPCLIENT_50_DTD_PUBLIC_ID, DTDRegistry.SUN_APPCLIENT_50_DTD_SYSTEM_ID
             ));
+        sunAppClientVersionMap.put(SunApplicationClient.VERSION_6_0_0, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient.class, SunApplicationClientProxy.class,
+                DTDRegistry.SUN_APPCLIENT_60_DTD_PUBLIC_ID, DTDRegistry.SUN_APPCLIENT_60_DTD_SYSTEM_ID
+            ));
+        sunAppClientVersionMap.put(SunApplicationClient.VERSION_6_0_1, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient.class, SunApplicationClientProxy.class,
+                DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_SYSTEM_ID
+            ));
     
         sunResourcesVersionMap.put(Resources.VERSION_1_3, new VersionInfo(
                 org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class, ResourcesProxy.class,
                 DTDRegistry.SUN_RESOURCE_13_DTD_PUBLIC_ID, DTDRegistry.SUN_RESOURCE_13_DTD_SYSTEM_ID
             ));
         
+        sunResourcesVersionMap.put(Resources.VERSION_1_5, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class, ResourcesProxy.class,
+                DTDRegistry.GLASSFISH_RESOURCE_15_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_RESOURCE_15_DTD_SYSTEM_ID
+            ));
+
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp.class, sunWebAppVersionMap);
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar.class, sunEjbJarVersionMap);
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication.class, sunApplicationVersionMap);
@@ -506,7 +530,9 @@ public final class DDProvider {
     private static SunEjbJar createEjbJar(DDParse parse) {        
           SunEjbJar jar = null;
           String version = parse.getVersion();
-          if (SunEjbJar.VERSION_3_1_0.equals(version)) {
+          if (SunEjbJar.VERSION_3_1_1.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_1.GlassFishEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES);
+          } else if (SunEjbJar.VERSION_3_1_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES);
           } else if (SunEjbJar.VERSION_3_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
@@ -528,7 +554,9 @@ public final class DDProvider {
     private static SunWebApp createWebApp(DDParse parse) throws DDException {
         SunWebApp webRoot = null;
         String version = parse.getVersion();
-        if (SunWebApp.VERSION_3_0_0.equals(version)) {
+        if (SunWebApp.VERSION_3_0_1.equals(version)) {
+            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_1.GlassFishWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES);
+        } else if (SunWebApp.VERSION_3_0_0.equals(version)) {
             return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES);
         } else if (SunWebApp.VERSION_2_5_0.equals(version)) {
             return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp(parse.getDocument(), Common.NO_DEFAULT_VALUES); 
@@ -547,7 +575,9 @@ public final class DDProvider {
     private static SunApplication createApplication(DDParse parse) {        
           SunApplication app = null;
           String version = parse.getVersion();
-          if (SunApplication.VERSION_6_0_0.equals(version)) {
+          if (SunApplication.VERSION_6_0_1.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_1.GlassFishApplication(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+          } else if (SunApplication.VERSION_6_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
           } else if (SunApplication.VERSION_5_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
@@ -563,7 +593,9 @@ public final class DDProvider {
     private static SunApplicationClient createApplicationClient(DDParse parse) {        
           SunApplicationClient appClient = null;
           String version = parse.getVersion();
-          if (SunApplicationClient.VERSION_6_0_0.equals(version)) {
+          if (SunApplicationClient.VERSION_6_0_1.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+          } else if (SunApplicationClient.VERSION_6_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
           } else if (SunApplicationClient.VERSION_5_0_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
@@ -583,9 +615,8 @@ public final class DDProvider {
      *
      * @param doc XML document representing the .sun-resource file    
      */
-    public Resources getResourcesGraph() {
-        Resources resourcesRoot = (Resources)newGraph(Resources.class, Resources.VERSION_1_3);
-        //Resources resourcesRoot = org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.createGraph();
+    public Resources getResourcesGraph(String version) {
+        Resources resourcesRoot =  (Resources)newGraph(Resources.class, version);
         ResourcesProxy proxy = new ResourcesProxy(resourcesRoot);
         return proxy;
     }
@@ -595,13 +626,38 @@ public final class DDProvider {
      *
      * @param doc XML document representing the .sun-resource file    
      */
-    public Resources getResourcesGraph(InputStream in) {
-        Resources resourcesRoot = org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.createGraph(in);
-        ResourcesProxy proxy = new ResourcesProxy(resourcesRoot);
+    public Resources getResourcesGraph(InputStream in) throws IOException, SAXException {
+        return getResourcesRoot(new InputSource(in));
+    }
+
+    /**
+     * Returns the root of deployment descriptor bean graph for java.io.File object.
+     *
+     * @param is source representing the sun-application.xml file
+     * @return Application object - root of the deployment descriptor bean graph
+     */
+    public Resources getResourcesRoot(InputSource is) throws IOException, SAXException {
+        DDParse parse = new DDParse(is);
+        Resources appRoot = createResources(parse);
+        ResourcesProxy proxy = new ResourcesProxy(appRoot, appRoot.getVersion().toString());
+        setErrorStatus(proxy, parse);
         return proxy;
+    }
+
+    private static Resources createResources(DDParse parse) {
+          Resources app = null;
+          String version = parse.getVersion();
+          if (Resources.VERSION_1_5.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model_1_5.Resources(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+          } else if (Resources.VERSION_1_3.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources(parse.getDocument(),  Common.NO_DEFAULT_VALUES);
+          }
+
+          return app;
     }
     
     private class SunDDFileChangeListener extends FileChangeAdapter {
+        @Override
         public void fileChanged(FileEvent evt) {
             FileObject fo = evt.getFile();
             try {
@@ -744,6 +800,7 @@ public final class DDProvider {
             return resolver;
         }
         
+        @Override
         public InputSource resolveEntity(String publicId, String systemId) {
             InputSource source = null;
             
@@ -763,6 +820,7 @@ public final class DDProvider {
         private int errorType = -1;
         SAXParseException error;
 
+        @Override
         public void warning(SAXParseException sAXParseException) throws SAXException {
             if (errorType < 0) {
                 errorType = 0;
@@ -771,6 +829,7 @@ public final class DDProvider {
             //throw sAXParseException;
         }
         
+        @Override
         public void error(SAXParseException sAXParseException) throws SAXException {
             if (errorType < 1) {
                 errorType = 1;
@@ -779,6 +838,7 @@ public final class DDProvider {
             //throw sAXParseException;
         }    
         
+        @Override
         public void fatalError(SAXParseException sAXParseException) throws SAXException {
             errorType = 2;
             throw sAXParseException;
@@ -969,7 +1029,7 @@ public final class DDProvider {
     
     /* Maps DOCTYPE to { version, proxy class, impl class, dtd path } info.
      */
-    private static Map<String, DocTypeInfo> publicIdToInfoMap = new HashMap<String, DocTypeInfo>(37);
+    final private static Map<String, DocTypeInfo> publicIdToInfoMap = new HashMap<String, DocTypeInfo>(37);
     
     static {
         publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_211_DTD_PUBLIC_ID, new DocTypeInfo(
@@ -1000,6 +1060,14 @@ public final class DDProvider {
                 SunEjbJar.VERSION_3_1_0, SunEjbJarProxy.class, SunEjbJar.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_1-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.GLASSFISH_EJBJAR_311_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunEjbJar.VERSION_3_1_1, SunEjbJarProxy.class, SunEjbJar.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_1.GlassFishEjbJar.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/glassfish-ejb-jar_3_1-1.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.GLASSFISH_WEBAPP_301_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunWebApp.VERSION_3_0_1, SunWebAppProxy.class, SunWebApp.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_1.GlassFishWebApp.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/glassfish-web-app_3_0-1.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunWebApp.VERSION_3_0_0, SunWebAppProxy.class, SunWebApp.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp.class,
@@ -1024,14 +1092,18 @@ public final class DDProvider {
                 SunWebApp.VERSION_2_3_0, SunWebAppProxy.class, SunWebApp.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_3-0.dtd")); // NOI18N
-        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_50_DTD_PUBLIC_ID, new DocTypeInfo(
-                SunApplication.VERSION_5_0_0, SunApplicationProxy.class, SunApplication.class,
-                org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication.class,
-                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_5_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.GLASSFISH_APPLICATION_601_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplication.VERSION_6_0_1, SunApplicationProxy.class, SunApplication.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_1.GlassFishApplication.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/glassfish-application_6_0-1.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_60_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunApplication.VERSION_6_0_0, SunApplicationProxy.class, SunApplication.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_6_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_50_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplication.VERSION_5_0_0, SunApplicationProxy.class, SunApplication.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_5_0-0.dtd")); // NOI18N
         
 //        publicIdToInfoMap.put(DTDRegistry.SUN_APPLICATION_141_DTD_PUBLIC_ID, new DocTypeInfo(
 //                SunApplication.VERSION_1_4_0, SunApplicationProxy.class, SunApplication.class,
@@ -1049,14 +1121,18 @@ public final class DDProvider {
                 SunApplication.VERSION_1_3_0, SunApplicationProxy.class, SunApplication.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_3-0.dtd")); // NOI18N
-        publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_50_DTD_PUBLIC_ID, new DocTypeInfo(
-                SunApplicationClient.VERSION_5_0_0, SunApplicationClientProxy.class, SunApplicationClient.class,
-                org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient.class,
-                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_5_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplicationClient.VERSION_6_0_1, SunApplicationClientProxy.class, SunApplicationClient.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_6_0-0.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_60_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunApplicationClient.VERSION_6_0_0, SunApplicationClientProxy.class, SunApplicationClient.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_6_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_50_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunApplicationClient.VERSION_5_0_0, SunApplicationClientProxy.class, SunApplicationClient.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_5_0-0.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_141_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunApplicationClient.VERSION_1_4_1, SunApplicationClientProxy.class, SunApplicationClient.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_4_1.SunApplicationClient.class,
@@ -1089,6 +1165,10 @@ public final class DDProvider {
                 Resources.VERSION_1_3, ResourcesProxy.class, Resources.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-resources_1_3.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.GLASSFISH_RESOURCE_15_DTD_PUBLIC_ID, new DocTypeInfo(
+                Resources.VERSION_1_5, ResourcesProxy.class, Resources.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/glassfish-resources_1_5.dtd")); // NOI18N
         
     }
 }
