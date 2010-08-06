@@ -219,7 +219,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                         if (enclosing == null) {
                             break;
                         }
-                        if (info.getTypes().isSameType(targetType, enclosing) && ELTypeUtilities.isSameMethod(child, targetMethod)) {
+                        if (info.getTypes().isSameType(targetType, enclosing) && typeUtilities.isSameMethod(child, targetMethod)) {
                             TypeMirror matching = getTypeForProperty(child, enclosing);
                             if (matching != null) {
                                 result.add(child);
@@ -316,7 +316,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             ExecutableElement methodElem = (ExecutableElement) each;
             String methodName = methodElem.getSimpleName().toString();
 
-            if (ELTypeUtilities.isSameMethod(property, methodElem)) {
+            if (typeUtilities.isSameMethod(property, methodElem)) {
                 return typeUtilities.getReturnType(methodElem);
 
             } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
