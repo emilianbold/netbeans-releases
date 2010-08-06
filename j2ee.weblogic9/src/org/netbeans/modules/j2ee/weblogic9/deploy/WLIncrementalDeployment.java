@@ -125,9 +125,10 @@ public class WLIncrementalDeployment extends IncrementalDeployment {
             return progress;
         }
 
-        WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
-                dm.getInstanceProperties());
-        return deployer.directoryRedeploy(module);
+        return dm.redeploy(new TargetModuleID[] {module});
+//        CommandBasedDeployer deployer = new CommandBasedDeployer(WLDeploymentFactory.getInstance(),
+//                dm.getInstanceProperties());
+//        return deployer.directoryRedeploy(module);
     }
 
     @Override
@@ -148,7 +149,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment {
             LOGGER.log(Level.FINE, null, ex);
         }
 
-        WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
+        CommandBasedDeployer deployer = new CommandBasedDeployer(WLDeploymentFactory.getInstance(),
                 dm.getInstanceProperties());
         return deployer.directoryDeploy(target, name, dir, dm.getHost(), dm.getPort(), app.getType());
     }

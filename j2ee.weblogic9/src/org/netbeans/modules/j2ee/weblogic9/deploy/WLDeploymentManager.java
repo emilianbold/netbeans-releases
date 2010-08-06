@@ -64,8 +64,11 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
@@ -83,6 +86,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -265,7 +269,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
         return wlDeployer.deploy(target, file, file2, getHost(), getPort());
     }
 
@@ -289,7 +293,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
         return wlDeployer.redeploy(targetModuleID, file, file2);
     }
 
@@ -297,7 +301,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
         return wlDeployer.undeploy(targetModuleID);
     }
 
@@ -306,7 +310,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
         return wlDeployer.stop(targetModuleID);
     }
 
@@ -315,7 +319,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
         return wlDeployer.start(targetModuleID);
     }
 
@@ -495,6 +499,27 @@ public class WLDeploymentManager implements DeploymentManager {
 
     public Locale[] getSupportedLocales() {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
+    }
+
+    public ProgressObject redeploy(final TargetModuleID[] targetModuleID) throws UnsupportedOperationException, IllegalStateException {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        try {
+            return executeAction(new Action<ProgressObject>() {
+                @Override
+                public ProgressObject execute(DeploymentManager manager) throws ExecutionException {
+                    return manager.redeploy(targetModuleID, (File) null, null);
+                }
+            });
+        } catch (Exception ex) {
+            LOGGER.log(Level.INFO, null, ex.getCause());
+            WLProgressObject po = new WLProgressObject(targetModuleID);
+            po.fireProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE,
+                    CommandType.REDEPLOY, StateType.FAILED,
+                    NbBundle.getMessage(WLDeploymentManager.class, "MSG_Redeployment_Failed", ex.getMessage())));
+            return po;
+        }
     }
 
     private static Target[] translateTargets(DeploymentManager manager, Target[] originalTargets) {

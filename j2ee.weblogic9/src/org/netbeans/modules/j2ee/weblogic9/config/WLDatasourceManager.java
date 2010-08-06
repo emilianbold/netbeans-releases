@@ -59,7 +59,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLCommandDeployer;
+import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -125,7 +125,7 @@ public class WLDatasourceManager implements DatasourceManager {
             throw new DatasourceAlreadyExistsException(conflictDS);
         }
 
-        WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
+        CommandBasedDeployer deployer = new CommandBasedDeployer(WLDeploymentFactory.getInstance(),
                 manager.getInstanceProperties());
         ProgressObject po = deployer.deployDatasource(toDeploy.values());
         ProgressObjectSupport.waitFor(po);
