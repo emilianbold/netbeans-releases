@@ -1292,6 +1292,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             public Action getPreferredAction() {
                 return new DefAction(true, nd.getLookup());
             }
+            @Override
+            public Action[] getActions(boolean context) {
+                return new Action[0];
+            }
         };
     }
 }
