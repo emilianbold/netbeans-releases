@@ -42,30 +42,44 @@
 package org.netbeans.modules.db.explorer.oracle;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
 import org.netbeans.modules.db.explorer.oracle.PredefinedWizard.Type;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
-public class ConnectionPanel implements PredefinedWizard.Panel {
-    
+public class ConnectionPanel implements PredefinedWizard.Panel, WizardDescriptor.ValidatingPanel<PredefinedWizard>, WizardDescriptor.FinishablePanel<PredefinedWizard> {
+
+    private DatabaseConnection databaseConnection;
+
     public ConnectionPanel() {
     }
-
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private Component component;
-    private String driverLocation;
-    private String driverName;
     public static final String ORACLE_THIN_DRIVER_CLASS = "oracle.jdbc.OracleDriver";
     public static final String ORACLE_OCI_DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
     public static final String MYSQL_DRIVER_CLASS = "com.mysql.jdbc.Driver";
@@ -85,7 +99,6 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
     public static final String MYSQL_SAMPLE_DB_PASSWORD = "vsds";
     public static final String MYSQL_SAMPLE_DB_URL = "jdbc:mysql://localhost:3306/mysql";
     public static final String MYSQL_DEFAULT_SCHEMA = "hr";
-    
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -98,34 +111,34 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
                 return null;
             }
             assert pw != null : "ConnectionPanel must be initialized.";
-            driverLocation = pw.getDriverLocation();
-            driverName = pw.getDriverName();
             type = pw.getType();
             String driverClass = null;
-            DatabaseConnection cinfo = new DatabaseConnection();
+            databaseConnection = new DatabaseConnection();
             switch (type) {
                 case ORACLE:
                     driverClass = ORACLE_THIN_DRIVER_CLASS;
-                    cinfo.setDriver(driverClass);
-                    cinfo.setDriverName(ORACLE_THIN_DRIVER_NAME);
-                    cinfo.setUser(ORACLE_SAMPLE_DB_USER);
-                    cinfo.setPassword(ORACLE_SAMPLE_DB_PASSWORD);
-                    cinfo.setDatabase(ORACLE_SAMPLE_DB_URL);
+                    databaseConnection.setDriver(driverClass);
+                    databaseConnection.setDriverName(ORACLE_THIN_DRIVER_NAME);
+                    databaseConnection.setUser(ORACLE_SAMPLE_DB_USER);
+                    databaseConnection.setPassword(ORACLE_SAMPLE_DB_PASSWORD);
+                    databaseConnection.setDatabase(ORACLE_SAMPLE_DB_URL);
                     //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
                     break;
                 case MYSQL:
                     driverClass = MYSQL_DRIVER_CLASS;
-                    cinfo.setDriver(driverClass);
-                    cinfo.setDriverName(MYSQL_DRIVER_NAME);
-                    cinfo.setUser(MYSQL_SAMPLE_DB_USER);
-                    cinfo.setPassword(MYSQL_SAMPLE_DB_PASSWORD);
-                    cinfo.setDatabase(MYSQL_SAMPLE_DB_URL);
+                    databaseConnection.setDriver(driverClass);
+                    databaseConnection.setDriverName(MYSQL_DRIVER_NAME);
+                    databaseConnection.setUser(MYSQL_SAMPLE_DB_USER);
+                    databaseConnection.setPassword(MYSQL_SAMPLE_DB_PASSWORD);
+                    databaseConnection.setDatabase(MYSQL_SAMPLE_DB_URL);
                     //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
                     break;
                 default:
                     assert false;
+                    return null;
             }
-            component = new NewConnectionPanel(pw, driverClass, cinfo);
+            databaseConnection.setRememberPassword(databaseConnection.getPassword() != null && ! databaseConnection.getPassword().isEmpty());
+            component = new NewConnectionPanel(pw, driverClass, databaseConnection);
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
@@ -156,7 +169,6 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
         // fireChangeEvent();
         // and uncomment the complicated stuff below.
     }
-
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     @Override
@@ -195,6 +207,116 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
 
     @Override
     public void storeSettings(PredefinedWizard settings) {
+        pw.setDatabaseConnection(databaseConnection);
+    }
+
+    private String state;
+    private String errorMessage;
+
+    @Override
+    @SuppressWarnings("SleepWhileHoldingLock")
+    public void validate() throws WizardValidationException {
+        state = null;
+        PropertyChangeListener connectionListener = new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getPropertyName().equals("connecting")) { // NOI18N
+                } else if (event.getPropertyName().equals("failed")) { // NOI18N
+                    state = event.getPropertyName();
+                } else if (event.getPropertyName().equals("connected")) { //NOI18N
+                    try {
+                        databaseConnection.getConnector().finishConnect(null, databaseConnection, databaseConnection.getConnection());
+                        state = event.getPropertyName();
+                    } catch (DatabaseException exc) {
+                        Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
+                        state = "failed";
+                    }
+                    //boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
+                }
+            }
+        };
+        ExceptionListener excListener = new ExceptionListener() {
+            @Override
+            public void exceptionOccurred(Exception exc) {
+                if (exc instanceof DDLException) {
+                    Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc.getCause());
+                } else {
+                    Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
+                }
+                String message = null;
+                if (exc instanceof ClassNotFoundException) {
+                    message = NbBundle.getMessage (ConnectUsingDriverAction.class, "EXC_ClassNotFound", exc.getMessage()); //NOI18N
+                } else {
+                    StringBuilder buffer = new StringBuilder();
+                    buffer.append(exc.getMessage());
+                    if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
+                        SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
+                        while (sqlEx != null) {
+                            buffer.append("\n\n").append(sqlEx.getMessage()); // NOI18N
+                            sqlEx = sqlEx.getNextException();
+                        }
+                    }
+                    message = buffer.toString();
+                }
+                errorMessage = message;
+            }
+        };
+
+
+        databaseConnection.addPropertyChangeListener(connectionListener);
+        databaseConnection.addExceptionListener(excListener);
+        databaseConnection.connectAsync();
+        int maxLoops = 60;
+        int loop = 0;
+        while ((! "connected".equals(state) || ! "failed".equals(state)) && loop < maxLoops) { // NOI18N
+            try {
+                Thread.sleep(1000);
+                loop++;
+            } catch (InterruptedException ex) {
+            }
+            if ("connected".equals(state)) { // NOI18N
+                // all ok
+                databaseConnection.removePropertyChangeListener(connectionListener);
+                databaseConnection.removeExceptionListener(excListener);
+                List<String> schemas = null;
+                try {
+                    DatabaseMetaData dbMetaData = databaseConnection.getConnection().getMetaData();
+                    if (dbMetaData.supportsSchemasInTableDefinitions()) {
+                        ResultSet rs = dbMetaData.getSchemas();
+                        if (rs != null) {
+                            while (rs.next()) {
+                                if (schemas == null) {
+                                    schemas = new ArrayList<String>();
+                                }
+                                schemas.add(rs.getString(1).trim());
+                            }
+                        }
+                    }
+                } catch (SQLException exc) {
+                    Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
+                    //String message = NbBundle.getMessage(ConnectUsingDriverAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
+                    //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
+                pw.setSchemas(schemas);
+                return ;
+            } else if ("failed".equals(state)) { // NOI18N
+                databaseConnection.removePropertyChangeListener(connectionListener);
+                databaseConnection.removeExceptionListener(excListener);
+                throw new WizardValidationException((JComponent) component, state, errorMessage);
+            } else if (loop >= maxLoops) {
+                databaseConnection.removePropertyChangeListener(connectionListener);
+                databaseConnection.removeExceptionListener(excListener);
+                throw new WizardValidationException((JComponent) component, "Too long", "Too long"); // NOI18N
+            }
+        }
+        databaseConnection.removePropertyChangeListener(connectionListener);
+        databaseConnection.removeExceptionListener(excListener);
+    }
+
+    @Override
+    public boolean isFinishPanel() {
+        return true;
     }
 
 }

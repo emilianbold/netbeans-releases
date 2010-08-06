@@ -42,10 +42,19 @@
 package org.netbeans.modules.db.explorer.oracle;
 
 import java.awt.Dialog;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.openide.DialogDisplayer;
@@ -72,7 +81,10 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
     private String driverClass;
     private String databaseUrl;
     private String user;
-    
+    private String defaultSchema;
+    private DatabaseConnection connection;
+    private List<String> schemas = null;
+    private String currentSchema;
 
     private PredefinedWizard(Type type) {
         this.type = type;
@@ -84,6 +96,7 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
                 databaseUrl = NbBundle.getMessage(PredefinedWizard.class, "OracleSampleDatabaseUrl");
                 user = NbBundle.getMessage(PredefinedWizard.class, "OracleSampleUser");
                 pwd = NbBundle.getMessage(PredefinedWizard.class, "OracleSamplePassword");
+                defaultSchema = NbBundle.getMessage(PredefinedWizard.class, "OracleSampleSchema");
                 break;
             case MYSQL:
                 driverName = NbBundle.getMessage(PredefinedWizard.class, "MySQLDriverName");
@@ -92,6 +105,7 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
                 databaseUrl = NbBundle.getMessage(PredefinedWizard.class, "MySQLSampleDatabaseUrl");
                 user = NbBundle.getMessage(PredefinedWizard.class, "MySQLSampleUser");
                 pwd = NbBundle.getMessage(PredefinedWizard.class, "MySQLSamplePassword");
+                defaultSchema = NbBundle.getMessage(PredefinedWizard.class, "MySQLSampleSchema");
                 break;
             default:
                 assert false;
@@ -130,7 +144,18 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            // do something
+            assert getDatabaseConnection() != null : "DatabaseConnection found.";
+            DatabaseConnection conn = getDatabaseConnection();
+            if (getSchemas() != null) {
+                conn.setSchema(getCurrentSchema());
+            }
+            try {
+                ConnectionList.getDefault().add(getDatabaseConnection());
+            } catch (DatabaseException ex) {
+                Logger.getLogger(PredefinedWizard.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), ex.getMessage()); // NOI18N
+                closeConnection();
+            }
         }
     }
     
@@ -250,4 +275,56 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
         return steps;
     }
     
+    void setDatabaseConnection(DatabaseConnection conn) {
+        this.connection = conn;
+    }
+    
+    DatabaseConnection getDatabaseConnection() {
+        return this.connection;
+    }
+
+    void setSchemas(List<String> schemas) {
+        this.schemas = schemas;
+    }
+    
+    List<String> getSchemas() {
+        return schemas;
+    }
+    
+    String getDefaultSchema() {
+        return defaultSchema;
+    }
+
+    void setCurrentSchema(String schema) {
+        this.currentSchema = schema;
+    }
+    
+    String getCurrentSchema() {
+        if (currentSchema == null) {
+            return defaultSchema;
+        }
+        return currentSchema;
+    }
+
+    @Override
+    public void closeConnection()
+    {
+        if (connection != null)
+        {
+            Connection conn = connection.getConnection();
+            if (conn != null)
+            {
+                try 
+                {
+                    conn.close();
+                    connection.setConnection(null);
+                } 
+                catch (SQLException e) 
+                {
+                    //unable to close db connection
+                    connection.setConnection(null);
+                }
+            }
+        }
+    }
 }

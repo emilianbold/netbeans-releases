@@ -42,8 +42,8 @@
 package org.netbeans.modules.db.explorer.oracle;
 
 import java.awt.Component;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -53,7 +53,7 @@ public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private SchemaPanel component;
     private PredefinedWizard pw;
 
     // Get the visual component for the panel. In this template, the component
@@ -63,13 +63,17 @@ public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new PredefinedVisualPanel3();
-            JComponent jc = (JComponent) component;
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 2);
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
-            jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+            if (pw == null) {
+                return null;
+            }
+            assert pw != null : "ChoosingSchemaPanel must be initialized.";
+            component = new SchemaPanel(pw, pw.getDatabaseConnection());
+            component.setSchemas(pw.getSchemas(), pw.getDefaultSchema());
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 2);
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
+            component.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
             component.setName(pw.getSteps()[2]);
         }
         return component;
@@ -136,5 +140,6 @@ public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
 
     @Override
     public void storeSettings(PredefinedWizard settings) {
+        pw.setCurrentSchema(component.getSchema());
     }
 }
