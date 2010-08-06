@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -211,7 +212,8 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
             Hk2TargetModuleID root = Hk2TargetModuleID.get((Hk2Target) moduleId.getTarget(),
                     moduleId.getModuleID(), null, moduleId.getLocation(), true);
             // build the tree of submodule
-            GetPropertyCommand gpc = new GetPropertyCommand("*." + moduleId.getModuleID() + ".*");
+            String query = getNameToQuery(moduleId.getModuleID());
+            GetPropertyCommand gpc = new GetPropertyCommand("*." + query + ".*");
             Future<OperationState> result =
                     dm.getCommonServerSupport().execute(gpc);
             if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
@@ -239,6 +241,27 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
 
             return new TargetModuleID[]{root};
         }
+    }
+
+    // hotfix for #176096 - maven moduleID can contains dots and result is that
+    // GetPropertyCommand above does not match right module. this fix
+    // is extracting the longest name which does not have dots and will use it
+    // as query, for example for "org.foo.bar.mywebapp_1.0-dev the query
+    // will be "mywebapp_1"
+
+    private String getNameToQuery(String name) {
+        if (name.indexOf('.') == -1) {
+            return name;
+        }
+        StringTokenizer st = new StringTokenizer(name, ".");
+        String newName = "";
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (token.length() > newName.length()) {
+                newName = token;
+            }
+        }
+        return newName;
     }
 
     private String determineContextRoot(Hk2TargetModuleID root, String moduleName) {
