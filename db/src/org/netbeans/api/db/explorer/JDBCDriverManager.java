@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -75,7 +75,7 @@ public final class JDBCDriverManager {
     /**
      * The list of listeners.
      */
-    private Set<JDBCDriverListener> listeners = new HashSet<JDBCDriverListener> ();
+    private final Set<JDBCDriverListener> listeners = new HashSet<JDBCDriverListener> ();
     
     /**
      * 

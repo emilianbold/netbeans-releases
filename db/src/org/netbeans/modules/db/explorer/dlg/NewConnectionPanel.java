@@ -114,6 +114,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         urlFields.put(JdbcUrl.TOKEN_ADDITIONAL, new UrlField(additionalPropsField, additionalPropsLabel));
     }
 
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public NewConnectionPanel(ConnectionDialogMediator mediator, String driverClass, DatabaseConnection connection) {
         this.mediator = mediator;
         this.connection = connection;
@@ -127,18 +128,22 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         DatabaseExplorerInternalUIs.connect(templateComboBox, JDBCDriverManager.getDefault(), driverClass);
 
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            @Override
             public void connectionStarted() {
                 startProgress();
             }
 
+            @Override
             public void connectionStep(String step) {
                 setProgressMessage(step);
             }
 
+            @Override
             public void connectionFinished() {
                 stopProgress(true);
             }
 
+            @Override
             public void connectionFailed() {
                 stopProgress(false);
             }
@@ -178,27 +183,32 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         new InputAdapter(directUrlField);
         
         urlField.addFocusListener(new FocusListener() {
+            @Override
             public void focusGained(FocusEvent e) {
             }
 
+            @Override
             public void focusLost(FocusEvent e) {
                 updateFieldsFromUrl();
             }
 
         });
         urlField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 if (urlField.hasFocus()) {
                     updateFieldsFromUrl();
                 }
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 if (urlField.hasFocus()) {
                     updateFieldsFromUrl();
                 }
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 if (urlField.hasFocus()) {
                     updateFieldsFromUrl();
@@ -219,16 +229,19 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         
         DocumentListener docListener = new DocumentListener()
         {
+            @Override
             public void insertUpdate(DocumentEvent evt) 
             {
                 fireChange();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent evt) 
             {
                 fireChange();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent evt) 
             {
                 fireChange();
@@ -279,6 +292,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         instanceLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionInstanceNameA11yDesc")); //NOI18N
   }
 
+    @Override
     public void initializeFocus() {
         setFocus();
     }
@@ -904,7 +918,7 @@ private void showUrl() {
     }
 
     private void setUrlField() {
-        if (!connection.getDatabase().equals("")) {
+        if (!connection.getDatabase().isEmpty()) {
             urlField.setText(connection.getDatabase());
             return;
         }
@@ -940,6 +954,7 @@ private void showUrl() {
 
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(NewConnectionPanel.class, "ConnectionProgress_Connecting"));
                 progressHandle.start();
@@ -950,6 +965,7 @@ private void showUrl() {
 
     private void setProgressMessage(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if  (progressHandle != null) {
                     progressHandle.setDisplayName(message);
@@ -968,6 +984,7 @@ private void showUrl() {
     
     private void stopProgress(final boolean connected) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (progressHandle != null) {
                     progressHandle.finish();
@@ -1071,7 +1088,7 @@ private void showUrl() {
     }
 
     private boolean isEmpty(String str) {
-        return str == null || str.equals("");
+        return str == null || str.isEmpty();
     }
 
     private void updateFieldsFromUrl() {
@@ -1142,21 +1159,25 @@ private void showUrl() {
      */
     private class InputAdapter implements DocumentListener, ListDataListener
     {
+        @SuppressWarnings("LeakingThisInConstructor")
         public InputAdapter(JTextField source)
         {
             source.getDocument().addDocumentListener(this);
         }
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public InputAdapter(JComboBox source)
         {
             source.getModel().addListDataListener(this);
         }
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public InputAdapter(JTextArea source)
         {
             source.getDocument().addDocumentListener(this);
         }
         
+        @Override
         public void insertUpdate(DocumentEvent evt) 
         {
             updateUrlFromFields();
@@ -1164,6 +1185,7 @@ private void showUrl() {
             fireChange();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent evt) 
         {
             updateUrlFromFields();
@@ -1171,6 +1193,7 @@ private void showUrl() {
             fireChange();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent evt) 
         {
             updateUrlFromFields();
@@ -1178,16 +1201,19 @@ private void showUrl() {
             fireChange();
         }
 
+        @Override
         public void intervalAdded(ListDataEvent evt) 
         {
             fireChange();
         }
 
+        @Override
         public void intervalRemoved(ListDataEvent evt) 
         {
             fireChange();
         }
 
+        @Override
         public void contentsChanged(ListDataEvent evt) 
         {
             updateUrlFromFields();

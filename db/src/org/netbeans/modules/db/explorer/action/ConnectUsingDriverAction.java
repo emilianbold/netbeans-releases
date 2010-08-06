@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -198,7 +198,8 @@ public class ConnectUsingDriverAction extends BaseAction {
                 @Override
                 public void propertyChange(PropertyChangeEvent event) {
                     if (event.getPropertyName().equals("argumentChanged")) { //NOI18N
-                        schemaPanel.setSchemas(Collections.EMPTY_LIST, ""); //NOI18N
+                        List<String> empty = Collections.emptyList();
+                        schemaPanel.setSchemas(empty, ""); //NOI18N
                         schemaPanel.resetProgress();
                         try {
                             Connection conn = cinfo.getConnection();

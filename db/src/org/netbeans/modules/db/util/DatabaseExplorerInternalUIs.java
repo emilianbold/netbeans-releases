@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,7 +57,6 @@ import javax.swing.JComboBox;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
-import org.netbeans.modules.db.util.JdbcUrl;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,6 +86,7 @@ public final class DatabaseExplorerInternalUIs {
             this.comboBoxModel = new DriverComboBoxModel(driverManager, driverClass);
         }
 
+        @Override
         public String getItemTooltipText(Object item) {
             JdbcUrl url = (JdbcUrl)item;
             if (url.getDriver() == null) {
@@ -96,10 +96,12 @@ public final class DatabaseExplorerInternalUIs {
             }
         }
 
+        @Override
         public String getItemDisplayName(Object item) {
             return ((JdbcUrl)item).getDisplayName();
         }
 
+        @Override
         public void newItemActionPerformed() {
             Set<JDBCDriver> oldDrivers = new HashSet<JDBCDriver>(Arrays.asList(driverManager.getDrivers()));
             driverManager.showAddDriverDialog();
@@ -118,10 +120,12 @@ public final class DatabaseExplorerInternalUIs {
             }
         }
 
+        @Override
         public String getNewItemDisplayName() {
             return NbBundle.getMessage(DatabaseExplorerInternalUIs.class, "LBL_NewDriver");
         }
 
+        @Override
         public ComboBoxModel getListModel() {
             return comboBoxModel;
         }
@@ -154,18 +158,22 @@ public final class DatabaseExplorerInternalUIs {
             Collections.sort(driverList, new DriverTypeComparator());
         }
 
+        @Override
         public void setSelectedItem(Object anItem) {
             selectedItem = anItem;
         }
 
+        @Override
         public Object getElementAt(int index) {
             return driverList.get(index);
         }
 
+        @Override
         public int getSize() {
             return driverList.size();
         }
 
+        @Override
         public Object getSelectedItem() {
             return selectedItem;
         }
@@ -183,8 +191,9 @@ public final class DatabaseExplorerInternalUIs {
         
     }
 
-    private static final class DriverTypeComparator implements Comparator {
-        public int compare(Object type1, Object type2) {
+    private static final class DriverTypeComparator implements Comparator<JdbcUrl> {
+        @Override
+        public int compare(JdbcUrl type1, JdbcUrl type2) {
             if (type1 == null) {
                 return type2 == null ? 0 : -1;
             } else {
@@ -193,8 +202,8 @@ public final class DatabaseExplorerInternalUIs {
                 }
             }
             
-            String dispName1 = ((JdbcUrl)type1).getName();
-            String dispName2 = ((JdbcUrl)type2).getName();
+            String dispName1 = type1.getName();
+            String dispName2 = type2.getName();
             
             if (dispName1 == null) {
                 return dispName2 == null ? 0 : -1;

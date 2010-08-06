@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -119,14 +119,17 @@ public class AddDriverDialog extends javax.swing.JPanel {
 
         DocumentListener documentListener = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateState();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateState();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updateState();
             }
@@ -134,14 +137,17 @@ public class AddDriverDialog extends javax.swing.JPanel {
         nameTextField.getDocument().addDocumentListener(documentListener);
         drvList.getModel().addListDataListener(new ListDataListener() {
 
+            @Override
             public void intervalAdded(ListDataEvent evt) {
                 updateState();
             }
 
+            @Override
             public void intervalRemoved(ListDataEvent evt) {
                 updateState();
             }
 
+            @Override
             public void contentsChanged(ListDataEvent evt) {
                 updateState();
             }
@@ -415,10 +421,12 @@ public class AddDriverDialog extends javax.swing.JPanel {
         //.jar and .zip file filter
         fileChooserBuilder.setFileFilter(new FileFilter() {
 
+            @Override
             public boolean accept(File f) {
                 return (f.isDirectory() || f.getName().endsWith(".jar") || f.getName().endsWith(".zip")); //NOI18N
             }
 
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(AddDriverDialog.class, "AddDriver_Chooser_Filter"); //NOI18N
             }
@@ -545,6 +553,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         drvClassComboBox.removeAllItems();
         findButton.setEnabled(false);
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 startProgress();
                                      
@@ -599,6 +608,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressHandle = ProgressHandleFactory.createHandle(null);
                 progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
@@ -611,6 +621,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
 
     private void stopProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (progressHandle != null) {
                     progressHandle.finish();

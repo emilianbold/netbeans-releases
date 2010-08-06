@@ -81,6 +81,7 @@ public final class DataComboBoxSupport {
      * Serves as the new item. Not private because used in tests.
      */
     final Object NEW_ITEM = new Object() {
+        @Override
         public String toString() {
             return dataModel.getNewItemDisplayName();
         }
@@ -110,6 +111,7 @@ public final class DataComboBoxSupport {
     /**
      * Connects a combo box with the specified combo box model.
      */
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public static void connect(JComboBox comboBox, DataComboBoxModel dataModel, boolean allowAdding) {
         new DataComboBoxSupport(comboBox, dataModel, allowAdding);
     }
@@ -130,10 +132,12 @@ public final class DataComboBoxSupport {
         // XXX intervalAdded() and intervalRemoved() are not implemented,
         // but it is enough for the connection and drivers combo boxes
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public ItemComboBoxModel() {
             getDelegate().addListDataListener(this);
         }
 
+        @Override
         public Object getElementAt(int index) {
             if (allowAdding) {
                 if (getSize() == 1) {
@@ -159,6 +163,7 @@ public final class DataComboBoxSupport {
             }
         }
 
+        @Override
         public int getSize() {
             // 1 = NEW_ITEM
             if (allowAdding) {
@@ -168,6 +173,7 @@ public final class DataComboBoxSupport {
             }
         }
 
+        @Override
         public void setSelectedItem(Object anItem) {
             previousItem = getDelegate().getSelectedItem();
 
@@ -178,6 +184,7 @@ public final class DataComboBoxSupport {
             getDelegate().setSelectedItem(anItem);
         }
 
+        @Override
         public Object getSelectedItem() {
             return getDelegate().getSelectedItem();
         }
@@ -202,14 +209,17 @@ public final class DataComboBoxSupport {
             return -1;
         }
 
+        @Override
         public void intervalRemoved(ListDataEvent e) {
             throw new UnsupportedOperationException("This is currently not supported.");
         }
 
+        @Override
         public void intervalAdded(ListDataEvent e) {
             throw new UnsupportedOperationException("This is currently not supported.");
         }
 
+        @Override
         public void contentsChanged(ListDataEvent e) {
             fireContentsChanged(this, 0, getSize());
         }
@@ -217,6 +227,7 @@ public final class DataComboBoxSupport {
 
     private class ItemListCellRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -237,6 +248,7 @@ public final class DataComboBoxSupport {
 
     private final class ItemActionListener implements ActionListener {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             final JComboBox comboBox = (JComboBox)e.getSource();
 
@@ -257,6 +269,7 @@ public final class DataComboBoxSupport {
                 // thus...
                 final Object newSelectedItem = comboBox.getSelectedItem();
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         comboBox.setSelectedItem(newSelectedItem);
                     }
@@ -267,15 +280,18 @@ public final class DataComboBoxSupport {
 
     private final class ItemPopupMenuListener implements PopupMenuListener {
 
+        @Override
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         }
 
+        @Override
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             if (!performingNewItemAction) {
                 setPreviousNonSpecialItem((JComboBox)e.getSource());
             }
         }
 
+        @Override
         public void popupMenuCanceled(PopupMenuEvent e) {
             // without the check the previous non-special item would be displayed
             // while calling DataComboBoxModel.newItemActionPerformed() 
