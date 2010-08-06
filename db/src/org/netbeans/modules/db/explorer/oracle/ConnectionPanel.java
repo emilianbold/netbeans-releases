@@ -42,10 +42,22 @@
 package org.netbeans.modules.db.explorer.oracle;
 
 import java.awt.Component;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
+import org.netbeans.modules.db.explorer.oracle.PredefinedWizard.Type;
+import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 public class ConnectionPanel implements PredefinedWizard.Panel {
+    
+    public ConnectionPanel() {
+    }
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -53,6 +65,27 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
      */
     private Component component;
     private String driverLocation;
+    private String driverName;
+    public static final String ORACLE_THIN_DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+    public static final String ORACLE_OCI_DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
+    public static final String MYSQL_DRIVER_CLASS = "com.mysql.jdbc.Driver";
+    private Type type;
+    private PredefinedWizard pw;
+    // Oracle
+    public static final String ORACLE_THIN_DRIVER_NAME = "Oracle Thin";
+    public static final String ORACLE_THIN_DRIVER_DISPLAY_NAME = "Oracle Thin";
+    public static final String ORACLE_SAMPLE_DB_USER = "hr";
+    public static final String ORACLE_SAMPLE_DB_PASSWORD = "hr";
+    public static final String ORACLE_SAMPLE_DB_URL = "jdbc:oracle:thin:@localhost:1521:XE";
+    public static final String ORACLE_DEFAULT_SCHEMA = "hr";
+    // MySQL
+    public static final String MYSQL_DRIVER_NAME = "MySQL";
+    public static final String MYSQL_DRIVER_DISPLAY_NAME = "MySQL (Connector/J driver)";
+    public static final String MYSQL_SAMPLE_DB_USER = "root";
+    public static final String MYSQL_SAMPLE_DB_PASSWORD = "vsds";
+    public static final String MYSQL_SAMPLE_DB_URL = "jdbc:mysql://localhost:3306/mysql";
+    public static final String MYSQL_DEFAULT_SCHEMA = "hr";
+    
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -61,7 +94,46 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new PredefinedVisualPanel2();
+            if (pw == null) {
+                return null;
+            }
+            assert pw != null : "ConnectionPanel must be initialized.";
+            driverLocation = pw.getDriverLocation();
+            driverName = pw.getDriverName();
+            type = pw.getType();
+            String driverClass = null;
+            DatabaseConnection cinfo = new DatabaseConnection();
+            switch (type) {
+                case ORACLE:
+                    driverClass = ORACLE_THIN_DRIVER_CLASS;
+                    cinfo.setDriver(driverClass);
+                    cinfo.setDriverName(ORACLE_THIN_DRIVER_NAME);
+                    cinfo.setUser(ORACLE_SAMPLE_DB_USER);
+                    cinfo.setPassword(ORACLE_SAMPLE_DB_PASSWORD);
+                    cinfo.setDatabase(ORACLE_SAMPLE_DB_URL);
+                    //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
+                    break;
+                case MYSQL:
+                    driverClass = MYSQL_DRIVER_CLASS;
+                    cinfo.setDriver(driverClass);
+                    cinfo.setDriverName(MYSQL_DRIVER_NAME);
+                    cinfo.setUser(MYSQL_SAMPLE_DB_USER);
+                    cinfo.setPassword(MYSQL_SAMPLE_DB_PASSWORD);
+                    cinfo.setDatabase(MYSQL_SAMPLE_DB_URL);
+                    //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
+                    break;
+                default:
+                    assert false;
+            }
+            component = new NewConnectionPanel(pw, driverClass, cinfo);
+            JComponent jc = (JComponent) component;
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
+            jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+            component.setName(pw.getSteps()[1]);
+            fireChangeEvent();
         }
         return component;
     }
@@ -85,36 +157,32 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
         // and uncomment the complicated stuff below.
     }
 
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+
     @Override
     public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
 
     @Override
     public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
-    /*
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
-    }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
-    }
-    }
+
     protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
     }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
@@ -122,10 +190,11 @@ public class ConnectionPanel implements PredefinedWizard.Panel {
     // by the user.
     @Override
     public void readSettings(PredefinedWizard settings) {
-        driverLocation = settings.getDriverLocation();
+        this.pw = settings;
     }
 
     @Override
     public void storeSettings(PredefinedWizard settings) {
     }
+
 }

@@ -44,6 +44,7 @@ package org.netbeans.modules.db.explorer.oracle;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -54,13 +55,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.db.explorer.oracle.PredefinedWizard.Type;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -75,6 +79,7 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
     private static final String MYSQL_DRIVER_NAME = "mysql.driver.name"; // NOI18N
     private static final String ORACLE_DOWNLOAD_FROM = "oracle.from"; // NOI18N
     private static final String MYSQL_DOWNLOAD_FROM = "mysql.from"; // NOI18N
+    private PredefinedWizard pw;
 
     public LookingForDriverPanel(PredefinedWizard.Type type) {
         this.type = type;
@@ -198,8 +203,17 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
     @Override
     public Component getComponent() {
         if (component == null) {
+            if (pw == null) {
+                return null;
+            }
             init();
             component = new LookingForDriverUI(this, driverName, driverPath, downloadFrom, driverFound);
+            JComponent jc = (JComponent) component;
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
+            jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
         }
         return component;
     }
@@ -214,8 +228,9 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
 
     @Override
     public boolean isValid() {
-        return component.driverFound();
+        return component != null && component.driverFound();
     }
+    
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     @Override
@@ -245,11 +260,29 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
 
     @Override
     public void readSettings(PredefinedWizard settings) {
+        this.pw = settings;
     }
 
     @Override
     public void storeSettings(PredefinedWizard settings) {
         settings.setDriverLocation(component.getDriverLocation());
+        // add new driver is still not present
+        if (getDriverFO(driverName) == null) {
+            URL url = null;
+            try {
+                url = new File(component.getDriverLocation()).toURI().toURL();
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+            JDBCDriver drv = JDBCDriver.create(pw.getDriverName(),
+                                        pw.getDriverDisplayName(),
+                                        pw.getDriverClass(), new URL[] {url});
+            try {
+                JDBCDriverManager.getDefault().addDriver(drv);
+            } catch (DatabaseException ex) {
+                Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+        }
     }
 
     String getDriverLocation() {
@@ -285,5 +318,9 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
 
     private static String getDefaultDriverPath() {
         return getUserDir().getPath() + File.separator + DRIVERS_DIR;
+    }
+
+    String getDriverName() {
+        return driverName;
     }
 }

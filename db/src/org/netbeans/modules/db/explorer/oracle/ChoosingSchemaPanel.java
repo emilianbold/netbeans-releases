@@ -42,7 +42,9 @@
 package org.netbeans.modules.db.explorer.oracle;
 
 import java.awt.Component;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
@@ -52,6 +54,7 @@ public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
      * component from this class, just use getComponent().
      */
     private Component component;
+    private PredefinedWizard pw;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -61,6 +64,13 @@ public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
     public Component getComponent() {
         if (component == null) {
             component = new PredefinedVisualPanel3();
+            JComponent jc = (JComponent) component;
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 2);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
+            jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+            component.setName(pw.getSteps()[2]);
         }
         return component;
     }
@@ -121,6 +131,7 @@ public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
     // by the user.
     @Override
     public void readSettings(PredefinedWizard settings) {
+        this.pw = settings;
     }
 
     @Override

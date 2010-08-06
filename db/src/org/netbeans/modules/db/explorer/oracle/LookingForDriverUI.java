@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.NotifyDescriptor;
@@ -75,7 +76,7 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
         } else {
             tfLocation.setText(driverPath);
         }
-        updateComponents();
+        updateComponents(false);
         lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text", driverName)); // NOI18N
         lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text.not.found", driverName)); // NOI18N
         lFound2.setVisible(found);
@@ -87,7 +88,7 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
         tfLocation.getDocument().addDocumentListener(this);
     }
     
-    private void updateComponents() {
+    private void updateComponents(boolean notifyNow) {
         if (driverFound()) {
             this.putClientProperty(NotifyDescriptor.PROP_WARNING_NOTIFICATION, NbBundle.getMessage(LookingForDriverUI.class,
                     "LookingForDriverUI.errorMessage.DriverNotFound", driverName)); // NOI18N
@@ -98,7 +99,16 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
         if (lDownloadInfo2.isVisible()) {
             lDownloadInfo2.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo2.text", tfLocation.getText())); // NOI18N
         }
-        panel.fireChangeEvent();
+        if (notifyNow) {
+            panel.fireChangeEvent();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    panel.fireChangeEvent();
+                }
+            });
+        }
     }
     
     @Override
@@ -224,7 +234,7 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File driverFile = chooser.getSelectedFile();
             tfLocation.setText(FileUtil.normalizeFile(driverFile).getAbsolutePath());
-            updateComponents();
+            updateComponents(true);
         }
         panel.fireChangeEvent();
     }//GEN-LAST:event_bBrowseActionPerformed
@@ -252,17 +262,17 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        updateComponents();
+        updateComponents(true);
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        updateComponents();
+        updateComponents(true);
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        updateComponents();
+        updateComponents(true);
     }
 
     boolean driverFound() {

@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.db.explorer.oracle;
 
-import java.awt.Component;
 import java.awt.Dialog;
 import java.text.MessageFormat;
 import java.util.NoSuchElementException;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
@@ -53,16 +51,51 @@ import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jiri Rechtacek
  */
 public class PredefinedWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<PredefinedWizard> {
+    
     private String driverLocation;
+    private String driverName;
+    private String[] steps;
+    private WizardDescriptor.Panel<PredefinedWizard>[] panels;
+    private Type type;
+    private int index;
+    private LookingForDriverPanel driverPanel;
+    private boolean found = false;
+    private String pwd;
+    private String driverDN;
+    private String driverClass;
+    private String databaseUrl;
+    private String user;
+    
 
     private PredefinedWizard(Type type) {
         this.type = type;
+        switch (type) {
+            case ORACLE:
+                driverName = NbBundle.getMessage(PredefinedWizard.class, "OracleThinDriverName");
+                driverDN = NbBundle.getMessage(PredefinedWizard.class, "OracleThinDriverDisplayName");
+                driverClass = NbBundle.getMessage(PredefinedWizard.class, "OracleThinDriverClass");
+                databaseUrl = NbBundle.getMessage(PredefinedWizard.class, "OracleSampleDatabaseUrl");
+                user = NbBundle.getMessage(PredefinedWizard.class, "OracleSampleUser");
+                pwd = NbBundle.getMessage(PredefinedWizard.class, "OracleSamplePassword");
+                break;
+            case MYSQL:
+                driverName = NbBundle.getMessage(PredefinedWizard.class, "MySQLDriverName");
+                driverDN = NbBundle.getMessage(PredefinedWizard.class, "MySQLDriverDisplayName");
+                driverClass = NbBundle.getMessage(PredefinedWizard.class, "MySQLDriverClass");
+                databaseUrl = NbBundle.getMessage(PredefinedWizard.class, "MySQLSampleDatabaseUrl");
+                user = NbBundle.getMessage(PredefinedWizard.class, "MySQLSampleUser");
+                pwd = NbBundle.getMessage(PredefinedWizard.class, "MySQLSamplePassword");
+                break;
+            default:
+                assert false;
+        }
     }
 
     @Override
@@ -74,12 +107,6 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
         ORACLE,
         MYSQL
     }
-    
-    private WizardDescriptor.Panel<PredefinedWizard>[] panels;
-    private Type type;
-    private int index;
-    private LookingForDriverPanel driverPanel;
-    private boolean found = false;
     
     public static void showWizard(PredefinedConnectionProvider.PredefinedConnection conn) {
         if (conn instanceof PredefinedConnectionProvider.OracleConnection) {
@@ -97,7 +124,7 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
         WizardDescriptor wizardDescriptor = new WizardDescriptor(this, this);
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Your wizard dialog title here");
+        wizardDescriptor.setTitle(NbBundle.getMessage(PredefinedWizard.class, "PredefinedWizard.WizardTitle")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
@@ -121,28 +148,12 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
                 new ConnectionPanel(),
                 new ChoosingSchemaPanel(),
             };
-            String[] steps = new String[panels.length];
-            for (int i = 0; i < panels.length; i++) {
-                Component c = panels[i].getComponent();
-                // Default step name to component name of panel. Mainly useful
-                // for getting the name of the target chooser to appear in the
-                // list of steps.
-                steps[i] = c.getName();
-                if (c instanceof JComponent) { // assume Swing components
-                    JComponent jc = (JComponent) c;
-                    // Sets step number of a component
-                    // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
-                    // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
-                    // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
-                    // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
-                    // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
-                }
-            }
+            steps = new String[panels.length];
+            steps = new String[] {
+                NbBundle.getMessage(PredefinedWizard.class, "LookingForDriverUI.Name"), // NOI18N
+                NbBundle.getMessage(PredefinedWizard.class, "ConnectionPanel.Name"), // NOI18N
+                NbBundle.getMessage(PredefinedWizard.class, "ChoosingSchemaPanel.Name"), // NOI18N
+            };
         }
         return panels;
     }
@@ -206,5 +217,37 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
     String getDriverLocation() {
         return driverLocation;
     }
-
+    
+    String getDriverName() {
+        return driverName;
+    }
+    
+    String getDriverDisplayName() {
+        return driverDN;
+    }
+    
+    String getDriverClass() {
+        return driverClass;
+    }
+    
+    String getDatabaseUrl() {
+        return databaseUrl;
+    }
+    
+    String getUser() {
+        return user;
+    }
+    
+    String getPassword() {
+        return pwd;
+    }
+    
+    Type getType() {
+        return type;
+    }
+    
+    String[] getSteps() {
+        return steps;
+    }
+    
 }
