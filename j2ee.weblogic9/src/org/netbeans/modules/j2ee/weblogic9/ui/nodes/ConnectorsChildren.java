@@ -115,16 +115,14 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
             WLConnectionSupport support = new WLConnectionSupport(manager);
             try {
                 List<String> jndiNames = support
-                        .executeAction(new WLConnectionSupport.JMXAction<List<String>>()
+                        .executeAction(new WLConnectionSupport.
+                                JMXRuntimeAction<List<String>>()
                         {
 
                             @Override
-                            public List<String> call( MBeanServerConnection con )
+                            public List<String> call( MBeanServerConnection con, ObjectName service )
                                     throws Exception
                             {
-                                ObjectName service = new ObjectName(
-                                        "com.bea:Name=DomainRuntimeService,"
-                                                + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");// NOI18N
 
                                 ObjectName objectName = (ObjectName) con
                                         .getAttribute(service,
@@ -153,10 +151,6 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
                                 return result;
                             }
 
-                            @Override
-                            public String getPath() {
-                                return "/jndi/weblogic.management.mbeanservers.domainruntime";// NOI18N
-                            }
                         });
                 for (String jndiName : jndiNames) {
                     children.add( new ResourceNode( Children.LEAF, 
@@ -200,16 +194,14 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
             WLConnectionSupport support = new WLConnectionSupport(manager);
             try {
                 List<String> jndiNames = support
-                        .executeAction(new WLConnectionSupport.JMXAction<List<String>>()
+                        .executeAction(new WLConnectionSupport.
+                                JMXRuntimeAction<List<String>>()
                         {
 
                             @Override
-                            public List<String> call( MBeanServerConnection con )
+                            public List<String> call( MBeanServerConnection con, ObjectName service )
                                     throws Exception
                             {
-                                ObjectName service = new ObjectName(
-                                        "com.bea:Name=DomainRuntimeService,"
-                                                + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");// NOI18N
                                 ObjectName[] adminServers = (ObjectName[]) con
                                         .getAttribute(service, "ServerRuntimes");  // NOI18N
                                 List<String> result = new LinkedList<String>();
@@ -228,11 +220,6 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
                                 return result;
                             }
 
-                            @Override
-                            public String getPath() {
-                                return "/jndi/weblogic.management.mbeanservers.domainruntime";// NOI18N
-                            }
-                            
                             private void addPool( ObjectName[] resourceAdapters, 
                                     List<String> names, MBeanServerConnection connection) 
                                 throws AttributeNotFoundException, InstanceNotFoundException, 
@@ -294,16 +281,13 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
             WLConnectionSupport support = new WLConnectionSupport(manager);
             try {
                 List<String> jndiNames = support
-                        .executeAction(new WLConnectionSupport.JMXAction<List<String>>()
+                        .executeAction(new WLConnectionSupport.JMXRuntimeAction<List<String>>()
                         {
 
                             @Override
-                            public List<String> call( MBeanServerConnection con )
+                            public List<String> call( MBeanServerConnection con, ObjectName service )
                                     throws Exception
                             {
-                                ObjectName service = new ObjectName(
-                                        "com.bea:Name=DomainRuntimeService,"
-                                                + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean");// NOI18N
 
                                 ObjectName objectName = (ObjectName) con
                                         .getAttribute(service,
@@ -343,10 +327,6 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
                                 return result;
                             }
 
-                            @Override
-                            public String getPath() {
-                                return "/jndi/weblogic.management.mbeanservers.domainruntime";// NOI18N
-                            }
                         });
                 for (String jndiName : jndiNames) {
                     children.add( new ResourceNode( Children.LEAF, 

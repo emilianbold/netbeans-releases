@@ -127,10 +127,10 @@ public class WLFindJSPServlet implements FindJSPServlet {
     private ApplicationDescriptor getApplicationDescriptor(final String moduleContextPath) {
         WLConnectionSupport support = new WLConnectionSupport(deploymentManager);
         try {
-            return support.executeAction(new WLConnectionSupport.JMXAction<ApplicationDescriptor>() {
+            return support.executeAction(new WLConnectionSupport.JMXRuntimeAction<ApplicationDescriptor>() {
 
                 @Override
-                public ApplicationDescriptor call(MBeanServerConnection con) throws Exception {
+                public ApplicationDescriptor call(MBeanServerConnection con, ObjectName service) throws Exception {
                     ObjectName pattern = new ObjectName(
                             "com.bea:Type=WebAppComponentRuntime,*"); // NOI18N
 
@@ -150,11 +150,6 @@ public class WLFindJSPServlet implements FindJSPServlet {
                         }
                     }
                     return null;
-                }
-
-                @Override
-                public String getPath() {
-                    return "/jndi/weblogic.management.mbeanservers.domainruntime"; // NOI18N
                 }
             });
         } catch (Exception ex) {

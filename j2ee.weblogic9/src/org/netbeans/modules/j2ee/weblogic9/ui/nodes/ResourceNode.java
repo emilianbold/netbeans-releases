@@ -73,6 +73,11 @@ class ResourceNode extends AbstractItemNode {
         CONNECTOR_RESOURCES,
         CONNECTION_POOLS,
         ADMIN_OBJ_RESOURCE,
+        JAVA_MAIL,
+        LIBRARY,
+        TUXEDO,
+        WTC_SERVER,
+        JOLT_CONNECTION_POOL
         ;
     }
     
@@ -85,21 +90,42 @@ class ResourceNode extends AbstractItemNode {
     private static final String CONNECTOR_ICON =
         "org/netbeans/modules/glassfish/javaee/resources/connector.gif"; // NOI18N
     
+    private static final String JAVAMAIL_ICON =
+        "org/netbeans/modules/glassfish/javaee/resources/javamail.gif"; // NOI18N
+    
+    private static final String LIBRARY_ICON =
+        "org/netbeans/modules/project/libraries/resources/libraries.gif"; // NOI18N
+    
 
     ResourceNode( Children children , ResourceNodeType type , String name , 
             Cookie cookie) 
     {
+        this( children , type , name , cookie , null );
+    }
+    
+    ResourceNode( Children children , ResourceNodeType type , String name , 
+            Cookie cookie, String tooltip ) 
+    {
         super(children);
         setDisplayName(name);
+        if ( tooltip != null ){
+            setShortDescription( tooltip );
+        }
         this.resourceType= type;
         if ( cookie != null){
             getCookieSet().add( cookie );
         }
     }
     
+    ResourceNode( Children children , ResourceNodeType type , String name , 
+            String tooltip) 
+    {
+        this( children , type , name , null , tooltip);
+    }
+    
     ResourceNode( Children children , ResourceNodeType type , String name ) 
     {
-        this( children , type , name , null );
+        this( children , type , name , null , null);
     }
     
     
@@ -116,17 +142,20 @@ class ResourceNode extends AbstractItemNode {
      */
     @Override
     public Image getIcon( int type ) {
-        if ( resourceType == ResourceNodeType.RESOURCE ){
-            return ImageUtilities.loadImage(RESOURCES_ICON);
-        }
-        else if (resourceType == ResourceNodeType.JDBC){
-            return ImageUtilities.loadImage(JDBC_RESOURCE_ICON);
-        }
-        else if ( resourceType == ResourceNodeType.CONNECTORS ){
-            return ImageUtilities.loadImage(CONNECTOR_ICON);
-        }
-        else {
-            return getIconDelegate().getIcon(type);
+        switch ( resourceType ){
+            case RESOURCE:
+                return ImageUtilities.loadImage(RESOURCES_ICON);
+            case JDBC:
+                return ImageUtilities.loadImage(JDBC_RESOURCE_ICON);
+            case CONNECTORS:
+                return ImageUtilities.loadImage(CONNECTOR_ICON);
+            case JAVA_MAIL:
+                return ImageUtilities.loadImage(JAVAMAIL_ICON);
+            case LIBRARY:
+                return ImageUtilities.loadImage(LIBRARY_ICON);
+            default:
+                return getIconDelegate().getIcon(type);
+                
         }
     }
     

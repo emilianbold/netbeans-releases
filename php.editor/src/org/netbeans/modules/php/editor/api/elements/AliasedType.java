@@ -43,149 +43,38 @@
 package org.netbeans.modules.php.editor.api.elements;
 
 import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.AliasedName;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Raddek Matous
  */
-public class AliasedType implements TypeElement, AliasedElement {
-    protected final TypeElement type;
-    private final AliasedName aliasedName;
+public class AliasedType extends AliasedElement implements TypeElement {
     public AliasedType(final AliasedName aliasedName, final TypeElement type) {
-        this.aliasedName =aliasedName;
-        this.type = type;
+        super(aliasedName, type);
+    }
+
+    protected final TypeElement getRealType() {
+        return (TypeElement) element;
+    }
+    @Override
+    public final String asString(PrintAs as) {
+        return getRealType().asString(as);
     }
 
     @Override
-    public String asString(PrintAs as) {
-        return type.asString(as);
+    public final Set<QualifiedName> getSuperInterfaces() {
+        return getRealType().getSuperInterfaces();
     }
 
     @Override
-    public Set<QualifiedName> getSuperInterfaces() {
-        return type.getSuperInterfaces();
+    public final boolean isClass() {
+        return getRealType().isClass();
     }
 
     @Override
-    public boolean isClass() {
-        return type.isClass();
-    }
-
-    @Override
-    public boolean isInterface() {
-        return type.isInterface();
-    }
-
-    @Override
-    public QualifiedName getNamespaceName() {
-        return type.getNamespaceName();
-    }
-
-    @Override
-    public QualifiedName getFullyQualifiedName() {
-        boolean isDefaultNamespace = isDefaultNamespaceName(getIn());
-        return (isDefaultNamespace) ? QualifiedName.createForDefaultNamespaceName().append(getName()).toFullyQualified()
-                : QualifiedName.createFullyQualified(getName(), getIn());
-    }
-
-    @Override
-    public ElementQuery getElementQuery() {
-        return type.getElementQuery();
-    }
-
-    @Override
-    public String getFilenameUrl() {
-        return type.getFilenameUrl();
-    }
-
-    @Override
-    public PhpModifiers getPhpModifiers() {
-        return type.getPhpModifiers();
-    }
-
-    @Override
-    public PhpElementKind getPhpElementKind() {
-        return type.getPhpElementKind();
-    }
-
-    @Override
-    public int getOffset() {
-        return type.getOffset();
-    }
-
-    @Override
-    public int getFlags() {
-        return type.getFlags();
-    }
-
-    @Override
-    public boolean isPlatform() {
-        return type.isPlatform();
-    }
-
-    @Override
-    public FileObject getFileObject() {
-        return type.getFileObject();
-    }
-
-    @Override
-    public String getMimeType() {
-        return type.getMimeType();
-    }
-
-    @Override
-    public String getName() {
-        return aliasedName.getAliasName();
-    }
-
-    @Override
-    public String getIn() {
-        return type.getIn();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return type.getKind();
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return type.getModifiers();
-    }
-
-    @Override
-    public boolean signatureEquals(ElementHandle handle) {
-        return type.signatureEquals(handle);
-    }
-
-    @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        return type.getOffsetRange(result);
-    }
-
-    static boolean isDefaultNamespaceName(String namespaceName) {
-        boolean isDefaultNamespace = namespaceName == null || NamespaceElement.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
-        return isDefaultNamespace;
-    }
-
-    @Override
-    public final boolean isAliased() {
-        return true;
-    }
-
-    @Override
-    public String getRealName() {
-        return type.getName();
+    public final boolean isInterface() {
+        return getRealType().isInterface();
     }
 }

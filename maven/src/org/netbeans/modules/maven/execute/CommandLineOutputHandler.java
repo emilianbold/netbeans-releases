@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -218,7 +219,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                     line = readLine();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                java.util.logging.Logger.getLogger(CommandLineOutputHandler.class.getName()).log(Level.FINE, null, ex);
             } finally {
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);
                 try {

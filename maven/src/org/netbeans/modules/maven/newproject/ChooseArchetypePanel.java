@@ -89,6 +89,8 @@ import org.openide.util.RequestProcessor;
  * @author  mkleint
  */
 public class ChooseArchetypePanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
+    
+    private static final RequestProcessor RP = new RequestProcessor(ChooseArchetypePanel.class.getName(),5);
 
     private static File getLocalCatalogFile() {
         return new File(new File(System.getProperty("user.home"), ".m2"), "archetype-catalog.xml"); //NOI18N
@@ -144,7 +146,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
         childs.addArchetype(LOADING_ARCHETYPE);
         AbstractNode root = new AbstractNode(childs);
         manager.setRootContext(root);
-        RequestProcessor.getDefault().post(this);
+        RP.post(this);
         manager.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
@@ -259,7 +261,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (ret != NotifyDescriptor.YES_OPTION) {
             return;
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 try {
                     RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
@@ -537,7 +539,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void addNotify() {
             keys.add(LOADING_ARCHETYPE);
             setKeys(keys);
-            RequestProcessor.getDefault().post(this);
+            RP.post(this);
         }
         
         @Override

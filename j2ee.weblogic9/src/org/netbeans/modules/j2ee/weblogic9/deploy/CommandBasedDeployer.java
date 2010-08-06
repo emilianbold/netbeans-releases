@@ -102,9 +102,9 @@ import org.openide.windows.InputOutput;
  * @author Petr Hejl
  */
 // FIXME refactor exceution to some common method
-public final class WLCommandDeployer {
+public final class CommandBasedDeployer {
 
-    private static final Logger LOGGER = Logger.getLogger(WLCommandDeployer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CommandBasedDeployer.class.getName());
 
     private static RequestProcessor DEPLOYMENT_RP = new RequestProcessor("Weblogic Deployment", 1); // NOI18N
 
@@ -116,13 +116,13 @@ public final class WLCommandDeployer {
 
     private static final Pattern LIST_APPS_PATTERN = Pattern.compile("\\s+(.*)"); // NOI18N
 
-    private static boolean showConsole = Boolean.getBoolean(WLCommandDeployer.class.getName() + ".showConsole");
+    private static boolean showConsole = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");
 
     private final WLDeploymentFactory factory;
 
     private final InstanceProperties ip;
 
-    public WLCommandDeployer(WLDeploymentFactory factory, InstanceProperties ip) {
+    public CommandBasedDeployer(WLDeploymentFactory factory, InstanceProperties ip) {
         this.factory = factory;
         this.ip = ip;
     }
@@ -134,24 +134,17 @@ public final class WLCommandDeployer {
     }
 
     public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
-        return redeploy(moduleId, moduleId.getModuleID());
+        return redeploy(new TargetModuleID[] {moduleId});
     }
 
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
-        final TargetModuleID moduleId = createModuleId(new Target() {
-
-            @Override
-            public String getName() {
-                return "default"; // NOI18N
-            }
-
-            @Override
-            public String getDescription() {
-                return "server"; // NOI18N
-            }
-        }, file, host, port, file.getName(), null);
-
+        // TODO is this correct only first server mentioned
+        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, file.getName(), null);
         return deploy(moduleId, file);
+    }
+
+    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) {
+        return redeploy(targetModuleID, "-source", file.getAbsolutePath()); // NOI18N
     }
 
     public ProgressObject undeploy(final TargetModuleID[] targetModuleID) {
@@ -159,7 +152,7 @@ public final class WLCommandDeployer {
 
         progress.fireProgressEvent(null, new WLDeploymentStatus(
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Started")));
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Started")));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
@@ -172,7 +165,7 @@ public final class WLCommandDeployer {
                     ExecutionService service = createService("-undeploy", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeploying", name)));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeploying", name)));
 
                     Future<Integer> result = service.run();
                     try {
@@ -181,7 +174,7 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Failed",
+                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed",
                                         lineProcessor.getLastLine())));
                             break;
                         } else {
@@ -191,7 +184,7 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Failed_Interrupted")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_Interrupted")));
                         result.cancel(true);
                         Thread.currentThread().interrupt();
                         break;
@@ -199,21 +192,21 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Failed_Timeout")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_Timeout")));
                         result.cancel(true);
                         break;
                     } catch (ExecutionException ex) {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Failed_With_Message")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_With_Message")));
                         break;
                     }
                 }
                 if (!failed) {
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Completed")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Completed")));
                 }
             }
         });
@@ -226,7 +219,7 @@ public final class WLCommandDeployer {
 
         progress.fireProgressEvent(null, new WLDeploymentStatus(
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Started")));
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Started")));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
@@ -239,7 +232,7 @@ public final class WLCommandDeployer {
                     ExecutionService service = createService("-start", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Starting", name)));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Starting", name)));
 
                     Future<Integer> result = service.run();
                     try {
@@ -248,7 +241,7 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Failed",
+                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed",
                                         lineProcessor.getLastLine())));
                             break;
                         } else {
@@ -259,7 +252,7 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Failed_Interrupted")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_Interrupted")));
                         result.cancel(true);
                         Thread.currentThread().interrupt();
                         break;
@@ -267,21 +260,21 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Failed_Timeout")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_Timeout")));
                         result.cancel(true);
                         break;
                     } catch (ExecutionException ex) {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Failed_With_Message")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_With_Message")));
                         break;
                     }
                 }
                 if (!failed) {
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Completed")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Completed")));
                 }
             }
         });
@@ -294,7 +287,7 @@ public final class WLCommandDeployer {
 
         progress.fireProgressEvent(null, new WLDeploymentStatus(
                 ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Started")));
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Started")));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
@@ -307,7 +300,7 @@ public final class WLCommandDeployer {
                     ExecutionService service = createService("-stop", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stopping", name)));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stopping", name)));
 
                     Future<Integer> result = service.run();
                     try {
@@ -316,7 +309,7 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed",
+                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed",
                                         lineProcessor.getLastLine())));
                             break;
                         } else {
@@ -326,7 +319,7 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed_Interrupted")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Interrupted")));
                         result.cancel(true);
                         Thread.currentThread().interrupt();
                         break;
@@ -334,21 +327,21 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed_Timeout")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Timeout")));
                         result.cancel(true);
                         break;
                     } catch (ExecutionException ex) {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed_With_Message")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_With_Message")));
                         break;
                     }
                 }
                 if (!failed) {
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Completed")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Completed")));
                 }
             }
         });
@@ -361,7 +354,7 @@ public final class WLCommandDeployer {
 
         progress.fireProgressEvent(null, new WLDeploymentStatus(
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Started")));
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Started")));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
@@ -378,7 +371,7 @@ public final class WLCommandDeployer {
                             datasource.getName(), "-upload", datasource.getOrigin().getAbsolutePath());
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Deploying", datasource.getName())));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Deploying", datasource.getName())));
 
                     Future<Integer> result = service.run();
                     try {
@@ -387,7 +380,7 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed",
+                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed",
                                         lineProcessor.getLastLine())));
                             break;
                         } else {
@@ -397,7 +390,7 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed_Interrupted")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed_Interrupted")));
                         result.cancel(true);
                         Thread.currentThread().interrupt();
                         break;
@@ -405,21 +398,21 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed_Timeout")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed_Timeout")));
                         result.cancel(true);
                         break;
                     } catch (ExecutionException ex) {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed_With_Message")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed_With_Message")));
                         break;
                     }
                 }
                 if (!failed) {
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Completed")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Completed")));
                 }
             }
         });
@@ -432,7 +425,7 @@ public final class WLCommandDeployer {
 
         progress.fireProgressEvent(null, new WLDeploymentStatus(
                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Started")));
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Started")));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
@@ -450,7 +443,7 @@ public final class WLCommandDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed",
+                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed",
                                         lineProcessor.getLastLine())));
                             break;
                         } else {
@@ -460,7 +453,7 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed_Interrupted")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed_Interrupted")));
                         result.cancel(true);
                         Thread.currentThread().interrupt();
                         break;
@@ -468,57 +461,26 @@ public final class WLCommandDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed_Timeout")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed_Timeout")));
                         result.cancel(true);
                         break;
                     } catch (ExecutionException ex) {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed_With_Message")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed_With_Message")));
                         break;
                     }
                 }
                 if (!failed) {
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Completed")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Completed")));
                 }
             }
         });
 
         return progress;
-    }
-
-    public TargetModuleID[] getAvailableModules(ModuleType moduleType, Target[] target) {
-
-        assert !SwingUtilities.isEventDispatchThread() : "Should not be executed in EDT";
-
-        ListAppLineProcessor lineProcessor = new ListAppLineProcessor();
-        ExecutionService service = createService("-listapps", lineProcessor);
-        Future<Integer> result = service.run();
-        try {
-            Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-            if (value.intValue() != 0) {
-                return null;
-            } else {
-                List<String> names = lineProcessor.getApps();
-                TargetModuleID[] ret = new TargetModuleID[names.size()];
-                for (int i = 0; i < names.size(); i++) {
-                    ret[i] = new WLTargetModuleID(target[0], names.get(i));
-                }
-                return ret;
-            }
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return null;
-        } catch (TimeoutException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        }
     }
 
     private ProgressObject deploy(final TargetModuleID moduleId, final File file,
@@ -527,7 +489,7 @@ public final class WLCommandDeployer {
 
         progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deploying", file.getAbsolutePath())));
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deploying", file.getAbsolutePath())));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
@@ -547,29 +509,29 @@ public final class WLCommandDeployer {
                     if (value.intValue() != 0) {
                         progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed",
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed",
                                     lineProcessor.getLastLine())));
                     } else {
                         //waitForUrlReady(factory, moduleId, progress);
                         progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Completed")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Completed")));
                     }
                 } catch (InterruptedException ex) {
                     progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_Interrupted")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_Interrupted")));
                     result.cancel(true);
                     Thread.currentThread().interrupt();
                 } catch (TimeoutException ex) {
                     progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_Timeout")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_Timeout")));
                     result.cancel(true);
                 } catch (ExecutionException ex) {
                     progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_With_Message")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_With_Message")));
                 }
             }
         });
@@ -577,56 +539,74 @@ public final class WLCommandDeployer {
         return progress;
     }
 
-    private ProgressObject redeploy(final TargetModuleID moduleId, final String name,
-            final String... parameters) {
-        final WLProgressObject progress = new WLProgressObject(moduleId);
+    // FIXME we should check the source of module if it differs this should do undeploy/deploy
+    private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final String... parameters) {
+        final WLProgressObject progress = new WLProgressObject(targetModuleID);
 
-        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
-                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeploying", name)));
+        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Started")));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
             @Override
             public void run() {
-                String[] execParams = new String[parameters.length + 2];
-                execParams[0] = "-name"; // NOI18N
-                execParams[1] = name;
-                if (parameters.length > 0) {
-                    System.arraycopy(parameters, 0, execParams, 2, parameters.length);
-                }
-
+                boolean failed = false;
                 LastLineProcessor lineProcessor = new LastLineProcessor();
-                ExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
-                Future<Integer> result = service.run();
-                try {
-                    Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                    if (value.intValue() != 0) {
-                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed",
-                                    lineProcessor.getLastLine())));
-                    } else {
-                        //waitForUrlReady(factory, moduleId, progress);
-                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Completed")));
+                for (TargetModuleID module : targetModuleID) {
+                    String name = module.getModuleID();
+                    String[] execParams = new String[parameters.length + 2];
+                    execParams[0] = "-name"; // NOI18N
+                    execParams[1] = name;
+                    if (parameters.length > 0) {
+                        System.arraycopy(parameters, 0, execParams, 2, parameters.length);
                     }
-                } catch (InterruptedException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_Interrupted")));
-                    result.cancel(true);
-                    Thread.currentThread().interrupt();
-                } catch (TimeoutException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_Timeout")));
-                    result.cancel(true);
-                } catch (ExecutionException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Redeployment_Failed_With_Message")));
+                    ExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeploying", name)));
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value.intValue() != 0) {
+                            failed = true;
+                            progress.fireProgressEvent(module, new WLDeploymentStatus(
+                                    ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed",
+                                        lineProcessor.getLastLine())));
+                            break;
+                        } else {
+                            //waitForUrlReady(factory, moduleId, progress);
+                            continue;
+                        }
+                    } catch (InterruptedException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(module, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_Interrupted")));
+                        result.cancel(true);
+                        Thread.currentThread().interrupt();
+                        break;
+                    } catch (TimeoutException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(module, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_Timeout")));
+                        result.cancel(true);
+                        break;
+                    } catch (ExecutionException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(module, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_With_Message")));
+                        break;
+                    }
+                }
+                if (!failed) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
                 }
             }
         });
@@ -731,7 +711,7 @@ public final class WLCommandDeployer {
         if (webUrl != null) {
             try {
                 URL url = new URL(webUrl);
-                String waitingMsg = NbBundle.getMessage(WLCommandDeployer.class, "MSG_Waiting_For_Url", url);
+                String waitingMsg = NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Waiting_For_Url", url);
 
                 progressObject.fireProgressEvent(null,
                         new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
@@ -869,31 +849,6 @@ public final class WLCommandDeployer {
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }            
-        }
-    }
-
-    private static class ListAppLineProcessor implements LineProcessor {
-
-        /* GuardedBy("this") */
-        private List<String> apps = new ArrayList<String>();
-
-        public synchronized List<String> getApps() {
-            return apps;
-        }
-
-        public void processLine(String line) {
-            Matcher matcher = LIST_APPS_PATTERN.matcher(line);
-            if (matcher.matches()) {
-                synchronized (this) {
-                    apps.add(matcher.group(1));
-                }
-            }
-        }
-
-        public void reset() {
-        }
-
-        public void close() {
         }
     }
 

@@ -47,7 +47,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -116,9 +118,7 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public boolean isRunFileEnabled(Lookup context) {
-        FileObject rootFolder = getTestDirectory(false);
-        assert rootFolder != null : "Test directory not found but isRunFileEnabled() for a test file called?!";
-        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context, rootFolder);
+        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context);
         return file != null && FileUtils.isPhpFile(file);
     }
 
@@ -191,23 +191,42 @@ class ConfigActionTest extends ConfigAction {
         if (phpUnit == null) {
             return null;
         }
-        FileObject testDirectory = getTestDirectory(true);
-        if (testDirectory == null) {
-            return null;
-        }
+
         if (context == null) {
+            // run project
+            FileObject testDirectory = getTestDirectory(true);
+            if (testDirectory == null) {
+                return null;
+            }
             return getProjectPhpUnitInfo(testDirectory);
         }
-        return getFilePhpUnitInfo(testDirectory, context);
+
+        return getFilePhpUnitInfo(context);
     }
 
     private PhpUnitInfo getProjectPhpUnitInfo(FileObject testDirectory) {
         return new PhpUnitInfo(testDirectory, testDirectory, null);
     }
 
-    private PhpUnitInfo getFilePhpUnitInfo(FileObject testDirectory, Lookup context) {
-        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
-        assert fileObj != null : "Fileobject not found for context: " + context;
+    private PhpUnitInfo getFilePhpUnitInfo(Lookup context) {
+        assert context != null;
+
+        // #188770
+        FileObject testDirectory = null;
+        if (!ProjectPropertiesSupport.runAllTestFilesUsingPhpUnit(project)) {
+            testDirectory = getTestDirectory(true);
+            if (testDirectory == null) {
+                return null;
+            }
+        }
+
+        FileObject fileObj = null;
+        if (testDirectory != null) {
+            fileObj = CommandUtils.fileForContextOrSelectedNodes(context, testDirectory);
+        } else {
+            fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        }
+        assert fileObj != null : "Fileobject not found for context: " + context + " and test directory: " + testDirectory;
         if (!fileObj.isValid()) {
             return null;
         }
@@ -218,14 +237,27 @@ class ConfigActionTest extends ConfigAction {
         public final FileObject workingDirectory;
         public final FileObject startFile;
         public final String testName;
+        private final List<Testcase> customTests = Collections.synchronizedList(new ArrayList<Testcase>());
 
         public PhpUnitInfo(FileObject workingDirectory, FileObject startFile, String testName) {
-            assert workingDirectory != null;
             assert startFile != null;
 
             this.workingDirectory = workingDirectory;
             this.startFile = startFile;
             this.testName = testName;
+        }
+
+        public List<Testcase> getCustomTests() {
+            return new ArrayList<Testcase>(customTests);
+        }
+
+        public void resetCustomTests() {
+            customTests.clear();
+        }
+
+        public void setCustomTests(Collection<Testcase> tests) {
+            resetCustomTests();
+            customTests.addAll(tests);
         }
     }
 
@@ -310,6 +342,24 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
+
+            List<Testcase> customTests = info.getCustomTests();
+            if (!customTests.isEmpty()) {
+                StringBuilder buffer = new StringBuilder(200);
+                boolean first = true;
+                for (Testcase test : customTests) {
+                    if (!first) {
+                        buffer.append("|"); // NOI18N
+                    }
+                    buffer.append(test.getName());
+                    first = false;
+                }
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(PhpUnit.PARAM_FILTER)
+                        .addArgument(buffer.toString());
+                info.resetCustomTests();
+            }
+
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.SUITE_NAME)
                     .addArgument(PhpUnit.SUITE.getAbsolutePath())
@@ -418,23 +468,38 @@ class ConfigActionTest extends ConfigAction {
         }
 
         @Override
-        public void rerun() {
+        public final void rerun() {
             PhpActionProvider.submitTask(new Runnable() {
                 @Override
                 public void run() {
-                    ConfigActionTest.this.run(info);
+                    rerunInternal();
                 }
             });
         }
 
+        protected void rerunInternal() {
+            ConfigActionTest.this.run(info);
+        }
+
         @Override
         public void rerun(Set<Testcase> tests) {
-            //not implemented yet
+            info.setCustomTests(tests);
+            rerun();
         }
 
         @Override
         public boolean enabled(RerunType type) {
-            return RerunType.ALL.equals(type) && enabled;
+            boolean supportedType = false;
+            switch (type) {
+                case ALL:
+                case CUSTOM:
+                    supportedType = true;
+                    break;
+                default:
+                    assert false : "Unknown RerunType: " + type;
+                    break;
+            }
+            return supportedType && enabled;
         }
 
         @Override
@@ -468,13 +533,8 @@ class ConfigActionTest extends ConfigAction {
         }
 
         @Override
-        public void rerun() {
-            PhpActionProvider.submitTask(new Runnable() {
-                @Override
-                public void run() {
-                    ConfigActionTest.this.debug(info);
-                }
-            });
+        protected void rerunInternal() {
+            ConfigActionTest.this.debug(info);
         }
     }
 

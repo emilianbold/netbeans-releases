@@ -263,13 +263,20 @@ made subject to such option by the copyright holder.
             <folder name="Archetypes">
                 <file name="maven-quickstart-archetype">
                     <attr name="position" intvalue="100"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
                     <attr name="groupId" stringvalue="org.apache.maven.archetypes"/>
                     <attr name="artifactId" stringvalue="maven-archetype-quickstart"/>
                     <attr name="version" stringvalue="1.0"/>
                     <!--attr name="repository" stringvalue=""/-->
-                    <attr name="nameBundleKey" stringvalue="LBL_Maven_Quickstart_Archetype"/>
-                    <attr name="descriptionBundleKey" stringvalue="HINT_MavenQuickStart"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_Quickstart_Archetype"/>
+                    <attr name="description" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#HINT_MavenQuickStart"/>
+                </file>
+                <file name="maven-pom-archetype">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
+                    <attr name="artifactId" stringvalue="pom-root"/>
+                    <attr name="version" stringvalue="1.0"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_POM_Archetype"/>
+                    <attr name="description" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#HINT_Maven_POM_Archetype"/>
                 </file>
             </folder>
             <file name="nbactions.xml" url="nbactions.xml"/>

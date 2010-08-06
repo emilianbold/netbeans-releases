@@ -47,24 +47,19 @@ import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ResourceBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Archetype provider that lists the 3 basic ones to have something in the list
  * when the user never used any archetypes before..
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=ArchetypeProvider.class)
+@ServiceProvider(service=ArchetypeProvider.class)
 public class LayerBasedArchetypeProvider implements ArchetypeProvider {
     
-    /** Creates a new instance of LayerBasedArchetypeProvider */
-    public LayerBasedArchetypeProvider() {
-    }
-
-    public List<Archetype> getArchetypes() {
+    public @Override List<Archetype> getArchetypes() {
         FileObject root = FileUtil.getConfigFile("Projects/org-netbeans-modules-maven/Archetypes"); //NOI18N
         List<Archetype> toRet = new ArrayList<Archetype>();
         for (FileObject fo : FileUtil.getOrder(Arrays.asList(root.getChildren()), false)) {
@@ -72,27 +67,19 @@ public class LayerBasedArchetypeProvider implements ArchetypeProvider {
             String artifactId = (String) fo.getAttribute("artifactId"); //NOI18N
             String version = (String) fo.getAttribute("version"); //NOI18N
             String repository = (String) fo.getAttribute("repository"); //NOI18N
-            String nameKey = (String) fo.getAttribute("nameBundleKey"); //NOI18N
-            String descKey = (String) fo.getAttribute("descriptionBundleKey"); //NOI18N
-            String bundleLocation = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
+            String name = (String) fo.getAttribute("displayName"); //NOI18N
+            String desc = (String) fo.getAttribute("description"); //NOI18N
             if (groupId != null && artifactId != null && version != null) {
                 Archetype simple = new Archetype(false);
                 simple.setGroupId(groupId);
                 simple.setArtifactId(artifactId);
                 simple.setVersion(version);
                 simple.setRepository(repository);
-                if (bundleLocation != null) {
-                    ResourceBundle bundle = NbBundle.getBundle(bundleLocation);
-                    if (bundle != null && nameKey != null) {
-                        simple.setName(bundle.getString(nameKey));
-                    }
-                    if (bundle != null && descKey != null) {
-                        simple.setDescription(bundle.getString(descKey));
-                    }
+                if (name == null) {
+                    name = simple.getArtifactId();
                 }
-                if (simple.getName() == null) {
-                    simple.setName(simple.getArtifactId());
-                }
+                simple.setName(name);
+                simple.setDescription(desc);
                 toRet.add(simple);
             }
         }

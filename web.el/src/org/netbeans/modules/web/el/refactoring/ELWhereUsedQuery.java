@@ -59,9 +59,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -72,6 +73,8 @@ import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELIndex;
 import org.netbeans.modules.web.el.ELIndexer.Fields;
 import org.netbeans.modules.web.el.ELParser;
+import org.netbeans.modules.web.el.ELTypeUtilities;
+import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -84,6 +87,7 @@ import org.openide.util.Lookup;
 public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
     private CompilationInfo info;
+    private ELTypeUtilities typeUtilities;
 
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
@@ -96,9 +100,10 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             return null;
         }
         this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
+        this.typeUtilities = ELTypeUtilities.create(info);
         Element element = handle.resolveElement(info);
         if (Kind.METHOD == handle.getKind()) {
-            return handleProperty(refactoringElementsBag, handle, element);
+            return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
         }
         if (Kind.CLASS == handle.getKind()) {
             return handleClass(refactoringElementsBag, handle, element);
@@ -109,7 +114,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
         TypeElement type = (TypeElement) targetType;
         String clazz = type.getQualifiedName().toString();
-        String beanName = findBeanName(clazz);
+        String beanName = ELVariableResolvers.findBeanName(clazz, getFileObject());
         if (beanName != null) {
             ELIndex index = ELIndex.get(handle.getFileObject());
             Collection<? extends IndexResult> result = index.findIdentifierReferences(beanName);
@@ -124,29 +129,22 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return null;
     }
 
-    private String findBeanName(String clazz) {
-        for (ELVariableResolver resolver : getResolvers()) {
-            String beanName = resolver.getBeanName(clazz, getFileObject());
-            if (beanName != null) {
-                return beanName;
-            }
-        }
-        return null;
-    }
-
-    protected Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
+    protected Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, ExecutableElement targetType) {
         String propertyName = RefactoringUtil.getPropertyName(targetType.getSimpleName().toString());
         ELIndex index = ELIndex.get(handle.getFileObject());
         final Set<IndexResult> result = new HashSet<IndexResult>();
-        result.addAll(index.findPropertyReferences(propertyName));
+        // search for property nodes only if the method has no params (or accepts one vararg)
+        if (targetType.getParameters().isEmpty() ||
+                (targetType.getParameters().size() == 1 && targetType.isVarArgs())) {
+            result.addAll(index.findPropertyReferences(propertyName));
+        }
         result.addAll(index.findMethodReferences(propertyName));
 
         // logic: first try to find all properties for which can resolve the type directly,
         // then search for occurrences in variables
         for (ELElement each : getMatchingElements(result)) {
             List<Node> matchingNodes = findMatchingPropertyNodes(each.getNode(),
-                    propertyName,
-                    targetType.getEnclosingElement().asType(),
+                    targetType,
                     each.getParserResult().getFileObject());
             addElements(each, matchingNodes, refactoringElementsBag);
             handleVariableReferences(each, targetType, refactoringElementsBag);
@@ -187,16 +185,6 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return Lookup.getDefault().lookupAll(ELVariableResolver.class);
     }
 
-    private String findBeanClass(String beanName, FileObject context) {
-        for (ELVariableResolver resolver : getResolvers()) {
-            String beanClass = resolver.getBeanClass(beanName, context);
-            if (beanClass != null) {
-                return beanClass;
-            }
-        }
-        return null;
-    }
-
     protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
         for (Node property : matchingNodes) {
             WhereUsedQueryElement wuqe =
@@ -206,18 +194,18 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     }
 
     private List<Node> findMatchingPropertyNodes(Node root,
-            final String targetName,
-            final TypeMirror targetType,
+            final ExecutableElement targetMethod,
             final FileObject context) {
 
         final List<Node> result = new ArrayList<Node>();
+        final TypeMirror targetType = targetMethod.getEnclosingElement().asType();
         root.accept(new NodeVisitor() {
 
             @Override
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    String beanClass = findBeanClass(node.getImage(), context);
+                    String beanClass = ELVariableResolvers.findBeanClass(node.getImage(), context);
                     if (beanClass == null) {
                         return;
                     }
@@ -225,16 +213,20 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                     TypeMirror enclosing = fmbType.asType();
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
-                        if (child instanceof AstPropertySuffix || child instanceof AstMethodSuffix) {
-                            if (targetName.equals(child.getImage()) && info.getTypes().isSameType(targetType, enclosing)) {
-                                TypeMirror matching = getTypeForProperty(child, enclosing);
-                                if (matching != null) {
-                                    result.add(child);
-                                }
-                            } else {
-                                enclosing = getTypeForProperty(child, enclosing);
+                        if (!(child instanceof AstPropertySuffix || child instanceof AstMethodSuffix)) {
+                            continue;
+                        }
+                        if (enclosing == null) {
+                            break;
+                        }
+                        if (info.getTypes().isSameType(targetType, enclosing) && typeUtilities.isSameMethod(child, targetMethod)) {
+                            TypeMirror matching = getTypeForProperty(child, enclosing);
+                            if (matching != null) {
+                                result.add(child);
                             }
 
+                        } else {
+                            enclosing = getTypeForProperty(child, enclosing);
                         }
                     }
                 }
@@ -259,7 +251,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    String beanClass = findBeanClass(node.getImage(), context);
+                    String beanClass = ELVariableResolvers.findBeanClass(node.getImage(), context);
                     if (beanClass == null) {
                         return;
                     }
@@ -314,40 +306,24 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
      */
     private TypeMirror getTypeForProperty(Node property, TypeMirror enclosing) {
         String name = property.getImage();
-        for (Element each : info.getTypes().asElement(enclosing).getEnclosedElements()) {
+        List<? extends Element> enclosedElements = info.getTypes().asElement(enclosing).getEnclosedElements();
+        for (Element each : ElementFilter.methodsIn(enclosedElements)) {
             // we're only interested in public methods
             // XXX: should probably include public fields too
-            if (each.getKind() != ElementKind.METHOD || !each.getModifiers().contains(Modifier.PUBLIC)) {
+            if (!each.getModifiers().contains(Modifier.PUBLIC)) {
                 continue;
             }
             ExecutableElement methodElem = (ExecutableElement) each;
             String methodName = methodElem.getSimpleName().toString();
 
-            if (property instanceof AstMethodSuffix
-                    && methodName.equals(name)
-                    && haveSameParameters((AstMethodSuffix) property, methodElem)) {
-
-                return getReturnType(methodElem);
+            if (typeUtilities.isSameMethod(property, methodElem)) {
+                return typeUtilities.getReturnType(methodElem);
 
             } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
-                return getReturnType(methodElem);
+                return typeUtilities.getReturnType(methodElem);
             }
         }
         return null;
-    }
-
-    private TypeMirror getReturnType(ExecutableElement method) {
-        TypeKind returnTypeKind = method.getReturnType().getKind();
-        if (returnTypeKind.isPrimitive()) {
-            return info.getTypes().getPrimitiveType(returnTypeKind);
-        } else {
-            return method.getReturnType();
-        }
-    }
-
-    private static boolean haveSameParameters(AstMethodSuffix methodNode, ExecutableElement method) {
-        //XXX: need to do type matching here
-        return method.getParameters().size() == methodNode.jjtGetNumChildren();
     }
 
     private List<ELElement> getMatchingElements(Collection<? extends IndexResult> indexResult) {

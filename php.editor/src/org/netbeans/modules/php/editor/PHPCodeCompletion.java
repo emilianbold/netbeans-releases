@@ -299,7 +299,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteNamespaces(completionResult, request);
                     autoCompleteTypeNames(completionResult, request, null, true);
                     final ElementFilter forName = ElementFilter.forName(nameKindPrefix);
-                    Set<ConstantElement> constants = request.index.getConstants(nameKindPrefix);
+                    final Model model = request.result.getModel();
+                    final Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
+                    Set<ConstantElement> constants = request.index.getConstants(nameKindPrefix, aliasedNames);
                     for (ConstantElement constant : forName.filter(constants)) {
                         completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
                     }
@@ -314,7 +316,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                     break;
                 case NAMESPACE_KEYWORD:
-                    autoCompleteNamespaces(completionResult, request, QualifiedNameKind.QUALIFIED);
+                    Set<NamespaceElement> namespaces = request.index.getNamespaces(
+                            NameKind.prefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
+                    for (NamespaceElement namespace : namespaces) {
+                        completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, QualifiedNameKind.QUALIFIED));
+                    }
                     break;
                 case GLOBAL:
                     autoCompleteGlobals(completionResult, request);
@@ -340,8 +346,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteInterfaceNames(completionResult, request);
                     break;
                 case USE_KEYWORD:
-                    autoCompleteNamespaces(completionResult, request, QualifiedNameKind.QUALIFIED);
-                    autoCompleteTypeNames(completionResult, request, QualifiedNameKind.QUALIFIED, false);
+                    autoCompleteAfterUses(completionResult, request, QualifiedNameKind.QUALIFIED, false);
                     break;
                 case TYPE_NAME:
                     autoCompleteNamespaces(completionResult, request);
@@ -495,7 +500,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
-        Set<ClassElement> classes = getClasses(request, nameQuery);
+        Model model = request.result.getModel();
+        Set<ClassElement> classes = request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor));
+
         if (!classes.isEmpty()) {
             completionResult.setFilterable(false);
         }
@@ -503,17 +510,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
         }
     }
-
-    private Set<ClassElement> getClasses(CompletionRequest request, final NameKind nameQuery) {
-        Model model = request.result.getModel();
-        return request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor));
-    }
-
-    private Set<InterfaceElement> getInterfaces(CompletionRequest request, final NameKind nameQuery) {
-        Model model = request.result.getModel();
-        return request.index.getInterfaces(nameQuery, ModelUtils.getAliasedNames(model, request.anchor));
-    }
-
     private void autoCompleteInterfaceNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
         autoCompleteInterfaceNames(completionResult, request, null);
     }
@@ -521,7 +517,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
-        Set<InterfaceElement> interfaces = getInterfaces(request, nameQuery);
+
+        Model model = request.result.getModel();
+        Set<InterfaceElement> interfaces = request.index.getInterfaces(nameQuery, ModelUtils.getAliasedNames(model, request.anchor));
         if (!interfaces.isEmpty()) {
             completionResult.setFilterable(false);
         }
@@ -534,6 +532,32 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
         autoCompleteTypeNames(completionResult, request, null, false);
     }
+    
+    private void autoCompleteAfterUses(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {
+        Set<NamespaceElement> namespaces = request.index.getNamespaces(
+                NameKind.prefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
+        for (NamespaceElement namespace : namespaces) {
+            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
+        }
+        final NameKind nameQuery = NameKind.prefix(request.prefix);
+        for (ClassElement clazz : request.index.getClasses(nameQuery)) {
+            completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
+        }
+        for (InterfaceElement iface : request.index.getInterfaces(nameQuery)) {
+            completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
+        }
+        for (FunctionElement element : request.index.getFunctions(nameQuery)) {
+            for (final PHPCompletionItem.FunctionElementItem functionItem :
+                    PHPCompletionItem.FunctionElementItem.getItems((FunctionElement) element, request)) {
+                completionResult.add(functionItem);
+            }
+
+        }
+        for (ConstantElement element : request.index.getConstants(nameQuery)) {
+            completionResult.add(new PHPCompletionItem.ConstantItem(element, request));
+        }
+    }
+    
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {
         if (request.prefix.trim().length() > 0) {
             autoCompleteClassNames(completionResult, request, endWithDoubleColon, kind);
@@ -569,7 +593,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
      private void autoCompleteNamespaces(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
-        Set<NamespaceElement> namespaces = request.index.getNamespaces(NameKind.prefix(prefix));
+        Model model = request.result.getModel();
+        Set<NamespaceElement> namespaces = request.index.getNamespaces(NameKind.prefix(prefix),
+                ModelUtils.getAliasedNames(model, request.anchor));
         for (NamespaceElement namespace : namespaces) {
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
         }

@@ -84,7 +84,8 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
     private JButton addButton = new JButton(NbBundle.getMessage(SearchDependencyUI.class, "BTN_Add"));
     private BeanTreeView beanTreeView;
     private NBVersionInfo nbvi;
-    private RequestProcessor.Task task;
+    private static RequestProcessor.Task task = null;
+    private static final RequestProcessor RP = new RequestProcessor(SearchDependencyUI.class.getName(),1);
     private boolean retrigger = false;
     private Project project;
     /** Creates new form SearchDependencyUI */
@@ -139,6 +140,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             }
         });
         explorerManager.setRootContext(createEmptyNode());
+        createSearchTask();
         load();
         txtClassName.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -165,81 +167,85 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
         return addButton;
     }
 
-    public synchronized void load() {
-        if (task == null) {
-            task = RequestProcessor.getDefault().create(new Runnable() {
-                public void run() {
-                    final String[] search = new String[1];
-                    try {
-                        SwingUtilities.invokeAndWait(new Runnable() {
-                            public void run() {
-                                lblSelected.setText(null);
-                                beanTreeView.setRootVisible(true);
-                                search[0] = getClassSearchName();
+    private void createSearchTask() {
+        if (task != null) {
+            task.cancel();
+        }
+        task = RP.create(new Runnable() {
+            public void run() {
+                final String[] search = new String[1];
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            lblSelected.setText(null);
+                            beanTreeView.setRootVisible(true);
+                            search[0] = getClassSearchName();
 //for debugging purposes only lblMatchingArtifacts.setText(search[0]);
-                            }
-                        });
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    
-                    Node node;
-                    boolean visible = false;
-                    explorerManager.setRootContext(createLoadingNode());
-                    if (search[0].length() > 0) {
-                        List<NBVersionInfo> infos = RepositoryQueries.findVersionsByClass(search[0]);
-                        //the actual lucene query takes much longer than our queue
-                        // timeout, we should not start new tasks until this one is
-                        //finished.. and this one should either finish with correct data
-                        // or immediately retrigger a new search.
-                        synchronized (SearchDependencyUI.this) {
-                            if (retrigger) {
-                                retrigger = false;
-                                task.schedule(20);
-                                return;
-                            }
                         }
-                        Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
+                    });
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 
-                        for (NBVersionInfo nbvi : infos) {
-                            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId();
-                            List<NBVersionInfo> get = map.get(key);
-                            if (get == null) {
-                                get = new ArrayList<NBVersionInfo>();
-                                map.put(key, get);
-                            }
-                            get.add(nbvi);
+                Node node;
+                boolean visible = false;
+                explorerManager.setRootContext(createLoadingNode());
+                if (search[0].length() > 0) {
+                    List<NBVersionInfo> infos = RepositoryQueries.findVersionsByClass(search[0]);
+                    //the actual lucene query takes much longer than our queue
+                    // timeout, we should not start new tasks until this one is
+                    //finished.. and this one should either finish with correct data
+                    // or immediately retrigger a new search.
+                    synchronized (SearchDependencyUI.this) {
+                        if (retrigger) {
+                            retrigger = false;
+                            task.schedule(20);
+                            return;
                         }
-                        Set<String> keySet = map.keySet();
-                        if (keySet.size() > 0) {
-                            Children.Array array = new Children.Array();
-                            node = new AbstractNode(array);
-                            List<String> keyList = new ArrayList<String>(keySet);
-                            Collections.sort(keyList, new HeuristicsComparator());
-                            for (String key : keyList) {
-                                array.add(new Node[]{new ArtifactNode(key, map.get(key))});
-                            }
-                            visible = false;
-                        } else {
-                            node = createEmptyNode();
-                            visible = true;
+                    }
+                    Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
+
+                    for (NBVersionInfo nbvi : infos) {
+                        String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId();
+                        List<NBVersionInfo> get = map.get(key);
+                        if (get == null) {
+                            get = new ArrayList<NBVersionInfo>();
+                            map.put(key, get);
                         }
+                        get.add(nbvi);
+                    }
+                    Set<String> keySet = map.keySet();
+                    if (keySet.size() > 0) {
+                        Children.Array array = new Children.Array();
+                        node = new AbstractNode(array);
+                        List<String> keyList = new ArrayList<String>(keySet);
+                        Collections.sort(keyList, new HeuristicsComparator());
+                        for (String key : keyList) {
+                            array.add(new Node[]{new ArtifactNode(key, map.get(key))});
+                        }
+                        visible = false;
                     } else {
                         node = createEmptyNode();
                         visible = true;
                     }
-                    final Node fNode = node;
-                    final boolean fVisible = visible;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            beanTreeView.setRootVisible(fVisible);
-                            explorerManager.setRootContext(fNode);
-                        }
-                    });
-                    
+                } else {
+                    node = createEmptyNode();
+                    visible = true;
                 }
-            }, true);
-        }
+                final Node fNode = node;
+                final boolean fVisible = visible;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        beanTreeView.setRootVisible(fVisible);
+                        explorerManager.setRootContext(fNode);
+                    }
+                });
+
+            }
+        }, true);
+    }
+    
+    public synchronized void load() {
         if (!task.isFinished() && task.getDelay() == 0) {
             retrigger = true;
             //if running, just flag the 'retrigger' variable,

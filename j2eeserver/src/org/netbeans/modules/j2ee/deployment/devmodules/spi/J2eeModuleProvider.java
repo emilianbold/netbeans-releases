@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -752,6 +753,13 @@ public abstract class J2eeModuleProvider {
 
     public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {
         return null;
+    }
+
+    /**
+     * @since org.netbeans.modules.j2eeserver/4 1.70
+     */
+    public File[] getRequiredLibraries() {
+        return new File[] {};
     }
     
     /**

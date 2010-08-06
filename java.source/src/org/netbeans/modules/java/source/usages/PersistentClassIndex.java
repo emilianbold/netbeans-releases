@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.Query;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -164,7 +165,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
     @Override
-    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
+    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         if (BinaryAnalyser.OBJECT.equals(binaryName)) {
             this.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, convertor, result);
@@ -181,7 +182,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
                        
     @Override
-    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
+    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
             @Override
@@ -197,7 +198,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     @Override
-    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
+    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<? super Document, T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
             public Void run () throws IOException, InterruptedException {
@@ -303,7 +304,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException, IOException {
+    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<? super Document, T> convertor, Set<? super T> result) throws InterruptedException, IOException {
         final Query usagesQuery = QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD);
         this.index.query(new Query[]{usagesQuery},DocumentUtil.declaredTypesFieldSelector(),convertor,result);                
     }
