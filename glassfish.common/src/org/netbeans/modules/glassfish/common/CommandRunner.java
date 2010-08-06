@@ -390,19 +390,19 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot)  {
-        return deploy(dir, moduleName, contextRoot, null);
+        return deploy(dir, moduleName, contextRoot, null, new File[0]);
     }
     
-    Future<OperationState> deploy(File dir, String moduleName, String contextRoot, Map<String,String> properties) {
+    public Future<OperationState> deploy(File dir, String moduleName, String contextRoot, Map<String,String> properties, File[] libraries) {
         LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.DeployCommand(dir, moduleName,
-                contextRoot, computePreserveSessions(ip), properties));
+                contextRoot, computePreserveSessions(ip), properties, libraries));
     }
 
-    public Future<OperationState> redeploy(String moduleName, String contextRoot)  {
+    public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries)  {
         LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.RedeployCommand(moduleName, contextRoot, 
-                computePreserveSessions(ip)));
+                computePreserveSessions(ip), libraries));
     }
 
     private static Boolean computePreserveSessions(Map<String,String> ip) {

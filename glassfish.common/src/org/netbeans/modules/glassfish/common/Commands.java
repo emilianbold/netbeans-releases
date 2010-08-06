@@ -291,6 +291,18 @@ public class Commands {
         }
     };
 
+    private static void appendLibraries(StringBuilder cmd, File[] libraries) {
+        cmd.append(ServerCommand.PARAM_SEPARATOR).append("libraries="); // NOI18N
+        boolean firstOne = true;
+        for (File f : libraries) {
+            if (!firstOne) {
+                cmd.append(",");
+            }
+            cmd.append(f.getPath()); // NOI18N
+            firstOne = false;
+        }
+    }
+
     /**
      * Command to deploy a directory
      */
@@ -299,7 +311,7 @@ public class Commands {
         private final boolean isDirDeploy;
         private final File path;
 
-        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions, final Map<String,String> properties) {
+        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions, final Map<String,String> properties, File[] libraries) {
             super("deploy"); // NOI18N
 
             this.isDirDeploy = path.isDirectory();
@@ -315,6 +327,9 @@ public class Commands {
             if(contextRoot != null && contextRoot.length() > 0) {
                 cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
                 cmd.append(contextRoot);
+            }
+            if (libraries.length > 0) {
+                appendLibraries(cmd, libraries);
             }
             cmd.append(PARAM_SEPARATOR).append("force=true"); // NOI18N
             addProperties(cmd,properties);
@@ -381,7 +396,7 @@ public class Commands {
      */
     public static final class RedeployCommand extends ServerCommand {
 
-        public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions) {
+        public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions, File[] libraries) {
             super("redeploy"); // NOI18N
 
             StringBuilder cmd = new StringBuilder(128);
@@ -390,6 +405,9 @@ public class Commands {
             if(contextRoot != null && contextRoot.length() > 0) {
                 cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
                 cmd.append(contextRoot);
+            }
+            if (libraries.length > 0) {
+                appendLibraries(cmd, libraries);
             }
             addKeepSessions(cmd, preserveSessions);
             query = cmd.toString();

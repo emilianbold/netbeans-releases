@@ -75,6 +75,7 @@ import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
+import org.netbeans.modules.glassfish.spi.GlassfishModule2;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -90,7 +91,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Peter Williams
  */
-public class CommonServerSupport implements GlassfishModule, RefreshModulesCookie {
+public class CommonServerSupport implements GlassfishModule2, RefreshModulesCookie {
 
     private final transient Lookup lookup;
     private final Map<String, String> properties =
@@ -420,11 +421,16 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     @Override
     public Future<OperationState> deploy(final OperationStateListener stateListener,
             final File application, final String name, final String contextRoot, Map<String,String> properties) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
-        
-        return mgr.deploy(application, name, contextRoot, properties);
+        return deploy(stateListener, application, name, contextRoot, null, new File[0]);
     }
     
+    @Override
+    public Future<OperationState> deploy(OperationStateListener stateListener, File application, String name, String contextRoot, Map<String, String> properties, File[] libraries) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+
+        return mgr.deploy(application, name, contextRoot, properties, libraries);
+    }
+
     @Override
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
             final String name) {
@@ -434,8 +440,13 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     @Override
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
             final String name, final String contextRoot) {
+        return redeploy(stateListener, name, contextRoot, new File[0]);
+    }
+
+    @Override
+    public Future<OperationState> redeploy(OperationStateListener stateListener, String name, String contextRoot, File[] libraries) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
-        return mgr.redeploy(name, contextRoot);
+        return mgr.redeploy(name, contextRoot, libraries);
     }
 
     @Override
