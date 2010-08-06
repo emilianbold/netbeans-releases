@@ -129,7 +129,6 @@ import org.openide.util.WeakListeners;
  */
 public class DependencyNode extends AbstractNode {
     private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
-    private static final String MISSING_BADGE_ICON = "org/netbeans/modules/maven/ResourceNotIncluded.gif"; //NOI18N
     private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
     private static final String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
 
@@ -143,7 +142,7 @@ public class DependencyNode extends AbstractNode {
             + NbBundle.getMessage(DependencyNode.class, "ICON_JavadocBadge");//NOI18N
     private static String toolTipSource = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_SourceBadge");//NOI18N
-    private static String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MISSING_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MavenProjectNode.BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_MissingBadge");//NOI18N
     private static String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
@@ -473,8 +472,10 @@ public class DependencyNode extends AbstractNode {
     
     @Override
     public Image getIcon(int param) {
-        Image retValue;
-        retValue = super.getIcon(param);
+        return badge(super.getIcon(param));
+    }
+
+    private Image badge(Image retValue) {
         if (isLocal()) {
             if (hasJavadocInRepository()) {
                 Image ann = ImageUtilities.loadImage(JAVADOC_BADGE_ICON); //NOI18N
@@ -493,7 +494,7 @@ public class DependencyNode extends AbstractNode {
             }
             return retValue;
         } else {
-            Image ann = ImageUtilities.loadImage(MISSING_BADGE_ICON); //NOI18N
+            Image ann = ImageUtilities.loadImage(MavenProjectNode.BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipMissing);
             return ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
         }
@@ -501,25 +502,7 @@ public class DependencyNode extends AbstractNode {
 
     @Override
     public Image getOpenedIcon(int type) {
-        Image retValue;
-        retValue = super.getOpenedIcon(type);
-        if (isLocal()) {
-            if (hasJavadocInRepository()) {
-                Image ann = ImageUtilities.loadImage(JAVADOC_BADGE_ICON); //NOI18N
-                ann = ImageUtilities.addToolTipToImage(ann, toolTipJavadoc);
-                retValue = ImageUtilities.mergeImages(retValue, ann, 12, 0);//NOI18N
-            }
-            if (hasSourceInRepository()) {
-                Image ann = ImageUtilities.loadImage(SOURCE_BADGE_ICON); //NOI18N
-                ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
-                retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
-            }
-            return retValue;
-        } else {
-            Image ann = ImageUtilities.loadImage(MISSING_BADGE_ICON); //NOI18N
-            ann = ImageUtilities.addToolTipToImage(ann, toolTipMissing);
-            return ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
-        }
+        return badge(super.getOpenedIcon(type));
     }
 
     @Override
