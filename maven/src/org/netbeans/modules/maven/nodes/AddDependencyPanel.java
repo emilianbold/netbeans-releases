@@ -230,7 +230,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             artifactList = new DMListPanel(project);
             artifactPanel.add(artifactList, BorderLayout.CENTER);
         } else {
-            tabPane.setEnabledAt(1, false);
+            tabPane.setEnabledAt(2, false);
         }
         chkNbOnly.setVisible(false);
         if (nbRepo != null) {
@@ -304,7 +304,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             version = null;
         }
 
-        boolean dmDefined = tabPane.isEnabledAt(1);
+        boolean dmDefined = tabPane.isEnabledAt(2);
         if (artifactList != null) {
             Color c = defaultVersionC;
             String warn = null;
@@ -355,7 +355,6 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        coordPanel = new javax.swing.JPanel();
         lblGroupId = new javax.swing.JLabel();
         txtGroupId = new javax.swing.JTextField();
         lblArtifactId = new javax.swing.JLabel();
@@ -374,13 +373,13 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         jPanel1 = new javax.swing.JPanel();
         chkNbOnly = new javax.swing.JCheckBox();
         progressLabel = new javax.swing.JLabel();
+        pnlOpen = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        pnlOpenProjects = new javax.swing.JPanel();
         pnlDepMan = new javax.swing.JPanel();
         artifactsLabel = new javax.swing.JLabel();
         artifactPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        pnlOpen = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        pnlOpenProjects = new javax.swing.JPanel();
 
         lblGroupId.setLabelFor(txtGroupId);
         org.openide.awt.Mnemonics.setLocalizedText(lblGroupId, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "LBL_GroupId")); // NOI18N
@@ -395,53 +394,6 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         org.openide.awt.Mnemonics.setLocalizedText(lblScope, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "LBL_Scope")); // NOI18N
 
         comScope.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "compile", "runtime", "test", "provided" }));
-
-        org.jdesktop.layout.GroupLayout coordPanelLayout = new org.jdesktop.layout.GroupLayout(coordPanel);
-        coordPanel.setLayout(coordPanelLayout);
-        coordPanelLayout.setHorizontalGroup(
-            coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(coordPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblArtifactId)
-                    .add(lblGroupId)
-                    .add(lblVersion))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanelLayout.createSequentialGroup()
-                        .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(lblScope)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(comScope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        coordPanelLayout.setVerticalGroup(
-            coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanelLayout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lblGroupId))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblArtifactId)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblVersion)
-                    .add(comScope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lblScope)
-                    .add(txtVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(43, 43, 43))
-        );
-
-        txtGroupId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtGroupId.AccessibleContext.accessibleDescription")); // NOI18N
-        txtArtifactId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtArtifactId.AccessibleContext.accessibleDescription")); // NOI18N
-        txtVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtVersion.AccessibleContext.accessibleDescription")); // NOI18N
-        comScope.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.comScope.AccessibleContext.accessibleDescription")); // NOI18N
 
         searchPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -498,17 +450,17 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                         .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, searchPanelLayout.createSequentialGroup()
-                                .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                                .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(chkNbOnly))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, progressLabel)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                            .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
                             .add(searchPanelLayout.createSequentialGroup()
                                 .add(resultsLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 205, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 215, Short.MAX_VALUE)
                                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(106, 106, 106)))))
                 .addContainerGap())
@@ -530,7 +482,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                         .add(resultsLabel)
                         .add(progressLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -538,6 +490,33 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         resultsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.resultsLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.searchPanel.TabConstraints.tabTitle", new Object[] {}), searchPanel); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jLabel3.text")); // NOI18N
+
+        pnlOpenProjects.setLayout(new java.awt.BorderLayout());
+
+        org.jdesktop.layout.GroupLayout pnlOpenLayout = new org.jdesktop.layout.GroupLayout(pnlOpen);
+        pnlOpen.setLayout(pnlOpenLayout);
+        pnlOpenLayout.setHorizontalGroup(
+            pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pnlOpenLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
+                    .add(jLabel3))
+                .addContainerGap())
+        );
+        pnlOpenLayout.setVerticalGroup(
+            pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pnlOpenLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.pnlOpen.TabConstraints.tabTitle"), pnlOpen); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(artifactsLabel, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.artifactsLabel.text", new Object[] {})); // NOI18N
 
@@ -555,7 +534,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             .add(pnlDepManLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(pnlDepManLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                    .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
                     .add(artifactsLabel))
                 .addContainerGap())
         );
@@ -565,54 +544,60 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 .addContainerGap()
                 .add(artifactsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.pnlDepMan.TabConstraints.tabTitle", new Object[] {}), pnlDepMan); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jLabel3.text")); // NOI18N
-
-        pnlOpenProjects.setLayout(new java.awt.BorderLayout());
-
-        org.jdesktop.layout.GroupLayout pnlOpenLayout = new org.jdesktop.layout.GroupLayout(pnlOpen);
-        pnlOpen.setLayout(pnlOpenLayout);
-        pnlOpenLayout.setHorizontalGroup(
-            pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlOpenLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
-                    .add(jLabel3))
-                .addContainerGap())
-        );
-        pnlOpenLayout.setVerticalGroup(
-            pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pnlOpenLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.pnlOpen.TabConstraints.tabTitle"), pnlOpen); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblGroupId)
+                    .add(lblArtifactId)
+                    .add(lblVersion))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(lblScope)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(comScope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+            .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(coordPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblGroupId)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblArtifactId)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblVersion)
+                    .add(txtVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(comScope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lblScope))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE))
         );
 
+        txtGroupId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtGroupId.AccessibleContext.accessibleDescription")); // NOI18N
+        txtArtifactId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtArtifactId.AccessibleContext.accessibleDescription")); // NOI18N
+        txtVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtVersion.AccessibleContext.accessibleDescription")); // NOI18N
+        comScope.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.comScope.AccessibleContext.accessibleDescription")); // NOI18N
         tabPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.tabPane.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
@@ -629,7 +614,6 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private javax.swing.JLabel artifactsLabel;
     private javax.swing.JCheckBox chkNbOnly;
     private javax.swing.JComboBox comScope;
-    private javax.swing.JPanel coordPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -847,14 +831,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
         private Color defSearchC;
 
-        /** Creates new form FindResultsPanel */
         private QueryPanel() {
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(true);
             btv.setUseSubstringInQuickSearch(true);
             manager = new ExplorerManager();
-            manager.setRootContext(getNoResultsRoot());
             setLayout(new BorderLayout());
             add(btv, BorderLayout.CENTER);
             defSearchC = AddDependencyPanel.this.searchField.getForeground();
@@ -1165,10 +1147,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     boolean dmEmpty = dmDeps.isEmpty();
-                    AddDependencyPanel.this.tabPane.setEnabledAt(1, !dmEmpty);
-                    if (dmEmpty) {
-                        AddDependencyPanel.this.tabPane.setToolTipTextAt(1, NbBundle.getMessage(AddDependencyPanel.class, "TXT_No_DM"));
-                    }
+                    tabPane.setEnabledAt(2, !dmEmpty);
                 }
             });
         }
@@ -1227,10 +1206,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     boolean opEmpty = toRet.isEmpty();
-                    AddDependencyPanel.this.tabPane.setEnabledAt(2, !opEmpty);
-                    if (opEmpty) {
-                        AddDependencyPanel.this.tabPane.setToolTipTextAt(1, NbBundle.getMessage(AddDependencyPanel.class, "TXT_No_Opened"));
-                    }
+                    tabPane.setEnabledAt(1, !opEmpty);
                 }
             });
         }
