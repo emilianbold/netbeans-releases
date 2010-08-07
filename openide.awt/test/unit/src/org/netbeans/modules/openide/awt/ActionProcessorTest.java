@@ -174,7 +174,10 @@ public class ActionProcessorTest extends NbTestCase {
     }
     
     
-    @ActionRegistration(displayName = "#Key")
+    @ActionRegistration(
+        displayName = "#Key",
+        iconBase="org/openide/awt/TestIcon.png"
+    )
     @ActionID(
         category = "Edit",
         id = "my.field.action"
@@ -188,6 +191,8 @@ public class ActionProcessorTest extends NbTestCase {
             "Actions/Edit/my-field-action.instance"
         );
         assertNotNull("File found", fo);
+        Object icon = fo.getAttribute("iconBase");
+        assertTrue("Icon found", icon instanceof String);
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Attribute present", obj);
         assertTrue("It is context aware action", obj instanceof ContextAwareAction);

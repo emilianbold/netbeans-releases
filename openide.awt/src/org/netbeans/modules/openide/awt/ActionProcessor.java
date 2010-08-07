@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -164,6 +163,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     } catch (LayerGenerationException ex) {
                         generateContext(e, f);
                     }
+                }
+                if (ar.iconBase().length() > 0) {
+                    f.stringvalue("iconBase", ar.iconBase());
                 }
                 f.boolvalue("noIconInMenu", !ar.iconInMenu());
                 if (ar.asynchronous()) {
