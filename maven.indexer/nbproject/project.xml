@@ -182,8 +182,12 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.indexer.spi.ui</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/nexus-indexer-2.0.0.jar</runtime-relative-path>
-                <binary-origin>external/nexus-indexer-2.0.0.jar</binary-origin>
+                <runtime-relative-path>ext/maven/nexus-indexer-3.0.2.jar</runtime-relative-path>
+                <binary-origin>external/nexus-indexer-3.0.2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven/nexus-indexer-artifact-1.0.0.jar</runtime-relative-path>
+                <binary-origin>external/nexus-indexer-artifact-1.0.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/commons-codec-1.4.jar</runtime-relative-path>
