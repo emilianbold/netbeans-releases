@@ -90,6 +90,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import javax.swing.text.BadLocationException;
 import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -1956,10 +1957,11 @@ public class JavaSourceTest extends NbTestCase {
             await();
         }
         
-        public void getPackageNames(String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException {
+        @Override
+        public <T> void queryBTree(Term start, ResultConvertor<Term, T> filter, Collection<? super T> result) throws IOException, InterruptedException {
             await ();
         }
-
+       
         public void store(Map<Pair<String,String>, Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException {            
         }
 
@@ -1992,8 +1994,7 @@ public class JavaSourceTest extends NbTestCase {
         @Override
         public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
             await();
-        }
-       
+        }              
     }
 
     private FileObject createTestFile (String className) {

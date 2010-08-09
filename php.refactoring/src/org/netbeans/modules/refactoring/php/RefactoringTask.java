@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.refactoring.php;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,13 +48,13 @@ import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.refactoring.php.findusages.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -65,7 +63,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -93,14 +90,16 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            ParserResult cc = (ParserResult) resultIterator.getParserResult();
-            Program root = RefactoringUtils.getRoot(cc);
-            if (root == null) {
-                // TODO How do I add some kind of error message?
-                RefactoringTask.LOG.log(Level.FINE, "FAILURE - can't refactor uncompileable sources");
-                return;
+            Result parserResult = resultIterator.getParserResult();
+            if (parserResult instanceof PHPParseResult) {
+                Program root = RefactoringUtils.getRoot((PHPParseResult) parserResult);
+                if (root != null) {
+                    ui = createRefactoringUI((PHPParseResult) parserResult);
+                    return;
+                }
             }
-            ui = createRefactoringUI(cc);
+            // TODO How do I add some kind of error message?
+            RefactoringTask.LOG.log(Level.FINE, "FAILURE - can't refactor uncompileable sources");
         }
 
         @Override
@@ -133,7 +132,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         }
 
-        protected abstract RefactoringUI createRefactoringUI(final ParserResult info);
+        protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info);
     }
 
     public static abstract class TextComponentTask extends RefactoringTask {
@@ -170,16 +169,19 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            ParserResult cc = (ParserResult) resultIterator.getParserResult();
-            Program root = RefactoringUtils.getRoot(cc);
-            if (root == null) {
-                // TODO How do I add some kind of error message?
-                RefactoringTask.LOG.log(Level.FINE, "FAILURE - can't refactor uncompileable sources");
-                return;
+            Result parserResult = resultIterator.getParserResult();
+            if (parserResult instanceof PHPParseResult) {
+                Program root = RefactoringUtils.getRoot((PHPParseResult) parserResult);
+                if (root != null) {
+                    ui = createRefactoringUI((PHPParseResult)parserResult, caret);
+                    return;
+                }
             }
-            ui = createRefactoringUI(cc, caret);
+            // TODO How do I add some kind of error message?
+            RefactoringTask.LOG.log(Level.FINE, "FAILURE - can't refactor uncompileable sources");
+
         }
 
-        protected abstract RefactoringUI createRefactoringUI(final ParserResult info, final int offset);
+        protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset);
     }
 }
