@@ -429,7 +429,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                         }
                     } else {
                         updatename += getBundle("OperationDescriptionStep_UpdatePluginVersionFormat", oldVersion, newVersion);
-                        if(checkInternalUpdates) {
+                        if(checkInternalUpdates && !el.getUpdateUnit().isPending()) {
                             container.add(el);
                         }
                     }
