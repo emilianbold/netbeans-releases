@@ -51,8 +51,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex;
 
 /**
@@ -70,8 +72,8 @@ public abstract class Index {
     public abstract boolean exists ();
     public abstract boolean isValid (boolean tryOpen) throws IOException;
     public abstract <T> void query (@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<? super Document, T> convertor, Collection<? super T> result) throws IOException, InterruptedException;
+    public abstract <T> void queryBTree(@NullAllowed Term start, @NonNull ResultConvertor<Term,T> filter, @NonNull Collection<? super T> result) throws  IOException, InterruptedException;
     public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<? super Document, T> convertor,Map<T,Set<String>> result) throws IOException, InterruptedException;
-    public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
     public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
     public abstract void clear () throws IOException;

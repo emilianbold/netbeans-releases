@@ -73,6 +73,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -716,10 +717,12 @@ class OccurenceBuilder {
         Set<MethodElement> methods = new HashSet<MethodElement>();
         final Scope scope = elementInfo.getScope();
         final ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
-        if (methods.isEmpty()/* && types.isEmpty()*/) {
-            String mthd = elementInfo.getName();
-            methods = index.getMethods(NameKind.exact(mthd));
-        }
+        String mthd = elementInfo.getName();
+        TypeElement type = (scope instanceof TypeElement) ? (TypeElement)scope : 
+            ((scope instanceof MethodScope)  ? (TypeElement)scope.getInScope() : null);
+
+        methods = type != null ? ElementFilter.forMembersOfType(type).filter(index.getMethods(NameKind.exact(mthd))) :
+            index.getMethods(NameKind.exact(mthd));
 
         Occurence.Accuracy accuracy = Accuracy.NO;
         if (methods.size() == 1) {
@@ -1305,7 +1308,7 @@ class OccurenceBuilder {
                     };
                     occurences.add(occurenceImpl);
 
-                }
+                } 
             }
         }
     }

@@ -45,14 +45,19 @@ import com.sun.el.parser.Node;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
@@ -72,8 +77,26 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
     }
 
     @Override
-    protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
-        // not supported yet
+    protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
+        TypeElement type = (TypeElement) targetType;
+        // handles only cases where the managed bean name matches the class name and is not 
+        // explicitly specified in the annotation
+        String beanName = ELVariableResolvers.findBeanName(type.getQualifiedName().toString(), getFileObject());
+        if (beanName != null && beanName.equalsIgnoreCase(type.getSimpleName().toString())) {
+            for (AnnotationMirror ann : info.getElements().getAllAnnotationMirrors(type)) {
+                CharSequence annFqn = info.getTypeUtilities().getTypeName(ann.getAnnotationType(), TypeNameOptions.PRINT_FQN);
+                if ("javax.faces.bean.ManagedBean".contentEquals(annFqn)) { //NOI18N
+                    for (ExecutableElement annElem : ann.getElementValues().keySet()) { 
+                        if ("name".contentEquals(annElem.getSimpleName())) { //NOI18N
+                            // name explicitly specified, so don't refactor
+                            return null;
+                        }
+                    }
+                    // uses default name, can be refactored
+                    return super.handleClass(refactoringElementsBag, handle, targetType);
+                }
+            }
+        }
         return null;
     }
 

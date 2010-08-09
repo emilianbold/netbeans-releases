@@ -62,6 +62,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.TypeElement;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.store.FSDirectory;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
@@ -111,7 +112,8 @@ public class LucenePerformanceTest extends NbTestCase {
         
         Set<String> result = new HashSet<String>();
         startTime = System.currentTimeMillis();
-        index.getPackageNames("",true,result);
+        final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter("", true);
+        index.queryBTree(filter.second, filter.first,result);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Packages: " + delta);
