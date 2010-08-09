@@ -116,15 +116,15 @@ import org.openide.util.Parameters;
  */
 public class SourceAnalyser {    
     
-    private final Index index;
+    private final ClassIndexImpl.Writer writer;
     private final Map<Pair<String, String>, Object[]> references;
     private final Set<Pair<String,String>> toDelete;
     private static final boolean fullIndex = Boolean.getBoolean(SourceAnalyser.class.getName()+".fullIndex");   //NOI18N
     
     /** Creates a new instance of SourceAnalyser */
-    SourceAnalyser (final @NonNull Index index) {
-        Parameters.notNull("index", index);   //NOI18N
-        this.index = index;
+    SourceAnalyser (final @NonNull ClassIndexImpl.Writer writer) {
+        Parameters.notNull("writer", writer);   //NOI18N
+        this.writer = writer;
         this.references = new HashMap<Pair<String,String>, Object[]> ();
         this.toDelete = new HashSet<Pair<String,String>> ();
     }
@@ -133,7 +133,7 @@ public class SourceAnalyser {
     public void store () throws IOException {
         if (this.references.size() > 0 || this.toDelete.size() > 0) {
             try {
-                this.index.store(this.references, toDelete);
+                this.writer.store(this.references, toDelete);
             } finally {
                 this.references.clear();
                 this.toDelete.clear();
@@ -216,7 +216,7 @@ public class SourceAnalyser {
                 final Data data = oe.getValue();
                 addClassReferences (key,data);
             }
-            this.index.store(this.references, topLevels);
+            this.writer.store(this.references, topLevels);
         } catch (IllegalArgumentException iae) {
             Exceptions.printStackTrace(iae);
         }catch (OutputFileManager.InvalidSourcePath e) {

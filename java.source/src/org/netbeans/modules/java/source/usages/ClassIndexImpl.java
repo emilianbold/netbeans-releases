@@ -187,6 +187,12 @@ public abstract class ClassIndexImpl {
     public static final class IndexAlreadyClosedException extends IOException {        
     }
     
+    public static interface Writer {
+        void clear() throws IOException;
+        void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException;
+        void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException;
+    }
+    
     private class Ref extends WeakReference<ClassIndexImplListener> implements Runnable {
         public Ref (ClassIndexImplListener listener) {
             super (listener, Utilities.activeReferenceQueue());
