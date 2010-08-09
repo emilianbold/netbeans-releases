@@ -1460,7 +1460,17 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 // However, IZ 97706 makes that unworkable.
 
                 v.setExpanded(true);
-                v.setChildren(item.rhs_vdl);
+		if (item.flags == 0) {
+		    v.setChildren(item.rhs_vdl, null);
+		} else {
+		    DbxVariable var = new DbxVariable(this, localUpdater, null,
+			   item.plain_lhs,
+			   item.plain_lhs,
+			   null,
+			   null,
+			   variableErrorCode(item.flags));
+		    v.setChildren(item.rhs_vdl, var);
+		}
             }
         }
 
@@ -1576,8 +1586,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 		v = new DbxVariable(this, localUpdater, null,
 			result.plain_lhs,
 			result.plain_lhs,
-			null,
-			null,
+			result.static_type,
+			result.static_type,
 			variableErrorCode(result.flags));
 	    }
 
@@ -1598,7 +1608,19 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                     result.qualified_lhs, var == null ? "miss" : "hit"); // NOI18N
         }
         if (var != null) {
-            var.setChildren(result.rhs_vdl);
+	    if (result.flags == 0) {
+		var.setChildren(result.rhs_vdl, null);
+	    } else {
+	        DbxVariable v = new DbxVariable(this, localUpdater, null,
+		       result.plain_lhs,
+		       result.plain_lhs,
+		       result.static_type,
+		       result.static_type,
+		       variableErrorCode(result.flags));
+	        Variable vars[] = new Variable[1];
+	        vars[0] = v;
+	        var.setChildren(vars, true);
+	    }
         }
     }
 
@@ -1616,7 +1638,19 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                     result.qualified_lhs, var == null ? "miss" : "hit"); // NOI18N
         }
         if (var != null) {
-            var.setChildren(result.rhs_vdl);
+	    if (result.flags == 0) {
+		var.setChildren(result.rhs_vdl, null);
+	    } else {
+	        DbxVariable v = new DbxVariable(this, localUpdater, null,
+		       result.plain_lhs,
+		       result.plain_lhs,
+		       result.static_type,
+		       result.static_type,
+		       variableErrorCode(result.flags));
+	        Variable vars[] = new Variable[1];
+	        vars[0] = v;
+	        var.setChildren(vars, true);
+	    }
         }
     }
 
@@ -1987,7 +2021,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                     nativeWatch.replacedWith(null);
                 }
             } else {
-                w.setChildren(null);
+                w.setChildren(null, null);
                 w.setLeaf(true);
                 w.setAsText(variableErrorCode(items[wx].flags));
             }
@@ -2097,7 +2131,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         } else if ((flags & GPDbxDisplayItem.NOTALLOC) != 0) {
             return "<NOT_ALLOC>"; // NOI18N
         } else if ((flags & GPDbxDisplayItem.TOOBIG) != 0) {
-            return "<TOO_BIG>"; // NOI18N
+            return "<TOO_BIG - Use \"Set Max Object Size\" to see expression value>"; // NOI18N
         } else if ((flags & GPDbxDisplayItem.NOT_AVAILABLE) != 0) {
             return "<NOT_AVAILABLE>"; // NOI18N
         } else {
@@ -2157,8 +2191,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             locals = locals_vector.toArray(locals);
         }
 
-	    localUpdater.batchOffForce();
-	}
+	localUpdater.batchOffForce();
+    }
 
     public int getLocalsCount() {
         if (locals == null) {

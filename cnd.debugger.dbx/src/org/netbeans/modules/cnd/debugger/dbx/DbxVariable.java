@@ -177,7 +177,15 @@ class DbxVariable extends Variable {
      * updateWatches with null on an error
      */
 
-    void setChildren(String rhs_vdl) {
+    void setChildren(String rhs_vdl, DbxVariable v) {
+
+	// CR 6972600, v is the node that will show error msg
+	if (v != null) {
+	    Variable vars[] = new Variable[1];
+	    vars[0] = v;
+	    setChildren(vars, true);
+	    return;
+	} 
 
 	if (rhs_vdl == null) {
 	    if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Variable.ctx)
