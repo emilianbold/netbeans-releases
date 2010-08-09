@@ -47,8 +47,8 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
@@ -64,7 +64,9 @@ class PHPRuleContext extends RuleContext {
 
     public ElementQuery.Index getIndex() {
         if (index == null) {
-            index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(parserResult));
+            if (parserResult instanceof PHPParseResult) {
+                index = ElementQueryFactory.getIndexQuery((PHPParseResult)parserResult);
+            }
         }
         return index;
     }

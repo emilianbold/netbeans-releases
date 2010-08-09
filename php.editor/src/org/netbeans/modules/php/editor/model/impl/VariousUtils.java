@@ -57,6 +57,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -70,6 +72,11 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseElement;
@@ -345,7 +352,7 @@ public class VariousUtils {
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
     //TODO: needs to be improved to properly return more types
-    public static Collection<? extends TypeScope> getType( VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
+    public static Collection<? extends TypeScope> getType(final VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
         Collection<? extends TypeScope> recentTypes = Collections.emptyList();
         Collection<? extends TypeScope> oldRecentTypes = Collections.emptyList();
         Stack<VariableName> fldVarStack = new Stack<VariableName>();
@@ -380,23 +387,14 @@ public class VariousUtils {
                 } else {
                     if (operation == null) {
                         assert i == 0 : frag;
-                        NamespaceIndexFilter filter = new NamespaceIndexFilter(frag);
-                        QualifiedNameKind kind = filter.getKind();
-                        String query = kind.isUnqualified() ? frag : filter.getName();
-                        recentTypes = CachingSupport.getClasses(query,varScope);
-                        if (recentTypes.isEmpty()) {
-                            recentTypes = CachingSupport.getInterfaces(query,varScope);
-                        }
-                        if (!kind.isUnqualified()) {
-                            recentTypes = filter.filterModelElements(recentTypes, true);
-                        }
+                        recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag),varScope);
                     } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
                         //new FooImpl()-> not allowed in php
                         return Collections.emptyList();
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
-                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
+                            Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
                                 newRecentTypes.addAll(meth.getReturnTypes(true));
                             }
@@ -405,7 +403,7 @@ public class VariousUtils {
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.FUNCTION_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
-                        FunctionScope fnc = ModelUtils.getFirst(CachingSupport.getFunctions(frag, varScope));
+                        FunctionScope fnc = ModelUtils.getFirst(IndexScopeImpl.getFunctions(QualifiedName.create(frag), varScope));
                         if (fnc != null) {
                             newRecentTypes.addAll(fnc.getReturnTypes(true));
                         }
@@ -417,33 +415,11 @@ public class VariousUtils {
                         assert frgs.length == 2;
                         String clsName = frgs[0];
                         if (clsName != null) {
-                            boolean parent = false;
-                            if (varScope instanceof MethodScope) {//NOI18N
-                                if ("self".equals(clsName)) {
-                                    Scope inScope = varScope.getInScope();
-                                    clsName = inScope.getName();
-                                } else if ("parent".equals(clsName)) {
-                                    Scope inScope = varScope.getInScope();
-                                    clsName = inScope.getName();
-                                    parent = true;
-                                }
-                            }
-                            NamespaceIndexFilter filter = new NamespaceIndexFilter(frag);
-                            QualifiedNameKind kind = filter.getKind();
-                            String query = kind.isUnqualified() ? frag : filter.getName();
-                            recentTypes = CachingSupport.getClasses(query, varScope);
-                            Collection<? extends ClassScope> classes = CachingSupport.getClasses(clsName, varScope);
-                            if (!kind.isUnqualified()) {
-                                classes = filter.filterModelElements(classes, true);
-                            }
+                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(createQuery(clsName, varScope), varScope);
                             for (ClassScope cls : classes) {
-                                if (parent) {
-                                    cls = ModelUtils.getFirst(cls.getSuperClasses());
-                                    if (cls == null) continue;
-                                }
-                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
+                                Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
-                                   newRecentTypes.addAll(meth.getReturnTypes(true));
+                                    newRecentTypes.addAll(meth.getReturnTypes(true));
                                 }
                             }
                         }
@@ -481,7 +457,7 @@ public class VariousUtils {
                                     final Scope inScope = mScope.getInScope();
                                     if (inScope instanceof ClassScope) {
                                         String clsName = ((ClassScope) inScope).getName();
-                                        newRecentTypes.addAll(CachingSupport.getClasses(clsName, varScope));
+                                        newRecentTypes.addAll(IndexScopeImpl.getClasses(QualifiedName.create(clsName), varScope));
                                     }
                                 }
                             }
@@ -499,7 +475,7 @@ public class VariousUtils {
                         for (TypeScope type : oldRecentTypes) {
                             if (type instanceof ClassScope) {
                                 ClassScope cls = (ClassScope) type;
-                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
+                                Collection<? extends FieldElement> inheritedFields = IndexScopeImpl.getFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
                                 for (FieldElement fieldElement : inheritedFields) {
                                     if (var != null) {
                                         final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
@@ -522,29 +498,25 @@ public class VariousUtils {
                 }
             }
         } else if (semiTypeName != null ) {
-            NamespaceIndexFilter filter = new NamespaceIndexFilter(semiTypeName);
             QualifiedName qn = QualifiedName.create(semiTypeName);
-            final QualifiedNameKind kind = qn.getKind();
-            String query = kind.isUnqualified() ? semiTypeName : filter.getName();
-            Collection<? extends TypeScope> retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, varScope));
-            if (retval.isEmpty() && varScope instanceof  MethodScope) {
-                query = translateSpecialClassName(varScope, query);
-                retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, varScope));
-            }
-
-            if (!kind.isUnqualified()) {
-                retval = filter.filterModelElements(retval, true);
-            }
-            return retval;
+            qn = qn.toNamespaceName().append(translateSpecialClassName(varScope, qn.getName()));
+            final IndexScope indexScope = ModelUtils.getIndexScope(varScope);
+            return indexScope.findTypes(qn);
         }
-       
+
         return recentTypes;
+    }
+
+    private static QualifiedName createQuery(String semiTypeName, final Scope scope) {
+        final QualifiedName query = QualifiedName.create(semiTypeName);
+        return query.toNamespaceName().append(translateSpecialClassName(scope, query.getName()));
     }
 
     public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
         Stack<ModelElement> emptyStack = new Stack<ModelElement>();
         Stack<ModelElement> retval = new Stack<ModelElement>();
-        Stack<String> stack = new Stack<String>();
+        Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();;
+
         TypeScope type = null;
         if (semiTypeName != null && semiTypeName.contains("@")) {
             String operation = null;
@@ -576,58 +548,61 @@ public class VariousUtils {
                 } else {
                     if (operation == null) {
                         assert i == 0;
-                        stack.push(frag);
+
+                        Collection<? extends TypeScope> types = IndexScopeImpl.getTypes(QualifiedName.create(frag), topScope);
+
+                        if (!types.isEmpty()) {
+                            stack.push(types);
+                        }
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
-                        String clsName = stack.isEmpty() ? null : stack.pop();
-                        if (clsName == null) {
+                        Collection<? extends TypeScope> types = stack.isEmpty() ? null : stack.pop();
+                        if (types == null || types.isEmpty()) {
                             return emptyStack;
                         }
-                        ClassScope cls = ModelUtils.getFirst(CachingSupport.getClasses(clsName,topScope));
+                        TypeScope cls = ModelUtils.getFirst(types);
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frag, topScope, PhpModifiers.ALL_FLAGS));
-                        if (meth == null) {
+                        final Collection<? extends MethodScope> methods = IndexScopeImpl.getMethods(cls, frag, topScope, PhpModifiers.ALL_FLAGS);
+                        MethodScope meth = ModelUtils.getFirst(methods);
+                        if (methods.isEmpty()) {
                             return emptyStack;
                         } else {
                             retval.push(meth);
                         }
-                        type = ModelUtils.getFirst(meth.getReturnTypes(true));
-                        if (type == null) {
-                            semiTypeName = null;
+                        types = meth.getReturnTypes(true);
+                        if (types == null || types.isEmpty()) {
                             break;
                         }
-                        stack.push(type.getName());
+                        stack.push(types);
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.FUNCTION_TYPE_PREFIX)) {
-                        FunctionScope fnc = ModelUtils.getFirst(CachingSupport.getFunctions(frag, topScope));
+                        FunctionScope fnc = ModelUtils.getFirst(IndexScopeImpl.getFunctions(QualifiedName.create(frag), topScope));
                         if (fnc == null) {
-                            semiTypeName = null;
                             break;
                         } else {
                             retval.push(fnc);
                         }
-                        type = ModelUtils.getFirst(fnc.getReturnTypes(true));
+                        final Collection<? extends TypeScope> returnTypes = fnc.getReturnTypes(true);
+                        type = ModelUtils.getFirst(returnTypes);
                         if (type == null) {
-                            semiTypeName = null;
                             break;
                         }
-                        stack.push(type.getName());
+                        stack.push(returnTypes);
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
-                        ClassScope cls = ModelUtils.getFirst(CachingSupport.getClasses(frag, topScope));
+                        ClassScope cls = ModelUtils.getFirst(IndexScopeImpl.getClasses(QualifiedName.create(frag), topScope));
                         if (cls == null) {
-                            semiTypeName = null;
                             break;
                         } else {
-                            MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, "__construct",topScope, PhpModifiers.ALL_FLAGS));//NOI18N
+                            MethodScope meth = ModelUtils.getFirst(IndexScopeImpl.getMethods(cls, "__construct",topScope, PhpModifiers.ALL_FLAGS));//NOI18N
                             if (meth != null) {
                                 retval.push(meth);
                             } else {
                                 return emptyStack;
                             }
                         }
-                        stack.push(cls.getName());
+                        stack.push(Collections.singletonList(cls));
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
                         String[] frgs = frag.split("\\.");
@@ -636,23 +611,23 @@ public class VariousUtils {
                         if (clsName == null) {
                             return emptyStack;
                         }
-                        ClassScope cls = ModelUtils.getFirst(CachingSupport.getClasses(clsName, topScope));
+                        ClassScope cls = ModelUtils.getFirst(IndexScopeImpl.getClasses(QualifiedName.create(clsName), topScope));
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frgs[1],topScope, PhpModifiers.ALL_FLAGS));
+                        MethodScope meth = ModelUtils.getFirst(IndexScopeImpl.getMethods(cls, frgs[1],topScope, PhpModifiers.ALL_FLAGS));
                                 //ModelUtils.getFirst(cls.getMethods(frgs[1], PhpModifiers.STATIC));
                         if (meth == null) {
                             return emptyStack;
                         } else {
                             retval.push(meth);
                         }
-                        type = ModelUtils.getFirst(meth.getReturnTypes(true));
+                        final Collection<? extends TypeScope> returnTypes = meth.getReturnTypes(true);
+                        type = ModelUtils.getFirst(returnTypes);
                         if (type == null) {
-                            semiTypeName = null;
                             break;
                         }
-                        stack.push(type.getName());
+                        stack.push(returnTypes);
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.VAR_TYPE_PREFIX)) {
                         type = null;
@@ -662,16 +637,17 @@ public class VariousUtils {
                                 type = (ClassScope) mScope.getInScope();
                             }
                             if (type != null) {
-                                stack.push(type.getName());
+                                stack.push(Collections.singletonList(type));
                                 operation = null;
                             }
                         } else if (varScope instanceof NamespaceScope) {
                             NamespaceScope nScope = (NamespaceScope) varScope;
                             VariableName varName = ModelUtils.getFirst(nScope.getDeclaredVariables(), frag);
                             if (varName != null) {
-                                type = ModelUtils.getFirst(varName.getTypes(offset));
+                                final Collection<? extends TypeScope> types = varName.getTypes(offset);
+                                type = ModelUtils.getFirst(types);
                                 if (type != null) {
-                                    stack.push(type.getName());
+                                    stack.push(types);
                                     operation = null;
                                 }
                             }
@@ -680,51 +656,47 @@ public class VariousUtils {
                             List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), frag);
                             if (!variables.isEmpty()) {
                                 VariableName varName = ModelUtils.getFirst(variables);
-                                type = varName != null ? ModelUtils.getFirst(varName.getTypes(offset)) : null;
+                                final Collection<? extends TypeScope> types = varName != null ? varName.getTypes(offset) : null;
+                                type = types != null ? ModelUtils.getFirst(types) : null;
                                 if (varName != null) {
                                     retval.push(varName);
                                 }
                                 if (type != null) {
-                                    stack.push(type.getName());
+                                    stack.push(types);
                                 } else {
-                                    semiTypeName = null;
                                     break;
                                 }
                                 operation = null;
                             }
                         }
                     } else if (operation.startsWith(VariousUtils.FIELD_TYPE_PREFIX)) {
-                        String clsName = stack.isEmpty() ? null : stack.pop();
-                        if (clsName == null) {
+                        Collection<? extends TypeScope> types = stack.isEmpty() ? null : stack.pop();
+                        if (types == null || types.isEmpty()) {
                             return emptyStack;
                         }
-                        ClassScope cls = ModelUtils.getFirst(CachingSupport.getClasses(clsName,topScope));
-                        if (cls == null) {
+                        TypeScope cls = ModelUtils.getFirst(types);
+                        if (cls == null || !(cls instanceof ClassScope)) {
                             return emptyStack;
                         }
-                        FieldElement fieldElement = ModelUtils.getFirst(CachingSupport.getInheritedFields(cls, 
+                        FieldElement fieldElement = ModelUtils.getFirst(IndexScopeImpl.getFields((ClassScope)cls,
                                 !frag.startsWith("$") ? String.format("%s%s", "$",frag) : frag, topScope, PhpModifiers.ALL_FLAGS));//NOI18N
                         if (fieldElement == null) {
                             return emptyStack;
                         } else {
                             retval.push(fieldElement);
                         }
-                        type = ModelUtils.getFirst(fieldElement.getTypes(offset));
+                        final Collection<? extends TypeScope> fieldTypes = fieldElement.getTypes(offset);
+                        type = ModelUtils.getFirst(fieldTypes);
                         if (type == null) {
-                            semiTypeName = null;
                             break;
                         }
-                        stack.push(type.getName());
+                        stack.push(fieldTypes);
                         operation = null;
                     } else {
                         throw new UnsupportedOperationException(operation);
                     }
                 }
             }
-            if (stack.size() == 1) {
-                semiTypeName = stack.pop();
-            }
-        //throw new UnsupportedOperationException("Not supported yet.");
         }
         return retval;
     }
@@ -1114,7 +1086,7 @@ public class VariousUtils {
                 return ((ClassScope)csi).getSuperClasses();
             }
         }
-        return CachingSupport.getTypes(staticTypeName, inScope);
+        return IndexScopeImpl.getTypes(QualifiedName.create(staticTypeName), inScope);
     }
 
     public static QualifiedName getPreferredName(QualifiedName fullName, NamespaceScope contextNamespace) {
