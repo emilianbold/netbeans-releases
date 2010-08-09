@@ -1243,7 +1243,7 @@ public class TokenFormatter {
                                                 int currentOffset = formatToken.getOffset() + delta + indexInST;
                                                 indexInST = indexInST + token.length();
                                                 int currentLine = Utilities.getLineOffset(doc, currentOffset);
-                                                if (firstLine < currentLine ) {
+                                                if (firstLine < currentLine  && !token.equals("\n")) {  //NOI18N
                                                     int lineIndent = Utilities.getRowIndent(doc, currentOffset + 1);
                                                     int finalIndent = lastPHPIndent + lineIndent - lineHTMLIndent;
                                                     if (finalIndent == docOptions.initialIndent && finalIndent != 0) {
