@@ -59,7 +59,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class DDHelper {
 
-    private static final String RESOURCE_FOLDER = "org/netbeans/modules/j2ee/common/dd/resources/"; //NOI18N
+    private static final String RESOURCE_FOLDER = "/org/netbeans/modules/j2ee/common/dd/resources/"; //NOI18N
 
     private DDHelper() {
     }
@@ -274,7 +274,7 @@ public class DDHelper {
                     throw new IllegalStateException("file "+toFile+" already exists in "+toDir);
                 }
                 FileObject xml = FileUtil.createData(toDir, toFile);
-                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(fromFile));
+                String content = readResource(DDHelper.class.getResourceAsStream(fromFile));
                 if (content != null) {
                     FileLock lock = xml.lock();
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(xml.getOutputStream(lock)));
