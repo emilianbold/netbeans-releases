@@ -73,11 +73,14 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
     private Project project;
     private WizardDescriptor wizard;
     private ChangeSupport changeSupport = new ChangeSupport(this);
+    private boolean javaEE6;
 
     /** Creates new form CrudSetupPanel */
-    public EntityResourcesSetupPanelVisual(String name) {
+    public EntityResourcesSetupPanelVisual(String name, boolean javaEE6) {
+        this.javaEE6 = javaEE6;
         initComponents();
         setName(name);
+        System.out.println("wizard = "+wizard);
         resourcePackageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
 
             @Override
@@ -85,13 +88,18 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
                 changeSupport.fireChange();
             }
         });
-        converterPackageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+        if (javaEE6) {
+            converterPackageLabel.setVisible(false);
+            converterPackageComboBox.setVisible(false);
+        } else {
+            converterPackageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
 
-            @Override
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                changeSupport.fireChange();
-            }
-        });
+                @Override
+                public void keyReleased(java.awt.event.KeyEvent evt) {
+                    changeSupport.fireChange();
+                }
+            });
+        }
     }
 
     /** This method is called from within the constructor to
@@ -254,7 +262,7 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
         } else if (!Util.isValidPackageName(getResourcePackage())) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourcePackageName");
             return false;
-        } else if (!Util.isValidPackageName(getConverterPackage())) {
+        } else if (!javaEE6 && !Util.isValidPackageName(getConverterPackage())) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidConverterPackageName");
             return false;
         }
@@ -296,7 +304,9 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
         SourceGroupUISupport.connect(locationComboBox, sourceGroups);
 
         resourcePackageComboBox.setRenderer(PackageView.listRenderer());
-        converterPackageComboBox.setRenderer(PackageView.listRenderer());
+        if (!javaEE6) {
+            converterPackageComboBox.setRenderer(PackageView.listRenderer());
+        }
         updateSourceGroupPackages();
 
         FileObject targetFolder = Templates.getTargetFolder(settings);
@@ -314,11 +324,13 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
         targetPackage = (targetPackage.length() == 0) ? "" : targetPackage + ".";
         String resourcePackage = targetPackage + EntityResourcesGenerator.RESOURCE_FOLDER;
         setResourcePackage(resourcePackage);
-        String converterPackage = targetPackage + EntityResourcesGenerator.CONVERTER_FOLDER;
-        setConverterPackage(converterPackage);
-
         addComboBoxListener(resourcePackageComboBox);
-        addComboBoxListener(converterPackageComboBox);
+
+        if (!javaEE6) {
+            String converterPackage = targetPackage + EntityResourcesGenerator.CONVERTER_FOLDER;
+            setConverterPackage(converterPackage);
+            addComboBoxListener(converterPackageComboBox);
+        }
     }
 
     public void store(WizardDescriptor settings) {

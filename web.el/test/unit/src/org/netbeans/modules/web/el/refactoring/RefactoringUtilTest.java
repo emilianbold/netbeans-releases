@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.rest.wizard.fromdb;
+package org.netbeans.modules.web.el.refactoring;
 
-import org.netbeans.modules.websvc.rest.wizard.*;
-import java.awt.Component;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
- * @author Pavel Buzek
+ *
+ * @author Erno Mononen
  */
-final public class EntityResourcesSetupPanel extends AbstractPanel {
-    
-    private EntityResourcesSetupPanelVisual component;
-    private boolean javaEE6Project;
-    
-    /** Create the wizard panel descriptor. */
-    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor, boolean javaEE6Project) {
-        super(name, wizardDescriptor);
-        this.javaEE6Project = javaEE6Project;
-    }
-    
-    @Override
-    public boolean isFinishPanel() {
-        return true;
+public class RefactoringUtilTest {
+
+    public RefactoringUtilTest() {
     }
 
-    @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName, javaEE6Project);
-            component.addChangeListener(this);
-        }
-        return component;
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
-    
-    @Override
-    public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
-    
-    @Override
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+
+    @Test
+    public void testEncodeAndHighlight() {
+        String text = "#{bar.foo}";
+        OffsetRange expressionOffset = new OffsetRange(0, 10);
+        OffsetRange nodeOffset = new OffsetRange(6, 9);
+        String result = RefactoringUtil.encodeAndHighlight(text, expressionOffset, nodeOffset);
+        assertEquals("#{bar.<b>foo</b>}", result);
     }
+
+    @Test
+    public void testEncodeAndHighlight2() {
+        String text = "<h v=\"#{bar.foo}#{bar.foo}\"/>";
+        OffsetRange expressionOffset = new OffsetRange(6, 16);
+        OffsetRange nodeOffset = new OffsetRange(6, 9);
+        String result = RefactoringUtil.encodeAndHighlight(text, expressionOffset, nodeOffset);
+
+        expressionOffset = new OffsetRange(16, 26);
+        result = RefactoringUtil.encodeAndHighlight(text, expressionOffset, nodeOffset);
+        assertEquals("&lt;h v=\"#{bar.foo}#{bar.<b>foo</b>}\"/&gt;", result);
+    }
+
+    @Test
+    public void testGetPropertyName() {
+        assertEquals("foo", RefactoringUtil.getPropertyName("getFoo"));
+        assertEquals("foo", RefactoringUtil.getPropertyName("isFoo"));
+        assertEquals("foo", RefactoringUtil.getPropertyName("foo"));
+
+        assertEquals("gettyFoo", RefactoringUtil.getPropertyName("gettyFoo"));
+        assertEquals("issyFoo", RefactoringUtil.getPropertyName("issyFoo"));
+    }
+
 }

@@ -42,49 +42,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.rest.wizard.fromdb;
-
-import org.netbeans.modules.websvc.rest.wizard.*;
-import java.awt.Component;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 /**
- * @author Pavel Buzek
+ * Provides a {@link PersistenceGenerator persistence generator}.
+ * Instances should be registered in the default lookup.
+ *
+ * @author Pavel Buzek, Andrei Badea
  */
-final public class EntityResourcesSetupPanel extends AbstractPanel {
-    
-    private EntityResourcesSetupPanelVisual component;
-    private boolean javaEE6Project;
-    
-    /** Create the wizard panel descriptor. */
-    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor, boolean javaEE6Project) {
-        super(name, wizardDescriptor);
-        this.javaEE6Project = javaEE6Project;
-    }
-    
-    @Override
-    public boolean isFinishPanel() {
-        return true;
-    }
+public interface FacadeGeneratorProvider {
 
-    @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName, javaEE6Project);
-            component.addChangeListener(this);
-        }
-        return component;
-    }
-    
-    @Override
-    public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
-    }
+    /**
+     * Returns the generator type.
+     */
+    String getGeneratorType();
+
+    /**
+     * Creates the persistence generator.
+     */
+    FacadeGenerator createGenerator();
 }

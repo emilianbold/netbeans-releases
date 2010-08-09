@@ -45,11 +45,18 @@ package org.netbeans.modules.websvc.rest.wizard.fromdb;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
@@ -66,9 +73,15 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorProvider;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
@@ -113,9 +126,13 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
     private static final Lookup.Result<PersistenceGeneratorProvider> PERSISTENCE_PROVIDERS =
             Lookup.getDefault().lookupResult(PersistenceGeneratorProvider.class);
+    private static final FacadeGeneratorProvider FACADE_GENERATOR =
+            Lookup.getDefault().lookup(FacadeGeneratorProvider.class);
     private RelatedCMPHelper helper;
     private ProgressPanel progressPanel;
     private PersistenceGenerator generator;
+
+    private final Map<String, String> entityNames = new HashMap<String, String>();
 
     @Override
     public void initialize(WizardDescriptor wizard) {
@@ -260,59 +277,111 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
 
             Set<FileObject> files = generator.createdObjects();
-            Set<Entity> entities = getEntities(project, files);
-
-            EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
-            EntityResourceBeanModel model = builder.build(entities);
-
-            PersistenceUnit pu = new PersistenceHelper(project).getPersistenceUnit();
 
             RestUtils.ensureRestDevelopmentReady(project);
-            FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
-            String targetPackage = null;
-            String resourcePackage = null;
-            String converterPackage = null;
+            Set<Entity> entities = getEntities(project, files);
+            
+            if (RestUtils.isJavaEE6(Templates.getProject(wizard))) {
 
-            if (targetFolder != null) {
-                targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
-                resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
-                converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
-            } else {
-                targetFolder = Templates.getTargetFolder(wizard);
-                SourceGroup targetSourceGroup = null;
-                targetPackage = "";
+                String targetPackage = null;
+                String resourcePackage = null;
+                String converterPackage = null;
+                FileObject targetResourceFolder = null;
+
+                FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
                 if (targetFolder != null) {
+                    targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
+                    resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
                     SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-                    targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
+                    SourceGroup targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
                     if (targetSourceGroup != null) {
-                        targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+                        targetResourceFolder = SourceGroupSupport.getFolderForPackage(targetSourceGroup, resourcePackage, true);
+                    }
+                } else {
+                    targetFolder = Templates.getTargetFolder(wizard);
+                    SourceGroup targetSourceGroup = null;
+                    targetPackage = "";
+                    if (targetFolder != null) {
+                        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+                        targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
+                        if (targetSourceGroup != null) {
+                            targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+
+                        }
+                    }
+
+                    targetPackage = (targetPackage.length() == 0) ? "" : targetPackage + ".";
+                    resourcePackage = targetPackage + EntityResourcesGenerator.RESOURCE_FOLDER;
+                    if (targetSourceGroup != null) {
+                        targetResourceFolder = SourceGroupSupport.getFolderForPackage(targetSourceGroup, resourcePackage, true);
                     }
                 }
+                
+                if (targetResourceFolder == null) {
+                    targetResourceFolder = targetFolder;
+                }
 
-                targetPackage = (targetPackage.length() == 0) ? "" : targetPackage + ".";
-                resourcePackage = targetPackage + EntityResourcesGenerator.RESOURCE_FOLDER;
-                converterPackage = targetPackage + EntityResourcesGenerator.CONVERTER_FOLDER;
+                Map<String, String> selectedEntityNames = new HashMap<String, String>();
+                Iterator<Entity> it = entities.iterator();
+                while (it.hasNext()) {
+                    Entity entity = it.next();
+                    // PENDING: need to compute primary key java type
+                    selectedEntityNames.put(entity.getClass2(), "java.lang.String");
+                }
+                instantiateWProgress(handle, targetResourceFolder, resourcePackage, selectedEntityNames);
+            } else {
+                
+                EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
+                EntityResourceBeanModel model = builder.build(entities);
+
+                PersistenceUnit pu = new PersistenceHelper(project).getPersistenceUnit();
+
+                FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
+                String targetPackage = null;
+                String resourcePackage = null;
+                String converterPackage = null;
+
+                if (targetFolder != null) {
+                    targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
+                    resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
+                    converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
+                } else {
+                    targetFolder = Templates.getTargetFolder(wizard);
+                    SourceGroup targetSourceGroup = null;
+                    targetPackage = "";
+                    if (targetFolder != null) {
+                        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+                        targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
+                        if (targetSourceGroup != null) {
+                            targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+                        }
+                    }
+
+                    targetPackage = (targetPackage.length() == 0) ? "" : targetPackage + ".";
+                    resourcePackage = targetPackage + EntityResourcesGenerator.RESOURCE_FOLDER;
+                    converterPackage = targetPackage + EntityResourcesGenerator.CONVERTER_FOLDER;
+                }
+
+                final EntityResourcesGenerator gen = EntityResourcesGeneratorFactory.newInstance(project);
+                gen.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
+
+                RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
+
+                    public void run() {
+                        try {
+                            RestUtils.disableRestServicesChangeListner(project);
+                            gen.generate(null);
+
+                        } catch (Exception iox) {
+                            Exceptions.printStackTrace(iox);
+                        } finally {
+                            RestUtils.enableRestServicesChangeListner(project);
+
+                        }
+                    }
+                });
+                transformTask.schedule(50);
             }
-
-            final EntityResourcesGenerator gen = EntityResourcesGeneratorFactory.newInstance(project);
-            gen.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
-
-            RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
-
-                public void run() {
-                    try {
-                        RestUtils.disableRestServicesChangeListner(project);
-                        gen.generate(null);
-
-                    } catch (Exception iox) {
-                        Exceptions.printStackTrace(iox);
-                    } finally {
-                        RestUtils.enableRestServicesChangeListner(project);
-
-                    }
-                }
-            });
-            transformTask.schedule(50);
 
         } finally {
             handle.finish();
@@ -335,12 +404,13 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
             String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
             String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey); // NOI18N
+            boolean javaEE6Project = RestUtils.isJavaEE6(Templates.getProject(wizard));
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()
                         new org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel.WizardPanel(wizardTitle),
-                        new EntityClassesPanel.WizardPanel(true),
+                        new EntityClassesPanel.WizardPanel(true, javaEE6Project),
                         new EntityResourcesSetupPanel(NbBundle.getMessage(EntityResourcesIterator.class,
-                        "LBL_RestResourcesAndClasses"), wizard)
+                        "LBL_RestResourcesAndClasses"), wizard, javaEE6Project)
                     };
 
             String[] steps = createSteps();
@@ -491,4 +561,48 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             return FileUtil.createFolder(sourceGroup.getRootFolder(), relativePkgName);
         }
     }
+
+    private Set instantiateWProgress(ProgressContributor handle, FileObject targetFolder, String resourcePackage, Map<String, String> selectedEntityNames) throws IOException {
+        Project project = Templates.getProject(wizard);
+        initEntityNames(project);
+        final Set<FileObject> createdFiles = new HashSet<FileObject>();
+        FacadeGenerator facadeGenerator = FACADE_GENERATOR.createGenerator();
+
+//        int stepsCount = selectedEntityNames.size();
+
+        for (String entity : selectedEntityNames.keySet()) {
+            //handle.progress(NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_GenSessionBean", entity), step++);
+            facadeGenerator.generate(project, entityNames, targetFolder, entity, selectedEntityNames.get(entity), resourcePackage, false, false, true);
+        }
+        //PersistenceUtils.logUsage(EjbFacadeWizardIterator.class, "USG_PERSISTENCE_SESSIONBEAN", new Integer[]{entities.size()});
+        return createdFiles;
+    }
+
+    /**
+     * Initializes the {@link #entityNames} map.
+     */
+    private void initEntityNames(Project project) throws IOException {
+
+        //XXX should probably be using MetadataModelReadHelper. needs a progress indicator as well (#113874).
+        try {
+            EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+            MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
+            Future<Void> result = entityMappingsModel.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+
+                @Override
+                public Void run(EntityMappingsMetadata metadata) throws Exception {
+                    for (Entity entity : metadata.getRoot().getEntity()) {
+                        entityNames.put(entity.getClass2(), entity.getName());
+                    }
+                    return null;
+                }
+            });
+            result.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
 }
