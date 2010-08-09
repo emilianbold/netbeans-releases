@@ -64,6 +64,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
@@ -83,12 +84,17 @@ import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.AliasedClass;
 import org.netbeans.modules.php.editor.api.elements.AliasedConstant;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 import org.netbeans.modules.php.editor.api.elements.AliasedFunction;
 import org.netbeans.modules.php.editor.api.elements.AliasedInterface;
 import org.netbeans.modules.php.editor.api.elements.AliasedNamespace;
 import org.netbeans.modules.php.editor.api.elements.AliasedType;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -103,29 +109,49 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private static final Logger LOG = Logger.getLogger(IndexQueryImpl.class.getName());
     private static Collection<NamespaceElement> namespacesCache = null;
     private final QuerySupport index;
+    private final Set<AliasedName> aliases = new HashSet<AliasedName>();
 
     /** Creates a new instance of JsIndex */
-    private IndexQueryImpl(QuerySupport index) {
+    private IndexQueryImpl(QuerySupport index, final Model model) {
         this.index = index;
+        if (model != null) {            
+            for (final NamespaceScope namespaceScope : model.getFileScope().getDeclaredNamespaces()) {
+                if (namespaceScope != null) {
+                    Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
+                    for (UseElement useElement : declaredUses) {
+                        AliasedName aliasedName = useElement.getAliasedName();
+                        if (aliasedName != null) {
+                            aliases.add(aliasedName);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private IndexQueryImpl(QuerySupport index) {
+        this(index, null);
     }
 
-    public static IndexQueryImpl get(final QuerySupport querySupport) {
+    public static Index create(final QuerySupport querySupport) {
         return new IndexQueryImpl(querySupport);
     }
-
+    public static Index create(final QuerySupport querySupport, final Model model) {
+        return new IndexQueryImpl(querySupport, model);
+    }
+    public static Index getModelInstance(final PHPParseResult parseResult) {
+        return parseResult.getModel().getIndexScope().getIndex();
+    }
     public static void clearNamespaceCache() {
         synchronized(IndexQueryImpl.class) {
             namespacesCache = null;
         }
     }
 
-    @Override
-    public final Set<ClassElement> getClasses() {
-        return getClasses(NameKind.empty());
+    private Set<ClassElement> getClassesImpl() {
+        return getClassesImpl(NameKind.empty());
     }
 
-    @Override
-    public final Set<ClassElement> getClasses(final NameKind query) {
+    private Set<ClassElement> getClassesImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<ClassElement> classes = new HashSet<ClassElement>();
         final Collection<? extends IndexResult> result = results(ClassElementImpl.IDX_FIELD, query);
@@ -138,39 +164,30 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(classes);
     }
 
-    @Override
-    public Set<ClassElement> getClasses(final NameKind query, final Set<AliasedName> aliasedNames) {
-        final Set<ClassElement> retval = new HashSet<ClassElement>();
-        for (final AliasedName aliasedName : aliasedNames) {
-            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
-                for (final ClassElement nextClass : getClasses(nextQuery)) {
-                    retval.add(new AliasedClass(aliasedName, nextClass));
-                }
-            }
-        }
-        retval.addAll(getClasses(query));
-        return retval;
+
+
+    private Set<InterfaceElement> getInterfacesImpl() {
+        return getInterfacesImpl(NameKind.empty());
     }
 
-    @Override
-    public Set<NamespaceElement> getNamespaces(final NameKind query, final Set<AliasedName> aliasedNames) {
-        final Set<NamespaceElement> retval = new HashSet<NamespaceElement>();
-        for (final AliasedName aliasedName : aliasedNames) {
-            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.NAMESPACE_DECLARATION)) {
-                for (final NamespaceElement nextNamespace : getNamespaces(nextQuery)) {
-                    retval.add(new AliasedNamespace(aliasedName, nextNamespace));
-                }
-            }
+    private Set<InterfaceElement> getInterfacesImpl(final NameKind query) {
+        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final Set<InterfaceElement> ifaces = new HashSet<InterfaceElement>();
+        final Collection<? extends IndexResult> result = results(InterfaceElementImpl.IDX_FIELD, query);
+        for (final IndexResult indexResult : result) {
+            ifaces.addAll(InterfaceElementImpl.fromSignature(query, this, indexResult));
         }
-        retval.addAll(getNamespaces(query));
-        return retval;
+        if (LOG.isLoggable(Level.FINE)) {
+            logQueryTime("Set<InterfaceElement> getInterfaces", query, start);//NOI18N
+        }
+        return Collections.unmodifiableSet(ifaces);
     }
 
     private static Set<NameKind> queriesForAlias(final NameKind query, final AliasedName aliasedName, final PhpElementKind elementKind) {
+        final Set<NameKind> aliasQueries = new HashSet<NameKind>();
         final boolean fullyQualified = query.getQuery().getKind().isFullyQualified();
         final Kind queryKind = query.getQueryKind();
         final LinkedList<String> segments = query.getQuery().getSegments();
-        final Set<NameKind> aliasQueries = new HashSet<NameKind>();
         for (int i = 0; i < segments.size(); i++) {
             final String nextSegment = segments.get(i);
             if ((i == 0 || (i == segments.size() - 1)) && (!nextSegment.isEmpty() || segments.size() == 1)
@@ -187,131 +204,16 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return aliasQueries;
     }
 
-    @Override
-    public Set<FunctionElement> getFunctions(NameKind query, Set<AliasedName> aliasedNames) {
-        final Set<FunctionElement> retval = new HashSet<FunctionElement>();
-        for (final AliasedName aliasedName : aliasedNames) {
-            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.FUNCTION)) {
-                for (final FunctionElement nextFunction : getFunctions(nextQuery)) {
-                    retval.add(new AliasedFunction(aliasedName, nextFunction));
-                }
-            }
-        }
-        retval.addAll(getFunctions(query));
-        return retval;
-    }
-
-    @Override
-    public Set<ConstantElement> getConstants(final NameKind query, final Set<AliasedName> aliasedNames) {
-        final Set<ConstantElement> retval = new HashSet<ConstantElement>();
-        for (final AliasedName aliasedName : aliasedNames) {
-            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CONSTANT)) {
-                for (final ConstantElement nextConstant : getConstants(nextQuery)) {
-                    retval.add(new AliasedConstant(aliasedName, nextConstant));
-                }
-            }
-        }
-        retval.addAll(getConstants(query));
-        return retval;
-    }
-
-    @Override
-    public Set<MethodElement> getConstructors(final NameKind typeQuery, final Set<AliasedName> aliasedNames) {
-        final Set<MethodElement> retval = new HashSet<MethodElement>();
-        for (final AliasedName aliasedName : aliasedNames) {
-            for (final NameKind nextQuery : queriesForAlias(typeQuery, aliasedName, PhpElementKind.CLASS)) {
-                for (ClassElement classElement : getClasses(nextQuery)) {
-                    final AliasedClass aliasedClass = new AliasedClass(aliasedName, classElement);
-                    final Set<MethodElement> constructorsImpl = getConstructorsImpl(aliasedClass, classElement, new LinkedHashSet<ClassElement>());
-                    retval.addAll(constructorsImpl.isEmpty() ? getDefaultConstructors(aliasedClass) : constructorsImpl);
-                }
-            }
-        }
-        retval.addAll(getConstructors(typeQuery));
-        return retval;
-    }
-
-    @Override
-    public Set<PhpElement> getTopLevelElements(final NameKind query, final Set<AliasedName> aliasedNames) {
-        final Set<PhpElement> retval = new HashSet<PhpElement>();
-        for (final AliasedName aliasedName : aliasedNames) {
-            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
-                for (final PhpElement nextElement : getTopLevelElements(nextQuery)) {
-                    if (nextElement instanceof ConstantElement) {
-                        retval.add(new AliasedConstant(aliasedName, (ConstantElement) nextElement));
-                    } else if (nextElement instanceof FunctionElement) {
-                        retval.add(new AliasedFunction(aliasedName, (FunctionElement) nextElement));
-                    } else if (nextElement instanceof ClassElement) {
-                        retval.add(new AliasedClass(aliasedName, (ClassElement) nextElement));
-                    } else if (nextElement instanceof InterfaceElement) {
-                        retval.add(new AliasedInterface(aliasedName, (InterfaceElement) nextElement));
-                    }
-                }
-            }
-        }
-        retval.addAll(getTopLevelElements(query));
-        return retval;
-    }
-
-
-    @Override
-    public final Set<InterfaceElement> getInterfaces() {
-        return getInterfaces(NameKind.empty());
-    }
-
-    @Override
-    public final Set<InterfaceElement> getInterfaces(final NameKind query) {
-        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<InterfaceElement> ifaces = new HashSet<InterfaceElement>();
-        final Collection<? extends IndexResult> result = results(InterfaceElementImpl.IDX_FIELD, query);
-        for (final IndexResult indexResult : result) {
-            ifaces.addAll(InterfaceElementImpl.fromSignature(query, this, indexResult));
-        }
-        if (LOG.isLoggable(Level.FINE)) {
-            logQueryTime("Set<InterfaceElement> getInterfaces", query, start);//NOI18N
-        }
-        return Collections.unmodifiableSet(ifaces);
-    }
-
-    @Override
-    public Set<InterfaceElement> getInterfaces(final NameKind query, final Set<AliasedName> aliasedNames) {
-        final Set<InterfaceElement> retval = new HashSet<InterfaceElement>();
-        for (final AliasedName aliasedName : aliasedNames) {
-            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.IFACE)) {
-                for (final InterfaceElement nextIface : getInterfaces(nextQuery)) {
-                    retval.add(new AliasedInterface(aliasedName, nextIface));
-                }
-            }
-        }
-        retval.addAll(getInterfaces(query));
-        return retval;
-    }
-
-    @Override
-    public Set<TypeElement> getTypes(NameKind query) {
+    private Set<TypeElement> getTypesImpl(NameKind query) {
         final Set<TypeElement> types = new HashSet<TypeElement>();
-        types.addAll(getClasses(query));
-        types.addAll(getInterfaces(query));
+        types.addAll(getClassesImpl(query));
+        types.addAll(getInterfacesImpl(query));
         return types;
     }
 
-    @Override
-    public Set<TypeElement> getTypes(final NameKind query, final Set<AliasedName> aliasedNames) {
-        final Set<TypeElement> retval = new HashSet<TypeElement>();
-        for (final AliasedName aliasedName : aliasedNames) {
-            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
-                for (final TypeElement nextType : getTypes(nextQuery)) {
-                    retval.add(new AliasedType(aliasedName, nextType));
-                }
-            }
-        }
-        retval.addAll(getTypes(query));
-        return retval;
-    }
 
-    @Override
-    public Set<FunctionElement> getFunctions() {
-        return getFunctions(NameKind.empty());
+    private Set<FunctionElement> getFunctionsImpl() {
+        return getFunctionsImpl(NameKind.empty());
     }
 
     @Override
@@ -319,8 +221,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return MethodElementImpl.getMagicMethods(type);
     }
 
-    @Override
-    public final Set<FunctionElement> getFunctions(final NameKind query) {
+    private final Set<FunctionElement> getFunctionsImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<FunctionElement> functions = new HashSet<FunctionElement>();
         final Collection<? extends IndexResult> result = results(FunctionElementImpl.IDX_FIELD, query);
@@ -333,13 +234,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(functions);
     }
 
-    @Override
-    public Set<NamespaceElement> getNamespaces(NameKind query) {
-        Set<NamespaceElement> retval = new HashSet<NamespaceElement>();
+    private Set<NamespaceElement> getNamespacesImpl(final NameKind query) {
+        final Set<NamespaceElement> retval = new HashSet<NamespaceElement>();
         synchronized (IndexQueryImpl.class) {
             if (namespacesCache == null) {
-                Map<String, NamespaceElement> namespacesMap = new LinkedHashMap<String, NamespaceElement>();
-                for (NamespaceElement namespace : getNamespacesImpl(NameKind.empty())) {
+                final Map<String, NamespaceElement> namespacesMap = new LinkedHashMap<String, NamespaceElement>();
+                for (final NamespaceElement namespace : namespacesImpl(NameKind.empty())) {
                     NamespaceElement original = null;
                     QualifiedName qn = namespace.getFullyQualifiedName();
                     while (original == null && !qn.isDefaultNamespace()) {
@@ -351,7 +251,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 namespacesCache = namespacesMap.values();
             }
         }
-        for (NamespaceElement indexedNamespace : namespacesCache) {
+        for (final NamespaceElement indexedNamespace : namespacesCache) {
             if (query.matchesName(indexedNamespace)) {
                 retval.add(indexedNamespace);
             }
@@ -359,7 +259,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return retval;
     }
     
-    public Set<NamespaceElement> getNamespacesImpl(NameKind query) {
+    private Set<NamespaceElement> namespacesImpl(NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         //TODO: not cached yet
         final Set<NamespaceElement> namespaces = new HashSet<NamespaceElement>();
@@ -374,13 +274,11 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
 
-    @Override
-    public final Set<ConstantElement> getConstants() {
-        return getConstants(NameKind.empty());
+    private Set<ConstantElement> getConstantsImpl() {
+        return getConstantsImpl(NameKind.empty());
     }
 
-    @Override
-    public final Set<ConstantElement> getConstants(final NameKind query) {
+    private Set<ConstantElement> getConstantsImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<ConstantElement> constants = new HashSet<ConstantElement>();
         final Collection<? extends IndexResult> result = results(ConstantElementImpl.IDX_FIELD, query);
@@ -393,8 +291,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(constants);
     }
 
-    @Override
-    public Set<PhpElement> getTopLevelElements(NameKind query) {
+    private Set<PhpElement> getTopLevelElementsImpl(NameKind query) {
         final boolean isVariable = query.getQueryName().startsWith(VariableElementImpl.DOLLAR_PREFIX);
         final String[] fieldsToLoad = isVariable ?
             new String[] {
@@ -440,8 +337,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
 
-   @Override
-    public final Set<MethodElement> getConstructors(final ClassElement classElement) {
+    @Override
+    public Set<MethodElement> getConstructors(final ClassElement classElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<MethodElement> retval = getConstructorsImpl( classElement, classElement, new LinkedHashSet<ClassElement>());
         if (LOG.isLoggable(Level.FINE)) {
@@ -450,10 +347,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return retval.isEmpty() ? getDefaultConstructors(classElement) : retval;
     }
 
-    @Override
-    public final Set<MethodElement> getConstructors(NameKind typeQuery) {
+    private Set<MethodElement> getConstructorsImpl(NameKind typeQuery) {
         final Set<MethodElement> retval = new HashSet<MethodElement>();
-        final Set<ClassElement> classes = getClasses(typeQuery);
+        final Set<ClassElement> classes = getClassesImpl(typeQuery);
         for (ClassElement classElement : classes) {
             retval.addAll(getConstructors(classElement));
         }
@@ -1127,8 +1023,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public Set<MethodElement> getAllMethods(final Exact typeQuery, final NameKind methodQuery) {
         Set<MethodElement> retval = new HashSet<MethodElement>();
         Set<TypeElement> types = new HashSet<TypeElement>();
-        types.addAll(getClasses(typeQuery));
-        types.addAll(getInterfaces(typeQuery));
+        types.addAll(getClassesImpl(typeQuery));
+        types.addAll(getInterfacesImpl(typeQuery));
         for (TypeElement typeElement : types) {
             retval.addAll(ElementFilter.forName(methodQuery).filter(getAllMethods(typeElement)));
         }
@@ -1138,7 +1034,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<FieldElement> getAlllFields(final Exact typeQuery, final NameKind fieldQuery) {
         Set<FieldElement> retval = new HashSet<FieldElement>();
-        Set<ClassElement> types = getClasses(typeQuery);
+        Set<ClassElement> types = getClassesImpl(typeQuery);
         for (TypeElement typeElement : types) {
             retval.addAll(ElementFilter.forName(fieldQuery).filter(getAlllFields(typeElement)));
         }
@@ -1149,8 +1045,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public Set<TypeConstantElement> getAllTypeConstants(final Exact typeQuery, final NameKind constantQuery) {
         Set<TypeConstantElement> retval = new HashSet<TypeConstantElement>();
         Set<TypeElement> types = new HashSet<TypeElement>();
-        types.addAll(getClasses(typeQuery));
-        types.addAll(getInterfaces(typeQuery));
+        types.addAll(getClassesImpl(typeQuery));
+        types.addAll(getInterfacesImpl(typeQuery));
         for (TypeElement typeElement : types) {
             retval.addAll(ElementFilter.forName(constantQuery).filter(getAllTypeConstants(typeElement)));
         }
@@ -1362,12 +1258,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         if (includeClasses && (typeElement instanceof ClassElement)) {
             QualifiedName superClassName = ((ClassElement) typeElement).getSuperClassName();
             if (superClassName != null) {
-                directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getClasses(NameKind.exact(superClassName))));
+                directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getClassesImpl(NameKind.exact(superClassName))));
             }
         }
         if (includeIfaces) {
             for (QualifiedName iface : typeElement.getSuperInterfaces()) {
-                directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getInterfaces(NameKind.exact(iface))));
+                directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getInterfacesImpl(NameKind.exact(iface))));
             }
         }
         return directTypes;
@@ -1431,30 +1327,30 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     private Collection<? extends IndexResult> search(String key, String name, QuerySupport.Kind kind, String... terms) {
         try {
-            long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+            long start = (LOG.isLoggable(Level.FINER)) ? System.currentTimeMillis() : 0;
             Collection<? extends IndexResult> results = index.query(key, name, kind, terms);
 
-            if (LOG.isLoggable(Level.FINE)) {
+            if (LOG.isLoggable(Level.FINER)) {
                 String msg = "IndexQuery.search(" + key + ", " + name + ", " + kind + ", " //NOI18N
                         + (terms == null || terms.length == 0 ? "no terms" : Arrays.asList(terms)) + ")"; //NOI18N
-                LOG.fine(msg);
+                LOG.finer(msg);
 
                 if (LOG.isLoggable(Level.FINEST)) {
                     LOG.log(Level.FINEST, null, new Throwable(msg));
                 }
 
                 for (IndexResult r : results) {
-                    LOG.fine("Fields in " + r + " (" + r.getFile().getPath() + "):"); //NOI18N
+                    LOG.finer("Fields in " + r + " (" + r.getFile().getPath() + "):"); //NOI18N
                     for (String field : PHPIndexer.ALL_FIELDS) {
                         String value = r.getValue(field);
                         if (value != null) {
-                            LOG.fine(" <" + field + "> = <" + value + ">"); //NOI18N
+                            LOG.finest(" <" + field + "> = <" + value + ">"); //NOI18N
                         }
                     }
-                    LOG.fine("----"); //NOI18N
+                    LOG.finer("----"); //NOI18N
                 }
-                LOG.fine(String.format("took: %d [ms]", System.currentTimeMillis() - start)); //NOI18N
-                LOG.fine("===="); //NOI18N
+                LOG.finer(String.format("took: %d [ms]", System.currentTimeMillis() - start)); //NOI18N
+                LOG.finer("===="); //NOI18N
             }
 
             return results;
@@ -1522,4 +1418,233 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement, Set<TypeElement> preferredTypes) {
                 return new TypeTreeElementImpl(typeElement, preferredTypes, false);
     }
+
+    @Override
+    public Set<PhpElement> getTopLevelElements(NameKind query) {
+        return getTopLevelElements(query, aliases, null);
+    }
+
+    @Override
+    public Set<ClassElement> getClasses() {
+        return getClasses(NameKind.empty(), aliases, null);
+    }
+
+    @Override
+    public Set<ClassElement> getClasses(NameKind query) {
+        return getClasses(query, aliases, null);
+    }
+
+    @Override
+    public Set<InterfaceElement> getInterfaces() {
+        return getInterfaces(NameKind.empty(), aliases, null);
+    }
+
+    @Override
+    public Set<InterfaceElement> getInterfaces(NameKind query) {
+        return getInterfaces(query, aliases, null);
+    }
+
+    @Override
+    public Set<TypeElement> getTypes(NameKind query) {
+        return getTypes(query, aliases, null);
+    }
+
+    @Override
+    public Set<FunctionElement> getFunctions() {
+        return getFunctions(NameKind.empty(), aliases, null);
+    }
+
+    @Override
+    public Set<FunctionElement> getFunctions(NameKind query) {
+        return getFunctions(query, aliases, null);
+    }
+
+    @Override
+    public Set<ConstantElement> getConstants() {
+        return getConstants(NameKind.empty(), aliases, null);
+    }
+
+    @Override
+    public Set<ConstantElement> getConstants(NameKind query) {
+        return getConstants(query, aliases, null);
+    }
+
+    @Override
+    public Set<MethodElement> getConstructors(NameKind typeQuery) {
+        return getConstructors(typeQuery, aliases, null);
+    }
+
+    @Override
+    public Set<NamespaceElement> getNamespaces(NameKind query) {
+        return getNamespaces(query, aliases, null);
+    }
+
+    @Override
+    public Set<ClassElement> getClasses(final NameKind query, final Set<AliasedName> aliasedNames, final Trait trait) {
+        final Set<ClassElement> retval = new HashSet<ClassElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
+                for (final ClassElement nextClass : getClassesImpl(nextQuery)) {
+                    final AliasedClass aliasedClass = new AliasedClass(aliasedName, nextClass);
+                    if (trait != null) {
+                        aliasedClass.setTrait(trait);
+                    }
+                    retval.add(aliasedClass);
+                }
+            }
+        }
+        retval.addAll(getClassesImpl(query));
+        return retval;
+    }
+
+    @Override
+    public Set<NamespaceElement> getNamespaces(final NameKind query, final Set<AliasedName> aliasedNames, final Trait trait) {
+        final Set<NamespaceElement> retval = new HashSet<NamespaceElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            final Set<NameKind> queriesForAlias = queriesForAlias(query, aliasedName, PhpElementKind.NAMESPACE_DECLARATION);
+            for (final NameKind nextQuery : queriesForAlias) {
+                for (final NamespaceElement nextNamespace : getNamespacesImpl(nextQuery)) {
+                    final AliasedNamespace aliasedNamespace = new AliasedNamespace(aliasedName, nextNamespace);
+                    if (trait != null) {
+                        aliasedNamespace.setTrait(trait);
+                    }
+                    retval.add(aliasedNamespace);
+                }
+            }
+        }
+        retval.addAll(getNamespacesImpl(query));
+        return retval;
+    }
+
+    @Override
+    public Set<FunctionElement> getFunctions(final NameKind query, final Set<AliasedName> aliasedNames, final Trait trait) {
+        final Set<FunctionElement> retval = new HashSet<FunctionElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.FUNCTION)) {
+                for (final FunctionElement nextFunction : getFunctionsImpl(nextQuery)) {
+                    final AliasedFunction aliasedFunction = new AliasedFunction(aliasedName, nextFunction);
+                    if (trait != null) {
+                        aliasedFunction.setTrait(trait);
+                    }
+                    retval.add(aliasedFunction);
+                }
+            }
+        }
+        retval.addAll(getFunctionsImpl(query));
+        return retval;
+    }
+
+    @Override
+    public Set<ConstantElement> getConstants(final NameKind query, final Set<AliasedName> aliasedNames, final Trait trait) {
+        final Set<ConstantElement> retval = new HashSet<ConstantElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CONSTANT)) {
+                for (final ConstantElement nextConstant : getConstantsImpl(nextQuery)) {
+                    final AliasedConstant aliasedConstant = new AliasedConstant(aliasedName, nextConstant);
+                    if (trait != null) {
+                        aliasedConstant.setTrait(trait);
+                    }
+                    retval.add(aliasedConstant);
+                }
+            }
+        }
+        retval.addAll(getConstantsImpl(query));
+        return retval;
+    }
+
+    @Override
+    public Set<MethodElement> getConstructors(final NameKind typeQuery, final Set<AliasedName> aliasedNames, final Trait trait) {
+        final Set<MethodElement> retval = new HashSet<MethodElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(typeQuery, aliasedName, PhpElementKind.CLASS)) {
+                for (ClassElement classElement : getClassesImpl(nextQuery)) {
+                    final AliasedClass aliasedClass = new AliasedClass(aliasedName, classElement);
+                    if (trait != null) {
+                        aliasedClass.setTrait(trait);
+                    }
+                    final Set<MethodElement> constructorsImpl = getConstructorsImpl(aliasedClass, classElement, new LinkedHashSet<ClassElement>());
+                    retval.addAll(constructorsImpl.isEmpty() ? getDefaultConstructors(aliasedClass) : constructorsImpl);
+                }
+            }
+        }
+        retval.addAll(getConstructorsImpl(typeQuery));
+        return retval;
+    }
+
+    
+    @Override
+    public Set<PhpElement> getTopLevelElements(final NameKind query, final Set<AliasedName> aliasedNames, final Trait trait) {
+        final Set<PhpElement> retval = new HashSet<PhpElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
+                for (final PhpElement nextElement : getTopLevelElementsImpl(nextQuery)) {
+                    AliasedElement aliasedElement = null;
+                    if (nextElement instanceof ConstantElement) {
+                        aliasedElement = new AliasedConstant(aliasedName, (ConstantElement) nextElement);
+                    } else if (nextElement instanceof FunctionElement) {
+                        aliasedElement = new AliasedFunction(aliasedName, (FunctionElement) nextElement);
+                    } else if (nextElement instanceof ClassElement) {
+                        aliasedElement = new AliasedClass(aliasedName, (ClassElement) nextElement);
+                    } else if (nextElement instanceof InterfaceElement) {
+                        aliasedElement = new AliasedInterface(aliasedName, (InterfaceElement) nextElement);
+                    }
+                    if (aliasedElement != null) {
+                        if (trait != null) {
+                            aliasedElement.setTrait(trait);
+                        }
+                        retval.add(aliasedElement);
+                    }
+                }
+            }
+        }
+        retval.addAll(getTopLevelElementsImpl(query));
+        return retval;
+    }
+
+    @Override
+    public Set<InterfaceElement> getInterfaces(final NameKind query, final Set<AliasedName> aliasedNames, final Trait trait) {
+        final Set<InterfaceElement> retval = new HashSet<InterfaceElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.IFACE)) {
+                for (final InterfaceElement nextIface : getInterfacesImpl(nextQuery)) {
+                    final AliasedInterface aliasedInterface = new AliasedInterface(aliasedName, nextIface);
+                    if (trait != null) {
+                        aliasedInterface.setTrait(trait);
+                    }
+                    retval.add(aliasedInterface);
+                }
+            }
+        }
+        retval.addAll(getInterfacesImpl(query));
+        return retval;
+    }
+
+    @Override
+    public Set<TypeElement> getTypes(final NameKind query, final Set<AliasedName> aliasedNames, final Trait trait) {
+        final Set<TypeElement> retval = new HashSet<TypeElement>();
+        for (final AliasedName aliasedName : aliasedNames) {
+            for (final NameKind nextQuery : queriesForAlias(query, aliasedName, PhpElementKind.CLASS)) {
+                for (final TypeElement nextType : getTypesImpl(nextQuery)) {
+                    AliasedType aliasedType = null;
+                    if (nextType instanceof ClassElement) {
+                        aliasedType = new AliasedClass(aliasedName, (ClassElement) nextType);
+                    } else if (nextType instanceof InterfaceElement) {
+                        aliasedType = new AliasedInterface(aliasedName, (InterfaceElement) nextType);
+                    } else {
+                        assert false : nextType.getClass();
+                    }
+                    if (aliasedType != null) {
+                        if (trait != null) {
+                            aliasedType.setTrait(trait);
+                        }
+                        retval.add(aliasedType);
+                    }
+                }
+            }
+        }
+        retval.addAll(getTypesImpl(query));
+        return retval;
+    }
+
+
 }

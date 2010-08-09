@@ -45,6 +45,8 @@ import java.util.LinkedList;
 import java.util.regex.Pattern;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.openide.util.Parameters;
@@ -116,19 +118,11 @@ public class NameKind {
             if (kindOfQuery.isUnqualified()) {
                 return true;
             }
-            LinkedList<String> nameSegments = name.toNamespaceName().getSegments();
-            LinkedList<String> querySegments = getQuery().toNamespaceName().getSegments();
+            final LinkedList<String> nameSegments = name.toNamespaceName().getSegments();
+            final LinkedList<String> querySegments = getQuery().toNamespaceName().getSegments();
             final int querySize = querySegments.size();
             final int nameSize = nameSegments.size();
-            /*if (querySize > nameSize) {
-                return false;
-            }
-            if (kindOfQuery.isFullyQualified()) {
-                if (querySize != nameSize) {
-                    return false;
-                }
-            }*/
-            int minSize = Math.min(nameSize, querySize);
+            final int minSize = Math.min(nameSize, querySize);
             for (int i = 1; i <= minSize; i++) {
                 String queryItem = querySegments.get(querySize - i);
                 String nameItem = nameSegments.get(nameSize - i);
@@ -148,12 +142,12 @@ public class NameKind {
     public boolean matchesName(PhpElement element) {
         if (element instanceof FullyQualifiedElement) {
             FullyQualifiedElement fqe = (FullyQualifiedElement) element;
+            if (fqe instanceof AliasedElement) {
+                return matchesName(element.getPhpElementKind(), fqe.getFullyQualifiedName()) ||
+                        matchesName(element.getPhpElementKind(), ((AliasedElement)fqe).getFullyQualifiedName(Trait.ALIAS));
+            }
             return matchesName(element.getPhpElementKind(), fqe.getFullyQualifiedName());
-        } /*else if (element instanceof TypeMemberElement) {
-            TypeMemberElement memberElement = (TypeMemberElement) element;
-            TypeElement type = memberElement.getType();
-            return matchesName(element.getPhpElementKind(), type.getFullyQualifiedName());
-        }*/
+        } 
         return matchesName(element.getPhpElementKind(), element.getName());
     }
 

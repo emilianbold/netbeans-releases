@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,41 +34,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.modules.web.el.refactoring;
 
-import java.util.List;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Erno Mononen
  */
-class PHPRuleContext extends RuleContext {
-    PHPVerificationVisitor.VariableStack variableStack;
-    List<ASTNode> path;
-    private ElementQuery.Index index;
-    @NullAllowed
-    FileScope fileScope;
+public class RefactoringUtilTest {
 
-    public ElementQuery.Index getIndex() {
-        if (index == null) {
-            if (parserResult instanceof PHPParseResult) {
-                index = ElementQueryFactory.getIndexQuery((PHPParseResult)parserResult);
-            }
-        }
-        return index;
+    public RefactoringUtilTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Test
+    public void testEncodeAndHighlight() {
+        String text = "#{bar.foo}";
+        OffsetRange expressionOffset = new OffsetRange(0, 10);
+        OffsetRange nodeOffset = new OffsetRange(6, 9);
+        String result = RefactoringUtil.encodeAndHighlight(text, expressionOffset, nodeOffset);
+        assertEquals("#{bar.<b>foo</b>}", result);
+    }
+
+    @Test
+    public void testEncodeAndHighlight2() {
+        String text = "<h v=\"#{bar.foo}#{bar.foo}\"/>";
+        OffsetRange expressionOffset = new OffsetRange(6, 16);
+        OffsetRange nodeOffset = new OffsetRange(6, 9);
+        String result = RefactoringUtil.encodeAndHighlight(text, expressionOffset, nodeOffset);
+
+        expressionOffset = new OffsetRange(16, 26);
+        result = RefactoringUtil.encodeAndHighlight(text, expressionOffset, nodeOffset);
+        assertEquals("&lt;h v=\"#{bar.foo}#{bar.<b>foo</b>}\"/&gt;", result);
+    }
+
+    @Test
+    public void testGetPropertyName() {
+        assertEquals("foo", RefactoringUtil.getPropertyName("getFoo"));
+        assertEquals("foo", RefactoringUtil.getPropertyName("isFoo"));
+        assertEquals("foo", RefactoringUtil.getPropertyName("foo"));
+
+        assertEquals("gettyFoo", RefactoringUtil.getPropertyName("gettyFoo"));
+        assertEquals("issyFoo", RefactoringUtil.getPropertyName("issyFoo"));
     }
 
 }

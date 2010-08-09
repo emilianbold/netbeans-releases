@@ -298,7 +298,7 @@ public class ModelIndexTest extends ModelTestBase {
         void testIndexScope(Model model, FileScope fScope, IndexScope iScope) {
             Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(fScope);
             for (ClassScope classScope : declaredClasses) {
-                assertNotNull(classScope.getName(), getFirst(iScope.findClasses(classScope.getName())));
+                assertNotNull(classScope.getName(), getFirst(iScope.findClasses(classScope.getFullyQualifiedName())));
             }
         }
 
