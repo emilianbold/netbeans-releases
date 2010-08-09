@@ -237,7 +237,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                     collectInto = result;
                 }
                 final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter(prefix,directOnly);
-                index.queryBTree(filter.second, filter.first, collectInto);
+                index.queryTerms(filter.second, filter.first, collectInto);
                 if (cacheOp) {
                     synchronized (PersistentClassIndex.this) {
                         if (rootPkgCache == null) {

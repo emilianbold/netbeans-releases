@@ -1958,7 +1958,7 @@ public class JavaSourceTest extends NbTestCase {
         }
         
         @Override
-        public <T> void queryBTree(Term start, ResultConvertor<Term, T> filter, Collection<? super T> result) throws IOException, InterruptedException {
+        public <T> void queryTerms(Term start, ResultConvertor<Term, T> filter, Collection<? super T> result) throws IOException, InterruptedException {
             await ();
         }
        

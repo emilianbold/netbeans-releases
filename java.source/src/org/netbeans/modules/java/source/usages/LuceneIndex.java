@@ -191,7 +191,7 @@ class LuceneIndex extends Index implements Evictable {
     }
     
     @Override
-    public <T> void queryBTree(
+    public <T> void queryTerms(
             final @NullAllowed Term seekTo,
             final @NonNull ResultConvertor<Term,T> filter,
             final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
