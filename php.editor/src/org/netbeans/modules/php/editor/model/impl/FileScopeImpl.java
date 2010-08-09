@@ -46,10 +46,9 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -59,18 +58,16 @@ import org.openide.util.Union2;
  */
 final class FileScopeImpl extends ScopeImpl implements FileScope  {
 
-    private CachingSupport cachedModelSupport;
-    private ParserResult info;
+    private PHPParseResult info;
     private final List<CodeMarkerImpl> codeMarkers = Collections.synchronizedList(new ArrayList<CodeMarkerImpl>());
 
-    FileScopeImpl(ParserResult info) {
+    FileScopeImpl(PHPParseResult info) {
         this(info, "program");//NOI18N
     }
 
-    private FileScopeImpl(ParserResult info, String name) {
+    private FileScopeImpl(PHPParseResult info, String name) {
         super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), PhpElementKind.PROGRAM);//NOI18N
         this.info = info;
-        this.cachedModelSupport = new CachingSupport(this);
     }
 
     void addCodeMarker(CodeMarkerImpl codeMarkerImpl) {
@@ -88,8 +85,9 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
     /**
      * @return the indexScope
      */
+    @Override
     public IndexScope getIndexScope() {
-        return ModelVisitor.getIndexScope(info);
+        return info.getModel().getIndexScope();
     }
 
     public Collection<? extends NamespaceScope> getDeclaredNamespaces() {
@@ -100,10 +98,6 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
         });
     }
 
-    @NonNull
-    public CachingSupport getCachingSupport() {
-        return cachedModelSupport;
-    }
 
     public NamespaceScope getDefaultDeclaredNamespace() {
         return ModelUtils.getFirst(ModelUtils.filter(getDeclaredNamespaces(), new ModelUtils.ElementFilter<NamespaceScope>() {

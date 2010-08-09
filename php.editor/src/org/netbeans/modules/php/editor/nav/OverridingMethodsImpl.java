@@ -130,7 +130,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
     private Set<MethodElement> getInheritedMethods(final ParserResult info, final MethodScope method) {
         final String signature = method.getInScope().getIndexSignature();
         if (!signature.equals(classSignatureForInheritedMethods)) {
-            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            Index index = ElementQueryFactory.getIndexQuery(info);
             inheritedMethods = index.getInheritedMethods((TypeScope) method.getInScope());
         }
         classSignatureForInheritedMethods = signature;
@@ -144,7 +144,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
     private LinkedHashSet<TypeElement> getInheritedByTypes(final ParserResult info, final TypeScope type) {
         final String signature = type.getIndexSignature();
         if (!signature.equals(classSignatureForInheritedByTypes)) {
-            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            Index index = ElementQueryFactory.getIndexQuery(info);
             inheritedByTypes = index.getInheritedByTypes(type);
         }
         classSignatureForInheritedByTypes = signature;
@@ -157,7 +157,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
     private Set<MethodElement> getInheritedByMethods(final ParserResult info, final MethodScope method) {
         final String signature = method.getInScope().getIndexSignature();
         if (!signature.equals(classSignatureForInheritedByMethods)) {
-            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            Index index = ElementQueryFactory.getIndexQuery(info);
             TypeScope type = (TypeScope) method.getInScope();
             inheritedByMethods = new HashSet<MethodElement>();
             for (TypeElement nextType : getInheritedByTypes(info,type)) {
