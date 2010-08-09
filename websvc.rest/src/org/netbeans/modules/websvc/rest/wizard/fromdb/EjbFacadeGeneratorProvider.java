@@ -44,47 +44,21 @@
 
 package org.netbeans.modules.websvc.rest.wizard.fromdb;
 
-import org.netbeans.modules.websvc.rest.wizard.*;
-import java.awt.Component;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
 
 /**
- * @author Pavel Buzek
+ *
+ * @author Andrei Badea
  */
-final public class EntityResourcesSetupPanel extends AbstractPanel {
-    
-    private EntityResourcesSetupPanelVisual component;
-    private boolean javaEE6Project;
-    
-    /** Create the wizard panel descriptor. */
-    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor, boolean javaEE6Project) {
-        super(name, wizardDescriptor);
-        this.javaEE6Project = javaEE6Project;
-    }
-    
-    @Override
-    public boolean isFinishPanel() {
-        return true;
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider.class)
+public class EjbFacadeGeneratorProvider implements FacadeGeneratorProvider {
+
+    public String getGeneratorType() {
+        return "ejb_rest_facade"; // NOI18N
     }
 
-    @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName, javaEE6Project);
-            component.addChangeListener(this);
-        }
-        return component;
-    }
-    
-    @Override
-    public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+    public FacadeGenerator createGenerator() {
+        return new EjbFacadeGenerator();
     }
 }

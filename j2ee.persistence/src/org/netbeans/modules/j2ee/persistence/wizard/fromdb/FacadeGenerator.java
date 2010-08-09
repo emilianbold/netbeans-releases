@@ -42,49 +42,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.rest.wizard.fromdb;
+package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
-import org.netbeans.modules.websvc.rest.wizard.*;
-import java.awt.Component;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
-/**
+/** This interface allows project implementation to provide a custom
+ * generator of ORM Java classes from a DB model. An instance of this
+ * interface should be registered in project lookup. 
+ *
+ * If there is no instance the default generator will be used.
+ *
  * @author Pavel Buzek
  */
-final public class EntityResourcesSetupPanel extends AbstractPanel {
-    
-    private EntityResourcesSetupPanelVisual component;
-    private boolean javaEE6Project;
-    
-    /** Create the wizard panel descriptor. */
-    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor, boolean javaEE6Project) {
-        super(name, wizardDescriptor);
-        this.javaEE6Project = javaEE6Project;
-    }
-    
-    @Override
-    public boolean isFinishPanel() {
-        return true;
-    }
+public interface FacadeGenerator {
+    static final String FACADE_SUFFIX = "Facade"; //NOI18N
 
-    @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName, javaEE6Project);
-            component.addChangeListener(this);
-        }
-        return component;
-    }
-    
-    @Override
-    public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
-    }
+    Set<FileObject> generate(final Project project,
+            final Map<String, String> entityNames,
+            final FileObject targetFolder,
+            final String entityFQN,
+            final String idClass,
+            final String pkg,
+            final boolean hasRemote,
+            final boolean hasLocal,
+            boolean overrideExisting) throws IOException;
 }
