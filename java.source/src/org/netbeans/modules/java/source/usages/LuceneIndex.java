@@ -191,7 +191,7 @@ class LuceneIndex extends Index implements Evictable {
     }
     
     @Override
-    public <T> void queryBTree(
+    public <T> void queryTerms(
             final @NullAllowed Term seekTo,
             final @NonNull ResultConvertor<Term,T> filter,
             final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
@@ -728,7 +728,7 @@ class LuceneIndex extends Index implements Evictable {
         close(true);
     }
 
-    public synchronized void close (boolean closeDir) throws IOException {
+    private synchronized void close (boolean closeDir) throws IOException {
         try {
             try {
                 if (this.reader != null) {
@@ -836,7 +836,6 @@ class LuceneIndex extends Index implements Evictable {
             throw new ClassIndexImpl.IndexAlreadyClosedException();
         }
     }
-
 
     private static Directory createDirectory(final File indexFolder) throws IOException {
         assert indexFolder != null;

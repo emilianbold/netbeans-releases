@@ -113,7 +113,7 @@ public class LucenePerformanceTest extends NbTestCase {
         Set<String> result = new HashSet<String>();
         startTime = System.currentTimeMillis();
         final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter("", true);
-        index.queryBTree(filter.second, filter.first,result);
+        index.queryTerms(filter.second, filter.first,result);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Packages: " + delta);

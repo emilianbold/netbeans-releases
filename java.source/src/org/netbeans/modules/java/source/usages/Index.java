@@ -70,9 +70,10 @@ public abstract class Index {
     };    
 
     public abstract boolean exists ();
-    public abstract boolean isValid (boolean tryOpen) throws IOException;
+    public abstract boolean isValid (boolean tryOpen) throws IOException;    
     public abstract <T> void query (@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<? super Document, T> convertor, Collection<? super T> result) throws IOException, InterruptedException;
-    public abstract <T> void queryBTree(@NullAllowed Term start, @NonNull ResultConvertor<Term,T> filter, @NonNull Collection<? super T> result) throws  IOException, InterruptedException;
+//    public abstract <T> void queryDocTerms(@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<? super Document, T> convertor, Map<? super T, Set<String>> result) throws IOException, InterruptedException;
+    public abstract <T> void queryTerms(@NullAllowed Term start, @NonNull ResultConvertor<Term,T> filter, @NonNull Collection<? super T> result) throws  IOException, InterruptedException;
     public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<? super Document, T> convertor,Map<T,Set<String>> result) throws IOException, InterruptedException;
     public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
     public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
