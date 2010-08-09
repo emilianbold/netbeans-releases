@@ -163,7 +163,9 @@ public class CssEditorSupport {
                                 }
 
                                 String text = (initialNewLine ? LINE_SEPARATOR : "") +
-                                        makeIndentString(INDENT) +
+// XXX: see the method comment
+//                                        makeIndentString(INDENT) +
+                                        IndentUtils.createIndentString(document, INDENT) +
                                         newRule.key().name() + ": " + newRule.value().name() + ";" +
                                         LINE_SEPARATOR;
 
@@ -196,13 +198,13 @@ public class CssEditorSupport {
     // But even then the same should be achieved by correctly setting the indentation
     // settings. Otherwise a simple Reformat.get(doc).reformat(...) call on a CSS document
     // could break its structure.
-    private String makeIndentString(int level) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < level; i++) {
-            sb.append(' ');
-        }
-        return sb.toString();
-    }
+//    private String makeIndentString(int level) {
+//        StringBuffer sb = new StringBuffer();
+//        for (int i = 0; i < level; i++) {
+//            sb.append(' ');
+//        }
+//        return sb.toString();
+//    }
 
     void parsed(final CssParserResult result, final int caretOffset) {
         d("model updated");
