@@ -996,6 +996,11 @@ public class TokenFormatter {
                                                         } else {
                                                         countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
                                                         }
+                                                        if (!isCloseAndOpenTagOnOneLine(formatTokens, index)) {
+                                                            newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+                                                        } else {
+                                                            newLines = 0;
+                                                        }
                                                     }
                                                     indent = suggestedIndent;
                                                 } else {
