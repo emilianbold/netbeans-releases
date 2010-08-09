@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Component;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -497,7 +498,12 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 }
                 names.add (updatename);
             }
-            Collections.sort (names);
+            Collections.sort(names, new Comparator<String>() {
+
+                public int compare(String o1, String o2) {
+                    return Collator.getInstance().compare(o1, o2);
+                }
+            });
             for (String name : names) {
                 s += name;
             }
