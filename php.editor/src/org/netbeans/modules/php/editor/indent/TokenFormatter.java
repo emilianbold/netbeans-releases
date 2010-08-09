@@ -326,11 +326,13 @@ public class TokenFormatter {
      */
     private int countOfNewLines(CharSequence chs) {
 	int count = 0;
-	for (int i = 0; i < chs.length(); i++) {
-	    if (chs.charAt(i) == '\n') { // NOI18N
-		count++;
-	    }
-	}
+        if (chs != null) {
+            for (int i = 0; i < chs.length(); i++) {
+                if (chs.charAt(i) == '\n') { // NOI18N
+                    count++;
+                }
+            }
+        }
 	return count;
     }
 
