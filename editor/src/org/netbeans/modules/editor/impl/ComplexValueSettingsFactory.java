@@ -83,10 +83,12 @@ public final class ComplexValueSettingsFactory {
     // 'formatter' setting
     // -----------------------------------------------------------------------
 
-    public static final Object getFormatterValue(MimePath mimePath, String settingName) {
-        assert settingName.equals(NbEditorDocument.FORMATTER) : "The getFormatter factory called for '" + settingName + "'"; //NOI18N
-
-// XXX: formatting cleanup, probably move the whole method to e.d.pre65formatting
+// This was moved to editor.deprecated.pre65formatting module as well as the layer preferences.xml
+// which accesses this method.
+//
+//    public static final Object getFormatterValue(MimePath mimePath, String settingName) {
+//        assert settingName.equals(NbEditorDocument.FORMATTER) : "The getFormatter factory called for '" + settingName + "'"; //NOI18N
+//
 //        IndentEngine eng = getIndentEngine(mimePath);
 //
 //        if (eng != null) {
@@ -99,10 +101,11 @@ public final class ComplexValueSettingsFactory {
 //                }
 //            }
 //        }
-        
-        return null;
-    }
+//        
+//        return null;
+//    }
 
+    // This is not called from a layer, but from NbEditorDocument and e.d.pre65formatting/.../ComplexValueSettingsFactory.getFormatterValue
     public static final IndentEngine getIndentEngine(MimePath mimePath) {
         IndentEngine eng = null;
 
