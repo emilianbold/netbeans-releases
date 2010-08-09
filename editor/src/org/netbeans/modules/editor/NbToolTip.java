@@ -227,35 +227,40 @@ public class NbToolTip extends FileChangeAdapter {
             return; // no tooltip support, no tooltips
         }
         
-        // Calls View.getTooltipText, which usually does nothing. CollapsedView.getTooltipText
-        // however calls ToolTipSupport to show its own tooltip component and then
-        // returns an empty string.
-        String toolTipText = target.getUI().getToolTipText(target, tts.getLastMouseEvent().getPoint());
-        if (toolTipText != null){
-            return;
-        }
-
+        BaseDocument doc = Utilities.getDocument(target);
         Point p = tts.getLastMouseEvent().getPoint();
-        assert (tts.getLastMouseEvent().getSource() == target);
-        org.netbeans.modules.editor.lib2.view.DocumentView docView =
-                org.netbeans.modules.editor.lib2.view.DocumentView.get(target);
-        Shape alloc;
-        if (docView != null && (alloc = docView.getAllocation()) != null) {
-            JComponent toolTip = docView.getToolTip(p.getX(), p.getY(), alloc);
-            if (toolTip != null) {
-                String tooltipType = (String) toolTip.getClientProperty("tooltip-type");
-                if ("fold-preview".equals(tooltipType)) {
-                    tts.setToolTip(toolTip, PopupManager.ViewPortBounds, PopupManager.BelowPreferred, -1, 0);
-//                    tts.setToolTip(toolTip, PopupManager.ScrollBarBounds, PopupManager.Largest, 2, 0);
-                } else {
-                    tts.setToolTip(toolTip);
-                }
+        doc.readLock();
+        try {
+            // Calls View.getTooltipText, which usually does nothing. CollapsedView.getTooltipText
+            // however calls ToolTipSupport to show its own tooltip component and then
+            // returns an empty string.
+            String toolTipText = target.getUI().getToolTipText(target, tts.getLastMouseEvent().getPoint());
+            if (toolTipText != null){
                 return;
             }
+
+            assert (tts.getLastMouseEvent().getSource() == target);
+            org.netbeans.modules.editor.lib2.view.DocumentView docView =
+                    org.netbeans.modules.editor.lib2.view.DocumentView.get(target);
+            Shape alloc;
+            if (docView != null && (alloc = docView.getAllocation()) != null) {
+                JComponent toolTip = docView.getToolTip(p.getX(), p.getY(), alloc);
+                if (toolTip != null) {
+                    String tooltipType = (String) toolTip.getClientProperty("tooltip-type");
+                    if ("fold-preview".equals(tooltipType)) {
+                        tts.setToolTip(toolTip, PopupManager.ViewPortBounds, PopupManager.BelowPreferred, -1, 0);
+    //                    tts.setToolTip(toolTip, PopupManager.ScrollBarBounds, PopupManager.Largest, 2, 0);
+                    } else {
+                        tts.setToolTip(toolTip);
+                    }
+                    return;
+                }
+            }
+        } finally {
+            doc.readUnlock();
         }
         
         Annotation[] annos = getTipAnnotations();
-        BaseDocument doc = Utilities.getDocument(target);
         if (doc != null) {
             DataObject dob = NbEditorUtilities.getDataObject(doc);
             if (dob != null && dob.isValid()) {
@@ -340,7 +345,8 @@ public class NbToolTip extends FileChangeAdapter {
 
             // Check that p is on a line with text and not completely below text,
             // ie. behind EOF.
-            if (eui != null && r.y == (p.y / eui.getLineHeight()) * eui.getLineHeight()) {
+            int relY = p.y - r.y;
+            if (eui != null && relY < eui.getLineHeight()) {
                 // Check that p is on a line with text before its EOL.
                 if (offset < Utilities.getRowEnd(doc, offset)) {
                     return offset;
