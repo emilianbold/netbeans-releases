@@ -220,6 +220,7 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
 
     private void bDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDownloadActionPerformed
         // TODO add your handling code here:
+        lUrlMouseClicked(null);
     }//GEN-LAST:event_bDownloadActionPerformed
 
     private void bBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bBrowseActionPerformed
