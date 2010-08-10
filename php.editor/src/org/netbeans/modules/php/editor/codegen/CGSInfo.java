@@ -138,7 +138,7 @@ public class CGSInfo {
                         className = classDecl.getName().getName();
                         if (info != null && className != null) {
                             FileObject fileObject = info.getSnapshot().getSource().getFileObject();
-                            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+                            Index index = ElementQueryFactory.getIndexQuery(info);
                             final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
                             Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(className)));
                             for (ClassElement classElement : classes) {

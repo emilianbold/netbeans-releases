@@ -42,8 +42,9 @@
 
 package org.netbeans.modules.php.editor.api;
 
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
@@ -52,13 +53,20 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
  */
 public final class ElementQueryFactory {
     private ElementQueryFactory() {};
-    public static ElementQuery.Index getIndexQuery(final QuerySupport querySupport)  {
-        return IndexQueryImpl.get(querySupport);
+    public static ElementQuery.Index createIndexQuery(final QuerySupport querySupport)  {
+        return IndexQueryImpl.create(querySupport);
     }
+    public static ElementQuery.Index getIndexQuery(final ParserResult parseResult)  {
+        return (parseResult instanceof PHPParseResult) ? getIndexQuery((PHPParseResult)parseResult) :
+            createIndexQuery(QuerySupportFactory.get(parseResult));
+    }
+    /**
+     * shared, cached by model
+     */
     public static ElementQuery.Index getIndexQuery(final PHPParseResult parseResult)  {
-        return IndexQueryImpl.get(QuerySupportFactory.get(parseResult));
+        return IndexQueryImpl.getModelInstance(parseResult);
     }
-    public static ElementQuery.File getFileQuery(final PHPParseResult parseResult)  {
+    public static ElementQuery.File createFileQuery(final PHPParseResult parseResult)  {
         return PhpElementVisitor.createElementQuery(parseResult);
     }
 }

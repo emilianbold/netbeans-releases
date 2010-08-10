@@ -422,6 +422,23 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
     }
 
+    @Override
+    public void preferenceChanged(View childView, boolean width, boolean height) {
+        super.preferenceChanged(childView, width, height);
+        if (childView == null) { // Track component resizes
+            if (LOG.isLoggable(Level.FINER)) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.INFO, "Cause of DocumentView.preferenceChanged()", new Exception()); // NOI18N
+                }
+                float prefWidth = getPreferredSpan(View.X_AXIS);
+                float prefHeight = getPreferredSpan(View.Y_AXIS);
+                String changed = (width ? "T" : "F") + "x" + (height ? "T" : "F"); // NOI18N
+                LOG.finer("DocumentView-preferenceChanged: WxH[" + changed + "]:" + // NOI18N
+                        prefWidth + "x" + prefHeight + '\n'); // NOI18N
+            }
+        }
+    }
+
     void checkViewsInited() {
         if (children == null && textComponent != null) {
             // Check whether Graphics can be constructed (only if component is part of hierarchy)

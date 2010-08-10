@@ -86,8 +86,8 @@ import org.openide.util.Lookup;
  */
 public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
-    private CompilationInfo info;
-    private ELTypeUtilities typeUtilities;
+    protected CompilationInfo info;
+    protected ELTypeUtilities typeUtilities;
 
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
@@ -119,11 +119,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             ELIndex index = ELIndex.get(handle.getFileObject());
             Collection<? extends IndexResult> result = index.findIdentifierReferences(beanName);
             for (ELElement elem : getMatchingElements(result)) {
-                for (Node identifier : findMatchingIdentifierNodes(elem.getNode(), beanName)) {
-                    WhereUsedQueryElement wuqe =
-                            new WhereUsedQueryElement(elem.getParserResult().getFileObject(), beanName, elem, identifier, getParserResult(elem.getParserResult().getFileObject()));
-                    refactoringElementsBag.add(refactoring, wuqe);
-                }
+                addElements(elem, findMatchingIdentifierNodes(elem.getNode(), beanName), refactoringElementsBag);
             }
         }
         return null;
@@ -338,7 +334,9 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             String expression = ir.getValue(Fields.EXPRESSION);
             for (ELElement element : parserResultHolder.parserResult.getElements()) {
                 if (expression.equals(element.getExpression())) {
-                    result.add(element);
+                    if (!result.contains(element)) {
+                        result.add(element);
+                    }
                 }
             }
         }

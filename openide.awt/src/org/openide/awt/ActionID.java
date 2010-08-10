@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,9 +13,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,14 +36,39 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.apisupport.project.ui.platform;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+package org.openide.awt;
 
-public final class NbPlatformCustomizerAction implements ActionListener {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.openide.filesystems.FileUtil;
 
-    public void actionPerformed(ActionEvent e) {
-        NbPlatformCustomizer.showCustomizer();
-    }
+/** Identifies one registered action. The action ought to be placed into 
+ * a category folder and use additional id identification. 
+ * In terms of {@link FileUtil#getConfigFile(java.lang.String)
+ * layer based definition},
+ * the action ought to be placed in 
+ * <code>"Actions/" + category() + "/" + id().replace('.','-') + ".instance"</code>
+ * path.
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since 7.26
+ * @see ActionRegistration
+ */
+@Retention(RetentionPolicy.SOURCE)
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
+public @interface ActionID {
+    /** Identifies category of an action.
+     * @return string representing programmatic name of the category
+     */
+    String category();
+    /** The unique ID (inside a category) of the action. Should follow
+     * Java naming conventions and somehow include package name prefix. Like
+     * <code>org.myproject.myproduct.MyAction</code>.
+     * 
+     * @return java identifiers separated with '.'
+     */
+    String id();
 }

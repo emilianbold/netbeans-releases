@@ -29,7 +29,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -43,66 +43,12 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
-  <!ENTITY api-questions SYSTEM "../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
-]>
 
-<api-answers
-  question-version="1.25"
-  author="mkleint@netbeans.org"
->
-
-  &api-questions;
-
-
-<!--
-        <question id="arch-overall" when="init">
-            Describe the overall architecture.
-            <hint>
-            What will be API for
-            <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi">
-                clients and what support API</a>? 
-            What parts will be pluggable?
-            How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
-            to describe your general APIs.
-            If possible please provide 
-            simple diagrams. 
-            </hint>
-        </question>
--->
- <answer id="arch-overall">
-  <ul>
-   <li>
-    <api group="java" name="MavenIndexerAPI" type="export" category="friend">
-     <p> 
-      The Maven Indexer API provides methods of interacting with Maven repository indices.
-      It allows to define, download and query the data.
-      The SPI part allows to plug alternate repository index providers.
-     </p>
-    </api>
-   </li>
-  </ul>
- </answer>
-
-
-
-
-
-
-<!--
-        <question id="arch-usecases" when="init">
-            Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase">
-            use cases</a> of the new API. Who will use it at
-            what circumstances and what will be the typical code to write
-            to use the module.
-        </question>
--->
- <answer id="arch-usecases">
-  <p>
-     API/SPI to be used by modules wanting to query maven repository content based on index provided by the
-     repository.
-  </p>
- </answer>
-
-
-</api-answers>
+<toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
+    <toolchain name="OracleSolarisStudioExpressSpica" display="Oracle Solaris Studio Express mm/yy Compiler Collection" family="SunStudio"/>
+    <platforms stringvalue="sun_intel,linux"/>
+    <default_locations>
+        <platform os="linux" directory="/opt/oracle/solstudioexyymm/bin"/>
+        <platform os="sun_intel" directory="/opt/solstudioexyymm/bin"/>
+    </default_locations>
+</toolchaindefinition>

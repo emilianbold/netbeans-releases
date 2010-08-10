@@ -62,12 +62,9 @@ import org.openide.util.NbBundle;
  */
 public class WebLogicalViewProvider extends AbstractLogicalViewProvider {
 
-    private WebProject project;
-
     public WebLogicalViewProvider(WebProject project, UpdateHelper helper,
             PropertyEvaluator evaluator, ReferenceHelper resolver, J2eeModuleProvider j2eeModuleProvider) {
         super(project, helper, evaluator, resolver, j2eeModuleProvider);
-        this.project = project;
     }
 
     @Override
@@ -101,7 +98,7 @@ public class WebLogicalViewProvider extends AbstractLogicalViewProvider {
 
     @Override
     protected String[] getBreakableProperties() {
-        return createListOfBreakableProperties(project.getSourceRoots(), project.getTestSourceRoots(), BREAKABLE_PROPERTIES);
+        return createListOfBreakableProperties(((WebProject)getProject()).getSourceRoots(), ((WebProject)getProject()).getTestSourceRoots(), BREAKABLE_PROPERTIES);
     }
 
     @Override

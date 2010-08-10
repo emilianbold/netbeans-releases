@@ -113,7 +113,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             assert superClass.hasFirst();
             String superClasName = superClass.first();
             if (superClasName != null) {
-                retval = CachingSupport.getClasses(superClasName, this);
+                retval = IndexScopeImpl.getClasses(QualifiedName.create(superClasName), this);
                 assert retval != null;
             }
         }

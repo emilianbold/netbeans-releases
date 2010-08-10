@@ -47,6 +47,8 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -58,6 +60,8 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -79,6 +83,16 @@ public final class NbPlatformCustomizer extends JPanel {
     private NbPlatformCustomizerModules modulesTab;
     private NbPlatformCustomizerJavadoc javadocTab;
     private NbPlatformCustomizerHarness harnessTab;
+
+    @ActionID(category="Tools", id="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerAction")
+    @ActionRegistration(displayName="#CTL_NbPlatformManager_Menu", iconInMenu=false)
+    public static ActionListener showCustomizerAction() {
+        return new ActionListener() {
+            public @Override void actionPerformed(ActionEvent e) {
+                NbPlatformCustomizer.showCustomizer();
+            }
+        };
+    }
     
     public static void showCustomizer() {
         HarnessUpgrader.checkForUpgrade();
