@@ -79,7 +79,7 @@ public class ConnectionPanel implements PredefinedWizard.Panel, WizardDescriptor
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private NewConnectionPanel component;
     public static final String ORACLE_THIN_DRIVER_CLASS = "oracle.jdbc.OracleDriver";
     public static final String ORACLE_OCI_DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
     public static final String MYSQL_DRIVER_CLASS = "com.mysql.jdbc.Driver";
@@ -207,6 +207,8 @@ public class ConnectionPanel implements PredefinedWizard.Panel, WizardDescriptor
 
     @Override
     public void storeSettings(PredefinedWizard settings) {
+        // store values from from into connection
+        component.setConnectionInfo();
         pw.setDatabaseConnection(databaseConnection);
     }
 
