@@ -195,7 +195,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     continue;
                 }
                 if (ee != null) {
-                    throw new LayerGenerationException("Only one public constructor allowed in ", e); // NOI18N
+                    throw new LayerGenerationException("Only one public constructor allowed", e); // NOI18N
                 }
                 ee = element;
             }
