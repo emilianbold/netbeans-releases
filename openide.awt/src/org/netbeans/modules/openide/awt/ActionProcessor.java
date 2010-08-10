@@ -213,6 +213,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         DeclaredType dt = (DeclaredType)ve.asType();
         String dtName = processingEnv.getElementUtils().getBinaryName((TypeElement)dt.asElement()).toString();
         if ("java.util.List".equals(dtName)) {
+            if (dt.getTypeArguments().isEmpty()) {
+                throw new LayerGenerationException("Use List<SomeType>", ee);
+            }
             f.stringvalue("type", dt.getTypeArguments().get(0).toString());
             f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
             f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString());

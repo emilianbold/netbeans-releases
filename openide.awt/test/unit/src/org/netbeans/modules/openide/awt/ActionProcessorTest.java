@@ -42,7 +42,6 @@ package org.netbeans.modules.openide.awt;
 import java.awt.Component;
 import javax.swing.JMenuItem;
 import org.openide.util.actions.Presenter;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import org.openide.util.test.AnnotationProcessorTestUtils;
 import java.util.Collections;
@@ -487,6 +486,27 @@ public class ActionProcessorTest extends NbTestCase {
             "@ActionID(category=\"Tools\",id=\"my.action\")" +
             "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
             "public class A extends AbstractAction implements Presenter.Menu {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
+    
+    public void testListWithNoType() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import org.openide.util.actions.Presenter;\n" +
+            "import java.awt.event.*;\n" +
+            "import java.util.List;\n" +
+            "import javax.swing.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "public class A extends AbstractAction {\n" +
+            "    public A(List wrongCnt) {}\n" +
             "    public void actionPerformed(ActionEvent e) {}" +
             "}\n"
         );
