@@ -93,6 +93,8 @@ import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
@@ -322,13 +324,31 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                 }
 
                 Map<String, String> selectedEntityNames = new HashMap<String, String>();
+
+                EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
+                EntityResourceBeanModel model = builder.build(entities);
+                Collection<EntityResourceBean> beans = model.getResourceBeans();
+                Map<String,String> beanMap = new HashMap<String,String>();
+                for (EntityResourceBean bean : beans) {
+                    if (bean.isItem()) {
+                        EntityClassInfo classInfo = bean.getEntityClassInfo();
+                        EntityClassInfo.FieldInfo fieldInfo = classInfo.getIdFieldInfo();
+                        if (fieldInfo != null) {
+                            beanMap.put(classInfo.getType(), fieldInfo.getType());
+                        }
+                    }
+                }
+
                 Iterator<Entity> it = entities.iterator();
                 while (it.hasNext()) {
                     Entity entity = it.next();
-                    // PENDING: need to compute primary key java type
-                    selectedEntityNames.put(entity.getClass2(), "java.lang.String");
+                    String primaryKeyType = beanMap.get(entity.getClass2());
+                    selectedEntityNames.put(
+                            entity.getClass2(),
+                            (primaryKeyType == null ? "java.lang.String" : primaryKeyType)); // NOI18N
                 }
                 instantiateWProgress(handle, targetResourceFolder, resourcePackage, selectedEntityNames);
+
             } else {
                 
                 EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);

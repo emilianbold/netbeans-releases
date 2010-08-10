@@ -566,6 +566,9 @@ public class EjbFacadeGenerator implements FacadeGenerator {
     
     private List<RestGenerationOptions> getRestFacadeMethodOptions(String entityFQN, String idClass){
 
+        String paramArg = "java.lang.Character".equals(idClass) ? "id.charAt(0)" : "id"; //NOI18N
+        String idType = "id".equals(paramArg) ? idClass : "java.lang.String"; //NOI18N
+
         RestGenerationOptions createOptions = new RestGenerationOptions();
         createOptions.setOperation(RestGenerationOptions.Operation.CREATE);
         createOptions.setReturnType("void"); //NOI18N
@@ -586,18 +589,18 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         destroyOptions.setOperation(RestGenerationOptions.Operation.REMOVE);
         destroyOptions.setReturnType("void");//NOI18N
         destroyOptions.setParameterNames(new String[]{"id"}); //NOI18N
-        destroyOptions.setParameterTypes(new String[]{idClass}); //NOI18N
+        destroyOptions.setParameterTypes(new String[]{idType}); //NOI18N
         destroyOptions.setPathParams(new String[]{"id"}); //NOI18N
-        destroyOptions.setBody("super.remove(super.find(id));"); //NOI18N
+        destroyOptions.setBody("super.remove(super.find("+paramArg+"));"); //NOI18N
 
         RestGenerationOptions findOptions = new RestGenerationOptions();
         findOptions.setOperation(RestGenerationOptions.Operation.FIND);
         findOptions.setReturnType(entityFQN);//NOI18N
         findOptions.setProduces(new String[]{"application/xml", "application/json"}); //NOI18N
         findOptions.setParameterNames(new String[]{"id"}); //NOI18N
-        findOptions.setParameterTypes(new String[]{idClass}); //NOI18N
+        findOptions.setParameterTypes(new String[]{idType}); //NOI18N
         findOptions.setPathParams(new String[]{"id"}); //NOI18N
-        findOptions.setBody("return super.find(id);"); //NOI18N
+        findOptions.setBody("return super.find("+paramArg+");"); //NOI18N
 
         RestGenerationOptions findAllOptions = new RestGenerationOptions();
         findAllOptions.setOperation(RestGenerationOptions.Operation.FIND_ALL);
@@ -610,9 +613,9 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         findSubOptions.setReturnType("java.util.List<" + entityFQN + ">");//NOI18N
         findSubOptions.setProduces(new String[]{"application/xml", "application/json"}); //NOI18N
         findSubOptions.setParameterNames(new String[]{"from", "to"}); //NOI18N
-        findSubOptions.setParameterTypes(new String[]{"java.lang.String", "java.lang.String"}); //NOI18N
+        findSubOptions.setParameterTypes(new String[]{"java.lang.Integer", "java.lang.Integer"}); //NOI18N
         findSubOptions.setPathParams(new String[]{"from", "to"}); //NOI18N
-        findSubOptions.setBody("return super.findRange(new int[] {new Integer(from), new Integer(to)});"); //NOI18N
+        findSubOptions.setBody("return super.findRange(new int[] {from, to});"); //NOI18N
 
         RestGenerationOptions countOptions = new RestGenerationOptions();
         countOptions.setOperation(RestGenerationOptions.Operation.COUNT);
