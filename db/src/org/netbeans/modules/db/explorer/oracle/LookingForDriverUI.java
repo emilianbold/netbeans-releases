@@ -77,8 +77,11 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
             tfLocation.setText(driverPath);
         }
         updateComponents(false);
-        lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text", driverName)); // NOI18N
-        lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text.not.found", driverName)); // NOI18N
+        if (found) {
+            lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text", driverName)); // NOI18N
+        } else {
+            lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text.not.found", driverName)); // NOI18N
+        }
         lFound2.setVisible(found);
         lFound2.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound2.text", tfLocation.getText())); // NOI18N
         lDownloadInfo1.setVisible(downloadFrom != null && ! downloadFrom.isEmpty());
