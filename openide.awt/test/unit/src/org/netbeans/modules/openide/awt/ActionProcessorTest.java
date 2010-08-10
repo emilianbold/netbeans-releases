@@ -85,11 +85,11 @@ public class ActionProcessorTest extends NbTestCase {
     )
     public static final class Always implements ActionListener {
         static int created;
-        
+
         public Always() {
             created++;
         }
-        
+
         static int cnt;
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -115,6 +115,37 @@ public class ActionProcessorTest extends NbTestCase {
         assertEquals("Created now!", 1, Always.created);
 
         assertEquals("Action called", 300, Always.cnt);
+    }
+
+    public static final class AlwaysByMethod {
+        private AlwaysByMethod() {}
+        static int created, cnt;
+        @ActionRegistration(displayName="#AlwaysOn")
+        @ActionID(id="my.test.AlwaysByMethod", category="Tools")
+        public static ActionListener factory() {
+            created++;
+            return new ActionListener() {
+                public @Override void actionPerformed(ActionEvent e) {
+                    cnt += e.getID();
+                }
+            };
+        }
+    }
+
+    public void testAlwaysEnabledActionByMethod() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/Tools/my-test-AlwaysByMethod.instance");
+        assertNotNull("File found", fo);
+        assertEquals("Not created yet", 0, AlwaysByMethod.created);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Attribute present", obj);
+        assertTrue("It is an action", obj instanceof Action);
+        Action a = (Action)obj;
+        assertEquals("Still not created", 0, AlwaysByMethod.created);
+        assertEquals("I am always on!", a.getValue(Action.NAME));
+        assertEquals("Not even now created", 0, AlwaysByMethod.created);
+        a.actionPerformed(new ActionEvent(this, 300, ""));
+        assertEquals("Created now!", 1, AlwaysByMethod.created);
+        assertEquals("Action called", 300, AlwaysByMethod.cnt);
     }
 
     @ActionRegistration(
