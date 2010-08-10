@@ -583,6 +583,14 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    scan(node.getStatement());
+            if (ts.token().id() == PHPTokenId.T_INLINE_HTML) {
+                // we are at the embeded html and we need to put the indent after
+                // php open tag
+                while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ENDFOREACH) {
+                    addFormatToken(formatTokens);
+                }
+                ts.movePrevious();
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
