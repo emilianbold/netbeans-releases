@@ -126,7 +126,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 
                 createDelegate = false;
                 key = var.getConstantValue().toString();
-            } else {
+            } else if (e.getKind() == ElementKind.CLASS) {
                 if (!isAssignable(e.asType(), actionListener)) {
                     throw new LayerGenerationException("Class annotated with @ActionRegistration must implement java.awt.event.ActionListener!", e);
                 }
@@ -134,12 +134,16 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     throw new LayerGenerationException("Class has to be public", e);
                 }
                 key = ar.key();
+            } else {
+                assert e.getKind() == ElementKind.METHOD : e;
+                layer(e).instanceFile("dummy", null, ActionListener.class);
+                key = ar.key();
             }
             
-            boolean direct = 
-                isAssignable(e.asType(), p1) ||
-                isAssignable(e.asType(), p2) ||
-                isAssignable(e.asType(), p3);
+            boolean direct = e.getKind() == ElementKind.CLASS &&
+                (isAssignable(e.asType(), p1) ||
+                 isAssignable(e.asType(), p2) ||
+                 isAssignable(e.asType(), p3));
             
             
             if (direct) {
