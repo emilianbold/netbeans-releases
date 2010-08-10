@@ -181,7 +181,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
     }
 
     private TypeMirror type(Class<?> type) {
-        final TypeElement e = processingEnv.getElementUtils().getTypeElement(type.getName().replace('$', '.'));
+        final TypeElement e = processingEnv.getElementUtils().getTypeElement(type.getCanonicalName());
         return e == null ? null : e.asType();
     }
 
