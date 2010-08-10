@@ -156,10 +156,22 @@ public class CallbackSystemActionTest extends NbTestCase {
                 cntPerformed++;
             }
         }
+        class Disabled extends AbstractAction {
+            @Override
+            public boolean isEnabled() {
+                return false;
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        }
         MyAction myAction = new MyAction();
         
         ActionMap other = new ActionMap();
         ActionMap tc = new ActionMap();
+        ActionMap disabled = new ActionMap();
+        disabled.put("somekey", new Disabled());
         
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
@@ -183,8 +195,10 @@ public class CallbackSystemActionTest extends NbTestCase {
 
         ic.remove(tc);
         ic.add(other);
+        assertTrue("Remains enabled", a.isEnabled());
+        ic.remove(other);
+        ic.add(disabled);
         assertFalse("Becomes disabled", a.isEnabled());
-        assertEquals("isEnabled called still only once", 1, myAction.cntEnabled);
         
         WeakReference<?> ref = new WeakReference<Object>(a);
         WeakReference<?> ref2 = new WeakReference<Object>(myAction);
