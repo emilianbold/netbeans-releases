@@ -58,7 +58,7 @@ import javax.swing.ActionMap;
  * @since 7.26
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.TYPE, ElementType.FIELD })
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 public @interface ActionRegistration {
     /** Display name. Usually prefixed with '#' to reference value from a 
      * <code>Bundle.properties</code> file in the same package.

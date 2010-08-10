@@ -58,7 +58,7 @@ import org.openide.filesystems.FileUtil;
  * @see ActionRegistration
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.TYPE, ElementType.FIELD })
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 public @interface ActionID {
     /** Identifies category of an action.
      * @return string representing programmatic name of the category
