@@ -275,6 +275,10 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
         if (children == null) {
             assert (length == 0) : "Attempt to remove from null children length=" + length; // NOI18N
             children = createChildren(views.length);
+            // Reset any previously (possibly estimated) spans (replace does just relative increase/decrease
+            // so it would be fooled by it).
+            setMajorAxisSpan(0d);
+            setMinorAxisSpan(0f);
         }
         return children.replace(this, new ReplaceResult(), index, length, views, offsetDelta, alloc);
     }
