@@ -64,7 +64,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescript
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -149,8 +148,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment {
             LOGGER.log(Level.FINE, null, ex);
         }
 
-        CommandBasedDeployer deployer = new CommandBasedDeployer(WLDeploymentFactory.getInstance(),
-                dm.getInstanceProperties());
+        CommandBasedDeployer deployer = new CommandBasedDeployer(dm);
         return deployer.directoryDeploy(target, name, dir, dm.getHost(), dm.getPort(), app.getType());
     }
 
