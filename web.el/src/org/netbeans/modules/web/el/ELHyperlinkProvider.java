@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -60,6 +61,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Go to declaration for Expression Language.
@@ -96,7 +98,17 @@ public final class ELHyperlinkProvider implements HyperlinkProvider {
     }
 
     @Override
-    public void performClickAction(Document doc, final int offset) {
+    public void performClickAction(final Document doc, final int offset) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            public void run() {
+                performGoTo(doc, offset, cancel);
+            }
+        }, NbBundle.getMessage(ELHyperlinkProvider.class, "LBL_GoToDeclaration"), cancel, false);
+    }
+    
+    
+    private void performGoTo(final Document doc, final int offset, final AtomicBoolean cancel) {
         Source source = Source.create(doc);
         try {
             ParserManager.parse(Collections.singletonList(source), new UserTask() {
@@ -104,6 +116,9 @@ public final class ELHyperlinkProvider implements HyperlinkProvider {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ResultIterator elRi = WebUtils.getResultIterator(resultIterator, ELLanguage.MIME_TYPE);
+                    if (cancel.get()) {
+                        return;
+                    }
                     ELParserResult parserResult = (ELParserResult) elRi.getParserResult();
                     ELElement elElement = parserResult.getElementAt(offset);
                     if (elElement == null) {
