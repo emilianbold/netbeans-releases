@@ -114,7 +114,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     /** Creates a new instance of JsIndex */
     private IndexQueryImpl(QuerySupport index, final Model model) {
         this.index = index;
-        if (model != null) {            
+        if (model != null) {
             for (final NamespaceScope namespaceScope : model.getFileScope().getDeclaredNamespaces()) {
                 if (namespaceScope != null) {
                     Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
@@ -147,10 +147,6 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         }
     }
 
-    private Set<ClassElement> getClassesImpl() {
-        return getClassesImpl(NameKind.empty());
-    }
-
     private Set<ClassElement> getClassesImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<ClassElement> classes = new HashSet<ClassElement>();
@@ -165,10 +161,6 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
 
-
-    private Set<InterfaceElement> getInterfacesImpl() {
-        return getInterfacesImpl(NameKind.empty());
-    }
 
     private Set<InterfaceElement> getInterfacesImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
@@ -211,10 +203,6 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return types;
     }
 
-
-    private Set<FunctionElement> getFunctionsImpl() {
-        return getFunctionsImpl(NameKind.empty());
-    }
 
     @Override
     public final Set<MethodElement> getAccessibleMagicMethods(final TypeElement type) {
@@ -273,10 +261,6 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(namespaces);
     }
 
-
-    private Set<ConstantElement> getConstantsImpl() {
-        return getConstantsImpl(NameKind.empty());
-    }
 
     private Set<ConstantElement> getConstantsImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
@@ -1289,10 +1273,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 String[] values = indexResult.getValues(PHPIndexer.FIELD_SUPER_CLASS);
                 for (String value : values) {
                     Signature signature = Signature.get(value);
-                    final String name = signature.string(1);
-                    //TODO: FQN should have been compared, but first into index must come super cls/iface
-                    //as FQN
-                    if (query.matchesName(PhpElementKind.CLASS, name)) {
+                    final QualifiedName fqnForValue = QualifiedName.createFullyQualified(signature.string(1), signature.string(2));
+                    if (query.matchesName(PhpElementKind.CLASS, fqnForValue)) {
                         directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
                     }
                 }
@@ -1304,10 +1286,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 String[] values = indexResult.getValues(PHPIndexer.FIELD_SUPER_IFACE);
                 for (String value : values) {
                     Signature signature = Signature.get(value);
-                    final String name = signature.string(1);
-                    //TODO: FQN should have been compared, but first into index must come super cls/iface
-                    //as FQN
-                    if (query.matchesName(PhpElementKind.IFACE, name)) {
+                    final QualifiedName fqnForValue = QualifiedName.createFullyQualified(signature.string(1), signature.string(2));
+                    if (query.matchesName(PhpElementKind.IFACE, fqnForValue)) {
                         directTypes.addAll(InterfaceElementImpl.fromSignature(NameKind.empty(), this, indexResult));
                         directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
                     }
