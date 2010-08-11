@@ -228,11 +228,11 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
             return;
         }
         
-        processMultiLine(string, stdOut, Level.WARN);
+        processMultiLine(string, stdOut, Level.WARNING);
     }
     
     public void warn(String string, Throwable throwable)    {
-        processMultiLine(string, stdOut, Level.WARN);
+        processMultiLine(string, stdOut, Level.WARNING);
         throwable.printStackTrace(stdOut);
     }
     

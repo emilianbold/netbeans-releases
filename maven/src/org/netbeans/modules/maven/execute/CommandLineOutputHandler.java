@@ -68,7 +68,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     //8 means 4 paralel builds, one for input, one for output.
     private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", 8); //NOI18N
     private InputOutput inputOutput;
-    private Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARN|ERROR|FATAL)\\] (.*)"); //NOI18N
+    private Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARNING|ERROR|FATAL)\\] (.*)"); //NOI18N
     static Pattern startPattern = Pattern.compile("\\[INFO\\] \\[([\\w]*):([\\w]*)[ ]?.*\\]"); //NOI18N
     private OutputWriter stdOut;
     //    private ProgressHandle handle;

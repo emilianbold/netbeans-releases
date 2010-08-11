@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,6 +64,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColorPrint;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -72,7 +74,7 @@ import org.openide.windows.OutputWriter;
  */
 public abstract class AbstractOutputHandler {
 
-    public enum Level {DEBUG, INFO, WARN, ERROR, FATAL}
+    public enum Level {DEBUG, INFO, WARNING, ERROR, FATAL}
 
     protected static final String PRJ_EXECUTE = "project-execute"; //NOI18N
     
@@ -290,9 +292,29 @@ public abstract class AbstractOutputHandler {
         }
         if (!visitor.isLineSkipped()) {
             String line = visitor.getLine() == null ? input : visitor.getLine();
+            if (visitor.getColor() == null && visitor.getOutputListener() == null) {
+                switch (level) {
+                case DEBUG:
+                    visitor.setColor(Color.GRAY);
+                    break;
+                case WARNING:
+                    visitor.setColor(Color.ORANGE);
+                    break;
+                case ERROR:
+                    visitor.setColor(Color.RED);
+                    break;
+                case FATAL:
+                    visitor.setColor(Color.MAGENTA);
+                    break;
+                }
+            }
             if (visitor.getOutputListener() != null) {
                 try {
-                    writer.println((level != Level.INFO ? "[" + level + "]" : "") + line, visitor.getOutputListener(), visitor.isImportant()); //NOI18N
+                    if (visitor.getColor() != null && IOColorPrint.isSupported(getIO())) {
+                        IOColorPrint.print(getIO(), line + "\n", visitor.getOutputListener(), visitor.isImportant(), visitor.getColor());
+                    } else {
+                        writer.println(line, visitor.getOutputListener(), visitor.isImportant());
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -304,7 +326,7 @@ public abstract class AbstractOutputHandler {
                         Exceptions.printStackTrace(ex);
                     }
                 } else {
-                    writer.println((level != Level.INFO ? "[" + level + "]" : "") + line); //NOI18N
+                    writer.println(line);
                 }
             }
         }
