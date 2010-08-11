@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.execute;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +71,9 @@ import org.openide.windows.OutputWriter;
  * @author mkleint
  */
 public abstract class AbstractOutputHandler {
+
+    public enum Level {DEBUG, INFO, WARN, ERROR, FATAL}
+
     protected static final String PRJ_EXECUTE = "project-execute"; //NOI18N
     
     protected HashMap<String, Set<OutputProcessor>> processors;
@@ -267,17 +269,17 @@ public abstract class AbstractOutputHandler {
         }
     }
     
-    protected final void processMultiLine(String input, OutputWriter writer, String levelText) {
+    protected final void processMultiLine(String input, OutputWriter writer, Level level) {
         if (input == null) {
             return;
         }
         //MEVENIDE-637
         for (String s : splitMultiLine(input)) {
-            processLine(s, writer, levelText);
+            processLine(s, writer, level);
         }
     }
     
-    protected final void processLine(String input, OutputWriter writer, String levelText) {
+    protected final void processLine(String input, OutputWriter writer, Level level) {
         checkSleepiness();
         
         visitor.resetVisitor();
@@ -290,7 +292,7 @@ public abstract class AbstractOutputHandler {
             String line = visitor.getLine() == null ? input : visitor.getLine();
             if (visitor.getOutputListener() != null) {
                 try {
-                    writer.println((levelText.length() == 0 ? "" : ("[" + levelText + "]")) + line, visitor.getOutputListener(), visitor.isImportant()); //NOI18N
+                    writer.println((level != Level.INFO ? "[" + level + "]" : "") + line, visitor.getOutputListener(), visitor.isImportant()); //NOI18N
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -302,7 +304,7 @@ public abstract class AbstractOutputHandler {
                         Exceptions.printStackTrace(ex);
                     }
                 } else {
-                    writer.println((levelText.length() == 0 ? "" : ("[" + levelText + "]")) + line); //NOI18N
+                    writer.println((level != Level.INFO ? "[" + level + "]" : "") + line); //NOI18N
                 }
             }
         }

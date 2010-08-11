@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.maven.embedder.MavenEmbedderLogger;
@@ -211,16 +210,16 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         match = linePattern.matcher(line);
                         if (match.matches()) {
                             String level = match.group(1);
-                            processLine(match.group(2), stdOut, "INFO".equals(level) ? "" : level); //NOI18N
+                            processLine(match.group(2), stdOut, Level.valueOf(level));
                         } else {
                             // oh well..
-                            processLine(line, stdOut, ""); //NOI18N
+                            processLine(line, stdOut, Level.INFO);
                         }
                     }
                     line = readLine();
                 }
             } catch (IOException ex) {
-                java.util.logging.Logger.getLogger(CommandLineOutputHandler.class.getName()).log(Level.FINE, null, ex);
+                java.util.logging.Logger.getLogger(CommandLineOutputHandler.class.getName()).log(java.util.logging.Level.FINE, null, ex);
             } finally {
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);
                 try {
