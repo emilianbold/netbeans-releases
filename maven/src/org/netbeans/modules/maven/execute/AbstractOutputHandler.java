@@ -308,26 +308,25 @@ public abstract class AbstractOutputHandler {
                     break;
                 }
             }
-            if (visitor.getOutputListener() != null) {
-                try {
+            try {
+                if (visitor.getOutputListener() != null) {
                     if (visitor.getColor() != null && IOColorPrint.isSupported(getIO())) {
                         IOColorPrint.print(getIO(), line + "\n", visitor.getOutputListener(), visitor.isImportant(), visitor.getColor());
                     } else {
                         writer.println(line, visitor.getOutputListener(), visitor.isImportant());
                     }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            } else {
-                if (visitor.getColor() != null && IOColorLines.isSupported(getIO())) {
-                    try {
-                        IOColorLines.println(getIO(), line, visitor.getColor());
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
                 } else {
-                    writer.println(line);
+                    if (level.compareTo(Level.ERROR) >= 0 && IOColorPrint.isSupported(getIO())) {
+                        IOColorPrint.print(getIO(), line + "\n", null, true, visitor.getColor());
+                    } else if (visitor.getColor() != null && IOColorLines.isSupported(getIO())) {
+                        IOColorLines.println(getIO(), line, visitor.getColor());
+                    } else {
+                        writer.println(line);
+                    }
                 }
+            } catch (IOException x) {
+                x.printStackTrace();
+                writer.println(line); // fallback
             }
         }
     }
