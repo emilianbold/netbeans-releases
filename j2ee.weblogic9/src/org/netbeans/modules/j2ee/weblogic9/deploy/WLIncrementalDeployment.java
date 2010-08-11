@@ -61,7 +61,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.openide.filesystems.FileObject;
@@ -71,7 +73,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class WLIncrementalDeployment extends IncrementalDeployment {
+public class WLIncrementalDeployment extends IncrementalDeployment implements IncrementalDeployment2 {
 
     private static final Logger LOGGER = Logger.getLogger(WLIncrementalDeployment.class.getName());
 
@@ -150,6 +152,18 @@ public class WLIncrementalDeployment extends IncrementalDeployment {
 
         CommandBasedDeployer deployer = new CommandBasedDeployer(dm);
         return deployer.directoryDeploy(target, name, dir, dm.getHost(), dm.getPort(), app.getType());
+    }
+
+    @Override
+    public ProgressObject incrementalDeploy(TargetModuleID module, DeploymentContext context) {
+        dm.deployOptionalPackages(context.getRequiredLibraries());
+        return incrementalDeploy(module, context.getChanges());
+    }
+
+    @Override
+    public ProgressObject initialDeploy(Target target, DeploymentContext context) {
+        dm.deployOptionalPackages(context.getRequiredLibraries());
+        return initialDeploy(target, context.getModule(), null, context.getModuleFile());
     }
 
     @Override
