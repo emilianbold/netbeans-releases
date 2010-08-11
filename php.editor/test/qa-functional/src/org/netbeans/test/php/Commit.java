@@ -95,7 +95,7 @@ public class Commit extends GeneralPHP
     "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*/?>";
 
   static private final String CLASS_PHP_INITIAL_CONTENT =
-    "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofPHPClass**@author" + System.getProperty( "user.name" ) + "*/classPHPClass{//putyourcodehere}?>";
+    "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofnewPHPClass**@author" + System.getProperty( "user.name" ) + "*/classnewPHPClass{//putyourcodehere}?>";
 
   static private final int COMPLETION_LIST_INCLASS = 22;
 
