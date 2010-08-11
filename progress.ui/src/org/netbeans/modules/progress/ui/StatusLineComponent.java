@@ -42,8 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.progress.ui;
+
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
@@ -82,7 +82,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JWindow;
 import javax.swing.KeyStroke;
-import javax.swing.Popup;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
@@ -100,7 +99,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
-
 /**
  *
  * @author Milos Kleint (mkleint@netbeans.org)
@@ -114,13 +112,11 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     private TaskModel model;
     private MouseListener mouseListener;
     private HideAWTListener hideListener;
-    private Popup popup;
     private JWindow popupWindow;
     private PopupPane pane;
     private Map<InternalHandle, ListComponent> handleComponentMap;
-    private final int prefferedHeight;
+    private final int preferredHeight;
     private JButton closeButton;
-    /** Creates a new instance of StatusLineComponent */
     public StatusLineComponent() {
         handleComponentMap = new HashMap<InternalHandle, ListComponent>();
         FlowLayout flay = new FlowLayout();
@@ -135,16 +131,16 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         createBar();
         // tricks to figure out correct height.
         bar.setStringPainted(true);
-        bar.setString("XXX");
-        label.setText("XXX");
-        prefferedHeight = Math.max(label.getPreferredSize().height, bar.getPreferredSize().height) + 2;
+        bar.setString("@@@"); // NOI18N
+        label.setText("@@@"); // NOI18N
+        preferredHeight = Math.max(label.getPreferredSize().height, bar.getPreferredSize().height) + 2;
         
         discardLabel();
         discardBar();
         
         pane = new PopupPane();
         pane.getActionMap().put("HidePopup", new AbstractAction() {
-            public void actionPerformed(ActionEvent actionEvent) {
+            public @Override void actionPerformed(ActionEvent actionEvent) {
 //                System.out.println("escape pressed - hiding");
                 hidePopup();
             }
@@ -239,7 +235,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     public Dimension getPreferredSize() {
         Dimension retValue;
         retValue = super.getPreferredSize();
-        retValue.height = prefferedHeight;
+        retValue.height = preferredHeight;
         return retValue;
     }
 
@@ -247,7 +243,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     public Dimension getMinimumSize() {
         Dimension retValue;
         retValue = super.getMinimumSize();
-        retValue.height = prefferedHeight;
+        retValue.height = preferredHeight;
         return retValue;
     }        
     
@@ -255,15 +251,15 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     public Dimension getMaximumSize() {
         Dimension retValue;
         retValue = super.getMaximumSize();
-        retValue.height = prefferedHeight;
+        retValue.height = preferredHeight;
         return retValue;
     }        
     
-    public void setModel(TaskModel mod) {
+    public @Override void setModel(TaskModel mod) {
         model = mod;
         model.addListDataListener(new Listener());
         model.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
+            public @Override void valueChanged(ListSelectionEvent e) {
                 pane.updateBoldFont(model.getSelectedHandle());
             }
         });
@@ -275,7 +271,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         if (size == 1) {
             key = "NbProgressBar.tooltip2"; //NOI18N
         }
-        String text = NbBundle.getMessage(StatusLineComponent.class, key, new Integer(size));
+        String text = NbBundle.getMessage(StatusLineComponent.class, key, size);
         setToolTipText(text);
         if (label != null) {
             label.setToolTipText(text);
@@ -285,23 +281,23 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         }
     }
     
-    public void processProgressEvent(ProgressEvent event) {
+    public @Override void processProgressEvent(ProgressEvent event) {
         if (event.getType() == ProgressEvent.TYPE_START) {
             createListItem(event.getSource());
         } else if (event.getType() == ProgressEvent.TYPE_PROGRESS || 
                    event.getType() == ProgressEvent.TYPE_SWITCH || 
                    event.getType() == ProgressEvent.TYPE_SILENT) {
-            ListComponent comp = (ListComponent)handleComponentMap.get(event.getSource());
+            ListComponent comp = handleComponentMap.get(event.getSource());
             if (comp == null) {
                 createListItem(event.getSource());
-                comp = (ListComponent)handleComponentMap.get(event.getSource());
+                comp = handleComponentMap.get(event.getSource());
             }
             comp.processProgressEvent(event);
         } else if (event.getType() == ProgressEvent.TYPE_FINISH) {
             removeListItem(event.getSource());
             if (model.getSelectedHandle() != null && handle != model.getSelectedHandle()) {
                 ProgressEvent snap = model.getSelectedHandle().requestStateSnapshot();
-                initiateComponent(snap);
+                initializeComponent(snap);
                 if (snap.getSource().isInSleepMode()) {
                     bar.setString(snap.getMessage());
                 }
@@ -311,9 +307,9 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         
     }
     
-    public void processSelectedProgressEvent(ProgressEvent event) {
+    public @Override void processSelectedProgressEvent(ProgressEvent event) {
         if (event.getType() == ProgressEvent.TYPE_START) {
-            initiateComponent(event);
+            initializeComponent(event);
             return;
         } else if (event.getType() == ProgressEvent.TYPE_FINISH) {
             //happens only when there's no more handles.
@@ -331,7 +327,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             if (event.getSource() != handle || event.isSwitched() || 
                 event.getType() == ProgressEvent.TYPE_SILENT ||                    // the following condition re-initiates the bar when going from/to sleep mode..
                     (event.getSource().isInSleepMode() != (bar.getClientProperty(NbProgressBar.SLEEPY) != null))) { //NIO18N
-                initiateComponent(event);
+                initializeComponent(event);
             }
             if (bar != null) {
                 if (event.getWorkunitsDone() > 0) {
@@ -368,7 +364,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         return "";
     }
     
-    private void initiateComponent(ProgressEvent event) {
+    private void initializeComponent(ProgressEvent event) {
         handle = event.getSource();
         boolean toShow = false;
         if (label == null) {
@@ -410,16 +406,13 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     }
     
     private class Listener implements ListDataListener {
-        public void intervalAdded(ListDataEvent e) {
+        public @Override void intervalAdded(ListDataEvent e) {
             setTooltipForAll();
         }
-        
-        public void intervalRemoved(ListDataEvent e) {
+        public @Override void intervalRemoved(ListDataEvent e) {
             setTooltipForAll();
         }
-        
-        
-        public void contentsChanged(ListDataEvent e) {
+        public @Override void contentsChanged(ListDataEvent e) {
             setTooltipForAll();
         }
     }
@@ -468,7 +461,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     }
 
     
-    public void showPopup() {
+    public @Override void showPopup() {
         if (GraphicsEnvironment.isHeadless()) {
             return;
         }
@@ -520,7 +513,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     }
     
     private class HideAWTListener extends ComponentAdapter implements  AWTEventListener, WindowStateListener {
-        public void eventDispatched(java.awt.AWTEvent aWTEvent) {
+        public @Override void eventDispatched(java.awt.AWTEvent aWTEvent) {
             if (aWTEvent instanceof MouseEvent) {
                 MouseEvent mv = (MouseEvent)aWTEvent;
                 if (mv.getClickCount() > 0) {
@@ -538,7 +531,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             }
         }
 
-        public void windowStateChanged(WindowEvent windowEvent) {
+        public @Override void windowStateChanged(WindowEvent windowEvent) {
             if (showingPopup) {
                 int oldState = windowEvent.getOldState();
                 int newState = windowEvent.getNewState();
@@ -608,7 +601,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             }
             setEnabled(handle == null ? false : handle.isAllowCancel());
         }
-        public void actionPerformed(ActionEvent actionEvent) {
+        public @Override void actionPerformed(ActionEvent actionEvent) {
             InternalHandle hndl = handle;
             if (hndl !=null && hndl.getState() == InternalHandle.STATE_RUNNING) {
                 String message = NbBundle.getMessage(StatusLineComponent.class, "Cancel_Question", handle.getDisplayName());
@@ -630,7 +623,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             setEnabled(handle == null ? false : handle.isAllowView());
             
         }
-        public void actionPerformed(ActionEvent actionEvent) {
+        public @Override void actionPerformed(ActionEvent actionEvent) {
             if (handle != null) {
                 handle.requestView();
             }
@@ -642,19 +635,19 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         public EmptyCancelAction() {
             setEnabled(false);
             putValue(Action.SMALL_ICON, new Icon() {
-                public int getIconHeight() {
+                public @Override int getIconHeight() {
                     return 12;
                 }
-                public int getIconWidth() {
+                public @Override int getIconWidth() {
                     return 12;
                 }
-                public void paintIcon(Component c, Graphics g, int x, int y) {
+                public @Override void paintIcon(Component c, Graphics g, int x, int y) {
                 }
             });
             putValue(Action.NAME, "");
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
         }
     }
 
