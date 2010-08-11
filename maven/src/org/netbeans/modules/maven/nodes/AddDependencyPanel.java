@@ -129,7 +129,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private int varianceStep, variance;
     private Timer progressTimer = new Timer(100, this);
 
-    private static final RequestProcessor RP = new RequestProcessor(AddDependencyPanel.class);
+    private static final RequestProcessor RP = new RequestProcessor(AddDependencyPanel.class.getName(), 5);
 
     private NotificationLineSupport nls;
     private RepositoryInfo nbRepo;
