@@ -60,7 +60,7 @@ import org.openide.util.ImageUtilities;
  */
 public class ArtifactNode extends AbstractNode {
     public ArtifactNode(RepositoryInfo info,String id, String art) {
-        super(new ArtifactChildren(info,id, art));
+        super(Children.create(new ArtifactChildren(info,id, art), true));
         setName(art);
         setDisplayName(art);
     }

@@ -41,21 +41,20 @@
  */
 package org.netbeans.modules.maven.repository;
 
-import java.util.Collections;
+import java.util.List;
 
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.openide.nodes.Children;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkleint
  * @author Anuradha G
  */
-public class ArtifactChildren extends Children.Keys {
+public class ArtifactChildren extends ChildFactory<NBVersionInfo> {
 
     private String artifactId;
     private String groupId;
@@ -69,34 +68,15 @@ public class ArtifactChildren extends Children.Keys {
         this.artifactId = artifactId;
     }
 
-    protected Node[] createNodes(Object key) {
-        if (GroupListChildren.LOADING == key) {
-            return new Node[]{GroupListChildren.createLoadingNode()};
-        }
-        NBVersionInfo record = (NBVersionInfo) key;
-
+    protected @Override Node createNodeForKey(NBVersionInfo record) {
         boolean hasSources = record.isSourcesExists();
         boolean hasJavadoc = record.isJavadocExists();
-
-        return new Node[]{new VersionNode(info,record, hasJavadoc, hasSources, groupId != null)};
+        return new VersionNode(info, record, hasJavadoc, hasSources, groupId != null);
+    }
+    
+    protected @Override boolean createKeys(List<NBVersionInfo> toPopulate) {
+        toPopulate.addAll(RepositoryQueries.getVersions(groupId, artifactId, info));
+        return true;
     }
 
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-
-        setKeys(Collections.singletonList(GroupListChildren.LOADING));
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                setKeys(RepositoryQueries.getVersions(groupId, artifactId, info));
-            }
-        });
-
-    }
-
-    @Override
-    protected void removeNotify() {
-        super.removeNotify();
-        setKeys(Collections.EMPTY_LIST);
-    }
 }
