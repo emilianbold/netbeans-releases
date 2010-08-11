@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
 import java.util.Collections;
+import javax.swing.Action;
 
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBGroupInfo;
@@ -60,11 +61,8 @@ import org.openide.util.RequestProcessor;
  * @author Anuradha
  */
 public class GroupNode extends AbstractNode {
-    private RepositoryInfo info;
-    /** Creates a new instance of GroupNode */
     public GroupNode(RepositoryInfo info,String id) {
         super(new GroupChildren(info,id));
-        this.info=info;
         setName(id);
         setDisplayName(id);
     }
@@ -131,5 +129,9 @@ public class GroupNode extends AbstractNode {
     @Override
     public Image getOpenedIcon(int arg0) {
         return NodeUtils.getTreeFolderIcon(true);
+    }
+
+    public @Override Action[] getActions(boolean context) {
+        return new Action[0];
     }
 }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
+import javax.swing.Action;
 
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -51,7 +52,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -59,11 +59,8 @@ import org.openide.util.Utilities;
  * @author Anuradha G
  */
 public class ArtifactNode extends AbstractNode {
-    private RepositoryInfo info;
-    /** Creates a new instance of ArtifactNode */
     public ArtifactNode(RepositoryInfo info,String id, String art) {
         super(new ArtifactChildren(info,id, art));
-        this.info=info;
         setName(art);
         setDisplayName(art);
     }
@@ -99,5 +96,9 @@ public class ArtifactNode extends AbstractNode {
     @Override
     public Image getOpenedIcon(int arg0) {
         return getIcon(arg0);
+    }
+
+    public @Override Action[] getActions(boolean context) {
+        return new Action[0];
     }
 }
