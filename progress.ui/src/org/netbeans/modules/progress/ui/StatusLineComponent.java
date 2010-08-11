@@ -117,6 +117,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     private Map<InternalHandle, ListComponent> handleComponentMap;
     private final int preferredHeight;
     private JButton closeButton;
+    private JLabel extraLabel;
     public StatusLineComponent() {
         handleComponentMap = new HashMap<InternalHandle, ListComponent>();
         FlowLayout flay = new FlowLayout();
@@ -164,6 +165,21 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             label = null;
         }
     }
+
+    private void createExtraLabel() {
+        discardExtraLabel();
+        extraLabel = new JLabel();
+        extraLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        extraLabel.addMouseListener(mouseListener);
+    }
+
+    private void discardExtraLabel() {
+        if (extraLabel != null) {
+            extraLabel.removeMouseListener(mouseListener);
+            extraLabel = null;
+        }
+    }
+
     private void createBar() {
         discardBar();
         bar = new NbProgressBar();
@@ -219,7 +235,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     private void discardCloseButton() {
         closeButton = null;
     }
-    
+
     private void createSeparator() {
         discardSeparator();
         separator = new JSeparator(JSeparator.VERTICAL);
@@ -319,6 +335,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             discardCloseButton();
             discardBar();
             discardLabel();
+            discardExtraLabel();
             //#63393, 61940 fix - removeAll() just invalidates. seems to work without revalidate/repaint on some platforms, fail on others.
             revalidate();
             repaint();
@@ -363,6 +380,16 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         }
         return "";
     }
+
+    private void updateExtraLabel() {
+        if (extraLabel != null) {
+            if (handleComponentMap.size() > 1) {
+                extraLabel.setText(NbBundle.getMessage(StatusLineComponent.class, "StatusLineComponent.extra", handleComponentMap.size() - 1));
+            } else {
+                extraLabel.setText(null);
+            }
+        }
+    }
     
     private void initializeComponent(ProgressEvent event) {
         handle = event.getSource();
@@ -387,6 +414,12 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         if (closeButton == null) {
             createCloseButton();
             add(closeButton);
+            toShow = true;
+        }
+        if (extraLabel == null) {
+            createExtraLabel();
+            updateExtraLabel();
+            add(extraLabel);
             toShow = true;
         }
         if (separator == null) {
@@ -446,6 +479,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         if (showingPopup) {
             resizePopup();
         }
+        updateExtraLabel();
     }
     
     private void removeListItem(InternalHandle handle) {
@@ -458,6 +492,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         if (c != null) {
             c.clearProgressBarOSX();
         }
+        updateExtraLabel();
     }
 
     
