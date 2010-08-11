@@ -326,11 +326,13 @@ public class TokenFormatter {
      */
     private int countOfNewLines(CharSequence chs) {
 	int count = 0;
-	for (int i = 0; i < chs.length(); i++) {
-	    if (chs.charAt(i) == '\n') { // NOI18N
-		count++;
-	    }
-	}
+        if (chs != null) {
+            for (int i = 0; i < chs.length(); i++) {
+                if (chs.charAt(i) == '\n') { // NOI18N
+                    count++;
+                }
+            }
+        }
 	return count;
     }
 
@@ -994,6 +996,11 @@ public class TokenFormatter {
                                                         } else {
                                                         countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
                                                         }
+                                                        if (!isCloseAndOpenTagOnOneLine(formatTokens, index)) {
+                                                            newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+                                                        } else {
+                                                            newLines = 0;
+                                                        }
                                                     }
                                                     indent = suggestedIndent;
                                                 } else {
@@ -1236,7 +1243,7 @@ public class TokenFormatter {
                                                 int currentOffset = formatToken.getOffset() + delta + indexInST;
                                                 indexInST = indexInST + token.length();
                                                 int currentLine = Utilities.getLineOffset(doc, currentOffset);
-                                                if (firstLine < currentLine ) {
+                                                if (firstLine < currentLine  && !token.equals("\n")) {  //NOI18N
                                                     int lineIndent = Utilities.getRowIndent(doc, currentOffset + 1);
                                                     int finalIndent = lastPHPIndent + lineIndent - lineHTMLIndent;
                                                     if (finalIndent == docOptions.initialIndent && finalIndent != 0) {

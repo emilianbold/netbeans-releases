@@ -59,6 +59,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.View;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  * Base class for views in editor view hierarchy.
@@ -494,9 +496,11 @@ public abstract class EditorView extends View {
 
     protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
         sb.append(getDumpId()).append(':');
-        sb.append('<').append(getStartOffset());
+        int startOffset = getStartOffset();
+        int endOffset = getEndOffset();
+        sb.append('<').append(startOffset);
         sb.append(',');
-        sb.append(getEndOffset()).append('>');
+        sb.append(endOffset).append('>');
         View parent = getParent();
         if (parent instanceof EditorBoxView) {
             @SuppressWarnings("unchecked")
@@ -505,6 +509,23 @@ public abstract class EditorView extends View {
             sb.append(' ').append(axis).append('=').append(boxView.getViewVisualOffset(this));
             // Also append raw visual offset value
             sb.append("(R").append(getRawVisualOffset()).append(')');
+            // First few chars of view's text
+            Document doc = getDocument();
+            if (doc != null) {
+                CharSequence docText = DocumentUtilities.getText(doc);
+                if (endOffset <= docText.length()) {
+                    int endTextOffset = Math.min(endOffset, startOffset + 7);
+                    CharSequence txt = docText.subSequence(startOffset, endTextOffset);
+                    sb.append(" \"");
+                    CharSequenceUtilities.debugText(sb, txt);
+                    if (endTextOffset < endOffset) {
+                        sb.append("...");
+                    }
+                    sb.append('"');
+                }
+            } else {
+                sb.append(" NULL-doc");
+            }
         }
         // Do not getPreferredSpan() since it may be expensive (for HighlightsView calls getTextLayout())
         return sb;

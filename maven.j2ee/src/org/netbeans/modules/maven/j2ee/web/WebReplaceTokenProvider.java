@@ -351,6 +351,9 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED );
                     for( String servletClass : servletClasses){
+                        if (servletClass == null) {
+                            continue;
+                        }
                         TypeElement typeElem = controller.getElements().
                             getTypeElement( servletClass);
                         if ( typeElem == null ){

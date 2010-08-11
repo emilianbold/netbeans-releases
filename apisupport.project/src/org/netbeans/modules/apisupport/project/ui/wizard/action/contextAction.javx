@@ -8,6 +8,21 @@ package ${PACKAGE_NAME};
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 ${IMPORTS}
+<#if ANNOTATIONS??>
+import org.openide.awt.ActionRegistration;
+import org.openide.awt.ActionID;
+
+@ActionID(
+    category="${CATEGORY}",
+    id="${PACKAGE_NAME}.${CLASS_NAME}"
+)
+@ActionRegistration(
+    <#if ICON_RESOURCE??>
+    iconBase="${ICON_RESOURCE}",
+    </#if>
+    displayName="#${DISPLAY_NAME_KEY}"
+)
+</#if>
 public final class ${CLASS_NAME} implements ActionListener {
     private final ${CONTEXT_TYPE} context;
 

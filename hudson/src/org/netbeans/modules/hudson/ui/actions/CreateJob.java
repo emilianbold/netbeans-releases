@@ -69,6 +69,8 @@ import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -79,6 +81,8 @@ import org.w3c.dom.Document;
 /**
  * Submenu action to create a job on this server from one of the open projects.
  */
+@ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.CreateJob")
+@ActionRegistration(displayName="#CTL_CreateJob", iconInMenu=false)
 public class CreateJob extends AbstractAction {
 
     private final HudsonInstance instance;
