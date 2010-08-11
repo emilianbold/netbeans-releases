@@ -58,9 +58,12 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -83,6 +86,9 @@ import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -102,7 +108,7 @@ import org.openide.util.NbBundle;
  * @author Kirill Sorokin
  * @author Petr Hejl
  */
-public class WLDeploymentManager implements DeploymentManager {
+public class WLDeploymentManager implements DeploymentManager2 {
 
     public static final int MANAGER_TIMEOUT = 60000;
     
@@ -269,12 +275,25 @@ public class WLDeploymentManager implements DeploymentManager {
         throw dmce;
     }
 
+    @Override
     public ProgressObject distribute(Target[] target, File file, File file2) throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.deploy(target, file, file2, getHost(), getPort());
+    }
+
+    @Override
+    public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        // in terms of WL it is optional package
+        deployOptionalPackages(deployment.getRequiredLibraries());
+
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        return wlDeployer.deploy(targets, deployment.getModuleFile(), deployment.getDeploymentPlan(), getHost(), getPort());
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
@@ -286,19 +305,32 @@ public class WLDeploymentManager implements DeploymentManager {
     }
 
     public boolean isRedeploySupported() {
-        return false;
+        return true;
     }
 
-    public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws  UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
-    }
-
+    @Override
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.redeploy(targetModuleID, file, file2);
+    }
+
+    @Override
+    public ProgressObject redeploy(TargetModuleID[] tmids, DeploymentContext deployment) {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        // in terms of WL it is optional package
+        deployOptionalPackages(deployment.getRequiredLibraries());
+
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        return wlDeployer.redeploy(tmids, deployment.getModuleFile(), deployment.getDeploymentPlan());
+    }
+
+    public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws  UnsupportedOperationException, IllegalStateException {
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws IllegalStateException {
@@ -523,6 +555,15 @@ public class WLDeploymentManager implements DeploymentManager {
                     CommandType.REDEPLOY, StateType.FAILED,
                     NbBundle.getMessage(WLDeploymentManager.class, "MSG_Redeployment_Failed", ex.getMessage())));
             return po;
+        }
+    }
+
+    public void deployOptionalPackages(File[] optionalPackages) {
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        if (optionalPackages.length > 0) {
+            Set<File> files = new HashSet<File>(Arrays.asList(optionalPackages));
+            ProgressObject po = wlDeployer.deployLibraries(files);
+            ProgressObjectSupport.waitFor(po);
         }
     }
 

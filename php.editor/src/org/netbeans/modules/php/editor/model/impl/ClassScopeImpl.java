@@ -93,7 +93,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         Expression superId = nodeInfo.getSuperClass();
-        String superName = (superId != null) ? CodeUtils.extractUnqualifiedName(superId) : null;
+        String superName = (superId != null) ? QualifiedName.create(superId).toString() : null;
         this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superName);
     }
 
@@ -101,7 +101,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         //TODO: in idx is no info about ifaces
         super(inScope, indexedClass);
         final QualifiedName superClassName = indexedClass.getSuperClassName();
-        this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName != null ? superClassName.getName() : null);
+        this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName != null ? superClassName.toFullyQualified().toString() : null);
     }
     //old contructors
 

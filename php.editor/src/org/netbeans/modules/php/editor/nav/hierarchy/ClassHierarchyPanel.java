@@ -457,13 +457,13 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
                 ClassElement clz = (ClassElement) type;
                 QualifiedName superClassName = clz.getSuperClassName();
                 if (superClassName != null) {
-                    this.superTypes.add(superClassName.getName());
+                    this.superTypes.add(superClassName.toString());
                 }
             }
             Set<QualifiedName> superInterfaces = type.getSuperInterfaces();
             for (QualifiedName supeIfaceName : superInterfaces) {
                 if (supeIfaceName != null) {
-                    this.superTypes.add(supeIfaceName.getName());
+                    this.superTypes.add(supeIfaceName.toString());
                 }
             }
         }
