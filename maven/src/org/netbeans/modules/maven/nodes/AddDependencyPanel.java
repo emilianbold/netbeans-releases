@@ -129,7 +129,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private int varianceStep, variance;
     private Timer progressTimer = new Timer(100, this);
 
-    private static final RequestProcessor RP = new RequestProcessor("Dependency Panel"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(AddDependencyPanel.class.getName(), 5);
 
     private NotificationLineSupport nls;
     private RepositoryInfo nbRepo;
@@ -1156,7 +1156,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
 
     private class OpenListPanel extends JPanel implements ExplorerManager.Provider,
-            PropertyChangeListener, Runnable, ActionListener {
+            PropertyChangeListener, Runnable {
 
         private BeanTreeView btv;
         private ExplorerManager manager;
@@ -1211,12 +1211,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             });
         }
 
-        public void actionPerformed(ActionEvent e) {
-            // empty impl, disables default action
-        }
-
     }
-
 
     private class DefAction extends AbstractAction implements ContextAwareAction, Runnable {
         private final boolean close;
