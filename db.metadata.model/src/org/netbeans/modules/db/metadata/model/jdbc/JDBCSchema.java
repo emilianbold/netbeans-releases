@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.metadata.model.jdbc;
@@ -82,26 +82,32 @@ public class JDBCSchema extends SchemaImplementation {
         this.synthetic = synthetic;
     }
 
+    @Override
     public final Catalog getParent() {
         return jdbcCatalog.getCatalog();
     }
 
+    @Override
     public final String getName() {
         return name;
     }
 
+    @Override
     public final boolean isDefault() {
         return _default;
     }
 
+    @Override
     public final boolean isSynthetic() {
         return synthetic;
     }
 
+    @Override
     public final Collection<Table> getTables() {
         return initTables().values();
     }
 
+    @Override
     public final Table getTable(String name) {
         return MetadataUtilities.find(name, initTables());
     }
@@ -174,7 +180,7 @@ public class JDBCSchema extends SchemaImplementation {
     }
 
     protected void createViews() {
-        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
+        LOGGER.log(Level.FINE, "Initializing views in {0}", this);
         Map<String, View> newViews = new LinkedHashMap<String, View>();
         try {
             ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "VIEW" }); // NOI18N
@@ -197,7 +203,7 @@ public class JDBCSchema extends SchemaImplementation {
     }
 
     protected void createProcedures() {
-        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
+        LOGGER.log(Level.FINE, "Initializing procedures in {0}", this);
         Map<String, Procedure> newProcedures = new LinkedHashMap<String, Procedure>();
         try {
             ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getProcedures(jdbcCatalog.getName(), name, "%"); // NOI18N

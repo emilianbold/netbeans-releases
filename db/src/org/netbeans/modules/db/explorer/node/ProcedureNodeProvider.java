@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -73,6 +73,7 @@ public class ProcedureNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public ProcedureNodeProvider createInstance(Lookup lookup) {
                 ProcedureNodeProvider provider = new ProcedureNodeProvider(lookup);
                 return provider;
@@ -83,12 +84,14 @@ public class ProcedureNodeProvider extends NodeProvider {
     private final DatabaseConnection connection;
     private MetadataElementHandle<Schema> schemaHandle;
 
+    @SuppressWarnings("unchecked")
     private ProcedureNodeProvider(Lookup lookup) {
         super(lookup, new ProcedureComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
+    @Override
     protected synchronized void initialize() {
 
         final List<Node> newList = new ArrayList<Node>();
@@ -99,6 +102,7 @@ public class ProcedureNodeProvider extends NodeProvider {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                    @Override
                         public void run(Metadata metaData) {
                             Schema schema = schemaHandle.resolve(metaData);
                             if (schema != null) {
@@ -130,6 +134,7 @@ public class ProcedureNodeProvider extends NodeProvider {
 
     static class ProcedureComparator implements Comparator<Node> {
 
+        @Override
         public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
         }

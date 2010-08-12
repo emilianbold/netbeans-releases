@@ -61,7 +61,9 @@ import org.openide.util.NbBundle;
  * @author Rob Englander
  */
 public class ProcedureNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/procedure.gif";
+    private static final String ICONBASE_P = "org/netbeans/modules/db/resources/procedure.png";
+    private static final String ICONBASE_F = "org/netbeans/modules/db/resources/function.png";
+    private static final String ICONBASE_T = "org/netbeans/modules/db/resources/trigger.png";
     private static final String FOLDER = "Procedure"; //NOI18N
 
     /**
@@ -79,6 +81,7 @@ public class ProcedureNode extends BaseNode {
     private String name = ""; // NOI18N
     private final MetadataElementHandle<Procedure> procedureHandle;
     private final DatabaseConnection connection;
+    private Type type;
 
     @SuppressWarnings("unchecked")
     private ProcedureNode(NodeDataLookup lookup, NodeProvider provider) {
@@ -87,6 +90,7 @@ public class ProcedureNode extends BaseNode {
         procedureHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
+    @Override
     protected void initialize() {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
@@ -94,9 +98,11 @@ public class ProcedureNode extends BaseNode {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             Procedure proc = procedureHandle.resolve(metaData);
                             name = proc.getName();
+                            type = proc.getReturnValue() == null ? Type.Procedure : Type.Function;
 
                             updateProperties(proc);
                         }
@@ -128,10 +134,23 @@ public class ProcedureNode extends BaseNode {
     public String getDisplayName() {
         return getName();
     }
+    
+    public Type getType() {
+        return this.type;
+    }
 
     @Override
     public String getIconBase() {
-        return ICONBASE;
+        switch (type) {
+            case Function:
+                return ICONBASE_F;
+            case Procedure:
+                return ICONBASE_P;
+            case Trigger:
+                return ICONBASE_T;
+            default:
+                return null;
+        }
     }
 
     @Override
@@ -142,5 +161,11 @@ public class ProcedureNode extends BaseNode {
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ProcedureNode.class);
+    }
+    
+    public enum Type {
+        Procedure,
+        Function,
+        Trigger
     }
 }
