@@ -76,7 +76,6 @@ public final class TimeStamps {
     private final Set<String> unseen;
 
     private FileObject rootFoCache;
-    private boolean changed;
 
     private TimeStamps(final URL root, boolean detectDeletedFiles) throws IOException {
         assert root != null;
@@ -196,7 +195,6 @@ public final class TimeStamps {
                 LOG.log(Level.FINE, null, e);
             }
         }
-        changed = false;
     }
 
     public Set<String> getUnseenFiles() {
@@ -211,7 +209,6 @@ public final class TimeStamps {
         long fts = f.lastModified().getTime();
         long lts = timestamps.put(fileId, fts);
         if (lts == LongHashMap.NO_VALUE) {
-            changed|=true;
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "{0}: lastTimeStamp=null, fileTimeStamp={1} is out of date", new Object [] { f.getPath(), fts }); //NOI18N
             }
@@ -228,7 +225,6 @@ public final class TimeStamps {
             }
         }
 
-        changed|=!isUpToDate;
         return isUpToDate;
     }    
 
