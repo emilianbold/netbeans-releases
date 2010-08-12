@@ -46,15 +46,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -189,45 +183,13 @@ public class SettingsPanel extends javax.swing.JPanel {
     {
         String path = txtCommandLine.getText().trim();
         File root = new File(path);
-        File lib = new File(root, "lib"); //NOI18N
-        if (lib.exists()) {
-            File[] jars = lib.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jar"); //NOI18N
-                }
-            });
-            for (File jar : jars) {
-                JarFile jf = null;
-                try
-                {
-                    jf = new JarFile(jar);
-                    ZipEntry entry = jf.getEntry("META-INF/maven/org.apache.maven/maven-core/pom.properties");//NOI18N
-                    if (entry != null) {
-                        InputStream resourceAsStream = jf.getInputStream(entry);
-                        Properties properties = new Properties();
-                        properties.load( resourceAsStream );
-                        if ( properties.getProperty( "builtOn" ) != null ) { //NOI18N
-                            lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_ExMavenVersion1", 
-                                    properties.getProperty( "version", "unknown" ), properties.getProperty( "builtOn" )));//NOI18N
-                        } else {
-                            lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_ExMavenVersion2", properties.getProperty( "version", "unknown" )));//NOI18N
-                        }
-                        return;
-                    }
-                } catch ( IOException ex )
-                {
-                    //ignore..
-                } finally {
-                    if (jf != null) {
-                        try {
-                            jf.close();
-                        } catch (IOException x) {}
-                    }
-                }
-            }
+        String version = MavenSettings.getCommandLineMavenVersion(root);
+        if (version != null) {
+            lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "LBL_ExMavenVersion2", version));
+        } else {
+            //add red color..
+            lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "ERR_NoValidInstallation"));
         }
-        //add red color..
-        lblExternalVersion.setText(NbBundle.getMessage(SettingsPanel.class, "ERR_NoValidInstallation"));
     }
     
     private void initValues() {

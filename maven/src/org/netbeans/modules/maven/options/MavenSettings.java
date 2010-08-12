@@ -43,24 +43,23 @@
 package org.netbeans.modules.maven.options;
 
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Arg;
-import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.StreamConsumer;
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  * a netbeans settings for global options that cannot be put into the settings file.
@@ -358,56 +357,38 @@ public class MavenSettings  {
         }
     }
 
-    private static String getMavenVersion(String ex) {
-        // XXX surely this should be memoized? or use version from SettingsPanel which may be faster
-        Commandline cmdline = new Commandline();
-        cmdline.setExecutable(ex);
-        Arg arg = cmdline.createArg();
-        arg.setValue("--version"); //NOI18N
-        cmdline.addArg(arg);
-        RegExpConsumer cons = new RegExpConsumer();
-        try {
-            int ret = CommandLineUtils.executeCommandLine(cmdline, cons, cons);
-            return cons.version != null ? cons.version.trim() : null;
-        } catch (CommandLineException ex1) {
-            Exceptions.printStackTrace(ex1);
-            return null;
-        }
-        
-    }
-
     public static String getCommandLineMavenVersion() {
         return getCommandLineMavenVersion(getDefault().getMavenHome());
     }
     
-    public static String getCommandLineMavenVersion(File path) {
-        String pathString = path.getAbsolutePath() + File.separator + "bin" + File.separator + (Utilities.isWindows() ? "mvn.bat" : "mvn"); //NOI18N
-        String ver = getMavenVersion(pathString);
-        if (ver != null) {
-            return ver;
+    public static String getCommandLineMavenVersion(File mavenHome) {
+        File[] jars = new File(mavenHome, "lib").listFiles(new FilenameFilter() { // NOI18N
+            public @Override boolean accept(File dir, String name) {
+                return name.endsWith(".jar"); // NOI18N
+            }
+        });
+        if (jars == null) {
+            return null;
         }
-        //TODO examine the version's lib folder and the prop file in there.. see SettingsPanel.java
+        for (File jar : jars) {
+            try {
+                // Prefer to use this rather than raw ZipFile since URLMapper since ArchiveURLMapper will cache JARs:
+                FileObject entry = URLMapper.findFileObject(new URL(FileUtil.urlForArchiveOrDir(jar), "META-INF/maven/org.apache.maven/maven-core/pom.properties")); // NOI18N
+                if (entry != null) {
+                    InputStream is = entry.getInputStream();
+                    try {
+                        Properties properties = new Properties();
+                        properties.load(is);
+                        return properties.getProperty("version"); // NOI18N
+                    } finally {
+                        is.close();
+                    }
+                }
+            } catch (IOException x) {
+                // ignore for now
+            }
+        }
         return null;
     }
-    
-    private static class RegExpConsumer implements StreamConsumer {
-
-        private static final Pattern PATTERN = Pattern.compile("^Maven version:(.*)");
-        private static final Pattern PATTERN_210 = Pattern.compile("^Apache Maven ([0-9\\.]+).*");
-        boolean hasMavenAround = false;
-        String version = null;
-
-        public void consumeLine(String line) {
-            Matcher match = PATTERN.matcher(line);
-            if (!match.matches()) {
-                match = PATTERN_210.matcher(line);
-            }
-            if (match.matches()) {
-                hasMavenAround = true;
-                version = match.group(1);
-            }
-        }
-    };
-
     
 }
