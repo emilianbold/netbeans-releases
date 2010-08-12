@@ -147,6 +147,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         Document doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
         lineElementRoot = doc.getDefaultRootElement();
+        assert (lineElementRoot != null) : "lineElementRoot is null."; // NOI18N
         lineIndex = lineElementRoot.getElementIndex(startOffset);
         newLineOffset = lineElementRoot.getElement(lineIndex).getEndOffset() - 1;
         highlightEndOffset = Integer.MIN_VALUE; // Makes the highlightsSequence to be inited
