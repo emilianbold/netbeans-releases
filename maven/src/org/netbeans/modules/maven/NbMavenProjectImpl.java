@@ -164,7 +164,7 @@ public final class NbMavenProjectImpl implements Project {
     private final Info projectInfo;
     private final MavenSharabilityQueryImpl sharability;
     private final SubprojectProviderImpl subs;
-    private final NbMavenProject watcher;
+    private final @NonNull NbMavenProject watcher;
     private final ProjectState state;
     private final M2ConfigProvider configProvider;
     private final ClassPathProviderImpl cppProvider;
@@ -229,7 +229,7 @@ public final class NbMavenProjectImpl implements Project {
         return projectFile;
     }
 
-    public NbMavenProject getProjectWatcher() {
+    public @NonNull NbMavenProject getProjectWatcher() {
         return watcher;
     }
 
