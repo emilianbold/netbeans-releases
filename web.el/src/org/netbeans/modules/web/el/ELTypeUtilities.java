@@ -154,7 +154,8 @@ public final class ELTypeUtilities {
             return false;
         }
         int methodParams = method.getParameters().size();
-        if (methodNode instanceof AstMethodSuffix && methodName.equals(image)) {
+        if (methodNode instanceof AstMethodSuffix && 
+                (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
             int methodNodeParams = ((AstMethodSuffix) methodNode).jjtGetNumChildren();
             if (method.isVarArgs()) {
                 return methodParams == 1 ? true : methodNodeParams >= methodParams;
