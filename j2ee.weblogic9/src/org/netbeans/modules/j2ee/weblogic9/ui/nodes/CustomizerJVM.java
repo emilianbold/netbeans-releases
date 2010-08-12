@@ -163,8 +163,20 @@ class CustomizerJVM extends javax.swing.JPanel {
         if ( javaOpts != null ){
             vmOptions.setText( javaOpts.trim());
         }
+        
+        String memOpts = manager.getInstanceProperties().getProperty(
+                WLPluginProperties.MEM_OPTS);
+        if ( memOpts!= null){
+            memoryOptions.setText( memOpts.trim());
+        }
+        
         vmOptions.getDocument().addDocumentListener( 
-                new PropertyDocumentListener(manager, WLPluginProperties.JAVA_OPTS, vmOptions));
+                new PropertyDocumentListener(manager, WLPluginProperties.JAVA_OPTS, 
+                        vmOptions));
+        
+        memoryOptions.getDocument().addDocumentListener( 
+                new PropertyDocumentListener(manager, WLPluginProperties.MEM_OPTS, 
+                        memoryOptions));
     }
 
     /** This method is called from within the constructor to
@@ -184,6 +196,9 @@ class CustomizerJVM extends javax.swing.JPanel {
         vmOptionsSampleLabel = new javax.swing.JLabel();
         vendorLabel = new javax.swing.JLabel();
         vendorName = new javax.swing.JComboBox();
+        memoryOptions = new javax.swing.JTextField();
+        memoryOptionsLabel = new javax.swing.JLabel();
+        memoryOptionsCommentLabel = new javax.swing.JLabel();
 
         javaHomeLabel.setLabelFor(javaHome);
         org.openide.awt.Mnemonics.setLocalizedText(javaHomeLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JavaHome")); // NOI18N
@@ -200,6 +215,11 @@ class CustomizerJVM extends javax.swing.JPanel {
         vendorLabel.setLabelFor(vendorName);
         org.openide.awt.Mnemonics.setLocalizedText(vendorLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JvmVendor")); // NOI18N
 
+        memoryOptionsLabel.setLabelFor(memoryOptions);
+        org.openide.awt.Mnemonics.setLocalizedText(memoryOptionsLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_VmMemoryOptions")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(memoryOptionsCommentLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_VmMemoryOptionsComment")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -212,15 +232,21 @@ class CustomizerJVM extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(vendorLabel)
                             .addComponent(vmOptionsLabel)
-                            .addComponent(javaHomeLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(javaHomeLabel)
+                            .addComponent(memoryOptionsLabel))
+                        .addGap(8, 8, 8)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(memoryOptionsCommentLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE))
+                            .addComponent(memoryOptions, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
+                            .addComponent(javaHome, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
+                            .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(10, 10, 10)
-                                .addComponent(vmOptionsSampleLabel))
-                            .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
-                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE))))
+                                .addComponent(vmOptionsSampleLabel)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -240,7 +266,13 @@ class CustomizerJVM extends javax.swing.JPanel {
                     .addComponent(vmOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(vmOptionsSampleLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 172, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(memoryOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(memoryOptionsLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(memoryOptionsCommentLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 126, Short.MAX_VALUE)
                 .addComponent(noteChangesLabel)
                 .addContainerGap())
         );
@@ -260,6 +292,10 @@ class CustomizerJVM extends javax.swing.JPanel {
         vendorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_Vendor")); // NOI18N
         vendorName.getAccessibleContext().setAccessibleName(vendorLabel.getAccessibleContext().getAccessibleName());
         vendorName.getAccessibleContext().setAccessibleDescription(vendorLabel.getAccessibleContext().getAccessibleDescription());
+        memoryOptions.getAccessibleContext().setAccessibleName(memoryOptionsLabel.getAccessibleContext().getAccessibleName());
+        memoryOptions.getAccessibleContext().setAccessibleDescription(memoryOptionsLabel.getAccessibleContext().getAccessibleDescription());
+        memoryOptionsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_VmMemoryOptions")); // NOI18N
+        memoryOptionsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_VmMemoryOptions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private static final class DefaultVendor{
@@ -282,6 +318,9 @@ class CustomizerJVM extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField javaHome;
     private javax.swing.JLabel javaHomeLabel;
+    private javax.swing.JTextField memoryOptions;
+    private javax.swing.JLabel memoryOptionsCommentLabel;
+    private javax.swing.JLabel memoryOptionsLabel;
     private javax.swing.JLabel noteChangesLabel;
     private javax.swing.JLabel vendorLabel;
     private javax.swing.JComboBox vendorName;

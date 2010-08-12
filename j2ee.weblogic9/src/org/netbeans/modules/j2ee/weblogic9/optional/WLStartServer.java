@@ -397,13 +397,8 @@ public final class WLStartServer extends StartServer {
         }
 
         @Override
-        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
+        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
-            String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            if ( vendor != null && vendor.trim().length() >0 ){
-                result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,          
-                        vendor.trim());
-            }
             /*JavaPlatform javaPlatform = getSettings().getJavaPlatform();
             vendor = javaPlatform.getVendor();
 
@@ -419,6 +414,12 @@ public final class WLStartServer extends StartServer {
             for (int i = 0; i < profJvmArgs.length; i++) {
                 javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
             }
+            String javaOpts = dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.JAVA_OPTS);
+            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
+                javaOptsBuilder.append( javaOpts.trim() );
+            }
+            
             if ( profJvmArgs.length >0 ){
                 result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE, 
                     javaOptsBuilder.toString());
@@ -456,16 +457,27 @@ public final class WLStartServer extends StartServer {
         }
 
         @Override
-        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
+        protected ExternalProcessBuilder setJavaOptionsEnv(
+                ExternalProcessBuilder builder )
+        {
             int debugPort = 4000;
             debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DEBUGGER_PORT_ATTR));
 
-            ExternalProcessBuilder result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,
-                    "-Xdebug -Xnoagent -Djava.compiler=none " +
-                    "-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="
-                    + debugPort);   //NOI18N
+            StringBuilder javaOptsBuilder = new StringBuilder();
+            String javaOpts = dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.JAVA_OPTS);
+            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
+                javaOptsBuilder.append( javaOpts.trim() );
+            }
+            javaOptsBuilder.append("-Xdebug -Xnoagent -Djava.compiler=none ");  // NOI18N
+            javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=");// NOI18N
+            javaOptsBuilder.append( debugPort );
+            ExternalProcessBuilder result = builder.addEnvironmentVariable(
+                    JAVA_OPTIONS_VARIABLE,
+                    javaOptsBuilder.toString());   
             return result;
+
         }
     }
 
@@ -474,6 +486,8 @@ public final class WLStartServer extends StartServer {
         static final String JAVA_VENDOR_VARIABLE = "JAVA_VENDOR";    // NOI18N
 
         static final String JAVA_OPTIONS_VARIABLE = "JAVA_OPTIONS";  // NOI18N
+        
+        static final String MEMORY_OPTIONS_VARIABLE= "USER_MEM_ARGS";// NOI18N
 
         /**
          * The amount of time in milliseconds during which the server should
@@ -590,15 +604,30 @@ public final class WLStartServer extends StartServer {
 
         protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder){
             ExternalProcessBuilder result = builder;
-            String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
-            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
-                result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,          
-                        javaOpts.trim());
-            }
+            
+            result = setJavaOptionsEnv( result );
             String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
             if ( vendor != null && vendor.trim().length() >0 ){
                 result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
                         vendor.trim());
+            }
+            String memoryOptions = dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.MEM_OPTS);
+            if ( memoryOptions != null && memoryOptions.trim().length() >0 ){
+                result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,         
+                        memoryOptions.trim());
+            }  
+            return result;
+        }
+        
+        protected ExternalProcessBuilder setJavaOptionsEnv( 
+                ExternalProcessBuilder builder)
+        {
+            ExternalProcessBuilder result = builder;
+            String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
+            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
+                result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,          
+                        javaOpts.trim());
             }
             return result;
         }
