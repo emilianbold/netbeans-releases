@@ -43,13 +43,13 @@
 package org.netbeans.modules.maven.hints.pom;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.apache.maven.model.PluginManagement;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
@@ -151,9 +151,11 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
         if (project == null) { //#154462
             return toRet;
         }
-        @SuppressWarnings("unchecked")
-        List<org.apache.maven.model.Plugin> plugins = project.getMavenProject().getPluginManagement().getPlugins();
-        for (org.apache.maven.model.Plugin plg : plugins) {
+        PluginManagement pluginManagement = project.getMavenProject().getPluginManagement();
+        if (pluginManagement == null) { // #189404
+            return toRet;
+        }
+        for (org.apache.maven.model.Plugin plg : pluginManagement.getPlugins()) {
             toRet.put(plg.getKey(), plg.getVersion());
         }
         return toRet;
