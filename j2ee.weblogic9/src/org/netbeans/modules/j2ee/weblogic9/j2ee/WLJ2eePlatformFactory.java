@@ -63,6 +63,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.swing.event.ChangeEvent;
@@ -101,6 +102,9 @@ import org.openide.util.lookup.Lookups;
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Logger LOGGER = Logger.getLogger(WLJ2eePlatformFactory.class.getName());
+
+    // always prefer JPA 1.0 see #189205
+    private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile("^javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
 
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
@@ -349,7 +353,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
-                            return name.startsWith("javax.persistence"); // NOI18N
+                            return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
                         }
                     });
                     if (persistenceCandidates.length > 0) {
