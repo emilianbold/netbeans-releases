@@ -166,7 +166,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
                 return false; // to explicitelly emphasise that JSR 109 is not supported
             }
-            if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
+            if ("defaultPersistenceProviderJavaEE5".equals(toolName)) { // NOI18N
+                return true;
+            }
+            // FIXME we need to figure out the configured persistence provider
+            if ("kodoPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
+                return true;
+            }
+            if ("kodo.persistence.PersistenceProviderImpl".equals(toolName)) { // NOI18N
                 return true;
             }
             return false;
