@@ -261,7 +261,8 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 	
 	isCurly = node.isCurly();
-	while (node.isCurly() && ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
+        // move ts in every case to the next token
+	while (ts.moveNext() && node.isCurly() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
 	    addFormatToken(formatTokens);
 	}
 
@@ -811,6 +812,7 @@ public class FormatVisitor extends DefaultVisitor {
 		}
 	    }
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            ts.movePrevious();
 	    scan(node.getFalseStatement());
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block) && !(body instanceof IfStatement)) {
