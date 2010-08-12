@@ -309,7 +309,17 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (lineWrapType == null) {
             return 0f; // Return zero until parent and etc. gets initialized
         }
-        return super.getPreferredSpan(axis);
+        float span = super.getPreferredSpan(axis);
+        if (axis == View.Y_AXIS) {
+            // Add extra span when component in viewport
+            Component parent;
+            if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
+                JViewport viewport = (JViewport) parent;
+                int viewportHeight = viewport.getExtentSize().height;
+                span += viewportHeight / 3;
+            }
+        }
+        return span;
     }
 
     @Override

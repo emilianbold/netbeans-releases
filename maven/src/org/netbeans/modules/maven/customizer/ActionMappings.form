@@ -32,10 +32,10 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtProfiles" pref="473" max="32767" attributes="2"/>
-                          <Component id="txtGoals" alignment="0" pref="473" max="32767" attributes="2"/>
+                          <Component id="txtProfiles" pref="487" max="32767" attributes="2"/>
+                          <Component id="txtGoals" alignment="0" pref="487" max="32767" attributes="2"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="jScrollPane1" pref="333" max="32767" attributes="1"/>
+                              <Component id="jScrollPane1" pref="377" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="btnRemove" linkSize="1" min="-2" max="-2" attributes="0"/>
@@ -47,13 +47,13 @@
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="cbBuildWithDeps" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane3" alignment="0" pref="473" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" alignment="0" pref="487" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="comConfiguration" pref="330" max="32767" attributes="0"/>
+                              <Component id="comConfiguration" pref="344" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="143" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="txtDirectory" pref="229" max="32767" attributes="0"/>
+                              <Component id="txtDirectory" pref="288" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnDirectory" min="-2" max="-2" attributes="0"/>
                           </Group>

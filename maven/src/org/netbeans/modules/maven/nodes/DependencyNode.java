@@ -358,7 +358,11 @@ public class DependencyNode extends AbstractNode {
 
     @Override
     public boolean canDestroy() {
-        return true;
+        return !isTransitive();
+    }
+    @Override
+    public void destroy() throws IOException {
+        REMOVEDEPINSTANCE.createContextAwareInstance(getLookup()).actionPerformed(null);
     }
 
     @Override

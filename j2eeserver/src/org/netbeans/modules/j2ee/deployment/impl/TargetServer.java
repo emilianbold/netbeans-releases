@@ -175,8 +175,7 @@ public class TargetServer {
     }
 
     private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) throws IOException {
-        //if (targetz == null || targetz.length != 1) {
-        if (targetz == null) {
+        if (targetz == null || targetz.length != 1) {
             LOGGER.log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
 
             if (targetz != null && LOGGER.isLoggable(Level.FINE)) {

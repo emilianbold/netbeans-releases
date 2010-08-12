@@ -87,6 +87,7 @@ import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
+import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
@@ -109,7 +110,6 @@ import org.openide.util.RequestProcessor;
  * @author  mkleint
  */
 public class ActionMappings extends javax.swing.JPanel {
-    public static final String BUILD_WITH_DEPENDENCIES = "build-with-dependencies";
     private static final String CUSTOM_ACTION_PREFIX = "CUSTOM-"; //NOI18N
     private NbMavenProjectImpl project;
     private ModelHandle handle;
@@ -202,7 +202,7 @@ public class ActionMappings extends javax.swing.JPanel {
         titles.put(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Test_file"));
         titles.put("profile", NbBundle.getMessage(ActionMappings.class, "COM_Profile_project"));
         titles.put("javadoc", NbBundle.getMessage(ActionMappings.class, "COM_Javadoc_project"));
-        titles.put(BUILD_WITH_DEPENDENCIES, NbBundle.getMessage(ActionMappings.class, "COM_Build_WithDeps_project"));
+        titles.put(ActionProviderImpl.BUILD_WITH_DEPENDENCIES, NbBundle.getMessage(ActionMappings.class, "COM_Build_WithDeps_project"));
 
         comConfiguration.setEditable(false);
         comConfiguration.setRenderer(new DefaultListCellRenderer() {
@@ -639,8 +639,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 cbRecursively.setEnabled(true);
                 cbRecursively.setSelected(mapp != null ? mapp.isRecursive() : true);
             }
-            cbBuildWithDeps.setSelected(mapp != null && BUILD_WITH_DEPENDENCIES.equals(mapp.getPreAction())); //NOI18N
-            if (mapp != null && BUILD_WITH_DEPENDENCIES.equals(mapp.getActionName())) { //NOI18N
+            cbBuildWithDeps.setSelected(mapp != null && ActionProviderImpl.BUILD_WITH_DEPENDENCIES.equals(mapp.getPreAction())); //NOI18N
+            if (mapp != null && ActionProviderImpl.BUILD_WITH_DEPENDENCIES.equals(mapp.getActionName())) { //NOI18N
                 cbBuildWithDeps.setEnabled(false);
             } else {
                 cbBuildWithDeps.setEnabled(true);
@@ -711,7 +711,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             addSingleAction(ActionProvider.COMMAND_BUILD, model);
             addSingleAction(ActionProvider.COMMAND_CLEAN, model);
             addSingleAction(ActionProvider.COMMAND_REBUILD, model);
-            addSingleAction( BUILD_WITH_DEPENDENCIES, model); //NOI18N
+            addSingleAction(ActionProviderImpl.BUILD_WITH_DEPENDENCIES, model);
             addSingleAction(ActionProvider.COMMAND_TEST, model);
             addSingleAction(ActionProvider.COMMAND_TEST_SINGLE, model);
             addSingleAction(ActionProvider.COMMAND_RUN, model);
@@ -1127,7 +1127,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                         }
                         shown = true;
                     }
-                    map.getMapping().setPreAction(BUILD_WITH_DEPENDENCIES); //NOI18N
+                    map.getMapping().setPreAction(ActionProviderImpl.BUILD_WITH_DEPENDENCIES);
                 } else {
                     map.getMapping().setPreAction(null);
                 }

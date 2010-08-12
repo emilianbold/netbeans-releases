@@ -58,9 +58,12 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -81,11 +84,18 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 
@@ -98,7 +108,7 @@ import org.openide.util.NbBundle;
  * @author Kirill Sorokin
  * @author Petr Hejl
  */
-public class WLDeploymentManager implements DeploymentManager {
+public class WLDeploymentManager implements DeploymentManager2 {
 
     public static final int MANAGER_TIMEOUT = 60000;
     
@@ -265,12 +275,25 @@ public class WLDeploymentManager implements DeploymentManager {
         throw dmce;
     }
 
+    @Override
     public ProgressObject distribute(Target[] target, File file, File file2) throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.deploy(target, file, file2, getHost(), getPort());
+    }
+
+    @Override
+    public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        // in terms of WL it is optional package
+        deployOptionalPackages(deployment.getRequiredLibraries());
+
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        return wlDeployer.deploy(targets, deployment.getModuleFile(), deployment.getDeploymentPlan(), getHost(), getPort());
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
@@ -282,26 +305,39 @@ public class WLDeploymentManager implements DeploymentManager {
     }
 
     public boolean isRedeploySupported() {
-        return false;
+        return true;
+    }
+
+    @Override
+    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        return wlDeployer.redeploy(targetModuleID, file, file2);
+    }
+
+    @Override
+    public ProgressObject redeploy(TargetModuleID[] tmids, DeploymentContext deployment) {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        // in terms of WL it is optional package
+        deployOptionalPackages(deployment.getRequiredLibraries());
+
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        return wlDeployer.redeploy(tmids, deployment.getModuleFile(), deployment.getDeploymentPlan());
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws  UnsupportedOperationException, IllegalStateException {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
-    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
-        if (disconnected) {
-            throw new IllegalStateException("Deployment manager is disconnected");
-        }
-        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
-        return wlDeployer.redeploy(targetModuleID, file, file2);
-    }
-
     public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.undeploy(targetModuleID);
     }
 
@@ -310,7 +346,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.stop(targetModuleID);
     }
 
@@ -319,7 +355,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.start(targetModuleID);
     }
 
@@ -522,6 +558,45 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
 
+    public void deployOptionalPackages(File[] optionalPackages) {
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        if (optionalPackages.length > 0) {
+            Set<File> files = new HashSet<File>(Arrays.asList(optionalPackages));
+            ProgressObject po = wlDeployer.deployLibraries(files);
+            ProgressObjectSupport.waitFor(po);
+        }
+    }
+
+    public void checkFailedAuthentication(String line) {
+        if (line != null && line.contains("failed to be authenticated")) { // NOI18N
+            Mutex.EVENT.readAccess(new Runnable() {
+
+                @Override
+                public void run() {
+                    String title = NbBundle.getMessage(WLDeploymentManager.class, "LBL_Failed_Authentication_Title");
+                    String msg = NbBundle.getMessage(WLDeploymentManager.class, "MSG_Failed_Authentication_Message");
+
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
+                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                        ServerManager.showCustomizer(uri);
+                    }
+                }
+            });
+        }
+    }
+
+    private TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
+        if (ids == null) {
+            return null;
+        }
+
+        TargetModuleID[] mapped = new TargetModuleID[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            mapped[i] = new ServerTargetModuleID(ids[i]);
+        }
+        return mapped;
+    }
+
     private static Target[] translateTargets(DeploymentManager manager, Target[] originalTargets) {
         Target[] targets = manager.getTargets();
         // WL does not implement equals however implements hashCode
@@ -542,18 +617,6 @@ public class WLDeploymentManager implements DeploymentManager {
             }
         }
         return deployTargets.toArray(new Target[deployTargets.size()]);
-    }
-
-    private TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
-        if (ids == null) {
-            return null;
-        }
-
-        TargetModuleID[] mapped = new TargetModuleID[ids.length];
-        for (int i = 0; i < ids.length; i++) {
-            mapped[i] = new ServerTargetModuleID(ids[i]);
-        }
-        return mapped;
     }
 
     private static interface Action<T> {
