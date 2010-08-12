@@ -417,6 +417,7 @@ public final class WLStartServer extends StartServer {
             String javaOpts = dm.getInstanceProperties().getProperty(
                     WLPluginProperties.JAVA_OPTS);
             if ( javaOpts!= null && javaOpts.trim().length() >0 ){
+                javaOptsBuilder.append( " " );                              // NOI18N
                 javaOptsBuilder.append( javaOpts.trim() );
             }
             
@@ -469,6 +470,9 @@ public final class WLStartServer extends StartServer {
                     WLPluginProperties.JAVA_OPTS);
             if ( javaOpts!= null && javaOpts.trim().length() >0 ){
                 javaOptsBuilder.append( javaOpts.trim() );
+            }
+            if ( javaOptsBuilder.length()> 0 ){
+                javaOptsBuilder.append(" ");                                    // NOI18N
             }
             javaOptsBuilder.append("-Xdebug -Xnoagent -Djava.compiler=none ");  // NOI18N
             javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=");// NOI18N
