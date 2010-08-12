@@ -52,7 +52,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
@@ -450,14 +449,6 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     @Override
     public boolean containsIdeArtifacts() {
-        MavenProject mav = mavenproject.getMavenProject();
-        //now figure the destination output folder
-        if (mav.getBuild() != null) {
-            File fil = new File(mav.getBuild().getOutputDirectory());
-            fil = FileUtil.normalizeFile(fil);
-            File stamp = new File(fil, NB_COS);
-            return stamp.exists();
-        }
-        return false;
+        return new File(mavenproject.getOutputDirectory(false), NB_COS).exists();
     }
 }

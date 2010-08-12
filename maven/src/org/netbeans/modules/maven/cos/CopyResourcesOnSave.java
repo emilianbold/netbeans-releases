@@ -52,7 +52,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.apache.maven.model.Resource;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -335,21 +334,14 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         if (resources == null) {
             return null;
         }
-        MavenProject mav = nbproj.getMavenProject();
         FileObject target = null;
         //now figure the destination output folder
-        if (mav.getBuild() != null) {
-            File fil = new File(test ? mav.getBuild().getTestOutputDirectory() : mav.getBuild().getOutputDirectory());
-            fil = FileUtil.normalizeFile(fil);
-            File stamp = new File(fil, CosChecker.NB_COS);
-            if (stamp.exists()) {
-                target = FileUtil.toFileObject(fil);
-            } else {
-                // no compile on save stamp, means no copying, classes don't get copied/compiled either.
-                return null;
-            }
+        File fil = nbproj.getOutputDirectory(test);
+        File stamp = new File(fil, CosChecker.NB_COS);
+        if (stamp.exists()) {
+            target = FileUtil.toFileObject(fil);
         } else {
-            //no output dir means no copying.
+            // no compile on save stamp, means no copying, classes don't get copied/compiled either.
             return null;
         }
 

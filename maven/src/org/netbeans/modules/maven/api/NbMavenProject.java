@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
@@ -254,6 +255,21 @@ public final class NbMavenProject {
      */
     public URI[] getResources(boolean test) {
         return project.getResources(test);
+    }
+
+    /**
+     * Standardized way of finding output directory even for broken projects.
+     * @param test true for {@code target/test-classes}, false for {@code target/classes}
+     * @return the configured output directory (normalized)
+     */
+    public File getOutputDirectory(boolean test) {
+        Build build = getMavenProject().getBuild();
+        String path = build != null ? (test ? build.getTestOutputDirectory() : build.getOutputDirectory()) : null;
+        if (path != null) {
+            return new File(path);
+        } else { // #189092
+            return new File(new File(getMavenProject().getBasedir(), "target"), test ? "test-classes" : "classes"); // NOI18N
+        }
     }
 
     /**

@@ -171,9 +171,7 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
          */       
         public URL[] getRoots() {
             try         {
-                String binary = isTest ? project.getOriginalMavenProject().getBuild().getTestOutputDirectory()
-                                       : project.getOriginalMavenProject().getBuild().getOutputDirectory();
-                File binFile = FileUtil.normalizeFile(new java.io.File(binary));
+                File binFile = project.getProjectWatcher().getOutputDirectory(isTest);
 
                 return new java.net.URL[]{binFile.toURI().toURL()};
             }

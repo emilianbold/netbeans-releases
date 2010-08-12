@@ -77,12 +77,7 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
                 //null means dependencies were not resolved..
             } 
         }
-        String outputDirectory = getMavenProject().getOriginalMavenProject().getBuild().getOutputDirectory();
-        if (outputDirectory != null) {
-            File fil = new File(outputDirectory);
-            fil = FileUtil.normalizeFile(fil);
-            lst.add(0, fil.toURI());
-        }
+        lst.add(0, getMavenProject().getProjectWatcher().getOutputDirectory(false).toURI());
         URI[] uris = new URI[lst.size()];
         uris = lst.toArray(uris);
         return uris;

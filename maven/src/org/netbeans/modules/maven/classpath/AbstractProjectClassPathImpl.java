@@ -167,6 +167,7 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         for (int i = 0; i < pieces.length; i++) {
             try {
+                // XXX would be cleaner to take a File[] if that is what these all are anyway!
                 URL entry = FileUtil.urlForArchiveOrDir(new File(pieces[i]));
                 if (entry != null) {
                     result.add(ClassPathSupport.createResource(entry));

@@ -63,7 +63,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -267,8 +266,7 @@ public class EjbJarImpl implements EjbJarImplementation2, J2eeModuleImplementati
      * @return FileObject for the content directory
      */
     public FileObject getContentDirectory() throws IOException {
-        String loc = mavenproject.getMavenProject().getBuild().getOutputDirectory();
-        File fil = FileUtil.normalizeFile(new File(loc));
+        File fil = mavenproject.getOutputDirectory(false);
 //        System.out.println("ejb jar..get content=" + fil);
         FileObject fo = FileUtil.toFileObject(fil.getParentFile());
         if (fo != null) {

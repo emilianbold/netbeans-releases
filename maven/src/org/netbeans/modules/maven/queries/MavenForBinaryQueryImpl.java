@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.queries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -57,8 +56,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.apache.maven.model.Build;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -66,7 +63,6 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -157,36 +153,13 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     private int checkURL(URL url) {
         if ("file".equals(url.getProtocol())) { //NOI18N
             // true for directories.
-            try {
-                MavenProject proj = project.getOriginalMavenProject();
-                if (proj != null) {
-                    Build build = proj.getBuild();
-                    if (build != null && build.getOutputDirectory() != null) {
-                        File src = FileUtil.normalizeFile(new File(build.getOutputDirectory()));
-                        URL srcUrl = src.toURI().toURL();
-                        if  (!srcUrl.toExternalForm().endsWith("/")) { //NOI18N
-                            srcUrl = new URL(srcUrl.toExternalForm() + "/"); //NOI18N
-                        }
-                        
-                        if (url.equals(srcUrl)) {
-                            return 0;
-                        }
-                        File test = FileUtil.normalizeFile(new File(build.getTestOutputDirectory()));
-                        // can be null in some obscrure cases.
-                        URL testsrcUrl = test.toURI().toURL();
-                        if  (!testsrcUrl.toExternalForm().endsWith("/")) { //NOI18N
-                            testsrcUrl = new URL(testsrcUrl.toExternalForm() + "/"); //NOI18N
-                        }
-                        
-                        if (url.equals(testsrcUrl)) {
-                            return 1;
-                        }
-                    }
-                }
-            } catch (MalformedURLException exc) {
-                ErrorManager.getDefault().notify(exc);
+            if (url.equals(FileUtil.urlForArchiveOrDir(project.getProjectWatcher().getOutputDirectory(false)))) {
+                return 0;
+            } else if (url.equals(FileUtil.urlForArchiveOrDir(project.getProjectWatcher().getOutputDirectory(true)))) {
+                return 1;
+            } else {
+                return -1;
             }
-            return -1;
         }
         if ("jar".equals(url.getProtocol()) //NOI18N
                 && !Boolean.getBoolean("mevenide.projectLinksDisable")) { //possible fix for MEVENIDE-535   //NOI18N
