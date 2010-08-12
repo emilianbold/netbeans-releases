@@ -50,17 +50,23 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.metadata.RepositoryMetadata;
 import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.wagon.ConnectionException;
+import org.apache.maven.wagon.ResourceDoesNotExistException;
+import org.apache.maven.wagon.TransferFailedException;
+import org.apache.maven.wagon.authentication.AuthenticationException;
+import org.apache.maven.wagon.authorization.AuthorizationException;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
@@ -74,6 +80,10 @@ import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.repository.legacy.DefaultUpdateCheckManager;
+import org.apache.maven.repository.legacy.UpdateCheckManager;
+import org.apache.maven.wagon.AbstractWagon;
+import org.apache.maven.wagon.Wagon;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -135,57 +145,54 @@ public final class EmbedderFactory {
         }
     }
 
+    /**
+     * #188970: no-op wagon that prevents HTTP(S) downloads from being initiated just by reading a project.
+     */
+    public static final class DummyWagon extends AbstractWagon {
+        protected @Override void openConnectionInternal() throws ConnectionException, AuthenticationException {}
+        protected @Override void closeConnection() throws ConnectionException {}
+        private TransferFailedException fail() {
+            return new TransferFailedException("no remote connections"); // NOI18N
+        }
+        public @Override void get(String string, File file) throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException {
+            throw fail();
+        }
+        public @Override boolean getIfNewer(String string, File file, long l) throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException {
+            throw fail();
+        }
+        public @Override void put(File file, String string) throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException {
+            throw fail();
+        }
+    }
+    /**
+     * {@link DummyWagon#fail} should not be memoized in the local repo, or real builds will fail.
+     */
+    public static final class NoTouchUpdateCheckManager extends DefaultUpdateCheckManager {
+        public @Override void touch(Artifact artifact, ArtifactRepository repository, String error) {}
+        public @Override void touch(RepositoryMetadata metadata, ArtifactRepository repository, File file) {}
+    }
+
     public static MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
             .setName("mavenCore");
 
-
-    dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
-
-      public List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm)
-          throws PlexusConfigurationException {
-
-        List<ComponentSetDescriptor> componentSetDescriptors = new ArrayList<ComponentSetDescriptor>();
-
-        if (mavenCoreRealmId.equals(classRealm.getId())) {
-          ComponentSetDescriptor componentSetDescriptor = new ComponentSetDescriptor();
-
-//          // register EclipseClassRealmManagerDelegate
-//          ComponentDescriptor componentDescriptor = new ComponentDescriptor();
-//          componentDescriptor.setRealm(classRealm);
-//          componentDescriptor.setRole(ClassRealmManagerDelegate.class.getName());
-//          componentDescriptor.setImplementationClass(EclipseClassRealmManagerDelegate.class);
-//          ComponentRequirement plexusRequirement = new ComponentRequirement();
-//          plexusRequirement.setRole("org.codehaus.plexus.PlexusContainer");
-//          plexusRequirement.setFieldName("plexus");
-//          componentDescriptor.addRequirement(plexusRequirement );
-//          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
-
-//          componentDescriptor = new ComponentDescriptor();
-//          componentDescriptor.setRealm(classRealm);
-//          componentDescriptor.setRole(LocalRepositoryMaintainer.class.getName());
-//          componentDescriptor.setImplementationClass(EclipseLocalRepositoryMaintainer.class);
-//          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
-//
-//          componentSetDescriptors.add(componentSetDescriptor);
-        }
-
-        return componentSetDescriptors;
-      }
-
-    });
-
         dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
-            @SuppressWarnings("unchecked")
-            public void componentDiscovered(ComponentDiscoveryEvent event) {
+            public @Override void componentDiscovered(ComponentDiscoveryEvent event) {
                 ComponentSetDescriptor set = event.getComponentSetDescriptor();
-                for (ComponentDescriptor desc : set.getComponents()) {
+                for (ComponentDescriptor<?> desc : set.getComponents()) {
                     if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
-                        desc.setImplementationClass(NbExecutionRequestPopulator.class);
+                        setImplementationClass(desc, NbExecutionRequestPopulator.class);
+                    } else if (Wagon.ROLE.equals(desc.getRole()) && desc.getRoleHint().matches("https?")) {
+                        setImplementationClass(desc, DummyWagon.class);
+                    } else if (UpdateCheckManager.class.getName().equals(desc.getRole())) {
+                        setImplementationClass(desc, NoTouchUpdateCheckManager.class);
                     }
                 }
+            }
+            <T> void setImplementationClass(ComponentDescriptor<T> desc, Class<?> implementationClass) { // type-safe accessor
+                desc.setImplementationClass(implementationClass.asSubclass(desc.getRoleClass()));
             }
         });
         DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
