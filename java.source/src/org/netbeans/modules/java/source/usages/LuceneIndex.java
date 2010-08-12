@@ -47,6 +47,8 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -97,33 +99,31 @@ import org.netbeans.modules.parsing.impl.indexing.lucene.util.Evictable;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-class LuceneIndex extends Index implements Evictable {
+class LuceneIndex extends Index {
 
     private static final boolean debugIndexMerging = Boolean.getBoolean("java.index.debugMerge");     // NOI18N
-    private static final boolean useMemoryCache = Boolean.getBoolean("java.index.useMemCache");       //NOI18N
+    private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
+    private static final CachePolicy cachePolicy = getCachePolicy();
     private static final String REFERENCES = "refs";    // NOI18N
-
-    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
-    private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
-
-    private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);
-
-    private final File refCacheRoot;
-    //@GuardedBy(this)
-    private Directory directory;
-
-    //@GuardedBy (this)
-    private IndexReader reader; //Cache, do not use this dirrectly, use getReader
-    private Analyzer analyzer;  //Analyzer used to store documents
-    private volatile boolean closed;
-    private volatile Boolean validCache;
-    private Directory memCacheDir;
+    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());    
+    private static final Analyzer analyzer;  //Analyzer used to store documents
+    
+    static {
+        final PerFieldAnalyzerWrapper _analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.identTerm("").field(), new WhitespaceAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.featureIdentTerm("").field(), new WhitespaceAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.caseInsensitiveFeatureIdentTerm("").field(), new DocumentUtil.LCWhitespaceAnalyzer());
+        analyzer = _analyzer;
+    }
+    
+    private final DirCache dirCache;
 
     static Index create (final File cacheRoot) throws IOException {
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
@@ -133,13 +133,7 @@ class LuceneIndex extends Index implements Evictable {
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
-        this.refCacheRoot = refCacheRoot;
-        this.directory = createDirectory(this.refCacheRoot);
-        PerFieldAnalyzerWrapper _analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.identTerm("").field(), new WhitespaceAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.featureIdentTerm("").field(), new WhitespaceAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.caseInsensitiveFeatureIdentTerm("").field(), new DocumentUtil.LCWhitespaceAnalyzer());
-        this.analyzer = _analyzer;
+        this.dirCache = new DirCache(refCacheRoot,cachePolicy);
     }
     
     @Override
@@ -152,9 +146,8 @@ class LuceneIndex extends Index implements Evictable {
         Parameters.notNull("selector", selector);   //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
         Parameters.notNull("result", result);       //NOI18N
-        checkPreconditions();
         
-        final IndexReader in = getReader();
+        final IndexReader in = dirCache.getReader();
         if (in == null) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
@@ -196,8 +189,7 @@ class LuceneIndex extends Index implements Evictable {
             final @NonNull ResultConvertor<Term,T> filter,
             final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
         
-        checkPreconditions();        
-        final IndexReader in = getReader();
+        final IndexReader in = dirCache.getReader();
         if (in == null) {
             return;
         }
@@ -227,8 +219,7 @@ class LuceneIndex extends Index implements Evictable {
 
     //Todo: replace by query(QueryUtil.createQueries) - needs to collect terms in queries
     public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
-        checkPreconditions();
-        final IndexReader in = getReader();
+        final IndexReader in = dirCache.getReader();
         if (in == null) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
             return;
@@ -377,44 +368,6 @@ class LuceneIndex extends Index implements Evictable {
         return -1;
     }
 
-    //<editor-fold desc="Implementation of Evictable interface">
-    public void evicted() {
-        //When running from memory cache no need to close the reader, it does not own file handler.
-        if (!useMemoryCache) {
-            //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
-            RP.post(new Runnable() {
-                public void run () {
-                    try {
-                        ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-                            public Void run() throws IOException, InterruptedException {
-                                close(false);
-                                LOGGER.fine("Evicted index: " + refCacheRoot.getAbsolutePath()); //NOI18N
-                                return null;
-                            }
-                        });
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (InterruptedException ie) {
-                        Exceptions.printStackTrace(ie);
-                    }
-                }
-            });
-        }
-    }
-    ///</editor-fold>
-
-    private void _hit() {
-        if (!useMemoryCache) {
-            try {
-                final URL url = this.refCacheRoot.toURI().toURL();
-                IndexCacheFactory.getDefault().getCache().put(url, this);
-            } catch (MalformedURLException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-    }
-
-
     private void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel, boolean caseSensitive) throws IOException, InterruptedException {        
         final String startText = startTerm.text();
         String startPrefix;
@@ -479,12 +432,13 @@ class LuceneIndex extends Index implements Evictable {
         }
     }
 
+    @Override
     public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
                     _store(refs, topLevels);
-                    validCache = true;
                     return null;
                 }
             });
@@ -494,10 +448,9 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private void _store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
-        checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         boolean create = !exists();
-        final IndexWriter out = getWriter(create);
+        final IndexWriter out = dirCache.getWriter(create);
         try {
             if (!create) {
                 for (Pair<String,String> topLevel : topLevels) {
@@ -509,18 +462,18 @@ class LuceneIndex extends Index implements Evictable {
             try {
                 out.close();
             } finally {
-                refreshReader();
+                dirCache.refreshReader();
             }
         }
     }
-
-    //Todo: probably unsed, the java source should be refactored and cleaned up.
+    
+    @Override
     public void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
                     _store(refs, toDelete);
-                    validCache = true;
                     return null;
                 }
             });
@@ -530,10 +483,9 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private void _store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
-        checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         boolean create = !exists();
-        final IndexWriter out = getWriter(create);
+        final IndexWriter out = dirCache.getWriter(create);
         try {
             if (!create) {
                 for (Pair<String,String> toDeleteItem : toDelete) {
@@ -545,7 +497,7 @@ class LuceneIndex extends Index implements Evictable {
             try {
                 out.close();
             } finally {
-                refreshReader();
+                dirCache.refreshReader();
             }
         }
     }
@@ -602,227 +554,48 @@ class LuceneIndex extends Index implements Evictable {
         }
     }
 
+    @Override
     public boolean isValid (boolean force) throws IOException {
-        checkPreconditions();
-        Boolean valid = validCache;
-        if (force ||  valid == null) {
-            final Collection<? extends String> locks = getOrphanLock();
-            boolean res = false;
-            if (!locks.isEmpty()) {
-                LOGGER.warning("Broken (locked) index folder: " + refCacheRoot.getAbsolutePath());   //NOI18N
-                for (String lockName : locks) {
-                    directory.deleteFile(lockName);
-                }
-                if (force) {
-                    clear();
-                }
-            } else {
-                res = exists();
-                if (res && force) {
-                    try {
-                        getReader();
-                    } catch (java.io.IOException e) {
-                        res = false;
-                        clear();
-                    } catch (RuntimeException e) {
-                        res = false;
-                        clear();
-                    }
-                }
-            }
-            valid = res;
-            validCache = valid;
-        }
-        return valid;
+        return dirCache.isValid(force);
     }
 
+    @Override
     public void clear () throws IOException {
         try {
-            checkPreconditions();
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-
+                @Override
                 public Void run() throws IOException, InterruptedException {
-                    _clear();
+                    dirCache.clear();
                     return null;
                 }
             });
         } catch (InterruptedException ex) {
-            //Never happens
-            IOException newException = new IOException();
-            newException.initCause(ex);
-            throw newException;
+            throw new IOException(ex);
         }
     }
-
-    private synchronized void _clear() throws IOException {
-        this.close (false);
-        try {
-            final String[] content = this.directory.list();
-            boolean dirty = false;
-            if (content != null) {
-                for (String file : content) {
-                    try {
-                        directory.deleteFile(file);
-                    } catch (IOException e) {
-                        //Some temporary files
-                        if (directory.fileExists(file)) {
-                            dirty = true;
-                        }
-                    }
-                }
-            }
-            if (dirty) {
-                //Try to delete dirty files and log what's wrong
-                final File cacheDir = ((FSDirectory)this.directory).getFile();
-                final File[] children = cacheDir.listFiles();
-                if (children != null) {
-                    for (final File child : children) {                                                
-                        if (!child.delete()) {
-                            final Class c = this.directory.getClass();
-                            int refCount = -1;
-                            try {
-                                final Field field = c.getDeclaredField("refCount"); //NOI18N
-                                field.setAccessible(true);
-                                refCount = field.getInt(this.directory);
-                            } catch (NoSuchFieldException e) {/*Not important*/}
-                              catch (IllegalAccessException e) {/*Not important*/}
-                            final Map<Thread,StackTraceElement[]> sts = Thread.getAllStackTraces();
-                            throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
-                                    child.exists()  +","+                                               //NOI18N
-                                    child.canRead() +","+                                               //NOI18N
-                                    child.canWrite() +","+                                              //NOI18N
-                                    cacheDir.canRead() +","+                                            //NOI18N
-                                    cacheDir.canWrite() +","+                                           //NOI18N
-                                    refCount +","+                                                      //NOI18N
-                                    sts +")");                                                          //NOI18N
-                        }
-                    }
-                }
-            }
-        } finally {
-            //Need to recreate directory, see issue: #148374
-            this.close(true);
-            this.directory = createDirectory(refCacheRoot);
-            closed = false;
-        }
-    }
-
+    
+    @Override
     public boolean exists () {
-        try {
-            return IndexReader.indexExists(this.directory);
-        } catch (IOException e) {
-            return false;
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.INFO, "Broken index: " + refCacheRoot.getAbsolutePath(), e);
-            return false;
-        }
+        return this.dirCache.exists();
     }
 
+    @Override
     public void close () throws IOException {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "Closing index: {0} {1}",  //NOI18N
                     new Object[]{
-                        this.refCacheRoot.getAbsolutePath(),
+                        this.dirCache.toString(),
                         Thread.currentThread().getStackTrace()});
         }
-        close(true);
+        dirCache.close(true);
     }
 
-    private synchronized void close (boolean closeDir) throws IOException {
-        try {
-            try {
-                if (this.reader != null) {
-                    this.reader.close();
-                    this.reader = null;
-                }
-            } finally {
-                if (memCacheDir != null) {
-                    assert useMemoryCache;
-                    final Directory tmpDir = this.memCacheDir;
-                    this.memCacheDir = null;
-                    tmpDir.close();
-                }
-            }
-        } finally {
-            if (closeDir) {
-                this.closed = true;
-                this.directory.close();
-            }
-        }
+
+    @Override
+    public String toString () {
+        return getClass().getSimpleName()+"["+this.dirCache.toString()+"]";  //NOI18N
     }
-
-    public @Override String toString () {
-        return getClass().getSimpleName()+"["+this.refCacheRoot.getAbsolutePath()+"]";  //NOI18N
-    }
-
-    private synchronized IndexReader getReader () throws IOException {
-        _hit();
-        if (this.reader == null) {
-            if (validCache == Boolean.FALSE) {
-                return null;
-            }
-            //Issue #149757 - logging
-            try {
-                Directory source;
-                if (useMemoryCache) {
-                    source = memCacheDir = new RAMDirectory(this.directory);
-
-                } else {
-                    source = this.directory;
-                }
-                //It's important that no Query will get access to original IndexReader
-                //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                this.reader = new NoNormsReader(IndexReader.open(source));
-            } catch (final FileNotFoundException fnf) {
-                //pass - returns null
-            } catch (IOException ioe) {
-                throw annotateException (ioe);
-            }
-        }
-        return this.reader;
-    }
-
-    private synchronized IndexWriter getWriter (final boolean create) throws IOException {
-        _hit();
-        //Issue #149757 - logging
-        try {
-            IndexWriter writer = new IndexWriter (this.directory, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
-            return writer;
-        } catch (IOException ioe) {
-            throw annotateException (ioe);
-        }
-    }
-
-    private synchronized void refreshReader() throws IOException {
-        if (useMemoryCache) {
-            close(false);
-        } else {
-            if (reader != null) {
-                final IndexReader newReader = reader.reopen();
-                if (newReader != reader) {
-                    reader.close();
-                    reader = newReader;
-                }
-            }
-        }
-    }
-
-    private IOException annotateException (final IOException ioe) {
-        String message;
-        File[] children = refCacheRoot.listFiles();
-        if (children == null) {
-            message = "Non existing index folder";
-        }
-        else {
-            StringBuilder b = new StringBuilder();
-            for (File c : children) {
-                b.append(c.getName() +" f: " + c.isFile() + " r: " + c.canRead() + " w: " + c.canWrite()+"\n");  //NOI18N
-            }
-            message = b.toString();
-        }
-        return Exceptions.attachMessage(ioe, message);
-    }
-
+    
     private static File getReferencesCacheFolder (final File cacheRoot) throws IOException {
         File refRoot = new File (cacheRoot,REFERENCES);
         if (!refRoot.exists()) {
@@ -830,36 +603,25 @@ class LuceneIndex extends Index implements Evictable {
         }
         return refRoot;
     }
-
-    private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
-        if (closed) {
-            throw new ClassIndexImpl.IndexAlreadyClosedException();
+           
+    private static CachePolicy getCachePolicy() {
+        final String value = System.getProperty("java.index.useMemCache");   //NOI18N
+        if (Boolean.TRUE.toString().equals(value) ||
+            CachePolicy.ALL.getSystemName().equals(value)) {
+            return CachePolicy.ALL;
         }
-    }
-
-    private static Directory createDirectory(final File indexFolder) throws IOException {
-        assert indexFolder != null;
-        FSDirectory directory  = FSDirectory.getDirectory(indexFolder);
-        directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
-        return directory;
-    }
-
-    private Collection<? extends String> getOrphanLock () {
-        final List<String> locks = new LinkedList<String>();
-        final String[] content = refCacheRoot.list();
-        if (content != null) {
-            for (String name : content) {
-                if (name.startsWith(CACHE_LOCK_PREFIX)) {
-                    locks.add(name);
-                }
-            }
+        if (Boolean.FALSE.toString().equals(value) ||
+            CachePolicy.NONE.getSystemName().equals(value)) {
+            return CachePolicy.NONE;
         }
-        return locks;
+        if (CachePolicy.DYNAMIC.getSystemName().equals(value)) {
+            return CachePolicy.DYNAMIC;
+        }
+        return DEFAULT_CACHE_POLICY;
     }
+    
 
-    /**
-     * Expert: Bypass read of norms
-     */
+    //<editor-fold defaultstate="collapsed" desc="Private classes (NoNormsReader, TermComparator, CachePolicy)">
     private static class NoNormsReader extends FilterIndexReader {
 
         //@GuardedBy (this)
@@ -871,14 +633,14 @@ class LuceneIndex extends Index implements Evictable {
 
         @Override
         public byte[] norms(String field) throws IOException {
-            byte[] norms = fakeNorms ();
-            return norms;
+            byte[] _norms = fakeNorms ();
+            return _norms;
         }
 
         @Override
         public void norms(String field, byte[] norm, int offset) throws IOException {
-            byte[] norms = fakeNorms ();
-            System.arraycopy(norms, 0, norm, offset, norms.length);
+            byte[] _norms = fakeNorms ();
+            System.arraycopy(_norms, 0, norm, offset, _norms.length);
         }
 
         @Override
@@ -929,6 +691,353 @@ class LuceneIndex extends Index implements Evictable {
             }
             return ret;
         }
+    }
+    
+    private enum CachePolicy {
+        
+        NONE("none", false),          //NOI18N
+        DYNAMIC("dynamic", true),     //NOI18N
+        ALL("all", true);             //NOI18N
+        
+        private final String sysName;
+        private final boolean hasMemCache;
+        
+        CachePolicy(final String sysName, final boolean hasMemCache) {
+            assert sysName != null;
+            this.sysName = sysName;
+            this.hasMemCache = hasMemCache;
+        }
+        
+        String getSystemName() {
+            return sysName;
+        }
+        
+        boolean hasMemCache() {
+            return hasMemCache;
+        }
     }    
+    
+    private static final class DirCache implements Evictable {
+        
+        private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
+        private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);
+        
+        private final File folder;
+        private final CachePolicy cachePolicy;
+        private FSDirectory fsDir;
+        private Directory memDir;
+        private Reference<Directory[]> ref;
+        private IndexReader reader;
+        private volatile boolean closed;
+        private volatile Boolean validCache;
+        
+        private DirCache(final @NonNull File folder, final @NonNull CachePolicy cachePolicy) throws IOException {
+            assert folder != null;
+            assert cachePolicy != null;
+            this.folder = folder;
+            this.fsDir = createFSDirectory(folder);
+            this.cachePolicy = cachePolicy;                        
+        }
+                                
+        synchronized void clear() throws IOException {
+            checkPreconditions();
+            close (false);
+            try {
+                final String[] content = fsDir.listAll();
+                boolean dirty = false;
+                if (content != null) {
+                    for (String file : content) {
+                        try {
+                            fsDir.deleteFile(file);
+                        } catch (IOException e) {
+                            //Some temporary files
+                            if (fsDir.fileExists(file)) {
+                                dirty = true;
+                            }
+                        }
+                    }
+                }
+                if (dirty) {
+                    //Try to delete dirty files and log what's wrong
+                    final File cacheDir = fsDir.getFile();
+                    final File[] children = cacheDir.listFiles();
+                    if (children != null) {
+                        for (final File child : children) {                                                
+                            if (!child.delete()) {
+                                final Class c = fsDir.getClass();
+                                int refCount = -1;
+                                try {
+                                    final Field field = c.getDeclaredField("refCount"); //NOI18N
+                                    field.setAccessible(true);
+                                    refCount = field.getInt(fsDir);
+                                } catch (NoSuchFieldException e) {/*Not important*/}
+                                  catch (IllegalAccessException e) {/*Not important*/}
+                                final Map<Thread,StackTraceElement[]> sts = Thread.getAllStackTraces();
+                                throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
+                                        child.exists()  +","+                                               //NOI18N
+                                        child.canRead() +","+                                               //NOI18N
+                                        child.canWrite() +","+                                              //NOI18N
+                                        cacheDir.canRead() +","+                                            //NOI18N
+                                        cacheDir.canWrite() +","+                                           //NOI18N
+                                        refCount +","+                                                      //NOI18N
+                                        sts +")");                                                          //NOI18N
+                            }
+                        }
+                    }
+                }
+            } finally {
+                //Need to recreate directory, see issue: #148374
+                this.close(true);
+                this.fsDir = createFSDirectory(this.folder);
+                closed = false;
+            }
+        }
+        
+        synchronized void close (final boolean closeFSDir) throws IOException {
+            try {
+                try {
+                    if (this.reader != null) {
+                        this.reader.close();
+                        this.reader = null;
+                    }
+                } finally {                        
+                    if (memDir != null) {
+                        assert cachePolicy.hasMemCache();
+                        this.ref.clear();
+                        final Directory tmpDir = this.memDir;
+                        memDir = null;
+                        tmpDir.close();
+                    }
+                }
+            } finally {
+                if (closeFSDir) {
+                    this.closed = true;
+                    this.fsDir.close();
+                }
+            }
+        }
+        
+        boolean exists() {
+            try {
+                return IndexReader.indexExists(this.fsDir);
+            } catch (IOException e) {
+                return false;
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.INFO, "Broken index: " + folder.getAbsolutePath(), e);
+                return false;
+            }
+        }
+        
+        boolean isValid(boolean force) throws IOException {
+            checkPreconditions();
+            Boolean valid = validCache;
+            if (force ||  valid == null) {
+                final Collection<? extends String> locks = getOrphanLock();
+                boolean res = false;
+                if (!locks.isEmpty()) {
+                    LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
+                    for (String lockName : locks) {
+                        fsDir.deleteFile(lockName);
+                    }
+                    if (force) {
+                        clear();
+                    }
+                } else {
+                    res = exists();
+                    if (res && force) {
+                        try {
+                            getReader();
+                        } catch (java.io.IOException e) {
+                            res = false;
+                            clear();
+                        } catch (RuntimeException e) {
+                            res = false;
+                            clear();
+                        }
+                    }
+                }
+                valid = res;
+                validCache = valid;
+            }
+            return valid;
+        }
+        
+        IndexWriter getWriter (final boolean create) throws IOException {
+            checkPreconditions();
+            hit();
+            //Issue #149757 - logging
+            try {
+                return new IndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
+            } catch (IOException ioe) {
+                throw annotateException (ioe);
+            }
+        }
+        
+        synchronized IndexReader getReader () throws IOException {
+            checkPreconditions();
+            hit();
+            if (this.reader == null) {
+                if (validCache == Boolean.FALSE) {
+                    return null;
+                }
+                //Issue #149757 - logging
+                try {
+                    Directory source;
+                    if (cachePolicy.hasMemCache()) {
+                        memDir = new RAMDirectory(fsDir);
+                        if (cachePolicy == CachePolicy.DYNAMIC) {
+                            ref = new CleanReference(this.memDir);
+                        }
+                        source = memDir;
+                    } else {
+                        source = fsDir;
+                    }
+                    assert source != null;
+                    this.reader = new NoNormsReader(IndexReader.open(source,true));
+                } catch (final FileNotFoundException fnf) {
+                    //pass - returns null
+                } catch (IOException ioe) {
+                    throw annotateException (ioe);
+                }
+            }
+            return this.reader;
+        }
+
+
+        synchronized void refreshReader() throws IOException {
+            try {
+                if (cachePolicy.hasMemCache()) {
+                    close(false);
+                } else {
+                    if (reader != null) {
+                        final IndexReader newReader = reader.reopen();
+                        if (newReader != reader) {
+                            reader.close();
+                            reader = newReader;
+                        }
+                    }
+                }
+            } finally {
+                 validCache = true;
+            }
+        }
+        
+        @Override
+        public String toString() {
+            return this.folder.getAbsolutePath();
+        }
+        
+        @Override
+        public void evicted() {
+            //When running from memory cache no need to close the reader, it does not own file handler.
+            if (!cachePolicy.hasMemCache()) {
+                //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
+                RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        try {
+                            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                                @Override
+                                public Void run() throws IOException, InterruptedException {
+                                    close(false);
+                                    LOGGER.log(Level.FINE, "Evicted index: {0}", folder.getAbsolutePath()); //NOI18N
+                                    return null;
+                                }
+                            });
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (InterruptedException ie) {
+                            Exceptions.printStackTrace(ie);
+                        }
+                    }
+                });
+            }
+        }
+        
+        private synchronized void hit() {
+            if (!cachePolicy.hasMemCache()) {
+                try {
+                    final URL url = folder.toURI().toURL();
+                    IndexCacheFactory.getDefault().getCache().put(url, this);
+                } catch (MalformedURLException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            } else if (ref != null) {
+                ref.get();
+            }
+        }
+        
+        private Collection<? extends String> getOrphanLock () {
+            final List<String> locks = new LinkedList<String>();
+            final String[] content = folder.list();
+            if (content != null) {
+                for (String name : content) {
+                    if (name.startsWith(CACHE_LOCK_PREFIX)) {
+                        locks.add(name);
+                    }
+                }
+            }
+            return locks;
+        }
+        
+        private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
+            if (closed) {
+                throw new ClassIndexImpl.IndexAlreadyClosedException();
+            }
+        }
+        
+        private IOException annotateException (final IOException ioe) {
+            String message;
+            File[] children = folder.listFiles();
+            if (children == null) {
+                message = "Non existing index folder";
+            }
+            else {
+                StringBuilder b = new StringBuilder();
+                for (File c : children) {
+                    b.append(c.getName()).append(" f: ").append(c.isFile()).
+                    append(" r: ").append(c.canRead()).
+                    append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
+                }
+                message = b.toString();
+            }
+            return Exceptions.attachMessage(ioe, message);
+        }
+        
+        private static FSDirectory createFSDirectory (final File indexFolder) throws IOException {
+            assert indexFolder != null;
+            FSDirectory directory  = FSDirectory.open(indexFolder);
+            directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
+            return directory;
+        } 
+        
+        private class CleanReference extends SoftReference<Directory[]> implements Runnable {
+
+            private CleanReference(final Directory dir) {
+                super (new Directory[] {dir}, Utilities.activeReferenceQueue());
+                LOGGER.log(Level.FINEST, "Caching index: {0} cache policy: {1}",    //NOI18N
+                new Object[]{
+                    folder.getAbsolutePath(),
+                    cachePolicy.getSystemName()
+                });
+            }
+            
+            @Override
+            public void run() {
+                try {
+                    LOGGER.log(Level.FINEST, "Dropping cache index: {0} cache policy: {1}", //NOI18N
+                    new Object[] {
+                        folder.getAbsolutePath(),
+                        cachePolicy.getSystemName()
+                    });
+                    close(false);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+        }
+    }
+    //</editor-fold>
 
 }
