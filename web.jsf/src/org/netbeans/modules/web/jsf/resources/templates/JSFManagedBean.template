@@ -14,6 +14,9 @@ import javax.inject.Named;
     <#if scopeAnnotation??>
 import javax.enterprise.context.${scopeAnnotation};
     </#if>
+    <#if passivationCapable??>
+import java.io.Serializable;
+	</#if>
 <#else>
     <#if classAnnotation??>
 import javax.faces.bean.ManagedBean;
@@ -33,7 +36,7 @@ ${classAnnotation}
 <#if scopeAnnotation??>
 @${scopeAnnotation}
 </#if>
-public class ${name} {
+public class ${name} <#if passivationCapable??>implements Serializable</#if>{
 
     /** Creates a new instance of ${name} */
     public ${name}() {
