@@ -69,7 +69,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -122,6 +121,7 @@ public class WLPluginProperties {
     
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N
+    public static final String MEM_OPTS = "mem_opts";               // NOI18N
     
     public static final String BEA_JAVA_HOME="bea_java_home";           // NOI18N
     public static final String SUN_JAVA_HOME="sun_java_home";           // NOI18N
@@ -181,6 +181,18 @@ public class WLPluginProperties {
             pluginProperties = new WLPluginProperties();
         }
         return pluginProperties;
+    }
+
+    @CheckForNull
+    public static FileObject getDomainConfigFile(WLDeploymentManager manager) {
+        String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        File domainPath = FileUtil.normalizeFile(new File(domainDir));
+        FileObject domain = FileUtil.toFileObject(domainPath);
+        FileObject domainConfig = null;
+        if (domain != null) {
+            domainConfig = domain.getFileObject("config/config.xml"); // NOI18N
+        }
+        return domainConfig;
     }
 
     @CheckForNull

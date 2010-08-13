@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -85,9 +86,9 @@ public final class SafeDeleteSupport {
         this.model = model;
     }
 
-    public static SafeDeleteSupport getInstance(final ParserResult info) {
+    public static SafeDeleteSupport getInstance(final PHPParseResult info) {
         Model model = ModelFactory.getModel(info);
-        final Index indexQuery = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+        final Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(info));
         return new SafeDeleteSupport(indexQuery, model);
     }
 

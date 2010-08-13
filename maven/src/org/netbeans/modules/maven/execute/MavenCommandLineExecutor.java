@@ -53,6 +53,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenSettings;
 import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import java.awt.Color;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -76,6 +77,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.IOColorLines;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -411,16 +413,28 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
         builder.directory(clonedConfig.getExecutionDirectory());
-        ioput.getOut().println("NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'"); //NOI18N - to be shown in log.
+        printGray(ioput, "NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'"); //NOI18N - to be shown in log.
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
-            ioput.getOut().println("NetBeans:      " + env + "=" + val);
+            printGray(ioput, "NetBeans:      " + env + "=" + val);
         }
 
         return builder;
+    }
+
+    private static void printGray(InputOutput io, String text) {
+        if (IOColorLines.isSupported(io)) {
+            try {
+                IOColorLines.println(io, text, Color.GRAY);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            io.getOut().println(text);
+        }
     }
 
     private void processIssue153101(IOException x, InputOutput ioput) {

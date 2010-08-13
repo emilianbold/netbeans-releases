@@ -447,16 +447,17 @@ public final class CommandUtils {
         return new DebugInfo(debugClient, debugServer);
     }
 
-    /**
-     *
-     * @param project
-     * @return
-     * @throws MalformedURLException if any error occurs.
-     */
     public static URL getBaseURL(PhpProject project) throws MalformedURLException {
+        return getBaseURL(project, false);
+    }
+
+    public static URL getBaseURL(PhpProject project, boolean addEndingSlash) throws MalformedURLException {
         String baseURLPath = ProjectPropertiesSupport.getUrl(project);
         if (baseURLPath == null) {
             throw new MalformedURLException();
+        }
+        if (addEndingSlash && !baseURLPath.endsWith("/")) { // NOI18N
+            baseURLPath += "/"; // NOI18N
         }
         return new URL(baseURLPath);
     }
@@ -480,13 +481,12 @@ public final class CommandUtils {
     private static URL urlForFile(PhpProject project, FileObject webRoot, FileObject file) throws MalformedURLException {
         String relativePath = null;
         if (file == null) {
-            // index file not set (or not valid but it's ok if we run project [not for debug project])
             relativePath = ""; // NOI18N
         } else {
             relativePath = FileUtil.getRelativePath(webRoot, file);
             assert relativePath != null : String.format("WebRoot %s must be parent of file %s", webRoot, file);
         }
-        URL retval = new URL(getBaseURL(project), encodeRelativeUrl(relativePath));
+        URL retval = new URL(getBaseURL(project, StringUtils.hasText(relativePath)), encodeRelativeUrl(relativePath));
         String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }

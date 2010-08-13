@@ -41,18 +41,30 @@
  */
 package org.netbeans.modules.web.el;
 
+import com.sun.el.parser.AstFalse;
+import com.sun.el.parser.AstFloatingPoint;
 import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstInteger;
 import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
+import com.sun.el.parser.AstString;
+import com.sun.el.parser.AstTrue;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -61,6 +73,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -73,6 +86,20 @@ import org.openide.util.Exceptions;
 public final class ELTypeUtilities {
 
     private final CompilationInfo info;
+
+    private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<Class<? extends Node>, Set<TypeKind>>();
+    static {
+        put(AstFloatingPoint.class, TypeKind.FLOAT, TypeKind.DOUBLE);
+        put(AstTrue.class, TypeKind.BOOLEAN);
+        put(AstFalse.class, TypeKind.BOOLEAN);
+        put(AstInteger.class, TypeKind.INT, TypeKind.SHORT, TypeKind.LONG);
+    }
+
+    private static void put(Class<? extends Node> node, TypeKind... kinds) {
+        Set<TypeKind> kindSet = new HashSet<TypeKind>();
+        kindSet.addAll(Arrays.asList(kinds));
+        TYPES.put(node, kindSet);
+    }
 
     private ELTypeUtilities(CompilationInfo info) {
         assert info != null;
@@ -120,20 +147,21 @@ public final class ELTypeUtilities {
      * @return true if {@code methodNode} and {@code method} have matching parameters;
      * false otherwise.
      */
-    public static boolean isSameMethod(Node methodNode, ExecutableElement method) {
+    public boolean isSameMethod(Node methodNode, ExecutableElement method) {
         String image = methodNode.getImage();
         String methodName = method.getSimpleName().toString();
         if (image == null) {
             return false;
         }
         int methodParams = method.getParameters().size();
-        //XXX: need to do type matching here
-        if (methodNode instanceof AstMethodSuffix && methodName.equals(image)) {
+        if (methodNode instanceof AstMethodSuffix && 
+                (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
             int methodNodeParams = ((AstMethodSuffix) methodNode).jjtGetNumChildren();
             if (method.isVarArgs()) {
                 return methodParams == 1 ? true : methodNodeParams >= methodParams;
             }
-            return method.getParameters().size() == methodNodeParams;
+            return method.getParameters().size() == methodNodeParams
+                    && haveSameParameters((AstMethodSuffix) methodNode, method);
         }
 
         if (methodNode instanceof AstPropertySuffix
@@ -144,6 +172,40 @@ public final class ELTypeUtilities {
                     : method.getParameters().isEmpty();
         }
         return false;
+    }
+
+    private boolean haveSameParameters(AstMethodSuffix methodNode, ExecutableElement method) {
+        for (int i = 0; i < methodNode.jjtGetNumChildren(); i++) {
+            Node paramNode = methodNode.jjtGetChild(i);
+            if (!isSameType(paramNode, method.getParameters().get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isSameType(Node paramNode, VariableElement param) {
+        TypeKind paramKind = param.asType().getKind();
+        if (!paramKind.isPrimitive()) {
+            // try unboxing
+            try {
+                PrimitiveType unboxedType = info.getTypes().unboxedType(param.asType());
+                paramKind = unboxedType.getKind();
+            } catch (IllegalArgumentException iae) {
+                // not unboxable (isn't there a way to check this before trying to unbox??)
+            }
+
+        }
+        if (TYPES.containsKey(paramNode.getClass())) {
+             return TYPES.get(paramNode.getClass()).contains(paramKind);
+        }
+        if (paramNode instanceof AstString) {
+            CharSequence typeName = info.getTypeUtilities().getTypeName(param.asType(), TypeNameOptions.PRINT_FQN);
+            return String.class.getName().contentEquals(typeName);//NOI18N
+        }
+        // the ast param is an object whose real type we don't know
+        // would need to further type inference for more exact matching
+        return true;
     }
 
     /**

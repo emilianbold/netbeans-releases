@@ -98,6 +98,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         super(inScope, element, PhpElementKind.IFACE);
     }
 
+    @Override
     public List<? extends String> getSuperInterfaceNames() {
         if (indexedElement instanceof TypeElement) {
             List<String> retval = new ArrayList<String>();
@@ -110,6 +111,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         return new ArrayList<String>(ifaces.keySet());
     }
 
+    @Override
     public List<? extends InterfaceScope> getSuperInterfaceScopes() {
         Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();
         Set<String> keySet = (indexedElement instanceof TypeElement) ? new HashSet<String>(getSuperInterfaceNames()) : ifaces.keySet();
@@ -127,7 +129,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                     if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
                         IndexScope indexScope = ModelUtils.getIndexScope(ps);
                         if (indexScope != null) {
-                            Collection<? extends InterfaceScope> cIfaces =CachingSupport.getInterfaces(ifaceName, this);
+                            Collection<? extends InterfaceScope> cIfaces =IndexScopeImpl.getInterfaces(QualifiedName.create(ifaceName), this);
                             ifaces.put(ifaceName,(List<? extends InterfaceScopeImpl>)cIfaces);
                             for (InterfaceScope interfaceScope : cIfaces) {
                                 retval.add((InterfaceScopeImpl)interfaceScope);
