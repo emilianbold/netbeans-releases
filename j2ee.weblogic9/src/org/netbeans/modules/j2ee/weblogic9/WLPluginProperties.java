@@ -68,7 +68,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -106,8 +108,6 @@ public class WLPluginProperties {
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
 
     private static final String CONFIG_XML = "config/config.xml"; //NOI18N
-
-    private static final String DOMAIN_LIB_DIR = "lib"; //NOI18N
 
     // additional properties that are stored in the InstancePropeties object
     public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
@@ -184,22 +184,38 @@ public class WLPluginProperties {
     }
 
     @CheckForNull
-    public static FileObject getDomainConfigFile(WLDeploymentManager manager) {
+    public static FileObject getDomainConfigFileObject(WLDeploymentManager manager) {
         String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-        File domainPath = FileUtil.normalizeFile(new File(domainDir));
+        return getDomainConfigFileObject(new File(domainDir));
+    }
+
+    @CheckForNull
+    public static FileObject getDomainConfigFileObject(File domainDir) {
+        File domainPath = FileUtil.normalizeFile(domainDir);
         FileObject domain = FileUtil.toFileObject(domainPath);
         FileObject domainConfig = null;
         if (domain != null) {
-            domainConfig = domain.getFileObject("config/config.xml"); // NOI18N
+            domainConfig = domain.getFileObject(CONFIG_XML);
         }
         return domainConfig;
+    }
+
+    @CheckForNull
+    public static File getDomainConfigFile(InstanceProperties props) {
+        String domainDir = props.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        if (domainDir == null) {
+            // may happen during the registration
+            return null;
+        }
+        return FileUtil.normalizeFile(new File(domainDir + File.separator
+                + "config" + File.separator + "config.xml")); // NOI18N
     }
 
     @CheckForNull
     public static File getDomainLibDirectory(WLDeploymentManager manager) {
         String domain = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
         if (domain != null) {
-            File domainLib = new File(new File(domain), DOMAIN_LIB_DIR);
+            File domainLib = new File(new File(domain), "lib"); // NOI18N
             if (domainLib.exists() && domainLib.isDirectory()) {
                 return domainLib;
             }
@@ -211,7 +227,7 @@ public class WLPluginProperties {
     public static File getServerLibDirectory(WLDeploymentManager manager) {
         String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         if (server != null) {
-            File serverLib = new File(new File(server), DOMAIN_LIB_DIR);
+            File serverLib = new File(new File(server), "server" + File.separator + "lib"); // NOI18N
             if (serverLib.exists() && serverLib.isDirectory()) {
                 return serverLib;
             }
