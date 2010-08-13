@@ -84,7 +84,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -186,12 +185,13 @@ public class DependenciesNode extends AbstractNode {
             if (wr == NULL) {
                 return new Node[] {new NonCPNode(nonCPcount, this)};
             }
-            Lookup look = Lookups.fixed(new Object[] {
-                wr.getArtifact(),
-                wr.getDependency(),
-                project
-            });
-            return new Node[] { new DependencyNode(look, true) };
+            Artifact art = wr.getArtifact();
+            if (art.getFile() == null) { // #140253
+                Node n = new AbstractNode(Children.LEAF);
+                n.setName("broken: " + art); // XXX I18N
+                return new Node[] {n};
+            }
+            return new Node[] {new DependencyNode(project, art, wr.getDependency(), true)};
         }
 
         Node getParentNode() {

@@ -121,6 +121,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 /**
  * node representing a dependency
@@ -148,32 +149,23 @@ public class DependencyNode extends AbstractNode {
 
     private static final RequestProcessor RP = new RequestProcessor("DependencyNode",1); //NOI18N
 
-    public static Children createChildren(Lookup look, boolean longLiving) {
+    public static Children createChildren(Artifact art, boolean longLiving) {
+        assert art != null;
+        assert art.getFile() != null;
         if (!longLiving) {
             return Children.LEAF;
         }
-        Artifact art = look.lookup(Artifact.class);
-        if (art.getFile() != null) {//#135463
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
-            if (fo != null && FileUtil.isArchiveFile(fo)) {
-                return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
-            }
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
+        if (fo != null && FileUtil.isArchiveFile(fo)) {
+            return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
         }
         return Children.LEAF;
     }
 
-    /**
-     *@param lookup - expects instance of NbMavenProjectImpl, Artifact
-     */
-    public DependencyNode(Lookup lookup, boolean isLongLiving) {
-        super(createChildren(lookup, isLongLiving), lookup);
-//        super(isLongLiving ? new DependencyChildren(lookup) : Children.LEAF, lookup);
-        project = lookup.lookup(NbMavenProjectImpl.class);
-        art = lookup.lookup(Artifact.class);
-        assert art != null;
-        if (art.getFile() == null) {
-            throw new IllegalStateException("Artifact " + art.getId() + " is not resolved and is missing the file association in local repository. Please report at issue #140253."); //NOI18N
-        }
+    public DependencyNode(NbMavenProjectImpl project, Artifact art, Dependency dependency, boolean isLongLiving) {
+        super(createChildren(art, isLongLiving), Lookups.fixed(project, art, dependency));
+        this.project = project;
+        this.art = art;
         longLiving = isLongLiving;
         if (longLiving) {
             listener = new PropertyChangeListener() {
@@ -294,7 +286,7 @@ public class DependencyNode extends AbstractNode {
         //#142784
         if (longLiving) {
             if (Children.LEAF == getChildren()) {
-                Children childs = createChildren(getLookup(), true);
+                Children childs = createChildren(art, true);
                 if (childs != Children.LEAF) {
                     setChildren(childs);
                 }
