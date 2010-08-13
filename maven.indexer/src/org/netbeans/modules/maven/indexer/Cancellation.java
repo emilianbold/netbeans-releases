@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,43 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.heap;
+package org.netbeans.modules.maven.indexer;
 
+import java.util.Set;
+import org.openide.util.Cancellable;
+import org.openide.util.WeakSet;
+import org.sonatype.nexus.index.DefaultNexusIndexer;
 
 /**
- *
- * @author Tomas Hurka
+ * Thrown when a task is canceled.
+ * Cannot just be a {@link RuntimeException}, since {@link DefaultNexusIndexer#scan} would catch it.
  */
-class ClassLoaderFieldValue extends HprofFieldObjectValue {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-    
-    ClassLoaderFieldValue(ClassDump cls, long offset) {
-        super(cls, offset);
+final class Cancellation extends Error {
+
+    public Cancellation() {
+        super("canceled");
     }
-    
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-    
-    public String getName() {
-        return "<classLoader>";  // NOI18N
+
+    private static final Set<Cancellable> cancellables = new WeakSet<Cancellable>();
+
+    public static synchronized void register(Cancellable c) {
+        cancellables.add(c);
     }
-    
-    byte getValueType() {
-        return (byte)HprofHeap.OBJECT;
+
+    public static synchronized boolean cancelAll() {
+        boolean ok = true;
+        for (Cancellable c : cancellables) {
+            boolean result = c.cancel();
+            ok &= result;
+        }
+        return ok;
     }
-    
-    public Instance getInstance() {
-        return classDump.getClassLoader();
-    }
-    
-    long getInstanceID() {
-        return classDump.getClassLoaderId();
-    }
-    
-    Object getTypeValue() {
-        return Long.valueOf(getInstanceID());
-    }
-    
-    
+
 }

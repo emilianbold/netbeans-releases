@@ -418,7 +418,7 @@ public class DependenciesNode extends AbstractNode {
                     }
                     String label = javadoc ? NbBundle.getMessage(DependenciesNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependenciesNode.class, "Progress_Source");
                     AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label, 
-                            contribs, null, null);
+                            contribs, ProgressTransferListener.cancellable(), null);
                     handle.start();
                     try {
                     ProgressTransferListener.setAggregateHandle(handle);
@@ -434,6 +434,7 @@ public class DependenciesNode extends AbstractNode {
                             }
                         }
                     }
+                    } catch (ThreadDeath d) { // download interrupted
                     } finally {
                         handle.finish();
                         ProgressTransferListener.clearAggregateHandle();

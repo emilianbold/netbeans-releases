@@ -45,9 +45,11 @@ package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
 
 import java.awt.Image;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -63,10 +65,14 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
@@ -91,6 +97,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * A sub-class of the J2eePlatformFactory that is set up to return the 
@@ -102,6 +110,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Logger LOGGER = Logger.getLogger(WLJ2eePlatformFactory.class.getName());
 
+    private static final String OPENJPA_JPA_PROVIDER = "org.apache.openjpa.persistence.PersistenceProviderImpl"; // NOI18N
+
+    private static final String ECLIPSELINK_JPA_PROVIDER = "org.eclipse.persistence.jpa.PersistenceProvider"; // NOI18N
+
+    // always prefer JPA 1.0 see #189205
+    private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile("^javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
+
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
@@ -109,52 +124,53 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     }
     
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
-        
+
+        /**
+         * The platform icon's URL
+         */
+        private static final String ICON = "org/netbeans/modules/j2ee/weblogic9/resources/16x16.gif"; // NOI18N
+
         private static final String J2EE_API_DOC    = "docs/javaee6-doc-api.zip";    // NOI18N
+
         private static final Set<Type> MODULE_TYPES = new HashSet<Type>();
+
         static {
             MODULE_TYPES.add(J2eeModule.Type.EAR);
             MODULE_TYPES.add(J2eeModule.Type.WAR);
             MODULE_TYPES.add(J2eeModule.Type.EJB);
         }
 
-        private final Set<Profile> PROFILES = new HashSet<Profile>();
+        private final Set<Profile> profiles = new HashSet<Profile>();
+
+        private final WLDeploymentManager dm;
+
+        private final ChangeListener domainChangeListener;
 
         private String platformRoot;
         
         private LibraryImplementation[] libraries = null;
-        
-        /**
-         * The platform icon's URL
-         */
-        private static final String ICON = "org/netbeans/modules/" +   // NOI18N
-                "j2ee/weblogic9/resources/16x16.gif";                  // NOI18N
-        
-        /**
-         * The server's deployment manager, to be exact the plugin's wrapper for
-         * it
-         */
-        private final WLDeploymentManager dm;
 
-        private final ChangeListener domainChangeListener;
+        /** <i>GuardedBy("this")</i> */
+        private String defaultJpaProvider;
         
         public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
             
             // Allow J2EE 1.4 Projects
-            PROFILES.add(Profile.J2EE_14);
+            profiles.add(Profile.J2EE_14);
             
             // Check for WebLogic Server 10x to allow Java EE 5 Projects
             String version = WLPluginProperties.getWeblogicDomainVersion(dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR));
             
             if (version != null && version.contains("10")) { // NOI18N
-                PROFILES.add(Profile.JAVA_EE_5);
+                profiles.add(Profile.JAVA_EE_5);
             }
 
             domainChangeListener = new DomainChangeListener(this);
             dm.addDomainChangeListener(WeakListeners.change(domainChangeListener, dm));
         }
-        
+
+        @Override
         public boolean isToolSupported(String toolName) {
             if (J2eePlatform.TOOL_WSGEN.equals(toolName) || J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
                 return true;
@@ -162,8 +178,33 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
                 return false; // to explicitelly emphasise that JSR 109 is not supported
             }
-            if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
+            if ("defaultPersistenceProviderJavaEE5".equals(toolName)) { // NOI18N
                 return true;
+            }
+
+            // shortcut
+            if (!"openJpaPersistenceProviderIsDefault".equals(toolName) // NOI18N
+                    && !"eclipseLinkPersistenceProviderIsDefault".equals(toolName) // NOI18N
+                    && !OPENJPA_JPA_PROVIDER.equals(toolName)
+                    && !ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
+                return false;
+            }
+
+            // JPA provider part
+            String currentDefaultJpaProvider = getDefaultJpaProvider();
+            if ("openJpaPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
+                return currentDefaultJpaProvider.equals(OPENJPA_JPA_PROVIDER);
+            }
+            if ("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
+                return currentDefaultJpaProvider.equals(ECLIPSELINK_JPA_PROVIDER);
+            }
+
+            // TODO is both providers supported even when the other one is configured
+            if (OPENJPA_JPA_PROVIDER.equals(toolName)) {
+                return currentDefaultJpaProvider.equals(OPENJPA_JPA_PROVIDER);
+            }
+            if (ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
+                return currentDefaultJpaProvider.equals(ECLIPSELINK_JPA_PROVIDER);
             }
             return false;
         }
@@ -178,7 +219,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Set<Profile> getSupportedProfiles() {
-            return PROFILES;
+            return profiles;
         }
 
         @Override
@@ -309,7 +350,47 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             libraries = new LibraryImplementation[1];
             libraries[0] = library;
         }
-        
+
+        private String getDefaultJpaProvider() {
+            synchronized (this) {
+                if (defaultJpaProvider != null) {
+                    return defaultJpaProvider;
+                }
+            }
+
+            // XXX we could use JPAMBean for remote instances
+            String newDefaultJpaProvider = null;
+            FileObject config = WLPluginProperties.getDomainConfigFileObject(dm);
+            if (config != null) {
+                try {
+                    SAXParserFactory factory = SAXParserFactory.newInstance();
+                    SAXParser parser = factory.newSAXParser();
+                    JPAHandler handler = new JPAHandler();
+                    InputStream is = new BufferedInputStream(config.getInputStream());
+                    try {
+                        parser.parse(is, handler);
+                        newDefaultJpaProvider = handler.getDefaultJPAProvider();
+                    } finally {
+                        is.close();
+                    }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                } catch (ParserConfigurationException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                } catch (SAXException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+            if (newDefaultJpaProvider == null) {
+                newDefaultJpaProvider = OPENJPA_JPA_PROVIDER;
+            }
+
+            synchronized (this) {
+                defaultJpaProvider = newDefaultJpaProvider;
+                return defaultJpaProvider;
+            }
+        }
+
         /**
          * Gets the platform icon. A platform icon is the one that appears near
          * the libraries attached to j2ee project.
@@ -349,7 +430,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
-                            return name.startsWith("javax.persistence"); // NOI18N
+                            return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
                         }
                     });
                     if (persistenceCandidates.length > 0) {
@@ -391,8 +472,12 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     String value = attrs.getValue("Class-Path"); //NOI18N
                     if (value != null) {
                         String[] values = value.split("\\s+"); // NOI18N
-                        FileObject baseDir = FileUtil.toFileObject(
-                                FileUtil.normalizeFile(new File(new File(getPlatformRoot(), "server"), "lib"))); // NOI18N
+                        FileObject baseDir = null;
+                        File serverLib = WLPluginProperties.getServerLibDirectory(dm);
+                        if (serverLib != null) {
+                            baseDir = FileUtil.toFileObject(FileUtil.normalizeFile(serverLib));
+                        }
+
                         if (baseDir != null) {
                             for (String cpElement : values) {
                                 if (!"".equals(cpElement.trim())) { // NOI18N
@@ -446,6 +531,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public void stateChanged(ChangeEvent e) {
+            synchronized (platform) {
+                platform.defaultJpaProvider = null;
+            }
+
             Set<WLServerLibrary> tmpNewLibraries =
                     new WLServerLibrarySupport(platform.dm).getDeployedLibraries();
             Set<WLServerLibrary> tmpOldLibraries = null;
@@ -477,6 +566,48 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             return !newLibraries.isEmpty();
+        }
+    }
+
+    private static class JPAHandler extends DefaultHandler {
+
+        private String defaultJPAProvider;
+
+        private String value;
+
+        private boolean start;
+
+        public JPAHandler() {
+            super();
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws SAXException {
+            value = null;
+            if ("default-jpa-provider".equals(qName)) { // NOI18N
+                start = true;
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) {
+            if (!start) {
+                return;
+            }
+
+            if ("default-jpa-provider".equals(qName)) { // NOI18N
+                defaultJPAProvider = value;
+                start = false;
+            }
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) {
+            value = new String(ch, start, length);
+        }
+
+        public String getDefaultJPAProvider() {
+            return defaultJPAProvider;
         }
     }
 

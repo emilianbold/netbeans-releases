@@ -407,7 +407,7 @@ public abstract class WebRestSupport extends RestSupport {
                 rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
                 return rc;
             } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
-                RestConfig rc = RestConfig.USER;
+                RestConfig rc = RestConfig.DD;
                 rc.setResourcePath(configPanel.getApplicationPath());
                 rc.setJerseyLibSelected(true);
                 return rc;

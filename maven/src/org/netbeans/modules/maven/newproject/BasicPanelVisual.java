@@ -700,7 +700,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(BasicPanelVisual.class, "Handle_Download"),
                 new ProgressContributor[] {
                     AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                null, null);
+                ProgressTransferListener.cancellable(), null);
         ProgressTransferListener.setAggregateHandle(hndl);
         try {
             hndl.start();
@@ -713,6 +713,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 //            }
             online.resolve(pom, repos, online.getLocalRepository());
             online.resolve(art, repos, online.getLocalRepository());
+        } catch (ThreadDeath d) { // download interrupted
         } finally {
             hndl.finish();
             ProgressTransferListener.clearAggregateHandle();

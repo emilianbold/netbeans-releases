@@ -190,7 +190,7 @@ public final class NbMavenProject {
                     AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                            null, null);
+                            ProgressTransferListener.cancellable(), null);
 
                     boolean ok = true;
                     try {
@@ -205,6 +205,7 @@ public final class NbMavenProject {
                             Exception ex = (Exception)res.getExceptions().get(0);
                             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbMavenProject.class, "MSG_Failed", ex.getLocalizedMessage()));
                         }
+                    } catch (ThreadDeath d) { // download interrupted
                     } finally {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
@@ -382,7 +383,7 @@ public final class NbMavenProject {
                 }
                 String label = javadoc ? NbBundle.getMessage(NbMavenProject.class, "Progress_Javadoc") : NbBundle.getMessage(NbMavenProject.class, "Progress_Source");
                 AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label,
-                        contribs, null, null);
+                        contribs, ProgressTransferListener.cancellable(), null);
                 handle.start();
                 try {
                     ProgressTransferListener.setAggregateHandle(handle);
@@ -391,6 +392,7 @@ public final class NbMavenProject {
                         downloadOneJavadocSources(online, contribs[index], project, a, javadoc);
                         index++;
                     }
+                } catch (ThreadDeath d) { // download interrupted
                 } finally {
                     handle.finish();
                     ProgressTransferListener.clearAggregateHandle();

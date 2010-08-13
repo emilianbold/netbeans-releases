@@ -145,7 +145,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                 AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                            null, null);
+                            ProgressTransferListener.cancellable(), null);
                 ProgressTransferListener.setAggregateHandle(hndl);
                 hndl.start();
                 try {
@@ -211,6 +211,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         // oh well..
                         //NOPMD
                     }
+                } catch (ThreadDeath d) { // download interrupted
                 } finally {
                     hndl.finish();
                     ProgressTransferListener.clearAggregateHandle();

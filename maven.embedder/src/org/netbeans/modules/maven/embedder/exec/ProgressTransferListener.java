@@ -43,12 +43,14 @@
 package org.netbeans.modules.maven.embedder.exec;
 
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.maven.repository.ArtifactTransferEvent;
 import org.apache.maven.repository.ArtifactTransferListener;
 import org.apache.maven.repository.ArtifactTransferResource;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,6 +66,7 @@ public class ProgressTransferListener implements ArtifactTransferListener {
     private static ThreadLocal<Integer> pomCountRef = new ThreadLocal<Integer>();
     private static ThreadLocal<Stack<ProgressContributor>> contribStackRef = new ThreadLocal<Stack<ProgressContributor>>();
     private static ThreadLocal<AggregateProgressHandle> handleRef = new ThreadLocal<AggregateProgressHandle>();
+    private static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean>();
     private static final int POM_MAX = 20;
     /** Creates a new instance of ProgressTransferListener */
     public ProgressTransferListener() {
@@ -85,6 +88,32 @@ public class ProgressTransferListener implements ArtifactTransferListener {
         contribStackRef.remove();
         pomcontribRef.remove();
         pomCountRef.remove();
+        cancel.remove();
+    }
+
+    /**
+     * Produces a token which may be passed to {@link AggregateProgressFactory#createHandle}
+     * in order to permit progress to be canceled.
+     * If an event is received after a cancel request has been made, {@link ThreadDeath} will
+     * be thrown (which you probably also want to catch and handle gracefully).
+     * Must be called by the same thread as will call {@link #setAggregateHandle} and runs the process.
+     * @return a cancellation token
+     */
+    public static Cancellable cancellable() {
+        final AtomicBoolean b = new AtomicBoolean();
+        cancel.set(b);
+        return new Cancellable() {
+            public @Override boolean cancel() {
+                return b.compareAndSet(false, true);
+            }
+        };
+    }
+
+    private static void checkCancel() {
+        AtomicBoolean b = cancel.get();
+        if (b != null && b.get()) {
+            throw new ThreadDeath();
+        }
     }
 
     private String getResourceName(ArtifactTransferResource res) {
@@ -151,6 +180,7 @@ public class ProgressTransferListener implements ArtifactTransferListener {
     }
     
     public void transferProgress(ArtifactTransferEvent ate) {
+        checkCancel();
         if (contribRef.get() == null) {
             return;
         }
