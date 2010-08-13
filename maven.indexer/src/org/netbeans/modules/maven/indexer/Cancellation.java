@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.maven.indexer;
 
+import java.util.Set;
+import org.openide.util.Cancellable;
+import org.openide.util.WeakSet;
 import org.sonatype.nexus.index.DefaultNexusIndexer;
 
 /**
@@ -52,6 +55,21 @@ final class Cancellation extends Error {
 
     public Cancellation() {
         super("canceled");
+    }
+
+    private static final Set<Cancellable> cancellables = new WeakSet<Cancellable>();
+
+    public static synchronized void register(Cancellable c) {
+        cancellables.add(c);
+    }
+
+    public static synchronized boolean cancelAll() {
+        boolean ok = true;
+        for (Cancellable c : cancellables) {
+            boolean result = c.cancel();
+            ok &= result;
+        }
+        return ok;
     }
 
 }

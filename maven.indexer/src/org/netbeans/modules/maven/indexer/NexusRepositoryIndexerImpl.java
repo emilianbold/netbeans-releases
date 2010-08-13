@@ -456,20 +456,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     public void shutdownAll() {
         LOGGER.finer("Shutting Down All Contexts");//NOI18N
+        // Do not acquire write access since that can block waiting for a hung download.
         try {
-            MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
-                @Override
-                public Object run() throws Exception {
-                    if (inited) {
-                        for (IndexingContext ic : indexer.getIndexingContexts().values()) {
-                            LOGGER.finer(" Shutting Down:" + ic.getId());//NOI18N
-                            indexer.removeIndexingContext(ic, false);
-                        }
-                    }
-                    return null;
+            if (inited) {
+                for (IndexingContext ic : indexer.getIndexingContexts().values()) {
+                    LOGGER.log(Level.FINER, "Shutting Down: {0}", ic.getId());
+                    indexer.removeIndexingContext(ic, false);
                 }
-            });
-        } catch (MutexException ex) {
+            }
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }

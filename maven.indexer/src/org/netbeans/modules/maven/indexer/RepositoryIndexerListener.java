@@ -93,6 +93,7 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
 
     public void scanningStarted(IndexingContext ctx) {
         handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
+        Cancellation.register(this);
         if (DEBUG) {
             writer.println("Indexing Repo   : " + (ri!=null? ri.getName():ctx.getId())); //NOI18N
             writer.println("Index Directory : " + ctx.getIndexDirectory().toString());//NOI18N

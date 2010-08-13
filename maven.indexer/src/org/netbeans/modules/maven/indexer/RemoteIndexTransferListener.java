@@ -95,6 +95,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     public void transferStarted(TransferEvent arg0) {
         long contentLength = arg0.getResource().getContentLength();
         this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
+        Cancellation.register(this);
         this.units = (int) contentLength / 1024;
         handle.start(units);
         if (debug) {
