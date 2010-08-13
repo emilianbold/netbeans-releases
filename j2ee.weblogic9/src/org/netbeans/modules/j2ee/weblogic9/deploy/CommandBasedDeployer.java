@@ -741,7 +741,7 @@ public final class CommandBasedDeployer {
             // TODO in fact we should look to deployment plan for overrides
             // for now it is as good as previous solution
             if (J2eeModule.Type.WAR.equals(type) || (type == null && file.getName().endsWith(".war"))) { // NOI18N
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 if (fo != null) {
                     configureWarModuleId(moduleId, fo, serverUrl);
                 }
@@ -760,7 +760,7 @@ public final class CommandBasedDeployer {
         try {
             FileObject root = null;
             if (file.isDirectory()) {
-                root = FileUtil.toFileObject(file);
+                root = FileUtil.toFileObject(FileUtil.normalizeFile(file));
             } else {
                 JarFileSystem jfs = new JarFileSystem();
                 jfs.setJarFile(file);
@@ -821,7 +821,7 @@ public final class CommandBasedDeployer {
                     LOGGER.log(Level.INFO, null, ex);
                 }
             }
-            moduleId.setContextURL(serverUrl + "/" + file.getNameExt());
+            moduleId.setContextURL(serverUrl + "/" + file.getNameExt()); // NOI18N
         } else {
             try {
                 String contextRoot = "/" + file.getName(); // NOI18N

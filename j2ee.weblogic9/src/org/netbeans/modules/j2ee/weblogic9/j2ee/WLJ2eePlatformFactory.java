@@ -360,7 +360,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // XXX we could use JPAMBean for remote instances
             String newDefaultJpaProvider = null;
-            FileObject config = WLPluginProperties.getDomainConfigFile(dm);
+            FileObject config = WLPluginProperties.getDomainConfigFileObject(dm);
             if (config != null) {
                 try {
                     SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -472,8 +472,12 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     String value = attrs.getValue("Class-Path"); //NOI18N
                     if (value != null) {
                         String[] values = value.split("\\s+"); // NOI18N
-                        FileObject baseDir = FileUtil.toFileObject(
-                                FileUtil.normalizeFile(new File(new File(getPlatformRoot(), "server"), "lib"))); // NOI18N
+                        FileObject baseDir = null;
+                        File serverLib = WLPluginProperties.getServerLibDirectory(dm);
+                        if (serverLib != null) {
+                            baseDir = FileUtil.toFileObject(FileUtil.normalizeFile(serverLib));
+                        }
+
                         if (baseDir != null) {
                             for (String cpElement : values) {
                                 if (!"".equals(cpElement.trim())) { // NOI18N
