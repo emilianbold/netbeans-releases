@@ -200,11 +200,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
     public boolean checkProjectCanBeProfiled(final Project project, final FileObject profiledClassFile) {
         return true; // no check performed in nbmodule project
     }
-
-    public boolean checkProjectIsModifiedForProfiler(final Project project) {
-        return true;
-    }
-
+    
     private static String getTestType(FileObject testFile) {
         String testPath = testFile.getPath();
         if (testPath.contains(TEST_TYPE_QA_FUNCTIONAL)) return TEST_TYPE_QA_FUNCTIONAL;

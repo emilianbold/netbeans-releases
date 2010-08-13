@@ -135,6 +135,7 @@ public class WLDatasourceManager implements DatasourceManager {
 
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
+        // FIXME use methods from WLPluginproperties
         String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
         File domainPath = FileUtil.normalizeFile(new File(domainDir));
         FileObject domain = FileUtil.toFileObject(domainPath);
@@ -143,7 +144,8 @@ public class WLDatasourceManager implements DatasourceManager {
             domainConfig = domain.getFileObject("config/config.xml"); // NOI18N
         }
 
-        return new HashSet<Datasource>(WLDatasourceSupport.getDatasources(domainPath, domainConfig, true));
+        return new HashSet<Datasource>(
+                WLDatasourceSupport.getDatasources(domainPath, domainConfig, true));
     }
 
     private Map<String, Datasource> createMap(Set<Datasource> datasources) {
