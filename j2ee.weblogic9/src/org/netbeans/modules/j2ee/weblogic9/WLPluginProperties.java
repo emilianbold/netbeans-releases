@@ -174,6 +174,8 @@ public final class WLPluginProperties {
 
     private static final String INSTALL_ROOT_KEY = "installRoot"; // NOI18N
 
+    private static final String FAILED_AUTHENTICATION_REPORTED_KEY = "failedAuthenticationReported"; // NOI18N
+
     private WLPluginProperties() {
         super();
     }
@@ -184,6 +186,14 @@ public final class WLPluginProperties {
 
     public static void setLastServerRoot(String serverRoot) {
         getPreferences().put(INSTALL_ROOT_KEY, serverRoot);
+    }
+
+    public static boolean isFailedAuthenticationReported() {
+        return getPreferences().getBoolean(FAILED_AUTHENTICATION_REPORTED_KEY, true);
+    }
+
+    public static void setFailedAuthenticationReported(boolean reported) {
+        getPreferences().putBoolean(FAILED_AUTHENTICATION_REPORTED_KEY, reported);
     }
 
     @CheckForNull

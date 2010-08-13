@@ -567,24 +567,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
     }
 
-    public void checkFailedAuthentication(String line) {
-        if (line != null && line.contains("failed to be authenticated")) { // NOI18N
-            Mutex.EVENT.readAccess(new Runnable() {
-
-                @Override
-                public void run() {
-                    String title = NbBundle.getMessage(WLDeploymentManager.class, "LBL_Failed_Authentication_Title");
-                    String msg = NbBundle.getMessage(WLDeploymentManager.class, "MSG_Failed_Authentication_Message");
-
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
-                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-                        ServerManager.showCustomizer(uri);
-                    }
-                }
-            });
-        }
-    }
-
     private TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
         if (ids == null) {
             return null;
