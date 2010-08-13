@@ -52,10 +52,13 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -90,7 +93,9 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
     public void initialize(TemplateWizard wizard) {
         WizardDescriptor.Panel folderPanel;
         Project project = Templates.getProject( wizard );
-        folderPanel = Templates.createSimpleTargetChooser(project, null/*sourceGroups*/);
+        Sources sources = project.getLookup().lookup(Sources.class);
+        SourceGroup[] webGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
+        folderPanel = Templates.createSimpleTargetChooser(project, webGroups);
 
         panels = new WizardDescriptor.Panel[] { folderPanel };
 
