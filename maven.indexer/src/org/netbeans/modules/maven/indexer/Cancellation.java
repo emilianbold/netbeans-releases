@@ -37,47 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.maven.indexer;
 
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.openide.modules.ModuleInstall;
-import org.openide.util.Lookup;
+import java.util.Set;
+import org.openide.util.Cancellable;
+import org.openide.util.WeakSet;
+import org.sonatype.nexus.index.DefaultNexusIndexer;
 
-public class Installer extends ModuleInstall {
+/**
+ * Thrown when a task is canceled.
+ * Cannot just be a {@link RuntimeException}, since {@link DefaultNexusIndexer#scan} would catch it.
+ */
+final class Cancellation extends Error {
 
-    @SuppressWarnings("deprecation")
-    public @Override void close() {
-        Logger LOG = Logger.getLogger(Installer.class.getName());
-        if (!Cancellation.cancelAll()) {
-            // Cf. #188883. Hard to kill HTTP connections.
-            for (Thread t : RemoteIndexTransferListener.getActiveTransfersOrScans()) {
-                LOG.log(Level.WARNING, "Killing Maven Repo Transfer thread {0} on system exit...", t.getName());
-                t.interrupt();
-                try {
-                    t.join(1000);
-                } catch (InterruptedException x) {
-                    LOG.log(Level.INFO, null, x);
-                }
-                if (t.isAlive()) {
-                    LOG.warning("...hard stop required.");
-                    t.stop(new Cancellation());
-                }
-            }
+    public Cancellation() {
+        super("canceled");
+    }
+
+    private static final Set<Cancellable> cancellables = new WeakSet<Cancellable>();
+
+    public static synchronized void register(Cancellable c) {
+        cancellables.add(c);
+    }
+
+    public static synchronized boolean cancelAll() {
+        boolean ok = true;
+        for (Cancellable c : cancellables) {
+            boolean result = c.cancel();
+            ok &= result;
         }
-
-        Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);
-        for (RepositoryIndexerImplementation impl : res) {
-            if (impl.getType().equals(RepositoryPreferences.TYPE_NEXUS)) {
-                ((NexusRepositoryIndexerImpl)impl).shutdownAll();
-            }
-        }
+        return ok;
     }
 
 }
