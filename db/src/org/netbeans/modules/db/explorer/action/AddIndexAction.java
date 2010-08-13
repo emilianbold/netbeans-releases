@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -46,6 +46,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
@@ -125,10 +126,10 @@ public class AddIndexAction extends BaseAction {
 
             drvSpec.getColumns(tablename, "%");
             ResultSet rs = drvSpec.getResultSet();
-            HashMap rset = new HashMap();
+            Map<Integer, String> rset = new HashMap<Integer, String>();
             while (rs.next()) {
                 rset = drvSpec.getRow();
-                cols.add((String) rset.get(new Integer(4)));
+                cols.add(rset.get(new Integer(4)));
                 rset.clear();
             }
             rs.close();

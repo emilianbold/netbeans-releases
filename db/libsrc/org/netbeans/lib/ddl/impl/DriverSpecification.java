@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,6 +49,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +60,7 @@ import org.netbeans.lib.ddl.DriverSpecificationFactory;
 public class DriverSpecification {
 
     /** Used DBConnection */
-    private HashMap desc;
+    private Map<Integer, String> desc;
 
     private String catalog, schema;
 
@@ -72,7 +74,7 @@ public class DriverSpecification {
     SpecificationFactory factory;
 
     /** Constructor */
-    public DriverSpecification(HashMap description) {
+    public DriverSpecification(Map<Integer, String> description) {
         desc = description;
         quoteString = null;
     }
@@ -92,20 +94,20 @@ public class DriverSpecification {
         } else
             catalog.trim();
 
-        ResultSet rs;
-        LinkedList list = new LinkedList();
+        ResultSet result;
+        List<String> list = new LinkedList<String>();
 
         try {
-            rs = dmd.getCatalogs();
-            while (rs.next())
-                list.add(rs.getString(1).trim());
-            rs.close();
+            result = dmd.getCatalogs();
+            while (result.next())
+                list.add(result.getString(1).trim());
+            result.close();
         } catch (SQLException exc) {
             Logger.getLogger("global").log(Level.INFO, null, exc);
             
 //            this.catalog = catalog;
             this.catalog = null;  //hack for IBM ODBC driver
-            rs = null;
+            result = null;
             return;
         }
 
@@ -220,9 +222,9 @@ public class DriverSpecification {
         return rs;
     }
 
-    public HashMap getRow() throws SQLException {
-        HashMap rset = new HashMap();
-        Object value;
+    public Map<Integer, String> getRow() throws SQLException {
+        Map<Integer, String> rset = new HashMap<Integer, String>();
+        String value;
 
         try {
             int count = rs.getMetaData().getColumnCount();
@@ -292,7 +294,7 @@ public class DriverSpecification {
             if (dmd.getDatabaseProductName().trim().equals("PointBase")) { //NOI18N
                 //hack for PointBase - DatabaseMetaData methods require quoted arguments for case sensitive identifiers
                 String quoteStr = getQuoteString();
-                if (str != null && !str.equals("%") && !quoteStr.equals("")) //NOI18N
+                if (str != null && !str.equals("%") && !quoteStr.isEmpty()) //NOI18N
                     str = quoteStr + str + quoteStr;
             }
         } catch (SQLException exc) {

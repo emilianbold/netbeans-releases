@@ -47,7 +47,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -211,9 +211,9 @@ public class DatabaseConnector {
         // this code is currently working around a metadata api bug.  the Column instances
         // should be the same, but they aren't always.  so for now we create handles
         // and determine equivalence from there
-        MetadataElementHandle columnHandle = MetadataElementHandle.create(column);
+        MetadataElementHandle<Column> columnHandle = MetadataElementHandle.create(column);
         for (Column col : columnList) {
-            MetadataElementHandle colHandle = MetadataElementHandle.create(col);
+            MetadataElementHandle<Column> colHandle = MetadataElementHandle.create(col);
             if (columnHandle.equals(colHandle)) {
                 result = true;
                 break;
@@ -229,11 +229,11 @@ public class DatabaseConnector {
         // this code is currently working around a metadata api bug.  the Column instances
         // should be the same, but they aren't always.  so for now we create handles
         // and determine equivalence from there
-        MetadataElementHandle columnHandle = MetadataElementHandle.create(column);
+        MetadataElementHandle<Column> columnHandle = MetadataElementHandle.create(column);
         for (Index idx : columnList) {
             Collection<IndexColumn> cols = idx.getColumns();
             for (IndexColumn col : cols) {
-                MetadataElementHandle colHandle = MetadataElementHandle.create(col);
+                MetadataElementHandle<IndexColumn> colHandle = MetadataElementHandle.create(col);
                 if (columnHandle.equals(colHandle)) {
                     result = true;
                     break;
@@ -277,19 +277,20 @@ public class DatabaseConnector {
             if (rs != null) {
                 boolean ok = rs.next();
                 if (ok) {
-                    HashMap rset = drvSpec.getRow();
+                    @SuppressWarnings("unchecked")
+                    Map<Integer, String> rset = drvSpec.getRow();
 
                     try {
                         //hack because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info - shouln't be thrown
-                        col.setColumnType(Integer.parseInt((String) rset.get(new Integer(5))));
-                        col.setColumnSize(Integer.parseInt((String) rset.get(new Integer(7))));
+                        col.setColumnType(Integer.parseInt(rset.get(new Integer(5))));
+                        col.setColumnSize(Integer.parseInt(rset.get(new Integer(7))));
                     } catch (NumberFormatException exc) {
                         col.setColumnType(0);
                         col.setColumnSize(0);
                     }
 
-                    col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
-                    col.setDefaultValue((String) rset.get(new Integer(13)));
+                    col.setNullAllowed((rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
+                    col.setDefaultValue(rset.get(new Integer(13)));
                     rset.clear();
                 } else {
                     Logger.getLogger(DatabaseConnector.class.getName()).log(Level.INFO, "Empty ResultSet for {0}.{1} in catalog {2}",
