@@ -408,8 +408,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             } else {
                 LOGGER.finer("Indexing Local Repository :" + repo.getId());//NOI18N
-                indexer.scan(indexingContext, new RepositoryIndexerListener(indexer, indexingContext), updateLocal);
+                RepositoryIndexerListener listener = new RepositoryIndexerListener(indexer, indexingContext);
+                try {
+                    indexer.scan(indexingContext, listener, updateLocal);
+                } finally {
+                    listener.scanningFinished(null, null);
+                }
             }
+        } catch (Cancellation x) {
+            LOGGER.log(Level.INFO, "canceled indexing of {0}", repo.getId());
         } catch (IOException iOException) {
             LOGGER.warning(iOException.getMessage());//NOI18N
             //handle index not found
