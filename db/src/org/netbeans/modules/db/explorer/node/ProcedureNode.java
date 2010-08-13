@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.node.BaseNode;
@@ -81,7 +84,13 @@ public class ProcedureNode extends BaseNode {
      * @return the ProcedureNode instance
      */
     public static ProcedureNode create(NodeDataLookup dataLookup, NodeProvider provider) {
-        ProcedureNode node = new ProcedureNode(dataLookup, provider);
+        DatabaseConnection conn = dataLookup.lookup(DatabaseConnection.class);
+        ProcedureNode node;
+        if (conn != null && "MySQL".equalsIgnoreCase(conn.getDriverName())) { // NOI18N
+            node = new MySQL(dataLookup, provider);
+        } else {
+            node = new ProcedureNode(dataLookup, provider);
+        }
         node.setup();
         return node;
     }
@@ -197,15 +206,111 @@ public class ProcedureNode extends BaseNode {
             Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting procedure " + getName());
         }
     }
-
+    
+    public boolean isViewSourceSupported() {
+        return false;
+    }
+    
+    public boolean isEditSourceSupported() {
+        return false;
+    }
+    
+    public String getSource() {
+        return "";
+    }
+    
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ProcedureNode.class);
     }
-    
+
     public enum Type {
         Procedure,
         Function,
         Trigger
     }
+    
+    public static class MySQL extends ProcedureNode implements SchemaNameProvider {
+        private final MetadataElementHandle<Procedure> handle;
+        private final DatabaseConnection connection;
+        
+        @SuppressWarnings("unchecked")
+        private MySQL(NodeDataLookup lookup, NodeProvider provider) {
+            super(lookup, provider);
+            connection = getLookup().lookup(DatabaseConnection.class);
+            handle = getLookup().lookup(MetadataElementHandle.class);
+        }
+
+        @Override
+        public boolean isViewSourceSupported() {
+            return true;
+        }
+
+        @Override
+        public String getSource() {
+            String source = "";
+            try {
+                Statement stat = connection.getConnection().createStatement();
+                ResultSet rs = stat.executeQuery("SELECT * FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
+                while(rs.next()) {
+                    //String params = rs.getString("param_list");
+                    source = rs.getString("body"); // NOI18N
+                    //System.out.println(create + "(" + params + ")" + '\n' + code);
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
+            }
+            return source;
+        }
+
+        @Override
+        public String getSchemaName() {
+            MetadataModel metaDataModel = connection.getMetadataModel();
+            final String[] array = new String[1];
+
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                    @Override
+                        public void run(Metadata metaData) {
+                            Procedure view = handle.resolve(metaData);
+                            if (view != null) {
+                                array[0] = view.getParent().getName();
+                            }
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                NodeRegistry.handleMetadataModelException(ProcedureNode.class, connection, e, true);
+            }
+
+            return array[0];
+        }
+
+        @Override
+        public String getCatalogName() {
+            MetadataModel metaDataModel = connection.getMetadataModel();
+            final String[] array = new String[1];
+
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                    @Override
+                        public void run(Metadata metaData) {
+                            Procedure view = handle.resolve(metaData);
+                            if (view != null) {
+                                array[0] = view.getParent().getParent().getName();
+                            }
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                NodeRegistry.handleMetadataModelException(ProcedureNode.class, connection, e, true);
+            }
+
+            return array[0];
+        }
+        
+    }
+    
 }

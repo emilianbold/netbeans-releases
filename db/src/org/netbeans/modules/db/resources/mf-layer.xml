@@ -379,6 +379,16 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
+                    <file name="org-netbeans-modules-db-explorer-action-ViewSourceCodeAction.instance">
+                        <attr name="position" intvalue="70"/>
+                    </file>
+                    <file name="org-netbeans-modules-db-explorer-action-EditSourceCodeAction.instance">
+                        <attr name="position" intvalue="80"/>
+                    </file>
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="90"/>
+                    </file>
                     <file name="org-netbeans-modules-db-explorer-action-ExecuteCommandAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
