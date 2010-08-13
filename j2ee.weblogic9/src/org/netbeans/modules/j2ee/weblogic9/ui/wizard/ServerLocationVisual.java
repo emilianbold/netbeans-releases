@@ -124,8 +124,8 @@ public class ServerLocationVisual extends JPanel {
         }
 
 
-        WLPluginProperties.getInstance().setInstallLocation(location);
-        WLPluginProperties.getInstance().saveProperties();
+        WLPluginProperties.setLastServerRoot(location);
+
         // set the server root in the parent instantiating iterator
         instantiatingIterator.setServerRoot(location);
 
@@ -170,7 +170,7 @@ public class ServerLocationVisual extends JPanel {
         // add server installation directory field
         locationField.setColumns(10);
         locationField.addKeyListener(new LocationKeyListener());
-        String loc = WLPluginProperties.getInstance().getInstallLocation();
+        String loc = WLPluginProperties.getLastServerRoot();
         if (loc != null) { // NOI18N
             locationField.setText(loc);
         }

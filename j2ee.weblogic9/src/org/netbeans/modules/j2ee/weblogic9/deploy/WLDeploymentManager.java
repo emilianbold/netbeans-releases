@@ -211,7 +211,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             // is made from InstanceProperties creation -> WLPluginProperties singleton contains
             // install location of the instance being registered
             if (serverRoot == null) {
-                serverRoot = WLPluginProperties.getInstance().getInstallLocation();
+                serverRoot = WLPluginProperties.getLastServerRoot();
             }
 
             try {
