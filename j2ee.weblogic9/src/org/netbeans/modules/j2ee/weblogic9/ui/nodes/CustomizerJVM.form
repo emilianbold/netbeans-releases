@@ -29,19 +29,12 @@
                       </Group>
                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                              <Component id="memoryOptionsCommentLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="29" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="memoryOptions" alignment="1" pref="405" max="32767" attributes="0"/>
-                          <Component id="javaHome" alignment="1" pref="405" max="32767" attributes="1"/>
                           <Component id="vendorName" alignment="0" min="-2" pref="111" max="-2" attributes="0"/>
-                          <Component id="vmOptions" alignment="0" pref="405" max="32767" attributes="1"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="10" pref="10" max="10" attributes="0"/>
-                              <Component id="vmOptionsSampleLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="javaHome" alignment="0" pref="540" max="32767" attributes="1"/>
+                          <Component id="vmOptions" alignment="0" pref="540" max="32767" attributes="1"/>
+                          <Component id="memoryOptions" alignment="0" pref="540" max="32767" attributes="0"/>
+                          <Component id="vmOptionsSampleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="memoryOptionsCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -76,7 +69,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="memoryOptionsCommentLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="126" max="32767" attributes="0"/>
+              <EmptySpace pref="127" max="32767" attributes="0"/>
               <Component id="noteChangesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

@@ -64,6 +64,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,7 +108,7 @@ public class ServerLocationVisual extends JPanel {
             return false;
         }
         
-        File serverRoot = new File(location);
+        File serverRoot = FileUtil.normalizeFile(new File(location));
         Version version = WLPluginProperties.getVersion(serverRoot);
 
         if (!WLPluginProperties.isSupportedVersion(version)) {
