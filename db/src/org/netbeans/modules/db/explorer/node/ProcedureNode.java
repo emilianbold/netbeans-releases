@@ -37,21 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -155,7 +163,39 @@ public class ProcedureNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage (ProcedureNode.class, "ND_Procedure"); //NOI18N
+        switch (type) {
+            case Function:
+                return NbBundle.getMessage (ProcedureNode.class, "ND_Function"); //NOI18N
+            case Procedure:
+                return NbBundle.getMessage (ProcedureNode.class, "ND_Procedure"); //NOI18N
+            case Trigger:
+                return NbBundle.getMessage (ProcedureNode.class, "ND_Trigger"); //NOI18N;
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public boolean canDestroy() {
+        DatabaseConnector connector = connection.getConnector();
+        return connector.supportsCommand(Specification.DROP_PROCEDURE);
+    }
+
+    @Override
+    public void destroy() {
+        DatabaseConnector connector = connection.getConnector();
+        Specification spec = connector.getDatabaseSpecification();
+
+        try {
+            AbstractCommand command = spec.createCommandDropProcedure(getName());
+            command.execute();
+            remove();
+        } catch (DDLException e) {
+            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting procedure " + getName());
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch (Exception e) {
+            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting procedure " + getName());
+        }
     }
 
     @Override

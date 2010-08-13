@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer;
@@ -306,9 +306,9 @@ public class DatabaseConnector {
     }
 
     public boolean supportsCommand(String cmd) {
-        boolean supported = true;
+        boolean supported = spec.getCommandProperties(cmd) != null;
 
-        if (spec.getCommandProperties(cmd).containsKey("Supported")) {
+        if (supported && spec.getCommandProperties(cmd).containsKey("Supported")) {
             supported = spec.getCommandProperties(cmd).get("Supported").toString().equals("true");
         }
 

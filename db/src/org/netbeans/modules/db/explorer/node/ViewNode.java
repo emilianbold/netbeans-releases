@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -145,7 +145,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
             command.execute();
             remove();
         } catch (DDLException e) {
-            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting procedure " + getName());
+            Logger.getLogger(ViewNode.class.getName()).log(Level.INFO, e + " while deleting view " + getName());
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
