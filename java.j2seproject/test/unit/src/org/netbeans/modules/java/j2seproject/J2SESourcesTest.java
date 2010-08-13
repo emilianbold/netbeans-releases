@@ -63,6 +63,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -98,7 +99,7 @@ public class J2SESourcesTest extends NbTestCase {
         return 300000;
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         MockLookup.setLayersAndInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
@@ -109,9 +110,9 @@ public class J2SESourcesTest extends NbTestCase {
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null); //NOI18N        
         J2SEProjectGenerator.setDefaultSourceLevel(null);
-        sources = this.getFileObject(projdir, "src");
-        build = this.getFileObject (scratch, "build");
-        classes = this.getFileObject(build,"classes");
+        sources = getFileObject(projdir, "src");
+        build = getFileObject (scratch, "build");
+        classes = getFileObject(build,"classes");
         File f = FileUtil.normalizeFile (FileUtil.toFile(build));
         String path = f.getAbsolutePath ();
 //#47657: SourcesHelper.remarkExternalRoots () does not work on deleted folders
@@ -125,7 +126,7 @@ public class J2SESourcesTest extends NbTestCase {
         assertTrue("Invalid project type", project instanceof J2SEProject);
     }
 
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         scratch = null;
         projdir = null;
         sources = null;
@@ -178,20 +179,20 @@ public class J2SESourcesTest extends NbTestCase {
         assertFalse(g.contains(doc));
     }
 
+    @RandomlyFails // on various builders, and w/o dump despite timeOut
     public void testFiring() throws Exception {
-        final Sources sources = project.getLookup().lookup(Sources.class);
+        final Sources s = project.getLookup().lookup(Sources.class);
         final SourceRoots roots = ((J2SEProject)project).getSourceRoots();
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         assertEquals(2, groups.length);
         class EventCounter implements ChangeListener {            
             final AtomicInteger count = new AtomicInteger();
-
-            public void stateChanged(ChangeEvent e) {
+            public @Override void stateChanged(ChangeEvent e) {
                 count.incrementAndGet();
             }            
-        };
+        }
         final EventCounter counter = new EventCounter();
-        sources.addChangeListener(counter);
+        s.addChangeListener(counter);
         final URL[] oldRootUrls = roots.getRootURLs();
         final String[] oldRootLabels = roots.getRootNames();
         final String[] oldRootProps = roots.getRootProperties();
@@ -207,7 +208,7 @@ public class J2SESourcesTest extends NbTestCase {
         newRootLabels[newRootLabels.length-1] = newRoot.getName();
         roots.putRoots(newRootUrls, newRootLabels);
         assertEquals(1, counter.count.get());
-        groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         assertEquals(3, groups.length);
         //test: removing of src root should fire once
         counter.count.set(0);
@@ -219,7 +220,7 @@ public class J2SESourcesTest extends NbTestCase {
         }
         roots.putRoots(newRootUrls, newRootLabels);
         assertEquals(1, counter.count.get());
-        groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         assertEquals(2, groups.length);
     }
     
