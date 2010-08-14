@@ -51,6 +51,7 @@ import org.apache.jasper.Options;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.TagPluginManager;
 import org.apache.jasper.runtime.TldScanner;
+import org.apache.jasper.xmlparser.ParserUtils;
 
 /**
  *
@@ -73,6 +74,8 @@ public class OptionsImpl implements Options {
 
     /** Creates a new instance of OptionsImpl */
     public OptionsImpl(ServletContext context) {
+        ParserUtils.setSchemaResourcePrefix("/resources/schemas/");
+        ParserUtils.setDtdResourcePrefix("/resources/dtds/");
         scanner = new TldScanner(context, true);
         jspConfig = new JspConfig(context);
         tagPluginManager = new TagPluginManager(context);

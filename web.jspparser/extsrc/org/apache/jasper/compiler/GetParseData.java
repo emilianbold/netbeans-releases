@@ -107,6 +107,10 @@ public class GetParseData {
     public Throwable getParseException() {
         return parseException;
     }
+    
+    public void setParseException(Throwable t) {
+        this.parseException = t;
+    }
 
     /** Code in this method copied over and adapted from Compiler.generateJava() 
      **/
@@ -485,10 +489,10 @@ public class GetParseData {
         }
     }
     
-    private static Vector getPluginDclsReflect(PageInfo pageInfo) {
+    private static List<String> getPluginDclsReflect(PageInfo pageInfo) {
         initPageInfoFields();
         try {
-            return (Vector)pluginDclsF.get(pageInfo);
+            return (List<String>)pluginDclsF.get(pageInfo);
         } catch (IllegalAccessException e) {
             LOGGER.log(Level.INFO, null, e);
             throw new RuntimeException();
