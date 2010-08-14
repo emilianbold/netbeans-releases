@@ -49,9 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -59,18 +57,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -114,17 +109,12 @@ public final class CommandBasedDeployer {
 
     private static final int TIMEOUT = 300000;
 
-    private static final Pattern LIST_APPS_PATTERN = Pattern.compile("\\s+(.*)"); // NOI18N
-
     private static boolean showConsole = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");
 
-    private final WLDeploymentFactory factory;
+    private final WLDeploymentManager deploymentManager;
 
-    private final InstanceProperties ip;
-
-    public CommandBasedDeployer(WLDeploymentFactory factory, InstanceProperties ip) {
-        this.factory = factory;
-        this.ip = ip;
+    public CommandBasedDeployer(WLDeploymentManager deploymentManager) {
+        this.deploymentManager = deploymentManager;
     }
 
     public ProgressObject directoryDeploy(final Target target, String name,
@@ -176,6 +166,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed",
                                         lineProcessor.getLastLine())));
+                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -243,9 +234,10 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed",
                                         lineProcessor.getLastLine())));
+                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
                             break;
                         } else {
-                            waitForUrlReady(factory, module, progress);
+                            waitForUrlReady(module, progress);
                             continue;
                         }
                     } catch (InterruptedException ex) {
@@ -311,6 +303,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed",
                                         lineProcessor.getLastLine())));
+                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -382,6 +375,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed",
                                         lineProcessor.getLastLine())));
+                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -445,6 +439,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed",
                                         lineProcessor.getLastLine())));
+                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -511,6 +506,7 @@ public final class CommandBasedDeployer {
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                 NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed",
                                     lineProcessor.getLastLine())));
+                        deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
                     } else {
                         //waitForUrlReady(factory, moduleId, progress);
                         progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
@@ -575,6 +571,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed",
                                         lineProcessor.getLastLine())));
+                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
                             break;
                         } else {
                             //waitForUrlReady(factory, moduleId, progress);
@@ -617,6 +614,7 @@ public final class CommandBasedDeployer {
     private ExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
+        InstanceProperties ip = deploymentManager.getInstanceProperties();
         String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
         String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
 
@@ -660,6 +658,7 @@ public final class CommandBasedDeployer {
     }
 
     private String getClassPath() {
+        InstanceProperties ip = deploymentManager.getInstanceProperties();
         String serverRoot = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         if (serverRoot != null) {
             File file = new File(serverRoot, WEBLOGIC_JAR_PATH);
@@ -686,8 +685,8 @@ public final class CommandBasedDeployer {
         return javaBinary;
     }
 
-    private static void waitForUrlReady(WLDeploymentFactory factory,
-            TargetModuleID moduleID, WLProgressObject progressObject) throws InterruptedException, TimeoutException {
+    private static void waitForUrlReady(TargetModuleID moduleID,
+            WLProgressObject progressObject) throws InterruptedException, TimeoutException {
 
         String webUrl = moduleID.getWebURL();
         if (webUrl == null) {
@@ -702,11 +701,11 @@ public final class CommandBasedDeployer {
             }
 
         }
-        waitForUrlReady(factory, webUrl, progressObject);
+        waitForUrlReady(webUrl, progressObject);
     }
 
-    private static void waitForUrlReady(WLDeploymentFactory factory,
-            String webUrl, WLProgressObject progressObject) throws InterruptedException, TimeoutException {
+    private static void waitForUrlReady(String webUrl,
+            WLProgressObject progressObject) throws InterruptedException, TimeoutException {
 
         if (webUrl != null) {
             try {

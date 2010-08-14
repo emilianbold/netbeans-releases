@@ -113,7 +113,7 @@ final class ViewBuilder {
     private int docViewEndOffset;
 
     private boolean createLocalViews; // Whether children of paragraph views are created
-
+    
     /**
      * Construct view builder.
      * @param paragraphView paragraph view in which a first replace will occur.
@@ -517,6 +517,7 @@ final class ViewBuilder {
         }
 
         // Repaint removed paragraph views
+        dReplace.retainSpans(); // Attempt to retain spans of paragraph views
         EditorBoxView.ReplaceResult dResult = dReplace.replaceViews(0, docViewBounds);
         if (dResult != null) {
             if (dResult.isPreferenceChanged()) {

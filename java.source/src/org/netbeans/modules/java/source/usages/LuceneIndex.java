@@ -89,6 +89,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.impl.indexing.lucene.IndexCacheFactory;
@@ -119,7 +120,6 @@ class LuceneIndex extends Index implements Evictable {
 
     //@GuardedBy (this)
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
-    private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
     private Analyzer analyzer;  //Analyzer used to store documents
     private volatile boolean closed;
     private volatile Boolean validCache;
@@ -159,14 +159,14 @@ class LuceneIndex extends Index implements Evictable {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
         }
-        final AtomicBoolean cancel = this.cancel.get();
-        assert cancel != null;        
+        final AtomicBoolean _cancel = cancel.get();
+        assert _cancel != null;        
         final BitSet bs = new BitSet(in.maxDoc());
         final Collector c = QueryUtil.createBitSetCollector(bs);
         final Searcher searcher = new IndexSearcher(in);
         try {
             for (Query q : queries) {
-                if (cancel.get()) {
+                if (_cancel.get()) {
                     throw new InterruptedException ();
                 }
                 searcher.search(q, c);
@@ -175,14 +175,53 @@ class LuceneIndex extends Index implements Evictable {
             searcher.close();
         }        
         for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-            if (cancel.get()) {
+            if (_cancel.get()) {
                 throw new InterruptedException ();
             }
             final Document doc = in.document(docNum, selector);
-            final T value = convertor.convert(doc);
-            if (value != null) {
-                result.add (value);
+            try {
+                final T value = convertor.convert(doc);
+                if (value != null) {
+                    result.add (value);
+                }
+            } catch (ResultConvertor.Stop stop) {
+                //Stop not supported not needed
             }
+        }
+    }
+    
+    @Override
+    public <T> void queryTerms(
+            final @NullAllowed Term seekTo,
+            final @NonNull ResultConvertor<Term,T> filter,
+            final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
+        
+        checkPreconditions();        
+        final IndexReader in = getReader();
+        if (in == null) {
+            return;
+        }
+        final AtomicBoolean _cancel = cancel.get();
+        assert _cancel != null;
+
+        final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
+        try {
+            do {
+                if (_cancel.get()) {
+                    throw new InterruptedException ();
+                }
+                final Term currentTerm = terms.term();
+                if (currentTerm != null) {                    
+                    final T vote = filter.convert(currentTerm);
+                    if (vote != null) {
+                        result.add(vote);
+                    }
+                }
+            } while (terms.next());
+        } catch (ResultConvertor.Stop stop) {
+            //Stop iteration of TermEnum
+        } finally {
+            terms.close();
         }
     }
 
@@ -318,9 +357,13 @@ class LuceneIndex extends Index implements Evictable {
                 throw new InterruptedException ();
             }
             final Document doc = in.document(docNum.getKey(), DocumentUtil.declaredTypesFieldSelector());
-            final T key = convertor.convert(doc);
-            if (key != null) {
-                result.put (key,docNum.getValue());
+            try {
+                final T key = convertor.convert(doc);
+                if (key != null) {
+                    result.put (key,docNum.getValue());
+                }
+            } catch (ResultConvertor.Stop stop) {
+                //Stop not supported, not needed
             }
         }
     }
@@ -436,75 +479,6 @@ class LuceneIndex extends Index implements Evictable {
         }
     }
 
-    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws IOException, InterruptedException {
-        checkPreconditions();
-        if (directOnly && this.rootPkgCache != null && prefix.length() == 0) {
-                result.addAll(this.rootPkgCache);
-                return;
-        }
-        final IndexReader in = getReader();
-        if (in == null) {
-            return;
-        }
-        final AtomicBoolean cancel = this.cancel.get();
-        assert cancel != null;
-        final Term pkgTerm = DocumentUtil.packageNameTerm (prefix);
-        final String prefixField = pkgTerm.field();
-        if (prefix.length() == 0) {
-            if (directOnly) {
-                this.rootPkgCache = new HashSet<String>();
-            }
-            final TermEnum terms = in.terms ();
-            try {
-                do {
-                    if (cancel.get()) {
-                        throw new InterruptedException ();
-                    }
-                    final Term currentTerm = terms.term();
-                    if (currentTerm != null && prefixField == currentTerm.field()) {
-                        String pkgName = currentTerm.text();
-                        if (directOnly) {
-                            int index = pkgName.indexOf('.',prefix.length());
-                            if (index>0) {
-                                pkgName = pkgName.substring(0,index);
-                            }
-                            this.rootPkgCache.add(pkgName);
-                        }
-                        result.add(pkgName);
-                    }
-                } while (terms.next());
-            } finally {
-                terms.close();
-            }
-        }
-        else {
-            final TermEnum terms = in.terms (pkgTerm);
-            try {
-                do {
-                    if (cancel.get()) {
-                        throw new InterruptedException ();
-                    }
-                    final Term currentTerm = terms.term();
-                    if (currentTerm != null && prefixField == currentTerm.field() && currentTerm.text().startsWith(prefix)) {
-                        String pkgName = currentTerm.text();
-                        if (directOnly) {
-                            int index = pkgName.indexOf('.',prefix.length());
-                            if (index>0) {
-                                pkgName = pkgName.substring(0,index);
-                            }
-                        }
-                        result.add(pkgName);
-                    }
-                    else {
-                        break;
-                    }
-                } while (terms.next());
-            } finally {
-                terms.close();
-            }
-        }
-    }
-
     public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -522,7 +496,6 @@ class LuceneIndex extends Index implements Evictable {
     private void _store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
         checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
-        this.rootPkgCache = null;
         boolean create = !exists();
         final IndexWriter out = getWriter(create);
         try {
@@ -559,7 +532,6 @@ class LuceneIndex extends Index implements Evictable {
     private void _store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
         checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
-        this.rootPkgCache = null;
         boolean create = !exists();
         final IndexWriter out = getWriter(create);
         try {
@@ -683,7 +655,6 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private synchronized void _clear() throws IOException {
-        this.rootPkgCache = null;
         this.close (false);
         try {
             final String[] content = this.directory.list();
@@ -757,7 +728,7 @@ class LuceneIndex extends Index implements Evictable {
         close(true);
     }
 
-    public synchronized void close (boolean closeDir) throws IOException {
+    private synchronized void close (boolean closeDir) throws IOException {
         try {
             try {
                 if (this.reader != null) {
@@ -865,7 +836,6 @@ class LuceneIndex extends Index implements Evictable {
             throw new ClassIndexImpl.IndexAlreadyClosedException();
         }
     }
-
 
     private static Directory createDirectory(final File indexFolder) throws IOException {
         assert indexFolder != null;

@@ -158,14 +158,17 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
 
         boolean actionProxy;
         boolean actionContext;
+        boolean annotations;
         try {
             SpecificationVersion current = getModuleInfo().getDependencyVersion("org.openide.awt");
             actionProxy = current == null || current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
             actionContext = current == null || current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
+            annotations = current == null || current.compareTo(new SpecificationVersion("7.26")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, ex);
             actionProxy = false;
             actionContext = false;
+            annotations = false;
         }
         
         String actionPath = getDefaultPackagePath(className + ".java", false); // NOI18N
@@ -191,6 +194,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         replaceTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         replaceTokens.put("DISPLAY_NAME_KEY", actionNameKey); // NOI18N
         replaceTokens.put("MODE", getSelectionMode()); // NOI18N
+        assert category.startsWith("Actions/");
+        replaceTokens.put("CATEGORY", category.substring("Actions/".length())); // NOI18N
+        if (annotations) {
+            replaceTokens.put("ANNOTATIONS", "true"); // NOI18N
+        }
         Set<String> imports = new TreeSet<String>();
         String cName = parseClassName(cookieClasses[0]);
         String cNameVar = Character.toLowerCase(cName.charAt(0)) + cName.substring(1);
@@ -240,22 +248,24 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             importsBuffer.append("import " + imprt + ';' + NEW_LINE); // NOI18N
         }
         replaceTokens.put("IMPORTS", importsBuffer.toString()); // NOI18N
-        cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
-        
-        // Bundle.properties for localized action name
-        String bundlePath = getDefaultPackagePath("Bundle.properties", true);
-        cmf.add(cmf.bundleKey(bundlePath, actionNameKey, displayName)); // NOI18N
         
         // Copy action icon
         String relativeIconPath = null;
         if (origIconPath != null && FileUtil.toFileObject(new File(origIconPath)) != null) {
             relativeIconPath = addCreateIconOperation(cmf, origIconPath);
+            replaceTokens.put("ICON_RESOURCE", relativeIconPath); // NOI18N
             replaceTokens.put("ICON_RESOURCE_METHOD", DataModel.generateIconResourceMethod(relativeIconPath)); // NOI18N
             replaceTokens.put("INITIALIZE_METHOD", ""); // NOI18N
         } else {
             replaceTokens.put("ICON_RESOURCE_METHOD", ""); // NOI18N
             replaceTokens.put("INITIALIZE_METHOD", DataModel.generateNoIconInitializeMethod()); // NOI18N
         }
+        
+        cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
+        
+        // Bundle.properties for localized action name
+        String bundlePath = getDefaultPackagePath("Bundle.properties", true);
+        cmf.add(cmf.bundleKey(bundlePath, actionNameKey, displayName)); // NOI18N
         
         if (isToolbarEnabled() && largeIconPath != null) {
             addCreateIconOperation(cmf, largeIconPath);
@@ -264,16 +274,36 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // add layer entry about the action
         String instanceFullPath = category + "/" // NOI18N
                 + dashedFqClassName + ".instance"; // NOI18N
-        if (!alwaysEnabled || !actionProxy) {
-            if (!actionContext) {
-                cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null));
+        if (!annotations) {
+            if (!alwaysEnabled || !actionProxy) {
+                if (!actionContext) {
+                    cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null));
+                } else {
+                    Map<String, Object> attrs = new HashMap<String, Object>();
+                    attrs.put("instanceCreate", "methodvalue:org.openide.awt.Actions.context"); // NOI18N
+                    attrs.put("delegate", "methodvalue:org.openide.awt.Actions.inject"); // NOI18N
+                    attrs.put("injectable", getPackageName() + '.' + className); // NOI18N
+                    attrs.put("selectionType", multiSelection ? "ANY" : "EXACTLY_ONE"); // NOI18N
+                    attrs.put("type", fullClassName(cookieClasses[0])); // NOI18N
+                    attrs.put("noIconInMenu", Boolean.FALSE); // NOI18N
+                    if (relativeIconPath != null) {
+                        attrs.put("iconBase", relativeIconPath); // NOI18N
+                    }
+                    attrs.put("displayName", "bundlevalue:" + getPackageName() + ".Bundle#" + actionNameKey); // NOI18N
+                    cmf.add(
+                        cmf.createLayerEntry(
+                            instanceFullPath,
+                            null,
+                            null,
+                            null,
+                            attrs
+                        )
+                    );
+                }
             } else {
-                Map<String, Object> attrs = new HashMap<String, Object>();
-                attrs.put("instanceCreate", "methodvalue:org.openide.awt.Actions.context"); // NOI18N
-                attrs.put("delegate", "methodvalue:org.openide.awt.Actions.inject"); // NOI18N
-                attrs.put("injectable", getPackageName() + '.' + className); // NOI18N
-                attrs.put("selectionType", multiSelection ? "ANY" : "EXACTLY_ONE"); // NOI18N
-                attrs.put("type", fullClassName(cookieClasses[0])); // NOI18N
+                Map<String,Object> attrs = new HashMap<String,Object>();
+                attrs.put("instanceCreate", "methodvalue:org.openide.awt.Actions.alwaysEnabled"); // NOI18N
+                attrs.put("delegate", "newvalue:" + getPackageName() + '.' + className); // NOI18N
                 attrs.put("noIconInMenu", Boolean.FALSE); // NOI18N
                 if (relativeIconPath != null) {
                     attrs.put("iconBase", relativeIconPath); // NOI18N
@@ -289,24 +319,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     )
                 );
             }
-        } else {
-            Map<String,Object> attrs = new HashMap<String,Object>();
-            attrs.put("instanceCreate", "methodvalue:org.openide.awt.Actions.alwaysEnabled"); // NOI18N
-            attrs.put("delegate", "newvalue:" + getPackageName() + '.' + className); // NOI18N
-            attrs.put("noIconInMenu", Boolean.FALSE); // NOI18N
-            if (relativeIconPath != null) {
-                attrs.put("iconBase", relativeIconPath); // NOI18N
-            }
-            attrs.put("displayName", "bundlevalue:" + getPackageName() + ".Bundle#" + actionNameKey); // NOI18N
-            cmf.add(
-                cmf.createLayerEntry(
-                    instanceFullPath,
-                    null,
-                    null,
-                    null,
-                    attrs
-                )
-            );
         }
         
         // add dependency on util to project.xml

@@ -178,7 +178,8 @@ public class SettingsTableModel extends AbstractTableModel {
                     getSettingsTab ().refreshProvider (unitProvider, false);
                 } else {
                     // was enabled -> remove from model and refresh
-                    getSettingsTab ().setNeedRefresh ();
+                    // getSettingsTab ().setNeedRefresh ();
+                    getSettingsTab ().refreshProvider (unitProvider, false);
                 }
             }
             break;

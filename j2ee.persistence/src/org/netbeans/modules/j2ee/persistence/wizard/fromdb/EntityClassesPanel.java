@@ -110,10 +110,15 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private final boolean puRequired;
 
 
-    private EntityClassesPanel(boolean puRequired) {
+    private EntityClassesPanel(boolean puRequired, boolean JAXBRequired) {
         this.puRequired = puRequired;
 
         initComponents();
+
+        if (JAXBRequired) {
+            generateJAXBCheckBox.setSelected(true);
+            generateJAXBCheckBox.setEnabled(false);
+        }
 
         tableActionsPopup.add(new AllToUpdateAction());
         tableActionsPopup.add(new AllToRecreateAction());
@@ -553,11 +558,17 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         private Project project;
         private boolean cmp;
         private boolean puRequired;
+        private boolean JAXBRequired;
 
         private List<Provider> providers;
 
         public WizardPanel(){
             this(false);
+        }
+
+        public WizardPanel(boolean persistenceUnitRequired, boolean JAXBRequired){
+            puRequired = persistenceUnitRequired;
+            this.JAXBRequired = JAXBRequired;
         }
 
         public WizardPanel(boolean persistenceUnitRequired){
@@ -567,7 +578,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         @Override
         public EntityClassesPanel getComponent() {
             if (component == null) {
-                component = new EntityClassesPanel(puRequired);
+                component = new EntityClassesPanel(puRequired, JAXBRequired);
                 component.addChangeListener(this);
             }
             return component;

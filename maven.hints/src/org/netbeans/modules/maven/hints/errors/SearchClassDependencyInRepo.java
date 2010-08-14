@@ -153,11 +153,6 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
                     return Collections.<Fix>emptyList();
                 }
             }
-            case MEMBER_SELECT: {
-
-                return Collections.<Fix>emptyList();
-
-            }
             //genaric handling
 
             case PARAMETERIZED_TYPE:
@@ -255,21 +250,39 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
 
         }
 
-        Token ident = null;
+        String simpleOrQualifiedName = null;
 
-        try {
-            ident = findUnresolvedElementToken(info, offset);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+        // XXX somewhat crude; is there a simpler way?
+        TreePath p = path;
+        while (p != null) {
+            TreePath parent = p.getParentPath();
+            if (parent == null) {
+                break;
+            }
+            Kind parentKind = parent.getLeaf().getKind();
+            if (parentKind == Kind.IMPORT) {
+                simpleOrQualifiedName = p.getLeaf().toString();
+                break;
+            } else if (parentKind == Kind.MEMBER_SELECT || parentKind == Kind.IDENTIFIER) {
+                p = parent;
+            } else {
+                break;
+            }
         }
 
-
-
-        if (ident == null) {
-            return Collections.<Fix>emptyList();
+        if (simpleOrQualifiedName == null) {
+            try {
+                Token<?> ident = findUnresolvedElementToken(info, offset);
+                if (ident == null) {
+                    return Collections.<Fix>emptyList();
+                }
+                simpleOrQualifiedName = ident.text().toString();
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+                return Collections.<Fix>emptyList();
+            }
         }
 
-        String simpleName = ident.text().toString();
         //copyed from ImportClass-end
         if (cancel.get()) {
             return Collections.<Fix>emptyList();
@@ -289,12 +302,12 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
         List<Fix> fixes = new ArrayList<Fix>();
         if (SearchClassDependencyHint.isSearchDialog()) {
 
-            fixes.add(new MavenSearchFix(project, simpleName, isTestSource));
+            fixes.add(new MavenSearchFix(project, simpleOrQualifiedName, isTestSource));
         } else {
             //mkleint: this option is has rather serious performance impact.
             // we need to work on performance before we enable it..
             Collection<NBVersionInfo> findVersionsByClass = filter(mavProj,
-                    RepositoryQueries.findVersionsByClass(simpleName), isTestSource);
+                    RepositoryQueries.findVersionsByClass(simpleOrQualifiedName), isTestSource);
 
 
 
@@ -346,7 +359,7 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
     }
     //copyed from ImportClass
 
-    public static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
+    private static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
         TokenHierarchy<?> th = info.getTokenHierarchy();
         TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
 

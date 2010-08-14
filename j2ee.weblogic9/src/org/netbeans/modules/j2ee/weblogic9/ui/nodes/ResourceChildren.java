@@ -58,8 +58,8 @@ class ResourceChildren extends WLNodeChildren<ResourceNode> {
                 createJDBCNode(lookup),
                     createConnectorsNode(lookup),
                         createJavaMail(lookup),
-                            createLibraries(lookup),
-                                createTuxedoResources(lookup)});
+                            createLibraries(lookup)});
+                                //createTuxedoResources(lookup)});
     } 
 
     private ResourceNode createConnectorsNode( Lookup lookup ) {
