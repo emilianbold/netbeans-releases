@@ -473,7 +473,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     if (value != null) {
                         String[] values = value.split("\\s+"); // NOI18N
                         FileObject baseDir = null;
-                        File serverLib = WLPluginProperties.getServerLibDirectory(dm);
+                        File serverLib = WLPluginProperties.getServerLibDirectory(dm, false);
                         if (serverLib != null) {
                             baseDir = FileUtil.toFileObject(FileUtil.normalizeFile(serverLib));
                         }
