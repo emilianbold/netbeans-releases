@@ -181,10 +181,63 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php");
     }
 
-//    public void test174595_175229() throws Exception {
+    public void test174595_175229() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", options);
+    }
+//--
+    public void test175229_1() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/175229_1.php", options);
+    }
+
+    public void test175229_2() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/175229_2.php", options);
+    }
+
+    //bug transformed to 189562
+//    public void test124273() throws Exception {
 //        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", options);
+//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/124273.php", options);
 //    }
+
+    public void test175425() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/175425.php", options);
+    }
+
+    //bug transformed to 189562
+//    public void test167162_1() throws Exception {
+//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/167162_1.php", options);
+//    }
+
+    //bug transformed to 189562
+//    public void test167162_2() throws Exception {
+//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/167162_2.php", options);
+//    }
+
+    //BUG transformed to 189560
+//    public void test163071() throws Exception {
+//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/163071.php", options);
+//    }
+
+    //BUG transformed to 189562
+//    public void test168187() throws Exception {
+//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/168187.php", options);
+//    }
+
+    public void test175427() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/175427.php", options);
+    }
+
+
+//--
 
     public void test174873_173906_stablePartial() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -284,10 +337,10 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php", new IndentPrefs(5, 5));
     }
 
-//    public void test174595_175229_5_5_stableFixed() throws Exception {
-//
-//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(5, 5));
-//    }
+    public void test174595_175229_5_5_stableFixed() throws Exception {
+
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(5, 5));
+    }
 
     public void test174873_173906_5_5_stablePartial() throws Exception {
 
@@ -390,10 +443,10 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php", new IndentPrefs(10, 10));
     }
 
-//    public void test174595_175229_10_10_stableFixed() throws Exception {
-//
-//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(10, 10));
-//    }
+    public void test174595_175229_10_10_stableFixed() throws Exception {
+
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(10, 10));
+    }
 
     public void test174873_173906_10_10_stablePartial() throws Exception {
 
