@@ -185,7 +185,7 @@ public class PHPFormatterQATest extends PHPTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", options);
     }
-//--
+
     public void test175229_1() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/175229_1.php", options);
@@ -236,7 +236,10 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/175427.php", options);
     }
 
-
+    public void test188810() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/188810.php", options);
+    }
 //--
 
     public void test174873_173906_stablePartial() throws Exception {
