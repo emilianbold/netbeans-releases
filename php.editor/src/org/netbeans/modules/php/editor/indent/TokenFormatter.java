@@ -399,7 +399,7 @@ public class TokenFormatter {
                     String newText = null;
                     String oldText = null;
                     int changeOffset = -1;
-                    int deltaForLastRightParen = 0;
+                    int deltaForLastMoveBeforeLineComment = 0;
                     FormatToken.AnchorToken lastAnchor = null;
 
                     while (index < formatTokens.size()) {
@@ -1211,9 +1211,9 @@ public class TokenFormatter {
                                         hIndex--;
                                     }
                                     if (hIndex > 0 && formatTokens.get(hIndex).getId() == FormatToken.Kind.TEXT
-                                            && ")".equals(formatTokens.get(hIndex).getOldText())) {
-                                        int origDelta = delta;
-                                        delta = replaceString(doc, formatTokens.get(hIndex).getOffset() + 1 - (delta - deltaForLastRightParen), hIndex + 1, "", newText + "{", delta, templateEdit);
+                                            && (")".equals(formatTokens.get(hIndex).getOldText())   // NOI18N
+                                            || "else".equals(formatTokens.get(hIndex).getOldText()))) { // NOI18N
+                                        delta = replaceString(doc, formatTokens.get(hIndex).getOffset() + formatTokens.get(hIndex).getOldText().length() - (delta - deltaForLastMoveBeforeLineComment), hIndex + 1, "", newText + "{", delta, templateEdit); // NOI18N
                                         delta = replaceString(doc, changeOffset, index, oldText, "", delta, templateEdit);
                                         delta = replaceString(doc, formatToken.getOffset(), index, formatToken.getOldText(), "", delta, templateEdit);
                                         newText = null;
@@ -1284,10 +1284,11 @@ public class TokenFormatter {
                                     }
                                     break;
                                 case TEXT:
-                                    if (")".equals(formatToken.getOldText())) {
-                                        // remember the delta for last paren due to
-                                        // possible moving { after the )
-                                        deltaForLastRightParen = delta;
+                                    if (")".equals(formatToken.getOldText())                    // NOI18N
+                                            || "else".equals(formatToken.getOldText())) {       // NOI18N
+                                        // remember the delta for last paren or else keyword due to
+                                        // possible moving { before line comment
+                                        deltaForLastMoveBeforeLineComment = delta;
                                     }
                                     break;
                             }
