@@ -84,6 +84,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
+import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
@@ -166,7 +167,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed",
                                         lineProcessor.getLastLine())));
-                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -234,7 +235,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed",
                                         lineProcessor.getLastLine())));
-                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
                             break;
                         } else {
                             waitForUrlReady(module, progress);
@@ -303,7 +304,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed",
                                         lineProcessor.getLastLine())));
-                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -375,7 +376,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed",
                                         lineProcessor.getLastLine())));
-                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -439,7 +440,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed",
                                         lineProcessor.getLastLine())));
-                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -506,7 +507,7 @@ public final class CommandBasedDeployer {
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                 NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed",
                                     lineProcessor.getLastLine())));
-                        deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
+                        FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
                     } else {
                         //waitForUrlReady(factory, moduleId, progress);
                         progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
@@ -571,7 +572,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed",
                                         lineProcessor.getLastLine())));
-                            deploymentManager.checkFailedAuthentication(lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
                             break;
                         } else {
                             //waitForUrlReady(factory, moduleId, progress);
