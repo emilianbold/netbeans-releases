@@ -118,13 +118,16 @@ final class UtilitiesCompositeActionMap extends ActionMap {
                 if (m != null) {
                     java.util.List<Object> l;
 
+                    Object[] keyList = null;
                     if (all) {
-                        l = java.util.Arrays.asList(m.allKeys());
+                        keyList = m.allKeys();
                     } else {
-                        l = java.util.Arrays.asList(m.keys());
+                        keyList = m.keys();
                     }
 
-                    keys.addAll(l);
+                    if (keyList != null) {
+                        keys.addAll(java.util.Arrays.asList(keyList));
+                    }
                 }
             }
 
