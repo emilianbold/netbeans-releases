@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -77,6 +76,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
     private List<PathResourceImplementation> resources;
     private long eventId;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     private SourcePath (final ClassPath delegate, final boolean bkgComp, final boolean apt) {
         this.delegate = delegate;
         this.manager = ClassIndexManager.getDefault();
@@ -86,6 +86,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         this.apt = apt;
     }
     
+    @Override
     public List<? extends PathResourceImplementation> getResources() {
         long currentEventId;
         synchronized (this) {
@@ -122,16 +123,19 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         return res;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         Parameters.notNull("listener", listener);   //NOI18N
         listeners.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         Parameters.notNull("listener", listener);   //NOI18N
         listeners.removePropertyChangeListener(listener);
     }
     
+    @Override
     public void classIndexAdded(ClassIndexManagerEvent event) {
         if (forcePrefSources) {
             return;
@@ -154,10 +158,11 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         
     }
 
-    public void classIndexRemoved(ClassIndexManagerEvent event) {
-              
+    @Override
+    public void classIndexRemoved(ClassIndexManagerEvent event) {              
     }
     
+    @Override
     public void propertyChange (final PropertyChangeEvent event) {
         synchronized (this) {
             this.resources = null;
@@ -173,6 +178,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         private final PropertyChangeSupport support;
         private final URL[] cache;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public FR (final ClassPath.Entry entry) {
             assert entry != null;
             this.support = new PropertyChangeSupport(this);
@@ -182,27 +188,33 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
             this.cache = new URL[] {entry.getURL()};
         }
 
+        @Override
         public boolean includes(URL root, String resource) {
             assert this.cache[0].equals(root);
             return entry.includes(resource);
         }
 
+        @Override
         public URL[] getRoots() {
             return cache;
         }
 
+        @Override
         public ClassPathImplementation getContent() {
             return null;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             this.support.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             this.support.removePropertyChangeListener(listener);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_INCLUDES.equals(evt.getPropertyName())) {
                 this.support.firePropertyChange(PROP_INCLUDES, null, null);
