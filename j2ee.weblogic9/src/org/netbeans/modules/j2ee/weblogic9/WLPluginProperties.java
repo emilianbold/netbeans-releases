@@ -237,8 +237,14 @@ public final class WLPluginProperties {
     }
 
     @CheckForNull
-    public static File getServerLibDirectory(WLDeploymentManager manager) {
+    public static File getServerLibDirectory(WLDeploymentManager manager, boolean fallback) {
         String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+        // if serverRoot is null, then we are in a server instance registration process, thus this call
+        // is made from InstanceProperties creation -> WLPluginProperties singleton contains
+        // install location of the instance being registered
+        if (fallback && server == null) {
+            server = WLPluginProperties.getLastServerRoot();
+        }
         if (server != null) {
             File serverLib = new File(new File(server), "server" + File.separator + "lib"); // NOI18N
             if (serverLib.exists() && serverLib.isDirectory()) {
