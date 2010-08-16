@@ -51,7 +51,6 @@ import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -254,6 +253,13 @@ public abstract class WebRestSupport extends RestSupport {
         FileObject ddFO = getWebXml();
         WebApp webApp = getWebApp();
         if (webApp == null) {
+            return;
+        }
+        if (webApp.getStatus() == webApp.STATE_INVALID_UNPARSABLE) {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        NbBundle.getMessage(WebRestSupport.class, "MSG_InvalidDD", webApp.getError()),
+                        NotifyDescriptor.ERROR_MESSAGE));
             return;
         }
         boolean needsSave = false;
