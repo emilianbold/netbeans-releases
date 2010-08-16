@@ -495,9 +495,7 @@ public class ProviderUtil {
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
         String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit ? Persistence.VERSION_1_0 : Persistence.VERSION_2_0;
         long top_version=Math.round(Double.parseDouble(version)*100);
-        long exact_version=Math.round(Double.parseDouble(version)*100);
-        Provider top_provider = null;
-        Provider exact_match = null;
+        Provider top_provider=null;
         if(providers == null) providers = getAllProviders();
         for (Provider each : providers){
             if(each.getProviderClass().equals(persistenceUnit.getProvider())){
@@ -510,12 +508,11 @@ public class ProviderUtil {
                     {
                         top_provider=each;
                         top_version=cur_version;
-                        if(cur_version == exact_version) exact_match = each;
                     }
                 }
             }
         }
-        return exact_match == null ? (top_provider == null ? DEFAULT_PROVIDER : top_provider) : exact_match;
+        return top_provider == null ? DEFAULT_PROVIDER : top_provider;
     }
 
     public static String getVersion(Provider provider){
@@ -769,7 +766,7 @@ public class ProviderUtil {
     public static Provider[] getAllProviders() {
         return new Provider[]{
             ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER, HIBERNATE_PROVIDER2_0, HIBERNATE_PROVIDER,
-            KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER1_0, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
+            KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, OPENJPA_PROVIDER1_0, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     
     /**

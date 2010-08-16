@@ -167,9 +167,8 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         LOG.fine("Instantiating...");
         //first add libraries if necessary
         Library lib = null;
-        Provider selectedProvider = null;
         if (descriptor.isContainerManaged()) {
-            selectedProvider=descriptor.getSelectedProvider();
+            Provider selectedProvider=descriptor.getSelectedProvider();
             if (descriptor.isNonDefaultProviderEnabled()) {
                 lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
                 if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
@@ -194,7 +193,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
             PersistenceLibrarySupport.addDriver(project, driver[0]);
         }
         handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_CreatePU"));
-        String version = lib!=null ? PersistenceUtils.getJPAVersion(lib) : (selectedProvider != null ? ProviderUtil.getVersion(selectedProvider) : null);
+        String version = lib!=null ? PersistenceUtils.getJPAVersion(lib) : null;
         try{
             LOG.fine("Retrieving PUDataObject");
             pud = ProviderUtil.getPUDataObject(project, version);
