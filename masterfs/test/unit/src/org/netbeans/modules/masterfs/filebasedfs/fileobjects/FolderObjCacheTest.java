@@ -110,7 +110,11 @@ public class FolderObjCacheTest extends NbTestCase {
         LOG.info("Before mkdir: " + fold);
         fold.mkdir();
         LOG.info("After mkdir: " + fold);
-        assertNotNull("Just created folder shall be visible", workDirFo.getFileObject(fold.getName()));
+        final FileObject okFn = workDirFo.getFileObject(fold.getName());
+        if (okFn == null) {
+            LOG.log(Level.INFO, "show children: {0}", Arrays.toString(workDirFo.getChildren()));
+        }
+        assertNotNull("Just created folder shall be visible", okFn);
         LOG.info("OK, passed thru");
         assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.getFileSystem().refresh(false);
