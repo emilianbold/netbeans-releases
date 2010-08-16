@@ -211,7 +211,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             // is made from InstanceProperties creation -> WLPluginProperties singleton contains
             // install location of the instance being registered
             if (serverRoot == null) {
-                serverRoot = WLPluginProperties.getInstance().getInstallLocation();
+                serverRoot = WLPluginProperties.getLastServerRoot();
             }
 
             try {
@@ -564,24 +564,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
             Set<File> files = new HashSet<File>(Arrays.asList(optionalPackages));
             ProgressObject po = wlDeployer.deployLibraries(files);
             ProgressObjectSupport.waitFor(po);
-        }
-    }
-
-    public void checkFailedAuthentication(String line) {
-        if (line != null && line.contains("failed to be authenticated")) { // NOI18N
-            Mutex.EVENT.readAccess(new Runnable() {
-
-                @Override
-                public void run() {
-                    String title = NbBundle.getMessage(WLDeploymentManager.class, "LBL_Failed_Authentication_Title");
-                    String msg = NbBundle.getMessage(WLDeploymentManager.class, "MSG_Failed_Authentication_Message");
-
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
-                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-                        ServerManager.showCustomizer(uri);
-                    }
-                }
-            });
         }
     }
 

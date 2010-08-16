@@ -61,6 +61,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,13 +69,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -85,10 +85,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * Plugin Properties Singleton class
+ * @author Petr Hejl
  * @author Ivan Sidorkin
  */
-public class WLPluginProperties {
+public final class WLPluginProperties {
     
     public enum Vendor {
         ORACLE("Oracle"),
@@ -172,15 +172,28 @@ public class WLPluginProperties {
     // TODO read from domain-registry.xml instead?
     private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
 
-    private static WLPluginProperties pluginProperties = null;
-    private String installLocation;
+    private static final String INSTALL_ROOT_KEY = "installRoot"; // NOI18N
 
+    private static final String FAILED_AUTHENTICATION_REPORTED_KEY = "failedAuthenticationReported"; // NOI18N
 
-    public static synchronized WLPluginProperties getInstance(){
-        if (pluginProperties == null) {
-            pluginProperties = new WLPluginProperties();
-        }
-        return pluginProperties;
+    private WLPluginProperties() {
+        super();
+    }
+
+    public static String getLastServerRoot() {
+        return getPreferences().get(INSTALL_ROOT_KEY, "");
+    }
+
+    public static void setLastServerRoot(String serverRoot) {
+        getPreferences().put(INSTALL_ROOT_KEY, serverRoot);
+    }
+
+    public static boolean isFailedAuthenticationReported() {
+        return getPreferences().getBoolean(FAILED_AUTHENTICATION_REPORTED_KEY, true);
+    }
+
+    public static void setFailedAuthenticationReported(boolean reported) {
+        getPreferences().putBoolean(FAILED_AUTHENTICATION_REPORTED_KEY, reported);
     }
 
     @CheckForNull
@@ -582,88 +595,8 @@ public class WLPluginProperties {
         return result;
     }
 
-    /** Creates a new instance of */
-    private WLPluginProperties() {
-        java.io.InputStream inStream = null;
-        try {
-            try {
-                propertiesFile = getPropertiesFile();
-                if (null != propertiesFile)
-                    inStream = propertiesFile.getInputStream();
-            } catch (java.io.FileNotFoundException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
-            } catch (java.io.IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
-            } finally {
-                loadPluginProperties(inStream);
-                if (null != inStream)
-                    inStream.close();
-            }
-        } catch (java.io.IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-        }
-
-    }
-
-    void loadPluginProperties(java.io.InputStream inStream) {
-        Properties inProps = new Properties();
-        if (null != inStream)
-            try {
-                inProps.load(inStream);
-            } catch (java.io.IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
-            }
-        String loc = inProps.getProperty(INSTALL_ROOT_KEY);
-        if (loc!=null){// try to get the default value
-            setInstallLocation(loc);
-        }
-    }
-
-    private static final String INSTALL_ROOT_KEY = "installRoot"; // NOI18N
-
-
-    private  FileObject propertiesFile = null;
-
-    private FileObject getPropertiesFile() throws java.io.IOException {
-        FileObject dir = FileUtil.getConfigFile("J2EE");
-        FileObject retVal = null;
-        if (null != dir) {
-            retVal = dir.getFileObject("weblogic","properties"); // NOI18N
-            if (null == retVal) {
-                retVal = dir.createData("weblogic","properties"); //NOI18N
-            }
-        }
-        return retVal;
-    }
-
-
-    public void saveProperties(){
-        Properties outProp = new Properties();
-        String installRoot = getInstallLocation();
-        if (installRoot != null)
-            outProp.setProperty(INSTALL_ROOT_KEY, installRoot);
-
-        FileLock l = null;
-        java.io.OutputStream outStream = null;
-        try {
-            if (null != propertiesFile) {
-                try {
-                    l = propertiesFile.lock();
-                    outStream = propertiesFile.getOutputStream(l);
-                    if (null != outStream)
-                        outProp.store(outStream, "");
-                } catch (java.io.IOException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                } finally {
-                    if (null != outStream)
-                        outStream.close();
-                    if (null != l)
-                        l.releaseLock();
-                }
-            }
-        } catch (java.io.IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-        }
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(WLPluginProperties.class);
     }
 
     private static Collection fileColl = new java.util.ArrayList();
@@ -771,19 +704,6 @@ public class WLPluginProperties {
                 return false;
         }
         return true;
-    }
-
-    public void setInstallLocation(String installLocation){
-        if ( installLocation.endsWith("/") || installLocation.endsWith("\\") ){
-            installLocation = installLocation.substring(0, installLocation.length() - 1 );
-        }
-
-        this.installLocation = installLocation;
-//        WLDeploymentFactory.resetWLClassLoader(installLocation);
-    }
-
-    public String getInstallLocation(){
-        return this.installLocation;
     }
 
 }

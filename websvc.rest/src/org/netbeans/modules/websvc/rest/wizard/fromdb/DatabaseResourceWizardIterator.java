@@ -422,8 +422,8 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
 
-            String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
-            String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey); // NOI18N
+            String wizardBundleKey = "Templates/WebServices/RestServicesFromDatabase"; // NOI18N
+            String wizardTitle = NbBundle.getMessage(EntityResourcesIterator.class, wizardBundleKey); // NOI18N
             boolean javaEE6Project = RestUtils.isJavaEE6(Templates.getProject(wizard));
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()
