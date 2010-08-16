@@ -344,14 +344,17 @@ public class Util {
         Object result = DialogDisplayer.getDefault().notify(nd);
         //add necessary libraries before pu creation
         Library lib = null;
+        Provider selectedProvider = null;
         if (result == createPUButton) {
             if (isContainerManaged) {
                 //TODO: verify if need to add library here
                 PersistenceUnitWizardPanelDS puDS = (PersistenceUnitWizardPanelDS) panel;
-                lib = PersistenceLibrarySupport.getLibrary(puDS.getSelectedProvider());
+                selectedProvider = puDS.getSelectedProvider();
+                lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
             } else {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
-                lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
+                selectedProvider = puJdbc.getSelectedProvider();
+                lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
                 //TODO: verify if don't need to add library here
                 if (lib != null) {
                     addLibraryToProject(project, lib);
@@ -360,7 +363,8 @@ public class Util {
                 PersistenceLibrarySupport.addDriver(project, driver[0]);
             }
         }
-        String version = lib != null ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
+        String version = lib != null ? PersistenceUtils.getJPAVersion(lib) : null;
+        if( version==null ) version = selectedProvider!=null ? ProviderUtil.getVersion(selectedProvider) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 if no library was found
         if (result == createPUButton) {
             PersistenceUnit punit = null;
             if (Persistence.VERSION_2_0.equals(version)) {
@@ -433,7 +437,8 @@ public class Util {
             }
         }
 
-        String version = lib != null ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
+        String version = lib != null ? PersistenceUtils.getJPAVersion(lib) : ProviderUtil.getVersion(provider);//use library if possible it will provide better result
+        if (version == null)version = PersistenceUtils.getJPAVersion(project);
 
         PersistenceUnit punit = null;
         if (Persistence.VERSION_2_0.equals(version)) {
