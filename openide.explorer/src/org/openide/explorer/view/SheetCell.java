@@ -759,7 +759,8 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             return outline.getOutlineModel().getColumnName(column);
         }
         public void propertyChange(PropertyChangeEvent evt) {
-            stopCellEditing();
+            // We get this event while editing
+            stopCellEditingNoCommit();
             if( SwingUtilities.isEventDispatchThread() ) {
                 outline.tableChanged(new TableModelEvent(outline.getModel(), 0, outline.getRowCount()));
             } else {
@@ -776,6 +777,10 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
 
             PropertyPanelBridge.commit(editor);
 
+            return stopCellEditingNoCommit();
+        }
+
+        private boolean stopCellEditingNoCommit() {
             PropertiesRowModel prm = null;
             if (outline instanceof OutlineView.OutlineViewOutline) {
                 OutlineView.OutlineViewOutline ovo = (OutlineView.OutlineViewOutline) outline;
