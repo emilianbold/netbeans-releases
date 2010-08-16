@@ -139,7 +139,6 @@ import org.openide.util.RequestProcessor;
         if (err != null) {
             String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying", remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage());
             err.printf("%s\n", message); // NOI18N
-            err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
             err.printf("%s\n", message); // NOI18N
         }
     }
