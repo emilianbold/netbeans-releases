@@ -14,7 +14,7 @@ import javax.ejb.Stateless;
  *
  * @author ${user}
  */
-@WebService()
+@WebService(serviceName="${name}")
 @Stateless()
 public class ${name} {
 

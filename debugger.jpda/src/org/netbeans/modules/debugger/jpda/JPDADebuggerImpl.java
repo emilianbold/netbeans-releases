@@ -779,8 +779,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 try {
                     ThreadReference t = StackFrameWrapper.thread(sf);
                     JPDAThread tr = getThread(t);
-                    c = tr.getCallStack(0, 1)[0];
-                    csf = (CallStackFrameImpl) c;
+                    CallStackFrame[] stackFrames = tr.getCallStack(0, 1);
+                    if (stackFrames.length > 0) {
+                        c = stackFrames[0];
+                        csf = (CallStackFrameImpl) c;
+                    }
                 } catch (InternalExceptionWrapper ex) {
                 } catch (InvalidStackFrameExceptionWrapper ex) {
                 } catch (VMDisconnectedExceptionWrapper ex) {

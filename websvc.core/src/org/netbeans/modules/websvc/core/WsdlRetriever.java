@@ -61,11 +61,14 @@ import java.util.Iterator;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -73,7 +76,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -184,10 +186,17 @@ public class WsdlRetriever implements Runnable {
             wsdlUrlName = beautifyUrlName(wsdlUrlName);
             wsdlUrl = new URL(wsdlUrlName);
             setState(STATUS_CONNECTING);
-            if (wsdlUrlName.startsWith("https")) { //NOI18N
-                setRetrieverTrustManager();
-            }
             connection = wsdlUrl.openConnection();
+            if (connection instanceof HttpsURLConnection) {
+                SSLSocketFactory sf = getSSLSocketFactory();
+                ((HttpsURLConnection)connection).setSSLSocketFactory(sf);
+                ((HttpsURLConnection)connection).setHostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(String string, SSLSession sSLSession) {
+                        // accept all hosts
+                        return true;
+                    }
+                });
+            }
             in = connection.getInputStream();
             
             setState(STATUS_DOWNLOADING);
@@ -514,7 +523,7 @@ public class WsdlRetriever implements Runnable {
     }
     
     // Install the trust manager for retriever
-    private void setRetrieverTrustManager() {
+    private SSLSocketFactory getSSLSocketFactory() {
         TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() {
@@ -548,15 +557,10 @@ public class WsdlRetriever implements Runnable {
         try {
             SSLContext sslContext = SSLContext.getInstance("SSL"); //NOI18N
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-                public boolean verify(String string, SSLSession sSLSession) {
-                    // accept all hosts
-                    return true;
-                }
-            });
+            return sslContext.getSocketFactory();
         } catch (java.security.GeneralSecurityException e) {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(WsdlRetriever.class.getName()).log(Level.WARNING, "Can not init SSL Context", e);
+            return null;
         }
     
     }

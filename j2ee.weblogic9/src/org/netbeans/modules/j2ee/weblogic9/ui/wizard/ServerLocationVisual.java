@@ -100,7 +100,7 @@ public class ServerLocationVisual extends JPanel {
 
         // check for the validity of the entered installation directory
         // if it's invalid, return false
-        String location = this.getInstallLocation();
+        String location = getInstallLocation();
 
         if (location.trim().length() < 1) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_EMPTY_SERVER_ROOT");  // NOI18N
@@ -109,6 +109,13 @@ public class ServerLocationVisual extends JPanel {
         }
         
         File serverRoot = FileUtil.normalizeFile(new File(location));
+        
+        serverRoot = findServerLocation( serverRoot , wizardDescriptor );
+        if ( serverRoot == null ){
+            return false;
+        }
+        location = serverRoot.getPath();
+        
         Version version = WLPluginProperties.getVersion(serverRoot);
 
         if (!WLPluginProperties.isSupportedVersion(version)) {
@@ -124,13 +131,43 @@ public class ServerLocationVisual extends JPanel {
         }
 
 
-        WLPluginProperties.getInstance().setInstallLocation(location);
-        WLPluginProperties.getInstance().saveProperties();
+        WLPluginProperties.setLastServerRoot(location);
+
         // set the server root in the parent instantiating iterator
         instantiatingIterator.setServerRoot(location);
 
         // everything seems ok
         return true;
+    }
+
+    private File findServerLocation( File candidate , 
+            WizardDescriptor wizardDescriptor) 
+    {
+        if (WLPluginProperties.isGoodServerLocation(candidate)) {
+            return candidate;
+        }
+        else {
+            File[] files = candidate.listFiles();
+            for (File file : files) {
+                String fileName = file.getName();
+                if ( fileName.startsWith("wlserver")){                  // NOI18N
+                    if (WLPluginProperties.isGoodServerLocation(file)){
+                        String msg = NbBundle.getMessage(ServerLocationVisual.class, 
+                                "WARN_CHILD_SERVER_ROOT", candidate.getPath(), 
+                                file.getPath());                        // NOI18N
+                        wizardDescriptor.putProperty(
+                                WizardDescriptor.PROP_WARNING_MESSAGE, 
+                                WLInstantiatingIterator.decorateMessage(msg));
+                        return file;
+                    }
+                }
+            }
+            String msg = NbBundle.getMessage(ServerLocationVisual.class, 
+                    "ERR_INVALID_SERVER_ROOT");  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+                    WLInstantiatingIterator.decorateMessage(msg));
+            return null;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -170,7 +207,7 @@ public class ServerLocationVisual extends JPanel {
         // add server installation directory field
         locationField.setColumns(10);
         locationField.addKeyListener(new LocationKeyListener());
-        String loc = WLPluginProperties.getInstance().getInstallLocation();
+        String loc = WLPluginProperties.getLastServerRoot();
         if (loc != null) { // NOI18N
             locationField.setText(loc);
         }
@@ -202,7 +239,7 @@ public class ServerLocationVisual extends JPanel {
         add(formattingPanel, gridBagConstraints);
     }
 
-     public String getInstallLocation() {
+     private String getInstallLocation() {
         return locationField.getText();
     }
 
