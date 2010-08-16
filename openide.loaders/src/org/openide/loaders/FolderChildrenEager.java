@@ -179,9 +179,10 @@ implements PropertyChangeListener, ChangeListener {
         }
     }
   
+    @Override
     public Node[] getNodes(boolean optimalResult) {
         Node[] res;
-        Object hold;
+        Object hold = null;
 
         if (optimalResult) {
             if (checkChildrenMutex()) {
@@ -190,7 +191,7 @@ implements PropertyChangeListener, ChangeListener {
                 err.fine("getNodes(true): waitProcessingFinished"); // NOI18N
                 RequestProcessor.Task task = refreshChildren();
                 res = getNodes();
-                err.fine("getNodes(true): getNodes: " + res.length); // NOI18N
+                err.log(Level.FINE, "getNodes(true): getNodes: {0}", res.length); // NOI18N
                 task.schedule(0);
                 task.waitFinished();
                 err.fine("getNodes(true): waitFinished"); // NOI18N
@@ -200,7 +201,7 @@ implements PropertyChangeListener, ChangeListener {
             }
         }
         res = getNodes();
-        err.fine("getNodes(boolean): post clear task"); // NOI18N
+        err.log(Level.FINE, "getNodes(boolean): post clear task {0}", hold); // NOI18N
         postClearTask();         // we can clean the references to data objects now
                                  // they are no longer needed
         return res;
