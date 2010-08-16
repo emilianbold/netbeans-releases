@@ -58,7 +58,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.openide.DialogDisplayer;
@@ -167,14 +166,6 @@ public final class Actions extends Object {
 
         public String getName() {
             return NbBundle.getMessage(Select.class, "ACT_Select_Main_Menu"); // NOI18N
-        }
-
-        /** Overriden to have different title in popup menu, works but ugly a bit */
-        @Override
-        public JMenuItem getPopupPresenter() {
-            JMenuItem mi = super.getPopupPresenter();
-            mi.setText(NbBundle.getMessage(Select.class, "ACT_Select")); // NOI18N
-            return mi;
         }
 
         @Override

@@ -57,7 +57,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -279,6 +281,7 @@ public abstract class JavaSourceAccessor {
     public abstract ModificationResult createModificationResult(Map<FileObject, List<Difference>> diffs, Map<?, int[]> tag2Span);
     public abstract Map<FileObject, List<Difference>> getDiffsFromModificationResult(ModificationResult mr);
     public abstract Map<?, int[]> getTagsFromModificationResult(ModificationResult mr);
+    public abstract ClassIndex createClassIndex (@NonNull ClassPath bootPath, @NonNull ClassPath classPath, @NonNull ClassPath sourcePath, boolean supportsChanges);
 
     private static class CancelableTaskWrapper extends JavaParserResultTask implements ClasspathInfoProvider {
         
