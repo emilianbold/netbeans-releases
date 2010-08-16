@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
@@ -389,7 +390,11 @@ public class ParameterInfoSupport {
                             if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
                                 FunctionScope functionScope = (FunctionScope) declaration;
                                 return new ParameterInfo(toParamNames(functionScope), idx, anchor);
+                            } else if (declaration instanceof FunctionElement && occurence.getAllDeclarations().size() == 1) {
+                                FunctionElement functionElement = (FunctionElement) declaration;
+                                return new ParameterInfo(toParamNames(functionElement), idx, anchor);
                             }
+
                         }
                     }
                 }
@@ -410,6 +415,15 @@ public class ParameterInfoSupport {
     private static List<String> toParamNames(FunctionScope functionScope) {
         List<String> paramNames = new ArrayList<String>();
         List<? extends ParameterElement> parameters = functionScope.getParameters();
+        for (ParameterElement parameter : parameters) {
+            paramNames.add(parameter.asString(true));
+        }
+        return paramNames;
+    }
+    @CheckForNull
+    private static List<String> toParamNames(FunctionElement functionElement) {
+        List<String> paramNames = new ArrayList<String>();
+        List<? extends ParameterElement> parameters = functionElement.getParameters();
         for (ParameterElement parameter : parameters) {
             paramNames.add(parameter.asString(true));
         }
