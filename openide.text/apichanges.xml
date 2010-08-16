@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="Editors-TabActions">
+        <api name="text"/>
+        <summary>Ability to inject actions into editor tab context menus</summary>
+        <version major="6" minor="32"/>
+        <date day="16" month="8" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Actions may now be placed in <code>Editors/TabActions</code> to add
+                them to the context menu of the tab of an editor window.
+            </p>
+        </description>
+        <issue number="189320"/>
+    </change>
     <change id="NbDocument-style-constants-deprecated">
         <api name="text"/>
         <summary>Deprecating style constants in NbDocument</summary>
