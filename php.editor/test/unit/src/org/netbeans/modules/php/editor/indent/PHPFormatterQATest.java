@@ -220,10 +220,10 @@ public class PHPFormatterQATest extends PHPTestBase {
     }
 
     //BUG transformed to 189560
-//    public void test163071() throws Exception {
-//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/163071.php", options);
-//    }
+    public void test163071() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/163071.php", options);
+    }
 
     //BUG transformed to 189562
     public void test168187() throws Exception {
