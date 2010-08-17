@@ -180,6 +180,16 @@ public abstract class ElementFilter {
         };
     }
 
+    public static ElementFilter forVirtualExtensions() {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                return element.getElementQuery().getQueryScope().isVirtualScope();
+            }
+        };
+    }
+
     public static ElementFilter forFiles(final FileObject... files) {
         return new ElementFilter() {
 

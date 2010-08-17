@@ -94,7 +94,8 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         "org.netbeans.modules.web.IsServletFile";                       //NOI18N
     
     private static final Set<WebModule> SERVLET_SEARCH_MODULES = new HashSet<WebModule>();
-    private static RequestProcessor SERVLETS_REQUEST_PROCESSOR = new RequestProcessor();
+    private static RequestProcessor SERVLETS_REQUEST_PROCESSOR = 
+        new RequestProcessor(WebReplaceTokenProvider.class);
 
     private Project project;
     private AtomicBoolean   isScanStarted;
