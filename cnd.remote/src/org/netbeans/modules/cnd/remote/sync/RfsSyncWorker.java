@@ -174,8 +174,14 @@ import org.openide.util.RequestProcessor;
         final BufferedReader rcInputStreamReader = ProcessUtils.getReader(rcInputStream, executionEnvironment.isRemote());
         final PrintWriter rcOutputStreamWriter = ProcessUtils.getWriter(rcOutputStream, executionEnvironment.isRemote());
         localController = new RfsLocalController(
-                executionEnvironment, files, rcInputStreamReader,
+                executionEnvironment, files, remoteControllerProcess, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
+
+        // A workaround for remote instable tests failure
+        int sleep = Integer.getInteger("rfs.instable.sleep", 0);
+        if (sleep > 0) {
+            Thread.sleep(sleep);
+        }
 
         if (!localController.init()) {
             remoteControllerProcess.destroy();

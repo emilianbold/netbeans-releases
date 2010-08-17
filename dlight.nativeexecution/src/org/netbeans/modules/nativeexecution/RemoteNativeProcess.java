@@ -107,4 +107,12 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
         }
     }
+
+    public boolean isAlive() {
+        if (streams == null || streams.channel == null) {
+            return false;
+        }
+
+        return streams.channel.isConnected();
+    }
 }
