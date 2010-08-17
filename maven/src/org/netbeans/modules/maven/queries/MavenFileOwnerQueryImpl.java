@@ -51,8 +51,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -62,8 +62,10 @@ import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex.Action;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -73,7 +75,7 @@ import org.openide.util.Mutex.Action;
  *
  * @author  Milos Kleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=97)
+@ServiceProvider(service=FileOwnerQueryImplementation.class, position=97)
 public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     private Set<NbMavenProjectImpl> set;
@@ -84,18 +86,16 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     private final Object cacheLock = new Object();
 
     private PropertyChangeListener projectListener;
-    private final List<ChangeListener> listeners;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     private static final Logger LOG = Logger.getLogger(MavenFileOwnerQueryImpl.class.getName());
     
-    /** Creates a new instance of MavenFileBuiltQueryImpl */
     public MavenFileOwnerQueryImpl() {
         set = new HashSet<NbMavenProjectImpl>();
-        listeners = new ArrayList<ChangeListener>();
         cachedProjects = null;
         projectsToAddToCache = null;
         projectListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     Object evtSource = evt.getSource();
                     if (evtSource instanceof NbMavenProjectImpl) {
@@ -129,7 +129,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public void addMavenProject(NbMavenProjectImpl project) {
         synchronized (setLock) {
             if (!set.contains(project)) {
-                LOG.fine("Adding Maven project:" + project.getArtifactRelativeRepositoryPath());
+                LOG.log(Level.FINE, "Adding Maven project:{0}", project.getArtifactRelativeRepositoryPath());
                 set.add(project);
                 NbMavenProject.addPropertyChangeListener(project, projectListener);
             }
@@ -150,7 +150,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public void removeMavenProject(NbMavenProjectImpl project) {
         synchronized (setLock) {
             if (set.contains(project)) {
-                LOG.fine("Removing Maven project:" + project.getArtifactRelativeRepositoryPath());
+                LOG.log(Level.FINE, "Removing Maven project:{0}", project.getArtifactRelativeRepositoryPath());
                 set.remove(project);
                 NbMavenProject.removePropertyChangeListener(project, projectListener);
             }
@@ -162,26 +162,15 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     }
     
     public void addChangeListener(ChangeListener list) {
-        synchronized (listeners) {
-            listeners.add(list);
-        }
+        cs.addChangeListener(list);
     }
     
     public void removeChangeListener(ChangeListener list) {
-        synchronized (listeners) {
-            listeners.remove(list);
-        }
+        cs.removeChangeListener(list);
     }
     
     private void fireChange() {
-        List<ChangeListener> lst = new ArrayList<ChangeListener>();
-        synchronized (listeners) {
-            lst.addAll(listeners);
-        }
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener change : lst) {
-            change.stateChanged(event);
-        }
+        cs.fireChange();
     }
     
     /**
@@ -193,29 +182,17 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         }
     }
     
-    public Set<FileObject> getOpenedProjectRoots() {
-        Set<FileObject> toRet = new HashSet<FileObject>();
-        synchronized (setLock) {
-            for (NbMavenProjectImpl prj : set) {
-                //TODO have generic and other source roots included to cater for projects with external source roots
-                toRet.add(prj.getProjectDirectory());
-            }
-        }
-        return toRet;
-    }
-    
-    public Project getOwner(URI uri) {
-        LOG.finest("getOwner of uri=" + uri);
+    public @Override Project getOwner(URI uri) {
+        LOG.log(Level.FINEST, "getOwner of uri={0}", uri);
         if (uri.getScheme() != null && "file".equals(uri.getScheme())) { //NOI18N
             File file = new File(uri);
             return getOwner(file);
         }
-        // for some reason nbinst:// protocol can be used as well?? WTF.
         return null;
     }
     
-    public Project getOwner(FileObject fileObject) {
-        LOG.finest("getOwner of fileobject=" + fileObject);
+    public @Override Project getOwner(FileObject fileObject) {
+        LOG.log(Level.FINEST, "getOwner of fileobject={0}", fileObject);
         File file = FileUtil.toFile(fileObject);
         if (file != null) {
             //logger.fatal("getOwner of fileobject=" + fileObject.getNameExt());
@@ -226,7 +203,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     private Project getOwner(File file) {
         //TODO check if the file is from local repo ??
-        LOG.fine("Looking for owner of " + file.getAbsolutePath());
+        LOG.log(Level.FINE, "Looking for owner of {0}", file);
         boolean passBasicCheck = false;
         String nm = file.getName();
         File parentVer = file.getParentFile();
@@ -249,12 +226,12 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         while (it.hasNext()) {
             NbMavenProjectImpl project = it.next();
             String path = project.getArtifactRelativeRepositoryPath();
-            LOG.finest("matching againts known project " + path);
+            LOG.log(Level.FINEST, "matching againts known project {0}", path);
             if (filepath.endsWith(path)) {
                 return project;
             }
             path = project.getTestArtifactRelativeRepositoryPath();
-            LOG.finest("matching againts known project's test " + path);
+            LOG.log(Level.FINEST, "matching againts known project''s test {0}", path);
             if (filepath.endsWith(path)) {
                 return project;
             }
@@ -266,7 +243,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
      
     private Set<NbMavenProjectImpl> getAllKnownProjects() {
         return ProjectManager.mutex().readAccess(new Action<Set<NbMavenProjectImpl>>() {
-            public Set<NbMavenProjectImpl> run() {
+            public @Override Set<NbMavenProjectImpl> run() {
                 synchronized (cacheLock) {
                     // is cachedProjects up-to-date?
                     if (cachedProjects != null && null == projectsToAddToCache) {
@@ -325,8 +302,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             for (Project p : subs) {
                 if (p instanceof NbMavenProjectImpl) {
                     finalset.add((NbMavenProjectImpl) p);
-                    if (!iteratinglist.contains((NbMavenProjectImpl)p))
+                    if (!iteratinglist.contains((NbMavenProjectImpl)p)) {
                         iteratinglist.add((NbMavenProjectImpl) p);
+                    }
                 }
             }
         }
