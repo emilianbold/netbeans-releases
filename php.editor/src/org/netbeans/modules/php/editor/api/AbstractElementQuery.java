@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
 
 /**
  *
@@ -100,7 +101,7 @@ public class AbstractElementQuery implements ElementQuery {
 
     @Override
     public final Set<FieldElement> getFields(Exact classQuery, NameKind fieldQuery) {
-        return getElements(FieldElement.class, fieldQuery);
+        return getElements(FieldElement.class, classQuery, fieldQuery);
     }
 
     @Override
@@ -161,6 +162,11 @@ public class AbstractElementQuery implements ElementQuery {
     @Override
     public final Set<TypeElement> getTypes(NameKind query) {
         return getElements(TypeElement.class, query);
+    }
+
+    @Override
+    public Set<VariableElement> getTopLevelVariables(NameKind query) {
+        return getElements(VariableElement.class, query);
     }
 
     @Override

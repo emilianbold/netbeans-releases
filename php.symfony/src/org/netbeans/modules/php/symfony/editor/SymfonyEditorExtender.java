@@ -110,6 +110,9 @@ public class SymfonyEditorExtender extends EditorExtender {
         if (action == null) {
             return Collections.emptySet();
         }
+        for (PhpBaseElement phpBaseElement : ELEMENTS) {
+            phpBaseElement.setFile(action);
+        }
         final Set<PhpVariable> phpVariables = new HashSet<PhpVariable>();
         try {
             ParserManager.parse(Collections.singleton(Source.create(action)), new UserTask() {
@@ -179,10 +182,10 @@ public class SymfonyEditorExtender extends EditorExtender {
                         }
                         Variable field = node.getField();
                         synchronized (fields) {
-                            fields.add(new PhpVariable(
-                                    "$" + CodeUtils.extractVariableName(field), // NOI18N
-                                    name != null ? new PhpClass(name, fqn) : null,
-                                    action, ASTNodeInfo.toOffsetRangeVar(field).getStart()));
+                            final PhpVariable phpVariable = new PhpVariable("$" + CodeUtils.extractVariableName(field),
+                                    name != null ? new PhpClass(name, fqn) : null, action, ASTNodeInfo.toOffsetRangeVar(field).getStart());
+                            phpVariable.setFile(action);
+                            fields.add(phpVariable);
                         }
                     }
                 }

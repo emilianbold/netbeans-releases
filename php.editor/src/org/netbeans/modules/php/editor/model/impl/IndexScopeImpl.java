@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -107,10 +107,24 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         return retval;
     }
 
-    static Collection<? extends FieldElement> getFields(ClassScope clsScope, String fieldName, ModelElement elem, final int... modifiers) {
+    static Collection<? extends FieldElement> getFields(TypeScope typeScope, String fieldName, ModelElement elem, final int... modifiers) {
         Set<FieldElement> retval = new HashSet<FieldElement>();
-        retval.addAll(ModelUtils.filter(clsScope.getDeclaredFields(), fieldName));
-        retval.addAll(ModelUtils.filter(clsScope.getInheritedFields(), fieldName));
+        if (typeScope instanceof ClassScope) {
+            ClassScope clsScope = (ClassScope)typeScope;
+            retval.addAll(ModelUtils.filter(clsScope.getDeclaredFields(), fieldName));
+            retval.addAll(ModelUtils.filter(clsScope.getInheritedFields(), fieldName));
+        } else {
+            //implemented just for ifaces having fields which isn't normally possible in php
+            //but used in ZF framework - this code could be used probably also for classes having
+            //fields (implemented in the block above) if properly tested
+            IndexScope indexScope = ModelUtils.getIndexScope(typeScope);
+            Index index = indexScope.getIndex();
+            org.netbeans.modules.php.editor.api.elements.ElementFilter forName =
+                    org.netbeans.modules.php.editor.api.elements.ElementFilter.forName(NameKind.exact(fieldName));
+            for (org.netbeans.modules.php.editor.api.elements.FieldElement fieldElement : forName.filter(index.getAlllFields(typeScope))) {
+                retval.add(new FieldElementImpl(typeScope, fieldElement));
+            }
+        }
         return retval;
     }
 

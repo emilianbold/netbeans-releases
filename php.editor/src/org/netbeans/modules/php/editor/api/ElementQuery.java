@@ -70,10 +70,15 @@ public interface ElementQuery {
     public static enum QueryScope {
 
         INDEX_SCOPE,
+        VIRTUAL_SCOPE,
         FILE_SCOPE;
 
         public boolean isIndexScope() {
             return this.equals(INDEX_SCOPE);
+        }
+
+        public boolean isVirtualScope() {
+            return this.equals(VIRTUAL_SCOPE);
         }
 
         public boolean isFileScope() {
@@ -119,7 +124,7 @@ public interface ElementQuery {
         
     Set<TypeConstantElement> getTypeConstants(NameKind constantQuery);
 
-
+    Set<VariableElement> getTopLevelVariables(NameKind query);
 
     Set<NamespaceElement> getNamespaces(NameKind query);
 
@@ -163,8 +168,7 @@ public interface ElementQuery {
         Set<NamespaceElement> getNamespaces(NameKind query, Set<AliasedName> aliasedNames, AliasedElement.Trait trait);
 
         Set<PhpElement> getTopLevelElements(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
-
-        Set<VariableElement> getTopLevelVariables(NameKind query);
+        
 
         Set<MethodElement> getDeclaredConstructors(ClassElement typeElement);
 
