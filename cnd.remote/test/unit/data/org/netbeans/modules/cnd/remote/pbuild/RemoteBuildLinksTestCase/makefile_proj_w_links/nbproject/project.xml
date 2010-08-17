@@ -3,22 +3,18 @@
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>tools</name>
+            <name>makefile_proj_w_links</name>
             <make-project-type>0</make-project-type>
-            <c-extensions>c</c-extensions>
+            <c-extensions/>
             <cpp-extensions/>
-            <header-extensions>h</header-extensions>
+            <header-extensions/>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
                 <sourceRootElem>.</sourceRootElem>
             </sourceRootList>
             <confList>
-                <confElem>Debug32</confElem>
-                <confElem>Debug64</confElem>
-                <confElem>Release32</confElem>
-                <confElem>Release64</confElem>
-                <confElem>Test_filedata_32</confElem>
+                <confElem>Default</confElem>
             </confList>
         </data>
     </configuration>

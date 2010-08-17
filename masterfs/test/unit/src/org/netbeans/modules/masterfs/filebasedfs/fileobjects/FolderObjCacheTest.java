@@ -46,13 +46,13 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -61,6 +61,10 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 public class FolderObjCacheTest extends NbTestCase {
+    static {
+        System.setSecurityManager(FileChangedManager.getInstance());
+    }
+    
     File testFile;
     Logger LOG;
     
@@ -80,7 +84,15 @@ public class FolderObjCacheTest extends NbTestCase {
         return Level.FINEST;
     }
 
-   public void testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache() throws IOException  {
+    public void testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache() throws IOException {
+        doWork(false);
+    }
+
+    public void testFileObjectDistributionWorksAccuratelyAccordingToChildrenCacheWithGC() throws IOException {
+        doWork(true);
+    }
+
+    private void doWork(boolean gc) throws IOException {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
         assertNotNull(workDirFo);        
         assertNotNull(workDirFo.getFileSystem().findResource(workDirFo.getPath()));                
@@ -101,12 +113,19 @@ public class FolderObjCacheTest extends NbTestCase {
         workDirFo.refresh();
         assertNotNull(workDirFo.getFileObject(fold.getName()));        
         assertTrue(existsChild(workDirFo, fold.getName()));        
+        FileObject gcFo = workDirFo.getFileObject(fold.getName());
+        assertNotNull("One exists", gcFo);
         fold.delete();
-        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        workDirFo.refresh();
-        assertNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertNull("Immediatelly invalidated thanks to FileChangedManager", workDirFo.getFileObject(fold.getName()));
         assertFalse(existsChild(workDirFo, fold.getName()));
+        assertFalse("No longer valid", gcFo.isValid());
+        
+        if (gc) {
+            WeakReference<Object> ref = new WeakReference<Object>(gcFo);
+            gcFo = null;
+            assertGC("Can be GCed", ref);
+        }
+        
         LOG.info("Before mkdir: " + fold);
         fold.mkdir();
         LOG.info("After mkdir: " + fold);
@@ -132,9 +151,6 @@ public class FolderObjCacheTest extends NbTestCase {
         assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
         assertTrue(existsChild(workDirFo, fold.getName()));        
         fold.delete();
-        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        workDirFo.getFileSystem().refresh(false);
         assertNull(workDirFo.getFileObject(fold.getName()));                                
         assertFalse(existsChild(workDirFo, fold.getName()));                
     }

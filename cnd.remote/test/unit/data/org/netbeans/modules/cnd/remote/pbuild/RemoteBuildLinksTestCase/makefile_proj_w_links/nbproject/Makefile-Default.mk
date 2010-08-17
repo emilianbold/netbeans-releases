@@ -22,11 +22,11 @@ AS=gas
 
 # Macros
 CND_PLATFORM=GNU-Solaris-x86
-CND_CONF=Release32
+CND_CONF=Default
 CND_DISTDIR=dist
 
 # Include project Makefile
-include Makefile-tools.mk
+include Makefile-makefile_proj_w_links.mk
 
 # Object Directory
 OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
@@ -53,14 +53,14 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	cd . && ${MAKE} DEBUG=-g all
+	cd . && $(MAKE) -f Makefile
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
-	cd . && ${MAKE}  clean
+	cd . && $(MAKE) -f Makefile clean
 
 # Subprojects
 .clean-subprojects:
