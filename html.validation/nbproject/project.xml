@@ -6,15 +6,6 @@
             <code-name-base>org.netbeans.modules.html.validation</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.jing</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -166,6 +157,10 @@
             <class-path-extension>
                 <runtime-relative-path>ext/hs-aelfred2.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/hs-aelfred2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jing.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jing.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/validator.jar</runtime-relative-path>
