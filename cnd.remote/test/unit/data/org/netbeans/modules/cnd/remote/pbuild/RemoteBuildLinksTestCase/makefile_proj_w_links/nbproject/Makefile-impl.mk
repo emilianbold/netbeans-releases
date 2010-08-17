@@ -24,14 +24,14 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=tools
+PROJECTNAME=makefile_proj_w_links
 
 # Active Configuration
-DEFAULTCONF=Debug32
+DEFAULTCONF=Default
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Debug32 Debug64 Release32 Release64 Test_filedata_32 
+ALLCONFS=Default 
 
 
 # build

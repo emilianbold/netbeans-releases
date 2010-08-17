@@ -474,7 +474,7 @@ static int init_files() {
             create_dir(path);
         } else if (state == LINK) { // symbolic link
             char lnk_src[bufsize]; // it is followed by a line that contains the link source
-            if(fgets(lnk_src, sizeof lnk_src, stdin)) {
+            if( !fgets(lnk_src, sizeof lnk_src, stdin)) {
                 report_error("protocol error while reading link info: unexpected EOF\n");
                 return false;
             }
