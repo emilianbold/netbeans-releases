@@ -174,7 +174,7 @@ import org.openide.util.RequestProcessor;
         final BufferedReader rcInputStreamReader = ProcessUtils.getReader(rcInputStream, executionEnvironment.isRemote());
         final PrintWriter rcOutputStreamWriter = ProcessUtils.getWriter(rcOutputStream, executionEnvironment.isRemote());
         localController = new RfsLocalController(
-                executionEnvironment, files, rcInputStreamReader,
+                executionEnvironment, files, remoteControllerProcess, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
         if (!localController.init()) {
