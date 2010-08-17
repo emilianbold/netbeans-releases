@@ -61,6 +61,11 @@ import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpClass.Field;
+import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.editor.api.AbstractElementQuery;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
@@ -110,19 +115,58 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private static Collection<NamespaceElement> namespacesCache = null;
     private final QuerySupport index;
     private final Set<AliasedName> aliases = new HashSet<AliasedName>();
+    private AbstractElementQuery extendedQuery = new AbstractElementQuery(QueryScope.VIRTUAL_SCOPE);
 
     /** Creates a new instance of JsIndex */
     private IndexQueryImpl(QuerySupport index, final Model model) {
         this.index = index;
         if (model != null) {
-            for (final NamespaceScope namespaceScope : model.getFileScope().getDeclaredNamespaces()) {
-                if (namespaceScope != null) {
-                    Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
-                    for (UseElement useElement : declaredUses) {
-                        AliasedName aliasedName = useElement.getAliasedName();
-                        if (aliasedName != null) {
-                            aliases.add(aliasedName);
-                        }
+            init(model);
+        }
+    }
+
+    private void init(final Model model) {
+        initExtendedQuery(model);
+        initAliases(model);
+    }
+
+    /**
+     * Intended to be used for fake additions of aliases that are returned
+     * as if they were in index
+     */
+    private void initAliases(final Model model) {
+        for (final NamespaceScope namespaceScope : model.getFileScope().getDeclaredNamespaces()) {
+            if (namespaceScope != null) {
+                Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
+                for (UseElement useElement : declaredUses) {
+                    AliasedName aliasedName = useElement.getAliasedName();
+                    if (aliasedName != null) {
+                        aliases.add(aliasedName);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Intended to be used for fake additions of frameworks that are returned
+     * as if they were in index
+     */
+    private void initExtendedQuery(final Model model) {
+        //TODO: the best approach would be the frameworks returned ElementQuery instance
+        //and get rid of PhpBaseElement and its subclasses
+        List<PhpBaseElement> extendedElements = model.getExtendedElements();
+        for (PhpBaseElement phpBaseElement : extendedElements) {
+            if (phpBaseElement instanceof PhpVariable) {
+                PhpVariable variable = (PhpVariable) phpBaseElement;
+                extendedQuery.addElement(VariableElementImpl.fromFrameworks(variable, extendedQuery));
+                final PhpClass type = variable.getType();
+                if (type != null) {
+                    final ClassElement classElement = ClassElementImpl.fromFrameworks(type, extendedQuery);
+                    extendedQuery.addElement(classElement);
+                    for (final Field field : type.getFields()) {
+                        final FieldElement fieldElement = FieldElementImpl.fromFrameworks(classElement, field, extendedQuery);
+                        extendedQuery.addElement(fieldElement);
                     }
                 }
             }
@@ -300,6 +344,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 elements.addAll(ConstantElementImpl.fromSignature(query, this, indexResult));
             }
         }
+        if (isVariable) {
+            elements.addAll(extendedQuery.getTopLevelVariables(query));
+        }
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<PhpElement> getTopLevelElements", query, start);//NOI18N
         }
@@ -314,6 +361,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         for (final IndexResult indexResult : result) {
             vars.addAll(VariableElementImpl.fromSignature(query, this, indexResult));
         }
+        vars.addAll(extendedQuery.getTopLevelVariables(query));
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<VariableElement> getTopLevelVariables", query, start);//NOI18N
         }
@@ -447,7 +495,13 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<PhpElement> getTypeMembers", typeQuery, memberQuery, start);//NOI18N
         }
-        return ElementFilter.forFiles(typeFo).filter(members);
+        final Set<TypeMemberElement> retval = new HashSet<TypeMemberElement>();
+        final Exact exactTypeName = NameKind.exact(typeElement.getFullyQualifiedName());
+        retval.addAll(extendedQuery.getFields(exactTypeName,NameKind.empty()));
+        retval.addAll(extendedQuery.getMethods(exactTypeName, NameKind.empty()));
+        retval.addAll(extendedQuery.getTypeConstants(exactTypeName, NameKind.empty()));
+        retval.addAll(ElementFilter.forFiles(typeFo).filter(members));
+        return retval;
     }
 
     @Override
@@ -593,26 +647,30 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public Set<FieldElement> getDeclaredFields(TypeElement classElement) {
-        final QualifiedName fullyQualifiedName = classElement.getFullyQualifiedName();
-        final FileObject typeFo = classElement.getFileObject();
-        return ElementFilter.forFiles(typeFo).filter(getFields(NameKind.exact(fullyQualifiedName), NameKind.empty()));
+        final Set<FieldElement> retval = new HashSet<FieldElement>();
+        final Exact typeNameQuery = NameKind.exact(classElement.getFullyQualifiedName());
+        retval.addAll(ElementFilter.forFiles(classElement.getFileObject())
+                .filter(getFields(typeNameQuery,NameKind.empty())));
+        retval.addAll(extendedQuery.getFields(typeNameQuery, NameKind.empty()));
+        return retval;
     }
 
     @Override
     public final Set<FieldElement> getFields(final NameKind fieldQuery) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<FieldElement> methods = new HashSet<FieldElement>();
+        final Set<FieldElement> fields = new HashSet<FieldElement>();
         final Collection<? extends IndexResult> fieldResults = results(FieldElementImpl.IDX_FIELD, fieldQuery,
                 new String[]{ClassElementImpl.IDX_FIELD, FieldElementImpl.IDX_FIELD});
         for (final IndexResult indexResult : fieldResults) {
             for (final TypeElement typeElement : ClassElementImpl.fromSignature(this, indexResult)) {
-                methods.addAll(FieldElementImpl.fromSignature(typeElement, fieldQuery, this, indexResult));
+                fields.addAll(FieldElementImpl.fromSignature(typeElement, fieldQuery, this, indexResult));
             }
         }
+        fields.addAll(extendedQuery.getFields(fieldQuery));
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<FieldElement> getFields", fieldQuery, start);//NOI18N
         }
-        return Collections.unmodifiableSet(methods);
+        return Collections.unmodifiableSet(fields);
     }
 
     @Override
@@ -626,6 +684,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 fields.addAll(FieldElementImpl.fromSignature(typeElement, fieldQuery, this, indexResult));
             }
         }
+        fields.addAll(extendedQuery.getFields(classQuery, fieldQuery));
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<FieldElement> getFields", classQuery, fieldQuery, start);//NOI18N
         }
@@ -824,6 +883,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
             QualifiedName superClassName = ((ClassElement) typeElement).getSuperClassName();
             if (superClassName != null) {
+                directTypes.addAll(extendedQuery.getFields(NameKind.exact(superClassName), NameKind.empty()));
+                directTypes.addAll(extendedQuery.getMethods(NameKind.exact(superClassName), NameKind.empty()));
+                directTypes.addAll(extendedQuery.getTypeConstants(NameKind.exact(superClassName), NameKind.empty()));
                 if (memberKinds.size() != 1) {
                     directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(superClassName), NameKind.empty())));
                 } else {
@@ -845,6 +907,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         }
         if (typeKinds.contains(PhpElementKind.IFACE)) {
             for (QualifiedName iface : typeElement.getSuperInterfaces()) {
+                directTypes.addAll(extendedQuery.getFields(NameKind.exact(iface), NameKind.empty()));
+                directTypes.addAll(extendedQuery.getMethods(NameKind.exact(iface), NameKind.empty()));
+                directTypes.addAll(extendedQuery.getTypeConstants(NameKind.exact(iface), NameKind.empty()));
                 if (memberKinds.size() != 1) {
                     directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(iface), NameKind.empty())));
                 } else {
@@ -983,7 +1048,10 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             subTypes = toTypes(allTypeMembers);
         }
         final ElementFilter filterForAccessible = forAccessibleTypeMembers(calledFromEnclosingType, subTypes);
-        Set<TypeMemberElement> retval  = filterForAccessible.filter(allTypeMembers);
+        Set<TypeMemberElement> retval  = new HashSet<TypeMemberElement>();
+        retval.addAll(filterForAccessible.filter(allTypeMembers));
+        ElementFilter allOf = ElementFilter.allOf(ElementFilter.forVirtualExtensions(), ElementFilter.forMembersOfTypeName(typeElement));
+        retval.addAll(allOf.filter(allTypeMembers));
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<PhpElement> getAccessibleTypeMembers", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
         }
@@ -1045,10 +1113,6 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<MethodElement> getAccessibleStaticMethods(final TypeElement typeElement, final TypeElement calledFromEnclosingType) {
         return ElementFilter.forStaticModifiers(true).filter(getAccessibleMethods(typeElement, calledFromEnclosingType));
-    }
-
-    private Set<MethodElement> getNotPrivateMethods(TypeElement oneType) {
-        return ElementFilter.forPrivateModifiers(false).filter(getDeclaredMethods(oneType));
     }
 
     private Set<TypeConstantElement> getNotPrivateTypeConstants(TypeElement oneType) {

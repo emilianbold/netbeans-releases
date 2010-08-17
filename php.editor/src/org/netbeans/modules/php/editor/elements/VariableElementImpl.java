@@ -52,6 +52,7 @@ import  org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import  org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import  org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.ElementQuery;
@@ -95,13 +96,13 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
     public static VariableElementImpl create(
             final String variableName,
             final int offset,
-            final FileObject fileObject,
+            final FileObject fo,
             final ElementQuery elementQuery,
             final Set<TypeResolver> instanceTypes) {
         return new VariableElementImpl(variableName, offset, (String)null, elementQuery, instanceTypes) {
             @Override
             public synchronized FileObject getFileObject() {
-                return fileObject;
+                return fo;
             }
         };
     }
@@ -142,6 +143,14 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         ASTNodeInfo<Variable> info = ASTNodeInfo.create(node);
         return new VariableElementImpl(info.getName(), info.getRange().getStart(),
                 fileQuery.getURL().toExternalForm(), fileQuery, typeResolvers);
+    }
+
+    public static VariableElement fromFrameworks(final PhpVariable variable, final ElementQuery elementQuery) {
+        Parameters.notNull("variable", variable);
+        VariableElementImpl retval = new VariableElementImpl(variable.getName(),variable.getOffset(), null, elementQuery,
+                Collections.<TypeResolver>singleton(new TypeResolverImpl(variable.getType().getFullyQualifiedName())));
+        retval.fileObject = variable.getFile();
+        return retval;
     }
 
     private static boolean matchesQuery(final NameKind query, VariableSignatureParser signParser) {

@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenSettings;
-import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.awt.Color;
 import java.net.URL;
@@ -413,14 +412,17 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
         builder.directory(clonedConfig.getExecutionDirectory());
-        printGray(ioput, "NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'"); //NOI18N - to be shown in log.
+        StringBuilder display = new StringBuilder();
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
-            printGray(ioput, "NetBeans:      " + env + "=" + val);
+            display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
         }
+        List<String> command = builder.command();
+        display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
+        printGray(ioput, display.toString());
 
         return builder;
     }

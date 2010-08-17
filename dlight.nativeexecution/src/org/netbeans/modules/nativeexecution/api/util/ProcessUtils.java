@@ -59,6 +59,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -70,10 +71,24 @@ public final class ProcessUtils {
 
     private ProcessUtils() {
     }
-    
+
     private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
     public static String getRemoteCharSet() {
         return remoteCharSet;
+    }
+
+    public static boolean isAlive(Process p) {
+        if (p instanceof RemoteNativeProcess) {
+            RemoteNativeProcess rnp = (RemoteNativeProcess) p;
+            return rnp.isAlive();
+        } else {
+            try {
+                p.exitValue();
+                return false;
+            } catch (IllegalThreadStateException x) {
+                return true;
+            }
+        }
     }
 
     public static BufferedReader getReader(final InputStream is, boolean remote) {
