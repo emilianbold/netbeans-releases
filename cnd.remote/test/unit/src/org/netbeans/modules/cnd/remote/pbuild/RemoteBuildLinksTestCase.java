@@ -37,62 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.remote.pbuild;
 
-import java.util.Collection;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Utilities;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public class BuildTestSuite extends CndBaseTestSuite {
+public class RemoteBuildLinksTestCase extends RemoteBuildTestBase {
 
-    public static final String PLATFORMS_SECTION = "remote.platforms";
-    public static final String DEFAULT_SECTION = "remote";
-
-    public BuildTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
+    public RemoteBuildLinksTestCase(String testName) {
+        super(testName);
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
+    public RemoteBuildLinksTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
+    }
+
+    @Override
+    protected void postCopyProject(File origBase, File copiedBase, String projectName) throws Exception {
+        String dir = copiedBase.getAbsolutePath();
+        String scriptName = "create_links.sh";
+        ProcessUtils.ExitStatus rc = ProcessUtils.executeInDir(dir, ExecutionEnvironmentFactory.getLocal(), "sh", scriptName);
+        assertTrue("Can not execute " + scriptName + " in " + dir + ":\n" + rc.error, rc.isOK());
+    }
+
+    private void doTest(Toolchain toolchain) throws Exception {
+        if (Utilities.isWindows()) {
+            System.out.printf("%s: skipping test on Windows\n", getName());
         }
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        MakeProject project = openProject("makefile_proj_w_links", execEnv, Sync.RFS, toolchain);
+        buildProject(project, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    public BuildTestSuite() {
-        this("Remote Development", // NOI18N
-             RfsGnuRemoteBuildTestCase.class,
-             RfsSunStudioRemoteBuildTestCase.class,
-             RemoteBuildSamplesTestCase.class,
-             RemoteBuildMakefileTestCase.class,
-             RemoteBuildLinksTestCase.class);
-    }
-
-    private BuildTestSuite(String name, Class... testClasses) {
-        super(name, PLATFORMS_SECTION, testClasses);
+    @ForAllEnvironments
+    public void testBuildMakefileWithExt() throws Exception {
+        doTest(Toolchain.GNU);
     }
 
     public static Test suite() {
-        TestSuite suite = new BuildTestSuite();
-        return suite;
+        return new RemoteDevelopmentTest(RemoteBuildLinksTestCase.class);
     }
 }
