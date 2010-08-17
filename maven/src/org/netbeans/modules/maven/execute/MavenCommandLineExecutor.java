@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenSettings;
-import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.awt.Color;
 import java.net.URL;
@@ -413,7 +412,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
         builder.directory(clonedConfig.getExecutionDirectory());
-        printGray(ioput, "NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'"); //NOI18N - to be shown in log.
+        List<String> command = builder.command();
+        printGray(ioput, "NetBeans: " + Utilities.escapeParameters(command.toArray(new String[command.size()]))); //NOI18N - to be shown in log.
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
