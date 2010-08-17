@@ -3996,7 +3996,7 @@ a.MstUsrLnk_sun4:link, a.MstUsrLnk_sun4:visited, a.MstAlmLnk_sun4:link, a.MstAlm
 	border-top-color:#3E637E;
 	background-color:#7196B0;
 }	
-
+/*
 .MstDiv_sun4 {
 	background:#5B87A5 url(images/masthead/masthead-background.jpg) top left repeat-x;
 	border-color:#000000;
@@ -4005,6 +4005,7 @@ a.MstUsrLnk_sun4:link, a.MstUsrLnk_sun4:visited, a.MstAlmLnk_sun4:link, a.MstAlm
 	background:#5B87A5 url(images/masthead/sec-masthead-background.jpg) top left repeat-x;
 	border-color:#000000;
 }
+*/
 .MstFooter_sun4 {
 	background-color:#5B87A5;
 	border-color:#000000;
@@ -4012,12 +4013,12 @@ a.MstUsrLnk_sun4:link, a.MstUsrLnk_sun4:visited, a.MstAlmLnk_sun4:link, a.MstAlm
 
 a.MstLnk_sun4:hover, a.MstLnkLft_sun4:hover, a.MstLnkRt_sun4:hover, a.MstLnkCen_sun4:hover {
 	background-color:#EAF9FF;
-	background-image:url(images/masthead/masthead_link_roll.gif);
+	background-image:url(images/masthead_link_roll.gif);
 }
 
 a.MstLnk_sun4:link, a.MstLnk_sun4:visited, a.MstLnkLft_sun4:link, a.MstLnkLft_sun4:visited, a.MstLnkRt_sun4:link, a.MstLnkRt_sun4:visited, a.MstLnkCen_sun4:link, a.MstLnkCen_sun4:visited {
 	background-color:#D9E6EC;
-	background-image:url(images/masthead/masthead_link_enabled.gif);
+	background-image:url(images/masthead_link_enabled.gif);
 	color:#000;
 	text-decoration:none;
 	border-top-color:#2D3C46;

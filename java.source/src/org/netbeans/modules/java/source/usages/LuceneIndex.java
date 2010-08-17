@@ -47,6 +47,7 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
@@ -65,6 +66,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -108,8 +110,11 @@ import org.openide.util.Utilities;
 //@NotTreadSafe
 class LuceneIndex extends Index {
 
+    private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
+    private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
     private static final boolean debugIndexMerging = Boolean.getBoolean("java.index.debugMerge");     // NOI18N
     private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
+    private static final float DEFAULT_CACHE_SIZE = 0.05f;
     private static final CachePolicy cachePolicy = getCachePolicy();
     private static final String REFERENCES = "refs";    // NOI18N
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());    
@@ -605,7 +610,7 @@ class LuceneIndex extends Index {
     }
            
     private static CachePolicy getCachePolicy() {
-        final String value = System.getProperty("java.index.useMemCache");   //NOI18N
+        final String value = System.getProperty(PROP_INDEX_POLICY);   //NOI18N
         if (Boolean.TRUE.toString().equals(value) ||
             CachePolicy.ALL.getSystemName().equals(value)) {
             return CachePolicy.ALL;
@@ -721,12 +726,14 @@ class LuceneIndex extends Index {
         
         private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
         private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);
+        private static final long maxCacheSize = getCacheSize();
+        private static volatile long currentCacheSize;
         
         private final File folder;
         private final CachePolicy cachePolicy;
         private FSDirectory fsDir;
-        private Directory memDir;
-        private Reference<Directory[]> ref;
+        private RAMDirectory memDir;
+        private CleanReference ref;
         private IndexReader reader;
         private volatile boolean closed;
         private volatile Boolean validCache;
@@ -883,10 +890,10 @@ class LuceneIndex extends Index {
                 //Issue #149757 - logging
                 try {
                     Directory source;
-                    if (cachePolicy.hasMemCache()) {
+                    if (cachePolicy.hasMemCache()) {                        
                         memDir = new RAMDirectory(fsDir);
                         if (cachePolicy == CachePolicy.DYNAMIC) {
-                            ref = new CleanReference(this.memDir);
+                            ref = new CleanReference (new RAMDirectory[] {this.memDir});
                         }
                         source = memDir;
                     } else {
@@ -951,6 +958,8 @@ class LuceneIndex extends Index {
                         }
                     }
                 });
+            } else if ((ref != null && currentCacheSize > maxCacheSize)) {
+                ref.clearHRef();
             }
         }
         
@@ -1011,10 +1020,37 @@ class LuceneIndex extends Index {
             return directory;
         } 
         
-        private class CleanReference extends SoftReference<Directory[]> implements Runnable {
+        private static long getCacheSize() {
+            float per = -1.0f;
+            final String propVal = System.getProperty(PROP_CACHE_SIZE); 
+            if (propVal != null) {
+                try {
+                    per = Float.parseFloat(propVal);
+                } catch (NumberFormatException nfe) {
+                    //Handled below
+                }
+            }
+            if (per<0) {
+                per = DEFAULT_CACHE_SIZE;
+            }
+            return (long) (per * Runtime.getRuntime().maxMemory());
+        }
+        
+        private final class CleanReference extends SoftReference<RAMDirectory[]> implements Runnable {
+            
+            @SuppressWarnings("VolatileArrayField")
+            private volatile Directory[] hardRef; //clearHRef may be called by more concurrently (read lock).
+            private final AtomicLong size = new AtomicLong();  //clearHRef may be called by more concurrently (read lock).
 
-            private CleanReference(final Directory dir) {
-                super (new Directory[] {dir}, Utilities.activeReferenceQueue());
+            private CleanReference(final RAMDirectory[] dir) {
+                super (dir, Utilities.activeReferenceQueue());
+                boolean doHardRef = currentCacheSize < maxCacheSize;
+                if (doHardRef) {
+                    this.hardRef = dir;
+                    long _size = dir[0].sizeInBytes();
+                    size.set(_size);
+                    currentCacheSize+=_size;
+                }
                 LOGGER.log(Level.FINEST, "Caching index: {0} cache policy: {1}",    //NOI18N
                 new Object[]{
                     folder.getAbsolutePath(),
@@ -1036,7 +1072,18 @@ class LuceneIndex extends Index {
                 }
             }
             
-        }
+            @Override
+            public void clear() {
+                clearHRef();
+                super.clear();
+            }
+            
+            void clearHRef() {
+                this.hardRef = null;
+                long mySize = size.getAndSet(0);
+                currentCacheSize-=mySize;
+            }
+        }        
     }
     //</editor-fold>
 
