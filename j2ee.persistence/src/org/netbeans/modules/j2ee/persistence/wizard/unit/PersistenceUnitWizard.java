@@ -167,6 +167,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         LOG.fine("Instantiating...");
         //first add libraries if necessary
         Library lib = null;
+        boolean libIsAdded = false;//used to check if lib was added to compile classpath
         if (descriptor.isContainerManaged()) {
             Provider selectedProvider=descriptor.getSelectedProvider();
             if (descriptor.isNonDefaultProviderEnabled()) {
@@ -175,6 +176,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
                     handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                     Util.addLibraryToProject(project, lib);
                     selectedProvider = null;//to avoid one more library addition
+                    libIsAdded = true;
                 }
             }
             if(selectedProvider != null && selectedProvider.getAnnotationProcessor() != null){
@@ -188,12 +190,13 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
             if (lib != null){
                 handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                 Util.addLibraryToProject(project, lib);
+                libIsAdded = true;
             }
             JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(descriptor.getPersistenceConnection().getDriverClass());
             PersistenceLibrarySupport.addDriver(project, driver[0]);
         }
         handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_CreatePU"));
-        String version = lib!=null ? PersistenceUtils.getJPAVersion(lib) : null;
+        String version = (lib!=null && libIsAdded) ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use project provided api and avoid use of unsupported features this way
         try{
             LOG.fine("Retrieving PUDataObject");
             pud = ProviderUtil.getPUDataObject(project, version);
