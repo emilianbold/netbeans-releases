@@ -80,6 +80,7 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.filters.LineContainsRegExp;
+import org.apache.tools.ant.filters.SuffixLines;
 import org.apache.tools.ant.taskdefs.Concat;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -321,6 +322,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
                                     bundles.put(suffix, ra);
                                 }
                                 ra.add(new ZipResource(jar, "UTF-8", zipEntry));
+                                ra.add(new StringResource("\n\n"));
                             }
                             if (copyPattern.matcher(je.getName()).matches()) {
                                 ZipEntry zipEntry = new ZipEntry(je);
