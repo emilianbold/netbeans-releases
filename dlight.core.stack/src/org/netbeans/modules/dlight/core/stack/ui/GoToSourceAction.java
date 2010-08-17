@@ -116,6 +116,10 @@ class GoToSourceAction extends AbstractAction {
         DLightExecutorService.submit(new Runnable() {
 
             public void run() {
+                SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+                if (sourceSupportProvider == null){
+                    return;
+                }
                 SourceFileInfo sourceFileInfo = null;
                 try {
                     sourceFileInfo = sourceFileInfoTask.get();
@@ -126,9 +130,7 @@ class GoToSourceAction extends AbstractAction {
                 }
                 if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
                     return;
-                }
-
-                SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+                }                
                 sourceSupportProvider.showSource(sourceFileInfo);
             }
         }, "GoToSource from Call Stack UI"); // NOI18N

@@ -666,8 +666,12 @@ public class Operator {
                         continue;
                     } catch (VMDisconnectedExceptionWrapper ex) {
                         return ;
+                    } catch (Exception e) {
+                        ErrorManager.getDefault().notify(e);
                     }
-
+                    if (Thread.interrupted()) {
+                        return ;
+                    }
                 }
             }
         }, 500);

@@ -132,7 +132,7 @@ is the proper place.
                 from EE module to deployment server.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="DeploymentContext"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="DeploymentManager2"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="IncrementalDeployment2"/>

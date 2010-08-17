@@ -334,7 +334,9 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             String expression = ir.getValue(Fields.EXPRESSION);
             for (ELElement element : parserResultHolder.parserResult.getElements()) {
                 if (expression.equals(element.getExpression())) {
-                    result.add(element);
+                    if (!result.contains(element)) {
+                        result.add(element);
+                    }
                 }
             }
         }

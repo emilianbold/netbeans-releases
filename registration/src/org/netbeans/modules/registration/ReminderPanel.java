@@ -46,7 +46,7 @@ public class ReminderPanel extends javax.swing.JPanel {
                     graphics.drawImage(
                             backgroundImage.getImage(),
                             0, 0,
-                            resize ? backgroundImage.getIconWidth() : this.getWidth(),
+                            resize ? this.getWidth() : backgroundImage.getIconWidth(),
                             backgroundImage.getIconHeight(),
                             0, 0,
                             backgroundImage.getIconWidth(), backgroundImage.getIconHeight(),

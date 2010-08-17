@@ -61,6 +61,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -79,7 +80,10 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.DataRowNode;
 import org.netbeans.modules.dlight.visualizers.api.impl.AdvancedTableViewVisualizerConfigurationAccessor;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
@@ -90,6 +94,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -103,7 +108,8 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private static final long MIN_REFRESH_MILLIS = 500;
 
     private TableDataProvider provider;
-    private AdvancedTableViewVisualizerConfiguration configuration;
+    private final AdvancedTableViewVisualizerConfiguration configuration;
+    private final NodeActionsProvider nodeActionsProvider;
     private final List<DataRow> data = new ArrayList<DataRow>();
     private JButton refresh;
 //    private AbstractTableModel tableModel;
@@ -132,11 +138,12 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         super(new BorderLayout());
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
-        this.configuration = configuration;
+        this.configuration = configuration;        
         this.explorerManager = new ExplorerManager();
         addComponentListener(this);
         AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
 //        tableView = new TableView();
+        this.nodeActionsProvider = accessor.getNodeActionProvider(configuration);        
         nodeColumnName = accessor.getNodeColumnName(configuration);
         nodeRowColumnID = accessor.getRowNodeColumnName(configuration);
         outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
@@ -225,12 +232,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         }
         outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 //        outlineView.setProperties(result.toArray(new Property[0]));
-        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
+        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);        
 
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
         outlineView.getOutline().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(returnKey, "return"); // NOI18N
         outlineView.getOutline().getActionMap().put("return", new AbstractAction() {// NOI18N
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 refresh.requestFocus(false);
             }
@@ -242,9 +250,10 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                     this, this.explorerManager,
                     accessor.getDetailsRenderer(configuration),
                     new DualPaneSupport.DataAdapter<Node, DataRow>() {
+                @Override
                         public DataRow convert(Node obj) {
-                            if (obj instanceof DataRowNode) {
-                                return ((DataRowNode)obj).getDataRow();
+                            if (obj instanceof DataRowNodeImpl) {
+                                return ((DataRowNodeImpl)obj).getDataRow();
                             } else {
                                 return null;
                             }
@@ -255,6 +264,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         }
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -556,7 +566,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
         @Override
         protected Node[] createNodes(DataRow key) {
-            return new Node[]{new DataRowNode(key)};
+            return new Node[]{new DataRowNodeImpl(key)};
         }
 
         @Override
@@ -565,20 +575,19 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         }
     }
 
-    private class DataRowNode extends AbstractNode {
+    private class DataRowNodeImpl extends DataRowNode {
 
-        private final DataRow dataRow;
         private PropertySet propertySet;
 
-        DataRowNode(DataRow row) {
-            super(Children.LEAF);
-            dataRow = row;
+
+        DataRowNodeImpl(DataRow row) {
+            super(row);
             propertySet = new PropertySet() {
 
                 @Override
                 public Property<?>[] getProperties() {
                     List<Property<?>> result = new ArrayList<Property<?>>();
-                    for (String columnName : dataRow.getColumnNames()) {
+                    for (String columnName : getDataRow().getColumnNames()) {
                         if (!columnName.equals(nodeColumnName) && !columnName.equals(nodeRowColumnID)) {
                             final Column c = configuration.getMetadata().getColumnByName(columnName);
                             @SuppressWarnings("unchecked")
@@ -586,7 +595,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                                 c.getColumnUName(), c.getColumnUName(), true, false) {
                                 @Override
                                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                                    return dataRow.getData(c.getColumnName());
+                                    return getDataRow().getData(c.getColumnName());
                                 }
                                 @Override
                                 public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -603,9 +612,40 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             };
         }
 
-        public DataRow getDataRow() {
-            return dataRow;
+
+        @Override
+        public Action getPreferredAction() {
+            //preffered action 
+            return new AbstractAction() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (nodeActionsProvider == null){
+                        return;
+                    }
+                    try {
+                        nodeActionsProvider.performDefaultAction(DataRowNodeImpl.this);
+                    } catch (UnknownTypeException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };            
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            if (nodeActionsProvider == null){
+                return null;
+            }
+            try {
+                return nodeActionsProvider.getActions(DataRowNodeImpl.this);
+            } catch (UnknownTypeException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
+        
 
         @Override
         public Image getIcon(int type) {
@@ -613,7 +653,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             if (iconColumnID == null){
                 return super.getIcon(type);
             }
-            return ImageUtilities.loadImage(resourceID + "/" + dataRow.getStringValue(iconColumnID) +".png"); // NOI18N
+            return ImageUtilities.loadImage(resourceID + "/" + getDataRow().getStringValue(iconColumnID) +".png"); // NOI18N
         }
 
         @Override
@@ -625,7 +665,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
         @Override
         public String getDisplayName() {
-            return dataRow.getData(nodeColumnName) + "";
+            return getDataRow().getData(nodeColumnName) + "";
         }
 
         @Override
@@ -644,7 +684,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
             PropertyEditor editor = PropertyEditorManager.findEditor(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnClass());
             if (editor != null && value != null && !(value + "").trim().equals("")) {//NOI18N
-                editor.setValue(value);
+                editor.setAsText(value.toString());
                 return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
             }
 

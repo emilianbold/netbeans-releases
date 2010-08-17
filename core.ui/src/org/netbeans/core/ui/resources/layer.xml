@@ -824,6 +824,15 @@ made subject to such option by the copyright holder.
 
     </folder>
 
+    <folder name="Editors">
+        <folder name="TabActions">
+            <file name="org-openide-actions-FileSystemAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+        </folder>
+    </folder>
+
     <folder name="OptionsExport">
         <folder name="General">
             <attr name="displayName" bundlevalue="org.netbeans.core.ui.options.general.Bundle#General.Options.Export.Category.displayName"/>

@@ -227,7 +227,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             filtOut.readFrom(outWriter);
         }
         boolean hadOutputListeners = hasOutputListeners;
-        hasOutputListeners = getOut() != null && getOut().getLines().firstListenerLine() >= 0;
+        hasOutputListeners = getOut() != null && (getOut().getLines().firstListenerLine() >= 0 || getOut().getLines().firstImportantListenerLine() >= 0);
         if (hasOutputListeners != hadOutputListeners) {
             hasOutputListenersChanged(hasOutputListeners);
         }

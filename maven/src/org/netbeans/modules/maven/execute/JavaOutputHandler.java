@@ -185,13 +185,13 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     
     public void debug(String string) {
         if (isDebugEnabled()) {
-            processMultiLine(string, stdOut, "DEBUG");//NOI18N
+            processMultiLine(string, stdOut, Level.DEBUG);
         }
     }
     
     public void debug(String string, Throwable throwable) {
         if (isDebugEnabled()) {
-            processMultiLine(string, stdOut, "DEBUG");//NOI18N
+            processMultiLine(string, stdOut, Level.DEBUG);
             throwable.printStackTrace(stdOut);
         }
     }
@@ -201,11 +201,11 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     }
     
     public void info(String string)    {
-        processMultiLine(string, stdOut, /*"INFO"*/ "");//NOI18N
+        processMultiLine(string, stdOut, Level.INFO);
     }
     
     public void info(String string, Throwable throwable)    {
-        processMultiLine( string, stdOut, /*"INFO"*/ "");//NOI18N
+        processMultiLine( string, stdOut, Level.INFO);
         throwable.printStackTrace(stdOut);
     }
     
@@ -216,23 +216,23 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     public void warn(String string)    {
         if (string.startsWith("Unable to get resource from repository")) { //NOI18N
             if (isDebugEnabled()) {
-                processMultiLine(string, stdOut, "DEBUG");//NOI18N
+                processMultiLine(string, stdOut, Level.DEBUG);
             }
             return;
         }
         //TEMPORARY - only relevant when 2.1 gets out
         if (string.startsWith("The <pluginRepositories/> section of the POM has been deprecated")) { //NOI18N
             if (isDebugEnabled()) {
-                processMultiLine(string, stdOut, "DEBUG");//NOI18N
+                processMultiLine(string, stdOut, Level.DEBUG);
             }
             return;
         }
         
-        processMultiLine(string, stdOut, "WARN");//NOI18N
+        processMultiLine(string, stdOut, Level.WARNING);
     }
     
     public void warn(String string, Throwable throwable)    {
-        processMultiLine(string, stdOut, "WARN");//NOI18N
+        processMultiLine(string, stdOut, Level.WARNING);
         throwable.printStackTrace(stdOut);
     }
     
@@ -241,11 +241,11 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     }
     
     public void error(String string)    {
-        processMultiLine(string, stdErr, "ERROR");//NOI18N
+        processMultiLine(string, stdErr, Level.ERROR);
     }
     
     public void error(String string, Throwable throwable)    {
-        processMultiLine(string, stdErr, "ERROR");//NOI18N
+        processMultiLine(string, stdErr, Level.ERROR);
         throwable.printStackTrace(stdErr);
     }
     
@@ -254,11 +254,11 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     }
     
     public void fatalError(String string)    {
-        processMultiLine(string, stdErr, "FATAL");//NOI18N
+        processMultiLine(string, stdErr, Level.FATAL);
     }
     
     public void fatalError(String string, Throwable throwable)    {
-        processMultiLine(string, stdErr, "FATAL");//NOI18N
+        processMultiLine(string, stdErr, Level.FATAL);
         throwable.printStackTrace(stdErr);
     }
     
@@ -484,7 +484,7 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
         
         private void doPrint() {
             assert Thread.holdsLock(this);
-            processMultiLine(buff.toString(), writer, "");//NOI18N
+            processMultiLine(buff.toString(), writer, Level.INFO);
             buff.setLength(0);
         }
 

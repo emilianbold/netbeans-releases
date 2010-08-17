@@ -300,6 +300,23 @@ exists or setup the property manually. For example like this:
                 <taskdef resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml" classpath="${{libs.CopyLibs.classpath}}"/>
             </target>
 
+            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check"/>
+
+            <target name="-profile-pre-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="-profile-post-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            <target name="-profile-init-check">
+                <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init</xsl:attribute>
+                <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
+                <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
+            </target>
+
             <target name="init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,-init-taskdefs</xsl:attribute>
             </target>
@@ -818,7 +835,71 @@ exists or setup the property manually. For example like this:
         <ear2:debug-appclient subprojectname="${{app.client}}"/>
     </target>
     
-            <xsl:comment>
+        <xsl:comment>
+    =================
+    PROFILING SECTION
+    =================
+    </xsl:comment>
+
+    <target name="profile">
+        <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+        <condition>
+            <xsl:attribute name="property">profiler.startserver.target</xsl:attribute>
+            <xsl:attribute name="value">start-profiled-server-extraargs</xsl:attribute>
+            <xsl:attribute name="else">start-profiled-server</xsl:attribute>
+            <isset>
+                <xsl:attribute name="property">profiler.info.jvmargs.extra</xsl:attribute>
+            </isset>
+        </condition>
+        <antcall>
+            <xsl:attribute name="target">${profiler.startserver.target}</xsl:attribute>
+        </antcall>
+        <antcall>
+            <xsl:attribute name="target">run</xsl:attribute>
+        </antcall>
+        <antcall>
+            <xsl:attribute name="target">start-loadgen</xsl:attribute>
+        </antcall>
+    </target>
+
+    <target name="start-profiled-server">
+        <nbstartprofiledserver>
+            <xsl:attribute name="forceRestart">${profiler.j2ee.serverForceRestart}</xsl:attribute>
+            <xsl:attribute name="startupTimeout">${profiler.j2ee.serverStartupTimeout}</xsl:attribute>
+            <xsl:attribute name="javaPlatform">${profiler.info.javaPlatform}</xsl:attribute>
+            <jvmarg>
+                <xsl:attribute name="value">${profiler.info.jvmargs.agent}</xsl:attribute>
+            </jvmarg>
+            <jvmarg>
+                <xsl:attribute name="value">${profiler.j2ee.agentID}</xsl:attribute>
+            </jvmarg>
+        </nbstartprofiledserver>
+    </target>
+
+    <target name="start-profiled-server-extraargs">
+        <nbstartprofiledserver>
+            <xsl:attribute name="forceRestart">${profiler.j2ee.serverForceRestart}</xsl:attribute>
+            <xsl:attribute name="startupTimeout">${profiler.j2ee.serverStartupTimeout}</xsl:attribute>
+            <xsl:attribute name="javaPlatform">${profiler.info.javaPlatform}</xsl:attribute>
+            <jvmarg>
+                <xsl:attribute name="value">${profiler.info.jvmargs.extra}</xsl:attribute>
+            </jvmarg>
+            <jvmarg>
+                <xsl:attribute name="value">${profiler.info.jvmargs.agent}</xsl:attribute>
+            </jvmarg>
+            <jvmarg>
+                <xsl:attribute name="value">${profiler.j2ee.agentID}</xsl:attribute>
+            </jvmarg>
+        </nbstartprofiledserver>
+    </target>
+
+    <target name="start-loadgen" if="profiler.loadgen.path">
+            <loadgenstart>
+                <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
+            </loadgenstart>
+    </target>
+
+    <xsl:comment>
     CLEANUP SECTION
     </xsl:comment>
 

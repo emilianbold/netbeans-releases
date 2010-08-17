@@ -47,14 +47,19 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.Query;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.Task;
@@ -79,6 +84,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private final File cacheRoot;
     private final boolean isSource;
     private volatile URL dirty;
+    //@GuardedBy("this")
+    private Set<String> rootPkgCache;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     private static IndexFactory indexFactory = LuceneIndexFactory.getInstance();
     
@@ -95,12 +102,12 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     @Override
     public BinaryAnalyser getBinaryAnalyser () {
-        return new BinaryAnalyser (this.index, this.cacheRoot);
+        return new BinaryAnalyser (new PIWriter(), this.cacheRoot);
     }
     
     @Override
     public SourceAnalyser getSourceAnalyser () {        
-        return new SourceAnalyser (this.index);        
+        return new SourceAnalyser (new PIWriter());        
     }
 
     @Override
@@ -212,8 +219,33 @@ public class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+            @Override
             public Void run () throws IOException, InterruptedException {
-                index.getPackageNames(prefix, directOnly, result);
+                final boolean cacheOp = directOnly && prefix.length() == 0;
+                Set<String> myPkgs = null;
+                Collection<String> collectInto;
+                if (cacheOp) {
+                    synchronized (PersistentClassIndex.this) {
+                        if (rootPkgCache != null) {
+                            result.addAll(rootPkgCache);
+                            return null;
+                        }
+                    }
+                    myPkgs = new HashSet<String>();
+                    collectInto = new TeeCollection(myPkgs,result);
+                } else {
+                    collectInto = result;
+                }
+                final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter(prefix,directOnly);
+                index.queryTerms(filter.second, filter.first, collectInto);
+                if (cacheOp) {
+                    synchronized (PersistentClassIndex.this) {
+                        if (rootPkgCache == null) {
+                            assert myPkgs != null;
+                            rootPkgCache = myPkgs;
+                        }
+                    }
+                }
                 return null;
             }
         });        
@@ -307,5 +339,56 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<? super Document, T> convertor, Set<? super T> result) throws InterruptedException, IOException {
         final Query usagesQuery = QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD);
         this.index.query(new Query[]{usagesQuery},DocumentUtil.declaredTypesFieldSelector(),convertor,result);                
+    }
+    
+    private synchronized void resetPkgCache() {        
+        rootPkgCache = null;
+    }
+    
+    private class PIWriter implements Writer {
+        @Override
+        public void clear() throws IOException {
+            resetPkgCache();
+            index.clear();
+        }
+        @Override
+        public void store(Map<Pair<String, String>, Object[]> refs, List<Pair<String, String>> topLevels) throws IOException {
+            resetPkgCache();
+            index.store(refs, topLevels);
+        }
+        @Override
+        public void store(Map<Pair<String, String>, Object[]> refs, Set<Pair<String, String>> toDelete) throws IOException {
+            resetPkgCache();
+            index.store(refs, toDelete);
+        }
+    }
+    
+    private class TeeCollection<T> extends AbstractCollection<T> {
+        
+        private Collection<T> primary;
+        private Collection<T> secondary;
+              
+        
+        TeeCollection(final @NonNull Collection<T> primary, @NonNull Collection<T> secondary) {
+            this.primary = primary;
+            this.secondary = secondary;
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            throw new UnsupportedOperationException("Not supported operation.");    //NOI18N
+        }
+
+        @Override
+        public int size() {
+            return primary.size();
+        }
+
+        @Override
+        public boolean add(T e) {
+            final boolean result = primary.add(e);
+            secondary.add(e);
+            return result;
+        }
     }
 }

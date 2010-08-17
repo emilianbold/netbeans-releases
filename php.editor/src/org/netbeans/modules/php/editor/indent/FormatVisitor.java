@@ -261,7 +261,8 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 	
 	isCurly = node.isCurly();
-	while (node.isCurly() && ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
+        // move ts in every case to the next token
+	while (ts.moveNext() && node.isCurly() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
 	    addFormatToken(formatTokens);
 	}
 
@@ -583,6 +584,14 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    scan(node.getStatement());
+            if (ts.token().id() == PHPTokenId.T_INLINE_HTML) {
+                // we are at the embeded html and we need to put the indent after
+                // php open tag
+                while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ENDFOREACH) {
+                    addFormatToken(formatTokens);
+                }
+                ts.movePrevious();
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
@@ -803,6 +812,7 @@ public class FormatVisitor extends DefaultVisitor {
 		}
 	    }
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            ts.movePrevious();
 	    scan(node.getFalseStatement());
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block) && !(body instanceof IfStatement)) {

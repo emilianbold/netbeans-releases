@@ -57,7 +57,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
@@ -125,8 +124,7 @@ public class WLDatasourceManager implements DatasourceManager {
             throw new DatasourceAlreadyExistsException(conflictDS);
         }
 
-        CommandBasedDeployer deployer = new CommandBasedDeployer(WLDeploymentFactory.getInstance(),
-                manager.getInstanceProperties());
+        CommandBasedDeployer deployer = new CommandBasedDeployer(manager);
         ProgressObject po = deployer.deployDatasource(toDeploy.values());
         ProgressObjectSupport.waitFor(po);
         if (po.getDeploymentStatus().isFailed()) {
@@ -137,6 +135,7 @@ public class WLDatasourceManager implements DatasourceManager {
 
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
+        // FIXME use methods from WLPluginproperties
         String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
         File domainPath = FileUtil.normalizeFile(new File(domainDir));
         FileObject domain = FileUtil.toFileObject(domainPath);
@@ -145,7 +144,8 @@ public class WLDatasourceManager implements DatasourceManager {
             domainConfig = domain.getFileObject("config/config.xml"); // NOI18N
         }
 
-        return new HashSet<Datasource>(WLDatasourceSupport.getDatasources(domainPath, domainConfig, true));
+        return new HashSet<Datasource>(
+                WLDatasourceSupport.getDatasources(domainPath, domainConfig, true));
     }
 
     private Map<String, Datasource> createMap(Set<Datasource> datasources) {
