@@ -268,6 +268,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.parser</friend>
+                <friend>org.netbeans.modules.html.validation</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
@@ -278,6 +279,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.editor.ext.html.parser</package>
                 <package>org.netbeans.editor.ext.html.parser.api</package>
                 <package>org.netbeans.editor.ext.html.parser.spi</package>
+                <package>org.netbeans.html.api.validation</package>
             </friend-packages>
         </data>
     </configuration>

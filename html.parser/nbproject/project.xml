@@ -85,7 +85,16 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <public-packages>
+                <package>nu.validator.htmlparser.annotation</package>
                 <package>nu.validator.htmlparser.common</package>
+                <package>nu.validator.htmlparser.dom</package>
+                <package>nu.validator.htmlparser.extra</package>
+                <package>nu.validator.htmlparser.impl</package>
+                <package>nu.validator.htmlparser.io</package>
+                <package>nu.validator.htmlparser.rewindable</package>
+                <package>nu.validator.htmlparser.sax</package>
+                <package>nu.validator.htmlparser.xom</package>
+                <package>nu.validator.saxtree</package>
                 <package>org.netbeans.modules.html.parser</package>
             </public-packages>
             <class-path-extension>

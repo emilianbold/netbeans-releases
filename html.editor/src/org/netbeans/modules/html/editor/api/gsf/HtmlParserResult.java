@@ -63,6 +63,9 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.html.api.validation.ValidationContext;
+import org.netbeans.html.api.validation.ValidationResult;
+import org.netbeans.html.api.validation.ValidatorService;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -79,7 +82,6 @@ public class HtmlParserResult extends ParserResult {
      */
     public static final String FALLBACK_DTD_PROPERTY_NAME = "fallbackDTD";
     private static final String UNEXPECTED_TOKEN = "unexpected_token"; //NOI18N
-    
     private SyntaxAnalyzerResult result;
     private List<Error> errors;
     private boolean isValid = true;
@@ -140,7 +142,6 @@ public class HtmlParserResult extends ParserResult {
 //        throw new IllegalArgumentException("The AstNode " + root
 //                + " doesn't belong to " + this + " HtmlParserResult!");//NOI18N
 //    }
-
     /** @return a root node of the hierarchical parse tree of the document.
      * basically the tree structure is done by postprocessing the flat parse tree
      * you can get by calling elementsList() method.
@@ -177,17 +178,15 @@ public class HtmlParserResult extends ParserResult {
         return null;
     }
 
-    
-
     /** returns a map of all namespaces to astnode roots.*/
     public Map<String, AstNode> roots() {
         Map<String, AstNode> roots = new HashMap<String, AstNode>();
-        for(String uri : getNamespaces().keySet()) {
+        for (String uri : getNamespaces().keySet()) {
             roots.put(uri, root(uri));
         }
 
         //non xhtml workaround, add the default namespaces if missing
-        if(!roots.containsValue(root())) {
+        if (!roots.containsValue(root())) {
             roots.put(null, root());
         }
 
@@ -213,14 +212,14 @@ public class HtmlParserResult extends ParserResult {
         //first try to find the leaf in html content
         AstNode mostLeaf = AstNodeUtils.findDescendant(root(), offset, exclusiveStartOffset);
         //now search the non html trees
-        for(String uri : getNamespaces().keySet()) {
+        for (String uri : getNamespaces().keySet()) {
             AstNode root = root(uri);
             AstNode leaf = AstNodeUtils.findDescendant(root, offset, exclusiveStartOffset);
-            if(mostLeaf == null) {
+            if (mostLeaf == null) {
                 mostLeaf = leaf;
             } else {
                 //they cannot overlap, just be nested, at least I think
-                if(leaf.logicalStartOffset() > mostLeaf.logicalStartOffset() ) {
+                if (leaf.logicalStartOffset() > mostLeaf.logicalStartOffset()) {
                     mostLeaf = leaf;
                 }
             }
@@ -237,17 +236,17 @@ public class HtmlParserResult extends ParserResult {
         //first try to find the leaf in html content
         AstNode mostLeaf = AstNodeUtils.findDescendantTag(root(), offset, useLogicalRanges, forward);
         //now search the non html trees
-        for(String uri : getNamespaces().keySet()) {
+        for (String uri : getNamespaces().keySet()) {
             AstNode root = root(uri);
             AstNode leaf = AstNodeUtils.findDescendantTag(root, offset, useLogicalRanges, forward);
-            if(leaf == null) {
+            if (leaf == null) {
                 continue;
             }
-            if(mostLeaf == null) {
+            if (mostLeaf == null) {
                 mostLeaf = leaf;
             } else {
                 //they cannot overlap, just be nested, at least I think
-                if(leaf.logicalStartOffset() > mostLeaf.logicalStartOffset() ) {
+                if (leaf.logicalStartOffset() > mostLeaf.logicalStartOffset()) {
                     mostLeaf = leaf;
                 }
             }
@@ -262,6 +261,7 @@ public class HtmlParserResult extends ParserResult {
             errors.addAll(getParseResultErrors());
             errors.addAll(extractErrorsFromAST());
             errors.addAll(findLexicalErrors());
+            errors.addAll(getValidationResults());
         }
         return errors;
     }
@@ -269,6 +269,40 @@ public class HtmlParserResult extends ParserResult {
     @Override
     protected void invalidate() {
         this.isValid = false;
+    }
+
+    private Collection<Error> getValidationResults() {
+        //XXX temporary!!!!!
+
+        //use the filtered snapshot or use the namespaces filtering facility in the nu.validator
+        Collection<ValidationResult> results =
+                ValidatorService.getDefault().validate(new ValidationContext(getSnapshot()));
+
+
+        if (!results.isEmpty()) {
+
+            //XXX just use first for now
+            ValidationResult result = results.iterator().next();
+
+            if (!result.isSuccess()) {
+                DefaultError error =
+                        new DefaultError("nu.validator",
+                        "nu.validator issues",
+                        result.getTextDescription(),
+                        result.getContext().getSnapshot().getSource().getFileObject(),
+                        0,
+                        0,
+                        true /* not line error */,
+                        Severity.WARNING);
+
+                return Collections.<Error>singletonList(error);
+            }
+        }
+
+        return Collections.emptyList();
+
+
+
     }
 
     private Collection<Error> getParseResultErrors() {
@@ -334,7 +368,7 @@ public class HtmlParserResult extends ParserResult {
                         ts.offset() + ts.token().length(),
                         false /* not line error */,
                         Severity.ERROR);
-                
+
                 lexicalErrors.add(error);
             }
         }
@@ -380,7 +414,7 @@ public class HtmlParserResult extends ParserResult {
         Collection<AstNode> roots = new ArrayList<AstNode>();
         roots.addAll(roots().values());
         roots.add(rootOfUndeclaredTagsParseTree());
-        for(AstNode root : roots) {
+        for (AstNode root : roots) {
             AstNodeUtils.visitChildren(root, errorsCollector);
         }
 
@@ -389,9 +423,9 @@ public class HtmlParserResult extends ParserResult {
     }
 
     public static AstNode getBoundAstNode(Error e) {
-        if(e instanceof DefaultError) {
-            if(e.getParameters() != null && e.getParameters().length > 0 && e.getParameters()[0] instanceof AstNode) {
-                return (AstNode)e.getParameters()[0];
+        if (e instanceof DefaultError) {
+            if (e.getParameters() != null && e.getParameters().length > 0 && e.getParameters()[0] instanceof AstNode) {
+                return (AstNode) e.getParameters()[0];
             }
         }
 

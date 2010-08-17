@@ -76,12 +76,14 @@ public class Html5ParserTest extends NbTestCase {
         suite.addTest(new Html5ParserTest("testParseUnfinishedCode"));
         return suite;
     }
-    
+
     public void testBasic() throws SAXException, IOException, ParseException {
         HtmlParseResult result = parse("<!doctype html><section><div></div></section>");
         AstNode root = result.root();
         assertNotNull(root);
         assertNotNull(AstNodeUtils.query(root, "html/body/section/div")); //html/body are generated
+
+//        AstNodeUtils.dumpTree(root);
     }
 
     public void testHtmlAndBodyTags() throws ParseException {
@@ -180,7 +182,7 @@ public class Html5ParserTest extends NbTestCase {
         child = childernItr.next();
         assertEquals("table", child.name());
         assertEquals(AstNode.NodeType.ENDTAG, child.type());
-        
+
 
 //        AstNodeUtils.dumpTree(root);
 
@@ -313,6 +315,6 @@ public class Html5ParserTest extends NbTestCase {
         public boolean hasOptionalEndTag() {
             return false;
         }
-        
+
     }
 }

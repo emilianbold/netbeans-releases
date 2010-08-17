@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.libs.jing/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/jing/Bundle.properties
+OpenIDE-Module-Implementation-Version: 1
+AutoUpdate-Show-In-Client: false
+
