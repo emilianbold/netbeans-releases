@@ -412,15 +412,17 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
         builder.directory(clonedConfig.getExecutionDirectory());
-        List<String> command = builder.command();
-        printGray(ioput, "NetBeans: " + Utilities.escapeParameters(command.toArray(new String[command.size()]))); //NOI18N - to be shown in log.
+        StringBuilder display = new StringBuilder();
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
-            printGray(ioput, "NetBeans:      " + env + "=" + val);
+            display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
         }
+        List<String> command = builder.command();
+        display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
+        printGray(ioput, display.toString());
 
         return builder;
     }
