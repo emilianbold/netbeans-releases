@@ -66,8 +66,7 @@ public class WeblogicServerProvider implements ServerProvider {
         this.cProvider = cProvider;
         
         // Set server root into Weblogic Plugin Properties
-        WLPluginProperties.getInstance().setInstallLocation(cProvider.getServerRoot());
-        WLPluginProperties.getInstance().saveProperties();
+        WLPluginProperties.setLastServerRoot(cProvider.getServerRoot());
     }
     
     public void setServerSpecificProperties(InstanceProperties ip) {
