@@ -65,23 +65,30 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 
 /**
  * NO listening on changes here, let the BootClassPath deal with it..
  * @author  Milos Kleint
  */
-public final class EndorsedClassPathImpl implements ClassPathImplementation {
+public final class EndorsedClassPathImpl implements ClassPathImplementation, FileChangeListener {
 
     private List<? extends PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final NbMavenProjectImpl project;
     private BootClassPathImpl bcp;
     private String[] current;
+    private final File endorsed;
 
-
+    @SuppressWarnings("LeakingThisInConstructor")
     EndorsedClassPathImpl(NbMavenProjectImpl project) {
         this.project = project;
+        endorsed = new File(project.getPOMFile().getParentFile(), "target/endorsed"); // NOI18N
+        FileUtil.addFileChangeListener(this, endorsed);
     }
 
     public List<? extends PathResourceImplementation> getResources() {
@@ -93,6 +100,12 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation {
                 if (boot != null) {
                     for (URL u :  stripDefaultJavaPlatform(boot)) {
                         result.add (ClassPathSupport.createResource(u));
+                    }
+                }
+                File[] jars = endorsed.listFiles();
+                if (jars != null) {
+                    for (File jar : jars) {
+                        result.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(jar)));
                     }
                 }
                 current = boot;
@@ -176,5 +189,29 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation {
             return Collections.unmodifiableSet(djpbcp);
         }
     }
+
+    private void fileChange() {
+        assert bcp != null;
+        synchronized (bcp.LOCK) {
+            resourcesCache = null;
+        }
+        support.firePropertyChange(PROP_RESOURCES, null, null);
+    }
+    public @Override void fileFolderCreated(FileEvent fe) {
+        fileChange();
+    }
+    public @Override void fileDataCreated(FileEvent fe) {
+        fileChange();
+    }
+    public @Override void fileChanged(FileEvent fe) {
+        fileChange();
+    }
+    public @Override void fileDeleted(FileEvent fe) {
+        fileChange();
+    }
+    public @Override void fileRenamed(FileRenameEvent fe) {
+        fileChange();
+    }
+    public @Override void fileAttributeChanged(FileAttributeEvent fe) {}
 
 }
