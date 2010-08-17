@@ -208,28 +208,28 @@ public class PHPFormatterQATest extends PHPTestBase {
     }
 
     //bug transformed to 189562
-//    public void test167162_1() throws Exception {
-//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/167162_1.php", options);
-//    }
+    public void test167162_1() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/167162_1.php", options);
+    }
 
     //bug transformed to 189562
-//    public void test167162_2() throws Exception {
-//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/167162_2.php", options);
-//    }
+    public void test167162_2() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/167162_2.php", options);
+    }
 
     //BUG transformed to 189560
-//    public void test163071() throws Exception {
-//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/163071.php", options);
-//    }
+    public void test163071() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/163071.php", options);
+    }
 
     //BUG transformed to 189562
-//    public void test168187() throws Exception {
-//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/168187.php", options);
-//    }
+    public void test168187() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/168187.php", options);
+    }
 
     public void test175427() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
