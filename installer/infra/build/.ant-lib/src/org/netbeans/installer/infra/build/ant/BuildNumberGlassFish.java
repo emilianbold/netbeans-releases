@@ -115,9 +115,12 @@ public class BuildNumberGlassFish extends Task {
             }
             if (matcher.find()) {
                 String buildType = "";
+                String releaseNumber = "";
                 int counter = 1;
                 if(matcher.groupCount() > 3) { //V2
 		    buildType = matcher.group(counter++);                           // NOMAGI
+                } else { // V3.X
+                    releaseNumber = matcher.group(counter++);                       // NOMAGI
                 }
                 final String milestoneNumberReal = 
                         matcher.group(counter++);                                   // NOMAGI
@@ -145,6 +148,9 @@ public class BuildNumberGlassFish extends Task {
                 getProject().setProperty(
                         prefix + BUILD_NUMBER_SUFFIX, 
                         buildNumber);
+                getProject().setProperty(
+                        prefix + RELEASE_NUMBER_SUFFIX, 
+                        releaseNumber);
             } else {
                 throw new BuildException(
                         "Cannot parse the input file."); // NOI18N
@@ -165,7 +171,7 @@ public class BuildNumberGlassFish extends Task {
             "sjsas-9_1_02-([a-z0-9]+)-bin-" + // NOI18N
             "b(([0-9]+)[a-z]?)-linux-([A-Za-z0-9_]+)\\.bin"); // NOI18N
     private static final Pattern PATTERN_V3 = Pattern.compile(            
-            "glassfish-3.0.1-web-b(([0-9]+)[a-z]?)\\.zip"); // NOI18N
+            "glassfish-([0-9]+[\\.0-9]+)-web-b(([0-9]+)[a-z]?)\\.zip"); // NOI18N
     
     /**
      * Date format used in the input file.
@@ -204,4 +210,10 @@ public class BuildNumberGlassFish extends Task {
      */
     private static final String BUILD_NUMBER_SUFFIX = 
             ".build.number"; // NOI18N
+
+    /**
+     * Release number property suffix.
+     */
+    private static final String RELEASE_NUMBER_SUFFIX = 
+            ".release.number"; // NOI18N
 }
