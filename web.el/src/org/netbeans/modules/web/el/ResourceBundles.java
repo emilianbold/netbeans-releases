@@ -90,7 +90,7 @@ public final class ResourceBundles {
 
     private final WebModule webModule;
     private final Project project;
-    private List<ResourceBundle> bundles;
+    private List<String> bundles;
     private Map<String, java.util.ResourceBundle> bundlesMap;
 
     private ResourceBundles(WebModule webModule, Project project) {
@@ -123,8 +123,8 @@ public final class ResourceBundles {
      * @return
      */
     public boolean isResourceBundleIdentifier(String identifier) {
-        for (ResourceBundle bundle : getBundles()) {
-            if (bundle.getBaseName().equals(identifier)) {
+        for (String bundle : getBundles()) {
+            if (bundle.equals(identifier)) {
                 return true;
             }
         }
@@ -147,7 +147,7 @@ public final class ResourceBundles {
         return bundleFile.containsKey(key);
     }
 
-    private List<ResourceBundle> getBundles() {
+    private List<String> getBundles() {
         if (bundles == null) {
             bundles = initJSFResourceBundles();
         }
@@ -160,20 +160,22 @@ public final class ResourceBundles {
      * @param webModule
      * @return
      */
-    private List<ResourceBundle> initJSFResourceBundles() {
+    private List<String> initJSFResourceBundles() {
         MetadataModel<JsfModel> model = JsfModelFactory.getModel(webModule);
         if (model == null) {
             return Collections.emptyList();
         }
         try {
-            return model.runReadAction(new MetadataModelAction<JsfModel, List<ResourceBundle>>() {
+            return model.runReadAction(new MetadataModelAction<JsfModel, List<String>>() {
 
                 @Override
-                public List<ResourceBundle> run(JsfModel metadata) throws Exception {
-                    List<ResourceBundle> result = new ArrayList<ResourceBundle>();
+                public List<String> run(JsfModel metadata) throws Exception {
                     List<Application> applications = metadata.getElements(Application.class);
+                    List<String> result = new ArrayList<String>();
                     for (Application application : applications) {
-                        result.addAll(application.getResourceBundles());
+                        for (ResourceBundle bundle : application.getResourceBundles()) {
+                            result.add(bundle.getBaseName());
+                        }
                     }
                     return result;
                 }
@@ -182,6 +184,9 @@ public final class ResourceBundles {
             LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ex);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ex);
+        } catch (IllegalStateException ise) {
+            // thrown from xdm (underlying the jsf model) when the model is broken
+            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ise);
         }
         return Collections.emptyList();
     }
@@ -207,8 +212,7 @@ public final class ResourceBundles {
         }
 
         SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (ResourceBundle bundle : getBundles()) {
-            String file = bundle.getBaseName();
+        for (String bundleFile : getBundles()) {
             for (SourceGroup sourceGroup : sourceGroups) {
                 FileObject rootFolder = sourceGroup.getRootFolder();
 
@@ -219,8 +223,8 @@ public final class ResourceBundles {
                     }
                     ClassLoader classLoader = classPath.getClassLoader(false);
                     try {
-                        java.util.ResourceBundle found = java.util.ResourceBundle.getBundle(file, Locale.getDefault(), classLoader);
-                        result.put(file, found);
+                        java.util.ResourceBundle found = java.util.ResourceBundle.getBundle(bundleFile, Locale.getDefault(), classLoader);
+                        result.put(bundleFile, found);
                         break; // found the bundle in source cp, skip searching compile cp
                     } catch (MissingResourceException exception) {
                         continue;
