@@ -67,8 +67,8 @@ import org.openide.util.RequestProcessor;
 public class RestServicesChildren extends Children.Keys {
     private Project project;
     private RestServicesListener listener;
-    
-    private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
+    private RequestProcessor.Task updateNodeTask = new RequestProcessor("RestServicesChildren-RP").create(new Runnable() { //NOI18N
+        @Override
         public void run() {
             updateKeys();
         }
