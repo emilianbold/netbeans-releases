@@ -79,7 +79,11 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
+import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.status.ClientConfiguration;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -371,7 +375,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return translateTargetModuleIDs(
+                        return translateTargetModuleIDsToPlugin(
                                 manager.getAvailableModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
@@ -400,7 +404,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return translateTargetModuleIDs(
+                        return translateTargetModuleIDsToPlugin(
                                 manager.getNonRunningModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
@@ -429,7 +433,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return translateTargetModuleIDs(
+                        return translateTargetModuleIDsToPlugin(
                                 manager.getRunningModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
@@ -547,7 +551,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
             return executeAction(new Action<ProgressObject>() {
                 @Override
                 public ProgressObject execute(DeploymentManager manager) throws ExecutionException {
-                    return manager.redeploy(targetModuleID, (File) null, null);
+                    return new ServerProgressObject(
+                            manager.redeploy(translateTargetModuleIDsToServer(targetModuleID), (File) null, null));
                 }
             });
         } catch (Exception ex) {
@@ -569,14 +574,36 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
     }
 
-    private TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
+    // XXX these are just temporary methods - should be replaced once we will
+    // use our own TargetModuleID populated via JMX
+    private TargetModuleID[] translateTargetModuleIDsToPlugin(TargetModuleID[] ids) {
         if (ids == null) {
             return null;
         }
 
         TargetModuleID[] mapped = new TargetModuleID[ids.length];
         for (int i = 0; i < ids.length; i++) {
-            mapped[i] = new ServerTargetModuleID(ids[i]);
+            if (!(ids[i] instanceof ServerTargetModuleID)) {
+                mapped[i] = new ServerTargetModuleID(ids[i]);
+            } else {
+                mapped[i] = ids[i];
+            }
+        }
+        return mapped;
+    }
+
+    private TargetModuleID[] translateTargetModuleIDsToServer(TargetModuleID[] ids) {
+        if (ids == null) {
+            return null;
+        }
+
+        TargetModuleID[] mapped = new TargetModuleID[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] instanceof ServerTargetModuleID) {
+                mapped[i] = ((ServerTargetModuleID) ids[i]).moduleId;
+            } else {
+                mapped[i] = ids[i];
+            }
         }
         return mapped;
     }
@@ -618,6 +645,26 @@ public class WLDeploymentManager implements DeploymentManager2 {
             if (f.isFile()) {
                 addURL(f.toURL());
             }
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            Class<?> clazz = super.findClass(name);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                String filename = name.replace('.', '/'); // NOI18N
+                int index = filename.indexOf('$'); // NOI18N
+                if (index > 0) {
+                    filename = filename.substring(0, index);
+                }
+                filename = filename + ".class"; // NOI18N
+
+                URL url = this.getResource(filename);
+                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
+                if (url != null) {
+                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
+                }
+            }
+            return clazz;
         }
 
         @Override
@@ -680,7 +727,61 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
         @Override
         public TargetModuleID[] getChildTargetModuleID() {
-            return translateTargetModuleIDs(moduleId.getChildTargetModuleID());
+            return translateTargetModuleIDsToPlugin(moduleId.getChildTargetModuleID());
+        }
+    }
+
+    private class ServerProgressObject implements ProgressObject {
+
+        private final ProgressObject po;
+
+        public ServerProgressObject(ProgressObject po) {
+            this.po = po;
+        }
+
+        @Override
+        public boolean isStopSupported() {
+            return po.isStopSupported();
+        }
+
+        @Override
+        public boolean isCancelSupported() {
+            return po.isCancelSupported();
+        }
+
+        @Override
+        public TargetModuleID[] getResultTargetModuleIDs() {
+            return translateTargetModuleIDsToPlugin(po.getResultTargetModuleIDs());
+        }
+
+        @Override
+        public DeploymentStatus getDeploymentStatus() {
+            return po.getDeploymentStatus();
+        }
+
+        @Override
+        public ClientConfiguration getClientConfiguration(TargetModuleID tmid) {
+            return po.getClientConfiguration(tmid);
+        }
+
+        @Override
+        public void stop() throws OperationUnsupportedException {
+            po.stop();
+        }
+
+        @Override
+        public void cancel() throws OperationUnsupportedException {
+            po.cancel();
+        }
+
+        @Override
+        public void addProgressListener(ProgressListener pl) {
+            po.addProgressListener(pl);
+        }
+
+        @Override
+        public void removeProgressListener(ProgressListener pl) {
+            po.removeProgressListener(pl);
         }
     }
 
