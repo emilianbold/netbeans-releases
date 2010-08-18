@@ -404,7 +404,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     iur.setResourceFetcher( new WagonFetcher( wagonManager, listener, null ) );
                     remoteIndexUpdater.fetchAndUpdateIndex(iur);
                 } finally {
-                    listener.transferCompleted(null);
+                    listener.close();
                 }
             } else {
                 LOGGER.finer("Indexing Local Repository :" + repo.getId());//NOI18N
@@ -412,7 +412,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 try {
                     indexer.scan(indexingContext, listener, updateLocal);
                 } finally {
-                    listener.scanningFinished(null, null);
+                    listener.close();
                 }
             }
         } catch (Cancellation x) {
