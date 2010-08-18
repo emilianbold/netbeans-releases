@@ -810,7 +810,9 @@ class LuceneIndex extends Index {
                 } finally {                        
                     if (memDir != null) {
                         assert cachePolicy.hasMemCache();
-                        this.ref.clear();
+                        if (this.ref != null) {
+                            this.ref.clear();
+                        }
                         final Directory tmpDir = this.memDir;
                         memDir = null;
                         tmpDir.close();
