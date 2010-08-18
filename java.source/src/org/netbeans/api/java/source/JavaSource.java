@@ -860,5 +860,10 @@ public final class JavaSource {
         public Map<?, int[]> getTagsFromModificationResult(ModificationResult mr) {
             return mr.tag2Span;
         }
+
+        @Override
+        public ClassIndex createClassIndex(ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, boolean supportsChanges) {
+            return new ClassIndex(bootPath, classPath, sourcePath, supportsChanges);
+        }
     }                                                
 }

@@ -696,12 +696,16 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     }
 
     private class TypeComparator implements Comparator<TypeDescriptor> {
+        
+        private final String mainProjectName;
+        
+        private TypeComparator() {
+            final Project mainProject = OpenProjects.getDefault().getMainProject();
+            mainProjectName = mainProject == null ? null : ProjectUtils.getInformation(mainProject).getDisplayName();
+        }
+        
         public int compare(TypeDescriptor t1, TypeDescriptor t2) {
-            Project mainProject = OpenProjects.getDefault().getMainProject();
-            String mainProjectname = null;
-            if (mainProject != null) {
-                mainProjectname = ProjectUtils.getInformation(mainProject).getDisplayName();
-            }
+            
             String t1Name = t1.getTypeName();
             String t2Name = t2.getTypeName();
 
@@ -711,7 +715,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 String t2projectName = t2.getProjectName();
                 if (t1projectName != null && t2projectName != null) {
                     // prioritize types from main project
-                    if (mainProjectname != null && t1projectName.equals(mainProjectname)) {
+                    if (mainProjectName != null && t1projectName.equals(mainProjectName)) {
                         return -1;
                     }
 

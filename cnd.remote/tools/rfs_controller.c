@@ -144,7 +144,10 @@ static void serve_connection(void* data) {
                         if (emulate) {
                             response[0] = response_ok;
                         } else
-                        fgets(response, sizeof response, stdin);
+                        if (!fgets(response, sizeof response, stdin)) {
+                            trace("Input stream closed. Exiting.\n");
+                            break;
+                        }
                         fd->state = (response[0] == response_ok) ? COPIED : ERROR;
                         pthread_mutex_unlock(&mutex);
                         trace("File %s state %c - got from LC %s, replying %s\n", filename, (char) fd->state, response, response);
@@ -404,14 +407,18 @@ static int init() {
     trace("Initialization\n");
     int bufsize = 256;
     char buffer[bufsize];
-    fgets(buffer, bufsize, stdin);
-    if ( strncmp("VERSION=", buffer, 8) != 0 ) {
-        report_error("protocol error: first line shoud start with VERSION: %s\n", buffer);
-        return false;
-    }
-    protocol_version = buffer[8];
-    if (protocol_version != VERSION_1 && protocol_version != VERSION_2) {
-        report_error("protocol error: unexpected version: %s\n", buffer);
+    if(fgets(buffer, bufsize, stdin)) {
+        if ( strncmp("VERSION=", buffer, 8) != 0 ) {
+            report_error("protocol error: first line shoud start with VERSION: %s\n", buffer);
+            return false;
+        }
+        protocol_version = buffer[8];
+        if (protocol_version != VERSION_1 && protocol_version != VERSION_2) {
+            report_error("protocol error: unexpected version: %s\n", buffer);
+            return false;
+        }
+    } else {
+        report_error("protocol error during initialization: unexpected EOF\n");
         return false;
     }
 }
@@ -429,7 +436,10 @@ static int init_files() {
     file_elem* tail = NULL;
     start_adding_file_data();
     while (1) {
-        fgets(buffer, bufsize, stdin);
+        if( !fgets(buffer, bufsize, stdin)) {
+            report_error("protocol error while reading file info: unexpected EOF\n");
+            return false;
+        }
         if (buffer[0] == '\n') {
             success = true;
             break;
@@ -464,7 +474,10 @@ static int init_files() {
             create_dir(path);
         } else if (state == LINK) { // symbolic link
             char lnk_src[bufsize]; // it is followed by a line that contains the link source
-            fgets(lnk_src, sizeof lnk_src, stdin);
+            if( !fgets(lnk_src, sizeof lnk_src, stdin)) {
+                report_error("protocol error while reading link info: unexpected EOF\n");
+                return false;
+            }
             char* lf = strchr(lnk_src, '\n');
             if (lf) {
                 *lf = 0;

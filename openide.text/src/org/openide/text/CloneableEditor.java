@@ -53,6 +53,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -61,14 +62,16 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.*;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import org.netbeans.modules.openide.text.Installer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.windows.*;
 
 /** Cloneable top component to hold the editor kit.
@@ -879,32 +882,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     @Override
     public Action[] getActions() {
-        Action[] a = super.getActions();
-
-        try {
-            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-
-            if (l == null) {
-                l = getClass().getClassLoader();
-            }
-
-            Class<? extends SystemAction> c = Class.forName("org.openide.actions.FileSystemAction", true, l).asSubclass(SystemAction.class); // NOI18N
-            SystemAction ra = SystemAction.findObject(c, true);
-
-            Class<? extends SystemAction> c2 = Class.forName("org.netbeans.modules.diff.DiffAction", true, l).asSubclass(SystemAction.class); // NOI18N
-            SystemAction ra2 = SystemAction.findObject(c2, true);           
-            
-            Action[] a2 = new Action[a.length + 2];
-            System.arraycopy(a, 0, a2, 0, a.length);
-            a2[a.length] = ra;
-            a2[a.length + 1] = ra2;
-
-            return a2;
-        } catch (Exception ex) {
-            // ok, we no action like this I guess
-        }
-
-        return a;
+        List<Action> actions = new ArrayList<Action>(Arrays.asList(super.getActions()));
+        // XXX nicer to use MimeLookup for type-specific actions, but not easy; see org.netbeans.modules.editor.impl.EditorActionsProvider
+        actions.add(null);
+        actions.addAll(Utilities.actionsForPath("Editors/TabActions"));
+        return actions.toArray(new Action[actions.size()]);
     }
 
     /** Transfer the focus to the editor pane.

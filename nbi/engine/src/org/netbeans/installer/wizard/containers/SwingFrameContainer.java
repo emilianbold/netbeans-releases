@@ -642,18 +642,24 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             // descriptionPane //////////////////////////////////////////////////////
             descriptionPane = new NbiTextPane();
+
+            NbiPanel titleDescriptionPanel = new NbiPanel();
+            titleDescriptionPanel.setLayout(new GridBagLayout());
+            titleDescriptionPanel.setOpaque(true);
             
             // titlePanel ///////////////////////////////////////////////////////////
             titlePanel = new NbiPanel();
             
             titlePanel.setLayout(new GridBagLayout());
             titlePanel.setOpaque(true);
+            titlePanel.setBackground(Color.WHITE);
+            titleDescriptionPanel.setBackground(Color.WHITE);
 
             final String backgroundImageUri = System.getProperty(WIZARD_FRAME_HEAD_BACKGROUND_IMAGE_URI_PROPERTY);
             if(backgroundImageUri != null) {
-                titlePanel.setBackgroundImage(backgroundImageUri, NbiPanel.ANCHOR_FULL);
+                titleDescriptionPanel.setBackgroundImage(backgroundImageUri, NbiPanel.ANCHOR_FULL);
             } else {
-                titlePanel.setBackground(Color.WHITE);
+                titleDescriptionPanel.setBackground(Color.WHITE);
             }
 
             final String leftImageUri = System.getProperty(WIZARD_FRAME_HEAD_LEFT_IMAGE_URI_PROPERTY);
@@ -711,22 +717,33 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     topSeparator.setPreferredSize(d);
                 }
             }
-            titlePanel.add(titleLabel, new GridBagConstraints(
-                    titlePanelDx , 0,                             // x, y
+
+            titleDescriptionPanel.add(titleLabel, new GridBagConstraints(
+                    0 , 0,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.BOTH,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
-            titlePanel.add(descriptionPane, new GridBagConstraints(
-                    titlePanelDx, 1,                             // x, y
+            titleDescriptionPanel.add(descriptionPane, new GridBagConstraints(
+                    0, 1,                             // x, y
                     1, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.BOTH,          // fill
                     new Insets(6, 22, 4, 11),        // padding
                     0, 0));                           // padx, pady - ???
+
+            titlePanel.add(titleDescriptionPanel, new GridBagConstraints(
+                    titlePanelDx , 0,                             // x, y
+                    1, 2,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),        // padding
+                    0, 0));                           // padx, pady - ???
+            
             titlePanel.add(topSeparator, new GridBagConstraints(
                     0, 2,                             // x, y
                     2 + titlePanelDx, 1,                             // width, height

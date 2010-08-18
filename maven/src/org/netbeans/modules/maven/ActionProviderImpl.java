@@ -117,10 +117,12 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class ActionProviderImpl implements ActionProvider {
 
+    public static final String BUILD_WITH_DEPENDENCIES = "build-with-dependencies"; // NOI18N
+
     private final NbMavenProjectImpl project;
     private static String[] supported = new String[]{
         COMMAND_BUILD,
-        "build-with-dependencies", //NOI18N
+        BUILD_WITH_DEPENDENCIES,
         COMMAND_CLEAN,
         COMMAND_REBUILD,
         "javadoc", //NOI18N
@@ -622,7 +624,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     public static Action buildWithDependenciesAction() {
-        return ProjectSensitiveActions.projectCommandAction("build-with-dependencies", NbBundle.getMessage(MavenProjectNode.class, "ACT_Build_Deps"), null);
+        return ProjectSensitiveActions.projectCommandAction(BUILD_WITH_DEPENDENCIES, NbBundle.getMessage(MavenProjectNode.class, "ACT_Build_Deps"), null);
     }
 
     /*

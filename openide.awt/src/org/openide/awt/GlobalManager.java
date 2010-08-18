@@ -69,7 +69,7 @@ import org.openide.util.WeakSet;
 /** Listener on a global context.
  */
 class GlobalManager extends Object implements LookupListener {
-    private static Logger LOG = GeneralAction.LOG;
+    private static final Logger LOG = GeneralAction.LOG;
     
     private static final Map<LookupRef, Reference<GlobalManager>> CACHE = new HashMap<LookupRef, Reference<GlobalManager>>();
     private static final Map<LookupRef, Reference<GlobalManager>> SURVIVE = new HashMap<LookupRef, Reference<GlobalManager>>();
@@ -117,7 +117,7 @@ class GlobalManager extends Object implements LookupListener {
         ActionMap map = actionMap.get();
         Action a = (map == null) ? null : map.get(key);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Action for key: " + key + " is: " + a); // NOI18N
+            LOG.log(Level.FINE, "Action for key: {0} is: {1}", new Object[]{key, a}); // NOI18N
         }
         
         return a;
@@ -154,13 +154,14 @@ class GlobalManager extends Object implements LookupListener {
     }
     
     /** Change all that do not survive ActionMap change */
-    public void resultChanged(org.openide.util.LookupEvent ev) {
+    @Override
+    public final void resultChanged(org.openide.util.LookupEvent ev) {
         Collection<? extends Lookup.Item<? extends ActionMap>> all = result.allItems();
         ActionMap a = all.isEmpty() ? null : all.iterator().next().getInstance();
         
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("changed map : " + a); // NOI18N
-            LOG.fine("previous map: " + actionMap.get()); // NOI18N
+            LOG.log(Level.FINE, "changed map : {0}", a); // NOI18N
+            LOG.log(Level.FINE, "previous map: {0}", actionMap.get()); // NOI18N
         }
         
         final ActionMap prev = actionMap.get();
@@ -170,13 +171,14 @@ class GlobalManager extends Object implements LookupListener {
         
         final ActionMap newMap = newMap(prev, a);
         
-        actionMap = new WeakReference<ActionMap>(a);
+        actionMap = new WeakReference<ActionMap>(newMap);
         
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("clearActionPerformers"); // NOI18N
         }
         
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 notifyListeners(prev, newMap);
             }
@@ -233,6 +235,7 @@ class GlobalManager extends Object implements LookupListener {
             this.survive = survive;
         }
         
+        @Override
         public void run() {
             clearCache(context, this, survive);
         }
@@ -259,7 +262,10 @@ class GlobalManager extends Object implements LookupListener {
                 if (all != null) {
                     old.addAll(Arrays.asList(all));
                     if (newMap != null) {
-                        old.removeAll(Arrays.asList(newMap.allKeys()));
+                        Object[] toRem = newMap.allKeys();
+                        if (toRem != null) {
+                            old.removeAll(Arrays.asList(toRem));
+                        }
                     }
                 }
             }

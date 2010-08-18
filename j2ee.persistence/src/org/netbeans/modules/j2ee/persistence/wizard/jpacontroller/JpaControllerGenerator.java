@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.jpacontroller;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -56,6 +58,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -103,7 +106,7 @@ public class JpaControllerGenerator {
     public static void generateJpaController(Project project, final String entityClass, final String controllerClass, String exceptionPackage, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, boolean managed) throws IOException {
         final boolean isInjection = Util.isContainerManaged(project) && managed;
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
-        String persistenceUnit = getPersistenceUnitAsString(project, entityClass);
+        String persistenceUnit = Util.getPersistenceUnitAsString(project, entityClass);
         final String fieldName = JpaControllerUtil.fieldFromClassName(simpleEntityName);
 
         final List<ElementHandle<ExecutableElement>> idGetter = new ArrayList<ElementHandle<ExecutableElement>>();
@@ -121,7 +124,8 @@ public class JpaControllerGenerator {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement jc = controller.getElements().getTypeElement(entityClass);
-                arrEntityClassFO[0] = org.netbeans.api.java.source.SourceUtils.getFile(jc, controller.getClasspathInfo());
+                ElementHandle<TypeElement> elementHandle = ElementHandle.create(jc);
+                arrEntityClassFO[0] = org.netbeans.api.java.source.SourceUtils.getFile(elementHandle, controller.getClasspathInfo());
                 fieldAccess[0] = JpaControllerUtil.isFieldAccess(jc);
                 for (ExecutableElement method : JpaControllerUtil.getEntityMethods(jc)) {
                     String methodName = method.getSimpleName().toString();
@@ -156,61 +160,15 @@ public class JpaControllerGenerator {
         if (arrEntityClassFO[0] != null) {
             addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
         }
-        
+
+        ClassPath cp = Util.getFullClasspath(pkg);
+        boolean isAnnotation = cp.findResource("javax/faces/bean/ManagedBean.class") != null; //NOI18N
+
+        addImplementsClause(controllerFileObject, controllerClass, "java.io.Serializable"); //NOI18N
         controllerFileObject = generateJpaController(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerClass, exceptionPackage,
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, getPersistenceVersion(project));
     }
     
-    private static String getPersistenceUnitAsString(Project project, String entity) throws IOException {
-        String persistenceUnit = null;
-        PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
-        if (persistenceScopes.length > 0) {
-            FileObject persXml = persistenceScopes[0].getPersistenceXml();
-            if (persXml != null) {
-                Persistence persistence = PersistenceMetadata.getDefault().getRoot(persXml);
-                PersistenceUnit units[] = persistence.getPersistenceUnit();
-                if (units.length > 0) {
-                    persistenceUnit = units[0].getName();
-                    if(units.length>1) {//find best
-                        String forAll=null;
-                        String forOne=null;
-                        for(int i=0;i<units.length && forOne==null;i++) {
-                            PersistenceUnit tmp=units[i];
-                            if(forAll ==null && !tmp.isExcludeUnlistedClasses()) forAll=tmp.getName();//first match sutable for all entities in the project
-                            if(tmp.isExcludeUnlistedClasses()) {
-                                String []classes = tmp.getClass2();
-                                for(String clas:classes){
-                                    if(entity.equals(clas)) {
-                                        forOne = tmp.getName();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        //try again with less restrictions (i.e. for j2se even without exclude-unlisted-classes node, it's by default true)
-                        if(forOne==null && forAll!=null){//there is exist pu without exclude-unlisted-classes
-                            for(int i=0;i<units.length && forOne==null;i++) {
-                                PersistenceUnit tmp=units[i];
-                                if(!tmp.isExcludeUnlistedClasses()) {//verify only pu without exclude-unlisted-classes as all other was examined in previos try
-                                    String []classes = tmp.getClass2();
-                                    for(String clas:classes){
-                                        if(entity.equals(clas)) {
-                                            forOne = tmp.getName();
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        persistenceUnit = forOne != null ? forOne : (forAll != null ? forAll : persistenceUnit);
-                    }
-                }
-            }
-        }
-        return persistenceUnit;
-    }
-
     private static String getPersistenceVersion(Project project) throws IOException {
         String version = Persistence.VERSION_1_0;
         PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
@@ -224,6 +182,37 @@ public class JpaControllerGenerator {
         return version;
     }
 
+     private static void addAnnotation(FileObject fileObject, final String className, final String annotationName, final String[] argNames, final Object[] argValues) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final boolean[] modified = new boolean[] { false };
+        ModificationResult modificationResult = javaSource.runModificationTask(new Task<WorkingCopy>() {
+            @Override
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
+                TypeMirror annotationType = workingCopy.getElements().getTypeElement(annotationName).asType();
+                if (!workingCopy.getTypes().isSubtype(typeElement.asType(), annotationType)) {
+                    ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
+                    AnnotationInfo annotation = new AnnotationInfo(annotationName,argNames, argValues);
+                    GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
+                    List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
+                    int i = 0;
+                    if (argNames != null) {
+                        for (String arg : argNames) {
+                            arguments.add(generationUtils.createAnnotationArgument(arg, argValues[i++]));
+                        }
+                    }
+                    AnnotationTree annotationTree =  generationUtils.createAnnotation(annotation.getType(),arguments);
+                    ClassTree newClassTree = generationUtils.addAnnotation(classTree, annotationTree);
+                    modified[0] = true;
+                    workingCopy.rewrite(classTree, newClassTree);
+                }
+            }
+        });
+        if (modified[0]) {
+            modificationResult.commit();
+        }
+    }
     private static void addImplementsClause(FileObject fileObject, final String className, final String interfaceName) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] modified = new boolean[] { false };
@@ -235,8 +224,9 @@ public class JpaControllerGenerator {
                 TypeMirror interfaceType = workingCopy.getElements().getTypeElement(interfaceName).asType();
                 if (!workingCopy.getTypes().isSubtype(typeElement.asType(), interfaceType)) {
                     ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-                    GenerationUtils.newInstance(workingCopy).addImplementsClause(classTree, interfaceName);
+                    ClassTree newClassTree = GenerationUtils.newInstance(workingCopy).addImplementsClause(classTree, interfaceName);
                     modified[0] = true;
+                    workingCopy.rewrite(classTree, newClassTree);
                 }
             }
         });
@@ -312,23 +302,23 @@ public class JpaControllerGenerator {
                     
                     CompilationUnitTree modifiedImportCut = null;
                     
-                    AnnotationInfo[] annotations = null;
+                    List<String> parameterTypes = new ArrayList<String>();
+                    List<String> parameterNames = new ArrayList<String>();
+                    String body = "";   //NOI18N
                     if (isInjection) {
-                        annotations = new AnnotationInfo[1];
-                        annotations[0] = new AnnotationInfo("javax.annotation.Resource");
-                        modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "utx", "javax.transaction.UserTransaction", privateModifier, null, annotations);
-                        
-                        if (persistenceUnit == null) {
-                            annotations[0] = new AnnotationInfo("javax.persistence.PersistenceUnit");
-                        } else {
-                            annotations[0] = new AnnotationInfo("javax.persistence.PersistenceUnit", new String[]{"unitName"}, new Object[]{persistenceUnit});
-                        }
-                    } else {
-                        modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "javax.persistence.Persistence");
-                        MethodInfo mi = new MethodInfo("<init>", publicModifier, "void", null, null, null, "emf = Persistence.createEntityManagerFactory(\"" + persistenceUnit + "\");", null, null);
-                        modifiedClassTree = JpaControllerUtil.TreeMakerUtils.modifyDefaultConstructor(classTree, modifiedClassTree, workingCopy, mi);
+                        modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "utx", "javax.transaction.UserTransaction", privateModifier, null, null);   //NOI18N
+                        parameterTypes.add("javax.transaction.UserTransaction");   //NOI18N
+                        parameterNames.add("utx");   //NOI18N
+                        body = "this.utx = utx;\n";   //NOI18N
+
                     }
-                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "emf", "javax.persistence.EntityManagerFactory", privateModifier, null, annotations);
+                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "emf", "javax.persistence.EntityManagerFactory", privateModifier, null, null);   //NOI18N
+                    parameterTypes.add("javax.persistence.EntityManagerFactory");   //NOI18N
+                    parameterNames.add("emf");   //NOI18N
+                    body += "this.emf = emf;";   //NOI18N
+                    MethodInfo mi = new MethodInfo("<init>", publicModifier, "void", null, parameterTypes.toArray(new String[parameterTypes.size()]),   //NOI18N
+                                                    parameterNames.toArray(new String[parameterNames.size()]), body, null, null);
+                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.modifyDefaultConstructor(classTree, modifiedClassTree, workingCopy, mi);
                     
                     MethodInfo methodInfo = new MethodInfo("getEntityManager", publicModifier, "javax.persistence.EntityManager", null, null, null, "return emf.createEntityManager();", null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);

@@ -80,13 +80,11 @@ public class WLMutableState {
             return;
         }
 
-        String domainDir = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-        // null may happen during the registration
-        if (domainDir != null) {
-            File domainXML = new File(domainDir + File.separator + "config" + File.separator + "config.xml");
+        File domainConfig = WLPluginProperties.getDomainConfigFile(ip);
+        if (domainConfig != null) {
             domainListener = new DomainChangeListener();
             // weak reference
-            FileUtil.addFileChangeListener(domainListener, domainXML);
+            FileUtil.addFileChangeListener(domainListener, domainConfig);
         }
     }
 
