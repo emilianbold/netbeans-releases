@@ -70,6 +70,17 @@ public final class ELElement {
         return originalOffset;
     }
 
+    /**
+     * Gets the offset of the given {@code node} in the original document.
+     * @param node a node contained by this element.
+     * @return
+     */
+    public OffsetRange getOriginalOffset(Node node) {
+        int start = originalOffset.getStart() + node.startOffset();
+        int end = start + (node.endOffset() - node.startOffset());
+        return new OffsetRange(start, end);
+    }
+
     public boolean isValid() {
         return error == null;
     }

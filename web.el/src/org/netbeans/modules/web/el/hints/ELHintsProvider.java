@@ -40,58 +40,67 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.el;
+package org.netbeans.modules.web.el.hints;
 
-import org.netbeans.api.lexer.Language;
+import com.sun.el.parser.AstIdentifier;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
-import org.netbeans.modules.web.el.hints.ELHintsProvider;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
- * CSL language for Expression Language
+ * Hints provider for Expression Language.
  *
  * @author Erno Mononen
  */
-@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
-@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
-public class ELLanguage extends DefaultLanguageConfig {
+public final class ELHintsProvider implements HintsProvider {
 
-    public static final String MIME_TYPE = "text/x-el"; //NOI18N
-
-    @Override
-    public Language getLexerLanguage() {
-        return ELTokenId.language();
+    enum Kind {
+        DEFAULT
     }
 
     @Override
-    public String getDisplayName() {
-        return "EL";
+    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
     }
 
     @Override
-    public Parser getParser() {
-        return new ELParser();
+    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
     }
 
     @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new ELIndexer.Factory();
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
     }
 
     @Override
-    public boolean hasHintsProvider() {
-        return true;
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        // computing the all hints - not just errors - due to #189590
+        ELRuleContext elContext = (ELRuleContext) context;
+        Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
+        List<? extends ELRule> ids = (List<? extends ELRule>) allHints.get(Kind.DEFAULT);
+        for (ELRule rule : ids) {
+            if (manager.isEnabled(rule)) {
+                rule.run(elContext, hints);
+            }
+        }
     }
 
     @Override
-    public HintsProvider getHintsProvider() {
-        return new ELHintsProvider();
+    public void cancel() {
     }
 
+    @Override
+    public List<Rule> getBuiltinRules() {
+        return null;
+    }
+
+    @Override
+    public ELRuleContext createRuleContext() {
+        return new ELRuleContext();
+    }
 
 }
