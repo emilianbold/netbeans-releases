@@ -438,7 +438,13 @@ public class Util {
         }
 
         String version = (lib != null && libIsAdded) ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
-
+        if(provider != null && version != null){
+            String provVersion = ProviderUtil.getVersion(provider);
+            if(provVersion != null){
+                //even if project support jpa 2.0 etc, but selected provider is reported as jpa1.0 use jpa1.0
+                if(Double.parseDouble(version)>Double.parseDouble(provVersion)) version = provVersion;
+            }
+        }
         PersistenceUnit punit = null;
         if (Persistence.VERSION_2_0.equals(version)) {
             punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
