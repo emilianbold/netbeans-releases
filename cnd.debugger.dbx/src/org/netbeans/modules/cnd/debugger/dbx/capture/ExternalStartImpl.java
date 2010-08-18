@@ -49,7 +49,6 @@ import org.openide.NotifyDescriptor;
 
 import com.sun.tools.swdev.glue.*;
 import com.sun.tools.swdev.glue.xstart.*;
-import org.netbeans.modules.cnd.debugger.common2.utils.GlueNotifierThread;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
@@ -114,13 +113,13 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
 
 	// always start a new one because apparently you cannot
 	// deregister and re-register a service under glue.
-	Notifier notifier = GlueNotifierThread.getNotifier();
+	Notifier notifier = NotifierThread.notifier();
 	if (svc == null) {
 	    svc = new MyExternalStartService(notifier);
 	    svc.limit_hard(getMaxRequests());
 	    success = svc.svc_register(null);
 	    if (success) {
-		GlueNotifierThread.runNotifier();
+		NotifierThread.runNotifier();
 	    }
 	}
 

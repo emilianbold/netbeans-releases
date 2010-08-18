@@ -76,13 +76,13 @@ import com.sun.tools.swdev.glue.Glue;
 import com.sun.tools.swdev.glue.Master;
 import com.sun.tools.swdev.glue.NetAddr;
 import com.sun.tools.swdev.glue.Notifier;
+import com.sun.tools.swdev.glue.NotifierThread;
 import com.sun.tools.swdev.glue.Surrogate;
 import com.sun.tools.swdev.glue.HostInfo;
 
 import com.sun.tools.swdev.glue.dbx.*;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
-import org.netbeans.modules.cnd.debugger.common2.utils.GlueNotifierThread;
 import org.netbeans.modules.cnd.debugger.common2.utils.PhasedProgress;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
@@ -617,7 +617,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 		    else
 			listenOn = EnumSet.of(Master.ListenOn.REMOTE);
 
-		    master = new Master(GlueNotifierThread.getNotifier(),
+		    master = new Master(NotifierThread.notifier(),
 					syncStyle,
 					keyStyle,
 					listenOn,
@@ -664,7 +664,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    // (DebuggerEngine) until we have a solid connection.
 
 	    tentativeDbx = getDbx(this,
-				  GlueNotifierThread.getNotifier(),
+				  NotifierThread.notifier(),
 				  flags,
 				  connectExisting,
 				  connectExisting? null: master);
@@ -935,7 +935,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 		                      "runNotifier\n"); // NOI18N
 		}
 
-		GlueNotifierThread.runNotifier();
+		NotifierThread.runNotifier();
 
 
 		timer = new ConnectTimer();
