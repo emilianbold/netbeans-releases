@@ -60,7 +60,6 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 /**
@@ -149,17 +148,8 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
     
     abstract URI[] createPath();
     
-    //to be overriden by subclasses..
-    protected FilteringPathResourceImplementation getFilteringResources() {
-        return null;
-    }
-
     private List<PathResourceImplementation> getPath() {
         List<PathResourceImplementation> base = getPath(createPath());
-        FilteringPathResourceImplementation filtering = getFilteringResources();
-        if (filtering != null) {
-            base.add(filtering);
-        }
         return Collections.<PathResourceImplementation>unmodifiableList(base);
     }
     

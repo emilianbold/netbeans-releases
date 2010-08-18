@@ -84,7 +84,6 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
@@ -93,9 +92,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Mutex;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -206,20 +203,25 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private synchronized ClassLoader getWLClassLoader() {
         if (classLoader == null) {
-            String serverRoot = getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-            // if serverRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> WLPluginProperties singleton contains
-            // install location of the instance being registered
-            if (serverRoot == null) {
-                serverRoot = WLPluginProperties.getInstance().getInstallLocation();
-            }
-
+            LOGGER.log(Level.FINE, "Creating classloader for {0}", this.getUri());
             try {
-                URL[] urls = new URL[] {new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
-                classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
+                File serverLib = WLPluginProperties.getServerLibDirectory(this, true);
+                if (serverLib == null) {
+                    LOGGER.log(Level.WARNING, "The server library directory does not exist for {0}", this.getUri());
+                } else {
+                    File weblogicJar = new File(serverLib, "weblogic.jar"); // NOI18N
+                    if (!weblogicJar.exists()) {
+                        LOGGER.log(Level.WARNING, "File weblogic.jar does not exist for {0}", this.getUri());
+                    }
+                    URL[] urls = new URL[] {FileUtil.normalizeFile(weblogicJar).toURI().toURL()};
+                    classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
+                    LOGGER.log(Level.FINE, "Classloader for {0} created successfully", this.getUri());
+                    return classLoader;
+                }
             } catch (MalformedURLException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
+            classLoader = new WLClassLoader(new URL[] {}, WLDeploymentManager.class.getClassLoader());
         }
         return classLoader;
     }
@@ -567,24 +569,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
     }
 
-    public void checkFailedAuthentication(String line) {
-        if (line != null && line.contains("failed to be authenticated")) { // NOI18N
-            Mutex.EVENT.readAccess(new Runnable() {
-
-                @Override
-                public void run() {
-                    String title = NbBundle.getMessage(WLDeploymentManager.class, "LBL_Failed_Authentication_Title");
-                    String msg = NbBundle.getMessage(WLDeploymentManager.class, "MSG_Failed_Authentication_Message");
-
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
-                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-                        ServerManager.showCustomizer(uri);
-                    }
-                }
-            });
-        }
-    }
-
     private TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
         if (ids == null) {
             return null;
@@ -626,7 +610,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private static class WLClassLoader extends URLClassLoader {
 
-        public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException {
+        public WLClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
         }
 

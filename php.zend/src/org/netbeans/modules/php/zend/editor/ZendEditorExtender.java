@@ -59,6 +59,9 @@ import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
@@ -117,18 +120,32 @@ public class ZendEditorExtender extends EditorExtender {
         private final String actionName;
         private final FileObject action;
         private final PHPParseResult actionParseResult;
-        private final PhpVariable view = new PhpVariable("$this", new PhpClass("Zend_View_Interface", "Zend_View_Interface")); // NOI18N
+        private final PhpVariable view; // NOI18N
 
         private String className = null;
         private String methodName = null;
 
-        public ZendControllerVisitor(FileObject view, PHPParseResult actionParseResult) {
-            assert view != null;
+        public ZendControllerVisitor(FileObject viewFile, PHPParseResult actionParseResult) {
+            assert viewFile != null;
             assert actionParseResult != null;
-
+            Index index = actionParseResult.getModel().getIndexScope().getIndex();
+            Set<InterfaceElement> interfaces = index.getInterfaces(NameKind.exact("Zend_View_Interface"));//NOI18N
+            PhpClass phpClass = null;
+            if (interfaces.size() > 0) {
+                InterfaceElement zendViewIface = interfaces.iterator().next();
+                phpClass = new PhpClass("Zend_View_Interface", "Zend_View_Interface", zendViewIface.getOffset());//NOI18N
+                phpClass.setFile(zendViewIface.getFileObject());
+            } else {
+                phpClass = new PhpClass("Zend_View_Interface", "Zend_View_Interface");//NOI18N
+            }
+            this.view = new PhpVariable("$this", phpClass);// NOI18N
+            FileObject file = phpClass.getFile();
+            if (file != null) {
+                this.view.setFile(file);
+            }
             this.actionParseResult = actionParseResult;
-            actionName = ZendUtils.getActionName(view);
-            action = ZendUtils.getAction(view);
+            actionName = ZendUtils.getActionName(viewFile);
+            action = ZendUtils.getAction(viewFile);
         }
 
         @Override

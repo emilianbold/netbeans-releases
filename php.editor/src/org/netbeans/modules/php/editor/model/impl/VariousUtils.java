@@ -56,9 +56,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.NamespaceIndexFilter;
-import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -71,11 +68,6 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.QualifiedNameKind;
-import org.netbeans.modules.php.editor.api.elements.ClassElement;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -473,20 +465,17 @@ public class VariousUtils {
                             fldName = "$" + fldName;//NOI18N
                         }
                         for (TypeScope type : oldRecentTypes) {
-                            if (type instanceof ClassScope) {
-                                ClassScope cls = (ClassScope) type;
-                                Collection<? extends FieldElement> inheritedFields = IndexScopeImpl.getFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
-                                for (FieldElement fieldElement : inheritedFields) {
-                                    if (var != null) {
-                                        final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
-                                        if (fieldTypes.isEmpty() && (fieldElement instanceof FieldElementImpl)) {
-                                            newRecentTypes.addAll(((FieldElementImpl)fieldElement).getDefaultTypes());
-                                        } else {
-                                            newRecentTypes.addAll(fieldTypes);
-                                        }
+                            Collection<? extends FieldElement> inheritedFields = IndexScopeImpl.getFields(type, fldName, varScope, PhpModifiers.ALL_FLAGS);
+                            for (FieldElement fieldElement : inheritedFields) {
+                                if (var != null) {
+                                    final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
+                                    if (fieldTypes.isEmpty() && (fieldElement instanceof FieldElementImpl)) {
+                                        newRecentTypes.addAll(((FieldElementImpl) fieldElement).getDefaultTypes());
                                     } else {
-                                        newRecentTypes.addAll(fieldElement.getTypes(offset));
+                                        newRecentTypes.addAll(fieldTypes);
                                     }
+                                } else {
+                                    newRecentTypes.addAll(fieldElement.getTypes(offset));
                                 }
                             }
                         }

@@ -148,12 +148,12 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         labelSelectedEntities = new javax.swing.JLabel();
         createPUCheckbox = new javax.swing.JCheckBox();
 
-        listAvailable.setCellRenderer(ENTITY_LIST_RENDERER);
+        listAvailable.setCellRenderer(ENTITY_LIST_RENDERER_AV);
         jScrollPane1.setViewportView(listAvailable);
         listAvailable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AvailableEntitiesList")); // NOI18N
         listAvailable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_AvailableEntitiesList")); // NOI18N
 
-        listSelected.setCellRenderer(ENTITY_LIST_RENDERER);
+        listSelected.setCellRenderer(ENTITY_LIST_RENDERER_SEL);
         jScrollPane2.setViewportView(listSelected);
         listSelected.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntitiesList")); // NOI18N
         listSelected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_SelectedEntitiesList")); // NOI18N
@@ -232,7 +232,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 .add(buttonAddAll)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonRemoveAll)
-                .addContainerGap(103, Short.MAX_VALUE))
+                .addContainerGap(127, Short.MAX_VALUE))
         );
 
         buttonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_Remove")); // NOI18N
@@ -469,7 +469,8 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         createPUCheckbox.setVisible(visible);
     }
 
-    private final ListCellRenderer ENTITY_LIST_RENDERER = new EntityListCellRenderer();
+    private final ListCellRenderer ENTITY_LIST_RENDERER_AV = new EntityListCellRenderer( true );
+    private final ListCellRenderer ENTITY_LIST_RENDERER_SEL = new EntityListCellRenderer( false );
 
     private class EntityListModel extends AbstractListModel implements ChangeListener {
 
@@ -516,21 +517,28 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
 
     private final class EntityListCellRenderer extends JLabel implements ListCellRenderer {
 
-        public EntityListCellRenderer() {
+        private boolean available;
+
+        public EntityListCellRenderer(boolean available) {
             setOpaque(true);
+            this.available = available;
         }
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text = null;
             if (value instanceof Entity) {
-                text = ((Entity) value).getClass2();
+                Entity entity = ((Entity) value);
+                text = entity.getClass2();
                 if (text != null) {
                     String simpleName = JavaIdentifiers.unqualify(text);
                     String packageName = text.length() > simpleName.length() ? text.substring(0, text.length() - simpleName.length() - 1) : "<default package>";
                     text = simpleName + " (" + packageName + ")";
                 } else {
                     Logger.getLogger("global").log(Level.INFO, "Entity:" + value + " returns null from getClass2(); see IZ 80024"); //NOI18N
+                }
+                if( available && true){
+                    ;
                 }
             }
             if (text == null) {

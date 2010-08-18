@@ -210,7 +210,7 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
                 cp.addAll(Arrays.asList(files));
             }
         }
-        File serverLib = WLPluginProperties.getServerLibDirectory(manager);
+        File serverLib = WLPluginProperties.getServerLibDirectory(manager, false);
         if (serverLib != null) {
             File[] files = serverLib.listFiles(CLASSPATH_FILTER);
             if (files != null) {

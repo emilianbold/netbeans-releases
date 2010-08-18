@@ -31,4 +31,9 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>javadoc</type>
     </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://repository.prime.com.tr/org/primefaces/primefaces/2.1/primefaces-2.1.pom</resource>
+    </volume>
 </library>

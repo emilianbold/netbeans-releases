@@ -261,10 +261,16 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
 
+    /** Allow descendants making additional actions */
+    protected void postCopyProject(File origBase, File copiedBase, String projectName) throws Exception {
+    }
+
     protected MakeProject openProject(String projectName, final ExecutionEnvironment execEnv, Sync sync, Toolchain toolchain) throws IOException, Exception, IllegalArgumentException {
         File origBase = getDataFile(projectName).getParentFile();
         File copiedBase = new File(new File(getWorkDir(), getTestHostName()), origBase.getName());
+        removeDirectoryContent(copiedBase);
         copyDirectory(origBase, copiedBase);
+        postCopyProject(origBase, copiedBase, projectName);
         File projectDirFile = new File(copiedBase, projectName);
         // call this only before opening project!
         changeProjectHost(projectDirFile, execEnv);

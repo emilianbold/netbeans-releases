@@ -276,7 +276,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 return getLibraries();
             }
 
-            List<LibraryImplementation> serverImpl = new ArrayList<LibraryImplementation>(Arrays.asList(getLibraries()));
+            List<LibraryImplementation> serverImpl = new ArrayList<LibraryImplementation>();
             for (Map.Entry<ServerLibrary, List<File>> entry : serverLibraries.entrySet()) {
                 LibraryImplementation library = new J2eeLibraryTypeProvider().
                         createLibrary();
@@ -306,6 +306,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                         VOLUME_TYPE_CLASSPATH, cp);
                 serverImpl.add(library);
             }
+            // add the standard server cp as last it is logical and prevents
+            // issues like #188753
+            serverImpl.addAll(Arrays.asList(getLibraries()));
 
             return serverImpl.toArray(new LibraryImplementation[serverImpl.size()]);
         }
@@ -473,7 +476,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     if (value != null) {
                         String[] values = value.split("\\s+"); // NOI18N
                         FileObject baseDir = null;
-                        File serverLib = WLPluginProperties.getServerLibDirectory(dm);
+                        File serverLib = WLPluginProperties.getServerLibDirectory(dm, false);
                         if (serverLib != null) {
                             baseDir = FileUtil.toFileObject(FileUtil.normalizeFile(serverLib));
                         }

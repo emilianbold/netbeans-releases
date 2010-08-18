@@ -45,9 +45,11 @@ import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.openide.util.RequestProcessor;
@@ -90,11 +92,15 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
     public static final String FILE_DD        =     "web.xml";          //NOI18N
     private static final String IS_SERVLET_FILE = 
         "org.netbeans.modules.web.IsServletFile";                       //NOI18N
+    
+    private static final Set<WebModule> SERVLET_SEARCH_MODULES = new HashSet<WebModule>();
+    private static RequestProcessor SERVLETS_REQUEST_PROCESSOR = 
+        new RequestProcessor(WebReplaceTokenProvider.class);
 
     private Project project;
     private AtomicBoolean   isScanStarted;
     private AtomicBoolean   isScanFinished;
-
+    
     public WebReplaceTokenProvider(Project prj) {
         project = prj;
         isScanStarted = new AtomicBoolean( false );
@@ -256,7 +262,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         return null;
     }
 
-    private static boolean isServletFile(FileObject javaClass, boolean initialScan) {
+    private static boolean isServletFile(final FileObject javaClass, boolean initialScan) {
         if (javaClass == null) {
             return false;
         }
@@ -270,7 +276,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             return false;
         }
 
-        WebModule webModule = WebModule.getWebModule(javaClass);
+        final WebModule webModule = WebModule.getWebModule(javaClass);
         if (webModule == null) {
             //not sure how it can happen, but #176535 proves it can
             return false;
@@ -282,7 +288,8 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             if ( initialScan || metadataModel.isReady()) {
                 List<ServletInfo> servlets = WebAppMetadataHelper
                         .getServlets(metadataModel);
-                List<String> servletClasses = new ArrayList<String>( servlets.size() );
+                final List<String> servletClasses = 
+                    new ArrayList<String>( servlets.size() );
                 for (ServletInfo si : servlets) {
                     if (className.equals(si.getServletClass())) {
                         result =  true;
@@ -291,7 +298,19 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                         servletClasses.add( si.getServletClass() );
                     }
                 }
-                setServletClasses( servletClasses,  javaClass , initialScan);
+                synchronized (SERVLET_SEARCH_MODULES) {
+                    if (!SERVLET_SEARCH_MODULES.contains(webModule)) {
+                        SERVLET_SEARCH_MODULES.add(webModule);
+                        Runnable runnable = new Runnable() {
+
+                            public void run() {
+                                setServletClasses(servletClasses, javaClass,
+                                        webModule);
+                            }
+                        };
+                        SERVLETS_REQUEST_PROCESSOR.post(runnable);
+                    }
+                }
             }
             return result;
         } catch (java.io.IOException ex) {
@@ -339,51 +358,50 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
      * Created as  fix for IZ#172931 - [68cat] AWT thread blocked for 29229 ms.
      */
     private static void setServletClasses( final List<String> servletClasses, 
-            final FileObject orig, boolean initial )
+            final FileObject orig , WebModule module )
     {
-        if ( initial ){
-            JavaSource javaSource = JavaSource.forFileObject( orig );
-            if ( javaSource == null) {
-                return;
-            }
-            try {
-            javaSource.runUserActionTask( new Task<CompilationController>(){
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
-                    for( String servletClass : servletClasses){
+        JavaSource javaSource = JavaSource.forFileObject(orig);
+        if (javaSource == null) {
+            return;
+        }
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+
+                public void run( CompilationController controller )
+                        throws Exception
+                {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    for (String servletClass : servletClasses) {
                         if (servletClass == null) {
                             continue;
                         }
-                        TypeElement typeElem = controller.getElements().
-                            getTypeElement( servletClass);
-                        if ( typeElem == null ){
+                        TypeElement typeElem = controller.getElements()
+                                .getTypeElement(servletClass);
+                        if (typeElem == null) {
                             continue;
                         }
-                        ElementHandle<TypeElement> handle = 
-                            ElementHandle.create( typeElem );
-                        FileObject fileObject = SourceUtils.getFile( handle, 
+                        ElementHandle<TypeElement> handle = ElementHandle
+                                .create(typeElem);
+                        FileObject fileObject = SourceUtils.getFile(handle,
                                 controller.getClasspathInfo());
-                        if ( fileObject != null && !Boolean.TRUE.equals(
-                                fileObject.getAttribute(IS_SERVLET_FILE)))
+                        if (fileObject != null
+                                && !Boolean.TRUE.equals(fileObject
+                                        .getAttribute(IS_SERVLET_FILE)))
                         {
-                            fileObject.setAttribute(IS_SERVLET_FILE, Boolean.TRUE); 
+                            fileObject.setAttribute(IS_SERVLET_FILE,
+                                    Boolean.TRUE);
                         }
                     }
                 }
             }, true);
-            }
-            catch(IOException e ){
-                e.printStackTrace();
-            }
         }
-        else {
-            Runnable runnable = new Runnable() {
-                
-                public void run() {
-                    setServletClasses(servletClasses, orig, true);
-                }
-            };
-            RequestProcessor.getDefault().post(runnable);
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            synchronized( SERVLET_SEARCH_MODULES ){
+                SERVLET_SEARCH_MODULES.remove( module );
+            }
         }
     }
 
