@@ -42,56 +42,52 @@
 
 package org.netbeans.modules.web.el;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
-import org.netbeans.modules.web.el.hints.ELHintsProvider;
+import com.sun.el.parser.Node;
+import com.sun.el.parser.NodeVisitor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.el.ELException;
+import org.openide.util.Parameters;
 
 /**
- * CSL language for Expression Language
+ * AST path for Expression Language AST nodes.
  *
  * @author Erno Mononen
  */
-@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
-@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
-public class ELLanguage extends DefaultLanguageConfig {
+public final class AstPath {
 
-    public static final String MIME_TYPE = "text/x-el"; //NOI18N
+    private final List<Node> nodes = new ArrayList<Node>();
+    private final Node root;
 
-    @Override
-    public Language getLexerLanguage() {
-        return ELTokenId.language();
+    public AstPath(Node root) {
+        Parameters.notNull("root", root);
+        this.root = root;
+        init();
     }
 
-    @Override
-    public String getDisplayName() {
-        return "EL";
+    private void init() {
+        root.accept(new NodeVisitor() {
+
+            @Override
+            public void visit(Node node) throws ELException {
+                nodes.add(node);
+            }
+        });
     }
 
-    @Override
-    public Parser getParser() {
-        return new ELParser();
+    public Node getRoot() {
+        return root;
     }
 
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new ELIndexer.Factory();
+    public List<Node> rootToLeaf() {
+        return nodes;
     }
 
-    @Override
-    public boolean hasHintsProvider() {
-        return true;
+    public List<Node> leafToRoot() {
+        List<Node> copy = new ArrayList<Node>(nodes);
+        Collections.reverse(copy);
+        return copy;
     }
-
-    @Override
-    public HintsProvider getHintsProvider() {
-        return new ELHintsProvider();
-    }
-
 
 }

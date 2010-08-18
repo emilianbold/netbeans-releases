@@ -65,7 +65,6 @@ public class FolderObjCacheTest extends NbTestCase {
         System.setSecurityManager(FileChangedManager.getInstance());
     }
     
-    File testFile;
     Logger LOG;
     
     public FolderObjCacheTest(String testName) {
@@ -74,9 +73,12 @@ public class FolderObjCacheTest extends NbTestCase {
             
     @Override
     protected void setUp() throws Exception {
-        clearWorkDir();
+        try {
+            clearWorkDir();
+        } catch (IOException ex) {
+            LOG.log(Level.WARNING, "Cannot clear work dir for some reason", ex);
+        }
         LOG = Logger.getLogger("test." + getName());
-        testFile = getWorkDir();        
     }
 
     @Override
@@ -93,10 +95,19 @@ public class FolderObjCacheTest extends NbTestCase {
     }
 
     private void doWork(boolean gc) throws IOException {
-        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        File wd = null;
+        for (int i = 0; i < 1000; i++) {
+            wd = new File(getWorkDir(), "dir" + i);
+            if (!wd.exists() && wd.mkdirs()) {
+                break;
+            }
+        }
+        LOG.log(Level.INFO, "Using wd: {0}", wd);
+        
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(wd);
         assertNotNull(workDirFo);        
         assertNotNull(workDirFo.getFileSystem().findResource(workDirFo.getPath()));                
-        File fold = new File(getWorkDir(),"fold");//NOI18N
+        File fold = new File(wd,"fold");//NOI18N
         assertNull(FileUtil.toFileObject(fold));
         FileObject foldFo = workDirFo.createFolder(fold.getName());
         assertNotNull(foldFo);

@@ -697,7 +697,8 @@ class OccurenceBuilder {
         }
         if (accuracy != null) {
             occurences.clear();
-            if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS).contains(accuracy)) {
+            if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE,
+                    Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS, Accuracy.MORE).contains(accuracy)) {
                 buildFieldInvocations(elementInfo, fileScope, accuracy, occurences);
                 buildFieldDeclarations(elementInfo, fileScope, occurences);
                 buildDocTagsForFields(elementInfo, fileScope, occurences);
@@ -769,7 +770,8 @@ class OccurenceBuilder {
         }
         if (accuracy != null) {
             occurences.clear();
-            if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS).contains(accuracy)) {
+            if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE,
+                    Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS, Accuracy.MORE).contains(accuracy)) {
                 buildMethodInvocations(elementInfo, fileScope, accuracy, cachedOccurences);
                 buildMethodDeclarations(elementInfo, fileScope, cachedOccurences);
                 buildMagicMethodDeclarations(elementInfo, fileScope, cachedOccurences);
@@ -858,7 +860,7 @@ class OccurenceBuilder {
                 ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
                 if (name.matchesName(PhpElementKind.METHOD, nodeInfo.getQualifiedName())) {
                     final HashSet<TypeScope> types = new HashSet<TypeScope>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
-                    if (!createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
+                    if (types.isEmpty() || !createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
                         final OccurenceImpl occurence = new OccurenceImpl(declarations, nodeInfo.getRange());
                         occurence.setAccuracy(accuracy);
                         occurences.add(occurence);
@@ -995,7 +997,7 @@ class OccurenceBuilder {
                 ASTNodeInfo<FieldAccess> nodeInfo = entry.getKey();
                 if (name.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
                     final HashSet<TypeScope> types = new HashSet<TypeScope>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
-                    if (!createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
+                    if (types.isEmpty() || !createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
                         final OccurenceImpl occurence = new OccurenceImpl(declarations, nodeInfo.getRange());
                         occurence.setAccuracy(accuracy);
                         occurences.add(occurence);
