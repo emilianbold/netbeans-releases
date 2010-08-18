@@ -588,8 +588,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         }
         private List<String> getRegisteredGlassFishV3Locations(File nbLocation) throws IOException{
             //temporary solution
-            File f = new File(nbLocation, "nb/config/GlassFishEE6/Instances/.nbattrs");
             List<String> result = new ArrayList<String>();
+            for(String nbattrs : new String[] {"nb/config/GlassFishEE6WC/Instances/.nbattrs", "nb/config/GlassFishEE6/Instances/.nbattrs"}) {
+            File f = new File(nbLocation, nbattrs);
             if (f.exists()) {
                 try {
                     List<String> list = FileUtils.readStringList(f, "utf-8");
@@ -605,6 +606,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 } catch (IOException e) {
                     LogManager.log("Cannot read file " + f, e);
                 }
+            }
             }
             return result;
         }

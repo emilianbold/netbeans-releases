@@ -97,16 +97,6 @@ public class AutomaticRegistration {
         // tell the infrastructure that the userdir is cluster dir
         System.setProperty("netbeans.user", clusterDirValue); // NOI18N
 
-        FileObject serverInstanceDir = FileUtil.getConfigFile("GlassFishEE6/Instances"); // NOI18N
-        
-        if (serverInstanceDir == null) {
-            serverInstanceDir = FileUtil.createFolder(FileUtil.getConfigRoot(), "GlassFishEE6/Instances");
-            if (serverInstanceDir == null) {
-                LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. The config/GlassFishEE6/Instances folder cannot be created."); // NOI18N
-                return 2;
-            }
-        }
-
         File glassfishHome = new File(glassfishRoot);
         if (!glassfishHome.exists()) {
             LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. " // NOI18N
@@ -114,8 +104,40 @@ public class AutomaticRegistration {
                     + " does not exist."); // NOI18N
             return 3;
         }
+        String config = null;
+        String deployer = null;
+        String defaultDisplayName = null;
+        if(new File(glassfishHome, "lib/dtds/glassfish-web-app_3_0-1.dtd").exists()) {
+            // ee6wc
+            config = "GlassFishEE6WC/Instances";
+            deployer = "deployer:gfv3ee6wc";
+            defaultDisplayName = "GlassFish Server 3.1";
+        } else if(new File(glassfishHome, "lib/schemas/web-app_3_0.xsd").exists()) {
+            // ee6
+            config = "GlassFishEE6/Instances";
+            deployer = "deployer:gfv3ee6";
+            defaultDisplayName = "GlassFish Server 3";
+        } else if (!new File(glassfishHome, "lib/schemas/web-app_3_0.xsd").exists()) {
+            config = "GlassFish/Instances";
+            deployer = "deployer:gfv3";
+            defaultDisplayName = "GlassFish v3 Prelude";
+        } else {
+            LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. " // NOI18N
+                    + "The GlassFish Root directory " + glassfishRoot // NOI18N
+                    + " is of unknown version."); // NOI18N
+            return 4;
+        }
+        FileObject serverInstanceDir = FileUtil.getConfigFile(config); // NOI18N
 
-        final String url = "[" + glassfishRoot + "]deployer:gfv3ee6:localhost:4848"; // NOI18N
+        if (serverInstanceDir == null) {
+            serverInstanceDir = FileUtil.createFolder(FileUtil.getConfigRoot(), config);
+            if (serverInstanceDir == null) {
+                LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. The config/" + config + " folder cannot be created."); // NOI18N
+                return 2;
+            }
+        }
+
+        final String url = "[" + glassfishRoot + "]" + deployer + ":localhost:4848"; // NOI18N
 
         // make sure the server is not registered yet
         for (FileObject fo : serverInstanceDir.getChildren()) {
@@ -125,7 +147,7 @@ public class AutomaticRegistration {
             }
         }
 
-        String displayName = generateUniqueDisplayName(serverInstanceDir, "");
+        String displayName = generateUniqueDisplayName(serverInstanceDir, defaultDisplayName);
         boolean ok = registerServerInstanceFO(serverInstanceDir, url, displayName, glassfishHome);
         if (ok) {
             return 0;
@@ -142,9 +164,9 @@ public class AutomaticRegistration {
      *
      * @return a unique display name for the specified version of GlassFish
      */
-    private static String generateUniqueDisplayName(FileObject serverInstanceDir, String version) {
+    private static String generateUniqueDisplayName(FileObject serverInstanceDir, String defaultDisplayName) {
         // find a unique display name
-        String displayName = "GlassFish Server 3"; // NOI18N
+        String displayName = defaultDisplayName; // NOI18N
         boolean unique = true;
         int i = 1;
         while (true) {
@@ -158,7 +180,7 @@ public class AutomaticRegistration {
             if (unique) {
                 break;
             }
-            displayName = "GlassFish Server 3 "+i++;
+            displayName = defaultDisplayName + " "+i++;
             unique = true;
         }
         return displayName;
