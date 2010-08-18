@@ -61,6 +61,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -185,12 +186,13 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     /**
      */
     private void createFilterButton() {
-        btnFilter = new JToggleButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/filter.png", true));
+        btnFilter = DropDownButtonFactory.createDropDownToggleButton(
+                ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/filter.png", true), //NOI18N
+                createFilterPopupMenu());
         btnFilter.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
         btnFilter.setSelected(filterEnabled);
         btnFilter.addItemListener(this);
-        btnFilter.setComponentPopupMenu(createFilterPopupMenu());
         updateFilterButtonLabel();
     }
 
