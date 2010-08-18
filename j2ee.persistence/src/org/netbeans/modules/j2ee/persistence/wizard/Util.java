@@ -73,6 +73,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -666,5 +668,54 @@ public class Util {
         public boolean supportsDefaultProvider() {
             return false;
         }
+    }
+    public static String getPersistenceUnitAsString(Project project, String entity) throws IOException {
+        String persistenceUnit = null;
+        PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
+        if (persistenceScopes.length > 0) {
+            FileObject persXml = persistenceScopes[0].getPersistenceXml();
+            if (persXml != null) {
+                Persistence persistence = PersistenceMetadata.getDefault().getRoot(persXml);
+                PersistenceUnit units[] = persistence.getPersistenceUnit();
+                if (units.length > 0) {
+                    persistenceUnit = units[0].getName();
+                    if(units.length>1) {//find best
+                        String forAll=null;
+                        String forOne=null;
+                        for(int i=0;i<units.length && forOne==null;i++) {
+                            PersistenceUnit tmp=units[i];
+                            if(forAll ==null && !tmp.isExcludeUnlistedClasses()) forAll=tmp.getName();//first match sutable for all entities in the project
+                            if(tmp.isExcludeUnlistedClasses()) {
+                                String []classes = tmp.getClass2();
+                                for(String clas:classes){
+                                    if(entity.equals(clas)) {
+                                        forOne = tmp.getName();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        //try again with less restrictions (i.e. for j2se even without exclude-unlisted-classes node, it's by default true)
+                        if(forOne==null && forAll!=null){//there is exist pu without exclude-unlisted-classes
+                            for(int i=0;i<units.length && forOne==null;i++) {
+                                PersistenceUnit tmp=units[i];
+                                if(!tmp.isExcludeUnlistedClasses()) {//verify only pu without exclude-unlisted-classes as all other was examined in previos try
+                                    String []classes = tmp.getClass2();
+                                    for(String clas:classes){
+                                        if(entity.equals(clas)) {
+                                            forOne = tmp.getName();
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        persistenceUnit = forOne != null ? forOne : (forAll != null ? forAll : persistenceUnit);
+                    }
+                }
+            }
+        }
+        return persistenceUnit;
     }
 }
