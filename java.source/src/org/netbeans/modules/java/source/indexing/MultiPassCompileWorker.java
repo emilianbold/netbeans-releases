@@ -283,9 +283,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         // presumably should not happen
                     }
                 }
-                if (!active.virtual) {
-                    ErrorsCache.setErrors(context.getRootURI(), active.indexable, diagnosticListener.getDiagnostics(active.jfo), JavaCustomIndexer.ERROR_CONVERTOR);
-                }
+                JavaCustomIndexer.setErrors(context, active, diagnosticListener);
                 Log.instance(jt.getContext()).nerrors = 0;
                 previous.finishedFiles.add(active.indexable);
                 active = null;
