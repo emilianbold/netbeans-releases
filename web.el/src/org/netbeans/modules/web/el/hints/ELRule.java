@@ -40,58 +40,58 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.el;
+package org.netbeans.modules.web.el.hints;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
-import org.netbeans.modules.web.el.hints.ELHintsProvider;
+import java.util.List;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.openide.util.NbBundle;
 
 /**
- * CSL language for Expression Language
+ * Base class for EL rules.
  *
  * @author Erno Mononen
  */
-@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
-@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
-public class ELLanguage extends DefaultLanguageConfig {
-
-    public static final String MIME_TYPE = "text/x-el"; //NOI18N
+abstract class ELRule implements AstRule {
 
     @Override
-    public Language getLexerLanguage() {
-        return ELTokenId.language();
+    public String getId() {
+        return getClass().getSimpleName();
     }
 
     @Override
-    public String getDisplayName() {
-        return "EL";
+    public String getDescription() {
+        return NbBundle.getMessage(ELRule.class, getId() + "_Desc");//NOI18N
     }
 
     @Override
-    public Parser getParser() {
-        return new ELParser();
-    }
-
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new ELIndexer.Factory();
-    }
-
-    @Override
-    public boolean hasHintsProvider() {
+    public boolean getDefaultEnabled() {
         return true;
     }
 
     @Override
-    public HintsProvider getHintsProvider() {
-        return new ELHintsProvider();
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(ELRule.class, getId());
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return true;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+
+    protected abstract void run(ELRuleContext context, List<Hint> result);
 
 }

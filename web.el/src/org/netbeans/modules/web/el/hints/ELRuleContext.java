@@ -40,58 +40,19 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.el;
+package org.netbeans.modules.web.el.hints;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
-import org.netbeans.modules.web.el.hints.ELHintsProvider;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.web.el.ELParserResult;
 
 /**
- * CSL language for Expression Language
  *
  * @author Erno Mononen
  */
-@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
-@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
-public class ELLanguage extends DefaultLanguageConfig {
+public final class ELRuleContext extends RuleContext {
 
-    public static final String MIME_TYPE = "text/x-el"; //NOI18N
-
-    @Override
-    public Language getLexerLanguage() {
-        return ELTokenId.language();
+    public ELParserResult getELParserResult() {
+        return (ELParserResult) parserResult;
     }
-
-    @Override
-    public String getDisplayName() {
-        return "EL";
-    }
-
-    @Override
-    public Parser getParser() {
-        return new ELParser();
-    }
-
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new ELIndexer.Factory();
-    }
-
-    @Override
-    public boolean hasHintsProvider() {
-        return true;
-    }
-
-    @Override
-    public HintsProvider getHintsProvider() {
-        return new ELHintsProvider();
-    }
-
 
 }
