@@ -621,6 +621,26 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
 
         @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            Class<?> clazz = super.findClass(name);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                String filename = name.replace('.', '/'); // NOI18N
+                int index = filename.indexOf('$'); // NOI18N
+                if (index > 0) {
+                    filename = filename.substring(0, index);
+                }
+                filename = filename + ".class"; // NOI18N
+
+                URL url = this.getResource(filename);
+                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
+                if (url != null) {
+                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
+                }
+            }
+            return clazz;
+        }
+
+        @Override
         protected PermissionCollection getPermissions(CodeSource codeSource) {
             Permissions p = new Permissions();
             p.add(new AllPermission());
