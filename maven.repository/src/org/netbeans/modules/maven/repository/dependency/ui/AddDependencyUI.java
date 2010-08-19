@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -56,11 +55,12 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -71,48 +71,31 @@ public class AddDependencyUI extends javax.swing.JPanel implements ExplorerManag
     private ExplorerManager explorerManager = new ExplorerManager();
     private final JButton addButton;
 
-    /** Creates new form AddDependencyUI */
     public AddDependencyUI(String libDef) {
         initComponents();
         lblDescription.setText(NbBundle.getMessage(AddDependencyUI.class, "LBL_Description", libDef));//NOI18N
         addButton = new JButton(NbBundle.getMessage(AddDependencyUI.class, "BTN_Add"));//NOI18N
         addButton.setEnabled(false);
-        final List<Project> openProjects = getOpenProjects();
-        Children children = new Children.Keys<Project>() {
-
-            @Override
-            protected Node[] createNodes(Project nmp) {
-                return new Node[]{new OpenProjectNode(nmp)};
+        Node openProjectsNode = new AbstractNode(Children.create(new ChildFactory<Project>() {
+            protected @Override boolean createKeys(List<Project> toPopulate) {
+                for (Project project : OpenProjects.getDefault().getOpenProjects()) {
+                    if (project.getLookup().lookup(NbMavenProject.class) != null) {
+                        toPopulate.add(project);
+                    }
+                }
+                return true;
             }
-
-            @Override
-            protected void addNotify() {
-                super.addNotify();
-                setKeys(openProjects);
+            protected @Override Node createNodeForKey(Project key) {
+                return new OpenProjectNode(key);
             }
-        };
-
-        AbstractNode openProjectsNode = new AbstractNode(children){
-
-            @Override
-            public Image getIcon(int arg0) {
-                return NodeUtils.getTreeFolderIcon(false);
-            }
-
-            @Override
-            public Image getOpenedIcon(int arg0) {
-                return NodeUtils.getTreeFolderIcon(true);
-            }
-        
-        };
-        openProjectsNode.setDisplayName(NbBundle.getMessage(AddDependencyUI.class, "LBL_OpenProjects"));//NOI18N
+        }, true));
         explorerManager.setRootContext(openProjectsNode);
         BeanTreeView beanTreeView = (BeanTreeView) jScrollPane1;
         beanTreeView.setPopupAllowed(false);
+        beanTreeView.setRootVisible(false);
         explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent arg0) {
-                if (arg0.getPropertyName().equals("selectedNodes")) {//NOI18N
+            public @Override void propertyChange(PropertyChangeEvent event) {
+                if (event.getPropertyName().equals("selectedNodes")) {//NOI18N
                     Node[] selectedNodes = explorerManager.getSelectedNodes();
                     boolean enable=false;
                     for (Node node : selectedNodes) {
@@ -173,7 +156,8 @@ public class AddDependencyUI extends javax.swing.JPanel implements ExplorerManag
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblDescription;
     // End of variables declaration//GEN-END:variables
-    public ExplorerManager getExplorerManager() {
+
+    public @Override ExplorerManager getExplorerManager() {
         return explorerManager;
     }
 
@@ -181,37 +165,18 @@ public class AddDependencyUI extends javax.swing.JPanel implements ExplorerManag
         List<Project> mavenProjects = new ArrayList<Project>();
         Node[] selectedNodes = explorerManager.getSelectedNodes();
         for (Node node : selectedNodes) {
-            if (node instanceof OpenProjectNode) {
-                OpenProjectNode opn = (OpenProjectNode) node;
-                mavenProjects.add(opn.project);
-            }
+            mavenProjects.add(node.getLookup().lookup(Project.class));
         }
 
         return mavenProjects;
     }
-    public  List<Project> getOpenProjects() {
-        List<Project> mavenProjects = new ArrayList<Project>();
-        //get all open projects
-        Project[] prjs = OpenProjects.getDefault().getOpenProjects();
 
-        for (Project project : prjs) {
-            //varify is maven project 
-            NbMavenProject mavProj = project.getLookup().lookup(NbMavenProject.class);
-            if(mavProj!=null)
-                mavenProjects.add(project);
-        }
+    private static class OpenProjectNode extends AbstractNode {
 
-        return mavenProjects;
-
-    }
-    public static class OpenProjectNode extends AbstractNode {
-
-        private Project project;
         private ProjectInformation pi;
 
         public OpenProjectNode(Project project) {
-            super(Children.LEAF);
-            this.project = project;
+            super(Children.LEAF, Lookups.singleton(project));
             pi = ProjectUtils.getInformation(project);
         }
 

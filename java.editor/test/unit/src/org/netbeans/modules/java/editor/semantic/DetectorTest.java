@@ -398,6 +398,10 @@ public class DetectorTest extends TestBase {
         performTest("ExoticIdentifier");
     }
 
+    public void testStaticImport189226() throws Exception {
+        performTest("StaticImport189226");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {

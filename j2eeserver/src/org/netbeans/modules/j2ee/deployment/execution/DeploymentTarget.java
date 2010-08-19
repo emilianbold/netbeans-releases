@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporte
  *
  * @author  gfink
  */
+// FIXME remove this dummy non-api private interface - replace with normal class
 public interface DeploymentTarget {
 
     public J2eeModule getModule ();

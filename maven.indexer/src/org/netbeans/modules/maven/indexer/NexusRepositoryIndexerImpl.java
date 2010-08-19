@@ -404,12 +404,19 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     iur.setResourceFetcher( new WagonFetcher( wagonManager, listener, null ) );
                     remoteIndexUpdater.fetchAndUpdateIndex(iur);
                 } finally {
-                    listener.transferCompleted(null);
+                    listener.close();
                 }
             } else {
                 LOGGER.finer("Indexing Local Repository :" + repo.getId());//NOI18N
-                indexer.scan(indexingContext, new RepositoryIndexerListener(indexer, indexingContext), updateLocal);
+                RepositoryIndexerListener listener = new RepositoryIndexerListener(indexer, indexingContext);
+                try {
+                    indexer.scan(indexingContext, listener, updateLocal);
+                } finally {
+                    listener.close();
+                }
             }
+        } catch (Cancellation x) {
+            LOGGER.log(Level.INFO, "canceled indexing of {0}", repo.getId());
         } catch (IOException iOException) {
             LOGGER.warning(iOException.getMessage());//NOI18N
             //handle index not found
@@ -449,20 +456,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     public void shutdownAll() {
         LOGGER.finer("Shutting Down All Contexts");//NOI18N
+        // Do not acquire write access since that can block waiting for a hung download.
         try {
-            MUTEX.writeAccess(new Mutex.ExceptionAction<Object>() {
-                @Override
-                public Object run() throws Exception {
-                    if (inited) {
-                        for (IndexingContext ic : indexer.getIndexingContexts().values()) {
-                            LOGGER.finer(" Shutting Down:" + ic.getId());//NOI18N
-                            indexer.removeIndexingContext(ic, false);
-                        }
-                    }
-                    return null;
+            if (inited) {
+                for (IndexingContext ic : indexer.getIndexingContexts().values()) {
+                    LOGGER.log(Level.FINER, "Shutting Down: {0}", ic.getId());
+                    indexer.removeIndexingContext(ic, false);
                 }
-            });
-        } catch (MutexException ex) {
+            }
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }

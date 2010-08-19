@@ -53,4 +53,5 @@ public interface FullyQualifiedElement extends PhpElement {
     QualifiedName getNamespaceName();
     @NonNull
     QualifiedName getFullyQualifiedName();
+    boolean isAliased();
 }

@@ -18,10 +18,6 @@ vmd.components.*/*/dist/*
 # Samples (should probably be packed during build instead):
 swingapp/src/org/netbeans/modules/swingapp/resources/*App.zip
 
-#native library, all files inside zip under CDDL
-uml/lib/DoorsIntegrationFiles.zip
-#sample under CDDL/BSD. Consider unpacking to source form and creation of project zip file on fly
-uml.samples/src/org/netbeans/modules/uml/samples/bankapp/resources/javaProject.zip
 #not 100% sure for this entry, but probably OK
 web.core.syntax/tlddoc/
 

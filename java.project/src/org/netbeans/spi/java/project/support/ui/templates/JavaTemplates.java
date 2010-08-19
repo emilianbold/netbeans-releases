@@ -108,7 +108,7 @@ public class JavaTemplates {
         if (folders.length == 0) {
             throw new IllegalArgumentException("No folders selected"); // NOI18N
         }
-        return new JavaTargetChooserPanel(project, folders, bottomPanel, NewJavaFileWizardIterator.TYPE_FILE, validPackageRequired);
+        return new JavaTargetChooserPanel(project, folders, bottomPanel, NewJavaFileWizardIterator.Type.FILE, validPackageRequired);
     } 
     
     /** Creates new WizardIterator containing standard Package chooser

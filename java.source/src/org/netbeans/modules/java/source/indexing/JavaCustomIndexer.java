@@ -557,7 +557,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
                             Indexable i = accessor.create(new FileObjectIndexable(root, fileName));
                             InferableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.encoding);
-                            aptGenerated.add(new CompileTuple(ffo, i));
+                            aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
                         }
                     }
                 } catch (IOException ioe) {
@@ -565,6 +565,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                     Exceptions.printStackTrace(ioe);
                 }
             }
+        }
+    }
+
+    static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {
+        if (!active.virtual) {
+            ErrorsCache.setErrors(context.getRootURI(), active.indexable, errors.getDiagnostics(active.jfo), active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
         }
     }
 
@@ -781,7 +787,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     return true;
                                 }
                                 try {
-                                    return uq.getSourceAnalyser().isValid();
+                                    return uq.isValid();
                                 } finally {
                                     uq.setState(ClassIndexImpl.State.INITIALIZED);
                                 }
@@ -866,14 +872,21 @@ public class JavaCustomIndexer extends CustomIndexer {
         public final InferableJavaFileObject jfo;
         public final Indexable indexable;
         public final boolean virtual;
-        public final boolean index;        
+        public final boolean index;
+        public final boolean aptGenerated;
 
         public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable,
                 final boolean virtual, final boolean index) {
+            this(jfo, indexable, virtual, index, false);
+        }
+
+        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable,
+                final boolean virtual, final boolean index, final boolean aptGenerated) {
             this.jfo = jfo;
             this.indexable = indexable;
             this.virtual = virtual;
             this.index = index;
+            this.aptGenerated = aptGenerated;
         }
 
         public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable) {
@@ -881,9 +894,16 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    static final Convertor<Diagnostic<?>> ERROR_CONVERTOR = new Convertor<Diagnostic<?>>() {
+    private static final Convertor<Diagnostic<?>> ERROR_CONVERTOR = new ErrorConvertorImpl(ErrorKind.ERROR);
+    private static final Convertor<Diagnostic<?>> ERROR_CONVERTOR_NO_BADGE = new ErrorConvertorImpl(ErrorKind.ERROR_NO_BADGE);
+    
+    private static final class ErrorConvertorImpl implements Convertor<Diagnostic<?>> {
+        private final ErrorKind errorKind;
+        public ErrorConvertorImpl(ErrorKind errorKind) {
+            this.errorKind = errorKind;
+        }
         public ErrorKind getKind(Diagnostic<?> t) {
-            return t.getKind() == Kind.ERROR ? ErrorKind.ERROR : ErrorKind.WARNING;
+            return t.getKind() == Kind.ERROR ? errorKind : ErrorKind.WARNING;
         }
         public int getLineNumber(Diagnostic<?> t) {
             return (int) t.getLineNumber();

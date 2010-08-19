@@ -46,10 +46,12 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -61,7 +63,7 @@ import org.openide.util.Parameters;
 /**
  * @author Radek Matous
  */
-public final class ClassElementImpl extends TypeElementImpl implements ClassElement {
+public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     public static final String IDX_FIELD = PHPIndexer.FIELD_CLASS;
 
     private final QualifiedName superClass;
@@ -120,6 +122,15 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
                 info.getSuperClassName(), info.getInterfaceNames(), info.getAccessModifiers().toFlags(),
                 fileQuery.getURL().toExternalForm(), fileQuery);
+    }
+
+    public static ClassElement fromFrameworks(final PhpClass clz, final ElementQuery elementQuery) {
+        Parameters.notNull("clz", clz);
+        Parameters.notNull("elementQuery", clz);
+        ClassElementImpl retval = new ClassElementImpl(QualifiedName.create(clz.getFullyQualifiedName()),
+                clz.getOffset(), null, Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, null, elementQuery);
+        retval.fileObject = clz.getFile();
+        return retval;
     }
 
     private static boolean matchesQuery(final NameKind query, ClassSignatureParser signParser) {

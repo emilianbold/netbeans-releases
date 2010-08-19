@@ -50,21 +50,28 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
@@ -72,13 +79,25 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
+import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.status.ClientConfiguration;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
+import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -90,11 +109,21 @@ import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
  * @author Kirill Sorokin
  * @author Petr Hejl
  */
-public class WLDeploymentManager implements DeploymentManager {
+public class WLDeploymentManager implements DeploymentManager2 {
 
     public static final int MANAGER_TIMEOUT = 60000;
     
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentManager.class.getName());
+
+    static {
+        WLConnectionSupport.WLDeploymentManagerAccessor.setDefault(new WLConnectionSupport.WLDeploymentManagerAccessor() {
+
+            @Override
+            public ClassLoader getWLClassLoader(WLDeploymentManager manager) {
+                return manager.getWLClassLoader();
+            }
+        });
+    }
 
     private final WLDeploymentFactory factory;
 
@@ -176,44 +205,52 @@ public class WLDeploymentManager implements DeploymentManager {
         return productProperties;
     }
 
-    private synchronized ClassLoader getWLClassLoader(String uri, String serverRoot) {
+    private synchronized ClassLoader getWLClassLoader() {
         if (classLoader == null) {
+            LOGGER.log(Level.FINE, "Creating classloader for {0}", this.getUri());
             try {
-                URL[] urls = new URL[] {new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
-                classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
+                File serverLib = WLPluginProperties.getServerLibDirectory(this, true);
+                if (serverLib == null) {
+                    LOGGER.log(Level.WARNING, "The server library directory does not exist for {0}", this.getUri());
+                } else {
+                    File weblogicJar = new File(serverLib, "weblogic.jar"); // NOI18N
+                    if (!weblogicJar.exists()) {
+                        LOGGER.log(Level.WARNING, "File weblogic.jar does not exist for {0}", this.getUri());
+                    }
+                    URL[] urls = new URL[] {FileUtil.normalizeFile(weblogicJar).toURI().toURL()};
+                    classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
+                    LOGGER.log(Level.FINE, "Classloader for {0} created successfully", this.getUri());
+                    return classLoader;
+                }
             } catch (MalformedURLException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
+            classLoader = new WLClassLoader(new URL[] {}, WLDeploymentManager.class.getClassLoader());
         }
         return classLoader;
     }
 
-    private synchronized <T> T executeAction(Action<T> action) throws ExecutionException {
-        ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
-        String serverRoot = getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-        // if serverRoot is null, then we are in a server instance registration process, thus this call
-        // is made from InstanceProperties creation -> WLPluginProperties singleton contains
-        // install location of the instance being registered
-        if (serverRoot == null) {
-            serverRoot = WLPluginProperties.getInstance().getInstallLocation();
-        }
+    private <T> T executeAction(final Action<T> action) throws Exception {
+        WLConnectionSupport support = new WLConnectionSupport(this);
+        return support.executeAction(new Callable<T>() {
 
-        Thread.currentThread().setContextClassLoader(getWLClassLoader(getUri(), serverRoot));
-        try {
-            DeploymentManager manager = getDeploymentManager(
-                    getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR),
-                    getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR),
-                    host, port);
-            try {
-                return action.execute(manager);
-            } finally {
-                manager.release();
+            @Override
+            public T call() throws Exception {
+                try {
+                    DeploymentManager manager = getDeploymentManager(
+                            getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR),
+                            getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR),
+                            host, port);
+                    try {
+                        return action.execute(manager);
+                    } finally {
+                        manager.release();
+                    }
+                } catch (DeploymentManagerCreationException ex) {
+                    throw new ExecutionException(ex);
+                }
             }
-        } catch(DeploymentManagerCreationException ex) {
-            throw new ExecutionException(ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(originalLoader);
-        }
+        });
     }
 
     private static DeploymentManager getDeploymentManager(String username,
@@ -244,12 +281,25 @@ public class WLDeploymentManager implements DeploymentManager {
         throw dmce;
     }
 
+    @Override
     public ProgressObject distribute(Target[] target, File file, File file2) throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.deploy(target, file, file2, getHost(), getPort());
+    }
+
+    @Override
+    public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        // in terms of WL it is optional package
+        deployOptionalPackages(deployment.getRequiredLibraries());
+
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        return wlDeployer.deploy(targets, deployment.getModuleFile(), deployment.getDeploymentPlan(), getHost(), getPort());
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
@@ -261,22 +311,39 @@ public class WLDeploymentManager implements DeploymentManager {
     }
 
     public boolean isRedeploySupported() {
-        return false;
+        return true;
+    }
+
+    @Override
+    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        return wlDeployer.redeploy(targetModuleID, file, file2);
+    }
+
+    @Override
+    public ProgressObject redeploy(TargetModuleID[] tmids, DeploymentContext deployment) {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
+        }
+        // in terms of WL it is optional package
+        deployOptionalPackages(deployment.getRequiredLibraries());
+
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        return wlDeployer.redeploy(tmids, deployment.getModuleFile(), deployment.getDeploymentPlan());
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws  UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException("Redeploy not yet implemented");
-    }
-
-    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
-        throw new UnsupportedOperationException("Redeploy not yet implemented");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.undeploy(targetModuleID);
     }
 
@@ -285,7 +352,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.stop(targetModuleID);
     }
 
@@ -294,7 +361,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.start(targetModuleID);
     }
 
@@ -308,7 +375,7 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return translateTargetModuleIDs(
+                        return translateTargetModuleIDsToPlugin(
                                 manager.getAvailableModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
@@ -319,6 +386,9 @@ public class WLDeploymentManager implements DeploymentManager {
             if (ex.getCause() instanceof TargetException) {
                 throw (TargetException) ex.getCause();
             }
+            LOGGER.log(Level.INFO, null, ex.getCause());
+            return new TargetModuleID[] {};
+        } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex.getCause());
             return new TargetModuleID[] {};
         }
@@ -334,7 +404,7 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return translateTargetModuleIDs(
+                        return translateTargetModuleIDsToPlugin(
                                 manager.getNonRunningModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
@@ -345,6 +415,9 @@ public class WLDeploymentManager implements DeploymentManager {
             if (ex.getCause() instanceof TargetException) {
                 throw (TargetException) ex.getCause();
             }
+            LOGGER.log(Level.INFO, null, ex.getCause());
+            return new TargetModuleID[] {};
+        } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex.getCause());
             return new TargetModuleID[] {};
         }
@@ -360,7 +433,7 @@ public class WLDeploymentManager implements DeploymentManager {
                 @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return translateTargetModuleIDs(
+                        return translateTargetModuleIDsToPlugin(
                                 manager.getRunningModules(moduleType, translateTargets(manager, target)));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
@@ -373,6 +446,9 @@ public class WLDeploymentManager implements DeploymentManager {
             }
             LOGGER.log(Level.INFO, null, ex.getCause());
             return new TargetModuleID[] {};
+        } catch (Exception ex) {
+            LOGGER.log(Level.INFO, null, ex.getCause());
+            return new TargetModuleID[] {};
         }
     }
 
@@ -382,14 +458,45 @@ public class WLDeploymentManager implements DeploymentManager {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         try {
-            return executeAction(new Action<Target[]>() {
-                public Target[] execute(DeploymentManager manager) throws ExecutionException {
-                    return manager.getTargets();
+            // we do this magic because default JSR-88 returns all targets
+            // including for example JMSServer which is not very good for
+            // our purposes
+            WLConnectionSupport support = new WLConnectionSupport(this);
+            return support.executeAction(new WLConnectionSupport.JMXRuntimeAction<Target[]>() {
+
+                @Override
+                public Target[] call(MBeanServerConnection connection, ObjectName service) throws Exception {
+                    List<Target> targets = new ArrayList<Target>();
+                    ObjectName domainPending = (ObjectName) connection.getAttribute(service, "DomainPending"); // NOI18N
+                    if (domainPending != null) {
+                        ObjectName[] domainTargets = (ObjectName[]) connection.getAttribute(domainPending, "Targets"); // NOI18N
+                        if (domainTargets != null) {
+                            for (ObjectName singleTarget : domainTargets) {
+                                String type = (String) connection.getAttribute(singleTarget, "Type"); // NOI18N
+                                if ("Server".equals(type)) { // NOI18N
+                                    String name = (String) connection.getAttribute(singleTarget, "Name"); // NOI18N
+                                    targets.add(new WLTarget(name));
+                                }
+                            }
+                        }
+                    }
+                    return targets.toArray(new Target[targets.size()]);
                 }
             });
-        } catch (ExecutionException ex) {
+        } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex.getCause());
-            return new Target[] {};
+
+                // just a fallback
+                try {
+                return executeAction(new Action<Target[]>() {
+                    public Target[] execute(DeploymentManager manager) throws ExecutionException {
+                        return manager.getTargets();
+                    }
+                });
+            } catch (Exception fex) {
+                LOGGER.log(Level.INFO, null, ex.getCause());
+                return new Target[] {};
+            }
         }
     }
 
@@ -436,37 +543,91 @@ public class WLDeploymentManager implements DeploymentManager {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
-    // TODO if possible (due to workflow of j2eeserver) reuse deployment manager
-    // instead of this
-    private static Target[] translateTargets(DeploymentManager manager, Target[] originalTargets) {
-        Target[] targets = manager.getTargets();
-        // WL does not implement equals however implements hashCode
-        // it consider two Target instances coming from different
-        // deployment managers different
-
-        // perhaps we could share DeploymentManager somehow
-        List<Target> deployTargets = new ArrayList<Target>(originalTargets.length);
-        for (Target t : targets) {
-            for (Target t2 : originalTargets) {
-                if (t.hashCode() == t2.hashCode()
-                        && t.getName().equals(t2.getName())) {
-                    deployTargets.add(t);
-                }
-            }
+    public ProgressObject redeploy(final TargetModuleID[] targetModuleID) throws UnsupportedOperationException, IllegalStateException {
+        if (disconnected) {
+            throw new IllegalStateException("Deployment manager is disconnected");
         }
-        return deployTargets.toArray(new Target[deployTargets.size()]);
+        try {
+            return executeAction(new Action<ProgressObject>() {
+                @Override
+                public ProgressObject execute(DeploymentManager manager) throws ExecutionException {
+                    return new ServerProgressObject(
+                            manager.redeploy(translateTargetModuleIDsToServer(targetModuleID), (File) null, null));
+                }
+            });
+        } catch (Exception ex) {
+            LOGGER.log(Level.INFO, null, ex.getCause());
+            WLProgressObject po = new WLProgressObject(targetModuleID);
+            po.fireProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE,
+                    CommandType.REDEPLOY, StateType.FAILED,
+                    NbBundle.getMessage(WLDeploymentManager.class, "MSG_Redeployment_Failed", ex.getMessage())));
+            return po;
+        }
     }
 
-    private static TargetModuleID[] translateTargetModuleIDs(TargetModuleID[] ids) {
+    public void deployOptionalPackages(File[] optionalPackages) {
+        CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
+        if (optionalPackages.length > 0) {
+            Set<File> files = new HashSet<File>(Arrays.asList(optionalPackages));
+            ProgressObject po = wlDeployer.deployLibraries(files);
+            ProgressObjectSupport.waitFor(po);
+        }
+    }
+
+    // XXX these are just temporary methods - should be replaced once we will
+    // use our own TargetModuleID populated via JMX
+    private TargetModuleID[] translateTargetModuleIDsToPlugin(TargetModuleID[] ids) {
         if (ids == null) {
             return null;
         }
 
         TargetModuleID[] mapped = new TargetModuleID[ids.length];
         for (int i = 0; i < ids.length; i++) {
-            mapped[i] = new ServerTargetModuleID(ids[i]);
+            if (!(ids[i] instanceof ServerTargetModuleID)) {
+                mapped[i] = new ServerTargetModuleID(ids[i]);
+            } else {
+                mapped[i] = ids[i];
+            }
         }
         return mapped;
+    }
+
+    private TargetModuleID[] translateTargetModuleIDsToServer(TargetModuleID[] ids) {
+        if (ids == null) {
+            return null;
+        }
+
+        TargetModuleID[] mapped = new TargetModuleID[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] instanceof ServerTargetModuleID) {
+                mapped[i] = ((ServerTargetModuleID) ids[i]).moduleId;
+            } else {
+                mapped[i] = ids[i];
+            }
+        }
+        return mapped;
+    }
+
+    private static Target[] translateTargets(DeploymentManager manager, Target[] originalTargets) {
+        Target[] targets = manager.getTargets();
+        // WL does not implement equals however implements hashCode
+        // it consider two Target instances coming from different
+        // deployment managers different
+
+        // moreover we switched to our own targets via JMX
+        // in future we get rid of this by avoiding JSR88 completely
+        // (getXXXModules() and similar)
+
+        // perhaps we could share DeploymentManager somehow
+        List<Target> deployTargets = new ArrayList<Target>(originalTargets.length);
+        for (Target t : targets) {
+            for (Target t2 : originalTargets) {
+                if (t.getName().equals(t2.getName())) {
+                    deployTargets.add(t);
+                }
+            }
+        }
+        return deployTargets.toArray(new Target[deployTargets.size()]);
     }
 
     private static interface Action<T> {
@@ -476,7 +637,7 @@ public class WLDeploymentManager implements DeploymentManager {
 
     private static class WLClassLoader extends URLClassLoader {
 
-        public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException {
+        public WLClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
         }
 
@@ -484,6 +645,26 @@ public class WLDeploymentManager implements DeploymentManager {
             if (f.isFile()) {
                 addURL(f.toURL());
             }
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            Class<?> clazz = super.findClass(name);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                String filename = name.replace('.', '/'); // NOI18N
+                int index = filename.indexOf('$'); // NOI18N
+                if (index > 0) {
+                    filename = filename.substring(0, index);
+                }
+                filename = filename + ".class"; // NOI18N
+
+                URL url = this.getResource(filename);
+                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
+                if (url != null) {
+                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
+                }
+            }
+            return clazz;
         }
 
         @Override
@@ -504,7 +685,7 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
 
-    private static class ServerTargetModuleID implements TargetModuleID {
+    private class ServerTargetModuleID implements TargetModuleID {
 
         private final TargetModuleID moduleId;
 
@@ -519,7 +700,11 @@ public class WLDeploymentManager implements DeploymentManager {
 
         @Override
         public String getWebURL() {
-            return moduleId.getWebURL();
+            String url = moduleId.getWebURL();
+            if (url != null && url.startsWith("/")) { // NOI18N
+                url = "http://" + getHost() + ":" + getPort() + url; // NOI18N
+            }
+            return url;
         }
 
         @Override
@@ -542,7 +727,61 @@ public class WLDeploymentManager implements DeploymentManager {
 
         @Override
         public TargetModuleID[] getChildTargetModuleID() {
-            return translateTargetModuleIDs(moduleId.getChildTargetModuleID());
+            return translateTargetModuleIDsToPlugin(moduleId.getChildTargetModuleID());
+        }
+    }
+
+    private class ServerProgressObject implements ProgressObject {
+
+        private final ProgressObject po;
+
+        public ServerProgressObject(ProgressObject po) {
+            this.po = po;
+        }
+
+        @Override
+        public boolean isStopSupported() {
+            return po.isStopSupported();
+        }
+
+        @Override
+        public boolean isCancelSupported() {
+            return po.isCancelSupported();
+        }
+
+        @Override
+        public TargetModuleID[] getResultTargetModuleIDs() {
+            return translateTargetModuleIDsToPlugin(po.getResultTargetModuleIDs());
+        }
+
+        @Override
+        public DeploymentStatus getDeploymentStatus() {
+            return po.getDeploymentStatus();
+        }
+
+        @Override
+        public ClientConfiguration getClientConfiguration(TargetModuleID tmid) {
+            return po.getClientConfiguration(tmid);
+        }
+
+        @Override
+        public void stop() throws OperationUnsupportedException {
+            po.stop();
+        }
+
+        @Override
+        public void cancel() throws OperationUnsupportedException {
+            po.cancel();
+        }
+
+        @Override
+        public void addProgressListener(ProgressListener pl) {
+            po.addProgressListener(pl);
+        }
+
+        @Override
+        public void removeProgressListener(ProgressListener pl) {
+            po.removeProgressListener(pl);
         }
     }
 

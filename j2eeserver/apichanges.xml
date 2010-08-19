@@ -116,6 +116,51 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+       <change id="required-librariers">
+    	    <api name="plugins"/>
+            <summary>
+                Implement support for deployment of standalone EE modules.
+            </summary>
+            <version major="1" minor="70"/>
+            <date day="2" month="8" year="2010"/>
+            <author login="dkonecny"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                Implemented both SPI and API for communication of requires libraries
+                from EE module to deployment server.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="DeploymentContext"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="DeploymentManager2"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="IncrementalDeployment2"/>
+            <issue number="186331"/>
+        </change>
+
+
+        <change id="deploymentDescriptorConfiguration">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Added SPI interface through which plugin may indicate it requires
+                deployment descriptor.
+	    </summary>
+	    <version major="1" minor="69"/>
+	    <date day="28" month="7" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                The SPI interface DeploymentDescriptorConfiguration may be
+                implemented by the server plugin in order to indicate the
+                server needs deployment descriptor.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="DeploymentDescriptorConfiguration"/>
+            <issue number="189012"/>
+	 </change>
+
         <change id="serverLibraries">
 	    <summary>
                 Implemented support for handling the server libraries.

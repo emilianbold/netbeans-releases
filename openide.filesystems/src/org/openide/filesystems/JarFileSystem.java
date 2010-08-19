@@ -56,6 +56,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
@@ -953,6 +954,9 @@ public class JarFileSystem extends AbstractFileSystem {
                     LOGGER.log(Level.FINE, "opened: {0} {1}", new Object[]{root.getAbsolutePath(), System.currentTimeMillis()}); //NOI18N
                     return jar;
                 }
+            } catch (ZipException ex) {
+                dumpFDs();
+                LOGGER.log(Level.INFO, ex.getMessage(), ex);
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, ex.getMessage(), ex);
             }
@@ -966,6 +970,31 @@ public class JarFileSystem extends AbstractFileSystem {
      */
     private void setJar(JarFile jar) {
         this.jar = jar;
+    }
+    
+    private static void dumpFDs() {
+        if (Utilities.isUnix()) {
+            String selfName = ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", ""); // NOI18N
+            LOGGER.log(Level.INFO, "Dumping file descriptors for pid {0}", selfName); // NOI18N
+            int pid;
+            try {
+                pid = Integer.parseInt(selfName);
+            } catch (NumberFormatException ex) {
+                LOGGER.info("Cannot get pid"); // NOI18N
+                return;
+            }
+            File descriptors = new File("/proc/" + pid + "/fd"); // NOI18N
+            final File[] arr = descriptors.listFiles();
+            String size = arr == null ? "nothing" : (arr.length + " files"); // NOI18N
+            LOGGER.log(Level.INFO, "There is {0} in {1}", new Object[]{size, descriptors}); // NOI18N
+            for (File fd : arr) {
+                try {
+                    LOGGER.log(Level.INFO, "{0} -> {1}", new Object[]{fd, fd.getCanonicalFile()}); // NOI18N
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, "{0}", fd); // NOI18N
+                }
+            }            
+        }
     }
 
     /** Use soft-references to not throw away the data that quickly.

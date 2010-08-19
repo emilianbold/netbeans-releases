@@ -1,6 +1,7 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.Node;
+import com.sun.el.parser.NodeVisitor;
 import javax.el.ELException;
 import org.netbeans.modules.csl.api.OffsetRange;
 
@@ -69,6 +70,17 @@ public final class ELElement {
         return originalOffset;
     }
 
+    /**
+     * Gets the offset of the given {@code node} in the original document.
+     * @param node a node contained by this element.
+     * @return
+     */
+    public OffsetRange getOriginalOffset(Node node) {
+        int start = originalOffset.getStart() + node.startOffset();
+        int end = start + (node.endOffset() - node.startOffset());
+        return new OffsetRange(start, end);
+    }
+
     public boolean isValid() {
         return error == null;
     }
@@ -81,15 +93,24 @@ public final class ELElement {
         return expression;
     }
 
-    public Node findNodeAt(int offset) {
-        if (!getEmbeddedOffset().containsInclusive(offset)) {
-            return null;
-        }
-        if (isValid()) {
-            // should fa
-            return null;
-        }
-        return null;
+    /**
+     * @return the node at the given {@code offset} or {@code null}.
+     */
+    public Node findNodeAt(final int offset) {
+        assert getOriginalOffset().containsInclusive(offset);
+        final Node[] result = new Node[1];
+        getNode().accept(new NodeVisitor() {
+            @Override
+            public void visit(Node node) throws ELException {
+                int nodeLength = node.endOffset() - node.startOffset();
+                if (originalOffset.getStart() + node.startOffset() <= offset
+                        && originalOffset.getStart() + node.startOffset() + nodeLength >= offset) {
+                    result[0] = node;
+                }
+
+            }
+        });
+        return result[0];
     }
 
     public ELParserResult getParserResult() {

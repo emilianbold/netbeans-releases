@@ -51,8 +51,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenSettings;
-import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import java.awt.Color;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -76,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.IOColorLines;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -98,6 +99,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     
     private Logger LOGGER = Logger.getLogger(MavenCommandLineExecutor.class.getName());
     
+    private static final RequestProcessor RP = new RequestProcessor(MavenCommandLineExecutor.class.getName(),1);
     
     public MavenCommandLineExecutor(RunConfig conf) {
         super(conf);
@@ -214,7 +216,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 ioput.getErr().close();
                 actionStatesAtFinish();
                 markFreeTab();
-                RequestProcessor.getDefault().post(new Runnable() { //#103460
+                RP.post(new Runnable() { //#103460
                     public void run() {
                         if (clonedConfig.getProject() != null) {
                             NbMavenProject.fireMavenProjectReload(clonedConfig.getProject());
@@ -410,16 +412,31 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
         builder.directory(clonedConfig.getExecutionDirectory());
-        ioput.getOut().println("NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'"); //NOI18N - to be shown in log.
+        StringBuilder display = new StringBuilder();
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
-            ioput.getOut().println("NetBeans:      " + env + "=" + val);
+            display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
         }
+        List<String> command = builder.command();
+        display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
+        printGray(ioput, display.toString());
 
         return builder;
+    }
+
+    private static void printGray(InputOutput io, String text) {
+        if (IOColorLines.isSupported(io)) {
+            try {
+                IOColorLines.println(io, text, Color.GRAY);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            io.getOut().println(text);
+        }
     }
 
     private void processIssue153101(IOException x, InputOutput ioput) {
@@ -445,7 +462,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             ioput.getErr().println("  This message will show on the next start of the IDE again, to skip it, add -J-Dmaven.run.cmd=true to your etc/netbeans.conf file in your NetBeans installation."); //NOI18N - in maven output
             ioput.getErr().println("The detailed exception output is printed to the IDE's log file."); //NOI18N - in maven output
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     RunConfig newConfig = new BeanRunConfig(config);
                     RunUtils.executeMaven(newConfig);

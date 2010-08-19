@@ -1299,7 +1299,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         VerifyResult matchingResult;
         
         if (!nodeEl.getModifiers().contains(Modifier.STATIC)) {
-            if (nodeEl.getKind().isClass() && info.getElementUtilities().enclosingTypeElement(nodeEl) == null) {
+            if ((nodeEl.getKind().isClass() || nodeEl.getKind().isInterface()) && info.getElementUtilities().enclosingTypeElement(nodeEl) == null) {
                 //top-level class:
                 matchingResult = VerifyResult.MATCH;
             } else {

@@ -62,6 +62,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.TypeElement;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.store.FSDirectory;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
@@ -111,7 +112,8 @@ public class LucenePerformanceTest extends NbTestCase {
         
         Set<String> result = new HashSet<String>();
         startTime = System.currentTimeMillis();
-        index.getPackageNames("",true,result);
+        final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter("", true);
+        index.queryTerms(filter.second, filter.first,result);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Packages: " + delta);
@@ -122,7 +124,11 @@ public class LucenePerformanceTest extends NbTestCase {
         
         Set<ElementHandle<TypeElement>> result2 = new HashSet<ElementHandle<TypeElement>>();
         startTime = System.currentTimeMillis();
-        index.getDeclaredTypes("", NameKind.PREFIX,ResultConvertor.elementHandleConvertor(),result2);
+        index.query(
+                QueryUtil.createQueries(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"",NameKind.PREFIX),
+                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.elementHandleConvertor(),
+                result2);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("All classes: " + delta);
@@ -131,8 +137,12 @@ public class LucenePerformanceTest extends NbTestCase {
         }
         
         result2 = new TreeSet<ElementHandle<TypeElement>>();
-        startTime = System.currentTimeMillis();
-        index.getDeclaredTypes("Class7", NameKind.PREFIX,ResultConvertor.elementHandleConvertor(),result2);
+        startTime = System.currentTimeMillis(); 
+        index.query(
+                QueryUtil.createQueries(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"Class7",NameKind.PREFIX),
+                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.elementHandleConvertor(),
+                result2);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Prefix classes: " + delta + " size: " + result.size());

@@ -62,6 +62,7 @@ import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Position.LineMapImpl;
 import com.sun.tools.javadoc.JavadocClassReader;
 import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
@@ -969,6 +970,13 @@ public class JavacParser extends Parser {
                             logTime (fo,Phase.RESOLVED,(end-start));
                         }
                     }
+
+                    //fix CompilationUnitTree.getLineMap:
+                    long startM = System.currentTimeMillis();
+                    char[] chars = snapshot.getText().toString().toCharArray();
+                    ((LineMapImpl) cu.getLineMap()).build(chars, chars.length, '\0');
+                    LOGGER.log(Level.FINER, "Rebuilding LineMap took: {0}", System.currentTimeMillis() - startM);
+
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);
                 } finally {
                     l.endPartialReparse();

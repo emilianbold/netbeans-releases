@@ -629,7 +629,7 @@ public class AstNode {
 
         @Override
         public List<Element> getAllPossibleElements() {
-            return dtd.getElementList(null);
+            return dtd == null ? Collections.emptyList() : dtd.getElementList(null);
         }
     }
 }

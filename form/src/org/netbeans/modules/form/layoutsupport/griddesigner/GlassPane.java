@@ -60,6 +60,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
@@ -79,7 +80,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     /** Color of the grid. */
     private static final Color GRID_COLOR = new Color(192, 192, 192, 128);
     /** Color of the highlighted cell. */
-    private static final Color HIGHLIGHT_COLOR = new Color(0,255,0,128);
+    private static final Color HIGHLIGHT_COLOR = new Color(64, 255, 64, 64);
     /** Gap between the grid and the header. */
     static final int HEADER_GAP = 10;
 
@@ -92,6 +93,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private GridManager gridManager;
     /** Grid information provider. */
     private GridInfoProvider gridInfo;
+    /** Grid customizer. */
+    private GridCustomizer customizer;
 
     // SELECTION
 
@@ -101,6 +104,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private BitSet selectedColumns = new BitSet();
     /** Selected rows. */
     private BitSet selectedRows = new BitSet();
+    /** Row of focused cell - used by actions with CELL context. */
+    private int focusedCellRow;
+    /** Column of focused cell - used by actions with CELL context. */
+    private int focusedCellColumn;
 
     /** The height of the column header. */
     private int headerHeight;
@@ -208,6 +215,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     public void setGridManager(GridManager gridManager) {
         this.gridManager = gridManager;
         this.gridInfo = gridManager.getGridInfo();
+        this.customizer = gridManager.getCustomizer(this);
         GridUtils.revalidateGrid(gridManager);
         GridUtils.addPaddingComponents(gridManager, gridInfo.getColumnCount(), gridInfo.getRowCount());
     }
@@ -349,7 +357,13 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      */
     private void paintSelection(Graphics g) {
         if (animation) return;
-        Rectangle rect = fromComponentPane(selection.getBounds());
+        Rectangle rect = fromComponentPane(selectionResizingBounds());
+        Rectangle inner = fromComponentPane(selection.getBounds());
+        g.setColor(HIGHLIGHT_COLOR);
+        g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
+        g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
+        g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
+        g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
         g.setColor(GridDesigner.SELECTION_COLOR);
         int x = rect.x-1;
         int y = rect.y-1;
@@ -393,6 +407,20 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         int height = extendedBound(rowBounds, newGridY+newGridHeight)-y;
         Point p = fromComponentPane(new Point(x, y));
         g.fillRect(p.x, p.y, width, height);
+    }
+    
+    private Rectangle selectionResizingBounds() {
+        int[] columnBounds = gridInfo.getColumnBounds();
+        int[] rowBounds = gridInfo.getRowBounds();
+        int gridX = gridInfo.getGridX(selection);
+        int gridY = gridInfo.getGridY(selection);
+        int gridWidth = gridInfo.getGridWidth(selection);
+        int gridHeight = gridInfo.getGridHeight(selection);
+        int x = columnBounds[gridX];
+        int width = columnBounds[gridX+gridWidth]-x;
+        int y = rowBounds[gridY];
+        int height = rowBounds[gridY+gridHeight]-y;
+        return new Rectangle(x,y,width,height);
     }
 
     /**
@@ -470,7 +498,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @return resizing rectangle that is used as a part of the resizing feedback.
      */
     Rectangle calculateResizingRectangle(Point resizingEnd) {
-        Rectangle rect = fromComponentPane(selection.getBounds());
+        Rectangle rect = fromComponentPane(selectionResizingBounds());
         int dx = resizingEnd.x - draggingStart.x;
         int dy = resizingEnd.y - draggingStart.y;
         if (isResizingEastward()) {
@@ -585,7 +613,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             Image resizeHandle = GridDesigner.RESIZE_HANDLE;
             int rw = resizeHandle.getWidth(null);
             int rh = resizeHandle.getHeight(null);
-            Rectangle rect = fromComponentPane(selection.getBounds());
+            Rectangle rect = fromComponentPane(selectionResizingBounds());
             boolean w = (rect.x-rw<=x) && (x<=rect.x+rect.width+rw);
             boolean h = (rect.y-rh<=y) && (y<=rect.y+rect.height+rh);
             boolean top = w && (rect.y-rh<=y) && (y<=rect.y+rh);
@@ -792,6 +820,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         context.setSelectedRows((BitSet)selectedRows.clone());
         context.setSelectedComponents((selection==null) ? Collections.EMPTY_SET : Collections.singleton(selection));
         context.setGridInfo(gridInfo);
+        context.setFocusedRow(focusedCellRow);
+        context.setFocusedColumn(focusedCellColumn);
         return context;
     }
 
@@ -862,7 +892,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 } else {
                     // Resizing (start)
                     resizing = true;
-                    draggingRect = fromComponentPane(selection.getBounds());
+                    draggingRect = fromComponentPane(selectionResizingBounds());
                     newGridX = gridInfo.getGridX(selection);
                     newGridY = gridInfo.getGridY(selection);
                     newGridHeight = gridInfo.getGridHeight(selection);
@@ -894,20 +924,20 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
                     // Column actions
                     int column = findColumnHeader(point);
+                    context.setFocusedColumn(column);
                     if (column != -1) {
-                        context.setFocusedColumn(column);
                         actions = gridManager.designerActions(GridAction.Context.COLUMN);
                     }
 
                     // Row actions
                     int row = findRowHeader(point);
+                    context.setFocusedRow(row);
                     if (row != -1) {
-                        context.setFocusedRow(row);
                         actions = gridManager.designerActions(GridAction.Context.ROW);
                     }
 
                     // Grid actions
-                    if ((selection == null) && (column == -1) /* && (row == -1) */) {
+                    if ((selection == null) && (column == -1) && (row == -1)) {
                         Point shift = fromComponentPane(new Point());
                         int x = gridInfo.getX();
                         int y = gridInfo.getY();
@@ -915,16 +945,28 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                         int height = gridInfo.getHeight();
                         Rectangle rect = new Rectangle(x+shift.x, y+shift.y, width, height);
                         if (rect.contains(point)) {
-                            actions = gridManager.designerActions(GridAction.Context.GRID);
+                            focusedCellColumn = gridXLocation(point.x-shift.x, true);
+                            focusedCellRow = gridYLocation(point.y-shift.y, true);
+                            context.setFocusedColumn(focusedCellColumn);
+                            context.setFocusedRow(focusedCellRow);
+                            actions = gridManager.designerActions(GridAction.Context.CELL);
                         }
+                    } else {
+                        focusedCellColumn = -1;
+                        focusedCellRow = -1;
                     }
 
                     if (actions != null) {
                         JPopupMenu menu = new JPopupMenu();
                         for (GridAction action : actions) {
-                            GridActionWrapper wrapper = new GridActionWrapper(action);
-                            wrapper.setDesignerContext(context);
-                            menu.add(wrapper);
+                            JMenuItem menuItem = action.getPopupPresenter(GlassPane.this);
+                            if (menuItem == null) {
+                                GridActionWrapper wrapper = new GridActionWrapper(action);
+                                wrapper.setDesignerContext(context);
+                                menu.add(wrapper);
+                            } else {
+                                menu.add(menuItem);
+                            }
                         }
                         menu.show(GlassPane.this, point.x, point.y);
                     }
@@ -1027,6 +1069,12 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     }
                 }
                 change = new GridBoundsChange(animOldColumnBounds, animOldRowBounds, animNewColumnBounds, animNewRowBounds);
+            }
+            
+            // Update customizer
+            if (customizer != null) {
+                DesignerContext context = currentContext();
+                customizer.setContext(context);                
             }
             animChange = change;
             animLayer.animate();

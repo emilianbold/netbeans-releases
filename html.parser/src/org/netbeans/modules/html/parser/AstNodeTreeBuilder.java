@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,6 +75,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     private Stack<AstNode> stack = new Stack<AstNode>();
     Queue<AstNode> physicalEndTagsQueue = new LinkedList<AstNode>();
     private ElementName startTag;
+
+    private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
 
 //    private int offset;
     public AstNodeTreeBuilder() {
@@ -161,7 +164,9 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     @Override
     public void stateChanged(int from, int to, int offset) {
 //        this.offset = offset;
-//        System.out.println(STATE_NAMES[from] + " -> " + STATE_NAMES[to] + " at " + offset);
+        if(DEBUG) {
+            System.out.println(STATE_NAMES[from] + " -> " + STATE_NAMES[to] + " at " + offset);
+        }
 
         switch (to) {
             case TAG_OPEN:
@@ -171,6 +176,13 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 //            case TAG_NAME:
 //                open_tag_name_offset = offset;
 //                break;
+
+            case CLOSE_TAG_OPEN_NOT_PCDATA:
+                switch(from) {
+                    case TAG_OPEN_NON_PCDATA:
+                        //close tag in CDATA (e.g. </style> tag after embedded stylesheet)
+                        tag_lt_offset = offset - 1; //the state transition happens after <'/' char found
+                }
 
             case DATA:
                 switch (from) {
@@ -183,11 +195,45 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                     case BEFORE_ATTRIBUTE_NAME:
                     case BEFORE_ATTRIBUTE_VALUE:
                     case ATTRIBUTE_VALUE_UNQUOTED:
+                    case CLOSE_TAG_OPEN_NOT_PCDATA:
                         tag_gt_offset = offset;
                         break;
 
                 }
+                break;
 
+            case ATTRIBUTE_NAME:
+                switch(from) {
+                    case BEFORE_ATTRIBUTE_NAME:
+                        //switching to attribute name
+                        AttrInfo ainfo = new AttrInfo();
+                        attrs.push(ainfo);
+                        ainfo.nameOffset = offset;
+                        break;
+                }
+                break;
+
+            case BEFORE_ATTRIBUTE_VALUE:
+                switch(from) {
+                    case ATTRIBUTE_NAME:
+                        attrs.peek().equalSignOffset = offset;
+                         break;
+                }
+                break;
+
+            case ATTRIBUTE_VALUE_DOUBLE_QUOTED:
+                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.DOUBLE;
+                attrs.peek().valueOffset = offset;
+                break;
+            case ATTRIBUTE_VALUE_SINGLE_QUOTED:
+                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.SINGLE;
+                attrs.peek().valueOffset = offset;
+                break;
+            case ATTRIBUTE_VALUE_UNQUOTED:
+                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.NONE;
+                attrs.peek().valueOffset = offset;
+                break;
+                
         }
     }
 
@@ -226,6 +272,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         tag_lt_offset = -1;
 //        open_tag_name_offset = -1;
         self_closing_starttag = false;
+        attrs.clear();
     }
 
     @Override
@@ -316,13 +363,23 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     @Override
     protected void addAttributesToElement(AstNode node, HtmlAttributes attributes) throws SAXException {
         for (int i = 0; i < attributes.getLength(); i++) {
+            //XXX I assume the attributes order is the same as in the source code
+            AttrInfo attrInfo = attrs.elementAt(i);
             AstNode.Attribute attr = factory.createAttribute(
                     attributes.getLocalName(i),
                     attributes.getValue(i),
-                    -1,
-                    -1);
+                    attrInfo.nameOffset,
+                    attrInfo.valueOffset);
 
             node.setAttribute(attr);
+        }
+    }
+
+    private static class AttrInfo {
+        public int nameOffset, equalSignOffset, valueOffset;
+        public ValueQuotation valueQuotationType;
+        private enum ValueQuotation {
+            NONE, SINGLE, DOUBLE;
         }
     }
 }

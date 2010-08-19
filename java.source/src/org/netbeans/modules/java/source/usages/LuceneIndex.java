@@ -47,14 +47,16 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,16 +66,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.lang.model.element.ElementKind;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
@@ -81,19 +84,16 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DefaultSimilarity;
-import org.apache.lucene.search.Hit;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.impl.indexing.lucene.IndexCacheFactory;
@@ -101,35 +101,34 @@ import org.netbeans.modules.parsing.impl.indexing.lucene.util.Evictable;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-class LuceneIndex extends Index implements Evictable {
+class LuceneIndex extends Index {
 
+    private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
+    private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
     private static final boolean debugIndexMerging = Boolean.getBoolean("java.index.debugMerge");     // NOI18N
-    private static final boolean useMemoryCache = Boolean.getBoolean("java.index.useMemCache");       //NOI18N
+    private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
+    private static final float DEFAULT_CACHE_SIZE = 0.05f;
+    private static final CachePolicy cachePolicy = getCachePolicy();
     private static final String REFERENCES = "refs";    // NOI18N
-
-    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
-    private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
-
-    private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);
-
-    private final File refCacheRoot;
-    //@GuardedBy(this)
-    private Directory directory;
-    private Long rootTimeStamp;
-
-    //@GuardedBy (this)
-    private IndexReader reader; //Cache, do not use this dirrectly, use getReader
-    private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
-    private Analyzer analyzer;  //Analyzer used to store documents
-    private volatile boolean closed;
-    private volatile Boolean validCache;
-    private Directory memCacheDir;
+    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());    
+    private static final Analyzer analyzer;  //Analyzer used to store documents
+    
+    static {
+        final PerFieldAnalyzerWrapper _analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.identTerm("").field(), new WhitespaceAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.featureIdentTerm("").field(), new WhitespaceAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.caseInsensitiveFeatureIdentTerm("").field(), new DocumentUtil.LCWhitespaceAnalyzer());
+        analyzer = _analyzer;
+    }
+    
+    private final DirCache dirCache;
 
     static Index create (final File cacheRoot) throws IOException {
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
@@ -139,249 +138,93 @@ class LuceneIndex extends Index implements Evictable {
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
-        this.refCacheRoot = refCacheRoot;
-        this.directory = createDirectory(this.refCacheRoot);
-        PerFieldAnalyzerWrapper _analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.identTerm("").field(), new WhitespaceAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.featureIdentTerm("").field(), new WhitespaceAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.caseInsensitiveFeatureIdentTerm("").field(), new DocumentUtil.LCWhitespaceAnalyzer());
-        this.analyzer = _analyzer;
+        this.dirCache = new DirCache(refCacheRoot,cachePolicy);
     }
-
-
-    @SuppressWarnings ("unchecked")     // NOI18N, unchecked - lucene has source 1.4
-    public List<String> getUsagesFQN(final String resourceName, final Set<ClassIndexImpl.UsageType>mask, final BooleanOperator operator) throws IOException, InterruptedException {
-        checkPreconditions();
-        final AtomicBoolean cancel = this.cancel.get();
-        assert cancel != null;
-        assert resourceName != null;
-        assert mask != null;
-        assert operator != null;
-        final IndexReader in = getReader();
-        if (in == null) {
-            return null;
-        }
-        final Searcher searcher = new IndexSearcher (in);
-        Query query;
-        try {
-            final List<String> result = new LinkedList<String> ();
-            switch (operator) {
-                case AND:
-                    query = new WildcardQuery(DocumentUtil.referencesTerm (resourceName, mask));
-                    break;
-                case OR:
-                    BooleanQuery booleanQuery = new BooleanQuery ();
-                    for (ClassIndexImpl.UsageType ut : mask) {
-                        final Query subQuery = new WildcardQuery(DocumentUtil.referencesTerm (resourceName, EnumSet.of(ut)));
-                        booleanQuery.add(subQuery, Occur.SHOULD);
-                    }
-                    query = booleanQuery;
-                    break;
-                default:
-                    throw new IllegalArgumentException (operator.toString());
-            }
-            if (cancel.get()) {
-                throw new InterruptedException ();
-            }
-            final Hits hits = searcher.search (query);
-            for (Iterator<Hit> it = (Iterator<Hit>) hits.iterator(); it.hasNext();) {
-                if (cancel.get()) {
-                    throw new InterruptedException ();
-                }
-                final Hit hit = it.next ();
-                final Document doc = hit.getDocument();
-                final String user = DocumentUtil.getBinaryName(doc);
-                result.add (user);
-            }
-            return result;
-        } finally {
-            searcher.close();
-        }
-    }
-
-
-    public String getSourceName (final String resourceName) throws IOException {
-        checkPreconditions();
-        final IndexReader in = getReader();
-        if (in == null) {
-            return null;
-        }
-        Searcher searcher = new IndexSearcher (in);
-        try {
-            Hits hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
-            if (hits.length() == 0) {
-                return null;
-            }
-            else {
-                Hit hit = (Hit) hits.iterator().next();
-                return DocumentUtil.getSourceName(hit.getDocument());
-            }
-        } finally {
-            searcher.close();
-        }
-    }
-
-    @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
-    public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException {
-        checkPreconditions();
-        final IndexReader in = getReader();
+    
+    @Override
+    public <T> void query (
+            final @NonNull Query[] queries,
+            final @NonNull FieldSelector selector,
+            final @NonNull ResultConvertor<? super Document, T> convertor, 
+            final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
+        Parameters.notNull("queries", queries);   //NOI18N
+        Parameters.notNull("selector", selector);   //NOI18N
+        Parameters.notNull("convertor", convertor); //NOI18N
+        Parameters.notNull("result", result);       //NOI18N
+        
+        final IndexReader in = dirCache.getReader();
         if (in == null) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
         }
-        final AtomicBoolean cancel = this.cancel.get();
-        assert cancel != null;
-        assert name != null;
-        final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
-        switch (kind) {
-            case SIMPLE_NAME:
-                {
-                    toSearch.add(DocumentUtil.simpleNameTerm(name));
-                    break;
-                }
-            case PREFIX:
-                if (name.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, convertor, result, cancel);
-                    return;
-                }
-                else {
-                    final Term nameTerm = DocumentUtil.simpleNameTerm(name);
-                    prefixSearh(nameTerm, in, toSearch, cancel);
-                    break;
-                }
-            case CASE_INSENSITIVE_PREFIX:
-                if (name.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, convertor, result, cancel);
-                    return;
-                }
-                else {
-                    final Term nameTerm = DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase());     //XXX: I18N, Locale
-                    prefixSearh(nameTerm, in, toSearch, cancel);
-                    break;
-                }
-            case CAMEL_CASE:
-                if (name.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                {
-                    StringBuilder sb = new StringBuilder();
-                    String prefix = null;
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(name, lastIndex + 1);
-                        String token = name.substring(lastIndex, index == -1 ? name.length(): index);
-                        if ( lastIndex == 0 ) {
-                            prefix = token;
-                        }
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    }
-                    while(index != -1);
-
-                    final Pattern pattern = Pattern.compile(sb.toString());
-                    regExpSearch(pattern,DocumentUtil.simpleNameTerm(prefix),in,toSearch,cancel, true);
-                }
-                break;
-            case CASE_INSENSITIVE_REGEXP:
-                if (name.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                else {
-                    final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
-                    if (Character.isJavaIdentifierStart(name.charAt(0))) {
-                        regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch,cancel, false);      //XXX: Locale
-                    }
-                    else {
-                        regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(""), in, toSearch,cancel, false);      //NOI18N
-                    }
-                    break;
-                }
-            case REGEXP:
-                if (name.length() == 0) {
-                    throw new IllegalArgumentException ();
-                } else {
-                    final Pattern pattern = Pattern.compile(name);
-                    if (Character.isJavaIdentifierStart(name.charAt(0))) {
-                        regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch, cancel, true);
-                    }
-                    else {
-                        regExpSearch(pattern, DocumentUtil.simpleNameTerm(""), in, toSearch, cancel, true);             //NOI18N
-                    }
-                    break;
-                }
-            case CAMEL_CASE_INSENSITIVE:
-                if (name.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, convertor, result, cancel);
-                    return;
-                }
-                else {
-                    final Term nameTerm = DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase());     //XXX: I18N, Locale
-                    prefixSearh(nameTerm, in, toSearch, cancel);
-                    StringBuilder sb = new StringBuilder();
-                    String prefix = null;
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(name, lastIndex + 1);
-                        String token = name.substring(lastIndex, index == -1 ? name.length(): index);
-                        if ( lastIndex == 0 ) {
-                            prefix = token;
-                        }
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    }
-                    while(index != -1);
-                    final Pattern pattern = Pattern.compile(sb.toString());
-                    regExpSearch(pattern,DocumentUtil.simpleNameTerm(prefix),in,toSearch,cancel, true);
-                    break;
-                }
-            default:
-                throw new UnsupportedOperationException (kind.toString());
-        }
-        LOGGER.fine(String.format("LuceneIndex.getDeclaredTypes[%s] returned %d elements\n",this.toString(), toSearch.size()));
-        final ElementKind[] kindHolder = new ElementKind[1];
-        final Set<Integer> docNums = new TreeSet<Integer>();
-        final TermDocs tds = in.termDocs();
+        final AtomicBoolean _cancel = cancel.get();
+        assert _cancel != null;        
+        final BitSet bs = new BitSet(in.maxDoc());
+        final Collector c = QueryUtil.createBitSetCollector(bs);
+        final Searcher searcher = new IndexSearcher(in);
         try {
-            int[] docs = new int[25];
-            int[] freq = new int [25];
-            int len;
-            for (Term t : toSearch) {
-                if (cancel.get()) {
+            for (Query q : queries) {
+                if (_cancel.get()) {
                     throw new InterruptedException ();
                 }
-                tds.seek(t);
-                while ((len = tds.read(docs, freq))>0) {
-                    for (int i = 0; i < len; i++) {
-                        docNums.add (docs[i]);
-                    }
-                }
+                searcher.search(q, c);
             }
         } finally {
-            tds.close();
-        }
-        for (Integer docNum : docNums) {
-            if (cancel.get()) {
+            searcher.close();
+        }        
+        for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
+            if (_cancel.get()) {
                 throw new InterruptedException ();
             }
-            final Document doc = in.document(docNum, DocumentUtil.declaredTypesFieldSelector());
-            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
-            final T value = convertor.convert(kindHolder[0],binaryName);
-            if (value != null) {
-                result.add (value);
+            final Document doc = in.document(docNum, selector);
+            try {
+                final T value = convertor.convert(doc);
+                if (value != null) {
+                    result.add (value);
+                }
+            } catch (ResultConvertor.Stop stop) {
+                //Stop not supported not needed
             }
         }
     }
+    
+    @Override
+    public <T> void queryTerms(
+            final @NullAllowed Term seekTo,
+            final @NonNull ResultConvertor<Term,T> filter,
+            final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
+        
+        final IndexReader in = dirCache.getReader();
+        if (in == null) {
+            return;
+        }
+        final AtomicBoolean _cancel = cancel.get();
+        assert _cancel != null;
 
-    public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
-        checkPreconditions();
-        final IndexReader in = getReader();
+        final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
+        try {
+            do {
+                if (_cancel.get()) {
+                    throw new InterruptedException ();
+                }
+                final Term currentTerm = terms.term();
+                if (currentTerm != null) {                    
+                    final T vote = filter.convert(currentTerm);
+                    if (vote != null) {
+                        result.add(vote);
+                    }
+                }
+            } while (terms.next());
+        } catch (ResultConvertor.Stop stop) {
+            //Stop iteration of TermEnum
+        } finally {
+            terms.close();
+        }
+    }
+
+    //Todo: replace by query(QueryUtil.createQueries) - needs to collect terms in queries
+    public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
+        final IndexReader in = dirCache.getReader();
         if (in == null) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
             return;
@@ -480,7 +323,6 @@ class LuceneIndex extends Index implements Evictable {
                 throw new UnsupportedOperationException (kind.toString());
         }
         LOGGER.fine(String.format("LuceneIndex.getDeclaredElements[%s] returned %d elements\n",this.toString(), toSearch.size()));  //NOI18N
-        final ElementKind[] kindHolder = new ElementKind[1];
         final Map<Integer,Set<String>> docNums = new HashMap<Integer,Set<String>>();   //todo: TreeMap may perform better, ordered according to doc nums => linear IO
         final TermDocs tds = in.termDocs();
         try {
@@ -511,53 +353,18 @@ class LuceneIndex extends Index implements Evictable {
                 throw new InterruptedException ();
             }
             final Document doc = in.document(docNum.getKey(), DocumentUtil.declaredTypesFieldSelector());
-            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
-            final T key = convertor.convert(kindHolder[0],binaryName);
-            if (key != null) {
-                result.put (key,docNum.getValue());
-            }
-        }
-    }
-
-    //<editor-fold desc="Implementation of Evictable interface">
-    public void evicted() {
-        //When running from memory cache no need to close the reader, it does not own file handler.
-        if (!useMemoryCache) {
-            //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
-            RP.post(new Runnable() {
-                public void run () {
-                    try {
-                        ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-                            public Void run() throws IOException, InterruptedException {
-                                close(false);
-                                LOGGER.fine("Evicted index: " + refCacheRoot.getAbsolutePath()); //NOI18N
-                                return null;
-                            }
-                        });
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (InterruptedException ie) {
-                        Exceptions.printStackTrace(ie);
-                    }
-                }
-            });
-        }
-    }
-    ///</editor-fold>
-
-    private void _hit() {
-        if (!useMemoryCache) {
             try {
-                final URL url = this.refCacheRoot.toURI().toURL();
-                IndexCacheFactory.getDefault().getCache().put(url, this);
-            } catch (MalformedURLException e) {
-                Exceptions.printStackTrace(e);
+                final T key = convertor.convert(doc);
+                if (key != null) {
+                    result.put (key,docNum.getValue());
+                }
+            } catch (ResultConvertor.Stop stop) {
+                //Stop not supported, not needed
             }
         }
     }
-
+    //where
     private static int findNextUpper(String text, int offset ) {
-
         for( int i = offset; i < text.length(); i++ ) {
             if ( Character.isUpperCase(text.charAt(i)) ) {
                 return i;
@@ -607,33 +414,7 @@ class LuceneIndex extends Index implements Evictable {
             en.close();
         }
     }
-
-    private <T> void emptyPrefixSearch (final IndexReader in, final ResultConvertor<T> convertor, final Set<? super T> result, final AtomicBoolean cancel) throws IOException, InterruptedException {        
-        final int bound = in.maxDoc();
-        final ElementKind[] kindHolder = new ElementKind[1];
-        for (int i=0; i<bound; i++) {
-            if (cancel.get()) {
-                throw new InterruptedException ();
-            }
-            if (!in.isDeleted(i)) {
-                final Document doc = in.document(i, DocumentUtil.declaredTypesFieldSelector());
-                if (doc != null) {
-                    String binaryName = DocumentUtil.getBinaryName (doc, kindHolder);
-                    if (binaryName == null) {
-                        //Root timestamp document
-                        continue;
-                    }
-                    else {
-                        final T value = convertor.convert(kindHolder[0],binaryName);
-                        if (value != null) {
-                            result.add (value);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    
     private void prefixSearh (Term nameTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel) throws IOException, InterruptedException {
         final String prefixField = nameTerm.field();
         final String name = nameTerm.text();
@@ -656,132 +437,13 @@ class LuceneIndex extends Index implements Evictable {
         }
     }
 
-    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws IOException, InterruptedException {
-        checkPreconditions();
-        if (directOnly && this.rootPkgCache != null && prefix.length() == 0) {
-                result.addAll(this.rootPkgCache);
-                return;
-        }
-        final IndexReader in = getReader();
-        if (in == null) {
-            return;
-        }
-        final AtomicBoolean cancel = this.cancel.get();
-        assert cancel != null;
-        final Term pkgTerm = DocumentUtil.packageNameTerm (prefix);
-        final String prefixField = pkgTerm.field();
-        if (prefix.length() == 0) {
-            if (directOnly) {
-                this.rootPkgCache = new HashSet<String>();
-            }
-            final TermEnum terms = in.terms ();
-            try {
-                do {
-                    if (cancel.get()) {
-                        throw new InterruptedException ();
-                    }
-                    final Term currentTerm = terms.term();
-                    if (currentTerm != null && prefixField == currentTerm.field()) {
-                        String pkgName = currentTerm.text();
-                        if (directOnly) {
-                            int index = pkgName.indexOf('.',prefix.length());
-                            if (index>0) {
-                                pkgName = pkgName.substring(0,index);
-                            }
-                            this.rootPkgCache.add(pkgName);
-                        }
-                        result.add(pkgName);
-                    }
-                } while (terms.next());
-            } finally {
-                terms.close();
-            }
-        }
-        else {
-            final TermEnum terms = in.terms (pkgTerm);
-            try {
-                do {
-                    if (cancel.get()) {
-                        throw new InterruptedException ();
-                    }
-                    final Term currentTerm = terms.term();
-                    if (currentTerm != null && prefixField == currentTerm.field() && currentTerm.text().startsWith(prefix)) {
-                        String pkgName = currentTerm.text();
-                        if (directOnly) {
-                            int index = pkgName.indexOf('.',prefix.length());
-                            if (index>0) {
-                                pkgName = pkgName.substring(0,index);
-                            }
-                        }
-                        result.add(pkgName);
-                    }
-                    else {
-                        break;
-                    }
-                } while (terms.next());
-            } finally {
-                terms.close();
-            }
-        }
-    }
-
-    public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
-        checkPreconditions();
-        final IndexReader in = getReader();
-        if (in == null) {
-            return false;
-        }
-        try {
-            Searcher searcher = new IndexSearcher (in);
-            try {
-                Hits hits;
-                if (resourceName == null) {
-                    synchronized (this) {
-                        if (this.rootTimeStamp != null) {
-                            return rootTimeStamp.longValue() >= timeStamp;
-                        }
-                    }
-                    hits = searcher.search(new TermQuery(DocumentUtil.rootDocumentTerm()));
-                }
-                else {
-                    hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
-                }
-
-                if (hits.length() != 1) {   //0 = not present, 1 = present and has timestamp, >1 means broken index, probably killed IDE, treat it as not up to date and store will fix it.
-                    return false;
-                }
-                else {
-                    try {
-                        Hit hit = (Hit) hits.iterator().next();
-                        long cacheTime = DocumentUtil.getTimeStamp(hit.getDocument());
-                        if (resourceName == null) {
-                            synchronized (this) {
-                                this.rootTimeStamp = new Long (cacheTime);
-                            }
-                        }
-                        return cacheTime >= timeStamp;
-                    } catch (ParseException pe) {
-                        throw new IOException ();
-                    }
-                }
-            } finally {
-                searcher.close();
-            }
-        } catch (java.io.IOException ioe) {
-            //The FileNotFoundException is may be thrown if the index is not fully merged,
-            //also IOException can be thrown when index was not closed on exit.
-            //Both can be caused by killing the IDE.
-            this.clear();
-            return false;
-        }
-    }
-
+    @Override
     public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
                     _store(refs, topLevels);
-                    validCache = true;
                     return null;
                 }
             });
@@ -791,36 +453,32 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private void _store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
-        checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
-        this.rootPkgCache = null;
         boolean create = !exists();
-        long timeStamp = System.currentTimeMillis();
-        final IndexWriter out = getWriter(create);
+        final IndexWriter out = dirCache.getWriter(create);
         try {
             if (!create) {
                 for (Pair<String,String> topLevel : topLevels) {
                     out.deleteDocuments(DocumentUtil.binaryContentNameQuery(topLevel));
                 }
-                out.deleteDocuments (DocumentUtil.rootDocumentTerm());
             }
-            storeData(out, refs, timeStamp, false);
+            storeData(out, refs, false);
         } finally {
             try {
                 out.close();
             } finally {
-                refreshReader();
+                dirCache.refreshReader();
             }
         }
     }
-
-    //Todo: probably unsed, the java source should be refactored and cleaned up.
+    
+    @Override
     public void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
                     _store(refs, toDelete);
-                    validCache = true;
                     return null;
                 }
             });
@@ -830,32 +488,27 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private void _store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
-        checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
-        this.rootPkgCache = null;
         boolean create = !exists();
-        long timeStamp = System.currentTimeMillis();
-        final IndexWriter out = getWriter(create);
+        final IndexWriter out = dirCache.getWriter(create);
         try {
             if (!create) {
                 for (Pair<String,String> toDeleteItem : toDelete) {
                     out.deleteDocuments(DocumentUtil.binaryNameSourceNamePairQuery(toDeleteItem));
                 }
-                out.deleteDocuments (DocumentUtil.rootDocumentTerm());
             }
-            storeData(out, refs, timeStamp, true);
+            storeData(out, refs, true);
         } finally {
             try {
                 out.close();
             } finally {
-                refreshReader();
+                dirCache.refreshReader();
             }
         }
     }
 
     private void storeData (final IndexWriter out,
             final Map<Pair<String,String>, Object[]> refs,
-            final long timeStamp,
             final boolean optimize) throws IOException {
         if (debugIndexMerging) {
             out.setInfoStream (System.err);
@@ -876,7 +529,6 @@ class LuceneIndex extends Index implements Evictable {
             memDir = new RAMDirectory ();
             activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
         }
-        activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
         for (Iterator<Map.Entry<Pair<String,String>,Object[]>> it = refs.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Pair<String,String>,Object[]> refsEntry = it.next();
             it.remove();
@@ -887,7 +539,7 @@ class LuceneIndex extends Index implements Evictable {
             final List<String> cr = (List<String>) data[0];
             final String fids = (String) data[1];
             final String ids = (String) data[2];
-            final Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr,fids,ids,srcName);
+            final Document newDoc = DocumentUtil.createDocument(cn,cr,fids,ids,srcName);
             activeOut.addDocument(newDoc);
             if (memDir != null && lmListener.isLowMemory()) {
                 activeOut.close();
@@ -905,226 +557,50 @@ class LuceneIndex extends Index implements Evictable {
         if (optimize) {
             out.optimize(false);
         }
-        synchronized (this) {
-            this.rootTimeStamp = new Long (timeStamp);
-        }
     }
 
+    @Override
     public boolean isValid (boolean force) throws IOException {
-        checkPreconditions();
-        Boolean valid = validCache;
-        if (force ||  valid == null) {
-            final Collection<? extends String> locks = getOrphanLock();
-            boolean res = false;
-            if (!locks.isEmpty()) {
-                LOGGER.warning("Broken (locked) index folder: " + refCacheRoot.getAbsolutePath());   //NOI18N
-                for (String lockName : locks) {
-                    directory.deleteFile(lockName);
-                }
-                if (force) {
-                    clear();
-                }
-            } else {
-                res = exists();
-                if (res && force) {
-                    try {
-                        getReader();
-                    } catch (java.io.IOException e) {
-                        res = false;
-                        clear();
-                    } catch (RuntimeException e) {
-                        res = false;
-                        clear();
-                    }
-                }
-            }
-            valid = res;
-            validCache = valid;
-        }
-        return valid;
+        return dirCache.isValid(force);
     }
 
+    @Override
     public void clear () throws IOException {
         try {
-            checkPreconditions();
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-
+                @Override
                 public Void run() throws IOException, InterruptedException {
-                    _clear();
+                    dirCache.clear();
                     return null;
                 }
             });
         } catch (InterruptedException ex) {
-            //Never happens
-            IOException newException = new IOException();
-            newException.initCause(ex);
-            throw newException;
+            throw new IOException(ex);
         }
     }
-
-    private synchronized void _clear() throws IOException {
-        this.rootPkgCache = null;
-        this.close (false);
-        try {
-            final String[] content = this.directory.list();
-            boolean dirty = false;
-            if (content != null) {
-                for (String file : content) {
-                    try {
-                        directory.deleteFile(file);
-                    } catch (IOException e) {
-                        //Some temporary files
-                        if (directory.fileExists(file)) {
-                            dirty = true;
-                        }
-                    }
-                }
-            }
-            if (dirty) {
-                //Try to delete dirty files and log what's wrong
-                final File cacheDir = ((FSDirectory)this.directory).getFile();
-                final File[] children = cacheDir.listFiles();
-                if (children != null) {
-                    for (final File child : children) {
-                        if (!child.delete()) {
-                            final Class c = this.directory.getClass();
-                            int refCount = -1;
-                            try {
-                                final Field field = c.getDeclaredField("refCount");
-                                field.setAccessible(true);
-                                refCount = field.getInt(this.directory);
-                            } catch (NoSuchFieldException e) {/*Not important*/}
-                              catch (IllegalAccessException e) {/*Not important*/}
-
-                            throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
-                                    child.exists()  +","+                                               //NOI18N
-                                    child.canRead() +","+                                               //NOI18N
-                                    child.canWrite() +","+                                              //NOI18N
-                                    cacheDir.canRead() +","+                                            //NOI18N
-                                    cacheDir.canWrite() +","+                                           //NOI18N
-                                    refCount+")");                                                      //NOI18N
-                        }
-                    }
-                }
-            }
-        } finally {
-            //Need to recreate directory, see issue: #148374
-            this.close(true);
-            this.directory = createDirectory(refCacheRoot);
-            closed = false;
-        }
-    }
-
+    
+    @Override
     public boolean exists () {
-        try {
-            return IndexReader.indexExists(this.directory);
-        } catch (IOException e) {
-            return false;
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.INFO, "Broken index: " + refCacheRoot.getAbsolutePath(), e);
-            return false;
-        }
+        return this.dirCache.exists();
     }
 
+    @Override
     public void close () throws IOException {
-        close(true);
-    }
-
-    public synchronized void close (boolean closeDir) throws IOException {
-        try {
-            try {
-                if (this.reader != null) {
-                    this.reader.close();
-                    this.reader = null;
-                }
-            } finally {
-                if (memCacheDir != null) {
-                    assert useMemoryCache;
-                    final Directory tmpDir = this.memCacheDir;
-                    this.memCacheDir = null;
-                    tmpDir.close();
-                }
-            }
-        } finally {
-            if (closeDir) {
-                this.closed = true;
-                this.directory.close();
-            }
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "Closing index: {0} {1}",  //NOI18N
+                    new Object[]{
+                        this.dirCache.toString(),
+                        Thread.currentThread().getStackTrace()});
         }
+        dirCache.close(true);
     }
 
-    public @Override String toString () {
-        return getClass().getSimpleName()+"["+this.refCacheRoot.getAbsolutePath()+"]";  //NOI18N
+
+    @Override
+    public String toString () {
+        return getClass().getSimpleName()+"["+this.dirCache.toString()+"]";  //NOI18N
     }
-
-    private synchronized IndexReader getReader () throws IOException {
-        _hit();
-        if (this.reader == null) {
-            if (validCache == Boolean.FALSE) {
-                return null;
-            }
-            //Issue #149757 - logging
-            try {
-                Directory source;
-                if (useMemoryCache) {
-                    source = memCacheDir = new RAMDirectory(this.directory);
-
-                } else {
-                    source = this.directory;
-                }
-                //It's important that no Query will get access to original IndexReader
-                //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                this.reader = new NoNormsReader(IndexReader.open(source));
-            } catch (final FileNotFoundException fnf) {
-                //pass - returns null
-            } catch (IOException ioe) {
-                throw annotateException (ioe);
-            }
-        }
-        return this.reader;
-    }
-
-    private synchronized IndexWriter getWriter (final boolean create) throws IOException {
-        _hit();
-        //Issue #149757 - logging
-        try {
-            IndexWriter writer = new IndexWriter (this.directory, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
-            return writer;
-        } catch (IOException ioe) {
-            throw annotateException (ioe);
-        }
-    }
-
-    private synchronized void refreshReader() throws IOException {
-        if (useMemoryCache) {
-            close(false);
-        } else {
-            if (reader != null) {
-                final IndexReader newReader = reader.reopen();
-                if (newReader != reader) {
-                    reader.close();
-                    reader = newReader;
-                }
-            }
-        }
-    }
-
-    private IOException annotateException (final IOException ioe) {
-        String message;
-        File[] children = refCacheRoot.listFiles();
-        if (children == null) {
-            message = "Non existing index folder";
-        }
-        else {
-            StringBuilder b = new StringBuilder();
-            for (File c : children) {
-                b.append(c.getName() +" f: " + c.isFile() + " r: " + c.canRead() + " w: " + c.canWrite()+"\n");  //NOI18N
-            }
-            message = b.toString();
-        }
-        return Exceptions.attachMessage(ioe, message);
-    }
-
+    
     private static File getReferencesCacheFolder (final File cacheRoot) throws IOException {
         File refRoot = new File (cacheRoot,REFERENCES);
         if (!refRoot.exists()) {
@@ -1132,37 +608,25 @@ class LuceneIndex extends Index implements Evictable {
         }
         return refRoot;
     }
-
-    private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
-        if (closed) {
-            throw new ClassIndexImpl.IndexAlreadyClosedException();
+           
+    private static CachePolicy getCachePolicy() {
+        final String value = System.getProperty(PROP_INDEX_POLICY);   //NOI18N
+        if (Boolean.TRUE.toString().equals(value) ||
+            CachePolicy.ALL.getSystemName().equals(value)) {
+            return CachePolicy.ALL;
         }
-    }
-
-
-    private static Directory createDirectory(final File indexFolder) throws IOException {
-        assert indexFolder != null;
-        FSDirectory directory  = FSDirectory.getDirectory(indexFolder);
-        directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
-        return directory;
-    }
-
-    private Collection<? extends String> getOrphanLock () {
-        final List<String> locks = new LinkedList<String>();
-        final String[] content = refCacheRoot.list();
-        if (content != null) {
-            for (String name : content) {
-                if (name.startsWith(CACHE_LOCK_PREFIX)) {
-                    locks.add(name);
-                }
-            }
+        if (Boolean.FALSE.toString().equals(value) ||
+            CachePolicy.NONE.getSystemName().equals(value)) {
+            return CachePolicy.NONE;
         }
-        return locks;
+        if (CachePolicy.DYNAMIC.getSystemName().equals(value)) {
+            return CachePolicy.DYNAMIC;
+        }
+        return DEFAULT_CACHE_POLICY;
     }
+    
 
-    /**
-     * Expert: Bypass read of norms
-     */
+    //<editor-fold defaultstate="collapsed" desc="Private classes (NoNormsReader, TermComparator, CachePolicy)">
     private static class NoNormsReader extends FilterIndexReader {
 
         //@GuardedBy (this)
@@ -1174,14 +638,14 @@ class LuceneIndex extends Index implements Evictable {
 
         @Override
         public byte[] norms(String field) throws IOException {
-            byte[] norms = fakeNorms ();
-            return norms;
+            byte[] _norms = fakeNorms ();
+            return _norms;
         }
 
         @Override
         public void norms(String field, byte[] norm, int offset) throws IOException {
-            byte[] norms = fakeNorms ();
-            System.arraycopy(norms, 0, norm, offset, norms.length);
+            byte[] _norms = fakeNorms ();
+            System.arraycopy(_norms, 0, norm, offset, _norms.length);
         }
 
         @Override
@@ -1224,6 +688,7 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private static class TermComparator implements Comparator<Term> {
+        @Override
         public int compare (Term t1, Term t2) {
             int ret = t1.field().compareTo(t2.field());
             if (ret == 0) {
@@ -1232,5 +697,396 @@ class LuceneIndex extends Index implements Evictable {
             return ret;
         }
     }
+    
+    private enum CachePolicy {
+        
+        NONE("none", false),          //NOI18N
+        DYNAMIC("dynamic", true),     //NOI18N
+        ALL("all", true);             //NOI18N
+        
+        private final String sysName;
+        private final boolean hasMemCache;
+        
+        CachePolicy(final String sysName, final boolean hasMemCache) {
+            assert sysName != null;
+            this.sysName = sysName;
+            this.hasMemCache = hasMemCache;
+        }
+        
+        String getSystemName() {
+            return sysName;
+        }
+        
+        boolean hasMemCache() {
+            return hasMemCache;
+        }
+    }    
+    
+    private static final class DirCache implements Evictable {
+        
+        private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
+        private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);
+        private static final long maxCacheSize = getCacheSize();
+        private static volatile long currentCacheSize;
+        
+        private final File folder;
+        private final CachePolicy cachePolicy;
+        private FSDirectory fsDir;
+        private RAMDirectory memDir;
+        private CleanReference ref;
+        private IndexReader reader;
+        private volatile boolean closed;
+        private volatile Boolean validCache;
+        
+        private DirCache(final @NonNull File folder, final @NonNull CachePolicy cachePolicy) throws IOException {
+            assert folder != null;
+            assert cachePolicy != null;
+            this.folder = folder;
+            this.fsDir = createFSDirectory(folder);
+            this.cachePolicy = cachePolicy;                        
+        }
+                                
+        synchronized void clear() throws IOException {
+            checkPreconditions();
+            close (false);
+            try {
+                final String[] content = fsDir.listAll();
+                boolean dirty = false;
+                if (content != null) {
+                    for (String file : content) {
+                        try {
+                            fsDir.deleteFile(file);
+                        } catch (IOException e) {
+                            //Some temporary files
+                            if (fsDir.fileExists(file)) {
+                                dirty = true;
+                            }
+                        }
+                    }
+                }
+                if (dirty) {
+                    //Try to delete dirty files and log what's wrong
+                    final File cacheDir = fsDir.getFile();
+                    final File[] children = cacheDir.listFiles();
+                    if (children != null) {
+                        for (final File child : children) {                                                
+                            if (!child.delete()) {
+                                final Class c = fsDir.getClass();
+                                int refCount = -1;
+                                try {
+                                    final Field field = c.getDeclaredField("refCount"); //NOI18N
+                                    field.setAccessible(true);
+                                    refCount = field.getInt(fsDir);
+                                } catch (NoSuchFieldException e) {/*Not important*/}
+                                  catch (IllegalAccessException e) {/*Not important*/}
+                                final Map<Thread,StackTraceElement[]> sts = Thread.getAllStackTraces();
+                                throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
+                                        child.exists()  +","+                                               //NOI18N
+                                        child.canRead() +","+                                               //NOI18N
+                                        child.canWrite() +","+                                              //NOI18N
+                                        cacheDir.canRead() +","+                                            //NOI18N
+                                        cacheDir.canWrite() +","+                                           //NOI18N
+                                        refCount +","+                                                      //NOI18N
+                                        sts +")");                                                          //NOI18N
+                            }
+                        }
+                    }
+                }
+            } finally {
+                //Need to recreate directory, see issue: #148374
+                this.close(true);
+                this.fsDir = createFSDirectory(this.folder);
+                closed = false;
+            }
+        }
+        
+        synchronized void close (final boolean closeFSDir) throws IOException {
+            try {
+                try {
+                    if (this.reader != null) {
+                        this.reader.close();
+                        this.reader = null;
+                    }
+                } finally {                        
+                    if (memDir != null) {
+                        assert cachePolicy.hasMemCache();
+                        if (this.ref != null) {
+                            this.ref.clear();
+                        }
+                        final Directory tmpDir = this.memDir;
+                        memDir = null;
+                        tmpDir.close();
+                    }
+                }
+            } finally {
+                if (closeFSDir) {
+                    this.closed = true;
+                    this.fsDir.close();
+                }
+            }
+        }
+        
+        boolean exists() {
+            try {
+                return IndexReader.indexExists(this.fsDir);
+            } catch (IOException e) {
+                return false;
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.INFO, "Broken index: " + folder.getAbsolutePath(), e);
+                return false;
+            }
+        }
+        
+        boolean isValid(boolean force) throws IOException {
+            checkPreconditions();
+            Boolean valid = validCache;
+            if (force ||  valid == null) {
+                final Collection<? extends String> locks = getOrphanLock();
+                boolean res = false;
+                if (!locks.isEmpty()) {
+                    LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
+                    for (String lockName : locks) {
+                        fsDir.deleteFile(lockName);
+                    }
+                    if (force) {
+                        clear();
+                    }
+                } else {
+                    res = exists();
+                    if (res && force) {
+                        try {
+                            getReader();
+                        } catch (java.io.IOException e) {
+                            res = false;
+                            clear();
+                        } catch (RuntimeException e) {
+                            res = false;
+                            clear();
+                        }
+                    }
+                }
+                valid = res;
+                validCache = valid;
+            }
+            return valid;
+        }
+        
+        IndexWriter getWriter (final boolean create) throws IOException {
+            checkPreconditions();
+            hit();
+            //Issue #149757 - logging
+            try {
+                return new IndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
+            } catch (IOException ioe) {
+                throw annotateException (ioe);
+            }
+        }
+        
+        synchronized IndexReader getReader () throws IOException {
+            checkPreconditions();
+            hit();
+            if (this.reader == null) {
+                if (validCache == Boolean.FALSE) {
+                    return null;
+                }
+                //Issue #149757 - logging
+                try {
+                    Directory source;
+                    if (cachePolicy.hasMemCache()) {                        
+                        memDir = new RAMDirectory(fsDir);
+                        if (cachePolicy == CachePolicy.DYNAMIC) {
+                            ref = new CleanReference (new RAMDirectory[] {this.memDir});
+                        }
+                        source = memDir;
+                    } else {
+                        source = fsDir;
+                    }
+                    assert source != null;
+                    this.reader = new NoNormsReader(IndexReader.open(source,true));
+                } catch (final FileNotFoundException fnf) {
+                    //pass - returns null
+                } catch (IOException ioe) {
+                    throw annotateException (ioe);
+                }
+            }
+            return this.reader;
+        }
+
+
+        synchronized void refreshReader() throws IOException {
+            try {
+                if (cachePolicy.hasMemCache()) {
+                    close(false);
+                } else {
+                    if (reader != null) {
+                        final IndexReader newReader = reader.reopen();
+                        if (newReader != reader) {
+                            reader.close();
+                            reader = newReader;
+                        }
+                    }
+                }
+            } finally {
+                 validCache = true;
+            }
+        }
+        
+        @Override
+        public String toString() {
+            return this.folder.getAbsolutePath();
+        }
+        
+        @Override
+        public void evicted() {
+            //When running from memory cache no need to close the reader, it does not own file handler.
+            if (!cachePolicy.hasMemCache()) {
+                //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
+                RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        try {
+                            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                                @Override
+                                public Void run() throws IOException, InterruptedException {
+                                    close(false);
+                                    LOGGER.log(Level.FINE, "Evicted index: {0}", folder.getAbsolutePath()); //NOI18N
+                                    return null;
+                                }
+                            });
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (InterruptedException ie) {
+                            Exceptions.printStackTrace(ie);
+                        }
+                    }
+                });
+            } else if ((ref != null && currentCacheSize > maxCacheSize)) {
+                ref.clearHRef();
+            }
+        }
+        
+        private synchronized void hit() {
+            if (!cachePolicy.hasMemCache()) {
+                try {
+                    final URL url = folder.toURI().toURL();
+                    IndexCacheFactory.getDefault().getCache().put(url, this);
+                } catch (MalformedURLException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            } else if (ref != null) {
+                ref.get();
+            }
+        }
+        
+        private Collection<? extends String> getOrphanLock () {
+            final List<String> locks = new LinkedList<String>();
+            final String[] content = folder.list();
+            if (content != null) {
+                for (String name : content) {
+                    if (name.startsWith(CACHE_LOCK_PREFIX)) {
+                        locks.add(name);
+                    }
+                }
+            }
+            return locks;
+        }
+        
+        private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
+            if (closed) {
+                throw new ClassIndexImpl.IndexAlreadyClosedException();
+            }
+        }
+        
+        private IOException annotateException (final IOException ioe) {
+            String message;
+            File[] children = folder.listFiles();
+            if (children == null) {
+                message = "Non existing index folder";
+            }
+            else {
+                StringBuilder b = new StringBuilder();
+                for (File c : children) {
+                    b.append(c.getName()).append(" f: ").append(c.isFile()).
+                    append(" r: ").append(c.canRead()).
+                    append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
+                }
+                message = b.toString();
+            }
+            return Exceptions.attachMessage(ioe, message);
+        }
+        
+        private static FSDirectory createFSDirectory (final File indexFolder) throws IOException {
+            assert indexFolder != null;
+            FSDirectory directory  = FSDirectory.open(indexFolder);
+            directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
+            return directory;
+        } 
+        
+        private static long getCacheSize() {
+            float per = -1.0f;
+            final String propVal = System.getProperty(PROP_CACHE_SIZE); 
+            if (propVal != null) {
+                try {
+                    per = Float.parseFloat(propVal);
+                } catch (NumberFormatException nfe) {
+                    //Handled below
+                }
+            }
+            if (per<0) {
+                per = DEFAULT_CACHE_SIZE;
+            }
+            return (long) (per * Runtime.getRuntime().maxMemory());
+        }
+        
+        private final class CleanReference extends SoftReference<RAMDirectory[]> implements Runnable {
+            
+            @SuppressWarnings("VolatileArrayField")
+            private volatile Directory[] hardRef; //clearHRef may be called by more concurrently (read lock).
+            private final AtomicLong size = new AtomicLong();  //clearHRef may be called by more concurrently (read lock).
+
+            private CleanReference(final RAMDirectory[] dir) {
+                super (dir, Utilities.activeReferenceQueue());
+                boolean doHardRef = currentCacheSize < maxCacheSize;
+                if (doHardRef) {
+                    this.hardRef = dir;
+                    long _size = dir[0].sizeInBytes();
+                    size.set(_size);
+                    currentCacheSize+=_size;
+                }
+                LOGGER.log(Level.FINEST, "Caching index: {0} cache policy: {1}",    //NOI18N
+                new Object[]{
+                    folder.getAbsolutePath(),
+                    cachePolicy.getSystemName()
+                });
+            }
+            
+            @Override
+            public void run() {
+                try {
+                    LOGGER.log(Level.FINEST, "Dropping cache index: {0} cache policy: {1}", //NOI18N
+                    new Object[] {
+                        folder.getAbsolutePath(),
+                        cachePolicy.getSystemName()
+                    });
+                    close(false);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+            @Override
+            public void clear() {
+                clearHRef();
+                super.clear();
+            }
+            
+            void clearHRef() {
+                this.hardRef = null;
+                long mySize = size.getAndSet(0);
+                currentCacheSize-=mySize;
+            }
+        }        
+    }
+    //</editor-fold>
 
 }

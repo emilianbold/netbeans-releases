@@ -186,21 +186,13 @@ made subject to such option by the copyright holder.
         <folder name="Window">
             <folder name="SelectDocumentNode">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
-                <!-- Searching nodes in projects/files tab -->
-                
                 <file name="org-netbeans-modules-project-ui-SelectInProjects.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjects"/>
-                    <attr name="position" intvalue="100"/>
                 </file>
-
-                
-                
                 <file name="org-netbeans-modules-project-ui-SelectInFiles.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFiles"/>
-                    <attr name="position" intvalue="200"/>
                 </file>
-                
-                </folder>
+            </folder>
         </folder>
         
     </folder>
@@ -580,6 +572,12 @@ made subject to such option by the copyright holder.
                     </file>
                     </folder>
             </folder>
+        </folder>
+        <folder name="TabActions">
+            <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
         </folder>
     </folder>
     

@@ -137,7 +137,7 @@ class DocRenderer {
                 if (indexedElement instanceof MethodElement) {
                     ElementFilter forName = ElementFilter.forName(NameKind.exact(indexedElement.getName()));
                     ElementQuery.Index index = elementQuery.getQueryScope().isIndexScope() ? (Index) elementQuery
-                            : ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(indexedElement.getFileObject()));
+                            : ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(indexedElement.getFileObject()));
                     final LinkedHashSet<TypeElement> inheritedTypes = index.getInheritedTypes(((MethodElement) indexedElement).getType());
                     for (Iterator<TypeElement> typeIt = inheritedTypes.iterator(); phpDoc.length() == 0 && typeIt.hasNext();) {
                         final Set<MethodElement> inheritedMethods = forName.filter(index.getDeclaredMethods(typeIt.next()));

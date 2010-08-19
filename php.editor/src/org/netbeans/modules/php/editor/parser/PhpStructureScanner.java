@@ -59,6 +59,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
@@ -513,9 +514,10 @@ public class PhpStructureScanner implements StructureScanner {
             formatter.reset();
             formatter.appendText(getName());
             UseElement useElement = (UseElement) getElementHandle();
-            if (useElement.getAliasName() != null) {
+            final AliasedName aliasedName = useElement.getAliasedName();
+            if (aliasedName != null) {
                 formatter.appendText(" as ");//NOI18N
-                formatter.appendText(useElement.getAliasName());
+                formatter.appendText(aliasedName.getAliasName());
             }
             return formatter.getText();
         }

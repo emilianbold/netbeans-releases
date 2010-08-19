@@ -61,6 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.apache.lucene.document.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -73,6 +74,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexImplListener;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
+import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
@@ -223,9 +225,17 @@ public final class ClassIndex {
     
     static {
 	ClassIndexImpl.FACTORY = new ClassIndexFactoryImpl();
-    }    
+    }
     
     ClassIndex(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {
+        this(bootPath,classPath,sourcePath,true);
+    }
+    
+    ClassIndex( final @NonNull ClassPath bootPath,
+            final @NonNull ClassPath classPath,
+            final @NonNull ClassPath sourcePath,
+            final boolean supportsChanges
+            ) {
         assert bootPath != null;
         assert classPath != null;
         assert sourcePath != null;
@@ -237,9 +247,11 @@ public final class ClassIndex {
         this.oldSources = new HashSet<URL>();
         this.depsIndeces = new HashSet<ClassIndexImpl>();
         this.sourceIndeces = new HashSet<ClassIndexImpl>();
-        this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
-        this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
-        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
+        if (supportsChanges) {
+            this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
+            this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
+            this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
+        }
         reset (true, true);
     }
     
@@ -282,7 +294,7 @@ public final class ClassIndex {
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
         final String binaryName = element.getSignature()[0];
-        final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
+        final ResultConvertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
@@ -321,7 +333,7 @@ public final class ClassIndex {
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
-                    final ResultConvertor<FileObject> foConvertor = ResultConvertor.fileObjectConvertor (query.getSourceRoots());
+                    final ResultConvertor<? super Document, FileObject> foConvertor = DocumentUtil.fileObjectConvertor (query.getSourceRoots());
                     try {
                         query.search (binaryName, ut, foConvertor, result);
                     } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
@@ -353,7 +365,7 @@ public final class ClassIndex {
         assert kind != null;
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-        final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
+        final ResultConvertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
         try {
             for (ClassIndexImpl query : queries) {
                 try {

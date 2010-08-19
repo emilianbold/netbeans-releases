@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.hints.pom;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -154,6 +153,9 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
         @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Plugin> plugins = project.getMavenProject().getPluginManagement().getPlugins();
         for (org.apache.maven.model.Plugin plg : plugins) {
+            if (plg.getGroupId().equals(Constants.GROUP_APACHE_PLUGINS)) {
+                continue; // #189261 - might be from superpom
+            }
             toRet.put(plg.getKey(), plg.getVersion());
         }
         return toRet;

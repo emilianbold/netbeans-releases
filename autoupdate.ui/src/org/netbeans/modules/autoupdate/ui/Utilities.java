@@ -790,6 +790,7 @@ public class Utilities {
     public static Comparator<String> getCategoryComparator () {
         return new Comparator<String> () {
             public int compare (String o1, String o2) {
+                /*
                 // Libraries always put in the last place.
                 if (LIBRARIES_CATEGORY.equals (o1)) {
                     if (LIBRARIES_CATEGORY.equals (o2)) {
@@ -828,6 +829,9 @@ public class Utilities {
                         return Collator.getInstance ().compare (o1, o2);
                     }
                 }
+                 *
+                 */
+                return Collator.getInstance ().compare (o1, o2);
             }
         };
     }

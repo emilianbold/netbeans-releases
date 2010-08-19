@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.JComponent;
@@ -58,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * The main class of the custom wizard for registering a new server instance.
@@ -79,6 +79,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * at creation time and can be changed via the properties sheet
      */
     private static final String DEFAULT_DEBUGGER_PORT = "8787"; // NOI18N
+
+    public static final String DEFAULT_MAC_MEM_OPTS = "-Xmx1024m -XX:PermSize=256m"; // NOI18N
 
     /**
      * The parent wizard descriptor
@@ -153,24 +155,13 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
         props.put(WLPluginProperties.DOMAIN_NAME, domainName);
         props.put(WLPluginProperties.PORT_ATTR, port);
+        if (Utilities.isMac()) {
+            props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
+        }
 
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, username, password, displayName, props);
         
-        Properties runtimeProps = WLPluginProperties.getRuntimeProperties(domainRoot);
-        String beaHome = runtimeProps.getProperty( WLPluginProperties.BEA_JAVA_HOME);
-        String sunHome = runtimeProps.getProperty( WLPluginProperties.SUN_JAVA_HOME);
-        String vendor = null;
-        if ( beaHome!= null && beaHome.trim().length()>0) {
-            vendor = WLPluginProperties.Vendor.ORACLE.toString();
-            ip.setProperty( WLPluginProperties.BEA_JAVA_HOME , beaHome.trim());
-        }
-        if ( sunHome!= null && sunHome.trim().length() >0 ) {
-            vendor = WLPluginProperties.Vendor.SUN.toString();
-            ip.setProperty( WLPluginProperties.SUN_JAVA_HOME , sunHome.trim());
-        }
-        ip.setProperty( WLPluginProperties.VENDOR , vendor );
-
         // add the created instance properties to the result set
         result.add(ip);
 
@@ -194,6 +185,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String url;
     private String domainName;
     private String port;
+    private String host;
 
 
     /**
@@ -203,6 +195,15 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public void setUrl(String url) {
         this.url = url;
+    }
+    
+    /**
+     * Setter for the instance host.
+     *
+     * @param url the new instance host
+     */
+    public void setHost(String host) {
+        this.host = host;
     }
     
     /**
@@ -249,6 +250,15 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public String getPort(){
         return port;
+    }
+    
+    /**
+     * Getter for the host
+     *
+     * @return the host
+     */
+    public String getHost(){
+        return host;
     }
     
     /**

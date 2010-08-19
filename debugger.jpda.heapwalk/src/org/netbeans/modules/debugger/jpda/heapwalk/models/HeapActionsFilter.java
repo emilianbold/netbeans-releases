@@ -48,6 +48,7 @@ import org.netbeans.lib.profiler.heap.Instance;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import javax.security.auth.Refreshable;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -117,6 +118,11 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
                     return false;
                 }
                 ObjectVariable var = (ObjectVariable) node;
+                if (var instanceof Refreshable) {
+                    if (!((Refreshable) var).isCurrent()) {
+                        return false;
+                    }
+                }
                 return var.getUniqueID() != 0L;
             }
             public void perform (Object[] nodes) {

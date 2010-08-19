@@ -987,7 +987,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="library-inclusion-in-archive" depends="compile">
-                <xsl:if test="count(//carproject:included-library) &gt; 0">
+<!--                <xsl:if test="count(//carproject:included-library) &gt; 0">
                     <mkdir dir="${{build.classes.dir}}/META-INF/lib"/>
                 </xsl:if>
                 <xsl:for-each select="//carproject:included-library">
@@ -997,7 +997,7 @@ exists or setup the property manually. For example like this:
                     <copyfiles todir="${{build.classes.dir}}/META-INF/lib">
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
                     </copyfiles>
-                </xsl:for-each>
+                </xsl:for-each> -->
             </target>
             
             <target name="library-inclusion-in-manifest" depends="compile">
@@ -1254,6 +1254,8 @@ exists or setup the property manually. For example like this:
                                 <propertyref prefix="run-sys-prop."/>
                                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
                             </syspropertyset>
+                            <env key="APPCPATH" path="${{javac.classpath}}"/>
+                            <sysproperty key="java.system.class.loader" value="org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader"/>
                             <customize/>
                         </java>
                     </sequential>

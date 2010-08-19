@@ -44,11 +44,13 @@ package org.netbeans.modules.maven.indexer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -58,9 +60,9 @@ import org.openide.windows.OutputWriter;
  *
  * @author Anuradha G
  */
-public class RemoteIndexTransferListener implements TransferListener {
+public class RemoteIndexTransferListener implements TransferListener, Cancellable {
 
-    private ProgressHandle handle;
+    private final ProgressHandle handle;
     private RepositoryInfo info;
     private int lastunit;/*last work unit*/
     /*Debug*/
@@ -70,13 +72,16 @@ public class RemoteIndexTransferListener implements TransferListener {
     private OutputWriter writer;
     private int units;
 
+    private final AtomicBoolean canceled = new AtomicBoolean();
+
     private static Map<Thread, Integer> transfers = new HashMap<Thread, Integer>();
     private static final Object TRANSFERS_LOCK = new Object();
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public RemoteIndexTransferListener(RepositoryInfo info) {
-
         this.info = info;
-
+        this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
+        Cancellation.register(this);
 
         if (debug) {
             io = IOProvider.getDefault().getIO(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), true);
@@ -90,7 +95,6 @@ public class RemoteIndexTransferListener implements TransferListener {
 
     public void transferStarted(TransferEvent arg0) {
         long contentLength = arg0.getResource().getContentLength();
-        this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()));
         this.units = (int) contentLength / 1024;
         handle.start(units);
         if (debug) {
@@ -99,7 +103,14 @@ public class RemoteIndexTransferListener implements TransferListener {
         }
     }
 
+    public @Override boolean cancel() {
+        return canceled.compareAndSet(false, true);
+    }
+
     public void transferProgress(TransferEvent arg0, byte[] arg1, int arg2) {
+        if (canceled.get()) {
+            throw new Cancellation();
+        }
         int work = arg2 / 1024;
         if (handle != null) {
             handle.progress(Math.min(units, lastunit += work));
@@ -111,9 +122,6 @@ public class RemoteIndexTransferListener implements TransferListener {
     }
 
     public void transferCompleted(TransferEvent arg0) {
-        if (handle != null) {
-            handle.finish();
-        }
         if (debug) {
             writer.println("Completed");//NII18N
 
@@ -129,6 +137,9 @@ public class RemoteIndexTransferListener implements TransferListener {
     }
 
     public void debug(String arg0) {
+        if (canceled.get()) {
+            throw new Cancellation();
+        }
         if (debug) {
             writer.println(arg0);
         }
@@ -165,6 +176,10 @@ public class RemoteIndexTransferListener implements TransferListener {
         synchronized (TRANSFERS_LOCK) {
             return transfers.keySet();
         }
+    }
+
+    void close() {
+        handle.finish();
     }
 
 }

@@ -697,7 +697,8 @@ class OccurenceBuilder {
         }
         if (accuracy != null) {
             occurences.clear();
-            if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS).contains(accuracy)) {
+            if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE,
+                    Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS, Accuracy.MORE).contains(accuracy)) {
                 buildFieldInvocations(elementInfo, fileScope, accuracy, occurences);
                 buildFieldDeclarations(elementInfo, fileScope, occurences);
                 buildDocTagsForFields(elementInfo, fileScope, occurences);
@@ -716,10 +717,12 @@ class OccurenceBuilder {
         Set<MethodElement> methods = new HashSet<MethodElement>();
         final Scope scope = elementInfo.getScope();
         final ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
-        if (methods.isEmpty()/* && types.isEmpty()*/) {
-            String mthd = elementInfo.getName();
-            methods = index.getMethods(NameKind.exact(mthd));
-        }
+        String mthd = elementInfo.getName();
+        TypeElement type = (scope instanceof TypeElement) ? (TypeElement)scope : 
+            ((scope instanceof MethodScope)  ? (TypeElement)scope.getInScope() : null);
+
+        methods = type != null ? ElementFilter.forMembersOfType(type).filter(index.getMethods(NameKind.exact(mthd))) :
+            index.getMethods(NameKind.exact(mthd));
 
         Occurence.Accuracy accuracy = Accuracy.NO;
         if (methods.size() == 1) {
@@ -767,7 +770,8 @@ class OccurenceBuilder {
         }
         if (accuracy != null) {
             occurences.clear();
-            if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS).contains(accuracy)) {
+            if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE,
+                    Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS, Accuracy.MORE).contains(accuracy)) {
                 buildMethodInvocations(elementInfo, fileScope, accuracy, cachedOccurences);
                 buildMethodDeclarations(elementInfo, fileScope, cachedOccurences);
                 buildMagicMethodDeclarations(elementInfo, fileScope, cachedOccurences);
@@ -856,7 +860,7 @@ class OccurenceBuilder {
                 ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
                 if (name.matchesName(PhpElementKind.METHOD, nodeInfo.getQualifiedName())) {
                     final HashSet<TypeScope> types = new HashSet<TypeScope>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
-                    if (!createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
+                    if (types.isEmpty() || !createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
                         final OccurenceImpl occurence = new OccurenceImpl(declarations, nodeInfo.getRange());
                         occurence.setAccuracy(accuracy);
                         occurences.add(occurence);
@@ -993,7 +997,7 @@ class OccurenceBuilder {
                 ASTNodeInfo<FieldAccess> nodeInfo = entry.getKey();
                 if (name.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
                     final HashSet<TypeScope> types = new HashSet<TypeScope>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
-                    if (!createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
+                    if (types.isEmpty() || !createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
                         final OccurenceImpl occurence = new OccurenceImpl(declarations, nodeInfo.getRange());
                         occurence.setAccuracy(accuracy);
                         occurences.add(occurence);
@@ -1305,7 +1309,7 @@ class OccurenceBuilder {
                     };
                     occurences.add(occurenceImpl);
 
-                }
+                } 
             }
         }
     }

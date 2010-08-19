@@ -157,7 +157,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
 
                             } else {
-                                retval.addAll(CachingSupport.getTypes(typeName, this));
+                                retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(typeName), this));
                             }
                         }
                     } finally {

@@ -44,6 +44,8 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import javax.swing.Action;
+
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -68,8 +70,14 @@ public class WLTargetNode extends AbstractNode {
     public WLTargetNode(Lookup lookup) {
         super(new Children.Array());
         getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), NbBundle.getMessage(WLTargetNode.class, "LBL_Apps"))});
+                new WLApplicationsChildren(lookup), 
+                NbBundle.getMessage(WLTargetNode.class, "LBL_Apps")),   // NOI18N
+                new ResourceNode(new ResourceChildren(lookup), 
+                        ResourceNodeType.RESOURCE, 
+                        NbBundle.getMessage(WLTargetNode.class, 
+                        "LBL_Resources"))});
     }
+    
     
     /**
      * A fake implementation of the Object's hashCode() method, in order to 

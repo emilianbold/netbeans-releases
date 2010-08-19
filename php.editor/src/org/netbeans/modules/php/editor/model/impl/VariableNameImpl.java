@@ -372,7 +372,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             Collection<TypeScope> retval = new HashSet<TypeScope>();
             Collection<? extends String> typeNamesImpl = getTypeNamesImpl(offset, arrayAccess);
             for (String tName : typeNamesImpl) {
-                retval.addAll(CachingSupport.getTypes(tName, getInScope()));
+                retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(tName), getInScope()));
 
             }
             return retval;

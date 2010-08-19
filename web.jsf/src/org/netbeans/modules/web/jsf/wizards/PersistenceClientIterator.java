@@ -92,7 +92,10 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
@@ -102,6 +105,7 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -136,7 +140,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private static final String JAVA_EXT = "java"; //NOI18N
     public static final String JSF2_GENERATOR_PROPERTY = "jsf2Generator"; // "true" if set otherwise undefined
     private static final String CSS_FOLDER = "resources/css/";  //NOI18N
-  
+
     private transient WebModuleExtender wme;
     
     public Set instantiate(TemplateWizard wizard) throws IOException
@@ -149,6 +153,14 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         final boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
+
+        // add framework to project first:
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        JSFFrameworkProvider fp = new JSFFrameworkProvider();
+        if (!fp.isInWebModule(wm)) {    //add jsf if not already present
+            updateWebModuleExtender(project, wm, fp);
+            wme.extend(wm);
+        }
 
         Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
         final String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
@@ -167,13 +179,6 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                         Util.addPersistenceUnitToProject( project, punit );
                     }
             }
-        }
-        
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        JSFFrameworkProvider fp = new JSFFrameworkProvider();
-        if (!fp.isInWebModule(wm)) {    //add jsf if not already present
-            updateWebModuleExtender(project, wm, fp);
-            wme.extend(wm);
         }
         
         final JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
@@ -204,11 +209,11 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                             }
                             else
                             {
-                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
+//                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
                                 JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, true, false);
                             }
                             FileObject jsfControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, controllerPkg.replace('.', '/'));
-                            if (jsf2Generator) {
+                            if (jsf2Generator || "Facelets".equals(preferredLanguage)) {
                                 Sources srcs = ProjectUtils.getSources(project);
                                 SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
                                 FileObject webRoot = sgWeb[0].getRootFolder();
@@ -493,15 +498,23 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params.put("controllerPackageName", controllerPkg);
             params.put("controllerClassName", controllerClassName);
             params.put("entityFullClassName", entityClass);
-            params.put("ejbFullClassName", jpaControllerPkg+"."+simpleJpaControllerName);
-            params.put("ejbClassName", simpleJpaControllerName);
+            params.put(genSessionBean ? "ejbFullClassName" : "jpaControllerFullClassName", jpaControllerPkg+"."+simpleJpaControllerName);
+            params.put(genSessionBean ? "ejbClassName" : "jpaControllerClassName", simpleJpaControllerName);
             params.put("entityClassName", simpleClassName);
             params.put("comment", Boolean.FALSE); // NOI18N
             params.put("bundle", bundleName); // NOI18N
+            boolean isInjected = Util.isContainerManaged(project);
+            if (!genSessionBean && isInjected) {
+                params.put("isInjected", true); //NOI18N
+            }
+            String persistenceUnitName = Util.getPersistenceUnitAsString(project, simpleClassName);
+            if ( persistenceUnitName != null) {
+                params.put("persistenceUnitName", persistenceUnitName); //NOI18N
+            }
             FromEntityBase.createParamsForConverterTemplate(params, targetFolder, entityClass);
 
             JSFPaletteUtilities.expandJSFTemplate(template, params, controllerFileObjects[i]);
-
+            
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".selected", false, true);
             bundleData.add(new TemplateData(simpleClassName, (List<FromEntityBase.TemplateData>)params.get("entityDescriptors")));
             params.put("controllerClassName", controllerClassName);
@@ -714,7 +727,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
-        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL)) {    //NOI18N
+        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL) || JSFUtils.isJSF20(wm)) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
             helpCtx = new HelpCtx("persistence_entity_selection_javaee6");  //NOI18N
         } else {

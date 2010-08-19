@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 
 /**
  * @author Radek Matous
@@ -52,11 +53,11 @@ public interface IndexScope extends Scope {
     //for now implemented on top of PHPIndex
     ElementQuery.Index getIndex();
     //globally visible
-    List<? extends InterfaceScope> findInterfaces(final String ifaceName);
-    List<? extends TypeScope> findTypes(final String typeName);
-    List<? extends ClassScope> findClasses(final String className);
-    List<? extends FunctionScope> findFunctions(final String fncName);
-    List<? extends ConstantElement> findConstants(final String constName);
+    List<? extends InterfaceScope> findInterfaces(final QualifiedName ifaceName);
+    List<? extends TypeScope> findTypes(final QualifiedName typeName);
+    List<? extends ClassScope> findClasses(final QualifiedName className);
+    List<? extends FunctionScope> findFunctions(final QualifiedName fncName);
+    List<? extends ConstantElement> findConstants(final QualifiedName constName);
     List<? extends VariableName> findVariables(final String varName);
     //class members
     List<? extends MethodScope> findMethods(TypeScope type);

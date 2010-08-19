@@ -447,7 +447,7 @@ public final class EarProject implements Project, AntProjectListener {
 
             // the only purpose of below code is to force deployment descriptor
             // creation if necesary (that is if JEE 1.4 and dd file is missing)
-            if (Profile.J2EE_14.equals(getJ2eeProfile())) {
+            if (pwm.getConfigSupport().isDescriptorRequired() || Profile.J2EE_14.equals(getJ2eeProfile())) {
                 appModule.getMetadataModel();
             }
             
@@ -569,7 +569,7 @@ public final class EarProject implements Project, AntProjectListener {
                         "Cannot resolve " + EarProjectProperties.META_INF + // NOI18N
                         " property for " + this); // NOI18N
             }
-            return null;
+            metaInfProp = "src/conf"; // NOI18N
         }
         FileObject metaInfFO = null;
         try {

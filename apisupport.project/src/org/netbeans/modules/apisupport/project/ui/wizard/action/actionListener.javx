@@ -7,7 +7,21 @@ package ${PACKAGE_NAME};
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+<#if ANNOTATIONS??>
+import org.openide.awt.ActionRegistration;
+import org.openide.awt.ActionID;
 
+@ActionID(
+    category="${CATEGORY}",
+    id="${PACKAGE_NAME}.${CLASS_NAME}"
+)
+@ActionRegistration(
+    <#if ICON_RESOURCE??>
+    iconBase="${ICON_RESOURCE}",
+    </#if>
+    displayName="#${DISPLAY_NAME_KEY}"
+)
+</#if>
 public final class ${CLASS_NAME} implements ActionListener {
     public void actionPerformed(ActionEvent e) {
        // TODO implement action body

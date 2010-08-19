@@ -157,7 +157,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
         epo=new JEditorPaneOperator(editorOperator);     
         try {
              r = new Robot();
-             r.setAutoDelay(10);
+//             r.setAutoDelay(10);
         } catch (AWTException e) {};
     }
     

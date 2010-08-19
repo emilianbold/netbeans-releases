@@ -93,6 +93,7 @@ import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
@@ -278,76 +279,89 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
 
             if (wsdlFo != null) {
-                final boolean isJaxWsLibrary = MavenModelUtils.isJaxWs21Library(project);
-                final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
-                final String serviceName = wsdlFo.getName();
-
-                Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
-                if (prefs != null) {
-                    // remember original WSDL URL for service
-                    prefs.put(MavenWebService.SERVICE_PREFIX+WSUtils.getUniqueId(wsdlFo.getName(), jaxWsSupport.getServices()), wsdlUrl);
-                }
-                
-                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-                    public void performOperation(POMModel model) {
-                        if (!isJaxWsLibrary) {
-                            try {
-                                MavenModelUtils.addJaxws21Library(project, model);
-                                MavenModelUtils.addJavadoc(project);
-                            } catch (Exception ex) {
-                                Logger.getLogger(
-                                    JaxWsServiceCreator.class.getName()).log(
-                                        Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
-                            }
-                        }
-                        org.netbeans.modules.maven.model.pom.Plugin plugin =
-                                WSUtils.isEJB(project) ?
-                                    MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
-                                    MavenModelUtils.addJaxWSPlugin(model);
-                        MavenModelUtils.addWsimportExecution(plugin, serviceName, relativePath);
-                        if (WSUtils.isWeb(project)) { // expecting web project
-                            MavenModelUtils.addWarPlugin(model);
-                        } else { // J2SE Project
-                            MavenModelUtils.addWsdlResources(model);
-                        }
-                    }
-                };
-                Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
-                        Collections.singletonList(operation));
-
-                // create empty web service implementation class
-                FileObject pkg = Templates.getTargetFolder(wiz);
-                final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false, true);
-
-                // execute wsimport goal
-                RunConfig cfg = RunUtils.createRunConfig(
-                        FileUtil.toFile(project.getProjectDirectory()),
-                        project,
-                        "JAX-WS:wsimport", //NOI18N
-                        Collections.singletonList("org.codehaus.mojo:jaxws-maven-plugin:wsimport")); //NOI18N
-                ExecutorTask task = RunUtils.executeMaven(cfg);
-                try {
-                    task.waitFinished(60000);
-                } catch (InterruptedException ex) {
-
-                }
-
                 final WsdlService wsdlService = (WsdlService) wiz.getProperty(WizardProperties.WSDL_SERVICE);
                 final WsdlPort wsdlPort = (WsdlPort) wiz.getProperty(WizardProperties.WSDL_PORT);
 
-                try {
-                    String wsdlLocationPrefix = WSUtils.isWeb(project) ? "WEB-INF/wsdl/" : "META-INF/wsdl/"; //NOI18N
-                    generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, wsdlLocationPrefix+relativePath); //NOI18N
-                    DataObject targetDo = DataObject.find(targetFile);
-                    if (targetDo != null) {
-                        SaveCookie save = targetDo.getCookie(SaveCookie.class);
-                        if (save != null) {
-                            save.save();
-                        }
+                if (wsdlService == null || wsdlPort == null) {
+                    WsdlModeler wsdlModeler = (WsdlModeler) wiz.getProperty(WizardProperties.WSDL_MODELER);
+                    if (wsdlModeler != null && wsdlModeler.getCreationException() != null) {
+                        handle.finish();
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(JaxWsServiceCreator.class, "TXT_CannotGenerateArtifacts",
+                                wsdlModeler.getCreationException().getLocalizedMessage()),
+                                NotifyDescriptor.ERROR_MESSAGE));
+                    } else {
+                        handle.finish();
+                    }
+                } else {
+                    final boolean isJaxWsLibrary = MavenModelUtils.isJaxWs21Library(project);
+                    final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                    final String serviceName = wsdlFo.getName();
+
+                    Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
+                    if (prefs != null) {
+                        // remember original WSDL URL for service
+                        prefs.put(MavenWebService.SERVICE_PREFIX+WSUtils.getUniqueId(wsdlFo.getName(), jaxWsSupport.getServices()), wsdlUrl);
                     }
 
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);                   
+                    ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                        public void performOperation(POMModel model) {
+                            if (!isJaxWsLibrary) {
+                                try {
+                                    MavenModelUtils.addJaxws21Library(project, model);
+                                    MavenModelUtils.addJavadoc(project);
+                                } catch (Exception ex) {
+                                    Logger.getLogger(
+                                        JaxWsServiceCreator.class.getName()).log(
+                                            Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
+                                }
+                            }
+                            org.netbeans.modules.maven.model.pom.Plugin plugin =
+                                    WSUtils.isEJB(project) ?
+                                        MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
+                                        MavenModelUtils.addJaxWSPlugin(model);
+                            MavenModelUtils.addWsimportExecution(plugin, serviceName, relativePath);
+                            if (WSUtils.isWeb(project)) { // expecting web project
+                                MavenModelUtils.addWarPlugin(model);
+                            } else { // J2SE Project
+                                MavenModelUtils.addWsdlResources(model);
+                            }
+                        }
+                    };
+                    Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
+                            Collections.singletonList(operation));
+
+                    // create empty web service implementation class
+                    FileObject pkg = Templates.getTargetFolder(wiz);
+                    final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false, true);
+
+                    // execute wsimport goal
+                    RunConfig cfg = RunUtils.createRunConfig(
+                            FileUtil.toFile(project.getProjectDirectory()),
+                            project,
+                            "JAX-WS:wsimport", //NOI18N
+                            Collections.singletonList("org.codehaus.mojo:jaxws-maven-plugin:wsimport")); //NOI18N
+                    ExecutorTask task = RunUtils.executeMaven(cfg);
+                    try {
+                        task.waitFinished(60000);
+                    } catch (InterruptedException ex) {
+
+                    }
+
+                    try {
+                        String wsdlLocationPrefix = WSUtils.isWeb(project) ? "WEB-INF/wsdl/" : "META-INF/wsdl/"; //NOI18N
+                        generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, wsdlLocationPrefix+relativePath); //NOI18N
+                        DataObject targetDo = DataObject.find(targetFile);
+                        if (targetDo != null) {
+                            SaveCookie save = targetDo.getCookie(SaveCookie.class);
+                            if (save != null) {
+                                save.save();
+                            }
+                        }
+
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                    }
                 }
 
             }

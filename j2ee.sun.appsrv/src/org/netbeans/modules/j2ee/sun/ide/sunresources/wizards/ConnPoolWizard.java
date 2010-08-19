@@ -109,7 +109,7 @@ public final class ConnPoolWizard implements WizardDescriptor.InstantiatingItera
     
     public Set instantiate(){
         try{
-            ResourceUtils.saveConnPoolDatatoXml(this.helper.getData());
+            ResourceUtils.saveConnPoolDatatoXml(this.helper.getData(),Util.getBaseName(project));
         }catch (Exception ex){
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                                         ex);

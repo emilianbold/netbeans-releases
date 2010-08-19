@@ -72,7 +72,7 @@ public final class SPSLocalImpl extends SPSCommonImpl {
 
     static {
         csums.put("SunOS-x86", 2839716019L); // NOI18N
-        csums.put("SunOS-sparc", 2764559413L); // NOI18N
+        csums.put("SunOS-sparc", 2274267119L); // NOI18N
     }
 
     private SPSLocalImpl(ExecutionEnvironment execEnv, String privp) {

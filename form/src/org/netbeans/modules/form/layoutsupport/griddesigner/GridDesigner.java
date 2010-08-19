@@ -47,6 +47,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
@@ -59,11 +60,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
 import javax.swing.OverlayLayout;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormLAF;
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.RADComponentNode;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
@@ -89,7 +93,8 @@ public class GridDesigner extends JPanel implements Customizer {
     private JSplitPane splitPane;
     private GridCustomizer customizer;
 
-    public GridDesigner() {
+    private void setDesignedContainer(RADVisualContainer metaContainer) {
+        FormModel formModel = metaContainer.getFormModel();
         setLayout(new BorderLayout());
         splitPane = new JSplitPane();
         innerPane = new JPanel() {
@@ -99,25 +104,40 @@ public class GridDesigner extends JPanel implements Customizer {
             }
         };
         innerPane.setLayout(new OverlayLayout(innerPane));
+        glassPane = new GlassPane(this);
+        glassPane.setOpaque(false);
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BorderLayout());
+        JToolBar toolBar = new JToolBar();
+        UndoRedoSupport support = UndoRedoSupport.getSupport(formModel);
+        support.reset(glassPane);
+        toolBar.add(support.getRedoAction());
+        toolBar.add(support.getUndoAction());
+        rightPanel.add(toolBar, BorderLayout.PAGE_START);
+        // Estimate of the size of the header
+        Dimension headerDim = new JLabel("99").getPreferredSize(); // NOI18N
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setViewportView(innerPane);
         scrollPane.setPreferredSize(new Dimension(500,500));
-        splitPane.setRightComponent(scrollPane);
-        glassPane = new GlassPane(this);
-        glassPane.setOpaque(false);
+        int unitIncrement = headerDim.height;
+        scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
+        rightPanel.add(scrollPane);
+        splitPane.setRightComponent(rightPanel);
         add(splitPane);
-    }
-
-    private void setDesignedContainer(RADVisualContainer metaContainer) {
-        FormModel formModel = metaContainer.getFormModel();
         replicator = new VisualReplicator(true, FormUtils.getViewConverters(), FormEditor.getBindingSupport(formModel));
         replicator.setTopMetaComponent(metaContainer);
-        Object bean = (Container)replicator.createClone();
-        Container container = metaContainer.getContainerDelegate(bean);
+        final Object[] bean = new Object[1];
+        // Create the cloned components in the correct look and feel setup
+        FormLAF.executeWithLookAndFeel(formModel, new Runnable() {
+            @Override
+            public void run() {
+                bean[0] = (Container)replicator.createClone();
+            } 
+        });        
+        Container container = metaContainer.getContainerDelegate(bean[0]);
         innerPane.removeAll();
-        // Estimate of the size of the header
-        Dimension headerDim = new JLabel("99").getPreferredSize(); // NOI18N
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.WHITE);
         GroupLayout layout = new GroupLayout(mainPanel);
@@ -210,19 +230,38 @@ public class GridDesigner extends JPanel implements Customizer {
 
     private Node selectedNode;
     private void updatePropertySheet() {
-        if (selectedNode != null) {
-            selectedNode.removePropertyChangeListener(getSelectedNodeListener());
-        }
         Node[] nodes;
         if (selection == null) {
             nodes = new Node[0];
-            selectedNode = null;
+            setSelectedNode(null);
         } else {
-            selectedNode = new LayoutConstraintsNode(selection.getNodeReference());
-            selectedNode.addPropertyChangeListener(getSelectedNodeListener());
-            nodes = new Node[] {selectedNode};
+            RADComponentNode node = selection.getNodeReference();
+            if (node == null) {
+                // "selection" was just added and the node reference is not initialized yet
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setSelectedNode(new LayoutConstraintsNode(selection.getNodeReference()));
+                        sheet.setNodes(new Node[] {selectedNode});
+                    }
+                });
+                return;
+            } else {
+                setSelectedNode(new LayoutConstraintsNode(selection.getNodeReference()));
+                nodes = new Node[] {selectedNode};
+            }
         }
         sheet.setNodes(nodes);
+    }
+
+    void setSelectedNode(Node node) {
+        if (selectedNode != null) {
+            selectedNode.removePropertyChangeListener(getSelectedNodeListener());
+        }
+        this.selectedNode = node;
+        if (selectedNode != null) {
+            selectedNode.addPropertyChangeListener(getSelectedNodeListener());
+        }
     }
 
     void updateCustomizer() {

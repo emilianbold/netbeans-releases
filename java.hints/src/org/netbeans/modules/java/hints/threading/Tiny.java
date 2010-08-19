@@ -260,6 +260,7 @@ public class Tiny {
     @TriggerPattern(value="$lock.lock(); $statements$; $lock.unlock();",
                     constraints=@Constraint(variable="$lock", type="java.util.concurrent.locks.Lock"))
     public static ErrorDescription unlockOutsideTryFinally(HintContext ctx) {
+        if (ctx.getMultiVariables().get("$statements$").isEmpty()) return null; //#186434
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_UnlockOutsideTryFinally");
         Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$lock.lock(); try {$statements$;} finally {$lock.unlock();}");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_UnlockOutsideTryFinally");

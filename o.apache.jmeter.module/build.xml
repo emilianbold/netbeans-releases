@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
 
     <target name="build-init" depends="projectized.build-init">
         <mkdir dir="build/jmeter"/>
-        <unzip src="external/apache-jmeter-2.2.zip" dest="build/jmeter"/>
+        <unzip src="external/jakarta-jmeter-2.4.zip" dest="build/jmeter"/>
     </target>
 
     <target name="release" depends="projectized.release">
