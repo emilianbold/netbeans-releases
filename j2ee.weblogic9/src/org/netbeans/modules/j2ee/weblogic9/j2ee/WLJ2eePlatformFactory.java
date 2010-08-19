@@ -199,12 +199,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 return currentDefaultJpaProvider.equals(ECLIPSELINK_JPA_PROVIDER);
             }
 
-            // TODO is both providers supported even when the other one is configured
-            if (OPENJPA_JPA_PROVIDER.equals(toolName)) {
-                return currentDefaultJpaProvider.equals(OPENJPA_JPA_PROVIDER);
-            }
-            if (ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
-                return currentDefaultJpaProvider.equals(ECLIPSELINK_JPA_PROVIDER);
+            // both are supported
+            if (OPENJPA_JPA_PROVIDER.equals(toolName) || ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
+                return true;
             }
             return false;
         }
