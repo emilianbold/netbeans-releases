@@ -78,8 +78,12 @@ public final class ELHintsProvider implements HintsProvider {
 
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        // computing the all hints - not just errors - due to #189590
         ELRuleContext elContext = (ELRuleContext) context;
+        // parse errors are not handled here, so let the infrastructure just display
+        // them as they are
+        unhandled.addAll(elContext.getELParserResult().getDiagnostics());
+        
+        // computing the all hints - not just errors - due to #189590
         Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
         List<? extends ELRule> ids = (List<? extends ELRule>) allHints.get(Kind.DEFAULT);
         for (ELRule rule : ids) {
