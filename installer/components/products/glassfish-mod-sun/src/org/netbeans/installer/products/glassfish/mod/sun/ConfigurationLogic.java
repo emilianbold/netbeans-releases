@@ -534,7 +534,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private boolean isGlassFishRegistred(File nbLocation) throws IOException {
-        return new File (nbLocation, "nb/config/GlassFishEE6/Instances/glassfish_autoregistered_instance").exists();
+        return new File (nbLocation, "nb/config/GlassFishEE6WC/Instances/glassfish_autoregistered_instance").exists();
     }
 
     private boolean registerGlassFish(File nbLocation, File gfLocation) throws IOException {
@@ -569,6 +569,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     private void removeGlassFishIntegration(File nbLocation, File gfLocation) throws IOException {
         LogManager.log("... ide location is " + nbLocation);
+        FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6WC/Instances/glassfish_autoregistered_instance"));
+        FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6WC/Instances/.nbattrs"));
         FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6/Instances/glassfish_autoregistered_instance"));
         FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6/Instances/.nbattrs"));
     }

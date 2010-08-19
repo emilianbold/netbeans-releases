@@ -256,9 +256,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         // presumably should not happen
                     }
                 }
-                if (!active.virtual) {
-                    ErrorsCache.setErrors(context.getRootURI(), active.indexable, dc.getDiagnostics(active.jfo), JavaCustomIndexer.ERROR_CONVERTOR);
-                }
+                JavaCustomIndexer.setErrors(context, active, dc);
                 Log.instance(jt.getContext()).nerrors = 0;
                 finished.add(active.indexable);
             }

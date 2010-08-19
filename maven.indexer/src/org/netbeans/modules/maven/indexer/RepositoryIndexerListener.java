@@ -72,18 +72,22 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
     private long tstart;
     
     private int count;
-   private ProgressHandle handle;
+   private final ProgressHandle handle;
     private final AtomicBoolean canceled = new AtomicBoolean();
     
-    private RepositoryInfo ri;
+    private final RepositoryInfo ri;
     /*Debug*/
     private final boolean DEBUG = false;
      private InputOutput io;
     private OutputWriter writer;
+
+    @SuppressWarnings("LeakingThisInConstructor")
     public RepositoryIndexerListener(NexusIndexer nexusIndexer, IndexingContext indexingContext) {
         this.indexingContext = indexingContext;
         this.nexusIndexer = nexusIndexer;
         ri = RepositoryPreferences.getInstance().getRepositoryInfoById(indexingContext.getId());
+        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
+        Cancellation.register(this);
 
         if (DEBUG) {
             io = IOProvider.getDefault().getIO("Indexing " +(ri!=null? ri.getName():indexingContext.getId()), true); //NOI18N
@@ -92,8 +96,6 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
     }
 
     public void scanningStarted(IndexingContext ctx) {
-        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
-        Cancellation.register(this);
         if (DEBUG) {
             writer.println("Indexing Repo   : " + (ri!=null? ri.getName():ctx.getId())); //NOI18N
             writer.println("Index Directory : " + ctx.getIndexDirectory().toString());//NOI18N
@@ -158,7 +160,7 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
     }
 
     public void scanningFinished(IndexingContext ctx, ScanningResult result) {
-        if (DEBUG && result != null) {
+        if (DEBUG) {
             writer.println("Scanning ended at " + SimpleDateFormat.getInstance().format(new Date())); //NOI18N
 
             if (result.hasExceptions()) {
@@ -180,7 +182,9 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
 
             }
         }
-        
+    }
+
+    void close() {
         handle.finish();
-   }
+    }
 }

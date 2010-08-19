@@ -54,56 +54,56 @@
 
 
     <!-- Sun GlassFish V3 properties   -->
-    <property name="glassfish.v3.sun.build.type"      value="fcs"/>
-    <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish/3.0.1/promoted"/>
+    <property name="glassfish.v3.sun.build.type"      value=""/>
+    <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish/3.1/promoted"/>
     <!--
     <property name="glassfish.v3.sun.build.number"    value="74b"/>
     -->
     
     <loadresource property="glassfish.v3.sun.build.number">
-          <url url="${glassfish.v3.sun.location.prefix}/fcs/latest/archive/bundles"/>
+          <url url="${glassfish.v3.sun.location.prefix}/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)ogs-3.0.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)ogs-3.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
     
-    <property name="glassfish.v3.sun.display.version" value="3.0.1 b${glassfish.v3.sun.build.number}"/>
+    <property name="glassfish.v3.sun.display.version" value="3.1 b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.version"      value="b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.id"           value="b${glassfish.v3.sun.build.number}"/>
-    <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/oges-3.0.1-b${glassfish.v3.sun.build.number}"/>
-    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.0.1-${glassfish.v3.sun.version}.zip"/>
-    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.0.1-${glassfish.v3.sun.version}-ml.zip"/>
+    <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/oges-3.1-b${glassfish.v3.sun.build.number}"/>
+    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.1-${glassfish.v3.sun.version}.zip"/>
+    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.1-${glassfish.v3.sun.version}-ml.zip"/>
     <!--<property name="glassfish_v3_sun_location"    value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}.zip"/>-->
     <!--<property name="glassfish_v3_sun_location_ml" value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}-ml.zip"/>-->
     <property name="glassfish.v3.sun.subdir"       value="glassfishv3"/>
 
 
     <!-- GlassFish V3 properties   -->   
-    <property name="glassfish.v3.build.type"      value="fcs"/>
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/3.0.1/promoted"/>
+    <property name="glassfish.v3.build.type"      value=""/>
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/3.1/promoted"/>
     
     <!--<property name="glassfish.v3.build.number"    value="74b"/>-->
     
     
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/fcs/latest/archive/bundles"/>
+          <url url="${glassfish.v3.location.prefix}/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)glassfish-3.0.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)glassfish-3.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
     
-    <property name="glassfish.v3.display.version" value="3.0.1 b${glassfish.v3.build.number}"/>
+    <property name="glassfish.v3.display.version" value="3.1 b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.0.1-b${glassfish.v3.build.number}"/>
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.0.1-${glassfish.v3.version}.zip"/>
-    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.0.1-${glassfish.v3.version}-ml.zip"/>
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1-b${glassfish.v3.build.number}"/>
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1-${glassfish.v3.version}.zip"/>
+    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1-${glassfish.v3.version}-ml.zip"/>
     <!--
     <property name="glassfish_v3_location"     value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}-ml.zip"/>

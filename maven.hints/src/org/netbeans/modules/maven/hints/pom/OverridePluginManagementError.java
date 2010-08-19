@@ -156,6 +156,9 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
             return toRet;
         }
         for (org.apache.maven.model.Plugin plg : pluginManagement.getPlugins()) {
+            if (plg.getGroupId().equals(Constants.GROUP_APACHE_PLUGINS)) {
+                continue; // #189261 - might be from superpom
+            }
             toRet.put(plg.getKey(), plg.getVersion());
         }
         return toRet;
