@@ -208,6 +208,8 @@ public class BridgeImpl implements BridgeInterface {
             if (antHome != null) {
                 project.setUserProperty("ant.home", antHome.getAbsolutePath()); // NOI18N
             }
+            String ENABLE_TESTLISTENER_EVENTS = "ant.junit.enabletestlistenerevents"; // NOI18N; since 1.8.2 in JUnitTask
+            project.setProperty(ENABLE_TESTLISTENER_EVENTS, "true"); // NOI18N
             for (Map.Entry<String,String> entry : properties.entrySet()) {
                 project.setUserProperty(entry.getKey(), entry.getValue());
             }

@@ -109,7 +109,7 @@ class AntHighlightsContainer extends AbstractHighlightsContainer {
                     end = _endOffset;
                 }
                 assert start >= startOffset;
-                assert end <= _endOffset;
+                assert end <= _endOffset : "#189668: end=" + end + " _endOffset=" + _endOffset + " start=" + start + " scanStart=" + scanStart + " m.range=" + m.start() + "-" + m.end() + " startOffset=" + startOffset;
                 assert end > start;
                 return true;
             }

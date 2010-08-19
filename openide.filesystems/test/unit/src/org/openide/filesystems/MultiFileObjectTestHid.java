@@ -45,6 +45,9 @@
 package org.openide.filesystems;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MultiFileObjectTestHid extends TestBaseHid {
     private static String[] resources = new String [] {
@@ -178,5 +181,24 @@ public class MultiFileObjectTestHid extends TestBaseHid {
         } finally {
             lock.releaseLock();
         }
+    }
+    
+    public void testOverridenAttributes187991() throws Exception {
+        MultiFileSystem mfs = (MultiFileSystem)this.testedFS;
+        List<FileSystem> all = new ArrayList<FileSystem>(Arrays.asList(mfs.getDelegates()));
+        XMLFileSystem xml = new XMLFileSystem(MultiFileObjectTestHid.class.getResource("test-layer-attribs.xml"));
+        all.add(xml);
+        FileObject fo = xml.findResource("foo/bar");
+        assertNotNull("Foo bar found", fo);
+        assertEquals("val", fo.getAttribute("x"));
+        
+        FileObject nfo = FileUtil.createData(all.get(0).getRoot(), "foo/bar");
+        nfo.setAttribute("x", "mal");
+        
+        mfs.setDelegates(all.toArray(new FileSystem[0]));
+        
+        FileObject t = mfs.findResource("foo/bar");
+        assertEquals("1st test", "mal", t.getAttribute("x"));
+        assertEquals("2nd test", "mal", t.getAttribute("x"));
     }
 }
