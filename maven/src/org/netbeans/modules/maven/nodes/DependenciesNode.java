@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.codehaus.plexus.util.StringUtils;
 import java.awt.Image;
 import java.util.prefs.BackingStoreException;
@@ -51,6 +52,7 @@ import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,6 +68,8 @@ import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
@@ -188,7 +192,7 @@ public class DependenciesNode extends AbstractNode {
             Artifact art = wr.getArtifact();
             if (art.getFile() == null) { // #140253
                 Node n = new AbstractNode(Children.LEAF);
-                n.setName("broken: " + art); // XXX I18N
+                n.setName("No such artifact: " + art); // XXX I18N
                 return new Node[] {n};
             }
             return new Node[] {new DependencyNode(project, art, wr.getDependency(), true)};
@@ -291,8 +295,15 @@ public class DependenciesNode extends AbstractNode {
                         break;
                     }
                 }
-                if (!added) {
-                    System.out.println("not found artifact for " + d);
+                if (!added) { // #189691: fake it
+                    Artifact a = new DefaultArtifact(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getScope(), d.getType(), d.getClassifier(), new DefaultArtifactHandler() {
+                        public @Override boolean isAddedToClasspath() {
+                            return true;
+                        }
+                    });
+                    ArtifactRepository local = project.getEmbedder().getLocalRepository();
+                    a.setFile(new File(local.getBasedir(), local.pathOf(a) + /* XXX why is this needed? */ '/' + d.getArtifactId() + '-' + d.getVersion() + '.' + d.getType()));
+                    lst.add(new DependencyWrapper(a, d));
                 }
             }
 //            if (nonCPCount > 0) {
