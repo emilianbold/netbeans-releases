@@ -187,15 +187,32 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             
             ActionReference aref = e.getAnnotation(ActionReference.class);
             if (aref != null) {
-                processReferences(e, aref, aid, f.getPath());
+                processReferences(e, aref, aid);
             }
             ActionReferences refs = e.getAnnotation(ActionReferences.class);
             if (refs != null) {
                 for (ActionReference actionReference : refs.value()) {
-                    processReferences(e, actionReference, aid, f.getPath());
+                    processReferences(e, actionReference, aid);
                 }
             }
             
+        }
+        for (Element e : roundEnv.getElementsAnnotatedWith(ActionReference.class)) {
+            if (e.getAnnotation(ActionRegistration.class) != null) {
+                continue;
+            }
+        }
+        for (Element e : roundEnv.getElementsAnnotatedWith(ActionReferences.class)) {
+            if (e.getAnnotation(ActionRegistration.class) != null) {
+                continue;
+            }
+            if (e.getKind() != ElementKind.PACKAGE) {
+                
+            }
+            ActionReferences refs = e.getAnnotation(ActionReferences.class);
+            for (ActionReference actionReference : refs.value()) {
+                processReferences(e, actionReference, actionReference.id());
+            }
         }
         return true;
     }
@@ -262,9 +279,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         }
     }
 
-    private void processReferences(Element e, ActionReference ref, ActionID aid, String path) {
+    private void processReferences(Element e, ActionReference ref, ActionID aid) {
         File f = layer(e).file(ref.path() + "/" + aid.id().replace('.', '-') + ".shadow");
-        f.stringvalue("originalFile", path);
+        f.stringvalue("originalFile", "Actions/" + aid.category() + "/" + aid.id().replace('.', '-') + ".instance");
         f.position(ref.position());
         f.write();
     }

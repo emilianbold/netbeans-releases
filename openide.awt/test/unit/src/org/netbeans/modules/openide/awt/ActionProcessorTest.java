@@ -126,6 +126,16 @@ public class ActionProcessorTest extends NbTestCase {
         assertEquals("Right position", 333, shad.getAttribute("position"));
         assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
     }
+    
+    public void testVerifyReferencesInstalledViaPackageInfo() {
+        FileObject one = FileUtil.getConfigFile("pkg/one/action-one.shadow");
+        assertNotNull("Found", one);
+        assertEquals("Actions/Fool/action-one.instance", one.getAttribute("originalFile"));
+        
+        FileObject two = FileUtil.getConfigFile("pkg/two/action-two.shadow");
+        assertNotNull("Found", two);
+        assertEquals("Actions/Pool/action-two.instance", two.getAttribute("originalFile"));
+    }
 
     public static final class AlwaysByMethod {
         private AlwaysByMethod() {}

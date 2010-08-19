@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,41 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.openide.awt;
+@ActionReferences({
+    @ActionReference(path="pkg/one", position=100, id=@ActionID(category="Fool", id="action.one")),
+    @ActionReference(path="pkg/two", position=100, id=@ActionID(category="Pool", id="action.two"))
+})
+package org.netbeans.modules.openide.awt;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 
-/** Registers an action under associated identifier specified by separate
- * {@link ActionID} annotation on the same element. Usually it is used together
- * with {@link ActionRegistration}.
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- * @since 7.27
- */
-@Retention(RetentionPolicy.SOURCE)
-@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
-public @interface ActionReference {
-    /** Into which location one wants to place the reference?
-     * Translates to {@link FileUtil#getConfigFile(java.lang.String)}.
-     * @return
-     */
-    String path();
-    
-    /** Position in the location.
-     */
-    int position();
-    
-    /** Identification of the action this reference shall point to.
-     * Usually this is specified as {@link ActionID} peer annotation, but
-     * in case one was to create references to actions defined by someone else,
-     * one can specify the id() here.
-     */
-    ActionID id() default @ActionID(id="",category="");
-}
