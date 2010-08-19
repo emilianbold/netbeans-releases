@@ -58,6 +58,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -80,6 +82,8 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         Set<String> hash = new HashSet<String>();
         hash.add(ActionRegistration.class.getCanonicalName());
         hash.add(ActionID.class.getCanonicalName());
+        hash.add(ActionReference.class.getCanonicalName());
+        hash.add(ActionReferences.class.getCanonicalName());
         return hash;
     }
     
@@ -180,6 +184,39 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 }
             }
             f.write();
+            
+            ActionReference aref = e.getAnnotation(ActionReference.class);
+            if (aref != null) {
+                processReferences(e, aref, aid);
+            }
+            ActionReferences refs = e.getAnnotation(ActionReferences.class);
+            if (refs != null) {
+                for (ActionReference actionReference : refs.value()) {
+                    processReferences(e, actionReference, aid);
+                }
+            }
+            
+        }
+        for (Element e : roundEnv.getElementsAnnotatedWith(ActionReference.class)) {
+            if (e.getAnnotation(ActionRegistration.class) != null) {
+                continue;
+            }
+            throw new LayerGenerationException("Don't use @ActionReference without @ActionRegistration", e);
+        }
+        for (Element e : roundEnv.getElementsAnnotatedWith(ActionReferences.class)) {
+            if (e.getAnnotation(ActionRegistration.class) != null) {
+                continue;
+            }
+            if (e.getKind() != ElementKind.PACKAGE) {
+                throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e);
+            }
+            ActionReferences refs = e.getAnnotation(ActionReferences.class);
+            for (ActionReference actionReference : refs.value()) {
+                if (actionReference.id().id().equals("") || actionReference.id().category().equals("")) {
+                    throw new LayerGenerationException("Specify real id=@ActionID(...)", e);
+                }
+                processReferences(e, actionReference, actionReference.id());
+            }
         }
         return true;
     }
@@ -244,5 +281,17 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         } else {
             return processingEnv.getTypeUtils().isAssignable(first, snd);
         }
+    }
+
+    private void processReferences(Element e, ActionReference ref, ActionID aid) throws LayerGenerationException {
+        if (!ref.id().category().equals("") && !ref.id().id().equals("")) {
+            if (!aid.id().equals(ref.id().id()) || !aid.category().equals(ref.id().category())) {
+                throw new LayerGenerationException("Can't specify id() attribute when @ActionID provided on the element", e);
+            }
+        }
+        File f = layer(e).file(ref.path() + "/" + aid.id().replace('.', '-') + ".shadow");
+        f.stringvalue("originalFile", "Actions/" + aid.category() + "/" + aid.id().replace('.', '-') + ".instance");
+        f.position(ref.position());
+        f.write();
     }
 }

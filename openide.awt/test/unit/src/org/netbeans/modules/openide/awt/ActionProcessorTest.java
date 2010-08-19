@@ -54,6 +54,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import org.netbeans.junit.NbTestCase;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +85,7 @@ public class ActionProcessorTest extends NbTestCase {
     @ActionID(
         id="my.test.Always", category="Tools"
     )
+    @ActionReference(path="My/Folder", position=333)        
     public static final class Always implements ActionListener {
         static int created;
 
@@ -115,6 +118,23 @@ public class ActionProcessorTest extends NbTestCase {
         assertEquals("Created now!", 1, Always.created);
 
         assertEquals("Action called", 300, Always.cnt);
+        
+        FileObject shad = FileUtil.getConfigFile(
+            "My/Folder/my-test-Always.shadow"
+        );
+        assertNotNull("Shadow created", shad);
+        assertEquals("Right position", 333, shad.getAttribute("position"));
+        assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+    }
+    
+    public void testVerifyReferencesInstalledViaPackageInfo() {
+        FileObject one = FileUtil.getConfigFile("pkg/one/action-one.shadow");
+        assertNotNull("Found", one);
+        assertEquals("Actions/Fool/action-one.instance", one.getAttribute("originalFile"));
+        
+        FileObject two = FileUtil.getConfigFile("pkg/two/action-two.shadow");
+        assertNotNull("Found", two);
+        assertEquals("Actions/Pool/action-two.instance", two.getAttribute("originalFile"));
     }
 
     public static final class AlwaysByMethod {
@@ -122,6 +142,10 @@ public class ActionProcessorTest extends NbTestCase {
         static int created, cnt;
         @ActionRegistration(displayName="#AlwaysOn")
         @ActionID(id="my.test.AlwaysByMethod", category="Tools")
+        @ActionReferences({
+            @ActionReference(path="Kuk/buk", position=1),
+            @ActionReference(path="Muk/luk", position=11)
+        })
         public static ActionListener factory() {
             created++;
             return new ActionListener() {
@@ -146,6 +170,24 @@ public class ActionProcessorTest extends NbTestCase {
         a.actionPerformed(new ActionEvent(this, 300, ""));
         assertEquals("Created now!", 1, AlwaysByMethod.created);
         assertEquals("Action called", 300, AlwaysByMethod.cnt);
+
+        {
+            FileObject shad = FileUtil.getConfigFile(
+                "Kuk/buk/my-test-AlwaysByMethod.shadow"
+            );
+            assertNotNull("Shadow created", shad);
+            assertEquals("Right position", 1, shad.getAttribute("position"));
+            assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+        }
+        {
+            FileObject shad = FileUtil.getConfigFile(
+                "Muk/luk/my-test-AlwaysByMethod.shadow"
+            );
+            assertNotNull("Shadow created", shad);
+            assertEquals("Right position", 11, shad.getAttribute("position"));
+            assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+        }
+        
     }
 
     @ActionRegistration(
@@ -538,6 +580,81 @@ public class ActionProcessorTest extends NbTestCase {
             "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
             "public class A extends AbstractAction {\n" +
             "    public A(List wrongCnt) {}\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
+    
+    public void testNoActionIDInReferences() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import org.openide.util.actions.Presenter;\n" +
+            "import java.awt.event.*;\n" +
+            "import java.util.List;\n" +
+            "import javax.swing.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "@ActionReference(path=\"manka\", position=11, id=@ActionID(category=\"Cat\",id=\"x.y.z\"))" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
+
+    public void testPackageInfoNeedsActionID() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.package-info", 
+            "@ActionReferences({\n" +
+            "  @ActionReference(path=\"manka\", position=11)\n" +
+            "})\n" +
+            "package test;\n" +
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionReferences;\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
+
+    public void testNoReferenceWithoutRegistration() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.*;\n" +
+            "import org.openide.awt.ActionReferences;\n" +
+            "import java.awt.event.*;\n" +
+            "@ActionReference(path=\"manka\", position=11, id=@ActionID(category=\"Cat\",id=\"x.y.z\"))" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
+
+    public void testNoReferencesWithoutRegistrationExceptOnPackage() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.*;\n" +
+            "import org.openide.awt.ActionReferences;\n" +
+            "import java.awt.event.*;\n" +
+            "@ActionReferences({\n" +
+            "  @ActionReference(path=\"manka\", position=11, id=@ActionID(category=\"Cat\",id=\"x.y.z\"))" +
+            "})\n" +
+            "public class A implements ActionListener {\n" +
             "    public void actionPerformed(ActionEvent e) {}" +
             "}\n"
         );
