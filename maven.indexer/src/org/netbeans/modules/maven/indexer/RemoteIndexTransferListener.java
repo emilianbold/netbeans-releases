@@ -62,7 +62,7 @@ import org.openide.windows.OutputWriter;
  */
 public class RemoteIndexTransferListener implements TransferListener, Cancellable {
 
-    private ProgressHandle handle;
+    private final ProgressHandle handle;
     private RepositoryInfo info;
     private int lastunit;/*last work unit*/
     /*Debug*/
@@ -77,10 +77,11 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     private static Map<Thread, Integer> transfers = new HashMap<Thread, Integer>();
     private static final Object TRANSFERS_LOCK = new Object();
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public RemoteIndexTransferListener(RepositoryInfo info) {
-
         this.info = info;
-
+        this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
+        Cancellation.register(this);
 
         if (debug) {
             io = IOProvider.getDefault().getIO(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), true);
@@ -94,8 +95,6 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
 
     public void transferStarted(TransferEvent arg0) {
         long contentLength = arg0.getResource().getContentLength();
-        this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
-        Cancellation.register(this);
         this.units = (int) contentLength / 1024;
         handle.start(units);
         if (debug) {
@@ -123,9 +122,6 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     }
 
     public void transferCompleted(TransferEvent arg0) {
-        if (handle != null) {
-            handle.finish();
-        }
         if (debug) {
             writer.println("Completed");//NII18N
 
@@ -180,6 +176,10 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         synchronized (TRANSFERS_LOCK) {
             return transfers.keySet();
         }
+    }
+
+    void close() {
+        handle.finish();
     }
 
 }

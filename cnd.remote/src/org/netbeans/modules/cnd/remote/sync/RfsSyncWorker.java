@@ -178,7 +178,7 @@ import org.openide.util.RequestProcessor;
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
         // A workaround for remote instable tests failure
-        int sleep = Integer.getInteger("rfs.instable.sleep", 0);
+        int sleep = Integer.getInteger("rfs.instable.sleep", 0); // NOI18N
         if (sleep > 0) {
             Thread.sleep(sleep);
         }

@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -105,22 +106,23 @@ private static String PROP_NEWLINE_WHILE = "org-netbeans-modules-editor-indent.t
             public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                InputSource is = null;
                if ("-//Puppy Crawl//DTD Check Configuration 1.0//EN".equals(publicId)) { //NOI18N
-                    is = new InputSource(getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/config/configuration_1_0.xml"));
+                    is = new InputSource(ModuleConvertor.class.getResourceAsStream("config/configuration_1_0.dtd"));
                }
                if ("-//Puppy Crawl//DTD Check Configuration 1.1//EN".equals(publicId)) {//NOI18N
-                    is = new InputSource(getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/config/configuration_1_1.xml"));
+                    is = new InputSource(ModuleConvertor.class.getResourceAsStream("config/configuration_1_1.dtd"));
                }
                if ("-//Puppy Crawl//DTD Check Configuration 1.2//EN".equals(publicId)) {//NOI18N
-                    is = new InputSource(getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/config/configuration_1_2.xml"));
+                    is = new InputSource(ModuleConvertor.class.getResourceAsStream("config/configuration_1_2.dtd"));
                }
                if ("-//Puppy Crawl//DTD Check Configuration 1.3//EN".equals(publicId)) {//NOI18N
-                    is = new InputSource(getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/config/configuration_1_3.xml"));
+                    is = new InputSource(ModuleConvertor.class.getResourceAsStream("config/configuration_1_3.dtd"));
                }
                if (is != null) {
                     is.setPublicId(publicId);
                     is.setSystemId(systemId);
+               } else {
+                   Logger.getLogger(ModuleConvertor.class.getName()).log(Level.WARNING, "unknown entity publicid={0} systemId={1}", new Object[] {publicId, systemId});
                }
-               Logger.getLogger(ModuleConvertor.class.getName()).info("unknown entity publicid=" + publicId + " systemId=" + systemId);
                return is;
             }
         });
