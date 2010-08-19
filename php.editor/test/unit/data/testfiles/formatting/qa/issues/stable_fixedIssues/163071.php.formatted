@@ -64,13 +64,13 @@ if ((int) $_GET['responder'] > 0) {
                 <tr>
                     <td colspan="2"><input type="submit" name="responder" value="Responder" /> <input type="submit" name="deletar" value="Deletar" /></td>
                 </tr>
-        <?php if ((int) $next > 0) { ?>
-            <tr>
-                <td colspan="2" style="text-align:right;"><a href="<?php echo $CONFIG['base_url'], 'control/?responder=', $next; ?>">Próxima não respondida</a></td>
-            </tr>
-        <?php } ?>
-        </table>
-    </form>
+                <?php if ((int) $next > 0) { ?>
+                    <tr>
+                        <td colspan="2" style="text-align:right;"><a href="<?php echo $CONFIG['base_url'], 'control/?responder=', $next; ?>">Próxima não respondida</a></td>
+                    </tr>
+                    <?php } ?>
+                </table>
+            </form>
 <?php
             } else {
                 
@@ -100,27 +100,27 @@ if ((int) $_GET['responder'] > 0) {
                                         <td>Data</td>
                                         <td>Ações</td>
                                     </tr>
-    <?php
-                                while ($r = $db->Result(false)) {
-                                    
-                                           
-    ?>
-                                            <tr>
-                                                <td><?php echo Show($r['name']); ?></td>
-                                                <td><?php echo Show($r['msg']); ?></td>
-                                                <td><?php echo Show($r['data']); ?></td>
-                                                <td>
-                                                    <a href="?responder=<?php echo $r['id']; ?>">Responder</a><br />
-                                                    <a href="?deletar=<?php echo $r['id']; ?>" onclick="if(!confirm('Deseja deletar esta mensagem?')) return false;">Deletar</a>
-                                                </td>
-                                            </tr>
+                                    <?php
+                                    while ($r = $db->Result(false)) {
+                                        
+                                               
+                                    ?>
+                                                <tr>
+                                                    <td><?php echo Show($r['name']); ?></td>
+                                            <td><?php echo Show($r['msg']); ?></td>
+                                            <td><?php echo Show($r['data']); ?></td>
+                                            <td>
+                                                <a href="?responder=<?php echo $r['id']; ?>">Responder</a><br />
+                                                <a href="?deletar=<?php echo $r['id']; ?>" onclick="if(!confirm('Deseja deletar esta mensagem?')) return false;">Deletar</a>
+                                            </td>
+                                        </tr>
 <?php
-                                            }
+                                    }
 ?>
-                                            </table>
+                                    </table>
 <?php
-                                            } else {
-                                                echo '<h3>Nenhuma mensagem a ser respondida, yay!</h3>';
-                                                }
-                                                }
+                                    } else {
+                                        echo '<h3>Nenhuma mensagem a ser respondida, yay!</h3>';
+                                        }
+                                        }
 ?>
