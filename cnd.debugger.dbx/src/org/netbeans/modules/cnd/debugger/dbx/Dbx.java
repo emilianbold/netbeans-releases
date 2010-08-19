@@ -146,7 +146,7 @@ public final class Dbx extends CommonDbx {
 	debugger.stateChanged();
     }
 
-    private static final DebuggerManager manager() {
+    private static DebuggerManager manager() {
 	return DebuggerManager.get();
     }
 
@@ -591,7 +591,7 @@ public final class Dbx extends CommonDbx {
 
     @Override
     protected final void prog_runargs(int argc, String argv[]) {
-	debugger.profileBridge().noteRunArgs(fixStrings(argc, argv));
+	debugger.profileBridge().noteRunArgs(argv);
     }
 
     @Override
@@ -661,7 +661,7 @@ public final class Dbx extends CommonDbx {
     protected final void clone(int argc, String argv[],
 			       boolean cloned_to_follow) {
 
-	debugger.clone(fixStrings(argc, argv), cloned_to_follow);
+	debugger.clone(argv, cloned_to_follow);
     }
 
     @Override
@@ -920,7 +920,7 @@ public final class Dbx extends CommonDbx {
 
     @Override
     protected final void display_update(int nitems, GPDbxDisplayItem items[]) {
-	debugger.updateWatches(fixDisplayItems(nitems, items));
+	debugger.updateWatches(items);
     }
 
     @Override
@@ -944,12 +944,12 @@ public final class Dbx extends CommonDbx {
 
     @Override
     protected final void locals(int nitems, GPDbxLocalItem items[]) {
-	debugger.setLocals(fixLocals(nitems, items));
+	debugger.setLocals(items);
     }
 
     @Override
     protected final void expanded_nodes(boolean is_local, int nitems, GPDbxLocalItem items[]) {
-	debugger.setExpandedNodes(is_local, fixLocals(nitems, items));
+	debugger.setExpandedNodes(is_local, items);
     }
 
     @Override
@@ -1000,8 +1000,7 @@ public final class Dbx extends CommonDbx {
     @Override
     protected final void signal_list(int count,
 				     GPDbxSignalInfoInit initial_signal_list[]){
-	dbxProfileBridge().
-	    noteSignalList(fixSignalInfoInit(count, initial_signal_list));
+	dbxProfileBridge().noteSignalList(initial_signal_list);
     }
 
     @Override
@@ -1012,7 +1011,7 @@ public final class Dbx extends CommonDbx {
     @Override
     protected final void pathmap_list(int count,
 				      GPDbxPathMap updated_pathmap[]) {
-	dbxProfileBridge().notePathmap(fixPathMap(count, updated_pathmap));
+	dbxProfileBridge().notePathmap(updated_pathmap);
     }
 
     @Override
@@ -1020,14 +1019,12 @@ public final class Dbx extends CommonDbx {
 					boolean unexpected,
 					int count, String typenames[]) {
 	dbxProfileBridge().
-	    noteInterceptList(unhandled, unexpected,
-			      fixStrings(count, typenames));
+	    noteInterceptList(unhandled, unexpected, typenames);
     }
 
     @Override
     protected final void intercept_except_list(int count, String typenames[]) {
-	dbxProfileBridge().
-	    noteInterceptExceptList(fixStrings(count, typenames));
+	dbxProfileBridge().noteInterceptExceptList(typenames);
     }
 
     @Override
@@ -1167,7 +1164,7 @@ public final class Dbx extends CommonDbx {
 	    return;
 	}
 
-	GPDbxEventRecord[] fixedEvents = fixEventRecords(nevents, events);
+	GPDbxEventRecord[] fixedEvents = events;
 	debugger.updateFiredEvents(fixedEvents);
 	debugger.explainStop(fixedEvents);
 
@@ -1315,7 +1312,7 @@ public final class Dbx extends CommonDbx {
 
     @Override
     protected final void stack(int nf, int vf, GPDbxFrame frame[], int flags) {
-	GPDbxFrame fixedFrames[] = fixStack(nf, frame);
+	GPDbxFrame fixedFrames[] = frame;
 	for (GPDbxFrame f : fixedFrames) {
 	    f.source = debugger.remoteToLocal("stack", f.source); // NOI18N
 	    // Perhaps SHOULD do loadobj and loadobj_base as well?
@@ -1326,13 +1323,7 @@ public final class Dbx extends CommonDbx {
 
     @Override
     protected final void threads(int tot, int shown, GPDbxThread thread[], int flags) {
-    /*
-    thread[0].tid = -5;
-    thread[1].tid = -6;
-    thread[0].htid = 0;
-    thread[1].htid = 0;
-    */
-	debugger.setThreads(fixThreads(shown, thread));
+	debugger.setThreads(thread);
     }
 
     @Override
@@ -1341,7 +1332,7 @@ public final class Dbx extends CommonDbx {
 
 	// Get rid of any pending property edits
 	EditUndo.undo();
-	manager().error(rt, new DbxError(fixErrors(nerr, errors)), debugger);
+	manager().error(rt, new DbxError(errors), debugger);
     }
 
     @Override
@@ -1521,8 +1512,6 @@ public final class Dbx extends CommonDbx {
     @Override
     protected final void fix_pending_build(String target,
 					   int n, String file[]) {
-	file = fixStrings(n, file);
-
 	// 6569426
 	// Arrange so on the next debug the project is rebuilt or the user
 	// get a reminder.
