@@ -61,15 +61,15 @@ public class FuncVarElementProviderTestCase extends CppSymbolBaseTestCase {
     }
 
    public void testFuncVarAllRegexp() throws Exception {
-        peformTest(".*", SearchType.REGEXP);
+        peformTest("*", SearchType.REGEXP);
     }
 
     public void testFuncVarDotRegexp() throws Exception {
-        peformTest("ma.n", SearchType.REGEXP);
+        peformTest("ma?n", SearchType.REGEXP);
     }
 
     public void testFuncVarCaseInsensitiveRegexp() throws Exception {
-        peformTest("MA.*n", SearchType.CASE_INSENSITIVE_REGEXP);
+        peformTest("MA?*n", SearchType.CASE_INSENSITIVE_REGEXP);
     }
     
     public void testFuncVarCamelCase() throws Exception {
@@ -93,11 +93,11 @@ public class FuncVarElementProviderTestCase extends CppSymbolBaseTestCase {
     }
 
     public void testMacroDotRegexp() throws Exception {
-        peformTest("CPU.H", SearchType.REGEXP);
+        peformTest("CPU?H", SearchType.REGEXP);
     }
 
     public void testMacroCaseInsensitiveRegexp() throws Exception {
-        peformTest("_cUs.*r_h", SearchType.CASE_INSENSITIVE_REGEXP);
+        peformTest("_cUs?*r_h", SearchType.CASE_INSENSITIVE_REGEXP);
     }
 
     public void testMacroCamelCase() throws Exception {
