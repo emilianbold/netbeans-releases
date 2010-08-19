@@ -201,13 +201,14 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (e.getAnnotation(ActionRegistration.class) != null) {
                 continue;
             }
+            throw new LayerGenerationException("Don't use @ActionReference without @ActionRegistration", e);
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionReferences.class)) {
             if (e.getAnnotation(ActionRegistration.class) != null) {
                 continue;
             }
             if (e.getKind() != ElementKind.PACKAGE) {
-                
+                throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e);
             }
             ActionReferences refs = e.getAnnotation(ActionReferences.class);
             for (ActionReference actionReference : refs.value()) {

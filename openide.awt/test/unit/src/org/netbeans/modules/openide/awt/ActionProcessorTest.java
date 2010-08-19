@@ -624,5 +624,43 @@ public class ActionProcessorTest extends NbTestCase {
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertFalse("Compilation has to fail:\n" + os, r);
     }
+
+    public void testNoReferenceWithoutRegistration() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.*;\n" +
+            "import org.openide.awt.ActionReferences;\n" +
+            "import java.awt.event.*;\n" +
+            "@ActionReference(path=\"manka\", position=11, id=@ActionID(category=\"Cat\",id=\"x.y.z\"))" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
+
+    public void testNoReferencesWithoutRegistrationExceptOnPackage() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.*;\n" +
+            "import org.openide.awt.ActionReferences;\n" +
+            "import java.awt.event.*;\n" +
+            "@ActionReferences({\n" +
+            "  @ActionReference(path=\"manka\", position=11, id=@ActionID(category=\"Cat\",id=\"x.y.z\"))" +
+            "})\n" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
     
 }
