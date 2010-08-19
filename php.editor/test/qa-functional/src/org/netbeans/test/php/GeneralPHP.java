@@ -518,7 +518,7 @@ public class GeneralPHP extends JellyTestCase {
                             !o.toString().contains("Scanning in progress...")) {
                         return result;
                     }
-                    Sleep(1000);
+                    Sleep(5000);
                 } catch (java.lang.Exception ex) {
                     return null;
                 }
@@ -528,7 +528,7 @@ public class GeneralPHP extends JellyTestCase {
                     return null;
                 }
             }
-            Sleep(100);
+            Sleep(1000);
         }
     }
 
