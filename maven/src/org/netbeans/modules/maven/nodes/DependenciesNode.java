@@ -303,6 +303,7 @@ public class DependenciesNode extends AbstractNode {
                     });
                     ArtifactRepository local = project.getEmbedder().getLocalRepository();
                     a.setFile(new File(local.getBasedir(), local.pathOf(a) + /* XXX why is this needed? */ '/' + d.getArtifactId() + '-' + d.getVersion() + '.' + d.getType()));
+                    a.setDependencyTrail(Collections.<String>emptyList());
                     lst.add(new DependencyWrapper(a, d));
                 }
             }
