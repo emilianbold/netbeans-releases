@@ -62,7 +62,9 @@ public final class DbxPathProviderImpl implements DbxPathProvider {
     }
 
     public String getDbxPath(Host host) {
-        String dbx = System.getenv("SPRO_DBX_PATH");	// NOI18N
+	String dbx = System.getProperty("SPRO_DBX_PATH");	// NOI18N
+        if (dbx == null)
+	    dbx = System.getenv("SPRO_DBX_PATH");		// NOI18N
 
 	if (dbx != null) {
 	    Platform platform;
