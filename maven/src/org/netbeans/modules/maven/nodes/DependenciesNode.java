@@ -273,6 +273,19 @@ public class DependenciesNode extends AbstractNode {
             }
         }
 
+        private void fixFile(Artifact a) {
+            if (a.getFile() == null) {
+                ArtifactRepository local = project.getEmbedder().getLocalRepository();
+                String path = local.pathOf(a);
+                if (!path.endsWith('.' + a.getType())) {
+                    // XXX why does this happen? just for fake artifacts
+                    path += '.' + a.getType();
+                }
+                File f = new File(local.getBasedir(), path);
+                a.setFile(f);
+            }
+        }
+
         private Tuple create(Collection<Dependency> deps, Collection<Artifact> arts, Set<String> scopes) {
             boolean nonCP = showNonClasspath() || showNonCP;
             int nonCPCount = 0;
@@ -283,6 +296,7 @@ public class DependenciesNode extends AbstractNode {
                 }
                 boolean added = false;
                 for (Artifact a : arts) {
+                    fixFile(a); // will be null if *any* dependency artifacts are missing, for some reason
                     if (a.getGroupId().equals(d.getGroupId()) &&
                           a.getArtifactId().equals(d.getArtifactId()) &&
                           StringUtils.equals(a.getClassifier(), d.getClassifier())) {
@@ -301,8 +315,7 @@ public class DependenciesNode extends AbstractNode {
                             return true;
                         }
                     });
-                    ArtifactRepository local = project.getEmbedder().getLocalRepository();
-                    a.setFile(new File(local.getBasedir(), local.pathOf(a) + /* XXX why is this needed? */ '/' + d.getArtifactId() + '-' + d.getVersion() + '.' + d.getType()));
+                    fixFile(a);
                     a.setDependencyTrail(Collections.<String>emptyList());
                     lst.add(new DependencyWrapper(a, d));
                 }
