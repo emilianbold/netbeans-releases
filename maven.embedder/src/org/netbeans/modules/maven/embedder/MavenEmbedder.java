@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -61,13 +60,9 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequestPopulationException;
 import org.apache.maven.execution.MavenExecutionRequestPopulator;
 import org.apache.maven.execution.MavenExecutionResult;
-import org.apache.maven.lifecycle.LifecycleExecutor;
 import org.apache.maven.lifecycle.mapping.Lifecycle;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.maven.model.io.ModelReader;
-import org.apache.maven.model.io.ModelWriter;
-import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.project.DefaultProjectBuilder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
@@ -98,29 +93,19 @@ public final class MavenEmbedder {
     public static final File DEFAULT_GLOBAL_SETTINGS_FILE =
             new File(System.getProperty("maven.home", System.getProperty("user.dir", "")), "conf/settings.xml");
     private final PlexusContainer plexus;
-    private final Maven maven;
     private final ProjectBuilder projectBuilder;
-    private final ModelReader modelReader;
-    private final ModelWriter modelWriter;
     private final RepositorySystem repositorySystem;
     private final MavenExecutionRequestPopulator populator;
     private final SettingsBuilder settingsBuilder;
-    private final LifecycleExecutor lifecycleExecutor;
-    private final BuildPluginManager pluginManager;
-    private final EmbedderConfiguration request;
+    private final EmbedderConfiguration embedderConfiguration;
 
-    MavenEmbedder(EmbedderConfiguration req) throws ComponentLookupException {
-        request = req;
-        plexus = req.getContainer();
-        this.maven = plexus.lookup(Maven.class);
+    MavenEmbedder(EmbedderConfiguration configuration) throws ComponentLookupException {
+        embedderConfiguration = configuration;
+        plexus = configuration.getContainer();
         this.projectBuilder = plexus.lookup(ProjectBuilder.class);
-        this.modelReader = plexus.lookup(ModelReader.class);
-        this.modelWriter = plexus.lookup(ModelWriter.class);
         this.repositorySystem = plexus.lookup(RepositorySystem.class);
         this.settingsBuilder = plexus.lookup(SettingsBuilder.class);
         this.populator = plexus.lookup(MavenExecutionRequestPopulator.class);
-        this.pluginManager = plexus.lookup(BuildPluginManager.class);
-        this.lifecycleExecutor = plexus.lookup(LifecycleExecutor.class);
     }
 
 
@@ -144,8 +129,8 @@ public final class MavenEmbedder {
     }
 
     private String getLocalRepositoryPath() {
-        if (request.getLocalRepository() != null) {
-            return request.getLocalRepository().getAbsolutePath();
+        if (embedderConfiguration.getLocalRepository() != null) {
+            return embedderConfiguration.getLocalRepository().getAbsolutePath();
         }
         return getSettings().getLocalRepository();
     }
@@ -167,7 +152,7 @@ public final class MavenEmbedder {
         SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
         req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
         req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
-        req.setSystemProperties(request.getSystemProperties());
+        req.setSystemProperties(embedderConfiguration.getSystemProperties());
         try {
             return settingsBuilder.build(req).getEffectiveSettings();
         } catch (SettingsBuildingException ex) {
@@ -198,12 +183,21 @@ public final class MavenEmbedder {
         MavenExecutionResult result = new DefaultMavenExecutionResult();
         try {
             populator.populateDefaults(req);
+ 
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             configuration.setResolveDependencies(true);
-            ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
-            result.setProject(projectBuildingResult.getProject());
-            result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
+            try {
+                ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
+                result.setProject(projectBuildingResult.getProject());
+                result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
+            } catch (ProjectBuildingException projectBuildingException) {
+                //faill back to online embedder 
+                req.setOffline(false);
+                ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
+                result.setProject(projectBuildingResult.getProject());
+                result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
+            }
         } catch (ProjectBuildingException ex) {
             //don't add the exception here. this should come out as a build marker, not fill
             //the error logs with msgs
@@ -217,7 +211,7 @@ public final class MavenEmbedder {
     //TODO maybe remove in favour of the Request one
     public MavenProject readProject(File fallback) {
         try {
-            MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+            MavenExecutionRequest req = createMavenExecutionRequest();
             populator.populateDefaults(req);
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
@@ -302,5 +296,25 @@ public final class MavenEmbedder {
             Logger.getLogger(MavenEmbedder.class.getName()).warning(ex.getMessage());
         }
         return null;
+    }
+
+    public MavenExecutionRequest createMavenExecutionRequest(){
+        MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+
+        ArtifactRepository localRepository = getLocalRepository();
+        req.setLocalRepository(localRepository);
+        req.setLocalRepositoryPath(localRepository.getBasedir());
+
+        //TODO: do we need to validate settings files?
+        if(DEFAULT_GLOBAL_SETTINGS_FILE !=null && DEFAULT_GLOBAL_SETTINGS_FILE.exists()) {
+            req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
+        }
+        if(DEFAULT_USER_SETTINGS_FILE !=null && DEFAULT_USER_SETTINGS_FILE.exists()) {
+          req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
+        }
+        
+        req.setSystemProperties(embedderConfiguration.getSystemProperties());
+
+        return req;
     }
 }

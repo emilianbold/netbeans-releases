@@ -249,7 +249,7 @@ public final class NbMavenProjectImpl implements Project {
         try {
 //            ProgressTransferListener.setAggregateHandle(hndl);
 //            hndl.start();
-            MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+            MavenExecutionRequest req = embedder.createMavenExecutionRequest();
 //            ProgressTransferListener ptl = new ProgressTransferListener();
 //            req.setTransferListener(ptl);
 
@@ -363,7 +363,7 @@ public final class NbMavenProjectImpl implements Project {
         try {
 //                ProgressTransferListener.setAggregateHandle(hndl);
 //                hndl.start();
-            MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+            MavenExecutionRequest req = getEmbedder().createMavenExecutionRequest();
 //                ProgressTransferListener ptl = new ProgressTransferListener();
 //                req.setTransferListener(ptl);
             //#172526 have the modellineage cache reset at the same time the project cache resets

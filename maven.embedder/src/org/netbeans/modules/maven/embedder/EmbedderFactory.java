@@ -197,15 +197,12 @@ public final class EmbedderFactory {
         });
         DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
 
-        EmbedderConfiguration req = new EmbedderConfiguration();
-        req.setContainer(dpc);
-        setLocalRepoPreference(req);
-
-//        //TODO remove explicit activation
-//        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
+        EmbedderConfiguration configuration = new EmbedderConfiguration();
+        configuration.setContainer(dpc);
+        setLocalRepoPreference(configuration);
         Properties props = new Properties();
         props.putAll(System.getProperties());
-        req.setSystemProperties(fillEnvVars(props));
+        configuration.setSystemProperties(fillEnvVars(props));
         
         File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
         File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
@@ -255,7 +252,7 @@ public final class EmbedderFactory {
 //        });
         MavenEmbedder embedder = null;
         try {
-            embedder = new MavenEmbedder(req);
+            embedder = new MavenEmbedder(configuration);
             //MEVENIDE-634 make all instances non-interactive
 //            WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
 //            wagonManager.setInteractive(false);

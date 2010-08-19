@@ -196,7 +196,7 @@ public final class NbMavenProject {
                     try {
                         ProgressTransferListener.setAggregateHandle(hndl);
                         hndl.start();
-                        MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+                        MavenExecutionRequest req = online.createMavenExecutionRequest();
                         req.setPom(pomFile);
                         req.setTransferListener(new ProgressTransferListener());
                         MavenExecutionResult res = online.readProjectWithDependencies(req); //NOI18N
