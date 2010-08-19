@@ -59,6 +59,13 @@ public class NameKind {
     private final QualifiedName query;
     private final QuerySupport.Kind queryKind;
 
+    public static Exact forElement(final PhpElement element) {
+        if (element instanceof FullyQualifiedElement) {
+            return new Exact(((FullyQualifiedElement)element).getFullyQualifiedName());
+        }
+        return new Exact(QualifiedName.create(element.getName()));
+    }
+
     public static Empty empty() {
         return new Empty();//NOI18N
     }

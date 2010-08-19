@@ -334,8 +334,11 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         if (cur==null || cur.getKind() == ElementKind.PACKAGE)
                 return false;
         TypeElement encl = workingCopy.getElementUtilities().enclosingTypeElement(cur);
-        if (outer.equals(encl) && workingCopy.getTypes().isSubtype(getCurrentClass().asType(), inner.asType())) {
-            return true;
+        if (outer.equals(encl)) {
+            TypeElement currentClass = getCurrentClass();
+            if (currentClass == null) return false;
+            if (workingCopy.getTypes().isSubtype(currentClass.asType(), inner.asType()))
+                return true;
         }
         return false;
     }
@@ -350,7 +353,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
             treePath = treePath.getParentPath();
         }
-        throw new IllegalStateException();
+        return null;
     }
 
     

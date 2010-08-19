@@ -87,7 +87,7 @@ public class ModelUnit {
      * Cached list of folders under which some configuration files may be created,
      * eg. Java source root under which MEAT-INF/*faces-config.xml can be created.
      */
-    private List<FileObject> configRoots = new LinkedList<FileObject>();
+    private List<FileObject> configRoots = Collections.synchronizedList(new LinkedList<FileObject>());
 
     private static final String META_INF = "META-INF";      // NOI18N
     private static final String FACES_CONFIG = "faces-config.xml";// NOI18N
@@ -285,12 +285,12 @@ public class ModelUnit {
                 // of the folder we are keeping eye on; that way we will ignore
                 // events coming for JSF configuration files from different projects
                 res = false;
-                for (FileObject fo : ModelUnit.this.getConfigRoots()) {
-                    if (FileUtil.isParentOf(fo, fe.getFile())) {
-                        res = true;
-                        break;
+                    for (FileObject fo : ModelUnit.this.getConfigRoots()) {
+                        if (FileUtil.isParentOf(fo, fe.getFile())) {
+                            res = true;
+                            break;
+                        }
                     }
-                }
             }
             return res;
         }
