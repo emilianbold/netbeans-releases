@@ -86,6 +86,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * 
      * @return 
      */
+    @Override
     public boolean isValid() {
         if (isValidating.compareAndSet(false, true)) {
             try {
@@ -106,14 +107,17 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * 
      * @param ev 
      */
+    @Override
     public void stateChanged(ChangeEvent ev) {
         fireChangeEvent(ev);
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
@@ -128,6 +132,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * 
      * @return 
      */
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new AddDomainLocationVisualPanel();
@@ -140,6 +145,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * 
      * @return 
      */
+    @Override
     public HelpCtx getHelp() {
         // !PW FIXME correct help context
         return new HelpCtx("registering_app_server_hk2_domain"); //NOI18N
@@ -149,6 +155,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * 
      * @param settings 
      */
+    @Override
     public void readSettings(Object settings) {
         if (wizard == null) {
             wizard = (WizardDescriptor) settings;
@@ -161,6 +168,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * 
      * @param settings 
      */
+    @Override
     public void storeSettings(Object settings) {
     }
 
@@ -205,6 +213,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 !domainDirCandidate.exists()) {
             wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
             wizardIterator.setHostName("localhost");
+            wizardIterator.setUseDefaultPorts(panel.getUseDefaultPorts());
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField)); // NOI18N
             return true;
         }
@@ -222,6 +231,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         if (AddServerLocationPanel.canCreate(domainDirCandidate) && !ServerUtilities.isTP2(gfRoot)) {
             wizardIterator.setDomainLocation(domainLoc);
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateDomain", domainField)); // NOI18N
+            wizardIterator.setUseDefaultPorts(panel.getUseDefaultPorts());
             wizardIterator.setHostName("localhost");
             return true;
         }
