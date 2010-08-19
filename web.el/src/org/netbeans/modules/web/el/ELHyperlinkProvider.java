@@ -121,7 +121,7 @@ public final class ELHyperlinkProvider implements HyperlinkProvider {
                     }
                     ELParserResult parserResult = (ELParserResult) elRi.getParserResult();
                     ELElement elElement = parserResult.getElementAt(offset);
-                    if (elElement == null) {
+                    if (elElement == null || !elElement.isValid()) {
                         return;
                     }
                     Node node = elElement.findNodeAt(offset);

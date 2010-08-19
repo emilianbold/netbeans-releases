@@ -98,6 +98,9 @@ public final class ELElement {
      */
     public Node findNodeAt(final int offset) {
         assert getOriginalOffset().containsInclusive(offset);
+        if (getNode() == null) {
+            return null;
+        }
         final Node[] result = new Node[1];
         getNode().accept(new NodeVisitor() {
             @Override

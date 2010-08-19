@@ -614,21 +614,26 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 public void resultChanged(LookupEvent ev) {
                     @SuppressWarnings("unchecked")
                     final Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
-                    getDocument().render(new Runnable() {
+                    SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            PriorityMutex mutex = getMutex();
-                            if (mutex != null) {
-                                mutex.lock();
-                                // checkDocumentLocked() - unnecessary - doc.render() called
-                                try {
-                                    if (textComponent != null) {
-                                        updateDefaultFontAndColors(result);
+                            getDocument().render(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PriorityMutex mutex = getMutex();
+                                    if (mutex != null) {
+                                        mutex.lock();
+                                        // checkDocumentLocked() - unnecessary - doc.render() called
+                                        try {
+                                            if (textComponent != null) {
+                                                updateDefaultFontAndColors(result);
+                                            }
+                                        } finally {
+                                            mutex.unlock();
+                                        }
                                     }
-                                } finally {
-                                    mutex.unlock();
                                 }
-                            }
+                            });
                         }
                     });
                 }

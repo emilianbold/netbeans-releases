@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.newproject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -69,7 +68,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -500,22 +498,8 @@ public class ArchetypeWizardUtils {
             }
             final NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
             if (watch != null) {
-                // do not create java/test for pom type projects.. most probably not relevant.
-                if (! NbMavenProject.TYPE_POM.equals(watch.getPackagingType())) {
-                    URI mainJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getSourceDirectory());
-                    URI testJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getTestSourceDirectory());
-                    File file = new File(mainJava);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-                    file = new File(testJava);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-
-                    if( nbAppModuleDir != null && NbMavenProject.TYPE_NBM.equals(watch.getPackagingType()) ) {
-                        storeNbAppModuleDirInfo( prj, nbAppModuleDir );
-                    }
+                if (nbAppModuleDir != null && NbMavenProject.TYPE_NBM.equals(watch.getPackagingType())) {
+                    storeNbAppModuleDirInfo(prj, nbAppModuleDir);
                 }
                 //see #163529 for reasoning
                 RP.post(new Runnable() {

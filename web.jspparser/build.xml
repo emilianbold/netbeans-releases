@@ -96,7 +96,7 @@ made subject to such option by the copyright holder.
         <unzip src="${glassfish_location}/glassfish/modules/common-util.jar" dest="glassfishjspparser/"/>
         <delete file="glassfish-jspparser-3.0.jar" />
         <zip  basedir="glassfishjspparser"
-        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class, com/sun/appserv/server/util/PreprocessorUtil.class"
+        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class, com/sun/appserv/server/util/PreprocessorUtil.class, org/glassfish/jsp/api/**"
             zipfile="./external/glassfish-jspparser-3.0.jar" />
 
         <delete dir="glassfishjspparser" />
