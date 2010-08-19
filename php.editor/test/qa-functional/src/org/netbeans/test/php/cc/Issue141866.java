@@ -103,7 +103,7 @@ public class Issue141866 extends cc
     TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     WaitCompletionScanning( );
-
+    Sleep( 2000 );
     // Get code
     String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
 
