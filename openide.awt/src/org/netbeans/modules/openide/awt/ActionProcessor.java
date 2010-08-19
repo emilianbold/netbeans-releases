@@ -58,6 +58,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -80,6 +82,8 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         Set<String> hash = new HashSet<String>();
         hash.add(ActionRegistration.class.getCanonicalName());
         hash.add(ActionID.class.getCanonicalName());
+        hash.add(ActionReference.class.getCanonicalName());
+        hash.add(ActionReferences.class.getCanonicalName());
         return hash;
     }
     
@@ -180,6 +184,18 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 }
             }
             f.write();
+            
+            ActionReference aref = e.getAnnotation(ActionReference.class);
+            if (aref != null) {
+                processReferences(e, aref, aid, f.getPath());
+            }
+            ActionReferences refs = e.getAnnotation(ActionReferences.class);
+            if (refs != null) {
+                for (ActionReference actionReference : refs.value()) {
+                    processReferences(e, actionReference, aid, f.getPath());
+                }
+            }
+            
         }
         return true;
     }
@@ -244,5 +260,12 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         } else {
             return processingEnv.getTypeUtils().isAssignable(first, snd);
         }
+    }
+
+    private void processReferences(Element e, ActionReference ref, ActionID aid, String path) {
+        File f = layer(e).file(ref.path() + "/" + aid.id().replace('.', '-') + ".shadow");
+        f.stringvalue("originalFile", path);
+        f.position(ref.position());
+        f.write();
     }
 }

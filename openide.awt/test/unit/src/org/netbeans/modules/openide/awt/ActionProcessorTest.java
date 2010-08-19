@@ -54,6 +54,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import org.netbeans.junit.NbTestCase;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +85,7 @@ public class ActionProcessorTest extends NbTestCase {
     @ActionID(
         id="my.test.Always", category="Tools"
     )
+    @ActionReference(path="My/Folder", position=333)        
     public static final class Always implements ActionListener {
         static int created;
 
@@ -115,6 +118,13 @@ public class ActionProcessorTest extends NbTestCase {
         assertEquals("Created now!", 1, Always.created);
 
         assertEquals("Action called", 300, Always.cnt);
+        
+        FileObject shad = FileUtil.getConfigFile(
+            "My/Folder/my-test-Always.shadow"
+        );
+        assertNotNull("Shadow created", shad);
+        assertEquals("Right position", 333, shad.getAttribute("position"));
+        assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
     }
 
     public static final class AlwaysByMethod {
@@ -122,6 +132,10 @@ public class ActionProcessorTest extends NbTestCase {
         static int created, cnt;
         @ActionRegistration(displayName="#AlwaysOn")
         @ActionID(id="my.test.AlwaysByMethod", category="Tools")
+        @ActionReferences({
+            @ActionReference(path="Kuk/buk", position=1),
+            @ActionReference(path="Muk/luk", position=11)
+        })
         public static ActionListener factory() {
             created++;
             return new ActionListener() {
@@ -146,6 +160,24 @@ public class ActionProcessorTest extends NbTestCase {
         a.actionPerformed(new ActionEvent(this, 300, ""));
         assertEquals("Created now!", 1, AlwaysByMethod.created);
         assertEquals("Action called", 300, AlwaysByMethod.cnt);
+
+        {
+            FileObject shad = FileUtil.getConfigFile(
+                "Kuk/buk/my-test-AlwaysByMethod.shadow"
+            );
+            assertNotNull("Shadow created", shad);
+            assertEquals("Right position", 1, shad.getAttribute("position"));
+            assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+        }
+        {
+            FileObject shad = FileUtil.getConfigFile(
+                "Muk/luk/my-test-AlwaysByMethod.shadow"
+            );
+            assertNotNull("Shadow created", shad);
+            assertEquals("Right position", 11, shad.getAttribute("position"));
+            assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+        }
+        
     }
 
     @ActionRegistration(
