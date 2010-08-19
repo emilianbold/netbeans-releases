@@ -609,5 +609,20 @@ public class ActionProcessorTest extends NbTestCase {
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertFalse("Compilation has to fail:\n" + os, r);
     }
+
+    public void testPackageInfoNeedsActionID() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.package-info", 
+            "@ActionReferences({\n" +
+            "  @ActionReference(path=\"manka\", position=11)\n" +
+            "})\n" +
+            "package test;\n" +
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionReferences;\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
     
 }

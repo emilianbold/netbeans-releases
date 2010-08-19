@@ -211,6 +211,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             }
             ActionReferences refs = e.getAnnotation(ActionReferences.class);
             for (ActionReference actionReference : refs.value()) {
+                if (actionReference.id().id().equals("") || actionReference.id().category().equals("")) {
+                    throw new LayerGenerationException("Specify real id=@ActionID(...)", e);
+                }
                 processReferences(e, actionReference, actionReference.id());
             }
         }
