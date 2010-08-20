@@ -1140,7 +1140,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         List<PropertyChangeEvent> evts;
         accessLock.writeLock().lock();
         try {
-            debugger.getOperator().notifyMethodInvoking(threadReference);
             logger.fine("Invoking a method in thread "+threadName);
             loggerS.fine("["+threadName+"]: Invoking a method, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
             if (methodInvokingDisabledUntilResumed) {
@@ -1151,10 +1150,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_AlreadyInvoking"), null);
             }
-            if (!isThreadSuspended()) {
+            if (!(suspended || suspendedNoFire)) {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
+            debugger.getOperator().notifyMethodInvoking(threadReference);
             if (vm != null) {
                 // Check if there aren't any steps submitted, which would break method invocation:
                 try {
