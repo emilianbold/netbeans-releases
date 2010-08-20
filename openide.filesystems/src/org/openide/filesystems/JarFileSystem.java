@@ -987,13 +987,15 @@ public class JarFileSystem extends AbstractFileSystem {
             final File[] arr = descriptors.listFiles();
             String size = arr == null ? "nothing" : (arr.length + " files"); // NOI18N
             LOGGER.log(Level.INFO, "There is {0} in {1}", new Object[]{size, descriptors}); // NOI18N
-            for (File fd : arr) {
-                try {
-                    LOGGER.log(Level.INFO, "{0} -> {1}", new Object[]{fd, fd.getCanonicalFile()}); // NOI18N
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "{0}", fd); // NOI18N
+            if (arr != null) {
+                for (File fd : arr) {
+                    try {
+                        LOGGER.log(Level.INFO, "{0} -> {1}", new Object[]{fd, fd.getCanonicalFile()}); // NOI18N
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, "{0}", fd); // NOI18N
+                    }
                 }
-            }            
+            }
         }
     }
 

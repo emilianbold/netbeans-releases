@@ -138,6 +138,13 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
             childrenToRefresh.add(node);
         }
     }
+
+    protected final void clearCache() {
+        synchronized (childrenCache) {
+            childrenCache.clear();
+            childrenToRefresh.clear();
+        }
+    }
     
     protected Object[] reorder(Object[] nodes) {
         return nodes;
