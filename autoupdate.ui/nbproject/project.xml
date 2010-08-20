@@ -127,6 +127,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.dlight.tools.customizer</friend>
                 <friend>org.netbeans.modules.autoupdate.pluginimporter</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <friend>com.microchip.mplab.nbide.embedded</friend>
