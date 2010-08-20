@@ -43,6 +43,7 @@
 package org.netbeans.modules.editor.indent.project;
 
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,11 +106,12 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
         // private implementation
         // --------------------------------------------------------------------
 
-        private final Map<Object, Map<String, Csp>> cache = new WeakHashMap<Object, Map<String, Csp>>();
+        private final Map<Object, Reference<Map<String, Csp>>> cache = new WeakHashMap<Object, Reference<Map<String, Csp>>>();
 
         private Csp getCsp(final Object obj, final String mimeType) {
             synchronized (cache) {
-                Map<String, Csp> csps = cache.get(obj);
+                Reference<Map<String, Csp>> cspsRef = cache.get(obj);
+                Map<String, Csp> csps = cspsRef.get();
                 Csp csp = csps != null ? csps.get(mimeType) : null;
                 if (csp == null) {
                     Document doc;
@@ -129,7 +131,7 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
                             file);
                     if (csps == null) {
                         csps = new HashMap<String, Csp>();
-                        cache.put(obj, csps);
+                        cache.put(obj, new SoftReference<Map<String, Csp>>(csps));
                     }
                     csps.put(mimeType, csp);
                 }
