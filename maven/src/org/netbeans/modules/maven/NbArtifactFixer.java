@@ -37,54 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.embedder;
+package org.netbeans.modules.maven;
 
 import java.io.File;
-import java.util.Properties;
-import org.codehaus.plexus.PlexusContainer;
+import org.apache.maven.ReactorArtifactRepository;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.netbeans.modules.maven.embedder.ArtifactFixer;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author mkleint
+ * #189442: tries to associate snapshot artifacts with their owners.
+ * @see ReactorArtifactRepository
  */
-class EmbedderConfiguration {
-    private PlexusContainer cont;
-    private File local;
-    private Properties props;
-    private boolean offline;
+@ServiceProvider(service=ArtifactFixer.class)
+public class NbArtifactFixer implements ArtifactFixer {
 
-    void setLocalRepository(File file) {
-        local = file;
-    }
-
-    File getLocalRepository() {
-        return local;
-    }
-
-    void setSystemProperties(Properties fillEnvVars) {
-        props = fillEnvVars;
-    }
-
-    Properties getSystemProperties() {
-        return props;
-    }
-
-    PlexusContainer getContainer() {
-        return cont;
-    }
-
-    void setContainer(PlexusContainer dpc) {
-        cont = dpc;
-    }
-    
-    public boolean isOffline() {
-        return offline;
-    }
-    public void setOffline(boolean offline) {
-        this.offline = offline;
+    public @Override File resolve(Artifact artifact) {
+        ArtifactRepository local = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+        File nominal = new File(local.getBasedir(), local.pathOf(artifact));
+        if (nominal.exists()) {
+            return null;
+        }
+        /* XXX deadlocks without #186024
+        Project owner = FileOwnerQuery.getOwner(nominal.toURI());
+        if (owner != null) {
+            NbMavenProjectImpl mavenProject = owner.getLookup().lookup(NbMavenProjectImpl.class);
+            if (mavenProject != null) {
+                if (artifact.getType().equals(NbMavenProject.TYPE_POM)) {
+                    return mavenProject.getPOMFile();
+                }
+            }
+        }
+         */
+        return null;
     }
 
 }

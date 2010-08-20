@@ -37,54 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
-import java.util.Properties;
-import org.codehaus.plexus.PlexusContainer;
+import org.apache.maven.artifact.Artifact;
 
 /**
- *
- * @author mkleint
+ * Service which can resolve an artifact before a request is sent to the local repo.
  */
-class EmbedderConfiguration {
-    private PlexusContainer cont;
-    private File local;
-    private Properties props;
-    private boolean offline;
+public interface ArtifactFixer {
 
-    void setLocalRepository(File file) {
-        local = file;
-    }
-
-    File getLocalRepository() {
-        return local;
-    }
-
-    void setSystemProperties(Properties fillEnvVars) {
-        props = fillEnvVars;
-    }
-
-    Properties getSystemProperties() {
-        return props;
-    }
-
-    PlexusContainer getContainer() {
-        return cont;
-    }
-
-    void setContainer(PlexusContainer dpc) {
-        cont = dpc;
-    }
-    
-    public boolean isOffline() {
-        return offline;
-    }
-    public void setOffline(boolean offline) {
-        this.offline = offline;
-    }
+    /**
+     * Possibly resolves an artifact.
+     * @param artifact an artifact which might or might not be available in local repo
+     * @return a file to resolve it to locally, or null to skip
+     */
+    File resolve(Artifact artifact);
 
 }
