@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.j2ee.eclipselinkmodelgen
+OpenIDE-Module-Layer: org/netbeans/modules/j2ee/eclipselinkmodelgen/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/eclipselinkmodelgen/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.5
+AutoUpdate-Show-In-Client: false
+
