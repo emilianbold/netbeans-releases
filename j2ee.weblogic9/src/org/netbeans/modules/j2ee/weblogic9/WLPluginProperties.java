@@ -118,6 +118,7 @@ public final class WLPluginProperties {
     public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
     public static final String ADMIN_SERVER_NAME= "adminName";      // NOI18N
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
+    public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
     
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N
@@ -355,6 +356,11 @@ public final class WLPluginProperties {
                 if ("name".equals(child.getNodeName())) {
                     String domainName = child.getFirstChild().getNodeValue();
                     properties.put(DOMAIN_NAME, domainName);
+                }
+                else if ("production-mode-enabled".equals(child.getNodeName())) {
+                    String isEnabled = child.getFirstChild().getNodeValue();
+                    properties.put(PRODUCTION_MODE, "true".equals( isEnabled ));
+                    
                 }
                 // if the child's name equals 'server' get its children
                 // and iterate over them
