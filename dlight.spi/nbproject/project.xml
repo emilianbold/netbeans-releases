@@ -31,6 +31,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
                 <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
@@ -42,7 +43,6 @@
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
-                <friend>com.sun.tools.dlight.spi.impl</friend>
                 <package>org.netbeans.modules.dlight.spi</package>
                 <package>org.netbeans.modules.dlight.spi.util</package>
             </friend-packages>
