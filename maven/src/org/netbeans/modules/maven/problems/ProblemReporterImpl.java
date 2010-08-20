@@ -304,13 +304,15 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     private void checkParent(final MavenProject project) {
-        //mkleint: this code is never properly reached..
         Artifact art = project.getParentArtifact();
         if (art != null ) {
             
-            File parent = project.getParent().getFile();
-            if (parent != null && parent.exists()) {
-                return;
+            MavenProject parentDecl = project.getParent();
+            if (parentDecl != null) {
+                File parent = parentDecl.getFile();
+                if (parent != null && parent.exists()) {
+                    return;
+                }
             }
            
             
