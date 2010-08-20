@@ -304,22 +304,23 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     private void checkParent(final MavenProject project) {
-        //mkleint: this code is never properly reached..
         Artifact art = project.getParentArtifact();
         if (art != null ) {
             
-            File parent = project.getParent().getFile();
-            if (parent != null && parent.exists()) {
-                return;
+            MavenProject parentDecl = project.getParent();
+            if (parentDecl != null) {
+                File parent = parentDecl.getFile();
+                if (parent != null && parent.exists()) {
+                    return;
+                }
             }
            
             
             if (art.getFile() != null && !art.getFile().exists()) {
-                //TODO create a correction action for this.
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_NoParent"),
                         org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NoParent", art.getId()),
-                        new OpenPomAction(nbproject));
+                        new RevalidateAction(nbproject));
                 addReport(report);
             }
         }

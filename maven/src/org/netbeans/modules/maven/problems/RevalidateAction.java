@@ -37,54 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.embedder;
+package org.netbeans.modules.maven.problems;
 
-import java.io.File;
-import java.util.Properties;
-import org.codehaus.plexus.PlexusContainer;
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author mkleint
+ * Corrective action to run {@code mvn validate}, which can download plugins or parent POMs.
+ * At worst it will show the same problem in the Output Window, so the user is more likely
+ * to believe that there really is a problem with their project, not NetBeans.
  */
-class EmbedderConfiguration {
-    private PlexusContainer cont;
-    private File local;
-    private Properties props;
-    private boolean offline;
+public class RevalidateAction extends AbstractAction {
 
-    void setLocalRepository(File file) {
-        local = file;
-    }
+    private final NbMavenProjectImpl nbproject;
 
-    File getLocalRepository() {
-        return local;
+    public RevalidateAction(NbMavenProjectImpl nbproject) {
+        super(NbBundle.getMessage(RevalidateAction.class, "ACT_validate"));
+        this.nbproject = nbproject;
     }
 
-    void setSystemProperties(Properties fillEnvVars) {
-        props = fillEnvVars;
-    }
-
-    Properties getSystemProperties() {
-        return props;
-    }
-
-    PlexusContainer getContainer() {
-        return cont;
-    }
-
-    void setContainer(PlexusContainer dpc) {
-        cont = dpc;
-    }
-    
-    public boolean isOffline() {
-        return offline;
-    }
-    public void setOffline(boolean offline) {
-        this.offline = offline;
+    public @Override void actionPerformed(ActionEvent e) {
+        BeanRunConfig config = new BeanRunConfig();
+        config.setExecutionDirectory(FileUtil.toFile(nbproject.getProjectDirectory()));
+        config.setGoals(Collections.singletonList("validate")); // NOI18N
+        config.setRecursive(false);
+        config.setProject(nbproject);
+        config.setExecutionName("validate"); // NOI18N
+        config.setTaskDisplayName(NbBundle.getMessage(RevalidateAction.class, "ACT_validate"));
+        RunUtils.executeMaven(config);
     }
 
 }

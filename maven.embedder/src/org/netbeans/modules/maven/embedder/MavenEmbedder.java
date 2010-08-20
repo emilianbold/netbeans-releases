@@ -117,6 +117,7 @@ public final class MavenEmbedder {
             populator.populateDefaults(request);
             ProjectBuildingRequest configuration = request.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            configuration.setOffline(embedderConfiguration.isOffline());
             ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
             result.setProject(projectBuildingResult.getProject());
             result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
@@ -213,6 +214,7 @@ public final class MavenEmbedder {
         try {
             MavenExecutionRequest req = createMavenExecutionRequest();
             populator.populateDefaults(req);
+            req.setOffline(embedderConfiguration.isOffline());
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             return projectBuilder.build(fallback, configuration).getProject();
@@ -314,6 +316,7 @@ public final class MavenEmbedder {
         }
         
         req.setSystemProperties(embedderConfiguration.getSystemProperties());
+        req.setOffline(embedderConfiguration.isOffline());
 
         return req;
     }

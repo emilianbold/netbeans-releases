@@ -50,28 +50,22 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.metadata.RepositoryMetadata;
 import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.wagon.ConnectionException;
-import org.apache.maven.wagon.ResourceDoesNotExistException;
-import org.apache.maven.wagon.TransferFailedException;
-import org.apache.maven.wagon.authentication.AuthenticationException;
-import org.apache.maven.wagon.authorization.AuthorizationException;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import java.util.prefs.Preferences;
 import org.apache.maven.execution.MavenExecutionRequestPopulator;
 import org.apache.maven.model.Model;
@@ -79,19 +73,18 @@ import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
+import org.apache.maven.repository.LocalArtifactRepository;
 import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.repository.legacy.DefaultUpdateCheckManager;
-import org.apache.maven.repository.legacy.UpdateCheckManager;
-import org.apache.maven.wagon.AbstractWagon;
-import org.apache.maven.wagon.Wagon;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.discovery.ComponentDiscoverer;
 import org.codehaus.plexus.component.discovery.ComponentDiscoveryEvent;
 import org.codehaus.plexus.component.discovery.ComponentDiscoveryListener;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
+import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
@@ -101,6 +94,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
 /**
@@ -113,15 +107,11 @@ public final class EmbedderFactory {
 
     private static MavenEmbedder project;
     private static MavenEmbedder online;
-    private static SettingsFileListener fileListener = new SettingsFileListener();
-    private static Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
     public static MavenEmbedder createExecuteEmbedder() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-
-    /** Creates a new instance of EmbedderFactory */
     private EmbedderFactory() {
     }
 
@@ -145,31 +135,35 @@ public final class EmbedderFactory {
         }
     }
 
-    /**
-     * #188970: no-op wagon that prevents HTTP(S) downloads from being initiated just by reading a project.
-     */
-    public static final class DummyWagon extends AbstractWagon {
-        protected @Override void openConnectionInternal() throws ConnectionException, AuthenticationException {}
-        protected @Override void closeConnection() throws ConnectionException {}
-        private TransferFailedException fail() {
-            return new TransferFailedException("no remote connections"); // NOI18N
-        }
-        public @Override void get(String string, File file) throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException {
-            throw fail();
-        }
-        public @Override boolean getIfNewer(String string, File file, long l) throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException {
-            throw fail();
-        }
-        public @Override void put(File file, String string) throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException {
-            throw fail();
-        }
+    private static <T> void setImplementationClass(ComponentDescriptor<T> desc, Class<?> implementationClass) { // type-safe accessor
+        desc.setImplementationClass(implementationClass.asSubclass(desc.getRoleClass()));
     }
-    /**
-     * {@link DummyWagon#fail} should not be memoized in the local repo, or real builds will fail.
-     */
-    public static final class NoTouchUpdateCheckManager extends DefaultUpdateCheckManager {
-        public @Override void touch(Artifact artifact, ArtifactRepository repository, String error) {}
-        public @Override void touch(RepositoryMetadata metadata, ArtifactRepository repository, File file) {}
+
+    private static <T> void addComponentDescriptor(ComponentSetDescriptor componentSetDescriptor, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
+        ComponentDescriptor<T> componentDescriptor = new ComponentDescriptor<T>();
+        componentDescriptor.setRoleClass(roleClass);
+        componentDescriptor.setImplementationClass(implementationClass);
+        componentDescriptor.setRoleHint(roleHint);
+        componentSetDescriptor.addComponentDescriptor(componentDescriptor);
+    }
+
+    public static class NbLocalArtifactRepository extends LocalArtifactRepository {
+        private final Collection<? extends ArtifactFixer> fixers = Lookup.getDefault().lookupAll(ArtifactFixer.class);
+        public @Override Artifact find(Artifact artifact) {
+            for (ArtifactFixer fixer : fixers) {
+                File f = fixer.resolve(artifact);
+                if (f != null) {
+                    artifact.setFile(f);
+                    artifact.setResolved(true);
+                    artifact.setRepository(this);
+                    break;
+                }
+            }
+            return artifact;
+        }
+        public @Override boolean hasLocalMetadata() {
+            return false;
+        }
     }
 
     public static MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
@@ -178,27 +172,36 @@ public final class EmbedderFactory {
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
             .setName("mavenCore");
 
+        // addComponentDescriptor does not work in this case, perhaps because there is a default impl already:
         dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
             public @Override void componentDiscovered(ComponentDiscoveryEvent event) {
                 ComponentSetDescriptor set = event.getComponentSetDescriptor();
                 for (ComponentDescriptor<?> desc : set.getComponents()) {
                     if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
                         setImplementationClass(desc, NbExecutionRequestPopulator.class);
-                    } else if (Wagon.ROLE.equals(desc.getRole()) && desc.getRoleHint().matches("https?")) {
-                        setImplementationClass(desc, DummyWagon.class);
-                    } else if (UpdateCheckManager.class.getName().equals(desc.getRole())) {
-                        setImplementationClass(desc, NoTouchUpdateCheckManager.class);
                     }
                 }
             }
-            <T> void setImplementationClass(ComponentDescriptor<T> desc, Class<?> implementationClass) { // type-safe accessor
-                desc.setImplementationClass(implementationClass.asSubclass(desc.getRoleClass()));
+        });
+        // Annotations do not seem to work: @Component(role=LocalArtifactRepository.class, hint=LocalArtifactRepository.IDE_WORKSPACE)
+        dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
+            public @Override List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm) throws PlexusConfigurationException {
+                ComponentSetDescriptor csd = new ComponentSetDescriptor();
+                addComponentDescriptor(csd, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
+                return Collections.singletonList(csd);
             }
         });
-        DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
+        PlexusContainer pc = new DefaultPlexusContainer(dpcreq);
+        try {
+            assert pc.lookup(LocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE) instanceof NbLocalArtifactRepository;
+            assert pc.lookup(MavenExecutionRequestPopulator.class) instanceof NbExecutionRequestPopulator;
+        } catch (ComponentLookupException x) {
+            assert false : x;
+        }
 
         EmbedderConfiguration configuration = new EmbedderConfiguration();
-        configuration.setContainer(dpc);
+        configuration.setContainer(pc);
+        configuration.setOffline(true);
         setLocalRepoPreference(configuration);
         Properties props = new Properties();
         props.putAll(System.getProperties());
@@ -226,21 +229,6 @@ public final class EmbedderFactory {
 //        req.setConfigurationCustomizer(new ContainerCustomizer() {
 //
 //            public void customize(PlexusContainer plexusContainer) {
-//                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
-//                desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
-//
-//                desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
-//                desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
-//
-//                desc = plexusContainer.getComponentDescriptor("org.apache.maven.workspace.MavenWorkspaceStore");
-//                desc.setImplementation(NbMavenWorkspaceStore.class.getName()); //NOI18N
-//
-//                desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
-//                desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
-//
-//                desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-//                desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
-//
 //                //MEVENIDE-634
 //                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
 //                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
@@ -294,48 +282,12 @@ public final class EmbedderFactory {
             .setName("mavenCore");
 
 
-    dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
-
-      public List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm)
-          throws PlexusConfigurationException {
-
-        List<ComponentSetDescriptor> componentSetDescriptors = new ArrayList<ComponentSetDescriptor>();
-
-        if (mavenCoreRealmId.equals(classRealm.getId())) {
-          ComponentSetDescriptor componentSetDescriptor = new ComponentSetDescriptor();
-
-//          // register EclipseClassRealmManagerDelegate
-//          ComponentDescriptor componentDescriptor = new ComponentDescriptor();
-//          componentDescriptor.setRealm(classRealm);
-//          componentDescriptor.setRole(ClassRealmManagerDelegate.class.getName());
-//          componentDescriptor.setImplementationClass(EclipseClassRealmManagerDelegate.class);
-//          ComponentRequirement plexusRequirement = new ComponentRequirement();
-//          plexusRequirement.setRole("org.codehaus.plexus.PlexusContainer");
-//          plexusRequirement.setFieldName("plexus");
-//          componentDescriptor.addRequirement(plexusRequirement );
-//          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
-
-//          componentDescriptor = new ComponentDescriptor();
-//          componentDescriptor.setRealm(classRealm);
-//          componentDescriptor.setRole(LocalRepositoryMaintainer.class.getName());
-//          componentDescriptor.setImplementationClass(EclipseLocalRepositoryMaintainer.class);
-//          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
-//
-//          componentSetDescriptors.add(componentSetDescriptor);
-        }
-
-        return componentSetDescriptors;
-      }
-
-    });
-
         dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
-            @SuppressWarnings("unchecked")
-            public void componentDiscovered(ComponentDiscoveryEvent event) {
+            public @Override void componentDiscovered(ComponentDiscoveryEvent event) {
                 ComponentSetDescriptor set = event.getComponentSetDescriptor();
-                for (ComponentDescriptor desc : set.getComponents()) {
+                for (ComponentDescriptor<?> desc : set.getComponents()) {
                     if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
-                        desc.setImplementationClass(NbExecutionRequestPopulator.class);
+                        setImplementationClass(desc, NbExecutionRequestPopulator.class);
                     }
                 }
             }

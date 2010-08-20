@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.embedder;
 
-import org.apache.maven.repository.legacy.UpdateCheckManager;
 import org.netbeans.junit.NbTestCase;
 
 public class EmbedderFactoryTest extends NbTestCase {
@@ -53,7 +52,7 @@ public class EmbedderFactoryTest extends NbTestCase {
 
     public void testCreateProjectLikeEmbedder() throws Exception {
         MavenEmbedder embedder = EmbedderFactory.createProjectLikeEmbedder();
-        assertEquals(EmbedderFactory.NoTouchUpdateCheckManager.class, embedder.lookupComponent(UpdateCheckManager.class).getClass());
+        // XXX find some way to verify that interesting things do not cause Wagon HTTP requests
     }
 
 }

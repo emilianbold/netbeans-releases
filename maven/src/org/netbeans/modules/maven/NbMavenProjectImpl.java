@@ -78,7 +78,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Resource;
@@ -122,6 +121,7 @@ import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideCheck
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.execute.ReactorChecker;
+import org.netbeans.modules.maven.problems.RevalidateAction;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileLocator;
@@ -266,6 +266,7 @@ public final class NbMavenProjectImpl implements Project {
             req.setInteractiveMode(false);
             // recursive == false is important to avoid checking all submodules for extensions
             // that will not be used in current pom anyway..
+            req.setOffline(true);
             // #135070
             req.setRecursive(false);
             req.setUserProperties(createSystemPropsForProjectLoading());
@@ -378,6 +379,7 @@ public final class NbMavenProjectImpl implements Project {
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
+            req.setOffline(true);
             req.setUserProperties(createSystemPropsForProjectLoading());
             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
             newproject = res.getProject();
@@ -398,7 +400,7 @@ public final class NbMavenProjectImpl implements Project {
                         //igonre if the problem is in the project validation codebase, we handle that later..
                         problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
                                 NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"),
-                                ((Exception) e).getMessage(), null));
+                                ((Exception) e).getMessage(), new RevalidateAction(this)));
                     } else {
                         Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), (Exception) e); //NOI18N
                         ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
