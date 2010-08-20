@@ -60,7 +60,7 @@ public final class WebServicesClientSupportFactory {
     }
 
     public static WebServicesClientSupport createWebServicesClientSupport(WebServicesClientSupportImpl spiWebServicesClientSupport) {
-        return WebServicesClientSupportAccessor.DEFAULT.createWebServicesClientSupport(spiWebServicesClientSupport);
+        return WebServicesClientSupportAccessor.getDefault().createWebServicesClientSupport(spiWebServicesClientSupport);
     }
 
 }
