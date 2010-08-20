@@ -239,9 +239,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
             for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
                 CompileTuple active = unit.second;
-                if (!active.virtual) {
-                    ErrorsCache.setErrors(context.getRootURI(), active.indexable, dc.getDiagnostics(active.jfo), JavaCustomIndexer.ERROR_CONVERTOR);
-                }
+                JavaCustomIndexer.setErrors(context, active, dc);
                 finished.add(active.indexable);
             }
             return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);

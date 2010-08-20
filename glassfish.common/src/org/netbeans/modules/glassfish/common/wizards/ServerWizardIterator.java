@@ -98,7 +98,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     public ServerWizardIterator(GlassfishInstanceProvider gip) {
         assert null != gip;
         this.gip = gip;
-        setHostName("localhost");
+        this.hostName = "localhost";
     }
 
     private ServerWizardIterator() {
@@ -255,6 +255,15 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private String installRoot;
     private String glassfishRoot;
     private String hostName;
+    private boolean useDefaultPorts;
+
+    public boolean isUseDefaultPorts() {
+        return useDefaultPorts;
+    }
+
+    public void setUseDefaultPorts(boolean useDefaultPorts) {
+        this.useDefaultPorts = useDefaultPorts;
+    }
 
     public String formatUri(String glassfishRoot, String host, int port) {
         return gip.formatUri(glassfishRoot, host, port);
@@ -387,7 +396,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             }
         }
 
-        if(binList.size() == 0) {
+        if(binList.isEmpty()) {
             return;
         }
 
@@ -472,7 +481,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip,false);
+            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip,false,useDefaultPorts);
             int newHttpPort = cd.getHttpPort();
             int newAdminPort = cd.getAdminPort();
             cd.start();

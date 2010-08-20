@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  * @author Milos Kleint
  */
 public class MavenProjectNode extends AbstractNode {
-    private static final String BADGE_ICON = "org/netbeans/modules/maven/brokenProjectBadge.png";//NOI18N
+    static final String BADGE_ICON = "org/netbeans/modules/maven/brokenProjectBadge.png";//NOI18N
      private static String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(MavenProjectNode.class, "ICON_BrokenProjectBadge");//NOI18N
 

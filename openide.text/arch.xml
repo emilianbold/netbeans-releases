@@ -765,7 +765,9 @@ No.
         </question>
 -->
 <answer id="resources-read">
-No.
+<api type="export" category="devel" group="layer" name="Editors-TabActions">
+    Actions for the editor tab (window) context menu can be injected into <code>Editors/TabActions</code>.
+</api>
 </answer>
 
 <!--

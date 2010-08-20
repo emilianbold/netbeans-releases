@@ -45,14 +45,10 @@ package org.netbeans.modules.maven.newproject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,20 +59,15 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import org.apache.maven.archetype.metadata.ArchetypeDescriptor;
-import org.apache.maven.archetype.metadata.RequiredProperty;
-import org.apache.maven.archetype.metadata.io.xpp3.ArchetypeDescriptorXpp3Reader;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -96,6 +87,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * @author mkleint
@@ -287,23 +284,24 @@ public class ArchetypeWizardUtils {
             jf = new JarFile(fil);
             ZipEntry entry = jf.getJarEntry("META-INF/maven/archetype-metadata.xml");//NOI18N
             if (entry != null) {
+                // http://maven.apache.org/archetype/maven-archetype-plugin/specification/archetype-metadata.html
                 InputStream in = jf.getInputStream(entry);
-                Reader rd = new InputStreamReader(in);
-                ArchetypeDescriptorXpp3Reader reader = new ArchetypeDescriptorXpp3Reader();
-                ArchetypeDescriptor desc = reader.read(rd);
-                List lst = desc.getRequiredProperties();
-                if (lst != null && lst.size() > 0) {
-                    Iterator it = lst.iterator();
-                    while (it.hasNext()) {
-                        RequiredProperty prop = (RequiredProperty) it.next();
-                        map.put(prop.getKey(), prop.getDefaultValue());
+                try {
+                    Document doc = XMLUtil.parse(new InputSource(in), false, false, XMLUtil.defaultErrorHandler(), null);
+                    NodeList nl = doc.getElementsByTagName("requiredProperty"); // NOI18N
+                    for (int i = 0; i < nl.getLength(); i++) {
+                        Element rP = (Element) nl.item(i);
+                        Element dV = XMLUtil.findElement(rP, "defaultValue", null); // NOI18N
+                        map.put(rP.getAttribute("key"), dV != null ? XMLUtil.findText(dV) : null); // NOI18N
                     }
+                } finally {
+                    in.close();
                 }
             }
         } catch (IOException ex) {
             Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
             //TODO should we do someting like delete the non-zip file? with the exception thrown the download failed?
-        } catch (XmlPullParserException ex) {
+        } catch (SAXException ex) {
             Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         } finally {
             if (jf != null) {
@@ -500,22 +498,8 @@ public class ArchetypeWizardUtils {
             }
             final NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
             if (watch != null) {
-                // do not create java/test for pom type projects.. most probably not relevant.
-                if (! NbMavenProject.TYPE_POM.equals(watch.getPackagingType())) {
-                    URI mainJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getSourceDirectory());
-                    URI testJava = FileUtilities.convertStringToUri(watch.getMavenProject().getBuild().getTestSourceDirectory());
-                    File file = new File(mainJava);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-                    file = new File(testJava);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-
-                    if( nbAppModuleDir != null && NbMavenProject.TYPE_NBM.equals(watch.getPackagingType()) ) {
-                        storeNbAppModuleDirInfo( prj, nbAppModuleDir );
-                    }
+                if (nbAppModuleDir != null && NbMavenProject.TYPE_NBM.equals(watch.getPackagingType())) {
+                    storeNbAppModuleDirInfo(prj, nbAppModuleDir);
                 }
                 //see #163529 for reasoning
                 RP.post(new Runnable() {

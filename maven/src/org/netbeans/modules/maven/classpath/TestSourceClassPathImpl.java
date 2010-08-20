@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 
 /**
  *
@@ -85,12 +84,5 @@ class TestSourceClassPathImpl extends AbstractProjectClassPathImpl {
         uris = col.toArray(uris);
         return uris;        
     }
-    
-    @Override
-    protected FilteringPathResourceImplementation getFilteringResources() {
-        return null;
-//        return new ExcludingResourceImpl(getMavenProject(), true);
-    }
-    
     
 }

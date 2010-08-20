@@ -187,6 +187,15 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
                 templateProperties.put("CDIEnabled", "true");
                 templateProperties.put("classAnnotation", "@Named(value=\""+beanName+"\")");   //NOI18N
                 templateProperties.put("scopeAnnotation", NAMED_SCOPE.get((NamedScope)scope).toString());    //NOI18N
+                NamedScope namedScope = (NamedScope)scope;
+                switch ( namedScope ){
+                    case SESSION:
+                    case CONVERSATION:
+                        templateProperties.put("passivationCapable", "true");    //NOI18N
+                        break;
+                    default:
+                        break;
+                }
             } else {
                 if (targetName.equalsIgnoreCase(beanName) && targetName.substring(0, 1).toLowerCase().equals(beanName.substring(0, 1))) {
                     templateProperties.put("classAnnotation", "@ManagedBean");   //NOI18N

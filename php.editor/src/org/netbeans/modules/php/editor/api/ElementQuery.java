@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.NameKind.Prefix;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
@@ -69,10 +70,15 @@ public interface ElementQuery {
     public static enum QueryScope {
 
         INDEX_SCOPE,
+        VIRTUAL_SCOPE,
         FILE_SCOPE;
 
         public boolean isIndexScope() {
             return this.equals(INDEX_SCOPE);
+        }
+
+        public boolean isVirtualScope() {
+            return this.equals(VIRTUAL_SCOPE);
         }
 
         public boolean isFileScope() {
@@ -118,7 +124,7 @@ public interface ElementQuery {
         
     Set<TypeConstantElement> getTypeConstants(NameKind constantQuery);
 
-
+    Set<VariableElement> getTopLevelVariables(NameKind query);
 
     Set<NamespaceElement> getNamespaces(NameKind query);
 
@@ -147,23 +153,22 @@ public interface ElementQuery {
     public interface Index extends ElementQuery {
         Set<PhpElement> getTopLevelElements(NameKind query);
 
-        Set<FunctionElement> getFunctions(NameKind query, Set<AliasedName> aliases);
+        Set<FunctionElement> getFunctions(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
 
-        Set<ConstantElement> getConstants(NameKind query, Set<AliasedName> aliases);
+        Set<ConstantElement> getConstants(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
 
-        Set<ClassElement> getClasses(NameKind query, Set<AliasedName> aliases);
+        Set<ClassElement> getClasses(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
 
-        Set<InterfaceElement> getInterfaces(NameKind query, Set<AliasedName> aliases);
+        Set<InterfaceElement> getInterfaces(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
 
-        Set<TypeElement> getTypes(NameKind query, Set<AliasedName> aliases);
+        Set<TypeElement> getTypes(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
 
-        Set<MethodElement> getConstructors(NameKind typeQuery, Set<AliasedName> aliases);
+        Set<MethodElement> getConstructors(NameKind typeQuery, Set<AliasedName> aliases, AliasedElement.Trait trait);
 
-        Set<NamespaceElement> getNamespaces(NameKind query, Set<AliasedName> aliasedNames);
+        Set<NamespaceElement> getNamespaces(NameKind query, Set<AliasedName> aliasedNames, AliasedElement.Trait trait);
 
-        Set<PhpElement> getTopLevelElements(NameKind query, Set<AliasedName> aliases);
-
-        Set<VariableElement> getTopLevelVariables(NameKind query);
+        Set<PhpElement> getTopLevelElements(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
+        
 
         Set<MethodElement> getDeclaredConstructors(ClassElement typeElement);
 

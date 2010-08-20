@@ -51,7 +51,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
  * @author Raddek Matous
  */
 public class AliasedType extends AliasedElement implements TypeElement {
-    public AliasedType(final AliasedName aliasedName, final TypeElement type) {
+    protected AliasedType(final AliasedName aliasedName, final TypeElement type) {
         super(aliasedName, type);
     }
 
