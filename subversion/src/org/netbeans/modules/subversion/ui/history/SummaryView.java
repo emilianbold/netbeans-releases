@@ -72,7 +72,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import javax.swing.border.LineBorder;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -81,8 +80,8 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -744,7 +743,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     // add author
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
                     String author = revision.getLog().getAuthor();
-                    Linker l = linkerSupport.getLinker(AuthorLinker.class, index);
+                    StyledDocumentHyperlink l = linkerSupport.getLinker(AuthorLinker.class, index);
                     if(l == null) {
                         if(kenaiUsersMap != null && author != null && !author.equals("")) {
                             KenaiUser kenaiUser = kenaiUsersMap.get(author);
