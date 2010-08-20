@@ -45,6 +45,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
+import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 
 import com.sun.source.tree.BinaryTree;
@@ -85,9 +86,11 @@ import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.MethodChooser;
 import org.openide.ErrorManager;
@@ -200,17 +203,15 @@ public class MethodChooserSupport implements PropertyChangeListener {
         operations = new Operation[0];
         int methodLine = currentThread.getLineNumber(null);
         
+        Method method = ((JPDAThreadImpl) currentThread).getTopMethod();
         List<Location> locs = java.util.Collections.emptyList();
         try {
-            while (methodLine > 0 && (locs = ReferenceTypeWrapper.locationsOfLine(clazzRef, methodLine)).isEmpty()) {
+            while (methodLine > 0 && (locs = MethodWrapper.locationsOfLine(method, methodLine)).isEmpty()) {
                 methodLine--;
             }
         } catch (InternalExceptionWrapper aiex) {
         } catch (VMDisconnectedExceptionWrapper aiex) {
             return false;
-        } catch (ObjectCollectedExceptionWrapper aiex) {
-            return false;
-        } catch (ClassNotPreparedExceptionWrapper aiex) {
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
         }

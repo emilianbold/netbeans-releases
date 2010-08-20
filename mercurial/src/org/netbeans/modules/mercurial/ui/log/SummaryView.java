@@ -73,7 +73,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Lookup;
@@ -737,7 +737,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     // add author
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
                     String author = container.getLog().getAuthor();
-                    Linker l = linkerSupport.getLinker(AuthorLinker.class, index);
+                    StyledDocumentHyperlink l = linkerSupport.getLinker(AuthorLinker.class, index);
                     if(l == null) {
                         if(kenaiUsersMap != null && author != null && !author.equals("")) {
                             KenaiUser kenaiUser = kenaiUsersMap.get(author);

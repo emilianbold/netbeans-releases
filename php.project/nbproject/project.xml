@@ -411,6 +411,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
+                <friend>org.netbeans.modules.php.nette</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.selenium.php</friend>
                 <package>org.netbeans.modules.php.project.api</package>

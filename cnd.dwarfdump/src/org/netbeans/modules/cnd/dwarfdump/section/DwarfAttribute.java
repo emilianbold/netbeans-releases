@@ -56,6 +56,10 @@ import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
 import java.io.PrintStream;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ACCESS;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.INL;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIRTUALITY;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIS;
 
 /**
  *
@@ -74,13 +78,37 @@ public class DwarfAttribute {
         out.print("\t" + attrName + " [" + valueForm + "]"); // NOI18N
         
         if (value != null) {
-            if (valueForm.equals(FORM.DW_FORM_ref4)) {
+            if (valueForm == FORM.DW_FORM_ref4) {
                 out.printf(" <%x>", value); // NOI18N
-            } else if (valueForm.equals(FORM.DW_FORM_block1)) {
+            } else if (valueForm == FORM.DW_FORM_block1) {
                 byte[] data = (byte[])value;
                 out.printf(" %d bytes: ", data.length); // NOI18N
                 for (int i = 0; i < data.length; i++) {
                     out.printf(" 0x%x", data[i]); // NOI18N
+                }
+            } else if (attrName == ATTR.DW_AT_inline && valueForm == FORM.DW_FORM_data1) {
+                out.printf(" %s", value.toString()); // NOI18N
+                INL inl = INL.get((Byte)value);
+                if (inl != null) {
+                    out.printf(" %s", inl.toString()); // NOI18N
+                }
+            } else if (attrName == ATTR.DW_AT_visibility && valueForm == FORM.DW_FORM_data1) {
+                out.printf(" %s", value.toString()); // NOI18N
+                VIS vis = VIS.get((Byte)value);
+                if (vis != null) {
+                    out.printf(" %s", vis.toString()); // NOI18N
+                }
+            } else if (attrName == ATTR.DW_AT_virtuality && valueForm == FORM.DW_FORM_data1) {
+                out.printf(" %s", value.toString()); // NOI18N
+                VIRTUALITY virt = VIRTUALITY.get((Byte)value);
+                if (virt != null) {
+                    out.printf(" %s", virt.toString()); // NOI18N
+                }
+            } else if (attrName == ATTR.DW_AT_accessibility && valueForm == FORM.DW_FORM_data1) {
+                out.printf(" %s", value.toString()); // NOI18N
+                ACCESS access = ACCESS.get((Byte)value);
+                if (access != null) {
+                    out.printf(" %s", access.toString()); // NOI18N
                 }
             } else {
                 out.printf(" %s", value.toString()); // NOI18N
