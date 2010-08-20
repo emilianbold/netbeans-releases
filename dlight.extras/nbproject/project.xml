@@ -73,6 +73,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.dlight.ui</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.dlight.core.ui</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
