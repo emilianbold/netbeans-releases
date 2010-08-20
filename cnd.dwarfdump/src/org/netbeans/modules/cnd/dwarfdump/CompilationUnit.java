@@ -197,6 +197,16 @@ public class CompilationUnit {
         return null;
     }
 
+    public DwarfEntry getReferencedFriend(DwarfEntry entry) throws IOException{
+        Object typeRef = entry.getAttributeValue(ATTR.DW_AT_friend);
+        if (typeRef instanceof Integer) {
+            return getEntry((Integer)typeRef);
+        } else if (typeRef instanceof Long) {
+            return getEntry((Long)typeRef);
+        }
+        return null;
+    }
+
     public String getType(DwarfEntry entry) throws IOException {
         TAG entryKind = entry.getKind();
         
@@ -283,7 +293,7 @@ public class CompilationUnit {
         }
         
         if (kind.equals(TAG.DW_TAG_subroutine_type)) {
-            return getType(typeEntry);
+            return typeEntry.getParametersString(false);
         }
         
         if (kind.equals(TAG.DW_TAG_volatile_type)) {
@@ -502,7 +512,7 @@ public class CompilationUnit {
             if (rela != null){
                 replace = rela.getAddend(dif);
             }
-            if (replace != null && attr.valueForm.equals(FORM.DW_FORM_strp)) {
+            if (replace != null && attr.valueForm == FORM.DW_FORM_strp) {
                 reader.readAttrValue(attr);
                 String s = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(replace.longValue());
                 entry.addValue(s);
