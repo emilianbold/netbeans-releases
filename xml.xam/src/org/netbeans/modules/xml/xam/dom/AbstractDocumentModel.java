@@ -83,6 +83,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     private boolean needsSync;
     private DocumentListener docListener;
     private javax.swing.text.Document swingDocument;
+    private final Object getAccessLock = new Object();
     
     public AbstractDocumentModel(ModelSource source) {
         super(source);
@@ -567,15 +568,17 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
 
     @Override
-    public synchronized DocumentModelAccess getAccess() {
-        if (access == null) {
-            access = getEffectiveAccessProvider().createModelAccess(this);
-            if (! (access instanceof ReadOnlyAccess)) {
-                access.addUndoableEditListener(this);
-                setIdentifyingAttributes();
+    public DocumentModelAccess getAccess() {
+        synchronized (getAccessLock) {
+            if (access == null) {
+                access = getEffectiveAccessProvider().createModelAccess(this);
+                if (! (access instanceof ReadOnlyAccess)) {
+                    access.addUndoableEditListener(this);
+                    setIdentifyingAttributes();
+                }
             }
+            return access;
         }
-        return access; 
     }
 
     private DocumentModelAccessProvider getEffectiveAccessProvider() {
