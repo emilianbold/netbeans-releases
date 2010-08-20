@@ -68,26 +68,31 @@ public class DwarfRenderer {
     public DwarfRenderer() {
     }
 
-    void dumpModel(PrintStream err) {
-        TreeMap<String, TreeMap<String, Declaration>> res = new TreeMap<String, TreeMap<String, Declaration>>();
-        for(Declaration d : sourceInfoMap) {
-            TreeMap<String, Declaration> map = res.get(d.filePath);
+    public void dumpModel(PrintStream out) {
+        Map<String, Map<String, Declaration>> res = getLWM();
+        for(Map.Entry<String, Map<String, Declaration>> entry : res.entrySet()) {
+            out.println(entry.getKey());
+            for(Map.Entry<String, Declaration> e : entry.getValue().entrySet()) {
+                if (e.getValue().getReferencedType() != null) {
+                    out.println("\t"+e.getValue().getQName()+" ("+e.getValue().getKind()+") "+e.getValue().getReferencedType()+" :"+e.getValue().getLine()); // NOI18N
+                } else {
+                    out.println("\t"+e.getValue().getQName()+" ("+e.getValue().getKind()+") :"+e.getValue().getLine()); // NOI18N
+                }
+            }
+        }
+    }
+
+    public Map<String, Map<String, Declaration>> getLWM() {
+        Map<String, Map<String, Declaration>> res = new TreeMap<String, Map<String, Declaration>>();
+        for (Declaration d : sourceInfoMap) {
+            Map<String, Declaration> map = res.get(d.filePath);
             if (map == null) {
                 map = new TreeMap<String, Declaration>();
                 res.put(d.filePath, map);
             }
             map.put(d.getQName(), d);
         }
-        for(Map.Entry<String, TreeMap<String, Declaration>> entry : res.entrySet()) {
-            System.err.println(entry.getKey());
-            for(Map.Entry<String, Declaration> e : entry.getValue().entrySet()) {
-                if (e.getValue().getReferencedType() != null) {
-                    err.println("\t"+e.getValue().getQName()+" ("+e.getValue().getKind()+") "+e.getValue().getReferencedType()+" :"+e.getValue().getLine()); // NOI18N
-                } else {
-                    err.println("\t"+e.getValue().getQName()+" ("+e.getValue().getKind()+") :"+e.getValue().getLine()); // NOI18N
-                }
-            }
-        }
+        return res;
     }
 
     public void process(CompilationUnit compilationUnit) throws IOException {
@@ -252,7 +257,7 @@ public class DwarfRenderer {
         }
     }
 
-    private static final class Declaration {
+    public static final class Declaration {
         private final int baseLine;
         private final String filePath;
         private final TAG kind;
