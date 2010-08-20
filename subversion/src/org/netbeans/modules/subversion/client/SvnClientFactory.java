@@ -127,19 +127,19 @@ public class SvnClientFactory {
     }
 
     public static boolean isCLI() {
-        init();
+        if(!isClientAvailable()) return false;
         assert factory != null;
         return factory.connectionType() == ConnectionType.cli;
     }
 
     public static boolean isJavaHl() {
-        init();
+        if(!isClientAvailable()) return false;
         assert factory != null;
         return factory.connectionType() == ConnectionType.javahl;
     }
 
     public static boolean isSvnKit() {
-        init();
+        if(!isClientAvailable()) return false;
         assert factory != null;
         return factory.connectionType() == ConnectionType.svnkit;
     }

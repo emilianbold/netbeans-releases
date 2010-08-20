@@ -114,18 +114,11 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     }
 
     static int getCurrentCallStackFrameIndex (JPDADebugger debuggerImpl) {
-        try {
-            JPDAThread t = debuggerImpl.getCurrentThread ();
-            if (t == null) return -1;
-            CallStackFrame csf = debuggerImpl.getCurrentCallStackFrame ();
-            if (csf == null) return -1;
-            CallStackFrame s[] = t.getCallStack ();
-            int i, k = s.length;
-            for (i = 0; i < k; i++)
-                if (csf.equals (s [i])) return i;
-        } catch (AbsentInformationException e) {
-        }
-        return -1;
+        JPDAThread t = debuggerImpl.getCurrentThread ();
+        if (t == null) return -1;
+        CallStackFrame csf = debuggerImpl.getCurrentCallStackFrame ();
+        if (csf == null) return -1;
+        return csf.getFrameDepth();
     }
     
     static void setCurrentCallStackFrameIndex (

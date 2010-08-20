@@ -825,6 +825,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                 } catch (PropertyVetoException pvex) {
                                     throw new RuntimeException(
                                         new InvalidExpressionException (pvex.getMessage()));
+                                } catch (ThreadDeath td) {
+                                    throw td;
+                                } catch (Throwable t) {
+                                    Exceptions.printStackTrace(t);
                                 }
                                 resumedThread[0] = theResumedThread;
                             }
@@ -946,6 +950,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     threadSuspended = true;
                 } catch (PropertyVetoException pvex) {
                     throw new InvalidExpressionException (pvex.getMessage());
+                } catch (RuntimeException rex) {
+                    // Give up
+                    thread.notifyMethodInvokeDone();
+                    throw rex;
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Error e) {
+                    // Give up
+                    thread.notifyMethodInvokeDone();
+                    throw e;
                 }
                 try {
                     Value v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.

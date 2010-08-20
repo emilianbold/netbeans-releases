@@ -81,7 +81,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 
@@ -265,7 +265,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 
                 // author
                 String author = annotateLine.getAuthor();
-                Linker l = linkerSupport.getLinker(AuthorLinker.class, 0);
+                StyledDocumentHyperlink l = linkerSupport.getLinker(AuthorLinker.class, 0);
                 if(master.isKenai()) {
                     KenaiUser kenaiUser = master.getKenaiUser(author);
                     if(kenaiUser != null) {

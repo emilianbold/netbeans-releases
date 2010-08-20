@@ -53,6 +53,7 @@ import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +123,7 @@ public final class FolderObj extends BaseFileObj {
 
   
     public final FileObject[] getChildren() {
-        final List<FileObject> results = new ArrayList<FileObject>();
+        final Collection<FileObject> results = new LinkedHashSet<FileObject>();
 
         final ChildrenCache childrenCache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();

@@ -171,7 +171,9 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
         c.gridwidth = 0;
         c.insets = new Insets (0, 3, 6, 0);
         doNotListen = true;
-        cbAttachTypes.setSelectedIndex (index);
+        if (cbAttachTypes.getItemCount() > 0) {
+            cbAttachTypes.setSelectedIndex (index);
+        }
         doNotListen = false;
         add (cbAttachTypes, c);
         c.insets = new Insets (0, 0, 6, 0);
@@ -181,17 +183,22 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
         c.weighty = 1.0;
         c.fill = java.awt.GridBagConstraints.BOTH;
         c.gridwidth = 0;
-        AttachType attachType = (AttachType) attachTypes.get (index);
-        JComponent customizer = attachType.getCustomizer ();
-        help = HelpCtx.findHelp (customizer);
-        controller = attachType.getController();
-        if (controller == null && (customizer instanceof Controller)) {
-            Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+customizer+" must not implement Controller interface!"));
-            controller = (Controller) customizer;
+        if (cbAttachTypes.getItemCount() == 0) {
+            JLabel noAttachType = new JLabel(NbBundle.getMessage(ConnectorPanel.class, "CTL_Attach_Types_Not_Found"));
+            add (noAttachType, c);
+        } else {
+            AttachType attachType = (AttachType) attachTypes.get (index);
+            JComponent customizer = attachType.getCustomizer ();
+            help = HelpCtx.findHelp (customizer);
+            controller = attachType.getController();
+            if (controller == null && (customizer instanceof Controller)) {
+                Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+customizer+" must not implement Controller interface!"));
+                controller = (Controller) customizer;
+            }
+            firePropertyChange(PROP_TYPE, null, customizer);
+            this.currentAttachType = attachType;
+            add (customizer, c);
         }
-        firePropertyChange(PROP_TYPE, null, customizer);
-        this.currentAttachType = attachType;
-        add (customizer, c);
     }
 
 
