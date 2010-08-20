@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.processor;
+package org.netbeans.modules.openide.filesystems;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
