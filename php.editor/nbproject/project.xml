@@ -442,6 +442,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.php.dbgp</friend>
+                <friend>org.netbeans.modules.php.nette</friend>
                 <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
