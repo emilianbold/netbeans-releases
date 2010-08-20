@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.discovery.wizard.bridge;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -330,7 +331,42 @@ public class DiscoveryProjectGenerator {
                 used.add(path);
             }
         }
+        used.addAll(compureRoots(used));
         return used;
+    }
+
+    private Set<String> compureRoots(Set<String> roots) {
+        Set<String> res = new HashSet<String>();
+        ArrayList<String> root = null;
+        for(String s : roots) {
+            if (root == null) {
+                root = new ArrayList<String>();
+                root.addAll(Arrays.asList(s.split("/"))); // NOI18N
+                continue;
+            }
+            int i = 0;
+            for(String segment : s.split("/")) { // NOI18N
+                if (i < root.size()) {
+                    if (!segment.equals(root.get(i))) {
+                        while(root.size() > i) {
+                            root.remove(root.size()-1);
+                        }
+                    }
+                } else {
+                    break;
+                }
+                i++;
+            }
+        }
+        if (root.size() > 1) {
+            StringBuilder buf = new StringBuilder();
+            for(String s : root) {
+                buf.append(s);
+                buf.append('/');
+            }
+            res.add(buf.toString());
+        }
+        return res;
     }
 
     private Map<String,Folder> prefferedFolders(){
