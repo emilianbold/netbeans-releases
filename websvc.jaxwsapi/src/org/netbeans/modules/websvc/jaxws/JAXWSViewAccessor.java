@@ -54,14 +54,22 @@ public abstract class JAXWSViewAccessor {
 
     public static JAXWSViewAccessor DEFAULT;
     
-    // force loading of WebServicesView class. That will set DEFAULT variable.
-    static {
+    // force loading of JAXWSView class. That will set DEFAULT variable.
+    public static JAXWSViewAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        // invokes static initializer of JAXWSView.class
+        // that will assign value to the DEFAULT field above
         Class c = JAXWSView.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
         }
+        assert DEFAULT != null : "The DEFAULT field must be initialized";
+        return DEFAULT;
     }
     
     public abstract JAXWSView createJAXWSView(JAXWSViewImpl spiWebServicesView);
