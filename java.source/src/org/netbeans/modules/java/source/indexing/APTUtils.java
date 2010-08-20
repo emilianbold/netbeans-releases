@@ -173,6 +173,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         Result options = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
         APTUtils utils = new APTUtils(root, pp, options);
         pp.addPropertyChangeListener(WeakListeners.propertyChange(utils, pp));
+        pp.getRoots();//so that the ClassPath starts listening on the filesystem
         options.addChangeListener(WeakListeners.change(utils, options));
 
         return utils;
