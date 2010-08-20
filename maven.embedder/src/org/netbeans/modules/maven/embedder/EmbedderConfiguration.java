@@ -55,6 +55,7 @@ class EmbedderConfiguration {
     private DefaultPlexusContainer cont;
     private File local;
     private Properties props;
+    private boolean offline;
 
     void setLocalRepository(File file) {
         local = file;
@@ -78,6 +79,13 @@ class EmbedderConfiguration {
 
     void setContainer(DefaultPlexusContainer dpc) {
         cont = dpc;
+    }
+    
+    public boolean isOffline() {
+        return offline;
+    }
+    public void setOffline(boolean offline) {
+        this.offline = offline;
     }
 
 }

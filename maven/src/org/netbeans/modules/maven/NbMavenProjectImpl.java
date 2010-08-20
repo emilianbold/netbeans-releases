@@ -266,6 +266,7 @@ public final class NbMavenProjectImpl implements Project {
             req.setInteractiveMode(false);
             // recursive == false is important to avoid checking all submodules for extensions
             // that will not be used in current pom anyway..
+            req.setOffline(true);
             // #135070
             req.setRecursive(false);
             req.setUserProperties(createSystemPropsForProjectLoading());
@@ -378,6 +379,7 @@ public final class NbMavenProjectImpl implements Project {
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
+            req.setOffline(true);
             req.setUserProperties(createSystemPropsForProjectLoading());
             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
             newproject = res.getProject();
