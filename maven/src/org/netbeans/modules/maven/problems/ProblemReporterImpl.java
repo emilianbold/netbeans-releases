@@ -317,11 +317,10 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
            
             
             if (art.getFile() != null && !art.getFile().exists()) {
-                //TODO create a correction action for this.
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_NoParent"),
                         org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NoParent", art.getId()),
-                        new OpenPomAction(nbproject));
+                        new RevalidateAction(nbproject));
                 addReport(report);
             }
         }
