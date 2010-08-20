@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,6 +34,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.dwarfdump.dwarfconsts;
@@ -47,39 +45,42 @@ package org.netbeans.modules.cnd.dwarfdump.dwarfconsts;
 import java.util.HashMap;
 
 /**
- * value of DW_AT_accessibility
+ * value of DW_AT_inline
+ *
+ * @author Alexander Simon
  */
-public enum ACCESS {
+public enum INL {
+    DW_INL_not_inlined(0x0, "not inlined"), // NOI18N
+    DW_INL_inlined(0x1, "inlined"), // NOI18N
+    DW_INL_declared_not_inlined(0x2, "declared as inline but ignored)"), // NOI18N
+    DW_INL_declared_inlined(0x3, "declared as inline and inlined"); // NOI18N
 
-    DW_ACCESS_public(0x1, "public"), // NOI18N
-    DW_ACCESS_protected(0x2, "protected"), // NOI18N
-    DW_ACCESS_private(0x3, "private"); // NOI18N
-    
-    private static final HashMap<Integer, ACCESS> hashmap = new HashMap<Integer, ACCESS>();
+    private static final HashMap<Integer, INL> hashmap = new HashMap<Integer, INL>();
     private final int value;
     private final String name;
-    
+
     static {
-        for (ACCESS elem : values()) {
+        for (INL elem : values()) {
             hashmap.put(elem.value, elem);
         }
     }
-    
-    ACCESS(int value, String name) {
+
+    INL(int value, String name) {
         this.value = value;
         this.name = name;
     }
-    
-    public static ACCESS get(int val) {
+
+    public static INL get(int val) {
         return hashmap.get(val);
     }
-    
+
     public int value() {
         return value;
     }
-    
+
     @Override
     public String toString() {
         return name;
     }
+
 }
