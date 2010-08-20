@@ -40,13 +40,17 @@
 package org.netbeans.modules.openide.awt;
 
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+import javax.annotation.processing.Completion;
+import javax.annotation.processing.Completions;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -64,6 +68,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -85,6 +90,26 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         hash.add(ActionReference.class.getCanonicalName());
         hash.add(ActionReferences.class.getCanonicalName());
         return hash;
+    }
+    
+    @Override
+    public Iterable<? extends Completion> getCompletions(Element element, AnnotationMirror annotation, ExecutableElement member, String userText) {
+        /*
+        System.err.println("elem: " + element);
+        System.err.println("anno: " + annotation.getAnnotationType().asElement().getSimpleName());
+        System.err.println("member: " + member.getSimpleName());
+        System.err.println("userText: " + userText);
+         */
+        if (annotation.getAnnotationType().asElement().getSimpleName().toString().contains(ActionReference.class.getSimpleName())) {
+            if (member.getSimpleName().contentEquals("path")) {
+                Set<Completion> res = new HashSet<Completion>();
+                res.add(Completions.of("Menu/", NbBundle.getMessage(ActionProcessor.class, "REGISTER ACTION IN MENU")));
+                res.add(Completions.of("Toolbar/", NbBundle.getMessage(ActionProcessor.class, "REGISTER ACTION IN TOOLBAR")));
+                res.add(Completions.of("Shortcuts/", NbBundle.getMessage(ActionProcessor.class, "GIVE ACTION A KEYBOARD SHORTCUT")));
+                return res;
+            }
+        }
+        return Collections.emptyList();
     }
     
     @Override
