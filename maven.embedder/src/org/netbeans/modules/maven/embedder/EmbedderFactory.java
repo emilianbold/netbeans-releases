@@ -56,7 +56,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -108,15 +107,11 @@ public final class EmbedderFactory {
 
     private static MavenEmbedder project;
     private static MavenEmbedder online;
-    private static SettingsFileListener fileListener = new SettingsFileListener();
-    private static Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
     public static MavenEmbedder createExecuteEmbedder() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-
-    /** Creates a new instance of EmbedderFactory */
     private EmbedderFactory() {
     }
 
@@ -144,6 +139,14 @@ public final class EmbedderFactory {
         desc.setImplementationClass(implementationClass.asSubclass(desc.getRoleClass()));
     }
 
+    private static <T> void addComponentDescriptor(ComponentSetDescriptor componentSetDescriptor, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
+        ComponentDescriptor<T> componentDescriptor = new ComponentDescriptor<T>();
+        componentDescriptor.setRoleClass(roleClass);
+        componentDescriptor.setImplementationClass(implementationClass);
+        componentDescriptor.setRoleHint(roleHint);
+        componentSetDescriptor.addComponentDescriptor(componentDescriptor);
+    }
+
     public static class NbLocalArtifactRepository extends LocalArtifactRepository {
         private final Collection<? extends ArtifactFixer> fixers = Lookup.getDefault().lookupAll(ArtifactFixer.class);
         public @Override Artifact find(Artifact artifact) {
@@ -169,6 +172,7 @@ public final class EmbedderFactory {
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
             .setName("mavenCore");
 
+        // addComponentDescriptor does not work in this case, perhaps because there is a default impl already:
         dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
             public @Override void componentDiscovered(ComponentDiscoveryEvent event) {
                 ComponentSetDescriptor set = event.getComponentSetDescriptor();
@@ -182,18 +186,15 @@ public final class EmbedderFactory {
         // Annotations do not seem to work: @Component(role=LocalArtifactRepository.class, hint=LocalArtifactRepository.IDE_WORKSPACE)
         dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
             public @Override List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm) throws PlexusConfigurationException {
-                ComponentDescriptor<LocalArtifactRepository> cd = new ComponentDescriptor<LocalArtifactRepository>();
-                cd.setRoleClass(LocalArtifactRepository.class);
-                cd.setRoleHint(LocalArtifactRepository.IDE_WORKSPACE);
-                cd.setImplementationClass(NbLocalArtifactRepository.class);
                 ComponentSetDescriptor csd = new ComponentSetDescriptor();
-                csd.addComponentDescriptor(cd);
+                addComponentDescriptor(csd, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
                 return Collections.singletonList(csd);
             }
         });
         PlexusContainer pc = new DefaultPlexusContainer(dpcreq);
         try {
             assert pc.lookup(LocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE) instanceof NbLocalArtifactRepository;
+            assert pc.lookup(MavenExecutionRequestPopulator.class) instanceof NbExecutionRequestPopulator;
         } catch (ComponentLookupException x) {
             assert false : x;
         }
@@ -228,21 +229,6 @@ public final class EmbedderFactory {
 //        req.setConfigurationCustomizer(new ContainerCustomizer() {
 //
 //            public void customize(PlexusContainer plexusContainer) {
-//                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
-//                desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
-//
-//                desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
-//                desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
-//
-//                desc = plexusContainer.getComponentDescriptor("org.apache.maven.workspace.MavenWorkspaceStore");
-//                desc.setImplementation(NbMavenWorkspaceStore.class.getName()); //NOI18N
-//
-//                desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
-//                desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
-//
-//                desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-//                desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
-//
 //                //MEVENIDE-634
 //                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
 //                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
