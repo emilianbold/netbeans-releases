@@ -73,12 +73,12 @@ public class FolderObjCacheTest extends NbTestCase {
             
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
         try {
             clearWorkDir();
         } catch (IOException ex) {
             LOG.log(Level.WARNING, "Cannot clear work dir for some reason", ex);
         }
-        LOG = Logger.getLogger("test." + getName());
     }
 
     @Override
