@@ -111,7 +111,7 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
         private Csp getCsp(final Object obj, final String mimeType) {
             synchronized (cache) {
                 Reference<Map<String, Csp>> cspsRef = cache.get(obj);
-                Map<String, Csp> csps = cspsRef.get();
+                Map<String, Csp> csps = cspsRef != null ? cspsRef.get() : null;
                 Csp csp = csps != null ? csps.get(mimeType) : null;
                 if (csp == null) {
                     Document doc;
