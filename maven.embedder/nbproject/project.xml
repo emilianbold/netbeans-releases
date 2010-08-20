@@ -142,40 +142,58 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>../maven/boot/plexus-classworlds-2.2.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>../maven/lib/aether-api-1.1-SNAPSHOT.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../maven/lib/aether-connector-wagon-1.1-SNAPSHOT.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../maven/lib/aether-impl-1.1-SNAPSHOT.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../maven/lib/aether-spi-1.1-SNAPSHOT.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../maven/lib/aether-util-1.1-SNAPSHOT.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>../maven/lib/commons-cli-1.2.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/google-collections-1.0.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/guice-patches-2.1.5-noaop.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-artifact-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-aether-provider-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-compat-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-artifact-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-core-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-compat-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-embedder-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-core-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-model-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-embedder-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-model-builder-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-model-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-plugin-api-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-model-builder-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-repository-metadata-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-plugin-api-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-settings-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-repository-metadata-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-settings-builder-3.0-beta-2.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-settings-3.0-SNAPSHOT.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../maven/lib/maven-settings-builder-3.0-SNAPSHOT.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/nekohtml-1.9.6.2.jar</runtime-relative-path>
@@ -187,9 +205,6 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>../maven/lib/plexus-component-annotations-1.5.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/plexus-container-default-1.5.4.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>../maven/lib/plexus-interpolation-1.11.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
@@ -197,6 +212,12 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/plexus-utils-2.0.4.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../maven/lib/spice-inject-bean-1.3.2.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../maven/lib/spice-inject-plexus-1.3.2.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/wagon-file-1.0-beta-6.jar</runtime-relative-path>
@@ -209,11 +230,6 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/wagon-provider-api-1.0-beta-6.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <!-- Cannot use xbean-reflect-3.4.jar: http://jira.codehaus.org/browse/PLX-453 -->
-                <runtime-relative-path>ext/maven/xbean-reflect-3.5.jar</runtime-relative-path>
-                <binary-origin>external/xbean-reflect-3.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/xercesMinimal-1.9.6.2.jar</runtime-relative-path>
