@@ -50,6 +50,22 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="ActionReference">
+        <api name="awt"/>
+        <summary>New @ActionReference annotations</summary>
+        <version major="7" minor="27"/>
+        <date day="25" month="8" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible"/>
+        <description>
+            <p>
+                New annotation to register references to actions from layer.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="ActionReference"/>
+        <class package="org.openide.awt" name="ActionReferences"/>
+        <issue number="189558"/>
+    </change>
     <change id="ActionRegistration">
         <api name="awt"/>
         <summary>New @ActionRegistration annotations</summary>
