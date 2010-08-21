@@ -57,7 +57,6 @@ import org.openide.filesystems.FileUtil;
 public @interface ActionReference {
     /** Into which location one wants to place the reference?
      * Translates to {@link FileUtil#getConfigFile(java.lang.String)}.
-     * @return
      */
     String path();
     
