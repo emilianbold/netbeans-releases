@@ -85,7 +85,7 @@ public class ActionProcessorTest extends NbTestCase {
     @ActionID(
         id="my.test.Always", category="Tools"
     )
-    @ActionReference(path="My/Folder", position=333)        
+    @ActionReference(path="My/Folder", position=333, name="D-F6")        
     public static final class Always implements ActionListener {
         static int created;
 
@@ -120,7 +120,7 @@ public class ActionProcessorTest extends NbTestCase {
         assertEquals("Action called", 300, Always.cnt);
         
         FileObject shad = FileUtil.getConfigFile(
-            "My/Folder/my-test-Always.shadow"
+            "My/Folder/D-F6.shadow"
         );
         assertNotNull("Shadow created", shad);
         assertEquals("Right position", 333, shad.getAttribute("position"));

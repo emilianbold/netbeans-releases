@@ -70,4 +70,9 @@ public @interface ActionReference {
      * one can specify the id() here.
      */
     ActionID id() default @ActionID(id="",category="");
+    
+    /** One can specify name of the reference. This is not necessary,
+     * then it is deduced from associated {@link ActionID}.
+     */
+    String name() default "";
 }

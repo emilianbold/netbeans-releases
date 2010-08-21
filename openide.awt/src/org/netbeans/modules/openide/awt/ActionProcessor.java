@@ -314,7 +314,11 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 throw new LayerGenerationException("Can't specify id() attribute when @ActionID provided on the element", e);
             }
         }
-        File f = layer(e).file(ref.path() + "/" + aid.id().replace('.', '-') + ".shadow");
+        String name = ref.name();
+        if (name.isEmpty()) {
+            name = aid.id().replace('.', '-');
+        }
+        File f = layer(e).file(ref.path() + "/" + name + ".shadow");
         f.stringvalue("originalFile", "Actions/" + aid.category() + "/" + aid.id().replace('.', '-') + ".instance");
         f.position(ref.position());
         f.write();
