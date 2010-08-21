@@ -42,34 +42,13 @@
 
 package org.netbeans.modules.openide.filesystems;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.Trees;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementScanner6;
-import javax.tools.Diagnostic;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -83,36 +62,10 @@ public class CleaningAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         try {
-            if (!shouldWorkaroundBug()) {
-                return false;
-            }
-
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Attempting to workaround 6512707");
-
-            final Trees t = Trees.instance(processingEnv);
-            final Collection<JCTree> toClean = new LinkedList<JCTree>();
-
-            new ElementScanner6<Void, Void>() {
-                @Override
-                public Void visitExecutable(ExecutableElement e, Void p) {
-                    Tree tree = t.getTree(e);
-
-                    if (tree != null && tree.getKind() == Kind.METHOD) {
-                        JCMethodDecl jcTree = (JCMethodDecl) tree;
-
-                        toClean.add(jcTree.defaultValue);
-                    }
-                    return super.visitExecutable(e, p);
-                }
-            }.scan(roundEnv.getRootElements(), null);
-
-            Method cleanTrees = JavacProcessingEnvironment.class.getDeclaredMethod("cleanTrees", List.class);
-
-            cleanTrees.setAccessible(true);
-            cleanTrees.invoke(null, List.from(toClean.toArray(new JCTree[0])));
-        } catch (Throwable t) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Failed with a Throwable: " + t.getMessage());
-            //presumably OK
+            Runnable impl = new CleaningAnnotationProcessorImpl(processingEnv, roundEnv);
+            impl.run();
+        } catch (LinkageError t) {
+            // not enough classes on classpath. Happens in core.startup tests.
         }
 
         return false;
@@ -122,34 +75,4 @@ public class CleaningAnnotationProcessor extends AbstractProcessor {
     public SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latest();
     }
-
-    private static final AtomicReference<Boolean> HAS_BUG = new AtomicReference<Boolean>();
-
-    private boolean shouldWorkaroundBug() {
-        Boolean result = HAS_BUG.get();
-
-        if (result != null) {
-            return result;
-        }
-        
-        Context ctx = ((JavacProcessingEnvironment) processingEnv).getContext();
-        TreeMaker make = TreeMaker.instance(ctx);
-
-        final JCLiteral val = make.Literal("");
-        JCMethodDecl method = make.MethodDef(null, null, null, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, val);
-        final boolean[] noBug = new boolean[] {false};
-
-        new TreeScanner() {
-            @Override
-            public void scan(JCTree tree) {
-                noBug[0] |= (tree == val);
-                super.scan(tree);
-            }
-        }.scan(method);
-
-        HAS_BUG.compareAndSet(null, Boolean.valueOf(!noBug[0]));
-
-        return HAS_BUG.get();
-    }
-
 }
