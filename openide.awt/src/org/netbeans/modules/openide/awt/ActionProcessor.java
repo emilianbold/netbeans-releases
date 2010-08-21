@@ -237,7 +237,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             }
             ActionReferences refs = e.getAnnotation(ActionReferences.class);
             for (ActionReference actionReference : refs.value()) {
-                if (actionReference.id().id().equals("") || actionReference.id().category().equals("")) {
+                if (actionReference.id().id().isEmpty() || actionReference.id().category().isEmpty()) {
                     throw new LayerGenerationException("Specify real id=@ActionID(...)", e);
                 }
                 processReferences(e, actionReference, actionReference.id());
@@ -309,7 +309,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
     }
 
     private void processReferences(Element e, ActionReference ref, ActionID aid) throws LayerGenerationException {
-        if (!ref.id().category().equals("") && !ref.id().id().equals("")) {
+        if (!ref.id().category().isEmpty() && !ref.id().id().isEmpty()) {
             if (!aid.id().equals(ref.id().id()) || !aid.category().equals(ref.id().category())) {
                 throw new LayerGenerationException("Can't specify id() attribute when @ActionID provided on the element", e);
             }
