@@ -44,20 +44,22 @@ package org.netbeans.modules.maven.embedder.exec;
 
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.maven.repository.ArtifactTransferEvent;
-import org.apache.maven.repository.ArtifactTransferListener;
-import org.apache.maven.repository.ArtifactTransferResource;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.sonatype.aether.TransferCancelledException;
+import org.sonatype.aether.TransferEvent;
+import org.sonatype.aether.TransferListener;
+import org.sonatype.aether.TransferResource;
 
 /**
  *
  * @author mkleint
+ * @author anuradha
  */
-public class ProgressTransferListener implements ArtifactTransferListener {
+public class ProgressTransferListener implements TransferListener {
     
     private static ThreadLocal<Integer> lengthRef = new ThreadLocal<Integer>();
     private static ThreadLocal<Integer> countRef = new ThreadLocal<Integer>();
@@ -116,12 +118,15 @@ public class ProgressTransferListener implements ArtifactTransferListener {
         }
     }
 
-    private String getResourceName(ArtifactTransferResource res) {
-        int lastSlash = res.getName().lastIndexOf("/"); //NOI18N
-        return lastSlash > -1 ? res.getName().substring(lastSlash + 1) : res.getName();
+    private String getResourceName(TransferResource res) {
+        int lastSlash = res.getResourceName().lastIndexOf("/"); //NOI18N
+        return lastSlash > -1 ? res.getResourceName().substring(lastSlash + 1) : res.getResourceName();
     }
     
-    public void transferInitiated(ArtifactTransferEvent ate) {
+
+
+    @Override
+    public void transferInitiated(TransferEvent te) throws TransferCancelledException {
         if (handleRef.get() == null || contribStackRef.get() == null) {
             //maybe log?
             return;
@@ -129,13 +134,13 @@ public class ProgressTransferListener implements ArtifactTransferListener {
         assert handleRef.get() != null;
         assert contribStackRef.get() != null;
         
-        ArtifactTransferResource res = ate.getResource();
+        TransferResource res = te.getResource();
         String resName = getResourceName(res);
         if (!resName.endsWith(".pom")) { //NOI18N
             Stack<ProgressContributor> stack = contribStackRef.get();
             ProgressContributor pc = stack != null && !stack.empty() ? stack.pop() : null;
             if (pc == null) {
-                String name = (ate.getRequestType() == ArtifactTransferEvent.REQUEST_GET
+                String name = (te.getRequestType() == TransferEvent.RequestType.GET
                         ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName)
                         : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
                 pc = AggregateProgressFactory.createProgressContributor(name);
@@ -143,7 +148,7 @@ public class ProgressTransferListener implements ArtifactTransferListener {
             }
             contribRef.set(pc);
         } else {
-            String name = (ate.getRequestType() == ArtifactTransferEvent.REQUEST_GET
+            String name = (te.getRequestType() == TransferEvent.RequestType.GET
                     ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName)
                     : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
             ProgressContributor pc = AggregateProgressFactory.createProgressContributor(name);
@@ -159,15 +164,13 @@ public class ProgressTransferListener implements ArtifactTransferListener {
             }
         }
     }
-    
-    public void transferStarted(ArtifactTransferEvent ate) {
-//        String smer = transferEvent.getRequestType() == TransferEvent.REQUEST_GET ?
-//                              "Downloading: " : "Uploading: "; //NOI18N - ends up in the maven output.
-//        System.out.println(smer + transferEvent.getWagon().getRepository().getUrl() + "/" + transferEvent.getResource().getName()); //NOI18N
+
+    @Override
+    public void transferStarted(TransferEvent te) throws TransferCancelledException {
         if (contribRef.get() == null || handleRef.get() == null) {
             return;
         }
-        ArtifactTransferResource res = ate.getResource();
+        TransferResource res = te.getResource();
         int total = (int)Math.min((long)Integer.MAX_VALUE, res.getContentLength());
         if (total < 0) {
             contribRef.get().start(0);
@@ -178,40 +181,52 @@ public class ProgressTransferListener implements ArtifactTransferListener {
         countRef.set(0);
         contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", getResourceName(res)));
     }
-    
-    public void transferProgress(ArtifactTransferEvent ate) {
-        checkCancel();
+
+    @Override
+    public void transferProgressed(TransferEvent te) throws TransferCancelledException {
+         checkCancel();
         if (contribRef.get() == null) {
             return;
         }
         long cnt = (long)countRef.get();
-        if (ate.getDataLength() > 0) {
-            cnt = cnt + ate.getDataLength();
+        if (te.getDataLength() > 0) {
+            cnt = cnt + te.getDataLength();
         }
         cnt = Math.min((long)Integer.MAX_VALUE, cnt);
         if (lengthRef.get() < 0) {
-            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring", getResourceName(ate.getResource())));
+            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring", getResourceName(te.getResource())));
         } else {
             cnt = Math.min(cnt, (long)lengthRef.get());
-            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", getResourceName(ate.getResource()), cnt), (int)cnt);
+            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", getResourceName(te.getResource()), cnt), (int)cnt);
         }
         countRef.set((int)cnt);
     }
-    
-    public void transferCompleted(ArtifactTransferEvent ate) {
+
+    @Override
+    public void transferCorrupted(TransferEvent te) throws TransferCancelledException {
+       if (contribRef.get() == null) {
+            return;
+        }
+        contribRef.get().finish();
+        contribRef.remove();
+    }
+
+    @Override
+    public void transferSucceeded(TransferEvent te) {
         if (contribRef.get() == null) {
             return;
         }
         contribRef.get().finish();
         contribRef.remove();
     }
-    
-    public boolean isShowChecksumEvents() {
-        return false;
-    }
 
-    public void setShowChecksumEvents(boolean bln) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public void transferFailed(TransferEvent te) {
+        if (contribRef.get() == null) {
+            return;
+        }
+        contribRef.get().finish();
+        contribRef.remove();
     }
 
 }

@@ -64,7 +64,6 @@ import org.apache.maven.lifecycle.mapping.Lifecycle;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuilder;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -76,7 +75,6 @@ import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.building.SettingsBuildingException;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
-import org.apache.maven.repository.ArtifactTransferListener;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.openide.util.Exceptions;
@@ -183,11 +181,8 @@ public final class MavenEmbedder {
 //        return result;
 //    }
     
+ 
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
-        return readProjectWithDependencies(req, null);
-    }
-    
-    public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req, ArtifactTransferListener transferListener) {
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
         try {
@@ -196,11 +191,7 @@ public final class MavenEmbedder {
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             configuration.setResolveDependencies(true);
-            
-            //make sure to set transferListener
-            if(configuration instanceof DefaultProjectBuildingRequest){
-                ((DefaultProjectBuildingRequest)configuration).setTransferListener(transferListener);
-            }
+
             try {
                 ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
                 result.setProject(projectBuildingResult.getProject());
