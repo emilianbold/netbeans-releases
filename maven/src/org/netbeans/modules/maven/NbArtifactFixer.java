@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven;
 
 import java.io.File;
-import org.apache.maven.ReactorArtifactRepository;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.netbeans.modules.maven.embedder.ArtifactFixer;

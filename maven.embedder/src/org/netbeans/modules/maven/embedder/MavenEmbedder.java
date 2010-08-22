@@ -75,6 +75,7 @@ import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.building.SettingsBuildingException;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
+import org.apache.maven.repository.ArtifactTransferListener;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.openide.util.Exceptions;
@@ -120,7 +121,8 @@ public final class MavenEmbedder {
             configuration.setOffline(embedderConfiguration.isOffline());
             ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
             result.setProject(projectBuildingResult.getProject());
-            result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
+            result.setDependencyResolutionResult(projectBuildingResult.getDependencyResolutionResult());
+     
         } catch (ProjectBuildingException ex) {
             return result.addException(ex);
         } catch (MavenExecutionRequestPopulationException ex) {
@@ -179,7 +181,12 @@ public final class MavenEmbedder {
 //
 //        return result;
 //    }
+    
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
+        return readProjectWithDependencies(req, null);
+    }
+    
+    public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req, ArtifactTransferListener transferListener) {
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
         try {
@@ -191,13 +198,13 @@ public final class MavenEmbedder {
             try {
                 ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
                 result.setProject(projectBuildingResult.getProject());
-                result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
+                result.setDependencyResolutionResult(projectBuildingResult.getDependencyResolutionResult());
             } catch (ProjectBuildingException projectBuildingException) {
                 //faill back to online embedder 
                 req.setOffline(false);
                 ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
                 result.setProject(projectBuildingResult.getProject());
-                result.setArtifactResolutionResult(projectBuildingResult.getArtifactResolutionResult());
+                result.setDependencyResolutionResult(projectBuildingResult.getDependencyResolutionResult());
             }
         } catch (ProjectBuildingException ex) {
             //don't add the exception here. this should come out as a build marker, not fill
