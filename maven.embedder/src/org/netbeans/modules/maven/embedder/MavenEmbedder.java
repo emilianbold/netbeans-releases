@@ -64,6 +64,7 @@ import org.apache.maven.lifecycle.mapping.Lifecycle;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuilder;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -195,6 +196,11 @@ public final class MavenEmbedder {
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             configuration.setResolveDependencies(true);
+            
+            //make sure to set transferListener
+            if(configuration instanceof DefaultProjectBuildingRequest){
+                ((DefaultProjectBuildingRequest)configuration).setTransferListener(transferListener);
+            }
             try {
                 ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
                 result.setProject(projectBuildingResult.getProject());
