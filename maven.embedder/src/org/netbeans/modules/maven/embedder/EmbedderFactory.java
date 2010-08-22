@@ -51,7 +51,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +63,6 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import java.util.prefs.Preferences;
 import org.apache.maven.execution.MavenExecutionRequestPopulator;
@@ -78,12 +76,8 @@ import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
-import org.codehaus.plexus.PlexusContainer;
 
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
-import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
-import org.codehaus.plexus.configuration.PlexusConfigurationException;
-import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -137,12 +131,12 @@ public final class EmbedderFactory {
         desc.setImplementationClass(implementationClass.asSubclass(desc.getRoleClass()));
     }
 
-    private static <T> void addComponentDescriptor(ComponentSetDescriptor componentSetDescriptor, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
+    private static <T> void addComponentDescriptor(DefaultPlexusContainer container, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
         ComponentDescriptor<T> componentDescriptor = new ComponentDescriptor<T>();
         componentDescriptor.setRoleClass(roleClass);
         componentDescriptor.setImplementationClass(implementationClass);
         componentDescriptor.setRoleHint(roleHint);
-        componentSetDescriptor.addComponentDescriptor(componentDescriptor);
+        container.addComponentDescriptor(componentDescriptor);
     }
 
     public static class NbLocalArtifactRepository extends LocalArtifactRepository {
@@ -168,28 +162,24 @@ public final class EmbedderFactory {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
-            .setName("mavenCore");
+            .setName("maven");
 
-        // addComponentDescriptor does not work in this case, perhaps because there is a default impl already:
-        dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
-            public @Override void componentDiscovered(ComponentDiscoveryEvent event) {
-                ComponentSetDescriptor set = event.getComponentSetDescriptor();
-                for (ComponentDescriptor<?> desc : set.getComponents()) {
-                    if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
-                        setImplementationClass(desc, NbExecutionRequestPopulator.class);
-                    }
-                }
-            }
-        });
-        // Annotations do not seem to work: @Component(role=LocalArtifactRepository.class, hint=LocalArtifactRepository.IDE_WORKSPACE)
-        dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
-            public @Override List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm) throws PlexusConfigurationException {
-                ComponentSetDescriptor csd = new ComponentSetDescriptor();
-                addComponentDescriptor(csd, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
-                return Collections.singletonList(csd);
-            }
-        });
-        PlexusContainer pc = new DefaultPlexusContainer(dpcreq);
+        
+        
+        
+        
+        
+        DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
+        
+        List<ComponentDescriptor<?>> descriptors = pc.getComponentDescriptorList(MavenExecutionRequestPopulator.class.getName());
+        
+        for (ComponentDescriptor<?> desc : descriptors) {        
+            setImplementationClass(desc, NbExecutionRequestPopulator.class);    
+        }
+       
+        //addComponentDescriptor(pc, MavenExecutionRequestPopulator.class, NbExecutionRequestPopulator.class, null);
+        addComponentDescriptor(pc, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
+        
         try {
             assert pc.lookup(LocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE) instanceof NbLocalArtifactRepository;
             assert pc.lookup(MavenExecutionRequestPopulator.class) instanceof NbExecutionRequestPopulator;
@@ -277,21 +267,15 @@ public final class EmbedderFactory {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
-            .setName("mavenCore");
+            .setName("maven");
 
-
-        dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
-            public @Override void componentDiscovered(ComponentDiscoveryEvent event) {
-                ComponentSetDescriptor set = event.getComponentSetDescriptor();
-                for (ComponentDescriptor<?> desc : set.getComponents()) {
-                    if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
-                        setImplementationClass(desc, NbExecutionRequestPopulator.class);
-                    }
-                }
-            }
-        });
         DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
-
+        List<ComponentDescriptor<?>> cds = dpc.getComponentDescriptorList(MavenExecutionRequestPopulator.class.getName());
+        
+        for (ComponentDescriptor<?> desc : cds) {          
+            setImplementationClass(desc, NbExecutionRequestPopulator.class); 
+        }
+        
         EmbedderConfiguration req = new EmbedderConfiguration();
         req.setContainer(dpc);
         setLocalRepoPreference(req);
