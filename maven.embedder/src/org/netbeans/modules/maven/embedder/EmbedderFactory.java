@@ -48,7 +48,11 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -127,14 +131,14 @@ public final class EmbedderFactory {
         }
     }
 
-    private static <T> void setImplementationClass(ComponentDescriptor<T> desc, Class<?> implementationClass) { // type-safe accessor
-        desc.setImplementationClass(implementationClass.asSubclass(desc.getRoleClass()));
+    private static <T> void setImplementationClass(ComponentDescriptor<T> desc, Class<T> roleClass, Class<? extends T> implementationClass) { // type-safe accessor
+        desc.setImplementationClass(implementationClass.asSubclass(roleClass));
     }
 
     private static <T> void addComponentDescriptor(DefaultPlexusContainer container, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
         ComponentDescriptor<T> componentDescriptor = new ComponentDescriptor<T>();
         componentDescriptor.setRoleClass(roleClass);
-        componentDescriptor.setImplementationClass(implementationClass);
+        setImplementationClass(componentDescriptor, roleClass, implementationClass);
         componentDescriptor.setRoleHint(roleHint);
         container.addComponentDescriptor(componentDescriptor);
     }
@@ -161,7 +165,7 @@ public final class EmbedderFactory {
     public static MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
-            .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
+            .setClassWorld( new ClassWorld(mavenCoreRealmId, getMavenClassLoader()) )
             .setName("maven");
 
         
@@ -171,18 +175,12 @@ public final class EmbedderFactory {
         
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
         
-        List<ComponentDescriptor<?>> descriptors = pc.getComponentDescriptorList(MavenExecutionRequestPopulator.class.getName());
-        
-        for (ComponentDescriptor<?> desc : descriptors) {        
-            setImplementationClass(desc, NbExecutionRequestPopulator.class);    
-        }
-       
-        //addComponentDescriptor(pc, MavenExecutionRequestPopulator.class, NbExecutionRequestPopulator.class, null);
         addComponentDescriptor(pc, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
-        
+       
         try {
+            
             assert pc.lookup(LocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE) instanceof NbLocalArtifactRepository;
-            assert pc.lookup(MavenExecutionRequestPopulator.class) instanceof NbExecutionRequestPopulator;
+           
         } catch (ComponentLookupException x) {
             assert false : x;
         }
@@ -266,18 +264,13 @@ public final class EmbedderFactory {
     /*public*/ static MavenEmbedder createOnlineEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
-            .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
+            .setClassWorld( new ClassWorld(mavenCoreRealmId, getMavenClassLoader()) )
             .setName("maven");
 
-        DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
-        List<ComponentDescriptor<?>> cds = dpc.getComponentDescriptorList(MavenExecutionRequestPopulator.class.getName());
-        
-        for (ComponentDescriptor<?> desc : cds) {          
-            setImplementationClass(desc, NbExecutionRequestPopulator.class); 
-        }
+        DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
         
         EmbedderConfiguration req = new EmbedderConfiguration();
-        req.setContainer(dpc);
+        req.setContainer(pc);
         setLocalRepoPreference(req);
 
 //        //TODO remove explicit activation
@@ -320,6 +313,35 @@ public final class EmbedderFactory {
 
         return embedder;
     }
+    
+    private static ClassLoader getMavenClassLoader(){
+       ClassLoader classLoader = EmbedderFactory.class.getClassLoader();
+        File maven = InstalledFileLocator.getDefault().locate("maven", "org.netbeans.modules.maven.embedder", false); // NOI18N
+        //FIXME do we have better way to do this ?,
+        //EmbedderFactory.class.getClassLoader() dose not load maven system components
+        try {
+            File libDri = new File(maven, "lib");
+            List<URL> urls = new ArrayList<URL>();
+            for (File file : libDri.listFiles(new FileFilter() {
+
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().endsWith(".jar");
+                }
+            })) {
+                urls.add(file.toURI().toURL());
+
+            }
+
+            URLClassLoader ucl = new URLClassLoader(urls.toArray(new URL[0]),classLoader);
+            return ucl;
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return classLoader;
+    }
+    
 //
 //    public static MavenEmbedder createExecuteEmbedder(MavenEmbedderLogger logger) /*throws MavenEmbedderException*/ {
 //        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
