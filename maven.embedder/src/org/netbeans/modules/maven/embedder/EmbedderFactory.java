@@ -69,7 +69,6 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import java.util.prefs.Preferences;
-import org.apache.maven.execution.MavenExecutionRequestPopulator;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
@@ -131,14 +130,12 @@ public final class EmbedderFactory {
         }
     }
 
-    private static <T> void setImplementationClass(ComponentDescriptor<T> desc, Class<T> roleClass, Class<? extends T> implementationClass) { // type-safe accessor
-        desc.setImplementationClass(implementationClass.asSubclass(roleClass));
-    }
+   
 
     private static <T> void addComponentDescriptor(DefaultPlexusContainer container, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
         ComponentDescriptor<T> componentDescriptor = new ComponentDescriptor<T>();
         componentDescriptor.setRoleClass(roleClass);
-        setImplementationClass(componentDescriptor, roleClass, implementationClass);
+        componentDescriptor.setImplementationClass(implementationClass.asSubclass(roleClass));
         componentDescriptor.setRoleHint(roleHint);
         container.addComponentDescriptor(componentDescriptor);
     }
