@@ -343,6 +343,7 @@ public class DwarfRenderer {
 
         private String initPath(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException{
             String res = _initPath(filePath, compDir, entry);
+            res.replace('\\', '/');
             if (res.indexOf("/../")>=0 || res.indexOf("/./")>=0) { // NOI18N
                 res = normalizeFile(res);
             }
