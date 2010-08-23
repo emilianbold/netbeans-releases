@@ -1117,10 +1117,10 @@ abstract public class CsmCompletionQuery {
                     CsmCompletionExpression item = exp.getParameter(0);
                     String name = item.getTokenText(0);
                     List res = finder.findLabel(contextElement, name, false, false);
-                    result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, 
+                    result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, // NOI18N
                             name.isEmpty() ? endOffset : item.getTokenOffset(0), 
                             name.isEmpty() ? 0 : item.getTokenLength(0),
-                            0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                            0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                     break;
                 }
 
