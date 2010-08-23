@@ -1114,9 +1114,13 @@ abstract public class CsmCompletionQuery {
                 }
 
                 case CsmCompletionExpression.LABEL: {
-                    String name = exp.getParameter(0).getTokenText(0);
+                    CsmCompletionExpression item = exp.getParameter(0);
+                    String name = item.getTokenText(0);
                     List res = finder.findLabel(contextElement, name, false, false);
-                    result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                    result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, 
+                            name.isEmpty() ? endOffset : item.getTokenOffset(0), 
+                            name.isEmpty() ? 0 : item.getTokenLength(0),
+                            0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                     break;
                 }
 
