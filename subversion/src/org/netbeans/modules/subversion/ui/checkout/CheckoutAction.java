@@ -78,22 +78,27 @@ public final class CheckoutAction extends CallableSystemAction {
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) return;
         
-        SVNUrl repository = wizard.getRepositoryRoot();
-        RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
-        File workDir = wizard.getWorkdir();
-        boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
-        boolean doExport = wizard.isExport();
-        boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
+        final SVNUrl repository = wizard.getRepositoryRoot();
+        final RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
+        final File workDir = wizard.getWorkdir();
+        final boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
+        final boolean doExport = wizard.isExport();
+        final boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
 
-        SvnClient client;
-        try {
-            client = Subversion.getInstance().getClient(repository);
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
-            return;
-        }
-
-        performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted);
+        Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                SvnClient client;
+                try {
+                    // this needs to be done in a background thread, otherwise the password won't be acquired from the keyring
+                    client = Subversion.getInstance().getClient(repository);
+                } catch (SVNClientException ex) {
+                    SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
+                    return;
+                }
+                performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted);
+            }
+        });
     }
     
     public String getName() {
