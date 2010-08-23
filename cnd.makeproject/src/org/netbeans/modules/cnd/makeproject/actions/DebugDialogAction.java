@@ -68,15 +68,15 @@ import org.openide.util.actions.NodeAction;
 
 public class DebugDialogAction extends NodeAction {
 
-    protected JButton runButton = null;
+    protected JButton debugButton = null;
     private Object options[];
 
     private void init() {
-        if (runButton == null) {
-            runButton = new JButton(getString("RunButtonText")); // NOI18N
-            runButton.getAccessibleContext().setAccessibleDescription(getString("RunButtonAD"));
+        if (debugButton == null) {
+            debugButton = new JButton(getString("DebugButtonText")); // NOI18N
+            debugButton.getAccessibleContext().setAccessibleDescription(getString("DebugButtonAD"));
             options = new Object[]{
-                        runButton,
+                        debugButton,
                         DialogDescriptor.CANCEL_OPTION,};
         }
     }
@@ -126,27 +126,27 @@ public class DebugDialogAction extends NodeAction {
     }
 
     public void perform(String executablePath) {
-        if (runButton == null) {
+        if (debugButton == null) {
             init();
         }
-        perform(new RunDialogPanel(executablePath, runButton, true));
+        perform(new RunDialogPanel(executablePath, debugButton, true));
     }
 
     protected void perform(RunDialogPanel runDialogPanel) {
-        if (runButton == null) {
+        if (debugButton == null) {
             init();
         }
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 runDialogPanel,
-                getString("RunDialogTitle"),
+                getString("DebugDialogTitle"),
                 true,
                 options,
-                runButton,
+                debugButton,
                 DialogDescriptor.BOTTOM_ALIGN,
                 null,
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
-        if (ret == runButton) {
+        if (ret == debugButton) {
             Project project = runDialogPanel.getSelectedProject();
             MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
             if (conf != null) {
@@ -155,7 +155,7 @@ public class DebugDialogAction extends NodeAction {
                 path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
-                        PredefinedType.RUN,
+                        PredefinedType.DEBUG,
                         path, conf,
                         profile,
                         false);
