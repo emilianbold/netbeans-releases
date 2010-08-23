@@ -143,14 +143,23 @@ public abstract class Scheduler {
         if (task != null)
             task.cancel ();
         task = null;
+        if (requestProcessor == null)
+            requestProcessor = new RequestProcessor ();
+        if (this.source != source && this.source != null) {
+            final Source orig = this.source;
+            requestProcessor.create(new Runnable() {
+                public void run() {
+                    SourceCache cache = SourceAccessor.getINSTANCE().getCache(orig);
+                    cache.unscheduleTasks(Scheduler.this.getClass());
+                }
+            }).schedule(0);
+        }
         if (source == null) {
             this.source = null;
             return ;
         }
         this.source = source;
         //if (task == null) {
-            if (requestProcessor == null)
-                requestProcessor = new RequestProcessor ();
             task = requestProcessor.create (new Runnable () {
                 public void run () {
                     SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
