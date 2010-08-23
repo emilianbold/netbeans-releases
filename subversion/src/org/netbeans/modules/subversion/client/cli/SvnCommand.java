@@ -152,6 +152,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return true;
     }
     
+    @Override
     public void commandStarted() {
         assert !commandExecuted : "Command re-use is not supported";
         commandExecuted = true;
@@ -159,6 +160,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         notificationHandler.logCommandLine(cmdString);        
     }
 
+    @Override
     public void outputText(String lineString) {
         Subversion.LOG.fine("outputText [" + lineString + "]");
         if(!notifyOutput()) {
@@ -179,6 +181,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         
     }
 
+    @Override
     public void errorText(String line) {
         cmdError.add(line);
         if (isErrorMessage(line)) hasFailed = true;
@@ -199,6 +202,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return exitCode;
     }
 
+    @Override
     public void commandFinished() {
         notificationHandler.logCompleted("");        
     }
@@ -445,6 +449,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
             add(psswd);                      		
         }
     
+        @Override
         public Iterator<String> iterator() {
             return args.iterator();
         }
