@@ -446,6 +446,26 @@ public final class SourceCache {
         }
     }
 
+    public void unscheduleTasks (Class<? extends Scheduler> schedulerType) {
+        //S ystem.out.println("unscheduleTasks " + schedulerType);
+        final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
+            if (tasks != null) {
+                for (SchedulerTask task : tasks) {
+                    if (schedulerType == null ||
+                        task.getSchedulerClass () == schedulerType ||
+                        task instanceof EmbeddingProvider
+                    ) {
+                        remove.add (task);
+                    }
+                }
+            }
+        }
+        if (!remove.isEmpty ()) {
+            TaskProcessor.removePhaseCompletionTasks(remove, source);
+        }
+    }
+
     //jjancura: probably has race condition too
     public void sourceModified () {
         SourceModificationEvent sourceModificationEvent = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);

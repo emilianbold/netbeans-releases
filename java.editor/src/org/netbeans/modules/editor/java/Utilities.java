@@ -378,7 +378,6 @@ public final class Utilities {
             case INVALID_COMMENT_END:
             case JAVADOC_COMMENT:
             case LONG_LITERAL:
-            case STRING_LITERAL:
             case LINE_COMMENT:
             case BLOCK_COMMENT:
                 return false;
