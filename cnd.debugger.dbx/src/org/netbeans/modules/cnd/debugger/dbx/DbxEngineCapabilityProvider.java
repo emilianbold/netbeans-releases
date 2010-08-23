@@ -65,6 +65,7 @@ public final class DbxEngineCapabilityProvider implements EngineCapabilityProvid
             switch (capability) {
                 case DERIVE_EXECUTABLE:
                 case RTC_SUPPORT:
+		case RUN_AUTOSTART:
                     return true;
                 default:
                     return false;
