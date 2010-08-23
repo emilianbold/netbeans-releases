@@ -92,6 +92,7 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Hyperlink;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -271,6 +272,7 @@ public class SummaryCellRenderer implements TreeCellRenderer {
             int[] issuespans = null;
             VCSHyperlinkProvider hyperlinkProvider = null;
             String issuesMsgValue = null;
+
             for (VCSHyperlinkProvider hp : getHyperlinkProviders()) {
                 issuespans = hp.getSpans(entry.getMessage()); // compute spans from untouched message text
                 if (issuespans == null) {
@@ -316,18 +318,6 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                 }
 
             }
-            // hilite message
-            if (hiliteMessage != null && !selected) {
-                int idx = entry.getMessage().indexOf(hiliteMessage);
-                if (idx != -1) {
-                    messageValue =
-                            messageValue.substring(0, idx) +
-                            "<font bgcolor=\"" + hiliteBackgroundColor + "\" color=\"" + hiliteForegroundColor+ "\">" +
-                            messageValue.substring(idx, idx + hiliteMessage.length()) +
-                            "</font>" +
-                            messageValue.substring(idx + hiliteMessage.length());
-                }
-            }
             if(nlc > 0 && !entry.messageExpanded) {
                 messageValue = messageValue + " <font color=\"" + (selected ? selectionForeground : linkColor) + "\" id=\"expandmsg\">...</font>";
             }
@@ -351,6 +341,10 @@ public class SummaryCellRenderer implements TreeCellRenderer {
             textPane.setText(txt);
 
             HTMLDocument document = (HTMLDocument) textPane.getDocument();
+
+            // hilite search results
+            hiliteSearch(document, selected);
+
             Element  e = document.getElement("author");
             if(e != null) {
                 if(kenaiUser != null) {
@@ -397,6 +391,22 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                 textPane.setPreferredSize(new Dimension(width, ph));
             }
             return textPane;
+        }
+
+        public void hiliteSearch(HTMLDocument document, boolean selected) {
+            if (hiliteMessage != null && !selected) {
+                String message = null;
+                try {
+                    message = document.getText(0, document.getLength());
+                } catch (BadLocationException ex) {
+                    AbstractSummaryView.LOG.log(Level.OFF, null, ex);
+                    return;
+                }
+                int idx = message.indexOf(hiliteMessage);
+                if (idx != -1) {
+                    document.setCharacterAttributes(idx, hiliteMessage.length(), searchHiliteAttrs, true);
+                }
+            }
         }
 
         public Collection<VCSHyperlinkProvider> getHyperlinkProviders() {
