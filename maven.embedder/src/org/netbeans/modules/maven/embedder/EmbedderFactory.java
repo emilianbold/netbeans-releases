@@ -48,9 +48,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -59,6 +57,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.jar.Attributes.Name;
+import java.util.jar.Manifest;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -311,32 +311,39 @@ public final class EmbedderFactory {
         return embedder;
     }
     
-    private static ClassLoader getMavenClassLoader(){
-       ClassLoader classLoader = EmbedderFactory.class.getClassLoader();
-        File maven = InstalledFileLocator.getDefault().locate("maven", "org.netbeans.modules.maven.embedder", false); // NOI18N
-        //FIXME do we have better way to do this ?,
-        //EmbedderFactory.class.getClassLoader() dose not load maven system components
+    private static ClassLoader getMavenClassLoader() {
+        Class<?>[] baseClasses = new Class<?>[] {EmbedderFactory.class};
+        // org.sonatype.guice.bean.reflect.URLClassSpace assumes URLClassLoader, not the NB module class loader.
+        // We must provide all JARs which might be using @javax.inject.Inject to register components, so guice-bean-scanners can find them.
         try {
-            File libDri = new File(maven, "lib");
             List<URL> urls = new ArrayList<URL>();
-            for (File file : libDri.listFiles(new FileFilter() {
-
-                @Override
-                public boolean accept(File pathname) {
-                    return pathname.getName().endsWith(".jar");
+            for (Class<?> baseClass : baseClasses) {
+                URL base = baseClass.getProtectionDomain().getCodeSource().getLocation();
+                Manifest m = new Manifest(new URL(base, "META-INF/MANIFEST.MF").openStream());
+                String baseS = base.toString();
+                if (baseS.matches("jar:.+!/")) {
+                    base = new URL(baseS.substring(4, baseS.length() - 2));
                 }
-            })) {
-                urls.add(file.toURI().toURL());
-
+                urls.add(base); // necessary only if we use @Inject in NB code
+                String cp = m.getMainAttributes().getValue(Name.CLASS_PATH);
+                if (cp != null) {
+                    for (String piece : cp.split(" +")) {
+                        urls.add(new URL(base, piece));
+                    }
+                }
             }
-
-            URLClassLoader ucl = new URLClassLoader(urls.toArray(new URL[0]),classLoader);
+//            System.err.println("loading from: " + urls);
+            URLClassLoader ucl = new URLClassLoader(urls.toArray(new URL[0]), baseClasses[0].getClassLoader()) {
+                protected @Override synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                    Class<?> c = super.loadClass(name, resolve);
+                    assert c.getClassLoader() != this : name + " loaded from " + c.getClassLoader();
+                    return c;
+                }
+            };
             return ucl;
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (IOException x) {
+            throw new AssertionError(x);
         }
-        
-        return classLoader;
     }
     
 //
