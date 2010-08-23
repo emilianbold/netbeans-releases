@@ -63,7 +63,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -101,12 +100,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         checkSourceDownloads();
         checkJavadocDownloads();
         attachUpdater();
-        MavenFileOwnerQueryImpl q = MavenFileOwnerQueryImpl.getInstance();
-        if (q != null) {
-            q.addMavenProject(project);
-        } else {
-            ErrorManager.getDefault().log("MavenFileOwnerQueryImpl not found..");  //NOI18N
-        }
+        MavenFileOwnerQueryImpl.getInstance().registerProject(project);
         Set<URI> uris = new HashSet<URI>();
         uris.addAll(Arrays.asList(project.getSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getSourceRoots(true)));
@@ -149,12 +143,6 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     
     protected void projectClosed() {
         uriReferences.clear();
-        MavenFileOwnerQueryImpl q = MavenFileOwnerQueryImpl.getInstance();
-        if (q != null) {
-            q.removeMavenProject(project);
-        } else {
-            ErrorManager.getDefault().log("MavenFileOwnerQueryImpl not found.."); //NOI18N
-        }
         detachUpdater();
         // unregister project's classpaths to GlobalPathRegistry
         ClassPathProviderImpl cpProvider = project.getLookup().lookup(org.netbeans.modules.maven.classpath.ClassPathProviderImpl.class);
