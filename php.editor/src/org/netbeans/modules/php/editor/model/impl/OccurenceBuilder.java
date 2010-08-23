@@ -76,6 +76,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.model.ClassMemberElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
@@ -969,14 +970,6 @@ class OccurenceBuilder {
 
     }
 
-    private static ElementFilter createTypeFilter(Collection<TypeElement> types, boolean forTypeMembers) {
-        List<ElementFilter> typeFilters = new ArrayList<ElementFilter>();
-        for (TypeElement typeElement : types) {
-            typeFilters.add(forTypeMembers ? ElementFilter.forMembersOfType(typeElement) : ElementFilter.forEqualTypes(typeElement));
-        }
-        return ElementFilter.anyOf(typeFilters);
-    }
-
     private void buildFieldInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, Occurence.Accuracy accuracy, final List<Occurence> occurences) {
         final Set<? extends PhpElement> declarations = nodeCtxInfo.getDeclarations();
         Map<QualifiedName, TypeElement> notMatchingTypeNames = new HashMap<QualifiedName, TypeElement>();
@@ -1030,21 +1023,63 @@ class OccurenceBuilder {
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
         for (PhpElement phpElement : elements) {
             if (phpElement instanceof MethodElement) {
-                MethodElement method = (MethodElement) phpElement;
-                TypeElement typeElement = method.getType();
-                Exact typeName = NameKind.exact(typeElement.getFullyQualifiedName());
+                final MethodElement method = (MethodElement) phpElement;
+                final ElementFilter typeFilter = createTypeFilter(method.getType(), false);
                 Exact methodName = NameKind.exact(method.getName());
                 for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
                     ASTNodeInfo<MethodDeclaration> nodeInfo = entry.getKey();
-                    TypeScope typeScope = (TypeScope) entry.getValue().getInScope();
-                    if (typeName.matchesName(typeScope)) {
-                        if (methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
+                    if (methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
+                        if (typeFilter.isAccepted((TypeScope) entry.getValue().getInScope())) {
                             occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
                         }
                     }
                 }
             }
         }
+    }
+
+    private static ElementFilter createTypeFilter(Collection<TypeElement> types, boolean forTypeMembers) {
+        List<ElementFilter> typeFilters = new ArrayList<ElementFilter>();
+        for (TypeElement typeElement : types) {
+            typeFilters.add(createTypeFilter(typeElement, forTypeMembers));
+        }
+        return ElementFilter.anyOf(typeFilters);
+    }
+
+    private static ElementFilter createTypeFilter(final TypeElement typeToCompareWith, boolean forTypeMembers) {
+        final ElementFilter typeFilter = new ElementFilter() {
+
+            final ElementFilter filterDelegate = ElementFilter.anyOf(
+                    ElementFilter.forEqualTypes(typeToCompareWith)/*,
+                    ElementFilter.forSuperInterfaceName(typeToCompareWith.getFullyQualifiedName()),
+                    ElementFilter.forSuperClassName(typeToCompareWith.getFullyQualifiedName())*/
+                    );
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeElement) {
+                    final TypeElement typeElement = (TypeElement) element;
+                    if (filterDelegate.isAccepted(element)) {
+                        return true;
+                    }
+                    ElementQuery elementQuery = typeToCompareWith.getElementQuery();
+                    if (elementQuery instanceof ElementQuery.Index) {
+                        return !ElementFilter.forEqualTypes(typeElement).filter(((Index) elementQuery).getInheritedByTypes(typeToCompareWith)).isEmpty();
+                    }
+                }
+                return false;
+            }
+        };
+        return !forTypeMembers ? typeFilter : new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    return typeFilter.isAccepted(((TypeMemberElement) element).getType());
+                }
+                return true;
+            }
+        };
     }
 
     private void buildStaticFieldInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {

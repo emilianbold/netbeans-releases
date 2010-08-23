@@ -571,6 +571,16 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 //Last fix of #138686 makes sure doc is not gc'ed till we keep reference to prepareDocument task
                 //so we can use support.getDocument instead of support.openDocument
                 doc = support.getDocument();
+                if (doc == null && LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE,"DoInitialize.initNonVisual CANNOT set kit because doc is null!"
+                    + " Time:" + System.currentTimeMillis()
+                    + " Thread:" + Thread.currentThread().getName()
+                    + " ce:[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                    + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
+                    + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
+                    + " Name:" + CloneableEditor.this.getName()
+                    + " kit:" + kit);
+                }
                 assert doc != null;
                 kit = k;
                 initialized = true;

@@ -70,31 +70,50 @@ import org.openide.util.NbBundle;
  */
 public class VCSHyperlinkSupport {
     private static Logger LOG = Logger.getLogger(VCSHyperlinkSupport.class.getName());
-    private Map<Integer, List<Linker>> linkers = new HashMap<Integer, List<Linker>>();
+    private Map<String, List<Hyperlink>> linkers = new HashMap<String, List<Hyperlink>>();
 
-    public <T extends Linker> T getLinker(Class<T> t, int idx) {
-        List<Linker> list = linkers.get(idx);
+    public <T extends Hyperlink> T getLinker(Class<T> t, int idx) {
+        return getLinker(t, Integer.toString(idx));
+    }
+
+    public <T extends Hyperlink> T getLinker(Class<T> t, String idx) {
+        List<Hyperlink> list = linkers.get(idx);
         if(list == null) return null;
-        for (Linker linker : list) {
+        for (Hyperlink linker : list) {
             if(linker.getClass() == t) return (T) linker;
         }
         return null;
     }
 
-    public void add(Linker l, int idx) {
+    public void add(Hyperlink l, int idx) {
+        add(l, Integer.toString(idx));
+    }
+
+    public void add(Hyperlink l, String idx) {
         if(l == null) return;
-        List<Linker> list = linkers.get(idx);
+        List<Hyperlink> list = linkers.get(idx);
         if(list == null) {
-            list = new ArrayList<Linker>();
+            list = new ArrayList<Hyperlink>();
         }
         list.add(l);
         linkers.put(idx, list);
     }
 
+    public void remove(Hyperlink l, String idx) {
+        if(l == null) return;
+        List<Hyperlink> list = linkers.get(idx);
+        if(list == null) return;
+        list.remove(l);
+    }
+
     public boolean mouseMoved(Point p, JComponent component, int idx) {
-        List<Linker> list = linkers.get(idx);
+        return mouseMoved(p, component, Integer.toString(idx));
+    }
+
+    public boolean mouseMoved(Point p, JComponent component, String idx) {
+        List<Hyperlink> list = linkers.get(idx);
         if(list == null) return false;
-        for (Linker linker : list) {
+        for (Hyperlink linker : list) {
             if(linker.mouseMoved(p, component)) {
                 return true;
             }
@@ -103,9 +122,13 @@ public class VCSHyperlinkSupport {
     }
 
     public boolean mouseClicked(Point p, int idx) {
-        List<Linker> list = linkers.get(idx);
+        return mouseClicked(p, Integer.toString(idx));
+    }
+
+    public boolean mouseClicked(Point p, String idx) {
+        List<Hyperlink> list = linkers.get(idx);
         if(list == null) return false;
-        for (Linker linker : list) {
+        for (Hyperlink linker : list) {
             if(linker.mouseClicked(p)) {
                 return true;
             }
@@ -114,21 +137,28 @@ public class VCSHyperlinkSupport {
     }
 
     public void computeBounds(JTextPane textPane, int idx) {
-        List<Linker> list = linkers.get(idx);
+        computeBounds(textPane, Integer.toString(idx));
+    }
+
+    public void computeBounds(JTextPane textPane, String idx) {
+        List<Hyperlink> list = linkers.get(idx);
         if(list == null) return ;
-        for (Linker linker : list) {
+        for (Hyperlink linker : list) {
             linker.computeBounds(textPane);
         }
     }
 
-    public static abstract class Linker {
+    public static abstract class Hyperlink {
         public abstract boolean mouseMoved(Point p, JComponent component);
         public abstract boolean mouseClicked(Point p);
         public abstract void computeBounds(JTextPane textPane);
+    }
+
+    public static abstract class StyledDocumentHyperlink extends Hyperlink {
         public abstract void insertString(StyledDocument sd, Style style) throws BadLocationException;
     }
 
-    public static class IssueLinker extends Linker {
+    public static class IssueLinker extends StyledDocumentHyperlink {
 
         private Rectangle bounds[];
         private final int docstart[];
@@ -231,7 +261,7 @@ public class VCSHyperlinkSupport {
         }
     }
 
-    public static class AuthorLinker extends Linker {
+    public static class AuthorLinker extends StyledDocumentHyperlink {
         private static final String AUTHOR_ICON_STYLE   = "authorIconStyle";    // NOI18N
 
         private Rectangle bounds;

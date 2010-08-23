@@ -82,9 +82,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private volatile static GlassfishInstanceProvider ee6Provider;
     private volatile static GlassfishInstanceProvider ee6WCProvider;
 
-    static private String EE6_PROP_ROOT = "org.glassfish.v3ee6."; // NOI18N
-    static private String EE6WC_PROP_ROOT = "org.glassfish.v3ee6wc."; // NOI18N
-    static private String INSTALL_ROOT_SUFFIX = "installRoot"; // NOI18N
+    final static private String EE6_PROP_ROOT = "org.glassfish.v3ee6."; // NOI18N
+    final static private String EE6WC_PROP_ROOT = "org.glassfish.v3ee6wc."; // NOI18N
+    final static private String INSTALL_ROOT_SUFFIX = "installRoot"; // NOI18N
     static private String EE6_INSTALL_ROOT_PROP = EE6_PROP_ROOT + INSTALL_ROOT_SUFFIX;
     static private String EE6WC_INSTALL_ROOT_PROP = EE6WC_PROP_ROOT + INSTALL_ROOT_SUFFIX;
     static private String PRELUDE_PROP_ROOT = "org.glassfish.v3."; // NOI18N
@@ -375,7 +375,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 activeDisplayNames.remove(si.getDisplayName());
                 // If this was the last of its type, need to remove the
                 // resolver catalog contents
-                if (instanceMap.size() == 0) {
+                if (instanceMap.isEmpty()) {
                     RegisteredDDCatalog catalog = getDDCatalog();
                     if (null != catalog) {
                         catalog.refreshRunTimeDDCatalog(this, null);
@@ -526,7 +526,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                 instanceMap.put(si.getDeployerUri(), si);
                                 activeDisplayNames.add(si.getDisplayName());
                             } else {
-                                getLogger().finer("Unable to create glassfish instance for " + instanceFOs[i].getPath()); // NOI18N
+                                getLogger().log(Level.FINER, "Unable to create glassfish instance for {0}", instanceFOs[i].getPath()); // NOI18N
                             }
                         } catch(IOException ex) {
                             getLogger().log(Level.INFO, null, ex);
@@ -564,7 +564,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             instance = GlassfishInstance.create(ip,this,false);
         } else {
-            getLogger().finer("GlassFish folder " + instanceFO.getPath() + " is not a valid install."); // NOI18N
+            getLogger().log(Level.FINER, "GlassFish folder {0} is not a valid install.", instanceFO.getPath()); // NOI18N
             instanceFO.delete();
         }
 
@@ -701,9 +701,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     "--user", //NOI18N
                     uname,
                     "--domaindir", //NOI18N
-                    domainDir,
-                    "--portbase", //NOI18N
-                    portBase,}));
+                    domainDir}));
+        if (null != portBase) {
+            retVal.add("--portbase"); //NOI18N
+            retVal.add(portBase);
+        }
         if (noPasswordOptions.size() > 0) {
             retVal.addAll(noPasswordOptions);
         }

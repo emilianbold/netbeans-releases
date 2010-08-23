@@ -48,6 +48,7 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
+import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadGroupReference;
@@ -273,6 +274,32 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             accessLock.readLock().unlock();
         }
         return -1;
+    }
+
+    public Method getTopMethod() {
+        accessLock.readLock().lock();
+        try {
+            if (suspended || suspendedNoFire) {
+                synchronized (cachedFramesLock) {
+                    if (stackDepth < 0) {
+                        stackDepth = ThreadReferenceWrapper.frameCount0(threadReference);
+                    }
+                    if (stackDepth < 1) return null;
+                }
+                return LocationWrapper.method(StackFrameWrapper.location(
+                        ThreadReferenceWrapper.frame(threadReference, 0)));
+            }
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+        } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            // Thrown when thread has exited
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper ex) {
+        } finally {
+            accessLock.readLock().unlock();
+        }
+        return null;
     }
 
     public synchronized Operation getCurrentOperation() {
@@ -1113,7 +1140,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         List<PropertyChangeEvent> evts;
         accessLock.writeLock().lock();
         try {
-            debugger.getOperator().notifyMethodInvoking(threadReference);
             logger.fine("Invoking a method in thread "+threadName);
             loggerS.fine("["+threadName+"]: Invoking a method, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
             if (methodInvokingDisabledUntilResumed) {
@@ -1124,10 +1150,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_AlreadyInvoking"), null);
             }
-            if (!isThreadSuspended()) {
+            if (!(suspended || suspendedNoFire)) {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
+            debugger.getOperator().notifyMethodInvoking(threadReference);
             if (vm != null) {
                 // Check if there aren't any steps submitted, which would break method invocation:
                 try {

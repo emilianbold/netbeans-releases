@@ -259,6 +259,7 @@ public class NodeLookupTest extends NbTestCase {
             }
             
             public Node.Cookie getCookie (Class clazz) {
+                assertFalse("Don't hold locks while querying nodes", Thread.holdsLock(getLookup()));
                 queries.add (clazz);
                 return super.getCookie (clazz);
             }
@@ -476,12 +477,12 @@ public class NodeLookupTest extends NbTestCase {
     }        
 
     public void testLazyCookieSet35856 () {
-        CookieNode n = new CookieNode ();
-        
+        final CookieNode n = new CookieNode ();
         class CF implements CookieSet.Factory, org.openide.cookies.OpenCookie, org.openide.cookies.EditCookie, org.openide.cookies.ViewCookie {
             public int cnt;
             public Node.Cookie createCookie(Class klass) {
                 cnt++;
+                assertFalse("Don't hold locks while querying nodes", Thread.holdsLock(n.getLookup()));
                 return this;
             }
                 

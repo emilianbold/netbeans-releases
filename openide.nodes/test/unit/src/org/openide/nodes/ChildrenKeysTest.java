@@ -1241,7 +1241,9 @@ public class ChildrenKeysTest extends NbTestCase {
      * @param arr names
      */
     private void checkNames (Node ch, String[] arr) {
+        LOG.log(Level.INFO, "About to get children: {0}", Arrays.toString(arr));
         Node[] nodes = ch.getChildren ().getNodes ();
+        LOG.info("Children computed");
         
         if (nodes.length != arr.length) {
             fail ("Keys: " + arr.length + " Nodes: " + nodes.length);
