@@ -61,7 +61,6 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import javax.swing.JToolTip;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -716,6 +715,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     break;
                 case BREAK:
                     insideBreak(env);
+                    break;
+                case STRING_LITERAL:
+                    insideStringLiteral(env);
                     break;
             }
         }
@@ -2085,6 +2087,19 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
+        private void insideStringLiteral(Env env) throws IOException {
+            TreePath path = env.getPath();
+            TreePath parentPath = path.getParentPath();
+            TreePath grandParentPath = parentPath.getParentPath();
+            if (grandParentPath != null && grandParentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION
+                    && parentPath.getLeaf().getKind() == Tree.Kind.ASSIGNMENT
+                    && ((AssignmentTree)parentPath.getLeaf()).getExpression() == path.getLeaf()) {
+                ExpressionTree var = ((AssignmentTree)parentPath.getLeaf()).getVariable();
+                if (var.getKind() == Tree.Kind.IDENTIFIER)
+                    insideAnnotationAttribute(env, grandParentPath, ((IdentifierTree)var).getName());
+            }
+        }
+        
         private void insideBinaryTree(Env env) throws IOException {
             int offset = env.getOffset();
             BinaryTree bi = (BinaryTree)env.getPath().getLeaf();
@@ -3225,8 +3240,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationController controller = env.getController();
             Elements elements = controller.getElements();
             String prefix = env.getPrefix();
-            for (javax.annotation.processing.Completion completion : SourceUtils.getAttributeValueCompletions(controller, element, annotation, member, null)) {
+            for (javax.annotation.processing.Completion completion : SourceUtils.getAttributeValueCompletions(controller, element, annotation, member, prefix)) {
                 String value = completion.getValue();
+                boolean quoted = false;
                 TypeElement typeElement = null;
                 TypeMirror type = member.getReturnType();
                 if (type.getKind() == TypeKind.ARRAY) {
@@ -3235,8 +3251,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (type.getKind() == TypeKind.DECLARED) {
                     CharSequence fqn = ((TypeElement)((DeclaredType)type).asElement()).getQualifiedName();
                     if ("java.lang.String".contentEquals(fqn)) { //NOI18N
-                        if (!value.startsWith("\"")) //NOI18N
-                            value = "\"" + value + "\""; //NOI18N
+                        if (prefix != null && prefix.startsWith("\"")) { //NOI18N
+                            anchorOffset++;
+                        } else if (!value.startsWith("\"")) //NOI18N
+                            quoted = true;
                     } else if ("java.lang.Class".contentEquals(fqn)) {
                         String name;
                         if (value.endsWith(".class")) { //NOI18N
@@ -3251,7 +3269,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         env.addToExcludes(typeElement);
                     }
                 }
-                results.add(JavaCompletionItem.createAttributeValueItem(env.getController(), value, typeElement, anchorOffset));
+                results.add(JavaCompletionItem.createAttributeValueItem(env.getController(), value, quoted, completion.getMessage(), typeElement, anchorOffset));
             }
         }
 
@@ -4527,7 +4545,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     ts.movePrevious();
                 int len = offset - ts.offset();
                 if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
-                        (ts.token().id().primaryCategory().startsWith("keyword")) || ts.token().id().primaryCategory().equals("literal"))
+                        ts.token().id().primaryCategory().startsWith("keyword") ||
+                        ts.token().id().primaryCategory().startsWith("string") ||
+                        ts.token().id().primaryCategory().equals("literal"))
                         && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
                     prefix = ts.token().toString().substring(0, len);
                     offset = ts.offset();
