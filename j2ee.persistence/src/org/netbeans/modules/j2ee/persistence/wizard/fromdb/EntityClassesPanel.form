@@ -56,7 +56,7 @@
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
-              <Component id="createPUWarningLabel" pref="471" max="32767" attributes="0"/>
+              <Component id="createPUWarningLabel" pref="478" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
@@ -293,6 +293,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="generateJAXBCheckBox">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle.properties" key="TXT_GenerateJAXBAnnotations" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
