@@ -84,6 +84,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -316,9 +317,14 @@ public abstract class JavaSourceAccessor {
         }
 
         @Override
-        public void run(Result result, SchedulerEvent event) {
+        public void run(@NonNull Result result, SchedulerEvent event) {
+            Parameters.notNull("result", result);   //NOI18N
             final CompilationInfo info = CompilationInfo.get(result);
-            assert info != null;
+            if (info == null) {
+                throw new IllegalArgumentException(String.format("Result %s [%s] does not provide CompilationInfo",    //NOI18N
+                        result.toString(),
+                        result.getClass().getName()));
+            }
             try {
                 JavaSourceAccessor.getINSTANCE().setJavaSource(info, javaSource);
                 this.task.run(info);
