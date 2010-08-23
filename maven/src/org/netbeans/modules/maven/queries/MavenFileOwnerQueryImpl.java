@@ -45,119 +45,67 @@ package org.netbeans.modules.maven.queries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.NbMavenProject;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex.Action;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
-
+import org.openide.util.lookup.ServiceProviders;
 
 /**
- * A global implementation of FileOwnerQueryImplementation, is required to link together the maven project
- * and it's artifact in the maven repository. any other files shall be handled by the
- * default netbeans implementation.
- *
- * @author  Milos Kleint
+ * Links the Maven project with its artifact in the local repository.
  */
-@ServiceProvider(service=FileOwnerQueryImplementation.class, position=97)
+@ServiceProviders({@ServiceProvider(service=FileOwnerQueryImplementation.class, position=97), @ServiceProvider(service=MavenFileOwnerQueryImpl.class)})
 public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
-    private Set<NbMavenProjectImpl> set;
-    private final Object setLock = new Object();
-
-    private Set<NbMavenProjectImpl> cachedProjects;
-    private Set<NbMavenProjectImpl> projectsToAddToCache;
-    private final Object cacheLock = new Object();
-
-    private PropertyChangeListener projectListener;
+    private final PropertyChangeListener projectListener;
     private final ChangeSupport cs = new ChangeSupport(this);
 
     private static final Logger LOG = Logger.getLogger(MavenFileOwnerQueryImpl.class.getName());
     
     public MavenFileOwnerQueryImpl() {
-        set = new HashSet<NbMavenProjectImpl>();
-        cachedProjects = null;
-        projectsToAddToCache = null;
         projectListener = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                    Object evtSource = evt.getSource();
-                    if (evtSource instanceof NbMavenProjectImpl) {
-                        // try adding the changed project and its subprojects again to cache
-                        // new subprojects might have been added/activated for the changed project
-                        synchronized (cacheLock) {
-                            if (null == projectsToAddToCache) {
-                                projectsToAddToCache = new HashSet<NbMavenProjectImpl>(1);
-                            }
-                            projectsToAddToCache.add((NbMavenProjectImpl) evtSource);
-                        }
-                    }
+                    registerProject((NbMavenProjectImpl) evt.getSource());
+                    fireChange();
                 }
             }
         };
     }
     
     public static MavenFileOwnerQueryImpl getInstance() {
-        Lookup.Result<FileOwnerQueryImplementation> implementations = 
-                Lookup.getDefault().lookup(new Lookup.Template<FileOwnerQueryImplementation>(FileOwnerQueryImplementation.class));
-        Iterator<? extends FileOwnerQueryImplementation> it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            FileOwnerQueryImplementation obj = it.next();
-            if (obj instanceof MavenFileOwnerQueryImpl) {
-                return (MavenFileOwnerQueryImpl)obj;
-            }
-        }
-        return null;
+        return Lookup.getDefault().lookup(MavenFileOwnerQueryImpl.class);
     }
     
-    public void addMavenProject(NbMavenProjectImpl project) {
-        synchronized (setLock) {
-            if (!set.contains(project)) {
-                LOG.log(Level.FINE, "Adding Maven project:{0}", project.getArtifactRelativeRepositoryPath());
-                set.add(project);
-                NbMavenProject.addPropertyChangeListener(project, projectListener);
-            }
+    public void registerProject(NbMavenProjectImpl project) {
+        MavenProject model = project.getOriginalMavenProject();
+        String key = model.getGroupId() + ':' + model.getArtifactId();
+        try {
+            String ownerURI = project.getProjectDirectory().getURL().toString();
+            prefs().put(key, ownerURI);
+            LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {ownerURI, key});
+        } catch (FileStateInvalidException x) {
+            LOG.log(Level.INFO, null, x);
         }
-        synchronized (cacheLock) {
-            // add the new project to cache incrementally if it has not been
-            // added to cache already from "set" where we added it just above
-            if (null != cachedProjects && !cachedProjects.contains(project)) {
-                if (null == projectsToAddToCache) {
-                    projectsToAddToCache = new HashSet<NbMavenProjectImpl>(1);
-                }
-                projectsToAddToCache.add(project);
-            }
-        }
-        
-        fireChange();
-    }
-    public void removeMavenProject(NbMavenProjectImpl project) {
-        synchronized (setLock) {
-            if (set.contains(project)) {
-                LOG.log(Level.FINE, "Removing Maven project:{0}", project.getArtifactRelativeRepositoryPath());
-                set.remove(project);
-                NbMavenProject.removePropertyChangeListener(project, projectListener);
-            }
-        }
-        synchronized (cacheLock) {
-            cachedProjects = null;
-        }
+        project.getProjectWatcher().removePropertyChangeListener(projectListener);
+        project.getProjectWatcher().addPropertyChangeListener(projectListener);
         fireChange();
     }
     
@@ -173,18 +121,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         cs.fireChange();
     }
     
-    /**
-     * get the list of currently opened maven projects.. kind of hack, but well..
-     */
-    public Set<Project> getOpenedProjects() {
-        synchronized (setLock) {
-            return new HashSet<Project>(set);
-        }
-    }
-    
     public @Override Project getOwner(URI uri) {
         LOG.log(Level.FINEST, "getOwner of uri={0}", uri);
-        if (uri.getScheme() != null && "file".equals(uri.getScheme())) { //NOI18N
+        if ("file".equals(uri.getScheme())) { //NOI18N
             File file = new File(uri);
             return getOwner(file);
         }
@@ -195,118 +134,90 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         LOG.log(Level.FINEST, "getOwner of fileobject={0}", fileObject);
         File file = FileUtil.toFile(fileObject);
         if (file != null) {
-            //logger.fatal("getOwner of fileobject=" + fileObject.getNameExt());
             return getOwner(file);
         }
         return null;
     }
     
     private Project getOwner(File file) {
-        //TODO check if the file is from local repo ??
-        LOG.log(Level.FINE, "Looking for owner of {0}", file);
-        boolean passBasicCheck = false;
-        String nm = file.getName();
-        File parentVer = file.getParentFile();
+        LOG.log(Level.FINER, "Looking for owner of {0}", file);
+        String nm = file.getName(); // commons-math-2.1.jar
+        File parentVer = file.getParentFile(); // ~/.m2/repository/org/apache/commons/commons-math/2.1
         if (parentVer != null) {
-            File parentArt = parentVer.getParentFile();
+            File parentArt = parentVer.getParentFile(); // ~/.m2/repository/org/apache/commons/commons-math
             if (parentArt != null) {
-                if (nm.startsWith(parentArt.getName() + "-" + parentVer.getName())) {
-                    passBasicCheck = true;
+                String artifactID = parentArt.getName(); // commons-math
+                String version = parentVer.getName(); // 2.1
+                if (nm.startsWith(artifactID + '-' + version + '.')) {
+                    File parentGroup = parentArt.getParentFile(); // ~/.m2/repository/org/apache/commons
+                    if (parentGroup != null) {
+                        // Split rest into separate method, to avoid linking EmbedderFactory unless and until needed.
+                        return getArtifactOwner(parentGroup, artifactID, version);
+                    }
                 }
-            }
-        }
-        if (!passBasicCheck) {
-            LOG.fine(" exiting early, not from local repository.");
-            return null;
-        }
-        Set<NbMavenProjectImpl> currentProjects = getAllKnownProjects();
-        
-        Iterator<NbMavenProjectImpl> it = currentProjects.iterator();
-        String filepath = file.getAbsolutePath().replace('\\', '/');
-        while (it.hasNext()) {
-            NbMavenProjectImpl project = it.next();
-            String path = project.getArtifactRelativeRepositoryPath();
-            LOG.log(Level.FINEST, "matching againts known project {0}", path);
-            if (filepath.endsWith(path)) {
-                return project;
-            }
-            path = project.getTestArtifactRelativeRepositoryPath();
-            LOG.log(Level.FINEST, "matching againts known project''s test {0}", path);
-            if (filepath.endsWith(path)) {
-                return project;
             }
         }
         return null;
-        
-    }
-    
-     
-    private Set<NbMavenProjectImpl> getAllKnownProjects() {
-        return ProjectManager.mutex().readAccess(new Action<Set<NbMavenProjectImpl>>() {
-            public @Override Set<NbMavenProjectImpl> run() {
-                synchronized (cacheLock) {
-                    // is cachedProjects up-to-date?
-                    if (cachedProjects != null && null == projectsToAddToCache) {
-                        return new HashSet<NbMavenProjectImpl>(cachedProjects);
-                    }
-                    // cachedProjects empty?
-                    if (null == cachedProjects) {
-                        // full build of the cache
-                        Set<NbMavenProjectImpl> currentProjects;
-                        List<NbMavenProjectImpl> iterating;
-                        synchronized (setLock) {
-                            currentProjects = new HashSet<NbMavenProjectImpl>(set);
-                            iterating = new ArrayList<NbMavenProjectImpl>(set);
-                        }
-                        int index = 0;
-                        // iterate all opened projects and figure their subprojects..
-                        // consider these as well. do so recursively.
-                        while (index < iterating.size()) {
-                            NbMavenProjectImpl prj = iterating.get(index);
-                            addSubProjects(currentProjects, iterating, prj);
-                            index = index + 1;
-                        }
-                        cachedProjects = currentProjects;
-                        projectsToAddToCache = null;
-                    }
-                    // non-empty projectsToAddToCache?
-                    if (null != projectsToAddToCache) {
-                        // incrementally adding to the cache
-                        Set<NbMavenProjectImpl> currentProjects;
-                        List<NbMavenProjectImpl> iterating;
-                        currentProjects = new HashSet<NbMavenProjectImpl>(cachedProjects);
-                        currentProjects.addAll(projectsToAddToCache);
-                        iterating = new ArrayList<NbMavenProjectImpl>(projectsToAddToCache);
-                        int index = 0;
-                        // iterate all new or changed (after propChange) projects
-                        // and figure their subprojects..
-                        // consider these as well. do so recursively.
-                        while (index < iterating.size()) {
-                            NbMavenProjectImpl prj = iterating.get(index);
-                            addSubProjects(currentProjects, iterating, prj);
-                            index = index + 1;
-                        }
-                        cachedProjects = currentProjects;
-                        projectsToAddToCache = null;
-                    }
-                    return new HashSet<NbMavenProjectImpl>(cachedProjects);
-                }
-            }
-        });
     }
 
-    private void addSubProjects(Set<NbMavenProjectImpl> finalset, List<NbMavenProjectImpl> iteratinglist, NbMavenProjectImpl prj) {
-        SubprojectProvider sub = prj.getLookup().lookup(SubprojectProvider.class);
-        if (sub != null) {
-            Set<? extends Project> subs = sub.getSubprojects();
-            for (Project p : subs) {
-                if (p instanceof NbMavenProjectImpl) {
-                    finalset.add((NbMavenProjectImpl) p);
-                    if (!iteratinglist.contains((NbMavenProjectImpl)p)) {
-                        iteratinglist.add((NbMavenProjectImpl) p);
-                    }
-                }
-            }
+    private Project getArtifactOwner(File parentGroup, String artifactID, String version) {
+        LOG.log(Level.FINER, "Checking {0} / {1} / {2}", new Object[] {parentGroup, artifactID, version});
+        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()); // ~/.m2/repository
+        String repoS = repo.getAbsolutePath();
+        if (!repoS.endsWith(File.separator)) {
+            repoS += File.separatorChar; // ~/.m2/repository/
         }
+        String parentGroupS = parentGroup.getAbsolutePath();
+        assert !parentGroupS.endsWith(File.separator) : parentGroupS;
+        if (parentGroupS.startsWith(repoS)) {
+            String groupID = parentGroupS.substring(repoS.length()).replace(File.separatorChar, '.'); // org.apache.commons
+            String key = groupID + ':' + artifactID; // org.apache.commons:commons-math
+            String ownerURI = prefs().get(key, null);
+            if (ownerURI != null) {
+                try {
+                    FileObject projectDir = URLMapper.findFileObject(new URI(ownerURI).toURL());
+                    if (projectDir != null && projectDir.isFolder()) {
+                        Project p = ProjectManager.getDefault().findProject(projectDir);
+                        if (p != null) {
+                            NbMavenProjectImpl mp = p.getLookup().lookup(NbMavenProjectImpl.class);
+                            if (mp != null) {
+                                MavenProject model = mp.getOriginalMavenProject();
+                                if (model.getGroupId().equals(groupID) && model.getArtifactId().equals(artifactID)) {
+                                    if (model.getVersion().equals(version)) {
+                                        LOG.log(Level.FINE, "Found match {0}", p);
+                                        return p;
+                                    } else {
+                                        LOG.log(Level.FINE, "Mismatch on version {0} in {1}", new Object[] {model.getVersion(), ownerURI});
+                                    }
+                                } else {
+                                    LOG.log(Level.FINE, "Mismatch on group and/or artifact ID in {0}", ownerURI);
+                                }
+                            } else {
+                                LOG.log(Level.FINE, "Not a Maven project {0} in {1}", new Object[] {p, ownerURI});
+                            }
+                        } else {
+                            LOG.log(Level.FINE, "No such project in {0}", ownerURI);
+                        }
+                    } else {
+                        LOG.log(Level.FINE, "No such folder {0}", ownerURI);
+                    }
+                } catch (IOException x) {
+                    LOG.log(Level.FINE, "Could not load project in " + ownerURI, x);
+                } catch (URISyntaxException x) {
+                    LOG.log(Level.INFO, null, x);
+                }
+                prefs().remove(key); // stale
+            } else {
+                LOG.log(Level.FINE, "No known owner for {0}", key);
+            }
+        } else {
+            LOG.log(Level.FINE, "Not in local repo {0}", repoS);
+        }
+        return null;
     }
+
+    private static Preferences prefs() {
+        return NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners"); // NOI18N
+    }
+
 }
