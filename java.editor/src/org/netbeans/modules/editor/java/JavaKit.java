@@ -63,7 +63,6 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.lexer.PartType;
@@ -75,7 +74,7 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.java.editor.codegen.InsertSemicolonAction;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
@@ -366,43 +365,6 @@ public class JavaKit extends NbEditorKit {
                 }
             }
         }
-
-        // TODO: remove this method once ExtKit uses the new Editor Indent API
-        protected void checkIndentHotChars(JTextComponent target, String typedText) {
-            BaseDocument doc = Utilities.getDocument(target);
-            if (doc != null) {
-                Formatter f = doc.getFormatter();
-                if (f instanceof ExtFormatter) {
-                    ExtFormatter ef = (ExtFormatter)f;
-                    int[] fmtBlk = ef.getReformatBlock(target, typedText);
-
-                    if (fmtBlk != null) {
-                        try {
-                            fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
-                            fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
-
-                            //this was the of #18922, that causes the bug #20198
-                            //ef.reformat(doc, fmtBlk[0], fmtBlk[1]);
-
-                            //bugfix of the bug #20198. Bug #18922 is fixed too as well as #6968
-                            Reformat reformat = Reformat.get(doc);
-                            reformat.lock();
-                            try {
-                                doc.atomicLock();
-                                try {
-                                    reformat.reformat(fmtBlk[0], fmtBlk[1]);
-                                } finally {
-                                    doc.atomicUnlock();
-                                }
-                            } finally {
-                                reformat.unlock();
-                            }
-                        } catch (BadLocationException e) {
-                        }
-                    }
-                }
-            }
-        }
     }
 
     @EditorActionRegistration(name = generateGoToPopupAction, mimeType = JAVA_MIME_TYPE)
@@ -647,7 +609,7 @@ public class JavaKit extends NbEditorKit {
                         int end = BraceCompletion.getRowOrBlockEnd(doc, dotPos, insert);
                         if (insert[0]) {
                             doc.insertString(end, "}", null); // NOI18N
-                            doc.getFormatter().indentNewLine(doc, end);
+                            Indent.get(doc).indentNewLine(end);
                         }
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
@@ -688,7 +650,7 @@ public class JavaKit extends NbEditorKit {
                         // complete open javadoc
                         // note that the formater will add one line of javadoc
                         doc.insertString(dotPosition, "*/", null); // NOI18N
-                        doc.getFormatter().indentNewLine(doc, dotPosition);
+                        Indent.get(doc).indentNewLine(dotPosition);
                         target.setCaretPosition(dotPosition);
 
                         isJavadocTouched = true;

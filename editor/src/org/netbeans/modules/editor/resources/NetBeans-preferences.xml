@@ -261,9 +261,6 @@ made subject to such option by the copyright holder.
         <value><![CDATA[none]]></value>
     </entry>
     
-    <entry category="deprecated" javaType="methodvalue" name="formatter" xml:space="preserve">
-        <value><![CDATA[org.netbeans.modules.editor.impl.ComplexValueSettingsFactory.getFormatterValue]]></value>
-    </entry>
     <entry category="deprecated" javaType="methodvalue" name="rendering-hints" xml:space="preserve">
         <value><![CDATA[org.netbeans.modules.editor.impl.ComplexValueSettingsFactory.getRenderingHintsValue]]></value>
     </entry>

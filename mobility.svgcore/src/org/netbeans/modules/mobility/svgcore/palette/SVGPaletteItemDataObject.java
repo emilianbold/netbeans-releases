@@ -86,7 +86,7 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
         return new File( m_data.getFilePath());
     }
     
-    protected Node createNodeDelegate() {
+    protected @Override Node createNodeDelegate() {
         return new SVGPaletteItemDataNode(this, getLookup());
     }
     
@@ -124,14 +124,12 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
     public static void insertToTextComponent( final String text, final JTextComponent target) {
         final Document doc = target.getDocument();
         
-        if ( doc instanceof BaseDocument) {
-            BaseDocument bDoc = (BaseDocument) doc;
-            final Reformat formatter = Reformat.get(bDoc);
+        if (doc instanceof BaseDocument) {
+            final Reformat formatter = Reformat.get(doc);
             formatter.lock();
             try {
-
-                Runnable run = new Runnable() {
-
+                final boolean [] ok = new boolean [] { false };
+                ((BaseDocument) doc).runAtomic(new Runnable() {
                     public void run() {
                         try {
                             Caret caret = target.getCaret();
@@ -141,32 +139,21 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
 
                             int start = caret.getDot();
                             doc.insertString(start, text, null);
-                            
+
                             int end = start + text.length();
                             formatter.reformat(start, end);
-                        } catch (BadLocationException ex) {
-                            throw new DocumentModificationException(ex);
+                            ok[0] = true;
+                        } catch (BadLocationException ble) {
+                            // ignore
                         }
                     }
-                };
-                try {
-                    bDoc.runAtomic(run);
-                } catch (DocumentModificationException ex) {
-                    SceneManager.error("Transaction failed.", ex.getCause()); //NOI18N
+                });
+                if (!ok[0]) {
+                    ((BaseDocument) doc).atomicUndo();
                 }
-
             } finally {
                 formatter.unlock();
             }
-            
         }
     }
-
-    private static class DocumentModificationException extends RuntimeException {
-
-        public DocumentModificationException(Throwable cause) {
-            super(cause);
-        }
-    }
-
 }
