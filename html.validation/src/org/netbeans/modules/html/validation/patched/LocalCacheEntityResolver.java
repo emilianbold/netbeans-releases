@@ -69,8 +69,6 @@ public class LocalCacheEntityResolver implements EntityResolver {
     public InputSource resolveEntity(String publicId, String systemId)
             throws SAXException, IOException {
         long a = System.currentTimeMillis();
-        System.out.print("resolving " + publicId + "; " + systemId);
-        try {
         String path = PATH_MAP.get(systemId);
         if (path != null) {
             InputStream stream = LOADER.getResourceAsStream(path);
@@ -96,9 +94,6 @@ public class LocalCacheEntityResolver implements EntityResolver {
             }
         }
         return delegate.resolveEntity(publicId, systemId);
-        } finally {
-            System.out.println("...resolved in " + (System.currentTimeMillis() - a));
-        }
     }
 
     /**

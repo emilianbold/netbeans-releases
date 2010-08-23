@@ -272,7 +272,6 @@ public class HtmlParserResult extends ParserResult {
     }
 
     private Collection<Error> getValidationResults() {
-        //XXX temporary!!!!!
 
         //use the filtered snapshot or use the namespaces filtering facility in the nu.validator
         Collection<ValidationResult> results =
@@ -282,20 +281,29 @@ public class HtmlParserResult extends ParserResult {
         if (!results.isEmpty()) {
 
             //XXX just use first for now
-            ValidationResult result = results.iterator().next();
+            ValidationResult validatorResult = results.iterator().next();
 
-            if (!result.isSuccess()) {
-                DefaultError error =
-                        new DefaultError("nu.validator",
-                        "nu.validator issues",
-                        result.getTextDescription(),
-                        result.getContext().getSnapshot().getSource().getFileObject(),
-                        0,
-                        0,
-                        true /* not line error */,
-                        Severity.WARNING);
+            if (!validatorResult.isSuccess()) {
 
-                return Collections.<Error>singletonList(error);
+                Collection<Error> errs = new ArrayList<Error>();
+                for (ProblemDescription pd : validatorResult.getProblems()) {
+
+                    DefaultError error =
+                            new DefaultError(pd.getKey(),
+                            "nu.validator issue",
+                            pd.getText(),
+                            validatorResult.getContext().getSnapshot().getSource().getFileObject(),
+                            pd.getFrom(),
+                            pd.getTo(),
+                            false /* not line error */,
+                            forProblemType(pd.getType()));
+                    errs.add(error);
+                }
+
+                return errs;
+
+
+
             }
         }
 

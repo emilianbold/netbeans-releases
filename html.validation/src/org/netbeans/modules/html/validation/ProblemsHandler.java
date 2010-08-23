@@ -1,5 +1,3 @@
-package org.netbeans.modules.html.validation;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -41,55 +39,44 @@ package org.netbeans.modules.html.validation;
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-import java.util.Collection;
-import org.netbeans.modules.html.parser.*;
-import java.io.IOException;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.editor.ext.html.parser.api.ParseException;
+
+package org.netbeans.modules.html.validation;
+
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
-import org.netbeans.junit.NbTestCase;
-import org.xml.sax.SAXException;
 
 /**
  *
  * @author marekfukala
  */
-public class ValidationTransactionTest extends NbTestCase {
+public class ProblemsHandler {
 
-    public ValidationTransactionTest(String name) {
-        super(name);
+    private List<ProblemDescription> problems;
+    private boolean finished;
+
+    public void startProblems() {
+        problems = new ArrayList<ProblemDescription>();
+        finished = false;
     }
 
-    public static Test xsuite() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new ValidationTransactionTest("testParseUnfinishedCode"));
-        return suite;
+    public void endProblems() {
+        finished = true;
     }
 
-    public void testBasic() throws SAXException, IOException, ParseException {
-        ValidationTransaction.enableDebug();
-
-        validate("<!doctype html> <html><head><title>hello</title></head><body><div>ahoj!</div></body></html>", true);
-        validate("<!doctype html> chybi open tag</div>", false);
-        validate("<!doctype html> <div> chybi close tag", false);
-    }
-
-    private void validate(String code, boolean expectedPass) throws SAXException {
-        System.out.print("Validating " + code + "...");
-        ValidationTransaction vt = ValidationTransaction.getInstance();
-        vt.validateCode(code);
-        assertEquals(expectedPass, vt.isSuccess());
-
-        Collection<ProblemDescription> problems = vt.getFoundProblems();
-
-        assertEquals(expectedPass, problems.isEmpty());
-
-        if(!expectedPass) {
-            for(ProblemDescription pd : problems) {
-                System.out.println(pd.dump(code));
-            }
+    public void addProblem(ProblemDescription pd) {
+        if(finished) {
+            throw new IllegalStateException("Already finished session"); //NOI18N
         }
-        System.out.println("done in " + vt.getValidationTime() + " ms.");
+        problems.add(pd);
     }
+
+    public List<ProblemDescription> getProblems() {
+        if(!finished) {
+            throw new IllegalStateException("Session not finished yet, probably someone forgot to call endProblems()?!?!"); //NOI18N
+        }
+
+        return problems;
+    }
+
 }

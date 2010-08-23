@@ -61,11 +61,11 @@ public class ValidatorImpl implements Validator {
     public ValidationResult validate(ValidationContext context) throws ValidationException {
         try {
             Snapshot snap = context.getSnapshot();
-            ValidationTransaction validator = ValidationTransaction.getInstance();
+            ValidationTransaction validatorTransaction = ValidationTransaction.getInstance();
 
-            validator.validateCode(snap.getText().toString());
+            validatorTransaction.validateCode(snap.getText().toString());
 
-            return new ValidationResult(this, context, validator.isSuccess(), validator.getTextDescription());
+            return new ValidationResult(this, context, validatorTransaction.getFoundProblems(), validatorTransaction.isSuccess());
 
         } catch (SAXException ex) {
             throw new ValidationException(ex);

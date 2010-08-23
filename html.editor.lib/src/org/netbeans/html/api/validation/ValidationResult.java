@@ -42,6 +42,9 @@
 
 package org.netbeans.html.api.validation;
 
+import java.util.Collection;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+
 /**
  *
  * @author marekfukala
@@ -51,13 +54,13 @@ public final class ValidationResult {
     private boolean success;
     private Validator validator;
     private ValidationContext context;
-    private String soup;
+    private Collection<ProblemDescription> problems;
 
-    public ValidationResult(Validator validator, ValidationContext context, boolean success, String soup) {
+    public ValidationResult(Validator validator, ValidationContext context, Collection<ProblemDescription> problems, boolean success) {
+        this.validator = validator;
+        this.problems = problems;
         this.success = success;
         this.context = context;
-        this.validator = validator;
-        this.soup = soup;
     }
 
     /**
@@ -73,9 +76,8 @@ public final class ValidationResult {
         return validator.getValidatorName();
     }
 
-    //XXX temporary
-    public String getTextDescription() {
-        return soup;
+    public Collection<ProblemDescription> getProblems() {
+        return problems;
     }
 
     public ValidationContext getContext() {

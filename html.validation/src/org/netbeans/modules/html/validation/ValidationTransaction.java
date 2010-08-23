@@ -28,9 +28,7 @@ import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,12 +52,10 @@ import nu.validator.htmlparser.common.DocumentModeHandler;
 import nu.validator.htmlparser.common.Heuristics;
 import nu.validator.htmlparser.common.XmlViolationPolicy;
 import nu.validator.htmlparser.sax.HtmlParser;
-import nu.validator.htmlparser.sax.HtmlSerializer;
 import nu.validator.messages.MessageEmitterAdapter;
 import nu.validator.messages.TooManyErrorsException;
 import nu.validator.servlet.ParserMode;
 import nu.validator.servlet.VerifierServletXMLReaderCreator;
-import nu.validator.servlet.imagereview.ImageCollector;
 import nu.validator.source.SourceCode;
 import nu.validator.spec.Spec;
 import nu.validator.spec.html5.Html5SpecBuilder;
@@ -107,24 +103,21 @@ import com.thaiopensource.validate.auto.AutoSchemaReader;
 import com.thaiopensource.validate.prop.rng.RngProperty;
 import com.thaiopensource.validate.prop.wrap.WrapProperty;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
-import java.io.ByteArrayOutputStream;
 import java.util.logging.Handler;
-import nu.validator.messages.TextMessageEmitter;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 
 /**
  * This class code was mainly extracted from the original class {@link VerifierServletTransaction}.
  *
- * @version $Id: VerifierServletTransaction.java,v 1.10 2005/07/24 07:32:48
- *          hsivonen Exp $
- * @author hsivonen
+ * @author hsivonen, mfukala@netbeans.org
  */
 public class ValidationTransaction implements DocumentModeHandler, SchemaResolver {
 
-    private static final Logger log4j = Logger.getLogger(ValidationTransaction.class.getCanonicalName());
+    private static final Logger LOGGER = Logger.getLogger(ValidationTransaction.class.getCanonicalName());
 
-    static {
-        log4j.setLevel(Level.FINE);
-        log4j.addHandler(new Handler() {
+    public static void enableDebug() {
+        LOGGER.setLevel(Level.FINE);
+        LOGGER.addHandler(new Handler() {
 
             @Override
             public void publish(LogRecord record) {
@@ -133,15 +126,14 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
             @Override
             public void flush() {
-//                throw new UnsupportedOperationException("Not supported yet.");
             }
 
             @Override
             public void close() throws SecurityException {
-//                throw new UnsupportedOperationException("Not supported yet.");
             }
         });
     }
+
     private static final Pattern SPACE = Pattern.compile("\\s+");
     protected static final int HTML5_SCHEMA = 3;
     protected static final int XHTML1STRICT_SCHEMA = 2;
@@ -173,10 +165,8 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     protected String document = null;
     private ParserMode parser = ParserMode.AUTO;
     private boolean laxType = false;
-    protected ContentHandler contentHandler;
     protected MessageEmitterAdapter errorHandler;
     protected final AttributesImpl attrs = new AttributesImpl();
-    private OutputStream out;
     private PropertyMap jingPropertyMap;
     protected LocalCacheEntityResolver entityResolver;
     private static String[] preloadedSchemaUrls;
@@ -203,10 +193,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private LexicalHandler lexicalHandler;
     private String codeToValidate;
     private String textDescriptionOfTheProblems; //XXX temp.
-    // for
-    // UI
-    // stability
-    protected ImageCollector imageCollector;
+    private long validationTime;
+    private ProblemsHandler problemsHandler = new ProblemsHandler();
+    private LinesMapper linesMapper = new LinesMapper();
 
     public static synchronized ValidationTransaction getInstance() {
         return new ValidationTransaction();
@@ -218,7 +207,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
 
         try {
-            log4j.fine("Starting initialization.");
+            LOGGER.fine("Starting initialization.");
 
             BufferedReader r = new BufferedReader(new InputStreamReader(LocalCacheEntityResolver.getPresetsAsStream(), "UTF-8"));
             String line;
@@ -227,7 +216,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             List<String> labels = new LinkedList<String>();
             List<String> urls = new LinkedList<String>();
 
-            log4j.fine("Starting to loop over config file lines.");
+            LOGGER.fine("Starting to loop over config file lines.");
 
             while ((line = r.readLine()) != null) {
                 if ("".equals(line.trim())) {
@@ -240,14 +229,14 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 urls.add(s[3]);
             }
 
-            log4j.fine("Finished reading config.");
+            LOGGER.fine("Finished reading config.");
 
             String[] presetDoctypesAsStrings = doctypes.toArray(new String[0]);
             presetNamespaces = namespaces.toArray(new String[0]);
             presetLabels = labels.toArray(new String[0]);
             presetUrls = urls.toArray(new String[0]);
 
-            log4j.fine("Converted config to arrays.");
+            LOGGER.fine("Converted config to arrays.");
 
             for (int i = 0; i < presetNamespaces.length; i++) {
                 String str = presetNamespaces[i];
@@ -258,14 +247,14 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 }
             }
 
-            log4j.fine("Prepared namespace array.");
+            LOGGER.fine("Prepared namespace array.");
 
             presetDoctypes = new int[presetDoctypesAsStrings.length];
             for (int i = 0; i < presetDoctypesAsStrings.length; i++) {
                 presetDoctypes[i] = Integer.parseInt(presetDoctypesAsStrings[i]);
             }
 
-            log4j.fine("Parsed doctype numbers into ints.");
+            LOGGER.fine("Parsed doctype numbers into ints.");
 
 //            String prefix = System.getProperty("nu.validator.servlet.cachepathprefix");
 
@@ -282,7 +271,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             RngProperty.CHECK_ID_IDREF.add(pmb);
             PropertyMap pMap = pmb.toPropertyMap();
 
-            log4j.fine("Parsing set up. Starting to read schemas.");
+            LOGGER.fine("Parsing set up. Starting to read schemas.");
 
             SortedMap<String, Schema> schemaMap = new TreeMap<String, Schema>();
 
@@ -326,7 +315,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 }
             }
 
-            log4j.fine("Schemas read.");
+            LOGGER.fine("Schemas read.");
 
             preloadedSchemaUrls = new String[schemaMap.size()];
             preloadedSchemas = new Schema[schemaMap.size()];
@@ -346,13 +335,11 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 i++;
             }
 
-//            log4j.fine("Reading HTML5 spec disabled!");
-
-            log4j.fine("Reading spec.");
+            LOGGER.fine("Reading spec.");
             html5spec = Html5SpecBuilder.parseSpec(LocalCacheEntityResolver.getHtml5SpecAsStream());
-            log4j.fine("Spec read.");
+            LOGGER.fine("Spec read.");
 
-            log4j.fine("Initialization complete.");
+            LOGGER.fine("Initialization complete.");
 
             INITIALIZED = true;
 
@@ -395,57 +382,38 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         initialize();
     }
 
-    public String getTextDescription() {
-        return textDescriptionOfTheProblems;
+    public List<ProblemDescription> getFoundProblems() {
+        return problemsHandler.getProblems();
+    }
+
+    public long getValidationTime() {
+        return validationTime;
     }
 
     public void validateCode(String code) throws SAXException {
-
-        System.out.println("Validating: '" + code + "");
-
-        this.codeToValidate = code;
-
-        this.out = System.out;
-
-        //represents an URI where the document can be loaded
-        document = null;
-
+        long from = System.currentTimeMillis();
+        
+        codeToValidate = code;
+        document = null; //represents an URI where the document can be loaded
         setup();
-
-        //asi vzit z FEQ nebo dokumentu
 //        charsetOverride = "UTF-8";
-
-        //muze se hodit!!!
         filteredNamespaces = Collections.emptySet();
-
-        //jen pro OutputFormat.HTML!
-        contentHandler = new HtmlSerializer(out);
-//        contentHandler = new XmlSerializer(out); //pro xml output
-
         int lineOffset = 0;
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-
         errorHandler = new MessageEmitterAdapter(sourceCode,
-                showSource, imageCollector, lineOffset,
-                new TextMessageEmitter(out, true));
+                showSource, null, lineOffset,
+                new NbMessageEmitter(problemsHandler, linesMapper, true));
 
         errorHandler.setLoggingOk(true);
         errorHandler.setErrorsOnly(false);
 
         validate();
-        try {
-            textDescriptionOfTheProblems = out.toString("UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(ValidationTransaction.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        System.out.println("done.");
-
+        
+        validationTime = System.currentTimeMillis() - from;
     }
 
     public boolean isSuccess() {
-        return errorHandler.getErrors() == 0 && errorHandler.getFatalErrors() == 0;
+        return getFoundProblems().isEmpty();
 
     }
 
@@ -538,7 +506,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             }
             wiretap.setWiretapLexicalHandler((LexicalHandler) recorder);
             reader = wiretap;
+
             if (htmlParser != null) {
+                htmlParser.addCharacterHandler(linesMapper);
                 htmlParser.addCharacterHandler(sourceCode);
                 htmlParser.setMappingLangToXmlLang(true);
                 htmlParser.setErrorHandler(errorHandler.getExactErrorHandler());
@@ -575,24 +545,24 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             }
             reader.parse(documentInput);
         } catch (TooManyErrorsException e) {
-            log4j.log(Level.INFO, "TooManyErrorsException", e);
+            LOGGER.log(Level.INFO, "TooManyErrorsException", e);
             errorHandler.fatalError(e);
         } catch (SAXException e) {
-            log4j.log(Level.INFO, "SAXException", e);
+            LOGGER.log(Level.INFO, "SAXException", e);
         } catch (IOException e) {
-            log4j.log(Level.INFO, "IOException", e);
+            LOGGER.log(Level.INFO, "IOException", e);
             errorHandler.ioError(e);
         } catch (IncorrectSchemaException e) {
-            log4j.log(Level.INFO, "IncorrectSchemaException", e);
+            LOGGER.log(Level.INFO, "IncorrectSchemaException", e);
             errorHandler.schemaError(e);
         } catch (RuntimeException e) {
-            log4j.log(Level.SEVERE, "RuntimeException, doc: " + document + " schema: "
+            LOGGER.log(Level.SEVERE, "RuntimeException, doc: " + document + " schema: "
                     + schemaUrls + " lax: " + laxType, e);
             errorHandler.internalError(
                     e,
                     "Oops. That was not supposed to happen. A bug manifested itself in the application internals. Unable to continue. Sorry. The admin was notified.");
         } catch (Error e) {
-            log4j.log(Level.SEVERE, "Error, doc: " + document + " schema: " + schemaUrls
+            LOGGER.log(Level.SEVERE, "Error, doc: " + document + " schema: " + schemaUrls
                     + " lax: " + laxType, e);
             errorHandler.internalError(
                     e,
@@ -832,9 +802,6 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 v = combineValidatorByUrl(v, url);
             }
         }
-        if (imageCollector != null && v != null) {
-            v = new CombineValidator(imageCollector, v);
-        }
         return v;
     }
 
@@ -932,14 +899,14 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private static Schema schemaByUrl(String url, EntityResolver resolver,
             PropertyMap pMap) throws SAXException, IOException,
             IncorrectSchemaException {
-        log4j.fine("Will load schema: " + url);
+        LOGGER.fine("Will load schema: " + url);
         long a = System.currentTimeMillis();
         TypedInputSource schemaInput;
         try {
             schemaInput = (TypedInputSource) resolver.resolveEntity(
                     null, url);
         } catch (ClassCastException e) {
-            log4j.log(Level.SEVERE, url, e);
+            LOGGER.log(Level.SEVERE, url, e);
             throw e;
         }
 
@@ -949,16 +916,16 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         SchemaReader sr = null;
         if ("application/relax-ng-compact-syntax".equals(schemaInput.getType())) {
             sr = CompactSchemaReader.getInstance();
-            log4j.log(Level.FINE, "Used CompactSchemaReader");
+            LOGGER.log(Level.FINE, "Used CompactSchemaReader");
         } else {
             sr = new AutoSchemaReader();
-            log4j.log(Level.FINE, "Used AutoSchemaReader");
+            LOGGER.log(Level.FINE, "Used AutoSchemaReader");
         }
         long c = System.currentTimeMillis();
         System.out.println("SchemaReader created in " + (c - b) + " ms.");
 
         Schema sch = sr.createSchema(schemaInput, pMap);
-        log4j.log(Level.FINE, "Schema created in " + (System.currentTimeMillis() - c) + " ms.");
+        LOGGER.log(Level.FINE, "Schema created in " + (System.currentTimeMillis() - c) + " ms.");
         return sch;
     }
 
