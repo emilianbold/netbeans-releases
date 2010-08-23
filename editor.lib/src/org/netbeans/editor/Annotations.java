@@ -926,29 +926,33 @@ public class Annotations implements DocumentListener {
         return createMenu(kit, line, !bkgInit);
     }
     
-//    private String dumpAnnotaionDesc(AnnotationDesc ad) {
-//        return "offset=" + ad.getOffset() // NOI18N
-//            + "(ls=" + doc.getParagraphElement(ad.getOffset()).getStartOffset() // NOI18N
-//            + "), line=" + ad.getLine() // NOI18N
-//            + ", type=" + ad.getAnnotationType(); // NOI18N
-//    }
-//
-//    private String dumpLineAnnotationsArray() {
-//        StringBuffer sb = new StringBuffer();
-//        for (int i = 0; i < lineAnnotationsArray.size(); i++) {
-//            LineAnnotations la = lineAnnotationsArray.get(i);
-//            LinkedList<AnnotationDesc> annos = la.annos;
-//            sb.append("[" + i + "]: line=" + la.getLine() // NOI18N
-//                + ", anos:"); // NOI18N
-//            for (AnnotationDesc ad : annos) {
-//                sb.append("\n    " + dumpAnnotaionDesc(ad)); // NOI18N
-//            }
-//            sb.append('\n');
-//        }
-//        return sb.toString();
-//    }
+    private String dumpAnnotaionDesc(AnnotationDesc ad) {
+        return "offset=" + ad.getOffset() // NOI18N
+            + "(ls=" + doc.getParagraphElement(ad.getOffset()).getStartOffset() // NOI18N
+            + "), line=" + ad.getLine() // NOI18N
+            + ", type=" + ad.getAnnotationType(); // NOI18N
+    }
+
+    private String dumpLineAnnotationsArray() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < lineAnnotationsArray.size(); i++) {
+            LineAnnotations la = lineAnnotationsArray.get(i);
+            LinkedList<AnnotationDesc> annos = la.annos;
+            sb.append("[" + i + "]: line=" + la.getLine() // NOI18N
+                + ", anos:"); // NOI18N
+            for (AnnotationDesc ad : annos) {
+                sb.append("\n    " + dumpAnnotaionDesc(ad)); // NOI18N
+            }
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return dumpLineAnnotationsArray() + ", lastGetLineAnnotationsIdx = " + lastGetLineAnnotationsIdx + ", lastGetLineAnnotationsLine = " + lastGetLineAnnotationsLine;
+    }
             
-    
     /** Manager of all annotations attached to one line. Class stores
      * the references to all annotations from one line in List and also
      * stores which annotation is active, count of visible annotations 
