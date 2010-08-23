@@ -116,7 +116,6 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         initComponents();
 
         if (JAXBRequired) {
-            generateJAXBCheckBox.setSelected(true);
             generateJAXBCheckBox.setEnabled(false);
         }
 
@@ -432,6 +431,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
         });
 
+        generateJAXBCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(generateJAXBCheckBox, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_GenerateJAXBAnnotations")); // NOI18N
         generateJAXBCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_ToolTipJAXB")); // NOI18N
         generateJAXBCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -458,7 +458,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(createPUCheckbox)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(cmpFieldsInInterfaceCheckBox)
