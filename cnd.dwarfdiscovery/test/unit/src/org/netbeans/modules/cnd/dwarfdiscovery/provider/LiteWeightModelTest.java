@@ -78,7 +78,7 @@ public class LiteWeightModelTest extends NbTestCase {
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gentoo.4.3.o";
         DwarfRenderer dwarfRenderer = LWM(objFileName);
-        //dwarfRenderer.dumpModel(System.out);
+        dwarfRenderer.dumpModel(System.out);
         Map<String, Map<String, Declaration>> map = dwarfRenderer.getLWM();
 ///export/home/av202691/NetBeansProjects/Quote_1/cpu.cc
 //        Cpu::ComputeSupportMetric() (DW_TAG_subprogram) :17
