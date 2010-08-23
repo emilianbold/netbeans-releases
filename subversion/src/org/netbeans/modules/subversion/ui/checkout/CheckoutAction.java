@@ -67,6 +67,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public final class CheckoutAction extends CallableSystemAction {
            
+    @Override
     public void performAction() {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -101,19 +102,23 @@ public final class CheckoutAction extends CallableSystemAction {
         });
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(CheckoutAction.class, "CTL_CheckoutAction"); // NOI18N
     }
     
+    @Override
     protected void initialize() {
         super.initialize();        
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -128,6 +133,7 @@ public final class CheckoutAction extends CallableSystemAction {
         final boolean showCheckoutCompleted)
     {
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             public void perform() {
                 try {
                     setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
