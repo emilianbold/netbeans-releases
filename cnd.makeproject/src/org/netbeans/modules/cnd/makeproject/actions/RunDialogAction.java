@@ -66,7 +66,9 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
+import org.openide.windows.WindowManager;
 
 public class RunDialogAction extends NodeAction {
 
@@ -156,7 +158,25 @@ public class RunDialogAction extends NodeAction {
         perform(new RunDialogPanel(executablePath, runButton, isRun), isRun);
     }
 
-    private void perform(RunDialogPanel runDialogPanel, boolean isRun) {
+    private void perform(final RunDialogPanel runDialogPanel, boolean isRun) {
+        if (WindowManager.getDefault().getRegistry().getOpened().isEmpty()){
+            // It seems action was invoked from command line
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+
+                @Override
+                public void run() {
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            Project project = runDialogPanel.getSelectedProject();
+                        }
+                    });
+                }
+            });
+            return;
+        }
+
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 runDialogPanel,
                 isRun ? getString("RunDialogTitle") : getString("CreateDialogTitle"),// NOI18N
