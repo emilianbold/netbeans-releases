@@ -303,7 +303,7 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                         sb.append("\" id=\"issue");
                         sb.append(issueidx);
                         sb.append("\">");
-                        if(start >= messageValue.length() || end >= messageValue.length()) {
+                        if(start >= messageValue.length() || end > messageValue.length()) {
                             linked = false;
                             break;
                         }
