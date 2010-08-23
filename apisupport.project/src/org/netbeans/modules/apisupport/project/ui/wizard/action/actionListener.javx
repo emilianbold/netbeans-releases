@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 <#if ANNOTATIONS??>
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionID;
 
 @ActionID(
@@ -21,6 +23,12 @@ import org.openide.awt.ActionID;
     </#if>
     displayName="#${DISPLAY_NAME_KEY}"
 )
+@ActionReferences({
+<#list REFERENCES as r>
+  @ActionReference(path="${r.path()}", position=${r.position()?string}<#if 
+  r.name()?length != 0>, name="${r.name()}"</#if>)<#if r_has_next>,</#if>
+</#list>
+})
 </#if>
 public final class ${CLASS_NAME} implements ActionListener {
     public void actionPerformed(ActionEvent e) {

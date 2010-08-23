@@ -44,18 +44,21 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
-import java.io.File;
 import java.util.Arrays;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFilesTest;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.WizardDescriptor;
+import org.openide.awt.ActionReference;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -69,110 +72,76 @@ public class DataModelTest extends LayerTestBase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
+    
+    public void testActionReferenceCreate() throws Exception {
+        ActionReference res = DataModel.createActionReference("mypath/sub", true, false, 100, "myname");
+        assertEquals("mypath/sub", res.path());
+        assertEquals(100, res.position());
+        assertEquals("myname", res.name());
+    }
 
     public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {
 //    XXX: failing test, fix or delete
-//        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-//        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-//        FileObject root = handle.layer(true).getRoot();
-//        FileUtil.createData(root, "Menu/Help/Tutorials/quick-start.url").setAttribute("position", 100);
-//        FileUtil.createData(root, "Menu/Help/Tutorials/prj-import-guide.url").setAttribute("position", 200);
-//        FileUtil.createData(root, "Toolbars/Edit/org-openide-actions-FindAction.instance").setAttribute("position", 600);
-//
-//        WizardDescriptor wd = new WizardDescriptor() {};
-//        wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
-//        DataModel data = new DataModel(wd);
-//
-//        // first panel data (Action Type)
-//        data.setAlwaysEnabled(true);
-//
-//        // second panel data (GUI Registration)
-//        data.setCategory("Actions/Tools");
-//        // global menu item
-//        data.setGlobalMenuItemEnabled(true);
-//        data.setGMIParentMenu("Menu/Help/Tutorials");
-//        data.setGMIPosition(new Position("quick-start.url", "prj-import-guide.url"));
-//        data.setGMISeparatorBefore(true);
-//        data.setGMISeparatorAfter(true);
-//        // global toolbar button
-//        data.setToolbarEnabled(true);
-//        data.setToolbar("Toolbars/Edit");
-//        data.setToolbarPosition(new Position("org-openide-actions-FindAction.instance", null));
-//        // global keyboard shortcut
-//        data.setKeyboardShortcutEnabled(true);
-//        data.setKeyStroke("DA-B");
-//
-//        // third panel data (Name, Icon, and Location)
-//        data.setClassName("BeepAction");
-//        data.setDisplayName("Beep");
-//        data.setPackageName("org.example.module1");
-//
-//        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
-//        assertEquals(
-//                Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java", "src/org/example/module1/Bundle.properties"}),
-//                Arrays.asList(cmf.getCreatedPaths()));
-//        assertEquals(
-//                Arrays.asList(new String[] {"nbproject/project.xml", "src/org/example/module1/resources/layer.xml"}),
-//                Arrays.asList(cmf.getModifiedPaths()));
-//
-//        cmf.run();
-//
-//        String[] supposedContent = new String[] {
-//            "<filesystem>",
-//                    "<folder name=\"Actions\">",
-//                    "<folder name=\"Tools\">",
-//                    "<file name=\"org-example-module1-BeepAction.instance\"/>",
-//                    "</folder>",
-//                    "</folder>",
-//                    "<folder name=\"Menu\">",
-//                    "<folder name=\"Help\">",
-//                    "<folder name=\"Tutorials\">",
-//                    "<file name=\"org-example-module1-BeepAction.shadow\">",
-//                    "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
-//                    "<attr name=\"position\" intvalue=\"150\"/>",
-//                    "</file>",
-//                    "<file name=\"org-example-module1-separatorAfter.instance\">",
-//                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
-//                    "<attr name=\"position\" intvalue=\"175\"/>",
-//                    "</file>",
-//                    "<file name=\"org-example-module1-separatorBefore.instance\">",
-//                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
-//                    "<attr name=\"position\" intvalue=\"125\"/>",
-//                    "</file>",
-//                    "<file name=\"prj-import-guide.url\">",
-//                    "<attr name=\"position\" intvalue=\"200\"/>",
-//                    "</file>",
-//                    "<file name=\"quick-start.url\">",
-//                    "<attr name=\"position\" intvalue=\"100\"/>",
-//                    "</file>",
-//                    "</folder>",
-//                    "</folder>",
-//                    "</folder>",
-//                    "<folder name=\"Shortcuts\">",
-//                    "<file name=\"DA-B.shadow\">",
-//                    "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
-//                    "</file>",
-//                    "</folder>",
-//                    "<folder name=\"Toolbars\">",
-//                    "<folder name=\"Edit\">",
-//                    "<file name=\"org-example-module1-BeepAction.shadow\">",
-//                    "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
-//                    "<attr name=\"position\" intvalue=\"700\"/>",
-//                    "</file>",
-//                    "<file name=\"org-openide-actions-FindAction.instance\">",
-//                    "<attr name=\"position\" intvalue=\"600\"/>",
-//                    "</file>",
-//                    "</folder>",
-//                    "</folder>",
-//                    "</filesystem>"
-//        };
-//
-//        CreatedModifiedFilesTest.assertLayerContent(supposedContent,
-//                new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
+        FileObject root = fs.getRoot();
+        FileUtil.createData(root, "Menu/Help/Tutorials/quick-start.url").setAttribute("position", 100);
+        FileUtil.createData(root, "Menu/Help/Tutorials/prj-import-guide.url").setAttribute("position", 200);
+        FileUtil.createData(root, "Toolbars/Edit/org-openide-actions-FindAction.instance").setAttribute("position", 600);
+        
+        WizardDescriptor wd = new WizardDescriptor() {};
+        wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
+        DataModel data = new DataModel(wd);
+        
+        // first panel data (Action Type)
+        data.setAlwaysEnabled(true);
+        
+        // second panel data (GUI Registration)
+        data.setCategory("Actions/Tools");
+        // global menu item
+        data.setGlobalMenuItemEnabled(true);
+        data.setGMIParentMenu("Menu/Help/Tutorials");
+        data.setGMIPosition(new Position("quick-start.url", "prj-import-guide.url"));
+        data.setGMISeparatorBefore(true);
+        data.setGMISeparatorAfter(true);
+        // global toolbar button
+        data.setToolbarEnabled(true);
+        data.setToolbar("Toolbars/Edit");
+        data.setToolbarPosition(new Position("org-openide-actions-FindAction.instance", null));
+        // global keyboard shortcut
+        data.setKeyboardShortcutEnabled(true);
+        data.setKeyStroke("DA-B");
+        
+        // third panel data (Name, Icon, and Location)
+        data.setClassName("BeepAction");
+        data.setDisplayName("Beep");
+        data.setPackageName("org.example.module1");
+        
+        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
+        assertEquals(
+            Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java", "src/org/example/module1/Bundle.properties"}),
+            Arrays.asList(cmf.getCreatedPaths())
+        );
+        assertEquals(
+            Arrays.asList(new String[] {"nbproject/project.xml" }),
+            Arrays.asList(cmf.getModifiedPaths())
+        );
+        
+        cmf.run();
+        
+        FileObject ba = project.getSourceDirectory().getFileObject("org/example/module1/BeepAction.java");
+        assertNotNull("BeepAction was generated", ba);
+        String text = ba.asText();
+
+        if (text.toLowerCase().contains("freemarker")) {
+            fail("There shall be no errors in the generated BeepAction.java:\n" + text);
+        }
+        //fail("OK\n" + text);
     }
 
 //    XXX: failing test, fix or delete

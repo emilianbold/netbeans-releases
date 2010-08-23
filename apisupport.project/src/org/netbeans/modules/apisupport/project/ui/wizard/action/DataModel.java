@@ -46,10 +46,16 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -58,6 +64,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -163,7 +170,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             SpecificationVersion current = getModuleInfo().getDependencyVersion("org.openide.awt");
             actionProxy = current == null || current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
             actionContext = current == null || current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
-            annotations = current == null || current.compareTo(new SpecificationVersion("7.26")) >= 0; // NOI18N
+            annotations = current == null || current.compareTo(new SpecificationVersion("7.27")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, ex);
             actionProxy = false;
@@ -189,7 +196,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         ); // NOI18N
         assert template != null;
         String actionNameKey = "CTL_" + className; // NOI18N
-        Map<String,String> replaceTokens = new HashMap<String,String>();
+        Map<String,Object> replaceTokens = new HashMap<String,Object>();
         replaceTokens.put("CLASS_NAME", className); // NOI18N
         replaceTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         replaceTokens.put("DISPLAY_NAME_KEY", actionNameKey); // NOI18N
@@ -200,14 +207,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             replaceTokens.put("ANNOTATIONS", "true"); // NOI18N
         }
         Set<String> imports = new TreeSet<String>();
-        String cName = parseClassName(cookieClasses[0]);
-        String cNameVar = Character.toLowerCase(cName.charAt(0)) + cName.substring(1);
         if (!actionContext) {
             imports.addAll(Arrays.asList(HARDCODED_IMPORTS));
         }
         Set<String> addedFQNCs = new TreeSet<String>();
         StringBuffer cookieSB = new StringBuffer();
         if (!alwaysEnabled) {
+            String cName = parseClassName(cookieClasses[0]);
+            String cNameVar = Character.toLowerCase(cName.charAt(0)) + cName.substring(1);
             for (String cookieClass : cookieClasses) {
                 // imports for predefined chosen cookie classes
                 if (CLASS_TO_CNB.containsKey(cookieClass)) {
@@ -260,6 +267,61 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             replaceTokens.put("ICON_RESOURCE_METHOD", ""); // NOI18N
             replaceTokens.put("INITIALIZE_METHOD", DataModel.generateNoIconInitializeMethod()); // NOI18N
         }
+        
+        if (annotations) {
+            List<ActionReference> refs = new ArrayList<ActionReference>();
+            // create layer entry for global menu item
+            if (globalMenuItemEnabled) {
+                refs.add(createActionReference(
+                    gmiParentMenuPath,
+                    gmiSeparatorBefore,
+                    gmiSeparatorAfter, 
+                    gmiPosition.toInteger(),
+                    null
+                ));
+            }
+
+            /*
+            // create layer entry for toolbar button
+            if (toolbarEnabled) {
+                generateShadow(toolbar + "/" + shadow, instanceFullPath); // NOI18N
+                generateOrder(toolbar, toolbarPosition.getBefore(), shadow, toolbarPosition.getAfter());
+            }
+            */
+            
+            // create layer entry for keyboard shortcut
+            if (kbShortcutEnabled) {
+                String parentPath = "Shortcuts"; // NOI18N
+                for (String keyStroke : keyStrokes) {
+                    refs.add(
+                        createActionReference(
+                            parentPath,
+                            false,
+                            false,
+                            -1,
+                            keyStroke
+                        )
+                    );
+                }
+            }
+
+            /*
+            // create file type context menu item
+            if (ftContextEnabled) {
+                generateShadowWithOrderAndSeparator(ftContextType, shadow,
+                        dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
+                        ftContextSeparatorAfter, ftContextPosition);
+            }
+            // create editor context menu item
+            if (edContextEnabled) {
+                generateShadowWithOrderAndSeparator(edContextType, shadow,
+                        dashedFqClassName, instanceFullPath, edContextSeparatorBefore,
+                        edContextSeparatorAfter, edContextPosition);
+            }
+            */
+            replaceTokens.put("REFERENCES", refs);
+        }
+        
         
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
         
@@ -333,34 +395,35 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             }
         }
         
-        // create layer entry for global menu item
-        if (globalMenuItemEnabled) {
-            generateShadowWithOrderAndSeparator(gmiParentMenuPath, shadow,
-                    dashedFqClassName, instanceFullPath, gmiSeparatorBefore,
-                    gmiSeparatorAfter, gmiPosition);
-        }
-        
-        // create layer entry for toolbar button
-        if (toolbarEnabled) {
-            generateShadow(toolbar + "/" + shadow, instanceFullPath); // NOI18N
-            generateOrder(toolbar, toolbarPosition.getBefore(), shadow, toolbarPosition.getAfter());
-        }
-        
-        // create layer entry for keyboard shortcut
-        if (kbShortcutEnabled) {
-            String parentPath = "Shortcuts"; // NOI18N
-            for (String keyStroke : keyStrokes) {
-                generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N                
+        if (!annotations) {
+            // create layer entry for global menu item
+            if (globalMenuItemEnabled) {
+                generateShadowWithOrderAndSeparator(gmiParentMenuPath, shadow,
+                        dashedFqClassName, instanceFullPath, gmiSeparatorBefore,
+                        gmiSeparatorAfter, gmiPosition);
+            }
+
+            // create layer entry for toolbar button
+            if (toolbarEnabled) {
+                generateShadow(toolbar + "/" + shadow, instanceFullPath); // NOI18N
+                generateOrder(toolbar, toolbarPosition.getBefore(), shadow, toolbarPosition.getAfter());
+            }
+
+            // create layer entry for keyboard shortcut
+            if (kbShortcutEnabled) {
+                String parentPath = "Shortcuts"; // NOI18N
+                for (String keyStroke : keyStrokes) {
+                    generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N                
+                }
+            }
+
+            // create file type context menu item
+            if (ftContextEnabled) {
+                generateShadowWithOrderAndSeparator(ftContextType, shadow,
+                        dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
+                        ftContextSeparatorAfter, ftContextPosition);
             }
         }
-        
-        // create file type context menu item
-        if (ftContextEnabled) {
-            generateShadowWithOrderAndSeparator(ftContextType, shadow,
-                    dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
-                    ftContextSeparatorAfter, ftContextPosition);
-        }
-        
         // create editor context menu item
         if (edContextEnabled) {
             generateShadowWithOrderAndSeparator(edContextType, shadow,
@@ -560,6 +623,43 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     void setEdContextSeparatorBefore(boolean separator) {
         this.edContextSeparatorBefore = separator;
     }
+
+    static ActionReference createActionReference(
+        final String parentPath, 
+        boolean beforeSep, 
+        boolean afterSep, 
+        final int position, 
+        final String name
+    ) {
+        class H implements InvocationHandler {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                System.err.println("name: " + method.getName());
+                if (method.getName().equals("path")) {
+                    return parentPath;
+                }
+                if (method.getName().equals("position")) {
+                    return position;
+                }
+                if (method.getName().equals("name")) {
+                    return name == null ? "" : name;
+                }
+                if (method.getName().equals("equals")) {
+                    return this == Proxy.getInvocationHandler(proxy);
+                }
+                if (method.getName().equals("hashCode")) {
+                    return hashCode();
+                }
+                return null;
+            }
+        }
+                
+        return (ActionReference) Proxy.newProxyInstance(
+            ActionReference.class.getClassLoader(), 
+            new Class[] { ActionReference.class }, 
+            new H()
+        );
+    }
     
     static final class Position {
 
@@ -603,6 +703,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             String beforeText = beforeName == null ? "" : beforeName + POSITION_SEPARATOR;
             String afterText = afterName == null ? "" : POSITION_SEPARATOR + afterName;
             return beforeText + POSITION_HERE + afterText;
+        }
+
+        private int toInteger() {
+            // XXX, TBD:
+            return 100;
         }
     }
     
