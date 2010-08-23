@@ -57,6 +57,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import org.apache.maven.artifact.Artifact;
@@ -162,7 +163,7 @@ public final class EmbedderFactory {
     public static MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
-            .setClassWorld( new ClassWorld(mavenCoreRealmId, getMavenClassLoader()) )
+            .setClassWorld( new ClassWorld(mavenCoreRealmId, guiceReadyLoader(EmbedderFactory.class)) )
             .setName("maven");
 
         
@@ -261,7 +262,7 @@ public final class EmbedderFactory {
     /*public*/ static MavenEmbedder createOnlineEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
-            .setClassWorld( new ClassWorld(mavenCoreRealmId, getMavenClassLoader()) )
+            .setClassWorld( new ClassWorld(mavenCoreRealmId, guiceReadyLoader(EmbedderFactory.class)) )
             .setName("maven");
 
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
@@ -310,41 +311,62 @@ public final class EmbedderFactory {
 
         return embedder;
     }
-    
-    private static ClassLoader getMavenClassLoader() {
-        Class<?>[] baseClasses = new Class<?>[] {EmbedderFactory.class};
-        // org.sonatype.guice.bean.reflect.URLClassSpace assumes URLClassLoader, not the NB module class loader.
-        // We must provide all JARs which might be using @javax.inject.Inject to register components, so guice-bean-scanners can find them.
-        try {
-            List<URL> urls = new ArrayList<URL>();
-            for (Class<?> baseClass : baseClasses) {
+
+    /**
+     * Create a class loader usable for Plexus over Guice.
+     * {@link org.sonatype.guice.bean.reflect.URLClassSpace} assumes {@link URLClassLoader}, not the NB module class loader.
+     * We must provide all JARs which might be using {@link javax.inject.Inject} to register components, so guice-bean-scanners can find them.
+     * @param baseClasses representative classes from some NB modules which may also bundle some Class-Path JARs
+     * @return a {@link URLClassLoader} which has the right URLs but does not load any classes on its own
+     */
+    public static synchronized ClassLoader guiceReadyLoader(Class<?>... baseClasses) {
+        List<URL> allURLs = new ArrayList<URL>();
+        final List<ClassLoader> baseLoaders = new ArrayList<ClassLoader>();
+        for (Class<?> baseClass : baseClasses) {
+            ClassLoader baseLoader = baseClass.getClassLoader();
+            baseLoaders.add(baseLoader);
+            List<URL> urls = urlCache.get(baseLoader);
+            if (urls == null) {
+                urls = new ArrayList<URL>();
                 URL base = baseClass.getProtectionDomain().getCodeSource().getLocation();
-                Manifest m = new Manifest(new URL(base, "META-INF/MANIFEST.MF").openStream());
-                String baseS = base.toString();
-                if (baseS.matches("jar:.+!/")) {
-                    base = new URL(baseS.substring(4, baseS.length() - 2));
-                }
-                urls.add(base); // necessary only if we use @Inject in NB code
-                String cp = m.getMainAttributes().getValue(Name.CLASS_PATH);
-                if (cp != null) {
-                    for (String piece : cp.split(" +")) {
-                        urls.add(new URL(base, piece));
+                try {
+                    Manifest m = new Manifest(new URL(base, "META-INF/MANIFEST.MF").openStream());
+                    String baseS = base.toString();
+                    if (baseS.matches("jar:.+!/")) {
+                        base = new URL(baseS.substring(4, baseS.length() - 2));
                     }
+                    urls.add(base); // necessary only if we use @Inject in NB code
+                    String cp = m.getMainAttributes().getValue(Name.CLASS_PATH);
+                    if (cp != null) {
+                        for (String piece : cp.split(" +")) {
+                            urls.add(new URL(base, piece));
+                        }
+                    }
+                } catch (IOException x) {
+                    throw new AssertionError(x);
                 }
+//                System.err.println("loading classes related to " + baseClass.getName() + " from " + urls);
+                urlCache.put(baseLoader, urls);
             }
-//            System.err.println("loading from: " + urls);
-            URLClassLoader ucl = new URLClassLoader(urls.toArray(new URL[0]), baseClasses[0].getClassLoader()) {
-                protected @Override synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-                    Class<?> c = super.loadClass(name, resolve);
-                    assert c.getClassLoader() != this : name + " loaded from " + c.getClassLoader();
-                    return c;
-                }
-            };
-            return ucl;
-        } catch (IOException x) {
-            throw new AssertionError(x);
+            allURLs.addAll(urls);
         }
+        return new URLClassLoader(allURLs.toArray(new URL[allURLs.size()])) {
+            protected @Override synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                for (ClassLoader baseLoader : baseLoaders) {
+                    try {
+                        Class<?> c = baseLoader.loadClass(name);
+                        if (resolve) {
+                            resolveClass(c);
+                        }
+                        return c;
+                    } catch (ClassNotFoundException x) {}
+                }
+                throw new ClassNotFoundException(name);
+            }
+        };
     }
+    // cannot cache the actual URLClassLoader since it refers strongly to baseLoader, but anyway it is flyweight
+    private static final Map<ClassLoader,List<URL>> urlCache = new WeakHashMap<ClassLoader,List<URL>>();
     
 //
 //    public static MavenEmbedder createExecuteEmbedder(MavenEmbedderLogger logger) /*throws MavenEmbedderException*/ {
