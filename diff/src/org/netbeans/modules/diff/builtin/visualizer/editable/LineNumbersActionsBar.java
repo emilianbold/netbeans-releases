@@ -366,7 +366,7 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
                         || !master.isFirst() && dd.getDiff().getType() == Difference.ADD) {
                     Image activeImage = master.isFirst() ? insertActiveImage : removeActiveImage;
                     Image image = master.isFirst() ? insertImage : removeImage;
-                    Rectangle hotSpot = new Rectangle(1, top + actionsYOffset, actionIconsWidth, actionIconsHeight);
+                    Rectangle hotSpot = new Rectangle((master.isFirst() ? 0 : offset) + 1, top + actionsYOffset, actionIconsWidth, actionIconsHeight);
                     if (hotSpot.contains(lastMousePosition) || idx == currentDifference) {
                         g.drawImage(activeImage, hotSpot.x, hotSpot.y, this);
                     } else {
