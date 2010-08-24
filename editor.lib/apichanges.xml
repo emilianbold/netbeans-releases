@@ -188,7 +188,7 @@ BUILD FAILED
 Signature tests return code is wrong (1), check the messages above
 </pre>                
             </description>
-            <issue number="90403"/>
+            <issue number="189638"/>
         </change>
         
         <change id="ToolTipSupport-heavyweight-tooltips">
