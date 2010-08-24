@@ -134,7 +134,9 @@ public class formatting_0001 extends formatting {
 
     public void bug181787() {
         startTest();
-        //test for always
+        if (getPlatform().equals("mac os x")) {
+            fail("Not implemented for MAC OS X yet!"); 
+        }
         setMethodParametersWrappingOptions(1);
 
         EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
@@ -193,8 +195,10 @@ public class formatting_0001 extends formatting {
     }
 
     public void Check_formatting_options_count() throws InterruptedException {
+        
         startTest();
-
+        if (getPlatform().equals("mac os x")) 
+            fail("Not implemented for MAC OS X yet!");
         JDialogOperator window = selectPHPFromEditorOptions(0);
 
         //categories - check if they are all present
@@ -253,9 +257,10 @@ public class formatting_0001 extends formatting {
         }
 
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");
+        Sleep(5000);
         String sTextUndo = eoPHP.getText();
         if (!sTextChanged.equals(sTextUndo)) {
-            fail("Undo formatting is not valid.");
+            fail("Undo formatting is not valid. Expected: \n " + sTextChanged + " \n but was \n" + sTextUndo);
         }
 
         endTest();
@@ -298,10 +303,12 @@ public class formatting_0001 extends formatting {
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");
+        Sleep(5000);
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");
+        Sleep(5000);
         String sTextUndo = eoPHP.getText();
         if (!sTextOriginal.equals(sTextUndo)) {
-            fail("Undo formatting is not valid.");
+            fail("Undo formatting is not valid. Expected: \n" + sTextOriginal + " but was \n" + sTextUndo);
         }
 
         endTest();
