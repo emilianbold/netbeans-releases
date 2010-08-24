@@ -45,18 +45,15 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.util.Arrays;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.WizardDescriptor;
 import org.openide.awt.ActionReference;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -140,6 +137,12 @@ public class DataModelTest extends LayerTestBase {
 
         if (text.toLowerCase().contains("freemarker")) {
             fail("There shall be no errors in the generated BeepAction.java:\n" + text);
+        }
+        if (text.toLowerCase().contains("333")) {
+            fail("Postion 333x signals wrongly defined position:\n" + text);
+        }
+        if (!text.toLowerCase().contains("position=150")) {
+            fail("Postion position=150 is what is in middle of 100 and 200:\n" + text);
         }
         //fail("OK\n" + text);
     }

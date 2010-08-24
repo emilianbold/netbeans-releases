@@ -61,11 +61,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -276,7 +279,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     gmiParentMenuPath,
                     gmiSeparatorBefore,
                     gmiSeparatorAfter, 
-                    gmiPosition.toInteger(),
+                    gmiPosition.toInteger(getProject(), gmiParentMenuPath),
                     null
                 ));
             }
@@ -705,10 +708,38 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             return beforeText + POSITION_HERE + afterText;
         }
 
-        private int toInteger() {
-            // XXX, TBD:
-            return 100;
-        }
+        final int toInteger(Project project, String layerPath) {
+            try {
+                FileObject merged = LayerUtils.getEffectiveSystemFilesystem(project).findResource(layerPath);
+                assert merged != null : layerPath;
+                Integer beforePos = getPosition(merged, getBefore());
+                Integer afterPos = getPosition(merged, getAfter());
+                    if (beforePos != null && afterPos != null) {
+                        // won't work well if afterPos == beforePos + 1, but oh well
+                        return (beforePos + afterPos) / 2;
+                    } else if (beforePos != null) {
+                        return beforePos + 100;
+                    } else if (afterPos != null) {
+                        return afterPos - 100; // NOI18N
+                    } else {
+                        return 3333;
+                    }
+                } catch (IOException ex) {
+                    return 3334;
+                }
+            }
+            private Integer getPosition(FileObject folder, String name) {
+                if (name == null) {
+                    return null;
+                }
+                FileObject f = folder.getFileObject(name);
+                if (f == null) {
+                    return null;
+                }
+                Object pos = f.getAttribute("position"); // NOI18N
+                // ignore floats for now...
+                return pos instanceof Integer ? (Integer) pos : null;
+            }
     }
     
     private void generateSeparator(final String parentPath, final String sepName) {
