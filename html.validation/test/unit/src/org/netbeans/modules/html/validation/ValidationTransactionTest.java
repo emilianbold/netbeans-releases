@@ -70,9 +70,25 @@ public class ValidationTransactionTest extends NbTestCase {
     public void testBasic() throws SAXException, IOException, ParseException {
         ValidationTransaction.enableDebug();
 
-        validate("<!doctype html> <html><head><title>hello</title></head><body><div>ahoj!</div></body></html>", true);
-        validate("<!doctype html> chybi open tag</div>", false);
-        validate("<!doctype html> <div> chybi close tag", false);
+//        validate("<!doctype html> <html><head><title>hello</title></head><body><div>ahoj!</div></body></html>", true);
+//        validate("<!doctype html> chybi open tag</div>", false);
+//        validate("<!doctype html> <div> chybi close tag", false);
+
+        validate("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
+                + "<html><head><title>hello</title></head>\n"
+                + "<body>\n"
+                + "<div>ahoj!</Xiv>\n"
+                + "</body></html>\n", false);
+
+//        validate("1\n"
+//                + "23\n"
+//                + "345\n"
+//                + "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
+//                + "<html><head><title>hello</title></head>\n"
+//                + "<body>\n"
+//                + "<div>ahoj!</Xiv>\n"
+//                + "</body></html>\n", false);
+
     }
 
     private void validate(String code, boolean expectedPass) throws SAXException {

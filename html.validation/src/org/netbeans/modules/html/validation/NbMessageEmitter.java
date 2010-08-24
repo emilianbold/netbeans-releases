@@ -57,9 +57,7 @@ public class NbMessageEmitter extends MessageEmitter {
 
     private static final char[] IN_RESOURCE = " in resource ".toCharArray();
 
-    private final Writer writer;
-
-    private final TextMessageTextHandler messageTextHandler;
+    private TextMessageTextHandler messageTextHandler;
 
     private String systemId;
 
@@ -73,7 +71,7 @@ public class NbMessageEmitter extends MessageEmitter {
 
     private boolean textEmitted;
 
-    private final HtmlSerializer contentHandler;
+    private HtmlSerializer contentHandler;
 
     private ProblemsHandler problemsHandler;
 
@@ -81,6 +79,9 @@ public class NbMessageEmitter extends MessageEmitter {
 
     private LinesMapper linesMapper;
     
+    private Writer writer;
+
+    private boolean asciiQuotes;
     
 //    private static Writer newOutputStreamWriter(OutputStream out) {
 //        CharsetEncoder enc = Charset.forName("UTF-8").newEncoder();
@@ -92,9 +93,7 @@ public class NbMessageEmitter extends MessageEmitter {
     public NbMessageEmitter(ProblemsHandler problemsHandler, LinesMapper linesMapper, boolean asciiQuotes) {
         this.problemsHandler = problemsHandler;
         this.linesMapper = linesMapper;
-        this.writer = new StringWriter();
-        this.messageTextHandler = new TextMessageTextHandler(writer, asciiQuotes);
-        this.contentHandler = new HtmlSerializer(writer);
+        this.asciiQuotes = asciiQuotes;
     }
 
     private void emitErrorLevel(char[] level) throws IOException {
@@ -166,6 +165,12 @@ public class NbMessageEmitter extends MessageEmitter {
             int oneBasedFirstLine, int oneBasedFirstColumn,
             int oneBasedLastLine, int oneBasedLastColumn, boolean exact)
             throws SAXException {
+
+        this.writer = new StringWriter();
+        this.messageTextHandler = new TextMessageTextHandler(writer, asciiQuotes);
+        this.contentHandler = new HtmlSerializer(writer);
+
+
         this.systemId = systemId;
         this.oneBasedFirstLine = oneBasedFirstLine;
         this.oneBasedFirstColumn = oneBasedFirstColumn;
@@ -207,13 +212,6 @@ public class NbMessageEmitter extends MessageEmitter {
     @Override
     public void endMessages() throws SAXException {
         problemsHandler.endProblems();
-        
-         try {
-             writer.flush();
-             writer.close();
-         } catch (IOException e) {
-         throw new SAXException(e.getMessage(), e);
-         }
     }
 
     /**
@@ -257,27 +255,39 @@ public class NbMessageEmitter extends MessageEmitter {
             throw new SAXException(e.getMessage(), e);
         }
 
-        int linefrom = -1, lineto = -1, columnfrom = -1, columnto = -1;
-        if(oneBasedFirstLine != -1) {
-            linefrom = oneBasedFirstLine;
-            columnfrom = oneBasedFirstColumn == -1 ? 0 : oneBasedFirstColumn;
-        }
-        if(oneBasedLastLine != -1) {
-            lineto = oneBasedLastLine;
-            columnto = oneBasedLastColumn == -1 ? 0 : oneBasedLastColumn;
-        } else {
-            lineto = linefrom;
-            columnto = 1;
-        }
+        int from, to;
+        if(oneBasedFirstLine == -1) {
+            //no position at all - use first line
+            from = 0;
+            to = linesMapper.getLine(0).getEnd();
 
-        int from = linesMapper.getSourceOffsetForLocation(linefrom, columnfrom);
-        int to = linesMapper.getSourceOffsetForLocation(lineto, columnto);
+        } else {
+            int linefrom = -1, lineto = -1, columnfrom = -1, columnto = -1;
+            if (oneBasedFirstLine != -1) {
+                linefrom = oneBasedFirstLine;
+                columnfrom = oneBasedFirstColumn == -1 ? 0 : oneBasedFirstColumn;
+            }
+            if (oneBasedLastLine != -1) {
+                lineto = oneBasedLastLine;
+                columnto = oneBasedLastColumn == -1 ? 0 : oneBasedLastColumn;
+            } else {
+                lineto = linefrom;
+                columnto = 1;
+            }
+
+            System.out.println("Message '" + writer + "' lf=" + linefrom + ", cf=" + columnfrom + ", lt=" + lineto + ", ct=" + columnto);
+
+            from = linesMapper.getSourceOffsetForLocation(linefrom - 1, columnfrom - 1);
+            to = linesMapper.getSourceOffsetForLocation(lineto - 1, columnto);
+        }
 
         problemsHandler.addProblem(ProblemDescription.create("nu.validator.issue",
                 writer.toString(),
                 problemType,
                 from,
                 to));
+
+
     }
 
     /**
@@ -285,25 +295,13 @@ public class NbMessageEmitter extends MessageEmitter {
      */
     @Override
     public ResultHandler startResult() throws SAXException {
-        return new TextResultHandler(writer);
+        return null;
     }
 
     @Override
     public ContentHandler startElaboration() throws SAXException {
         return contentHandler;
     }
- 
-
-    @Override
-    public void endResult() throws SAXException {
-        super.endResult();
-    }
-
-    @Override
-    public void endSource() throws SAXException {
-        super.endSource();
-    }
-
 
     @Override
     public SourceHandler startFullSource(int lineOffset) throws SAXException {

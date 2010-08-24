@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.validation;
 
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import nu.validator.htmlparser.common.CharacterHandler;
@@ -56,134 +57,128 @@ public class LinesMapper implements CharacterHandler {
     private Line currentLine = null;
     private boolean prevWasCr = false;
     private final int expectedLength = 2048;
+    StringBuilder content = new StringBuilder();
 
     @Override
     public void characters(char[] ch, int start, int length)
             throws SAXException {
-        int s = start;
-        int end = start + length;
-        for (int i = start; i < end; i++) {
-            char c = ch[i];
+
+        int from = content.length();
+        content.append(ch, start, length);
+        int to = content.length();
+
+        //now scan for EOLs
+        for (int i = from; i < to; i++) {
+            char c = content.charAt(i);
             switch (c) {
                 case '\r':
-                    if (s < i) {
-                        currentLine.characters(ch, s, i - s);
-                    }
-                    newLine();
-                    s = i + 1;
+                    currentLine.setCR();
+                    currentLine.setEnd(i + 1);
                     prevWasCr = true;
                     break;
                 case '\n':
-                    if (!prevWasCr) {
-                        if (s < i) {
-                            currentLine.characters(ch, s, i - s);
-                        }
-                        newLine();
-                    }
-                    s = i + 1;
+                    currentLine.setLF();
+                    currentLine.setEnd(i + 1);
                     prevWasCr = false;
+                    newLine(i + 1);
                     break;
                 default:
-                    prevWasCr = false;
+                    if (prevWasCr) {
+                        //only \r (on old Mac-s)
+                        prevWasCr = false;
+                        newLine(i);
+                    }
                     break;
             }
         }
-        if (s < end) {
-            currentLine.characters(ch, s, end - s);
-        }
     }
 
-    private void newLine() {
-        int offset;
-        char[] buffer;
-        if (currentLine == null) {
-            offset = 0;
-            buffer = new char[expectedLength];
-        } else {
-            offset = currentLine.getOffset() + currentLine.getBufferLength();
-            buffer = currentLine.getBuffer();
+    private void newLine(int from) {
+        if (currentLine != null) {
+            lines.add(currentLine);
         }
-        currentLine = new Line(buffer, offset);
-        lines.add(currentLine);
+        currentLine = new Line(from);
     }
 
     @Override
     public void end() throws SAXException {
         //no-op
+        System.out.println("Lines:");
+        for (int i = 0; i < lines.size(); i++) {
+            Line l = lines.get(i);
+            System.out.println(l);
+        }
+        System.out.println("------------");
     }
 
     @Override
     public void start() throws SAXException {
         lines.clear();
-        currentLine = null;
-        newLine();
+        newLine(0);
         prevWasCr = false;
     }
 
-    /** lines and columns starts at ONE! */
-    public int getSourceOffsetForLocation(int line, int column) {
-        if(line == -1 || column == -1) {
-            throw new IllegalArgumentException();
-        }
-        Line lline = lines.get(line - 1);
-        
-        assert column <= lline.getBufferLength();
-
-        return lline.getOffset() + column - 1;
+    public Line getLine(int linenum) {
+        return lines.get(linenum);
     }
 
-    private static class Line {
+    public int getSourceOffsetForLocation(int line, int column) {
+        if (line == -1 || column == -1) {
+            throw new IllegalArgumentException();
+        }
+        Line lline = lines.get(line);
 
-        private char[] buffer;
-        private int offset = 0;
-        private int bufferLength = 0;
+//        assert column <= lline.getBufferLength() : "requested column " + column + " for line only " + lline.getBufferLength() + " chars long!";
 
-        /**
-         * @param buffer
-         * @param offset
-         */
-        Line(char[] buffer, int offset) {
-            this.buffer = buffer;
-            this.offset = offset;
+
+        return lline.getOffset() + column;
+    }
+
+    public class Line {
+
+        private int start, end; //len includes the EOL chars!
+        private boolean cr, lf;
+
+        public Line(int offset) {
+            this.start = offset;
         }
 
-        /**
-         * Returns the buffer.
-         *
-         * @return the buffer
-         */
-        char[] getBuffer() {
-            return buffer;
+        public void setCR() {
+            this.cr = true;
         }
 
-        /**
-         * Returns the bufferLength.
-         *
-         * @return the bufferLength
-         */
-        int getBufferLength() {
-            return bufferLength;
+        public void setEnd(int end) {
+            this.end = end;
         }
 
-        /**
-         * Returns the offset.
-         *
-         * @return the offset
-         */
-        int getOffset() {
-            return offset;
+        public void setLF() {
+            this.lf = true;
         }
 
-        void characters(char[] ch, int start, int length) {
-            int newBufferLength = bufferLength + length;
-            if (offset + newBufferLength > buffer.length) {
-                char[] newBuf = new char[((newBufferLength >> 11) + 1) << 11];
-                System.arraycopy(buffer, offset, newBuf, 0, bufferLength);
-                buffer = newBuf;
-                offset = 0;
-            }
-            System.arraycopy(ch, start, buffer, offset + bufferLength, length);
-            bufferLength = newBufferLength;
+        public CharSequence getText() {
+            return LinesMapper.this.content.subSequence(start, end - getNewLineDelimitersLen());
         }
+
+        public CharSequence getTextWithEndLineChars() {
+            return LinesMapper.this.content.subSequence(start, end);
+        }
+
+        public int getNewLineDelimitersLen() {
+            return (cr ? 1 : 0) + (lf ? 1 : 0);
+        }
+
+        public int getOffset() {
+            return start;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        @Override
+        public String toString() {
+            return "Line{" + "start=" + start + "end=" + end + "cr=" + cr + "lf=" + lf + "}: '" + getText() + "'";
+        }
+        
     }
 }
