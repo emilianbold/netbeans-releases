@@ -111,8 +111,6 @@ public class SummaryCellRenderer implements TreeCellRenderer {
     private String selectionBackground = getColorString(selectionBackgroundColor);
     private String selectionForeground = getColorString(new JList().getSelectionForeground());
 
-    private final String hiliteForegroundColor;
-    private final String hiliteBackgroundColor;
     private final Color normalBackgroundColor = darker(UIManager.getColor("List.background"));
     private final String normalForeground = getColorString(UIManager.getColor("List.foreground"));
     private final String normalBackground = getColorString(normalBackgroundColor);
@@ -144,11 +142,6 @@ public class SummaryCellRenderer implements TreeCellRenderer {
 
         FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
-
-        Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
-        hiliteBackgroundColor = c != null ? getColorString(c) : null;
-        c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
-        hiliteForegroundColor = c != null ? getColorString(c) : null;
 
         computeFieldSizes(results);
         master.getList().addTreeExpansionListener(new TreeExpansionListener() {
