@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashSet;
@@ -70,6 +72,8 @@ import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
+import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+import javax.servlet.descriptor.TaglibDescriptor;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.cookies.EditorCookie;
@@ -109,6 +113,7 @@ public class ParserServletContext implements ServletContext {
      */
     protected FileObject wmRoot;
     
+    private JspConfigDescriptor jspConfigDesc;
     
     private final WebModuleProvider webModuleProvider;
     
@@ -134,6 +139,19 @@ public class ParserServletContext implements ServletContext {
         this.wmRoot = wmRoot;
         this.webModuleProvider = WebModuleProvider;
         this.useEditorVersion = useEditor;
+        this.jspConfigDesc = new JspConfigDescriptor() {
+            
+            @Override
+            public Collection<TaglibDescriptor> getTaglibs() {
+                return Collections.<TaglibDescriptor>emptyList();
+            }
+            
+            @Override
+            public Collection<JspPropertyGroupDescriptor> getJspPropertyGroups() {
+                return Collections.<JspPropertyGroupDescriptor>emptyList();                
+            }
+            
+        };
         
         setAttribute(JSP_TAGLIBRARY_CACHE, new ConcurrentHashMap<String, TagLibraryInfo>());
         setAttribute(JSP_TAGFILE_JAR_URLS_CACHE, new ConcurrentHashMap<String, URL>());
@@ -655,8 +673,7 @@ public class ParserServletContext implements ServletContext {
 
     @Override
     public JspConfigDescriptor getJspConfigDescriptor() {
-        /// !!!!!
-        return null;
+        return jspConfigDesc;
     }
 
     @Override

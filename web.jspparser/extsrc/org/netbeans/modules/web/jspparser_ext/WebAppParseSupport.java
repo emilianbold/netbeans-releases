@@ -539,6 +539,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     // XXX has to be returned back to track all errors
                     Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(WebAppParseSupport.class, "MSG_errorDuringJspParsing"));
                     LOG.fine(e.getMessage());
+                    LOG.log(Level.FINE, null, e);
                     JspParserAPI.ErrorDescriptor error = constructErrorDescriptor(e, wmRoot, jspFile);
                     resultRef.result = new JspParserAPI.ParseResult(nbPageInfo, nbNodes, new JspParserAPI.ErrorDescriptor[] {error});
                 }
@@ -557,6 +558,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     throw td;
                 } catch (Throwable t) {
                     if (gpd != null) {
+                        if (gpd.getParseException() == null) {
+                            gpd.setParseException(t);
+                        } else {
+                            LOG.log(Level.INFO, null, t);
+                        }
                         setResult(gpd);
                     } else {
                         LOG.log(Level.INFO, null, t);
