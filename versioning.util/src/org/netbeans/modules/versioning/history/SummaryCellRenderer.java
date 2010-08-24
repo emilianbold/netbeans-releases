@@ -319,26 +319,16 @@ public class SummaryCellRenderer implements TreeCellRenderer {
 
             }
             if(nlc > 0 && !entry.messageExpanded) {
-                messageValue = messageValue + " <font color=\"" + (selected ? selectionForeground : linkColor) + "\" id=\"expandmsg\">...</font>";
+                StringBuilder sb = new StringBuilder();
+                sb.append(messageValue);
+                sb.append(" <font color=\"");
+                sb.append((selected ? selectionForeground : linkColor));
+                sb.append("\" id=\"expandmsg\">...</font>");
+                messageValue = sb.toString();
             }
-
-            // author
-            KenaiUser kenaiUser = null;
-            if(kenaiUsersMap != null && author != null && !author.equals("")) {
-                kenaiUser = kenaiUsersMap.get(author);
-            }
-
-            String txt = "<html><body>" +
-                        "<table width=\"100%\" height=\"100%\" border=\"0\">" +
-                            "<tr>" +
-                                "<td bgcolor=\"" + background + "\" valign=\"top\" width=\"" + (revisionMaxWidth) + "\" border=\"0\"><font color=\"" + foreground + "\">" + revision + "</font></td>" +
-                                "<td bgcolor=\"" + background + "\" valign=\"top\" width=\"" + (authorMaxWidth) + "\" border=\"0\" ><center><font color=\"" + (selected ? selectionForeground : (kenaiUser != null ? "#0000FF" : authorColor)) + "\" id=\"author\">(" + author + ")</font></center></td>" +
-                                "<td bgcolor=\"" + background + "\" valign=\"top\" border=\"0\"><font color=\"" + foreground + "\">" + messageValue + "</font></td>" +
-                                "<td bgcolor=\"" + background + "\" valign=\"top\" width=\"" + (dateMaxWidth) + "\" border=\"0\"><font color=\"" + (selected ? selectionForeground : dateColor) + "\">" + date + "</font></td>" +
-                            "</tr>" +
-                        "</table>" +
-                    "</body></html>";
-            textPane.setText(txt);
+            
+            KenaiUser kenaiUser = getKenaiUser(author);
+            textPane.setText(formatValue(background, foreground, selected, kenaiUser, author, messageValue, date));
 
             HTMLDocument document = (HTMLDocument) textPane.getDocument();
 
@@ -391,6 +381,52 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                 textPane.setPreferredSize(new Dimension(width, ph));
             }
             return textPane;
+        }
+
+        public String formatValue(String background, String foreground, boolean selected, KenaiUser kenaiUser, String author, String messageValue, String date) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html><body><table width=\"100%\" height=\"100%\" border=\"0\"><tr>");
+            sb.append("<td bgcolor=\"");
+            sb.append("<td bgcolor=\"");
+            sb.append(background);
+            sb.append("\" valign=\"top\" width=\"");
+            sb.append(revisionMaxWidth);
+            sb.append("\" border=\"0\"><font color=\"");
+            sb.append(foreground);
+            sb.append("\">");
+            sb.append(revision);
+            sb.append("</font></td><td bgcolor=\"");
+            sb.append(background);
+            sb.append("\" valign=\"top\" width=\"");
+            sb.append(authorMaxWidth);
+            sb.append("\" border=\"0\" ><center><font color=\"");
+            sb.append((selected ? selectionForeground : (kenaiUser != null ? "#0000FF" : authorColor)));
+            sb.append("\" id=\"author\">(");
+            sb.append(author);
+            sb.append(")</font></center></td><td bgcolor=\"");
+            sb.append(background);
+            sb.append("\" valign=\"top\" border=\"0\"><font color=\"");
+            sb.append(foreground);
+            sb.append("\">");
+            sb.append(messageValue);
+            sb.append("</font></td><td bgcolor=\"");
+            sb.append(background);
+            sb.append("\" valign=\"top\" width=\"");
+            sb.append(dateMaxWidth);
+            sb.append("\" border=\"0\"><font color=\"");
+            sb.append((selected ? selectionForeground : dateColor));
+            sb.append("\">");
+            sb.append(date);
+            sb.append("</font></td></tr></table></body></html>");
+            return sb.toString();
+        }
+
+        public KenaiUser getKenaiUser(String author) {
+            KenaiUser kenaiUser = null;
+            if (kenaiUsersMap != null && author != null && !author.equals("")) {
+                kenaiUser = kenaiUsersMap.get(author);
+            }
+            return kenaiUser;
         }
 
         public void hiliteSearch(HTMLDocument document, boolean selected) {
