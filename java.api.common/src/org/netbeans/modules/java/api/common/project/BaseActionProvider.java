@@ -617,15 +617,17 @@ public abstract class BaseActionProvider implements ActionProvider {
             p.setProperty("ignore.failing.tests", "true");  //NOI18N
             targetNames = getCommands().get(command);
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSources(context, true);
-            if (files != null) {
-                targetNames = setupTestSingle(p, files);
+            final FileObject[] files = findTestSources(context, true);
+            if (files == null) {
+                return null;
             }
+            targetNames = setupTestSingle(p, files);            
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSources(context, true);
-            if (files != null) {
-                targetNames = setupDebugTestSingle(p, files);
+            final FileObject[] files = findTestSources(context, true);
+            if (files == null) {
+                return null;
             }
+            targetNames = setupDebugTestSingle(p, files);
         } else if ( command.equals( SingleMethod.COMMAND_RUN_SINGLE_METHOD ) ) {
             SingleMethod[] methodSpecs = findTestMethods(context);
             if ((methodSpecs == null) || (methodSpecs.length != 1)) {
