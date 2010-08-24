@@ -637,7 +637,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         class H implements InvocationHandler {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                System.err.println("name: " + method.getName());
                 if (method.getName().equals("path")) {
                     return parentPath;
                 }

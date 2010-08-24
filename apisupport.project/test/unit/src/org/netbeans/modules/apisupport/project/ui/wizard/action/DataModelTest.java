@@ -141,8 +141,11 @@ public class DataModelTest extends LayerTestBase {
         if (text.toLowerCase().contains("333")) {
             fail("Postion 333x signals wrongly defined position:\n" + text);
         }
+        if (text.toLowerCase().contains("-1")) {
+            fail("Postion -1 should not be printed at all:\n" + text);
+        }
         if (!text.toLowerCase().contains("position=150")) {
-            fail("Postion position=150 is what is in middle of 100 and 200:\n" + text);
+            fail("Postion position=150 is what is in middle of 100 and :\n" + text);
         }
         //fail("OK\n" + text);
     }
