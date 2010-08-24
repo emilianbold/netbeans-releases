@@ -164,7 +164,11 @@ abstract class URIMapper {
             File toSourceFile(URI remoteURI) {
                 File retval = new File(remoteURI);
                 File absFile = can2AbsFile.get(retval);
-                return (absFile != null) ? absFile : retval;
+                retval = (absFile != null) ? absFile : retval;
+                if (LOGGER.isLoggable(Level.INFO)) {
+                    LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), remoteURI, retval));
+                }
+                return retval;
             }
 
             @Override
@@ -179,7 +183,11 @@ abstract class URIMapper {
                     can2AbsFile.put(canonicalFile, localFile);
                     localFile = canonicalFile;
                 }
-                return toURI(localFile, includeHostPart);
+                final URI retval = toURI(localFile, includeHostPart);
+                if (LOGGER.isLoggable(Level.INFO)) {
+                    LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), localFile, retval));
+                }
+                return retval;
             }
 
         };
@@ -264,28 +272,35 @@ abstract class URIMapper {
         @Override
         File toSourceFile(URI webServerURI) {
             URI relativizedURI = baseWebServerURI.relativize(webServerURI);
+            File retval = null;
             if (!relativizedURI.isAbsolute()) {
                 assert FILE_SCHEME.equals(webServerURI.getScheme());
-                return new File(baseSourceURI.resolve(relativizedURI));
+                retval = new File(baseSourceURI.resolve(relativizedURI));
             }
-            return null;
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), webServerURI, retval));
+            }
+            return retval;
         }
 
         @Override
         URI toWebServerURI(File sourceFile, boolean includeHostPart) {
+            URI retval = null;
             if (sourceFile.equals(baseSourceFolder)) {
-                return baseWebServerURI;
+                retval = baseWebServerURI;
             } else {
                 URI relativizedURI = baseSourceURI.relativize(sourceFile.toURI());
                 if (!relativizedURI.isAbsolute()) {
-                    URI retval = baseWebServerURI.resolve(relativizedURI);
-                    retval = createURI(retval.getScheme(), retval.getHost(),
-                            retval.getPath(), retval.getFragment(),
+                    URI uri = baseWebServerURI.resolve(relativizedURI);
+                    retval = createURI(uri.getScheme(), uri.getHost(),
+                            uri.getPath(), uri.getFragment(),
                             true, false);
-                    return retval;
                 }
             }
-            return null;
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), sourceFile, retval));
+            }
+            return retval;
         }
     }
 

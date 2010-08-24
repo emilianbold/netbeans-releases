@@ -1114,9 +1114,13 @@ abstract public class CsmCompletionQuery {
                 }
 
                 case CsmCompletionExpression.LABEL: {
-                    String name = exp.getParameter(0).getTokenText(0);
+                    CsmCompletionExpression item = exp.getParameter(0);
+                    String name = item.getTokenText(0);
                     List res = finder.findLabel(contextElement, name, false, false);
-                    result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                    result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, // NOI18N
+                            name.isEmpty() ? endOffset : item.getTokenOffset(0), 
+                            name.isEmpty() ? 0 : item.getTokenLength(0),
+                            0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                     break;
                 }
 
@@ -2261,20 +2265,20 @@ abstract public class CsmCompletionQuery {
          * to be displayed. It's used to display the inner classes
          * of the main class to exclude the initial part of the name.
          */
-        private int classDisplayOffset;
+        private final int classDisplayOffset;
         /** Expression to substitute */
-        private CsmCompletionExpression substituteExp;
+        private final CsmCompletionExpression substituteExp;
         /** Starting position of the text to substitute */
-        private int substituteOffset;
+        private final int substituteOffset;
         /** Length of the text to substitute */
-        private int substituteLength;
+        private final int substituteLength;
         /** Component to update */
-        private JTextComponent component;
+        private final JTextComponent component;
         /**
          * baseDocument to work with
          */
         private BaseDocument baseDocument;
-        private List<CompletionItem> items;
+        private final List<CompletionItem> items;
 
         public CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, String title,
                 CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {

@@ -198,17 +198,9 @@ public final class MavenEmbedder {
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             configuration.setResolveDependencies(true);
             configuration.setRepositorySession(maven.newRepositorySession(req));
-            try {
-                ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
-                result.setProject(projectBuildingResult.getProject());
-                result.setDependencyResolutionResult(projectBuildingResult.getDependencyResolutionResult());
-            } catch (ProjectBuildingException projectBuildingException) {
-                //faill back to online embedder 
-                req.setOffline(false);
-                ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
-                result.setProject(projectBuildingResult.getProject());
-                result.setDependencyResolutionResult(projectBuildingResult.getDependencyResolutionResult());
-            }
+            ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
+            result.setProject(projectBuildingResult.getProject());
+            result.setDependencyResolutionResult(projectBuildingResult.getDependencyResolutionResult());
         } catch (ProjectBuildingException ex) {
             //don't add the exception here. this should come out as a build marker, not fill
             //the error logs with msgs

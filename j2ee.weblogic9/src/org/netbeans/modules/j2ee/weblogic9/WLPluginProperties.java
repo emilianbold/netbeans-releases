@@ -118,6 +118,7 @@ public final class WLPluginProperties {
     public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
     public static final String ADMIN_SERVER_NAME= "adminName";      // NOI18N
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
+    public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
     
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N
@@ -355,6 +356,11 @@ public final class WLPluginProperties {
                 if ("name".equals(child.getNodeName())) {
                     String domainName = child.getFirstChild().getNodeValue();
                     properties.put(DOMAIN_NAME, domainName);
+                }
+                else if ("production-mode-enabled".equals(child.getNodeName())) {
+                    String isEnabled = child.getFirstChild().getNodeValue();
+                    properties.put(PRODUCTION_MODE, "true".equals( isEnabled ));
+                    
                 }
                 // if the child's name equals 'server' get its children
                 // and iterate over them
@@ -632,6 +638,71 @@ public final class WLPluginProperties {
         return version != null && (Integer.valueOf(9).equals(version.getMajor())
                     || Integer.valueOf(10).equals(version.getMajor())
                     || Integer.valueOf(11).equals(version.getMajor()));
+    }
+
+    public static File[] getClassPath(WLDeploymentManager manager) {
+        File serverLib = WLPluginProperties.getServerLibDirectory(manager, true);
+        if (serverLib == null) {
+            LOGGER.log(Level.INFO, "The server library directory does not exist for {0}", manager.getUri());
+            return new File[] {};
+        }
+
+        File weblogicJar = FileUtil.normalizeFile(new File(serverLib, "weblogic.jar")); // NOI18N
+        if (!weblogicJar.exists()) {
+            LOGGER.log(Level.INFO, "File weblogic.jar does not exist for {0}", manager.getUri());
+            return new File[] {weblogicJar};
+        }
+
+        // we will add weblogic.server.modules jar manually as the path is hardcoded
+        // and may not be valid see #189537
+        String serverModulesJar = null;
+        try {
+            // JarInputStream cannot be used due to problem in weblogic.jar in Oracle Weblogic Server 10.3
+            JarFile jar = new JarFile(weblogicJar);
+            try {
+                Manifest manifest = jar.getManifest();
+                if (manifest != null) {
+                    String classpath = manifest.getMainAttributes()
+                            .getValue("Class-Path"); // NOI18N
+                    String[] elements = classpath.split("\\s+"); // NOI18N
+                    for (String element : elements) {
+                        if (element.contains("weblogic.server.modules")) { // NOI18N
+                            File ref = new File(weblogicJar.getParentFile(), element);
+                            if (!ref.exists()) {
+                                LOGGER.log(Level.INFO, "Broken weblogic.jar classpath file {0} for {1}",
+                                        new Object[] {ref.getAbsolutePath(), manager.getUri()});
+                            }
+                            serverModulesJar = element;
+                            // last element of ../../../modules/something
+                            int index = serverModulesJar.lastIndexOf("./"); // NOI18N
+                            if (index >= 0) {
+                                serverModulesJar = serverModulesJar.substring(index + 1);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                try {
+                    jar.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINEST, null, ex);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, null, e);
+        }
+
+        if (serverModulesJar != null) {
+            WLProductProperties prodProps = manager.getProductProperties();
+            String mwHome = prodProps.getMiddlewareHome();
+            if (mwHome != null) {
+                File serverModuleFile = FileUtil.normalizeFile(new File(new File(mwHome),
+                        serverModulesJar.replaceAll("/", Matcher.quoteReplacement(File.separator)))); // NOI18N
+                return new File[] {weblogicJar, serverModuleFile};
+            }
+        }
+
+        return new File[] {weblogicJar};
     }
 
     public static Version getVersion(File serverRoot) {

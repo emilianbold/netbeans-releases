@@ -850,20 +850,13 @@ public class CallStackFrameImpl implements CallStackFrame {
         
         private JPDAThread thread;
         private int depth;
-        private ReferenceType locationType;
-        private String locationMethodName;
-        private String locationMethodSignature;
-        private long locationCodeIndex;
+        private Location location;
         
         public EqualsInfo(JPDADebuggerImpl debugger, StackFrame sf, int depth) {
             try {
                 thread = debugger.getThread(StackFrameWrapper.thread(sf));
                 this.depth = depth;
-                Location l = StackFrameWrapper.location(sf);
-                locationType = LocationWrapper.declaringType(l);
-                locationMethodName = TypeComponentWrapper.name(LocationWrapper.method(l));
-                locationMethodSignature = TypeComponentWrapper.signature(LocationWrapper.method(l));
-                locationCodeIndex = LocationWrapper.codeIndex(l);
+                this.location = StackFrameWrapper.location(sf);
             } catch (VMDisconnectedExceptionWrapper e) {
                 thread = null;
             } catch (InternalExceptionWrapper e) {
@@ -881,16 +874,13 @@ public class CallStackFrameImpl implements CallStackFrame {
             EqualsInfo ei = (EqualsInfo) obj;
             return thread == ei.thread &&
                    depth == ei.depth &&
-                   (locationType == null && ei.locationType == null || locationType != null && locationType.equals(ei.locationType)) &&
-                   (locationMethodName == null && ei.locationMethodName == null || locationMethodName != null && locationMethodName.equals(ei.locationMethodName)) &&
-                   (locationMethodSignature == null && ei.locationMethodSignature == null || locationMethodSignature != null && locationMethodSignature.equals(ei.locationMethodSignature)) &&
-                   locationCodeIndex == ei.locationCodeIndex;
+                   location.equals(ei.location);
         }
 
         @Override
         public int hashCode() {
             if (thread == null) return 0;
-            return (thread.hashCode() << 8 + depth + locationType.hashCode() << 4 + locationCodeIndex);
+            return (thread.hashCode() << 8 + depth + location.hashCode() << 4);
         }
         
     }

@@ -618,10 +618,14 @@ public abstract class BaseActionProvider implements ActionProvider {
             targetNames = getCommands().get(command);
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] files = findTestSources(context, true);
-            targetNames = setupTestSingle(p, files);
+            if (files != null) {
+                targetNames = setupTestSingle(p, files);
+            }
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSources(context, true);
-            targetNames = setupDebugTestSingle(p, files);
+            if (files != null) {
+                targetNames = setupDebugTestSingle(p, files);
+            }
         } else if ( command.equals( SingleMethod.COMMAND_RUN_SINGLE_METHOD ) ) {
             SingleMethod[] methodSpecs = findTestMethods(context);
             if ((methodSpecs == null) || (methodSpecs.length != 1)) {

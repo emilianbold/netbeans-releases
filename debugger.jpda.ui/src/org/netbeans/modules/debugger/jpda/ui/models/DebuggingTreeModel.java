@@ -350,12 +350,28 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     }
 
     public void removeModelListener (ModelListener l) {
+        boolean destroyListeners = false;
         synchronized (listeners) {
             listeners.remove (l);
             if (listeners.size () == 0 && listener != null) {
                 listener.destroy ();
                 listener = null;
+                destroyListeners = true;
             }
+        }
+        if (destroyListeners) {
+            destroyThreadStateListeners();
+            clearCache();
+        }
+    }
+
+    private void destroyThreadStateListeners() {
+        synchronized (threadStateListeners) {
+            for (Map.Entry<JPDAThread, ThreadStateListener> entry : threadStateListeners.entrySet()) {
+                PropertyChangeListener pcl = entry.getValue().getThreadPropertyChangeListener();
+                ((Customizer) entry.getKey()).removePropertyChangeListener(pcl);
+            }
+            threadStateListeners.clear();
         }
     }
 
@@ -541,10 +557,12 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         // currently waiting / running refresh task
         // there is at most one
         private RequestProcessor.Task task;
+        private final PropertyChangeListener propertyChangeListener;
         
         public ThreadStateListener(JPDAThread t) {
             this.tr = new WeakReference(t);
-            ((Customizer) t).addPropertyChangeListener(WeakListeners.propertyChange(this, t));
+            this.propertyChangeListener = WeakListeners.propertyChange(this, t);
+            ((Customizer) t).addPropertyChangeListener(propertyChangeListener);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -565,6 +583,10 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                     task.schedule(suspended ? 200 : 1000);
                 }
             }
+        }
+
+        PropertyChangeListener getThreadPropertyChangeListener() {
+            return propertyChangeListener;
         }
         
         private class Refresher extends Object implements Runnable {

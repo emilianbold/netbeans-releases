@@ -93,6 +93,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
     private transient WLInstantiatingIterator instantiatingIterator;
     
+    private boolean isProductionModeEnabled;
+    
     /**
      * Creates a new instance of the ServerPropertiesVisual. It initializes all
      * the GUI components that appear on the panel.
@@ -118,6 +120,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         // clear the error message
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
         // check the profile root directory for validity
         if (!isValidDomainRoot(domainPathField.getText())) {
@@ -146,6 +149,12 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         if (!portField.getText().trim().matches("[0-9]+")) {  // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_PORT"))); // NOI18N
+        }
+        
+        if ( isProductionModeEnabled ){
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
+                            ServerPropertiesVisual.class, "WARN_PRODUCTION_MODE"))); // NOI18N
         }
 
         Instance item = (Instance) localInstancesCombo.getSelectedItem();
@@ -252,6 +261,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             String port = properties.getProperty( WLPluginProperties.PORT_ATTR);
             String host = properties.getProperty( WLPluginProperties.HOST_ATTR );
             String domainName = properties.getProperty( WLPluginProperties.DOMAIN_NAME );
+            Boolean isProductionMode = (Boolean)properties.get(
+                    WLPluginProperties.PRODUCTION_MODE);
             if ((name != null) && (!name.equals(""))) { // NOI18N
                 // address and port have minOccurs=0 and are missing in 90
                 // examples server
@@ -260,7 +271,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                         : port;
                 host = (host == null || host.equals("")) ? "localhost" // NOI18N
                         : host;
-                result.add(new Instance(name, host, port, domains[i], domainName));
+                result.add(new Instance(name, host, port, domains[i], domainName,
+                        isProductionMode != null && isProductionMode ));
             }
         }
 
@@ -290,6 +302,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             domainPathField.setText(instance.getDomainPath());
             hostField.setText(instance.getHost());
             portField.setText(instance.getPort());
+            isProductionModeEnabled  = instance.isProductionModeEnabled();
         }
 
     }
@@ -665,6 +678,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * Instance's domain name
          */
         private String domainName;
+        
+        /**
+         * Production mode is enabled for domain.
+         */
+        private boolean isProductionModeEnabled;
 
         /**
          * Creates a new instance of Instance
@@ -675,7 +693,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @param domainPath the instance's profile path
          */
         public Instance(String name, String host, String port, String domainPath,
-                String domainName) 
+                String domainName, boolean isProductionModeEnabled) 
         {
             // save the properties
             this.name = name;
@@ -683,6 +701,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             this.port = port;
             this.domainPath = domainPath;
             this.domainName = domainName;
+            this.isProductionModeEnabled = isProductionModeEnabled;
         }
 
         /**
@@ -773,6 +792,25 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         public void setDomainPath(String domainPath) {
             this.domainPath = domainPath;
+        }
+        
+        /**
+         * 
+         * Getter for domain production mode property. 
+         * 
+         * @return true if production mode is enabled for domain
+         */
+        public boolean isProductionModeEnabled(){
+            return isProductionModeEnabled;
+        }
+        
+        /**
+         * Setter for production mode property.
+         * 
+         * @param productionMode isProductionModeEnabled property value
+         */
+        public void setProductionModeEnabled( boolean productionMode ){
+            isProductionModeEnabled = productionMode;
         }
 
         /**

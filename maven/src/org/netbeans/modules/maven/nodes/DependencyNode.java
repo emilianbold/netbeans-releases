@@ -80,8 +80,10 @@ import org.apache.maven.model.DependencyManagement;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.dependencies.DependencyExcludeNodeVisitor;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.dependencies.ExcludeDependencyPanel;
@@ -221,7 +223,7 @@ public class DependencyNode extends AbstractNode {
     }
 
     private void setIconBase(boolean longLiving) {
-        if (longLiving && isDependencyProjectOpen()) {
+        if (longLiving && isDependencyProjectAvailable()) {
             if (isTransitive()) {
                 setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveMaven2Icon.gif"); //NOI18N
             } else {
@@ -263,14 +265,12 @@ public class DependencyNode extends AbstractNode {
      * this call is slow
      * @return
      */
-    boolean isDependencyProjectOpen() {
+    private boolean isDependencyProjectAvailable() {
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             return false;
         }
         URI uri = art.getFile().toURI();
-//        URI  rootUri = project.getRepositoryRoot().getURL().toURI();
-//        URI uri = rootUri.create(rootUri.toString() + "/" + project.getArtifactRelativeRepositoryPath(art));
-        Project depPrj = MavenFileOwnerQueryImpl.getInstance().getOwner(uri);
+        Project depPrj = FileOwnerQuery.getOwner(uri);
         return depPrj != null;
     }
 
@@ -310,6 +310,9 @@ public class DependencyNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         Collection<Action> acts = new ArrayList<Action>();
+        if (longLiving && isDependencyProjectAvailable()) {
+            acts.add(OpenProjectAction.SINGLETON);
+        }
         if (isAddedToCP()) {
             InstallLocalArtifactAction act = new InstallLocalArtifactAction();
             acts.add(act);
@@ -1078,4 +1081,34 @@ public class DependencyNode extends AbstractNode {
             }
         }
     }
+
+    private static class OpenProjectAction extends AbstractAction implements ContextAwareAction {
+
+        static final OpenProjectAction SINGLETON = new OpenProjectAction();
+
+        private OpenProjectAction() {}
+
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
+        }
+
+        public @Override Action createContextAwareInstance(final Lookup context) {
+            return new AbstractAction(NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project")) {
+                public @Override void actionPerformed(ActionEvent e) {
+                    Set<Project> projects = new HashSet<Project>();
+                    for (Artifact art : context.lookupAll(Artifact.class)) {
+                        File f = art.getFile();
+                        if (f != null) {
+                            Project p = FileOwnerQuery.getOwner(f.toURI());
+                            if (p != null) {
+                                projects.add(p);
+                            }
+                        }
+                    }
+                    OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);
+                }
+            };
+        }
+    }
+
 }

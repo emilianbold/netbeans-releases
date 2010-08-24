@@ -150,7 +150,7 @@ public class formatting_0001 extends formatting {
 
         String sTextIdeal = "<?php\n\n"
                 + "function testFunction($a,\n        $b,\n        $c) {\n    \n}"
-                + "\n?>";
+                + "\n\n?>";
         assertEquals(sTextIdeal, sTextFormatted);
 
         //tests for If Long
@@ -167,7 +167,7 @@ public class formatting_0001 extends formatting {
 
         sTextIdeal = "<?php\n\n"
                 + "function testFunction($firstLongParameter = \"bdlkfjdsa fhjjkdshafjd a\",\n        $secondLongParameter, $thirdLongParameter) {\n    \n}"
-                + "\n?>";
+                + "\n\n?>";
 
         assertEquals(sTextIdeal, sTextFormatted);
 
@@ -185,7 +185,7 @@ public class formatting_0001 extends formatting {
 
         sTextIdeal = "<?php\n\n"
                 + "function testFunction($firstLongParameter, $secondLongParameter, $thirdLongParameter) {\n    \n}"
-                + "\n?>";
+                + "\n\n?>";
 
         assertEquals(sTextIdeal, sTextFormatted);
 
@@ -199,7 +199,7 @@ public class formatting_0001 extends formatting {
 
         //categories - check if they are all present
         JComboBoxOperator category = new JComboBoxOperator(window, 2);
-        Sleep(1000);
+        Sleep(5000);
 
 
 

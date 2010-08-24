@@ -209,23 +209,17 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (classLoader == null) {
             LOGGER.log(Level.FINE, "Creating classloader for {0}", this.getUri());
             try {
-                File serverLib = WLPluginProperties.getServerLibDirectory(this, true);
-                if (serverLib == null) {
-                    LOGGER.log(Level.WARNING, "The server library directory does not exist for {0}", this.getUri());
-                } else {
-                    File weblogicJar = new File(serverLib, "weblogic.jar"); // NOI18N
-                    if (!weblogicJar.exists()) {
-                        LOGGER.log(Level.WARNING, "File weblogic.jar does not exist for {0}", this.getUri());
-                    }
-                    URL[] urls = new URL[] {FileUtil.normalizeFile(weblogicJar).toURI().toURL()};
-                    classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
-                    LOGGER.log(Level.FINE, "Classloader for {0} created successfully", this.getUri());
-                    return classLoader;
+                File[] classpath = WLPluginProperties.getClassPath(this);
+                URL[] urls = new URL[classpath.length];
+                for (int i = 0; i < classpath.length; i++) {
+                    urls[i] = classpath[i].toURI().toURL();
                 }
+                classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
+                LOGGER.log(Level.FINE, "Classloader for {0} created successfully", this.getUri());
+                return classLoader;
             } catch (MalformedURLException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
-            classLoader = new WLClassLoader(new URL[] {}, WLDeploymentManager.class.getClassLoader());
         }
         return classLoader;
     }

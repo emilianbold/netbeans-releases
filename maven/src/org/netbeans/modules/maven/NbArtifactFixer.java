@@ -45,6 +45,9 @@ package org.netbeans.modules.maven;
 import java.io.File;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.ArtifactFixer;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.util.lookup.ServiceProvider;
@@ -58,11 +61,14 @@ public class NbArtifactFixer implements ArtifactFixer {
 
     public @Override File resolve(Artifact artifact) {
         ArtifactRepository local = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+        if (local.getLayout() == null) {
+            // #189807: for unknown reasons, there is no layout when running inside MavenCommandLineExecutor.run
+            return null;
+        }
         File nominal = new File(local.getBasedir(), local.pathOf(artifact));
         if (nominal.exists()) {
             return null;
         }
-        /* XXX deadlocks without #186024
         Project owner = FileOwnerQuery.getOwner(nominal.toURI());
         if (owner != null) {
             NbMavenProjectImpl mavenProject = owner.getLookup().lookup(NbMavenProjectImpl.class);
@@ -72,7 +78,6 @@ public class NbArtifactFixer implements ArtifactFixer {
                 }
             }
         }
-         */
         return null;
     }
 

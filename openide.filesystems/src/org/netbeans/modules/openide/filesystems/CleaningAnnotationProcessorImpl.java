@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.processor;
+package org.netbeans.modules.openide.filesystems;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -59,32 +59,31 @@ import com.sun.tools.javac.util.List;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Processor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementScanner6;
 import javax.tools.Diagnostic;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author lahvac
  */
-@SupportedAnnotationTypes("*")
-@ServiceProvider(service=Processor.class)
-public class CleaningAnnotationProcessor extends AbstractProcessor {
+class CleaningAnnotationProcessorImpl implements Runnable {
+    private final ProcessingEnvironment processingEnv;
+    private final RoundEnvironment roundEnv;
+    
+    public CleaningAnnotationProcessorImpl(ProcessingEnvironment processingEnv, RoundEnvironment roundEnv) {
+        this.processingEnv = processingEnv;
+        this.roundEnv = roundEnv;
+    }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    public void run() {
         try {
             if (!shouldWorkaroundBug()) {
-                return false;
+                return;
             }
 
             processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Attempting to workaround 6512707");
@@ -114,13 +113,6 @@ public class CleaningAnnotationProcessor extends AbstractProcessor {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Failed with a Throwable: " + t.getMessage());
             //presumably OK
         }
-
-        return false;
-    }
-
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latest();
     }
 
     private static final AtomicReference<Boolean> HAS_BUG = new AtomicReference<Boolean>();

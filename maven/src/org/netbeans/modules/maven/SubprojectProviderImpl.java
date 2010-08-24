@@ -54,6 +54,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.project.Project;
@@ -109,22 +110,20 @@ public class SubprojectProviderImpl implements SubprojectProvider {
             // can be interrupted in the open project dialog..
             return Collections.emptySet();
         }
-        addOpenedCandidates(projects);
+        addKnownOwners(projects);
         projects.remove(project);
         return projects;
     }
 
-    private void addOpenedCandidates(Set<Project> resultset) {
-        Set<Project> opened = MavenFileOwnerQueryImpl.getInstance().getOpenedProjects();
+    private void addKnownOwners(Set<Project> resultset) {
         List<Artifact> compileArtifacts = project.getOriginalMavenProject().getCompileArtifacts();
-        List<String> artPaths = new ArrayList<String>();
         for (Artifact ar : compileArtifacts) {
-            artPaths.add(project.getArtifactRelativeRepositoryPath(ar));
-        }
-        for (Project prj : opened) {
-            String prjpath = ((NbMavenProjectImpl)prj).getArtifactRelativeRepositoryPath();
-            if (artPaths.contains(prjpath)) {
-                resultset.add(prj);
+            File f = ar.getFile();
+            if (f != null) {
+                Project p = FileOwnerQuery.getOwner(f.toURI());
+                if (p != null) {
+                    resultset.add(p);
+                }
             }
         }
     }

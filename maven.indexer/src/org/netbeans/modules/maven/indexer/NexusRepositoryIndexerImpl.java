@@ -829,12 +829,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     @Override
-    public List<NBVersionInfo> findByMD5(final String md5, List<RepositoryInfo> repos) {
-        //not supported
-        return Collections.<NBVersionInfo>emptyList();
-    }
-
-    @Override
     public List<NBVersionInfo> findBySHA1(final String sha1, List<RepositoryInfo> repos) {
         final RepositoryInfo[] allrepos = repos.toArray(new RepositoryInfo[repos.size()]);
         try {

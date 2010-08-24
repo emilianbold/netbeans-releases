@@ -335,8 +335,19 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         int line = startLine;
         AnnotationDesc foundDesc = null;
         Annotations annotations = document.getAnnotations();
+        int last = (-1);
+        int unchagedLoops = 0;
         
         while ((line = annotations.getNextLineWithAnnotation(line)) <= endLine && line != (-1)) {
+            if (last == line) {
+                unchagedLoops++;
+                LOG.log(Level.WARNING, "Please add the following info to https://netbeans.org/bugzilla/show_bug.cgi?id=188843 : Possible infinite loop in getMainMarkForBlockAnnotations, debug data: {0}, unchaged loops: {1}", new Object[]{annotations.toString(), unchagedLoops});
+                if (unchagedLoops >= 100) break;
+            } else {
+                last = line;
+                unchagedLoops = 0;
+            }
+
             AnnotationDesc desc = annotations.getActiveAnnotation(line);
             
             if (desc != null) {

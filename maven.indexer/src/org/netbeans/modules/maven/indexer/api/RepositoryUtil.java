@@ -45,12 +45,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.codehaus.plexus.util.IOUtil;
-import java.util.logging.Logger;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 
 /**
@@ -59,8 +60,6 @@ import org.netbeans.modules.maven.embedder.MavenEmbedder;
  */
 public final class RepositoryUtil {
 
-    private static Logger LOGGER = Logger.getLogger(RepositoryUtil.class.getName());
-    
     private RepositoryUtil() {
     }
 
@@ -94,20 +93,20 @@ public final class RepositoryUtil {
 
         return art;
     }
-
-    public static String calculateMD5Checksum(File file) throws IOException {
-        byte[] buffer = readFile(file);
-        String md5sum = DigestUtils.md5Hex(buffer);
-        return md5sum;
-    }
     
     public static String calculateSHA1Checksum(File file) throws IOException {
         byte[] buffer = readFile(file);
-        String sha1sum = DigestUtils.shaHex(buffer);
-        return sha1sum;
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-1");
+        } catch (NoSuchAlgorithmException x) {
+            throw new IOException(x);
+        }
+        digest.update(buffer);
+        return String.format("%040x", new BigInteger(1, digest.digest()));
     }
 
-    static byte[] readFile(File file) throws IOException {
+    private static byte[] readFile(File file) throws IOException {
 
         InputStream is = null; 
         byte[] bytes = new byte[(int) file.length()];
