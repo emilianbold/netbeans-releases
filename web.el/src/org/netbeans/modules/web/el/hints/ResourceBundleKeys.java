@@ -41,18 +41,14 @@
  */
 package org.netbeans.modules.web.el.hints;
 
-import com.sun.el.parser.AstBracketSuffix;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
-import com.sun.el.parser.Node;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.web.el.AstPath;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.Pair;
 import org.netbeans.modules.web.el.ResourceBundles;
@@ -85,7 +81,7 @@ public final class ResourceBundleKeys extends ELRule {
 
     @Override
     public boolean getDefaultEnabled() {
-        return false; // change to true after m1
+        return true;
     }
 
     @Override
