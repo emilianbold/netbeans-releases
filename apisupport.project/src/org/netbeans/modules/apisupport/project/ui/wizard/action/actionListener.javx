@@ -26,7 +26,7 @@ import org.openide.awt.ActionID;
 @ActionReferences({
 <#list REFERENCES as r>
   @ActionReference(path="${r.path()}"<#if
-  r.position()!=-1>, position=${r.position()}</#if><#if 
+  r.position()!=-1>, position=${r.position()?string("0")}</#if><#if 
   r.name()?length != 0>, name="${r.name()}"</#if>)<#if r_has_next>,</#if>
 </#list>
 })

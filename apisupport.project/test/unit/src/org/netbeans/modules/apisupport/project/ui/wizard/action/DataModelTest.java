@@ -90,7 +90,7 @@ public class DataModelTest extends LayerTestBase {
         FileObject root = fs.getRoot();
         FileUtil.createData(root, "Menu/Help/Tutorials/quick-start.url").setAttribute("position", 100);
         FileUtil.createData(root, "Menu/Help/Tutorials/prj-import-guide.url").setAttribute("position", 200);
-        FileUtil.createData(root, "Toolbars/Edit/org-openide-actions-FindAction.instance").setAttribute("position", 600);
+        FileUtil.createData(root, "Toolbars/Edit/org-openide-actions-FindAction.instance").setAttribute("position", 6000);
         
         WizardDescriptor wd = new WizardDescriptor() {};
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
@@ -151,7 +151,7 @@ public class DataModelTest extends LayerTestBase {
         if (!text.toLowerCase().contains("position=150")) {
             fail("Postion position=150 is what is in middle of 100 and :\n" + text);
         }
-        if (!text.toLowerCase().contains("position=700") || !text.contains("Toolbars/Edit")) {
+        if (!text.toLowerCase().contains("position=6100") || !text.contains("Toolbars/Edit")) {
             fail("Toolbar is generated:\n" + text);
         }
         if (!text.contains("Loaders/text/xml/Actions")) {
