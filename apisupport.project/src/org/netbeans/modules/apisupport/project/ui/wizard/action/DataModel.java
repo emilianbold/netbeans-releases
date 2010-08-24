@@ -284,13 +284,16 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 ));
             }
 
-            /*
             // create layer entry for toolbar button
             if (toolbarEnabled) {
-                generateShadow(toolbar + "/" + shadow, instanceFullPath); // NOI18N
-                generateOrder(toolbar, toolbarPosition.getBefore(), shadow, toolbarPosition.getAfter());
+                refs.add(createActionReference(
+                    toolbar,
+                    false,
+                    false,
+                    toolbarPosition.toInteger(getProject(), toolbar),
+                    null
+                ));
             }
-            */
             
             // create layer entry for keyboard shortcut
             if (kbShortcutEnabled) {

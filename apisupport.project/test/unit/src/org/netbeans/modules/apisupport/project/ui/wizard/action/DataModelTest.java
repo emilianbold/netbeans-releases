@@ -147,6 +147,9 @@ public class DataModelTest extends LayerTestBase {
         if (!text.toLowerCase().contains("position=150")) {
             fail("Postion position=150 is what is in middle of 100 and :\n" + text);
         }
+        if (!text.toLowerCase().contains("position=700") || !text.contains("Toolbars/Edit")) {
+            fail("Toolbar is generated:\n" + text);
+        }
         //fail("OK\n" + text);
     }
 
