@@ -54,11 +54,13 @@ import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -194,7 +196,7 @@ public final class NbMavenProject {
                     try {
                         ProgressTransferListener.setAggregateHandle(hndl);
                         hndl.start();
-                        MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+                        MavenExecutionRequest req = online.createMavenExecutionRequest();
                         req.setPom(pomFile);
                         req.setTransferListener(new ProgressTransferListener());
                         MavenExecutionResult res = online.readProjectWithDependencies(req); //NOI18N
@@ -232,7 +234,7 @@ public final class NbMavenProject {
      * a project change the correct instance changes as the embedder reloads it.
      * 
      */ 
-    public MavenProject getMavenProject() {
+    public @NonNull MavenProject getMavenProject() {
         return project.getOriginalMavenProject();
     }
 
@@ -254,6 +256,21 @@ public final class NbMavenProject {
      */
     public URI[] getResources(boolean test) {
         return project.getResources(test);
+    }
+
+    /**
+     * Standardized way of finding output directory even for broken projects.
+     * @param test true for {@code target/test-classes}, false for {@code target/classes}
+     * @return the configured output directory (normalized)
+     */
+    public File getOutputDirectory(boolean test) {
+        Build build = getMavenProject().getBuild();
+        String path = build != null ? (test ? build.getTestOutputDirectory() : build.getOutputDirectory()) : null;
+        if (path != null) {
+            return new File(path);
+        } else { // #189092
+            return new File(new File(getMavenProject().getBasedir(), "target"), test ? "test-classes" : "classes"); // NOI18N
+        }
     }
 
     /**
@@ -359,7 +376,6 @@ public final class NbMavenProject {
         NONBINARYRP.post(new Runnable() {
             public void run() {
                 MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                @SuppressWarnings("unchecked")
                 Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
                 ProgressContributor[] contribs = new ProgressContributor[arts.size()];
                 for (int i = 0; i < arts.size(); i++) {

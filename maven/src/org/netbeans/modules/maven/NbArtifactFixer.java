@@ -37,59 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.embedder.exec;
+package org.netbeans.modules.maven;
 
-import java.util.List;
-import junit.framework.TestCase;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.lifecycle.LifecycleLoaderException;
-import org.apache.maven.lifecycle.LifecycleSpecificationException;
-import org.apache.maven.lifecycle.plan.BuildPlan;
-import org.apache.maven.lifecycle.plan.BuildPlanner;
-import org.apache.maven.lifecycle.plan.LifecyclePlannerException;
-import org.apache.maven.project.MavenProject;
+import java.io.File;
+import org.apache.maven.ReactorArtifactRepository;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.netbeans.modules.maven.embedder.ArtifactFixer;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author mkleint
+ * #189442: tries to associate snapshot artifacts with their owners.
+ * @see ReactorArtifactRepository
  */
-public class NBBuildPlannerTest extends TestCase {
-    
-    public NBBuildPlannerTest(String testName) {
-        super(testName);
-    }            
+@ServiceProvider(service=ArtifactFixer.class)
+public class NbArtifactFixer implements ArtifactFixer {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public void testBuildPlanMethods() throws Exception {
-        new BP();
-    }
-    
-    private class BP implements BuildPlanner {
-
-        public void constructInitialProjectBuildPlans(MavenSession arg0) throws LifecycleLoaderException, LifecycleSpecificationException, LifecyclePlannerException {
-            throw new UnsupportedOperationException("Not supported yet.");
+    public @Override File resolve(Artifact artifact) {
+        ArtifactRepository local = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+        if (local.getLayout() == null) {
+            // #189807: for unknown reasons, there is no layout when running inside MavenCommandLineExecutor.run
+            return null;
         }
-
-        public BuildPlan constructInitialProjectBuildPlan(MavenProject arg0, MavenSession arg1) throws LifecycleLoaderException, LifecycleSpecificationException, LifecyclePlannerException {
-            throw new UnsupportedOperationException("Not supported yet.");
+        File nominal = new File(local.getBasedir(), local.pathOf(artifact));
+        if (nominal.exists()) {
+            return null;
         }
-
-        public BuildPlan constructBuildPlan(List tasks, MavenProject project, MavenSession session, boolean allowUnbindableMojos) throws LifecycleLoaderException, LifecycleSpecificationException, LifecyclePlannerException {
-            throw new UnsupportedOperationException("Not supported yet.");
+        /* XXX deadlocks without #186024
+        Project owner = FileOwnerQuery.getOwner(nominal.toURI());
+        if (owner != null) {
+            NbMavenProjectImpl mavenProject = owner.getLookup().lookup(NbMavenProjectImpl.class);
+            if (mavenProject != null) {
+                if (artifact.getType().equals(NbMavenProject.TYPE_POM)) {
+                    return mavenProject.getPOMFile();
+                }
+            }
         }
-        
+         */
+        return null;
     }
 
 }

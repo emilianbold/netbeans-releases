@@ -59,7 +59,6 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -73,8 +72,6 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
-import org.netbeans.modules.maven.options.MavenOptionController;
-import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.DialogDisplayer;
@@ -360,9 +357,9 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, platformId, true);
             }
         };
-
+        /*
         checkExternalMaven();
-        
+        */
     }
 
     @Override
@@ -378,14 +375,13 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         return BootClassPathImpl.getActivePlatform(platformId);
     }
 
+    /*
     private boolean isExternalMaven () {
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         String val = props.get(Constants.HINT_USE_EXTERNAL, true);
         boolean useEmbedded = "false".equalsIgnoreCase(val);
-
         return !useEmbedded && MavenSettings.canFindExternalMaven();
     }
-
     private void checkExternalMaven () {
         if (isExternalMaven()) {
             lblWarnPlatform.setVisible(false);
@@ -396,8 +392,8 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
             lblWarnPlatform.setVisible(true);
             btnSetupHome.setVisible(true);
         }
-
     }
+     */
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -408,19 +404,26 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        lblJavaPlatform = new javax.swing.JLabel();
+        comJavaPlatform = new javax.swing.JComboBox();
+        btnMngPlatform = new javax.swing.JButton();
         lblCompileOnSave = new javax.swing.JLabel();
         comCompileOnSave = new javax.swing.JComboBox();
         lblHint1 = new javax.swing.JLabel();
         lblHint2 = new javax.swing.JLabel();
         cbDebug = new javax.swing.JCheckBox();
         cbDeprecate = new javax.swing.JCheckBox();
-        lblJavaPlatform = new javax.swing.JLabel();
-        comJavaPlatform = new javax.swing.JComboBox();
-        btnMngPlatform = new javax.swing.JButton();
-        lblWarnPlatform = new javax.swing.JLabel();
-        btnSetupHome = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(576, 303));
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblJavaPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblJavaPlatform.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnMngPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.text")); // NOI18N
+        btnMngPlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMngPlatformActionPerformed(evt);
+            }
+        });
 
         lblCompileOnSave.setLabelFor(comCompileOnSave);
         org.openide.awt.Mnemonics.setLocalizedText(lblCompileOnSave, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblCompileOnSave.text")); // NOI18N
@@ -433,24 +436,6 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
 
         org.openide.awt.Mnemonics.setLocalizedText(cbDeprecate, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.cbDeprecate.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblJavaPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblJavaPlatform.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnMngPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.text")); // NOI18N
-        btnMngPlatform.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnMngPlatformActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblWarnPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblWarnPlatform.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnSetupHome, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnSetupHome.text")); // NOI18N
-        btnSetupHome.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSetupHomeActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -458,7 +443,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
-                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+                    .add(lblHint2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 566, Short.MAX_VALUE)
                     .add(cbDebug)
                     .add(cbDeprecate)
                     .add(layout.createSequentialGroup()
@@ -467,14 +452,10 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                             .add(lblJavaPlatform))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(comJavaPlatform, 0, 302, Short.MAX_VALUE)
-                            .add(comCompileOnSave, 0, 302, Short.MAX_VALUE))
+                            .add(comJavaPlatform, 0, 204, Short.MAX_VALUE)
+                            .add(comCompileOnSave, 0, 204, Short.MAX_VALUE))
                         .add(16, 16, 16)
-                        .add(btnMngPlatform))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnSetupHome)))
+                        .add(btnMngPlatform)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -496,15 +477,10 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 .add(cbDebug)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbDeprecate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 109, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btnSetupHome)
-                    .add(lblWarnPlatform))
-                .addContainerGap())
+                .addContainerGap(142, Short.MAX_VALUE))
         );
 
         btnMngPlatform.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.AccessibleContext.accessibleDescription")); // NOI18N
-        btnSetupHome.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnSetupHome.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnMngPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMngPlatformActionPerformed
@@ -512,15 +488,9 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         PlatformsCustomizer.showCustomizer(getSelPlatform());
 }//GEN-LAST:event_btnMngPlatformActionPerformed
 
-    private void btnSetupHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupHomeActionPerformed
-        // TODO add your handling code here:
-        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
-}//GEN-LAST:event_btnSetupHomeActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnMngPlatform;
-    private javax.swing.JButton btnSetupHome;
     private javax.swing.JCheckBox cbDebug;
     private javax.swing.JCheckBox cbDeprecate;
     private javax.swing.JComboBox comCompileOnSave;
@@ -529,7 +499,6 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
     private javax.swing.JLabel lblHint1;
     private javax.swing.JLabel lblHint2;
     private javax.swing.JLabel lblJavaPlatform;
-    private javax.swing.JLabel lblWarnPlatform;
     // End of variables declaration//GEN-END:variables
 
     private static final String CONFIGURATION_EL = "configuration";//NOI18N
@@ -600,7 +569,9 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
     }
 
     public void windowGainedFocus(WindowEvent e) {
+        /*
         checkExternalMaven();
+         */
     }
 
     public void windowLostFocus(WindowEvent e) {
@@ -665,10 +636,10 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
 
             if ( isSelected ) {
                 setBackground(list.getSelectionBackground());
-                setForeground(isExternalMaven() ? list.getSelectionForeground() : java.awt.SystemColor.textInactiveText);
+                setForeground(/*isExternalMaven() ? */list.getSelectionForeground()/* : java.awt.SystemColor.textInactiveText*/);
             } else {
                 setBackground(list.getBackground());
-                setForeground(isExternalMaven() ? list.getForeground() : java.awt.SystemColor.textInactiveText);
+                setForeground(/*isExternalMaven() ? */list.getForeground()/* : java.awt.SystemColor.textInactiveText*/);
             }
 
             return this;

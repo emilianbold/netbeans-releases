@@ -37,84 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.maven.embedder;
 
-import org.apache.maven.embedder.MavenEmbedderLogger;
+import java.io.File;
+import java.util.Properties;
+import org.codehaus.plexus.PlexusContainer;
 
 /**
  *
  * @author mkleint
  */
-public class NullEmbedderLogger implements MavenEmbedderLogger {
-    
-    /** Creates a new instance of NullEmbedderLogger */
-    public NullEmbedderLogger() {
+class EmbedderConfiguration {
+    private PlexusContainer cont;
+    private File local;
+    private Properties props;
+    private boolean offline;
+
+    void setLocalRepository(File file) {
+        local = file;
     }
 
-    public void debug(String string) {
+    File getLocalRepository() {
+        return local;
     }
 
-    public void debug(String string, Throwable throwable) {
+    void setSystemProperties(Properties fillEnvVars) {
+        props = fillEnvVars;
     }
 
-    public boolean isDebugEnabled() {
-        return false;
+    Properties getSystemProperties() {
+        return props;
     }
 
-    public void info(String string) {
+    PlexusContainer getContainer() {
+        return cont;
     }
 
-    public void info(String string, Throwable throwable) {
-    }
-
-    public boolean isInfoEnabled() {
-        return false;
-    }
-
-    public void warn(String string) {
-    }
-
-    public void warn(String string, Throwable throwable) {
-    }
-
-    public boolean isWarnEnabled() {
-        return false;
-    }
-
-    public void error(String string) {
-    }
-
-    public void error(String string, Throwable throwable) {
-    }
-
-    public boolean isErrorEnabled() {
-        return false;
-    }
-
-    public void fatalError(String string) {
-    }
-
-    public void fatalError(String string, Throwable throwable) {
-    }
-
-    public boolean isFatalErrorEnabled() {
-        return false;
-    }
-
-    public void setThreshold(int i) {
-        level = i;
-    }
-
-    private int level = 0;
-    
-    public int getThreshold() {
-        return level;
-    }
-
-    public void close() {
+    void setContainer(PlexusContainer dpc) {
+        cont = dpc;
     }
     
+    public boolean isOffline() {
+        return offline;
+    }
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+    }
+
 }

@@ -57,7 +57,7 @@ import org.openide.windows.OutputListener;
  */
 public class GlobalOutputProcessor implements OutputProcessor {
     private static final String SECTION_PROJECT = "project-execute"; //NOI18N
-    /*test*/ static final Pattern DOWNLOAD = Pattern.compile("^((\\d+)/(\\d*)[MKb\\?](\\s*))+$"); //NOI18N
+    /*test*/ static final Pattern DOWNLOAD = Pattern.compile("^(\\d+(/\\d*)? ?(M|K|b|KB|B|\\?)\\s*)+$"); //NOI18N
     private static final Pattern LOW_MVN = Pattern.compile("(.*)Error resolving version for (.*): Plugin requires Maven version (.*)"); //NOI18N
     
     /** Creates a new instance of GlobalOutputProcessor */
