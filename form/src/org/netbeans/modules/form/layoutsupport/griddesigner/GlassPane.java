@@ -51,6 +51,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.BitSet;
@@ -866,6 +867,18 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         designer.setSelection(selection);
     }
 
+    @Override
+    protected void processKeyEvent(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        if ((keyCode == KeyEvent.VK_ESCAPE) && (moving || resizing)) {
+            moving = false;
+            resizing = false;
+            repaint();
+        } else {
+            super.processKeyEvent(e);
+        }
+    }
+
     /**
      * Listener for glass-pane user gestures.
      */
@@ -892,6 +905,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 } else {
                     // Resizing (start)
                     resizing = true;
+                    requestFocusInWindow();
                     draggingRect = fromComponentPane(selectionResizingBounds());
                     newGridX = gridInfo.getGridX(selection);
                     newGridY = gridInfo.getGridY(selection);
@@ -994,6 +1008,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                         // Moving start
                         newGridHeight = gridInfo.getGridHeight(selection);
                         newGridWidth = gridInfo.getGridWidth(selection);
+                        requestFocusInWindow();
                     }
                     moving = true;
                     draggingRect = calculateMovingRectangle(e.getPoint());
