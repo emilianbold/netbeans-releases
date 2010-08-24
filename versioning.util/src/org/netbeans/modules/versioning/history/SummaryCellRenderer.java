@@ -67,6 +67,8 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -78,6 +80,7 @@ import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.ActionNode;
@@ -89,12 +92,13 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Hyperlink;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 public class SummaryCellRenderer implements TreeCellRenderer {
     private static final double DARKEN_FACTOR = 0.95;
@@ -107,8 +111,6 @@ public class SummaryCellRenderer implements TreeCellRenderer {
     private String selectionBackground = getColorString(selectionBackgroundColor);
     private String selectionForeground = getColorString(new JList().getSelectionForeground());
 
-    private final String hiliteForegroundColor;
-    private final String hiliteBackgroundColor;
     private final Color normalBackgroundColor = darker(UIManager.getColor("List.background"));
     private final String normalForeground = getColorString(UIManager.getColor("List.foreground"));
     private final String normalBackground = getColorString(normalBackgroundColor);
@@ -132,7 +134,7 @@ public class SummaryCellRenderer implements TreeCellRenderer {
     private double dateMaxWidth;
     private double revisionMaxWidth;
 
-    public SummaryCellRenderer(AbstractSummaryView master, VCSHyperlinkSupport linkerSupport, List<LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
+    public SummaryCellRenderer(AbstractSummaryView master, final VCSHyperlinkSupport linkerSupport, List<LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
         this.master = master;
         this.hiliteMessage = master.getMessage();
         this.kenaiUsersMap = kenaiUsersMap;
@@ -141,12 +143,22 @@ public class SummaryCellRenderer implements TreeCellRenderer {
         FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
 
-        Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
-        hiliteBackgroundColor = c != null ? getColorString(c) : null;
-        c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
-        hiliteForegroundColor = c != null ? getColorString(c) : null;
-
         computeFieldSizes(results);
+        master.getList().addTreeExpansionListener(new TreeExpansionListener() {
+
+            @Override
+            public void treeExpanded(TreeExpansionEvent event) {}
+
+            @Override
+            public void treeCollapsed(TreeExpansionEvent event) {
+                TreePath path = event.getPath();
+                Object o = path.getLastPathComponent();
+                if(o instanceof LogEntryNode) {
+                    LogEntry le = (LogEntry) ((LogEntryNode)o).getUserObject();
+                    linkerSupport.remove(ActionHyperlink.class, le.getRevision());
+                }
+            }
+        });
     }
 
     private void computeFieldSizes(List<LogEntry> results) {
@@ -210,6 +222,7 @@ public class SummaryCellRenderer implements TreeCellRenderer {
         private String revision;
 
         private JTextPane textPane = new Pane();
+        private Collection<VCSHyperlinkProvider> hpInstances;
 
         public RevisionRenderer() {
             textPane.setBorder(new MatteBorder(3, 0, 0, 0, Color.WHITE));
@@ -236,10 +249,6 @@ public class SummaryCellRenderer implements TreeCellRenderer {
             }
             textPane.setBackground(backgroundColor);
 
-            // XXX cache
-            Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
-            Collection<VCSHyperlinkProvider> hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
-
             revision = entry.getRevision();
             String author = entry.getAuthor() != null ? entry.getAuthor() : "";
             String date = entry.getDate();
@@ -253,12 +262,11 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                     nlc == 0 || entry.messageExpanded ? messageValue.replace("\n", "<br>")
                                                       : messageValue.substring(0, messageValue.indexOf("\n"));
             // compute issue hyperlinks
-//                IssueLinker il = linkerSupport.getLinker(IssueLinker.class, index);
             int[] issuespans = null;
             VCSHyperlinkProvider hyperlinkProvider = null;
             String issuesMsgValue = null;
-            for (VCSHyperlinkProvider hp : hpInstances) {
-//                        il = IssueLinker.create(hp, issueHyperlinkStyle, master.getRoots()[0], sd, commitMessage);
+
+            for (VCSHyperlinkProvider hp : getHyperlinkProviders()) {
                 issuespans = hp.getSpans(entry.getMessage()); // compute spans from untouched message text
                 if (issuespans == null) {
                     continue;
@@ -288,7 +296,7 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                         sb.append("\" id=\"issue");
                         sb.append(issueidx);
                         sb.append("\">");
-                        if(start >= messageValue.length() || end >= messageValue.length()) {
+                        if(start >= messageValue.length() || end > messageValue.length()) {
                             linked = false;
                             break;
                         }
@@ -303,41 +311,23 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                 }
 
             }
-            // hilite message
-            if (hiliteMessage != null && !selected) {
-                int idx = entry.getMessage().indexOf(hiliteMessage);
-                if (idx != -1) {
-                    messageValue =
-                            messageValue.substring(0, idx) +
-                            "<font bgcolor=\"" + hiliteBackgroundColor + "\" color=\"" + hiliteForegroundColor+ "\">" +
-                            messageValue.substring(idx, idx + hiliteMessage.length()) +
-                            "</font>" +
-                            messageValue.substring(idx + hiliteMessage.length());
-                }
-            }
             if(nlc > 0 && !entry.messageExpanded) {
-                messageValue = messageValue + " <font color=\"" + (selected ? selectionForeground : linkColor) + "\" id=\"expandmsg\">...</font>";
+                StringBuilder sb = new StringBuilder();
+                sb.append(messageValue);
+                sb.append(" <font color=\"");
+                sb.append((selected ? selectionForeground : linkColor));
+                sb.append("\" id=\"expandmsg\">...</font>");
+                messageValue = sb.toString();
             }
-
-            // author
-            KenaiUser kenaiUser = null;
-            if(kenaiUsersMap != null && author != null && !author.equals("")) {
-                kenaiUser = kenaiUsersMap.get(author);
-            }
-
-            String txt = "<html><body>" +
-                        "<table width=\"100%\" height=\"100%\" border=\"0\">" +
-                            "<tr>" +
-                                "<td bgcolor=\"" + background + "\" valign=\"top\" width=\"" + (revisionMaxWidth) + "\" border=\"0\"><font color=\"" + foreground + "\">" + revision + "</font></td>" +
-                                "<td bgcolor=\"" + background + "\" valign=\"top\" width=\"" + (authorMaxWidth) + "\" border=\"0\" ><center><font color=\"" + (selected ? selectionForeground : (kenaiUser != null ? "#0000FF" : authorColor)) + "\" id=\"author\">(" + author + ")</font></center></td>" +
-                                "<td bgcolor=\"" + background + "\" valign=\"top\" border=\"0\"><font color=\"" + foreground + "\">" + messageValue + "</font></td>" +
-                                "<td bgcolor=\"" + background + "\" valign=\"top\" width=\"" + (dateMaxWidth) + "\" border=\"0\"><font color=\"" + (selected ? selectionForeground : dateColor) + "\">" + date + "</font></td>" +
-                            "</tr>" +
-                        "</table>" +
-                    "</body></html>";
-            textPane.setText(txt);
+            
+            KenaiUser kenaiUser = getKenaiUser(author);
+            textPane.setText(formatValue(background, foreground, selected, kenaiUser, author, messageValue, date));
 
             HTMLDocument document = (HTMLDocument) textPane.getDocument();
+
+            // hilite search results
+            hiliteSearch(document, selected);
+
             Element  e = document.getElement("author");
             if(e != null) {
                 if(kenaiUser != null) {
@@ -384,6 +374,76 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                 textPane.setPreferredSize(new Dimension(width, ph));
             }
             return textPane;
+        }
+
+        public String formatValue(String background, String foreground, boolean selected, KenaiUser kenaiUser, String author, String messageValue, String date) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html><body><table width=\"100%\" height=\"100%\" border=\"0\"><tr>");
+            sb.append("<td bgcolor=\"");
+            sb.append("<td bgcolor=\"");
+            sb.append(background);
+            sb.append("\" valign=\"top\" width=\"");
+            sb.append(revisionMaxWidth);
+            sb.append("\" border=\"0\"><font color=\"");
+            sb.append(foreground);
+            sb.append("\">");
+            sb.append(revision);
+            sb.append("</font></td><td bgcolor=\"");
+            sb.append(background);
+            sb.append("\" valign=\"top\" width=\"");
+            sb.append(authorMaxWidth);
+            sb.append("\" border=\"0\" ><center><font color=\"");
+            sb.append((selected ? selectionForeground : (kenaiUser != null ? "#0000FF" : authorColor)));
+            sb.append("\" id=\"author\">(");
+            sb.append(author);
+            sb.append(")</font></center></td><td bgcolor=\"");
+            sb.append(background);
+            sb.append("\" valign=\"top\" border=\"0\"><font color=\"");
+            sb.append(foreground);
+            sb.append("\">");
+            sb.append(messageValue);
+            sb.append("</font></td><td bgcolor=\"");
+            sb.append(background);
+            sb.append("\" valign=\"top\" width=\"");
+            sb.append(dateMaxWidth);
+            sb.append("\" border=\"0\"><font color=\"");
+            sb.append((selected ? selectionForeground : dateColor));
+            sb.append("\">");
+            sb.append(date);
+            sb.append("</font></td></tr></table></body></html>");
+            return sb.toString();
+        }
+
+        public KenaiUser getKenaiUser(String author) {
+            KenaiUser kenaiUser = null;
+            if (kenaiUsersMap != null && author != null && !author.equals("")) {
+                kenaiUser = kenaiUsersMap.get(author);
+            }
+            return kenaiUser;
+        }
+
+        public void hiliteSearch(HTMLDocument document, boolean selected) {
+            if (hiliteMessage != null && !selected) {
+                String message = null;
+                try {
+                    message = document.getText(0, document.getLength());
+                } catch (BadLocationException ex) {
+                    AbstractSummaryView.LOG.log(Level.OFF, null, ex);
+                    return;
+                }
+                int idx = message.indexOf(hiliteMessage);
+                if (idx != -1) {
+                    document.setCharacterAttributes(idx, hiliteMessage.length(), searchHiliteAttrs, true);
+                }
+            }
+        }
+
+        public Collection<VCSHyperlinkProvider> getHyperlinkProviders() {
+            if(hpInstances == null) {
+                Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
+                hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
+            }
+            return hpInstances;
         }
 
         private class Pane extends JTextPane {

@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.web.el;
 
+import com.sun.el.parser.AstBracketSuffix;
+import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstString;
+import com.sun.el.parser.Node;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -147,6 +151,49 @@ public final class ResourceBundles {
         return bundleFile.containsKey(key);
     }
 
+    /**
+     * Collects references to resource bundle keys in the given {@code root}.
+     * @return List of identifier/string pairs. Identifier = resource bundle base name - string = res bundle key.
+     */
+    public List<Pair<AstIdentifier, AstString>> collectKeys(final Node root) {
+        final List<Pair<AstIdentifier, AstString>> result = new ArrayList<Pair<AstIdentifier, AstString>>();
+        List<Node> path = new AstPath(root).rootToLeaf();
+        for (int i = 0; i < path.size(); i++) {
+            Node node = path.get(i);
+            if (node instanceof AstIdentifier && isResourceBundleIdentifier(node.getImage())) {
+                // check for i18n["my.key"] => AST for that is: identifier, brackets and string
+                if (i + 2 < path.size()) {
+                    Node brackets = path.get(i + 1);
+                    Node string = path.get(i + 2);
+                    if (brackets instanceof AstBracketSuffix
+                            && string instanceof AstString) {
+                        result.add(Pair.of((AstIdentifier) node, (AstString) string));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gets the value of the given {@code key} in the given {@code bundle}.
+     * @param bundle the base name of the bundle.
+     * @param key key in the given bundle.
+     * @return the value or {@code null}.
+     */
+    public String getValue(String bundle, String key) {
+        java.util.ResourceBundle bundleFile = getBundlesMap().get(bundle);
+        if (bundleFile == null || !bundleFile.containsKey(key)) {
+            // no matching bundle file
+            return null;
+        }
+        try {
+            return bundleFile.getString(key);
+        } catch (MissingResourceException e) {
+            return null;
+        }
+    }
+    
     private List<String> getBundles() {
         if (bundles == null) {
             bundles = initJSFResourceBundles();
