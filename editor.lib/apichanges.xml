@@ -107,6 +107,90 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="deprecating-formatting">
+            <summary>Deprecating old formatting API</summary>
+            <version major="3" minor="1"/>
+            <date day="24" month="8" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes" deprecation="yes" deletion="yes" modification="yes"/>
+            <description>
+                <p>
+                    The old formatting API (<code>org.netbeans.editor.Formatter</code> &amp; co.)
+                    has been deprecated and moved to <code>editor.deprecated.pre65formatting</code> module.
+                </p>
+                <p>The exact API changes are listed in the sigtest report below.</p>
+<pre>
+-sigtest-init:
+     [echo] sigtest check: editor.lib; cnb: org-netbeans-modules-editor-lib; email: api-changes@netbeans.org; type: check
+
+check-sigtest:
+    [mkdir] Created dir: /work/netbeans/main2m/editor.lib/build/test/sigtest/results
+  [sigtest] /work/netbeans/main2m/editor.lib/build/test/sigtest/results/org.netbeans.modules.editor.lib
+  [sigtest] Packages: org.netbeans.editor.*, org.netbeans.editor.ext.*, org.netbeans.editor.view.spi.*, org.netbeans.lib.editor.hyperlink.spi.*, org.netbeans.lib.editor.view.*
+  [sigtest] Missing /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/lib/rt.jar
+  [sigtest] 
+  [sigtest] email: api-changes@netbeans.org
+  [sigtest] SignatureTest report
+  [sigtest] Base version: 2.11.0
+  [sigtest] Tested version: 2.11.0
+  [sigtest] Check mode: bin [throws removed]
+  [sigtest] Constant checking: on
+  [sigtest] 
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.BaseDocument
+  [sigtest]   "E1.2 - API type removed" : method public org.netbeans.editor.Formatter org.netbeans.editor.BaseDocument.getFormatter()
+  [sigtest]   "E1.2 - API type removed" : method public org.netbeans.editor.Formatter org.netbeans.editor.BaseDocument.getLegacyFormatter()
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.BaseKit
+  [sigtest]   "E1.2 - API type removed" : method public org.netbeans.editor.Formatter org.netbeans.editor.BaseKit.createFormatter()
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.BaseKit$PasteAction
+  [sigtest]   "E1.2 - API type removed" : method public static void org.netbeans.editor.BaseKit$PasteAction.indentBlock(org.netbeans.editor.BaseDocument,int,int)
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.Formatter
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.Formatter
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.GuardedDocument
+  [sigtest]   "E1.2 - API type removed" : method public org.netbeans.editor.Formatter org.netbeans.editor.BaseDocument.getFormatter()
+  [sigtest]   "E1.2 - API type removed" : method public org.netbeans.editor.Formatter org.netbeans.editor.BaseDocument.getLegacyFormatter()
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.AbstractFormatLayer
+  [sigtest]   "E1.2 - API type removed" : CLASS public abstract org.netbeans.editor.ext.AbstractFormatLayer
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.ExtFormatSupport
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.ext.ExtFormatSupport
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.ExtFormatter
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.ext.ExtFormatter
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.ExtFormatter$Simple
+  [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ext.ExtFormatter$Simple
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.ExtKit
+  [sigtest]   "E1.2 - API type removed" : method public org.netbeans.editor.Formatter org.netbeans.editor.BaseKit.createFormatter()
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.FormatLayer
+  [sigtest]   "E1.2 - API type removed" : CLASS public abstract interface org.netbeans.editor.ext.FormatLayer
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.FormatSupport
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.ext.FormatSupport
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.FormatTokenPosition
+  [sigtest]   "E1.2 - API type removed" : CLASS public abstract interface org.netbeans.editor.ext.FormatTokenPosition
+  [sigtest] 
+  [sigtest] Class org.netbeans.editor.ext.FormatWriter
+  [sigtest]   "E1.2 - API type removed" : CLASS public final org.netbeans.editor.ext.FormatWriter
+  [sigtest] 
+  [sigtest] /work/netbeans/main2m/editor.lib/build/test/sigtest/results/org-netbeans-modules-editor-lib.xml: 1 failures in /work/netbeans/main2m/editor.lib/nbproject/org-netbeans-modules-editor-lib.sig
+
+BUILD FAILED
+Signature tests return code is wrong (1), check the messages above
+</pre>                
+            </description>
+            <issue number="90403"/>
+        </change>
+        
         <change id="ToolTipSupport-heavyweight-tooltips">
             <summary>Support for heavyweight tooltips</summary>
             <version major="2" minor="10"/>
