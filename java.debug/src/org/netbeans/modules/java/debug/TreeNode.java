@@ -98,11 +98,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -119,10 +121,10 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
     private CompilationInfo info;
     private boolean synthetic;
     
-    public static Node getTree(CompilationInfo info, TreePath tree) {
+    public static Node getTree(CompilationInfo info, TreePath tree, AtomicBoolean cancel) {
         List<Node> result = new ArrayList<Node>();
         
-        new FindChildrenTreeVisitor(info).scan(tree, result);
+        new FindChildrenTreeVisitor(info, cancel).scan(tree, result);
         
         return result.get(0);
     }
@@ -213,11 +215,12 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         
     }
     
-    private static class FindChildrenTreeVisitor extends TreePathScanner<Void, List<Node>> {
+    private static class FindChildrenTreeVisitor extends CancellableTreePathScanner<Void, List<Node>> {
         
-        private CompilationInfo info;
+        private final CompilationInfo info;
         
-        public FindChildrenTreeVisitor(CompilationInfo info) {
+        public FindChildrenTreeVisitor(CompilationInfo info, AtomicBoolean cancel) {
+            super(cancel);
             this.info = info;
         }
         
