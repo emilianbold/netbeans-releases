@@ -111,7 +111,11 @@ public final class ELTypeUtilities {
     }
 
     public static ELTypeUtilities create(FileObject context) {
-        ClasspathInfo cp = ClasspathInfo.create(context);
+        return create(getCompilationInfo(context));
+    }
+
+    public static CompilationInfo getCompilationInfo(FileObject file) {
+        ClasspathInfo cp = ClasspathInfo.create(file);
         final CompilationInfo[] info = new CompilationInfo[1];
         JavaSource source = JavaSource.create(cp);
         try {
@@ -125,9 +129,9 @@ public final class ELTypeUtilities {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return create(info[0]);
-    }
+        return info[0];
 
+    }
     public Element resolveElement(final ELElement elem, final Node target) {
         TypeResolverVisitor typeResolver = new TypeResolverVisitor(elem, target);
         elem.getNode().accept(typeResolver);
