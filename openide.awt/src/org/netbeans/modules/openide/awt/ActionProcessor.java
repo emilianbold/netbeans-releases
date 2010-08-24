@@ -61,6 +61,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -69,6 +70,7 @@ import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -318,6 +320,14 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         if (name.isEmpty()) {
             name = aid.id().replace('.', '-');
         }
+        
+        if (ref.path().startsWith("Shortcuts")) {
+            KeyStroke stroke = Utilities.stringToKey(name);
+            if (stroke == null) {
+                throw new LayerGenerationException("Registrations in shortcuts folder need to represent a key. See org.openide.util.Utilities.stringToKey.");
+            }
+        }
+        
         File f = layer(e).file(ref.path() + "/" + name + ".shadow");
         f.stringvalue("originalFile", "Actions/" + aid.category() + "/" + aid.id().replace('.', '-') + ".instance");
         f.position(ref.position());

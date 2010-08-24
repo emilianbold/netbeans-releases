@@ -495,6 +495,7 @@ public class ActionProcessorTest extends NbTestCase {
     }
     @ActionID(category="eager", id="direct.two")
     @ActionRegistration(displayName="Direct Action")
+    @ActionReference(path="Shortcuts", name="C-F2")
     public static class Direct2 extends AbstractAction implements Presenter.Toolbar {
         static int cnt;
         public Direct2() {
@@ -661,6 +662,49 @@ public class ActionProcessorTest extends NbTestCase {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertFalse("Compilation has to fail:\n" + os, r);
+    }
+    
+    
+    public void testCheckSyntaxInShortcutsNoName() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.*;\n" +
+            "import org.openide.awt.*;\n" +
+            "import java.awt.event.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "@ActionReference(path=\"Shortcuts\")" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+        assertTrue("Contains hint", os.toString().contains("Utilities.stringToKey"));
+    }
+
+    public void testCheckSyntaxInShortcuts() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.*;\n" +
+            "import org.openide.awt.*;\n" +
+            "import java.awt.event.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "@ActionReference(path=\"Shortcuts\", name=\"silly\")" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+        assertTrue("Contains hint", os.toString().contains("Utilities.stringToKey"));
     }
     
 }
