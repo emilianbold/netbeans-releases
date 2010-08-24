@@ -401,9 +401,13 @@ class DiffViewManager implements ChangeListener {
             Difference difference = diffs[i];
             DecoratedDifference dd = new DecoratedDifference(difference, canRollback(document, difference));
             Rectangle leftStartRect = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, difference.getFirstStart() - 1, false);
-            Rectangle leftEndRect = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, difference.getFirstEnd() - 1, true);
+            Rectangle leftEndRect = difference.getType() == Difference.ADD 
+                    ? getRectForView(leftContentPanel.getEditorPane(), rootLeftView, difference.getFirstStart(), false)
+                    : getRectForView(leftContentPanel.getEditorPane(), rootLeftView, difference.getFirstEnd() - 1, true);
             Rectangle rightStartRect = getRectForView(rightContentPanel.getEditorPane(), rootRightView, difference.getSecondStart() - 1, false);
-            Rectangle rightEndRect = getRectForView(rightContentPanel.getEditorPane(), rootRightView, difference.getSecondEnd() - 1, true);
+            Rectangle rightEndRect = difference.getType() == Difference.DELETE
+                    ? getRectForView(rightContentPanel.getEditorPane(), rootRightView, difference.getSecondStart(), false)
+                    : getRectForView(rightContentPanel.getEditorPane(), rootRightView, difference.getSecondEnd() - 1, true);
             if (leftStartRect == null || leftEndRect == null || rightStartRect == null || rightEndRect == null) {
                 decorations = new DecoratedDifference[0];
                 break;
@@ -411,12 +415,12 @@ class DiffViewManager implements ChangeListener {
             if (difference.getType() == Difference.ADD) {
                 dd.topRight = rightStartRect.y;
                 dd.bottomRight = rightEndRect.y + rightEndRect.height;
-                dd.topLeft = leftStartRect.y + leftStartRect.height;
+                dd.topLeft = leftEndRect.y == 0 ? leftStartRect.y + leftStartRect.height : leftEndRect.y;
                 dd.floodFill = true;
             } else if (difference.getType() == Difference.DELETE) {
                 dd.topLeft = leftStartRect.y;
                 dd.bottomLeft = leftEndRect.y + leftEndRect.height;
-                dd.topRight = rightStartRect.y + rightStartRect.height;
+                dd.topRight = rightEndRect.y == 0 ? rightStartRect.y + rightStartRect.height : rightEndRect.y;
                 dd.floodFill = true;
             } else {
                 dd.topRight = rightStartRect.y;
