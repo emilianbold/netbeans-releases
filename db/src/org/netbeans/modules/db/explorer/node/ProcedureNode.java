@@ -88,6 +88,8 @@ public class ProcedureNode extends BaseNode {
         ProcedureNode node;
         if (conn != null && "MySQL".equalsIgnoreCase(conn.getDriverName())) { // NOI18N
             node = new MySQL(dataLookup, provider);
+        } else if (conn != null && conn.getDriverName() != null && conn.getDriverName().startsWith("Oracle")) { // NOI18N
+            node = new Oracle(dataLookup, provider);
         } else {
             node = new ProcedureNode(dataLookup, provider);
         }
@@ -261,6 +263,90 @@ public class ProcedureNode extends BaseNode {
                 Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
             }
             return source;
+        }
+
+        @Override
+        public String getSchemaName() {
+            MetadataModel metaDataModel = connection.getMetadataModel();
+            final String[] array = new String[1];
+
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                    @Override
+                        public void run(Metadata metaData) {
+                            Procedure view = handle.resolve(metaData);
+                            if (view != null) {
+                                array[0] = view.getParent().getName();
+                            }
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                NodeRegistry.handleMetadataModelException(ProcedureNode.class, connection, e, true);
+            }
+
+            return array[0];
+        }
+
+        @Override
+        public String getCatalogName() {
+            MetadataModel metaDataModel = connection.getMetadataModel();
+            final String[] array = new String[1];
+
+            try {
+                metaDataModel.runReadAction(
+                    new Action<Metadata>() {
+                    @Override
+                        public void run(Metadata metaData) {
+                            Procedure view = handle.resolve(metaData);
+                            if (view != null) {
+                                array[0] = view.getParent().getParent().getName();
+                            }
+                        }
+                    }
+                );
+            } catch (MetadataModelException e) {
+                NodeRegistry.handleMetadataModelException(ProcedureNode.class, connection, e, true);
+            }
+
+            return array[0];
+        }
+        
+    }
+    
+    public static class Oracle extends ProcedureNode implements SchemaNameProvider {
+        private final MetadataElementHandle<Procedure> handle;
+        private final DatabaseConnection connection;
+        
+        @SuppressWarnings("unchecked")
+        private Oracle(NodeDataLookup lookup, NodeProvider provider) {
+            super(lookup, provider);
+            connection = getLookup().lookup(DatabaseConnection.class);
+            handle = getLookup().lookup(MetadataElementHandle.class);
+        }
+
+        @Override
+        public boolean isViewSourceSupported() {
+            return true;
+        }
+
+        @Override
+        public String getSource() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                Statement stat = connection.getConnection().createStatement();
+                // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
+                String q = "SELECT TEXT FROM sys.dba_source WHERE name = '" + getName() + "'" // NOI18N
+                        + " ORDER BY LINE"; // NOI18N
+                ResultSet rs = stat.executeQuery(q);
+                while(rs.next()) {
+                    sb.append(rs.getString("text")); // NOI18N
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
+            }
+            return sb.toString();
         }
 
         @Override
