@@ -134,7 +134,6 @@ public class formatting_0001 extends formatting {
 
     public void bug181787() {
         startTest();
-        //test for always
         setMethodParametersWrappingOptions(1);
 
         EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
@@ -142,7 +141,7 @@ public class formatting_0001 extends formatting {
         eoPHP.insert("<?php\n "
                 + "function testFunction($a, $b, $c) {}"
                 + "\n?>");
-        String sTextOriginal = eoPHP.getText();
+//        String sTextOriginal = eoPHP.getText();
         eoPHP.clickForPopup();
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
@@ -159,7 +158,7 @@ public class formatting_0001 extends formatting {
         eoPHP.insert("<?php\n "
                 + "function testFunction($firstLongParameter = \"bdlkfjdsa fhjjkdshafjd a\" , $secondLongParameter, $thirdLongParameter) { }"
                 + "\n ?>");
-        sTextOriginal = eoPHP.getText();
+//        sTextOriginal = eoPHP.getText();
         eoPHP.clickForPopup();
         menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
@@ -177,7 +176,7 @@ public class formatting_0001 extends formatting {
         eoPHP.insert("<?php \n "
                 + "function testFunction($firstLongParameter, $secondLongParameter, $thirdLongParameter) { }"
                 + "\n ?>");
-        sTextOriginal = eoPHP.getText();
+//        sTextOriginal = eoPHP.getText();
         eoPHP.clickForPopup();
         menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
@@ -199,9 +198,7 @@ public class formatting_0001 extends formatting {
 
         //categories - check if they are all present
         JComboBoxOperator category = new JComboBoxOperator(window, 2);
-        Sleep(5000);
-
-
+        Sleep(10000);
 
         int count = category.getItemCount();
         window.close();
