@@ -59,6 +59,10 @@ public class NbArtifactFixer implements ArtifactFixer {
 
     public @Override File resolve(Artifact artifact) {
         ArtifactRepository local = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+        if (local.getLayout() == null) {
+            // #189807: for unknown reasons, there is no layout when running inside MavenCommandLineExecutor.run
+            return null;
+        }
         File nominal = new File(local.getBasedir(), local.pathOf(artifact));
         if (nominal.exists()) {
             return null;
