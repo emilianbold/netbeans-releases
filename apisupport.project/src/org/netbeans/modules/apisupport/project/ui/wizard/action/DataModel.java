@@ -279,7 +279,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     gmiParentMenuPath,
                     gmiSeparatorBefore,
                     gmiSeparatorAfter, 
-                    gmiPosition.toInteger(getProject(), gmiParentMenuPath),
+                    Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath),
                     null
                 ));
             }
@@ -290,7 +290,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     toolbar,
                     false,
                     false,
-                    toolbarPosition.toInteger(getProject(), toolbar),
+                    Position.toInteger(toolbarPosition, getProject(), toolbar),
                     null
                 ));
             }
@@ -311,13 +311,20 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 }
             }
 
-            /*
             // create file type context menu item
             if (ftContextEnabled) {
-                generateShadowWithOrderAndSeparator(ftContextType, shadow,
-                        dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
-                        ftContextSeparatorAfter, ftContextPosition);
+                refs.add(createActionReference(
+                    ftContextType,
+                    false,
+                    false,
+                    Position.toInteger(ftContextPosition, getProject(), toolbar),
+                    null
+                ));
+//                generateShadowWithOrderAndSeparator(ftContextType, shadow,
+//                        dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
+//                        ftContextSeparatorAfter, ftContextPosition);
             }
+            /*
             // create editor context menu item
             if (edContextEnabled) {
                 generateShadowWithOrderAndSeparator(edContextType, shadow,
@@ -710,12 +717,15 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             return beforeText + POSITION_HERE + afterText;
         }
 
-        final int toInteger(Project project, String layerPath) {
+        static int toInteger(Position p, Project project, String layerPath) {
+            if (p == null) {
+                return -1;
+            }
             try {
                 FileObject merged = LayerUtils.getEffectiveSystemFilesystem(project).findResource(layerPath);
                 assert merged != null : layerPath;
-                Integer beforePos = getPosition(merged, getBefore());
-                Integer afterPos = getPosition(merged, getAfter());
+                Integer beforePos = getPosition(merged, p.getBefore());
+                Integer afterPos = getPosition(merged, p.getAfter());
                     if (beforePos != null && afterPos != null) {
                         // won't work well if afterPos == beforePos + 1, but oh well
                         return (beforePos + afterPos) / 2;
@@ -730,7 +740,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     return 3334;
                 }
             }
-            private Integer getPosition(FileObject folder, String name) {
+            private static Integer getPosition(FileObject folder, String name) {
                 if (name == null) {
                     return null;
                 }

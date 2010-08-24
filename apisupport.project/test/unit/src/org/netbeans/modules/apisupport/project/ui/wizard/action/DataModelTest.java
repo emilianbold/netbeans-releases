@@ -114,6 +114,9 @@ public class DataModelTest extends LayerTestBase {
         data.setKeyboardShortcutEnabled(true);
         data.setKeyStroke("DA-B");
         
+        data.setFileTypeContextEnabled(true);
+        data.setFTContextType("Loaders/text/xml/Actions/");
+        
         // third panel data (Name, Icon, and Location)
         data.setClassName("BeepAction");
         data.setDisplayName("Beep");
@@ -149,6 +152,9 @@ public class DataModelTest extends LayerTestBase {
         }
         if (!text.toLowerCase().contains("position=700") || !text.contains("Toolbars/Edit")) {
             fail("Toolbar is generated:\n" + text);
+        }
+        if (!text.contains("Loaders/text/xml/Actions")) {
+            fail("Context action is generated:\n" + text);
         }
         //fail("OK\n" + text);
     }
