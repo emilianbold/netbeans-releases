@@ -218,3 +218,4 @@ derby\.log
 \.orig\..*$
 \.chg\..*$
 \.conflict\~$
+^html\.validation/release/modules/ext/.*\.jar$
