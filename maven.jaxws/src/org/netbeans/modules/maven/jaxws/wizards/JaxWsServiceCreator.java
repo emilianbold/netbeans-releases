@@ -542,9 +542,11 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                 DataFolder df = DataFolder.findFolder(pkg);
                 FileObject template = Templates.getTemplate(wiz);
+                FileObject templateParent = template.getParent();
                 if ((Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) {
-                    FileObject templateParent = template.getParent();
-                    template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
+                    template = templateParent.getFileObject("EjbWebServiceNoOp", "java"); //NOI18N
+                } else {
+                    template = templateParent.getFileObject("WebServiceNoOp", "java"); //NOI18N
                 }
                 DataObject dTemplate = DataObject.find(template);
                 DataObject dobj = dTemplate.createFromTemplate(df, wsName);
