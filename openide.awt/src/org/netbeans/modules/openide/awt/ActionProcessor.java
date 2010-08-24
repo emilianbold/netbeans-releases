@@ -69,6 +69,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
@@ -83,6 +84,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class ActionProcessor extends LayerGeneratingProcessor {
     private static final String IDENTIFIER = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; // NOI18N
     private static final Pattern FQN = Pattern.compile(IDENTIFIER + "(?:[.]" + IDENTIFIER + ")*"); // NOI18N
+    private Processor COMPLETIONS;
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
@@ -108,6 +110,27 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 res.add(Completions.of("Menu/", NbBundle.getMessage(ActionProcessor.class, "REGISTER ACTION IN MENU")));
                 res.add(Completions.of("Toolbar/", NbBundle.getMessage(ActionProcessor.class, "REGISTER ACTION IN TOOLBAR")));
                 res.add(Completions.of("Shortcuts/", NbBundle.getMessage(ActionProcessor.class, "GIVE ACTION A KEYBOARD SHORTCUT")));
+                if (COMPLETIONS == null) {
+                    String pathCompletions = System.getProperty(ActionReference.class.getName() + ".completion");
+                    if (pathCompletions != null) {
+                        ClassLoader l = Thread.currentThread().getContextClassLoader();
+                        try {
+                            COMPLETIONS = (Processor)Class.forName(pathCompletions, true, l).newInstance();
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                            // no completions, OK
+                            COMPLETIONS = this;
+                        }
+                    } else {
+                        COMPLETIONS = this;
+                    }
+                }
+                if (COMPLETIONS != null && COMPLETIONS != this) {
+                    COMPLETIONS.init(processingEnv);
+                    for (Completion completion : COMPLETIONS.getCompletions(element, annotation, member, userText)) {
+                        res.add(completion);
+                    }
+                }
                 return res;
             }
         }
