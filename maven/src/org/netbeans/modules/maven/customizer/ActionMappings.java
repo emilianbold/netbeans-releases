@@ -88,6 +88,7 @@ import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.ActionProviderImpl;
+import org.netbeans.modules.maven.TestSkippingChecker;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
@@ -123,7 +124,6 @@ public class ActionMappings extends javax.swing.JPanel {
     private final PropertiesListener propertiesListener;
     private final RecursiveListener recursiveListener;
     private final DepsListener depsListener;
-    public static final String PROP_SKIP_TEST="maven.test.skip"; //NOI18N
     private ActionToGoalMapping actionmappings;
     private ActionListener comboListener;
     
@@ -1165,8 +1165,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
 
         public void actionPerformed(ActionEvent e) {
-            String replace = PROP_SKIP_TEST + "=true"; //NOI18N
-            String pattern = ".*" + PROP_SKIP_TEST + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
+            String replace = TestSkippingChecker.PROP_SKIP_TEST + "=true"; //NOI18N
+            String pattern = ".*" + TestSkippingChecker.PROP_SKIP_TEST + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
             replacePattern(pattern, area, replace, true);
         }
     }
@@ -1290,8 +1290,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         String props = area.getText();
         Matcher match = Pattern.compile(pattern, Pattern.DOTALL).matcher(props);
         if (match.matches()) {
-            int begin = props.indexOf(PROP_SKIP_TEST);
-            props = props.replace(PROP_SKIP_TEST + match.group(1), replace); //NOI18N
+            int begin = props.indexOf(TestSkippingChecker.PROP_SKIP_TEST);
+            props = props.replace(TestSkippingChecker.PROP_SKIP_TEST + match.group(1), replace); //NOI18N
             area.setText(props);
             if (select) {
                 area.setSelectionStart(begin);
