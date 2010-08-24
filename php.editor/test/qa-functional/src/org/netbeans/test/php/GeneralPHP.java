@@ -717,4 +717,8 @@ public class GeneralPHP extends JellyTestCase {
 
 
     }
+    
+    protected  String getPlatform() {
+        return System.getProperty("os.name"); 
+    }
 }

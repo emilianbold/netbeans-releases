@@ -455,8 +455,12 @@ public class Commit extends GeneralPHP
 
     // Insert constructor
     Sleep( 1500 );
-    eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
-    Sleep( 1500 );
+    if (!getPlatform().toLowerCase().equals("mac os x")) {
+        eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    } else {
+        eoPHP.pressKey( KeyEvent.VK_I, InputEvent.CTRL_MASK );
+      }
+    Sleep( 5000 );
 
     JDialogOperator jdInsetter = new JDialogOperator( );
     JListOperator jlList = new JListOperator( jdInsetter );
@@ -488,7 +492,11 @@ public class Commit extends GeneralPHP
 
     boolean b = true;
     // Insert get
-    eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+     if (!getPlatform().toLowerCase().equals("mac os x")) {
+        eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    } else {
+        eoPHP.pressKey( KeyEvent.VK_I, InputEvent.CTRL_MASK );
+      }
     Sleep( 1500 );
 
     jdInsetter = new JDialogOperator( );
