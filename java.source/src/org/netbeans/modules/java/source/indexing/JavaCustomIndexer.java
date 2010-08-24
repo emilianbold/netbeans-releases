@@ -372,8 +372,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         final File classFolder = JavaIndex.getClassFolder(context);
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
         final String sourceRelative = indexable.getRelativePath();
-        final List<String> sourceRelatives = new LinkedList<String>();
-        sourceRelatives.add(sourceRelative);
+        final List<Pair<String,URL>> sourceRelativeURLPairs = new LinkedList<Pair<String,URL>>();
+        sourceRelativeURLPairs.add(Pair.of(sourceRelative,indexable.getURL()));
         File file;
         if (aptFolder.exists()) {
             file = new File(classFolder,  FileObjects.stripExtension(sourceRelative) + '.' + FileObjects.RAPT);
@@ -382,7 +382,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String fileName : readRSFile(file)) {
                         File f = new File (aptFolder, fileName);
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
-                            sourceRelatives.add(fileName);
+                            sourceRelativeURLPairs.add(Pair.of(fileName,f.toURI().toURL()));
                         }
                         f.delete();
                     }
@@ -393,12 +393,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                 file.delete();
             }
         }
-        for (String relative : sourceRelatives) {
-            final String ext = FileObjects.getExtension(relative);
-            final String withoutExt = FileObjects.stripExtension(relative);
+        for (Pair<String,URL> relURLPair : sourceRelativeURLPairs) {
+            final String ext = FileObjects.getExtension(relURLPair.first);
+            final String withoutExt = FileObjects.stripExtension(relURLPair.first);
             final boolean dieIfNoRefFile = VirtualSourceProviderQuery.hasVirtualSource(ext);
             if (dieIfNoRefFile) {
-                file = new File(classFolder, relative + '.' + FileObjects.RX);
+                file = new File(classFolder, relURLPair.first + '.' + FileObjects.RX);
             } else {
                 file = new File(classFolder, withoutExt + '.' + FileObjects.RS);
             }
@@ -410,8 +410,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String className : readRSFile(file)) {
                         File f = new File(classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
                         if (!binaryName.equals(className)) {
-                            if (javaContext.fqn2Files.remove(className, indexable.getURL())) {
-                                toDelete.add(Pair.<String, String>of(className, relative));
+                            if (javaContext.fqn2Files.remove(className, relURLPair.second)) {
+                                toDelete.add(Pair.<String, String>of(className, relURLPair.first));
                                 removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                                 removedFiles.add(f);
                                 f.delete();
@@ -427,7 +427,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 file.delete();
             }
             if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-                if (javaContext.fqn2Files.remove(FileObjects.getBinaryName(file, classFolder), indexable.getURL())) {
+                if (javaContext.fqn2Files.remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
                     final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N

@@ -48,6 +48,7 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -97,6 +98,19 @@ public class VCSHyperlinkSupport {
         }
         list.add(l);
         linkers.put(idx, list);
+    }
+
+    public <T extends Hyperlink> void remove(Class<T> c, String idx) {
+        if(c == null) return;
+        List<Hyperlink> list = linkers.get(idx);
+        if(list == null) return;
+        Iterator<Hyperlink> it = list.iterator();
+        while(it.hasNext()) {
+            if(it.next().getClass() == c) {
+                it.remove();
+                return;
+            }
+        }
     }
 
     public void remove(Hyperlink l, String idx) {
