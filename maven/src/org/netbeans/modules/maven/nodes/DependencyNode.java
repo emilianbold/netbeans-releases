@@ -65,14 +65,13 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Profile;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -124,6 +123,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 /**
  * node representing a dependency
@@ -151,32 +151,23 @@ public class DependencyNode extends AbstractNode {
 
     private static final RequestProcessor RP = new RequestProcessor("DependencyNode",1); //NOI18N
 
-    public static Children createChildren(Lookup look, boolean longLiving) {
+    public static Children createChildren(Artifact art, boolean longLiving) {
+        assert art != null;
+        assert art.getFile() != null;
         if (!longLiving) {
             return Children.LEAF;
         }
-        Artifact art = look.lookup(Artifact.class);
-        if (art.getFile() != null) {//#135463
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
-            if (fo != null && FileUtil.isArchiveFile(fo)) {
-                return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
-            }
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
+        if (fo != null && FileUtil.isArchiveFile(fo)) {
+            return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
         }
         return Children.LEAF;
     }
 
-    /**
-     *@param lookup - expects instance of NbMavenProjectImpl, Artifact
-     */
-    public DependencyNode(Lookup lookup, boolean isLongLiving) {
-        super(createChildren(lookup, isLongLiving), lookup);
-//        super(isLongLiving ? new DependencyChildren(lookup) : Children.LEAF, lookup);
-        project = lookup.lookup(NbMavenProjectImpl.class);
-        art = lookup.lookup(Artifact.class);
-        assert art != null;
-        if (art.getFile() == null) {
-            throw new IllegalStateException("Artifact " + art.getId() + " is not resolved and is missing the file association in local repository. Please report at issue #140253."); //NOI18N
-        }
+    public DependencyNode(NbMavenProjectImpl project, Artifact art, Dependency dependency, boolean isLongLiving) {
+        super(createChildren(art, isLongLiving), Lookups.fixed(project, art, dependency));
+        this.project = project;
+        this.art = art;
         longLiving = isLongLiving;
         if (longLiving) {
             listener = new PropertyChangeListener() {
@@ -295,7 +286,7 @@ public class DependencyNode extends AbstractNode {
         //#142784
         if (longLiving) {
             if (Children.LEAF == getChildren()) {
-                Children childs = createChildren(getLookup(), true);
+                Children childs = createChildren(art, true);
                 if (childs != Children.LEAF) {
                     setChildren(childs);
                 }
@@ -313,20 +304,10 @@ public class DependencyNode extends AbstractNode {
     }
 
     private String createName() {
-        if (art instanceof NbArtifact) {
-            NbArtifact nb = (NbArtifact)art;
-            if (nb.isFakedSystemDependency()) {
-                return nb.getNonFakedFile().getName();
-            }
-            if (nb.isFakedPomDependency()) {
-                return nb.getNonFakedFile().getName();
-            }
-        }
         return art.getFile().getName();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Action[] getActions(boolean context) {
         Collection<Action> acts = new ArrayList<Action>();
         if (longLiving && isDependencyProjectAvailable()) {
@@ -360,9 +341,11 @@ public class DependencyNode extends AbstractNode {
         acts.add(CommonArtifactActions.createFindUsages(art));
         acts.add(null);
         acts.add(CommonArtifactActions.createViewJavadocAction(art));
+        /* #164992: disabled
         acts.add(CommonArtifactActions.createViewProjectHomeAction(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
         acts.add(CommonArtifactActions.createViewBugTrackerAction(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
         acts.add(CommonArtifactActions.createSCMActions(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
+         */
         acts.add(null);
         acts.add(PropertiesAction.get(PropertiesAction.class));
         return acts.toArray(new Action[acts.size()]);
@@ -399,12 +382,6 @@ public class DependencyNode extends AbstractNode {
     }
 
     public boolean isLocal() {
-        if (art instanceof NbArtifact) {
-            NbArtifact nb = (NbArtifact) art;
-            if (nb.isFakedSystemDependency()) {
-                return false;
-            }
-        }
         return art.getFile().exists();
     }
 

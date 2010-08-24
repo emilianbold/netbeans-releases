@@ -37,41 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.output;
+package org.netbeans.modules.maven.embedder;
 
-import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
 
-/**
- *
- * @author dafe
- */
-public class GlobalOutputProcessorTest extends TestCase {
-
-    public GlobalOutputProcessorTest(String testName) {
-        super(testName);
+public class EmbedderFactoryTest extends NbTestCase {
+    
+    public EmbedderFactoryTest(String n) {
+        super(n);
     }
 
-    /**
-     * Test of processLine method, of class GlobalOutputProcessor.
-     */
-    public void testProcessLine() {
-        System.out.println("processLine - skipping lines");
-        String[] lines = new String[] {
-            "51521/?", "11/12K", "11/12M", "51521/120000b",
-            "51521/? 12/25K", "34/263M 464/500b",
-            "51521/? 13/25K 4034/4640M",
-            // #189465: M3 ConsoleMavenTransferListener.doProgress
-            "59/101 KB    ", "1/3 B  ", "55 KB", "300 B  ",
-            "10/101 KB   48/309 KB   ", // sometimes seems to jam
-        };
-        for (int i = 0; i < lines.length; i++) {
-            if (!GlobalOutputProcessor.DOWNLOAD.matcher(lines[i]).matches()) {
-                fail("Line " + lines[i] + " not skipped");
-            }
-        }
+    public void testCreateProjectLikeEmbedder() throws Exception {
+        MavenEmbedder embedder = EmbedderFactory.createProjectLikeEmbedder();
+        // XXX find some way to verify that interesting things do not cause Wagon HTTP requests
     }
 
 }

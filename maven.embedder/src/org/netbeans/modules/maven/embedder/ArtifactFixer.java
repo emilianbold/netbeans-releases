@@ -35,59 +35,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): theanuradha@netbeans.org
+ * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.embedder.exec;
 
-import java.util.List;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.lifecycle.LifecycleLoaderException;
-import org.apache.maven.lifecycle.LifecycleSpecificationException;
-import org.apache.maven.lifecycle.plan.BuildPlan;
-import org.apache.maven.lifecycle.plan.DefaultBuildPlanner;
-import org.apache.maven.lifecycle.plan.LifecyclePlannerException;
-import org.apache.maven.project.MavenProject;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.maven.embedder;
+
+import java.io.File;
+import org.apache.maven.artifact.Artifact;
 
 /**
- *
- * @author Anuradha
+ * Service which can resolve an artifact before a request is sent to the local repo.
  */
-public class NBBuildPlanner extends DefaultBuildPlanner {
+public interface ArtifactFixer {
 
-    private MavenSession mavenSession;
+    /**
+     * Possibly resolves an artifact.
+     * @param artifact an artifact which might or might not be available in local repo
+     * @return a file to resolve it to locally, or null to skip
+     */
+    File resolve(Artifact artifact);
 
-    @Override
-    public synchronized BuildPlan constructInitialProjectBuildPlan(MavenProject arg0, MavenSession arg1) throws LifecycleLoaderException, LifecycleSpecificationException, LifecyclePlannerException {
-        this.mavenSession = arg1;
-        this.notifyAll();
-        return super.constructInitialProjectBuildPlan(arg0, arg1);
-    }
-
-    @Override
-    public synchronized void constructInitialProjectBuildPlans(MavenSession arg0) throws LifecycleLoaderException, LifecycleSpecificationException, LifecyclePlannerException {
-        this.mavenSession = arg0;
-        this.notifyAll();
-        super.constructInitialProjectBuildPlans(arg0);
-    }
-
-    public synchronized MavenSession getMavenSession() {
-        if (mavenSession == null) {
-            try {
-                this.wait(100000);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return mavenSession;
-    }
-    
-    @Override
-    public synchronized BuildPlan constructBuildPlan(List tasks, MavenProject project, MavenSession session, boolean allowUnbindableMojos) 
-            throws LifecycleLoaderException, LifecycleSpecificationException, LifecyclePlannerException {
-        return super.constructBuildPlan(tasks, project, session, allowUnbindableMojos);
-    }
-    
 }

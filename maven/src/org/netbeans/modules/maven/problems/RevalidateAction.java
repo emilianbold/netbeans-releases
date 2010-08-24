@@ -37,41 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.output;
+package org.netbeans.modules.maven.problems;
 
-import junit.framework.TestCase;
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author dafe
+ * Corrective action to run {@code mvn validate}, which can download plugins or parent POMs.
+ * At worst it will show the same problem in the Output Window, so the user is more likely
+ * to believe that there really is a problem with their project, not NetBeans.
  */
-public class GlobalOutputProcessorTest extends TestCase {
+public class RevalidateAction extends AbstractAction {
 
-    public GlobalOutputProcessorTest(String testName) {
-        super(testName);
+    private final NbMavenProjectImpl nbproject;
+
+    public RevalidateAction(NbMavenProjectImpl nbproject) {
+        super(NbBundle.getMessage(RevalidateAction.class, "ACT_validate"));
+        this.nbproject = nbproject;
     }
 
-    /**
-     * Test of processLine method, of class GlobalOutputProcessor.
-     */
-    public void testProcessLine() {
-        System.out.println("processLine - skipping lines");
-        String[] lines = new String[] {
-            "51521/?", "11/12K", "11/12M", "51521/120000b",
-            "51521/? 12/25K", "34/263M 464/500b",
-            "51521/? 13/25K 4034/4640M",
-            // #189465: M3 ConsoleMavenTransferListener.doProgress
-            "59/101 KB    ", "1/3 B  ", "55 KB", "300 B  ",
-            "10/101 KB   48/309 KB   ", // sometimes seems to jam
-        };
-        for (int i = 0; i < lines.length; i++) {
-            if (!GlobalOutputProcessor.DOWNLOAD.matcher(lines[i]).matches()) {
-                fail("Line " + lines[i] + " not skipped");
-            }
-        }
+    public @Override void actionPerformed(ActionEvent e) {
+        BeanRunConfig config = new BeanRunConfig();
+        config.setExecutionDirectory(FileUtil.toFile(nbproject.getProjectDirectory()));
+        config.setGoals(Collections.singletonList("validate")); // NOI18N
+        config.setRecursive(false);
+        config.setProject(nbproject);
+        config.setExecutionName("validate"); // NOI18N
+        config.setTaskDisplayName(NbBundle.getMessage(RevalidateAction.class, "ACT_validate"));
+        RunUtils.executeMaven(config);
     }
 
 }

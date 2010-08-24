@@ -70,8 +70,8 @@ public interface Constants {
     /**
      * Maven property that when set forces netbeans to use external maven instance
      * instead of the embedded Maven.
-     */ 
     public static final String HINT_USE_EXTERNAL = "netbeans.hint.useExternalMaven"; //NOI18N
+     */ 
     
     /**
      * Maven property that designates the jdk platform to use in the IDE on classpath for project.

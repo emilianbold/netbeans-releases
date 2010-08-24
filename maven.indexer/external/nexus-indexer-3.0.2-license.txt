@@ -1,10 +1,9 @@
 Name: Sonatype Nexus Indexer
-Version: 2.0.0
+Version: 3.0.2
 Description: Maven remote repository indexing engine.
 License: EPL-v10
-Origin: http://svn.sonatype.org/nexus/tags/nexus-indexer-2.0.0/
-Files: nexus-indexer-2.0.0-shaded.jar
-Source: http://svn.sonatype.org/nexus/tags/nexus-indexer-2.0.0/
+Origin: http://repo1.maven.org/maven2/org/sonatype/nexus/nexus-indexer/3.0.2/nexus-indexer-3.0.2.jar
+Files: nexus-indexer-3.0.2.jar nexus-indexer-artifact-1.0.0.jar
 OSR: 9451
 
 

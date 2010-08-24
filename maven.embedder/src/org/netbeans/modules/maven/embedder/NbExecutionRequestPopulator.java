@@ -37,65 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.maven.embedder;
 
-import java.util.List;
-import junit.framework.TestCase;
+import java.util.Properties;
+import org.apache.maven.execution.DefaultMavenExecutionRequestPopulator;
 import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.extension.ExtensionManager;
-import org.apache.maven.extension.ExtensionManagerException;
-import org.apache.maven.model.Extension;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.project.MavenProject;
+import org.apache.maven.execution.MavenExecutionRequestPopulationException;
 
 /**
  *
  * @author mkleint
  */
-public class NbExtensionManagerTest extends TestCase {
-    
-    public NbExtensionManagerTest(String testName) {
-        super(testName);
-    }            
+public class NbExecutionRequestPopulator extends DefaultMavenExecutionRequestPopulator {
+//    private Properties props;
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public MavenExecutionRequest populateDefaults(MavenExecutionRequest request) throws MavenExecutionRequestPopulationException {
+        MavenExecutionRequest toRet =  super.populateDefaults(request);
+        if (toRet.getSystemProperties().size() == 0) {
+            toRet.setSystemProperties(getSysProps());
+        }
+        return toRet;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    private Properties getSysProps() {
+        Properties props = new Properties();
+        props.putAll(System.getProperties());
+        props = EmbedderFactory.fillEnvVars(props);
+        return props;
     }
 
-    /**
-     */
-    public void testExtensionManagerMethod() throws Exception {
-        new Ext();
-    }
-    
-    private class Ext implements ExtensionManager {
-
-        public void addExtension(Extension arg0, MavenProject arg1, MavenExecutionRequest arg2) throws ExtensionManagerException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void registerWagons() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void addExtension(Extension arg0, Model arg1, List arg2, MavenExecutionRequest arg3) throws ExtensionManagerException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void addPluginAsExtension(Plugin arg0, Model arg1, List arg2, MavenExecutionRequest arg3) throws ExtensionManagerException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-    }
 
 }

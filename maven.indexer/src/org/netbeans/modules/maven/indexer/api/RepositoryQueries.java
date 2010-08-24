@@ -199,34 +199,6 @@ public final class RepositoryQueries {
         }
     }
     
-
-    public static List<NBVersionInfo> findByMD5(File file, RepositoryInfo... repos) {
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
-        try {
-            String calculateChecksum = RepositoryUtil.calculateMD5Checksum(file);
-            return findByMD5(calculateChecksum, repos);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return toRet;
-        
-    }
-
-    public static List<NBVersionInfo> findByMD5(String md5, RepositoryInfo... repos) {
-        Collection<List<RepositoryInfo>> all = splitReposByType(repos);
-        List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
-        for (List<RepositoryInfo> rps : all) {
-            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
-            if (impl != null) {
-                ChecksumQueries chq = impl.getCapabilityLookup().lookup(ChecksumQueries.class);
-                if (chq != null) {
-                    toRet.addAll(chq.findByMD5(md5, rps));
-                }
-            }
-        }
-        return toRet;
-    }
-    
     public static List<NBVersionInfo> findBySHA1(File file, RepositoryInfo... repos) {
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         try {
@@ -239,7 +211,7 @@ public final class RepositoryQueries {
         
     }
 
-    public static List<NBVersionInfo> findBySHA1(String sha1, RepositoryInfo... repos) {
+    private static List<NBVersionInfo> findBySHA1(String sha1, RepositoryInfo... repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         for (List<RepositoryInfo> rps : all) {

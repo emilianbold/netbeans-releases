@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.maven.junit;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.text.NumberFormat;
