@@ -21,6 +21,7 @@ if [ ! -z $WORKSPACE ]; then
     #Clean obsolete sources first
     rm -rf $NB_ALL
     hg clone $WORKSPACE $NB_ALL
+    hg update release610_m1
 fi
 
 #if [ $ML_BUILD == 1 ]; then
