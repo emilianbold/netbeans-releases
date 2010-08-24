@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.el;
 
+import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,6 +81,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -134,20 +137,70 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        Pair<Element, ELParserResult> resolvedElement = resolveElement(doc, offset, new AtomicBoolean());
-        if (resolvedElement != null) {
-            CompilationInfo info = ELTypeUtilities.getCompilationInfo(resolvedElement.second.getFileObject());
-            if (info != null) {
-                DisplayNameElementVisitor dnev = new DisplayNameElementVisitor(info);
-                dnev.visit(resolvedElement.first, Boolean.TRUE);
-                return "<html><body>" + dnev.result.toString(); //NOI18N
+        Pair<Node, ELElement> nodeAndElement = resolveNodeAndElement(doc, offset, new AtomicBoolean());
+        if (nodeAndElement != null) {
+            if (nodeAndElement.first instanceof AstString) {
+                // could be a resource bundle key
+                return getTooltipTextForBundleKey(nodeAndElement);
+            } else {
+                return getTooltipTextForElement(nodeAndElement);
             }
         }
         return null;
     }
+
+    private String getTooltipTextForElement(Pair<Node, ELElement> pair) {
+        FileObject context = pair.second.getParserResult().getFileObject();
+        Element resolvedElement = ELTypeUtilities.create(context).resolveElement(pair.second, pair.first);
+        if (resolvedElement == null) {
+            return null;
+        }
+        CompilationInfo info = ELTypeUtilities.getCompilationInfo(pair.second.getParserResult().getFileObject());
+        if (info != null) {
+            DisplayNameElementVisitor dnev = new DisplayNameElementVisitor(info);
+            dnev.visit(resolvedElement, Boolean.TRUE);
+            return "<html><body>" + dnev.result.toString(); //NOI18N
+        }
+        return null;
+    }
     
-    private Pair<Element, ELParserResult> resolveElement(final Document doc, final int offset, final AtomicBoolean cancel) {
-        final List<Pair<Element,ELParserResult>> result = new ArrayList<Pair<Element,ELParserResult>>(1);
+    private String getTooltipTextForBundleKey(Pair<Node, ELElement> pair) {
+        FileObject context = pair.second.getParserResult().getFileObject();
+        ResourceBundles resourceBundles = ResourceBundles.get(context);
+        if (!resourceBundles.canHaveBundles()) {
+            return null;
+        }
+        for (Pair<AstIdentifier,AstString> each : resourceBundles.collectKeys(pair.second.getNode())) {
+            if (each.second.equals(pair.first)) {
+                StringBuilder result = new StringBuilder();
+                String key = each.second.getString();
+                String value = resourceBundles.getValue(each.first.getImage(), each.second.getString());
+                String bundle = each.first.getImage();
+                result.append("<html><body>")
+                        /* displaying the bundle in the tooltip looks a bit strange,
+                          so commented out for now - maybe using a smaller font would
+                          help
+                         append("<i>")
+                        .append(NbBundle.getMessage(ELHyperlinkProvider.class, "ResourceBundle", bundle))
+                        .append("</i><br>")
+                         */
+                        .append(key)
+                        .append("=<font color='#ce7b00'>") // NOI18N
+                        .append(value)
+                        .append("</font>"); // NOI18N
+                
+                return result.toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the Node at the given offset.
+     * @return the node and the ELElement containing it or null.
+     */
+    private Pair<Node, ELElement> resolveNodeAndElement(final Document doc, final int offset, final AtomicBoolean cancel) {
+        final List<Pair<Node,ELElement>> result = new ArrayList<Pair<Node,ELElement>>(1);
         Source source = Source.create(doc);
         try {
             ParserManager.parse(Collections.singletonList(source), new UserTask() {
@@ -166,11 +219,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
                     if (node == null) {
                         return;
                     }
-                    Element resolvedElement = ELTypeUtilities.create(parserResult.getFileObject()).resolveElement(elElement, node);
-                    if (resolvedElement != null) {
-                        result.add(Pair.<Element, ELParserResult>of(resolvedElement, parserResult));
-                        return;
-                    }
+                    result.add(Pair.<Node, ELElement>of(node, elElement));
                 }
             });
         } catch (ParseException ex) {
@@ -180,9 +229,14 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     private void performGoTo(final Document doc, final int offset, final AtomicBoolean cancel) {
-        Pair<Element, ELParserResult> resolvedElement = resolveElement(doc, offset, cancel);
-        if (resolvedElement != null) {
-            ElementOpen.open(ClasspathInfo.create(resolvedElement.second.getFileObject()), resolvedElement.first);
+        Pair<Node, ELElement> nodeElem = resolveNodeAndElement(doc, offset, cancel);
+        if (nodeElem == null) {
+            return;
+        }
+        FileObject context = nodeElem.second.getParserResult().getFileObject();
+        Element javaElement = ELTypeUtilities.create(context).resolveElement(nodeElem.second, nodeElem.first);
+        if (javaElement != null) {
+            ElementOpen.open(ClasspathInfo.create(context), javaElement);
         }
     }
 
@@ -205,7 +259,9 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             return null; //no token
         }
 
-        if (elTokenSequence.token().id() == ELTokenId.IDENTIFIER) {
+        if (elTokenSequence.token().id() == ELTokenId.IDENTIFIER
+                || elTokenSequence.token().id() == ELTokenId.STRING_LITERAL) { // string for bundle keys
+
             return new int[]{elTokenSequence.offset(), elTokenSequence.offset() + elTokenSequence.token().length()};
         }
 
