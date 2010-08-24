@@ -43,21 +43,14 @@
  */
 package org.netbeans.test.php.formatting;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.util.NameComponentChooser;
-import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
