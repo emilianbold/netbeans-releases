@@ -45,7 +45,7 @@ package org.netbeans.modules.java.source.parsing;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -59,7 +59,7 @@ public class JavacParserResult extends Parser.Result {
         super (
             JavaSourceAccessor.getINSTANCE ().getCompilationInfoImpl (info).getSnapshot ()
         );
-        assert info != null;
+        Parameters.notNull("info", info);   //NOI18N
         this.info = info;
     }
         
