@@ -282,6 +282,13 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath),
                     null
                 ));
+                generateAnnotationSeparators(
+                    gmiParentMenuPath,
+                    dashedFqClassName,
+                    gmiSeparatorBefore,
+                    gmiSeparatorAfter,
+                    gmiPosition
+                );
             }
 
             // create layer entry for toolbar button
@@ -315,14 +322,18 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             if (ftContextEnabled) {
                 refs.add(createActionReference(
                     ftContextType,
-                    false,
-                    false,
+                    ftContextSeparatorBefore,
+                    ftContextSeparatorAfter,
                     Position.toInteger(ftContextPosition, getProject(), toolbar),
                     null
                 ));
-//                generateShadowWithOrderAndSeparator(ftContextType, shadow,
-//                        dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
-//                        ftContextSeparatorAfter, ftContextPosition);
+                generateAnnotationSeparators(
+                    ftContextType,
+                    dashedFqClassName,
+                    ftContextSeparatorBefore,
+                    ftContextSeparatorAfter,
+                    ftContextPosition
+                );
             }
             /*
             // create editor context menu item
@@ -457,16 +468,33 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         generateOrder(parentPath, position.getBefore(), shadow, position.getAfter());
         if (separatorBefore) {
             String sepName = dashedPkgName + "-separatorBefore.instance"; // NOI18N
-            generateSeparator(parentPath, sepName);
+            generateSeparator(parentPath, sepName, -1);
             generateOrder(parentPath, position.getBefore(), sepName, shadow);
         }
         if (separatorAfter) {
             String sepName = dashedPkgName + "-separatorAfter.instance"; // NOI18N
-            generateSeparator(parentPath, sepName);
+            generateSeparator(parentPath, sepName, -1);
             generateOrder(parentPath, shadow, sepName, position.getAfter());
         }
     }
     
+    private void generateAnnotationSeparators(
+        String parentPath,
+        String dashedPkgName,
+        boolean before,
+        boolean after,
+        Position bounds
+    ) {
+        if (before) {
+            String sepName = dashedPkgName + "-separatorBefore.instance"; // NOI18N
+            generateSeparator(parentPath, sepName, Position.toInteger(bounds, getProject(), parentPath, Boolean.TRUE));
+        }
+        if (after) {
+            String sepName = dashedPkgName + "-separatorAfter.instance"; // NOI18N
+            generateSeparator(parentPath, sepName, Position.toInteger(bounds, getProject(), parentPath, Boolean.FALSE));
+        }
+        
+    }
     /**
      * Just a helper convenient method for cleaner code.
      */
@@ -676,7 +704,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     static final class Position {
 
         public static final Position PROTOTYPE = new Position(null, null, "One Thing", "Another Thing"); // NOI18N
-        
+
         private String before;
         private String after;
         private String beforeName;
@@ -718,6 +746,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
 
         static int toInteger(Position p, Project project, String layerPath) {
+            return toInteger(p, project, layerPath, null);
+        }
+        static int toInteger(Position p, Project project, String layerPath, Boolean middleBelowAbove) {
             if (p == null) {
                 return -1;
             }
@@ -726,40 +757,59 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 assert merged != null : layerPath;
                 Integer beforePos = getPosition(merged, p.getBefore());
                 Integer afterPos = getPosition(merged, p.getAfter());
-                    if (beforePos != null && afterPos != null) {
-                        // won't work well if afterPos == beforePos + 1, but oh well
-                        return (beforePos + afterPos) / 2;
-                    } else if (beforePos != null) {
-                        return beforePos + 100;
-                    } else if (afterPos != null) {
-                        return afterPos - 100; // NOI18N
-                    } else {
-                        return 3333;
-                    }
-                } catch (IOException ex) {
-                    return 3334;
-                }
+                return toIntFromBounds(beforePos, afterPos, middleBelowAbove);
+            } catch (IOException ex) {
+                return 3334;
             }
-            private static Integer getPosition(FileObject folder, String name) {
-                if (name == null) {
-                    return null;
-                }
-                FileObject f = folder.getFileObject(name);
-                if (f == null) {
-                    return null;
-                }
-                Object pos = f.getAttribute("position"); // NOI18N
-                // ignore floats for now...
-                return pos instanceof Integer ? (Integer) pos : null;
+        }
+        private static Integer getPosition(FileObject folder, String name) {
+            if (name == null) {
+                return null;
             }
+            FileObject f = folder.getFileObject(name);
+            if (f == null) {
+                return null;
+            }
+            Object pos = f.getAttribute("position"); // NOI18N
+            // ignore floats for now...
+            return pos instanceof Integer ? (Integer) pos : null;
+        }
+        private static int toIntFromBounds(Integer beforePos, Integer afterPos, Boolean middleBelowAbove) {
+            int middle = 0;
+            if (beforePos != null && afterPos != null) {
+                // won't work well if afterPos == beforePos + 1, but oh well
+                middle = (beforePos + afterPos) / 2;
+            } else if (beforePos != null) {
+                middle = beforePos + 100;
+            } else if (afterPos != null) {
+                middle = afterPos - 100; // NOI18N
+            } else {
+                middle = 3333;
+            }
+            
+            if (middleBelowAbove == null) {
+                return middle;
+            }
+            if (middleBelowAbove) {
+                return beforePos == null ? middle - 50 : (beforePos + middle) / 2;
+            } else {
+                return afterPos == null ? middle + 50 : (afterPos + middle) / 2;
+            }
+        }
+        
     }
     
-    private void generateSeparator(final String parentPath, final String sepName) {
+    private void generateSeparator(final String parentPath, final String sepName, int position) {
         String sepPath = parentPath + "/" + sepName; // NOI18N
         cmf.add(cmf.createLayerEntry(sepPath,
                 null, null, null, null));
         cmf.add(cmf.createLayerAttribute(sepPath, "instanceClass", // NOI18N
                 "javax.swing.JSeparator")); // NOI18N
+        if (position != -1) {
+            cmf.add(cmf.createLayerAttribute(
+                sepPath, "position", position// NOI18N
+            ));
+        }
     }
 
     private static String fullClassName(String type) {
