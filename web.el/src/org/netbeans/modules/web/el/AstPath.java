@@ -90,4 +90,15 @@ public final class AstPath {
         return copy;
     }
 
+    public List<Node> rootToNode(Node node) {
+        List<Node> result = new ArrayList<Node>();
+        for (Node each : nodes) {
+            result.add(each);
+            if (each.equals(node)) {
+                break;
+            }
+        }
+        return result;
+    }
+
 }
