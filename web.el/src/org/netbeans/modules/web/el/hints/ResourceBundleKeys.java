@@ -95,7 +95,7 @@ public final class ResourceBundleKeys extends ELRule {
                 // broken AST, skip (perhaps could try just plain string search)
                 continue;
             }
-            for (Pair<AstIdentifier, AstString> pair : collectKeys(each.getNode())) {
+            for (Pair<AstIdentifier, AstString> pair : resourceBundles.collectKeys(each.getNode())) {
                 if (!resourceBundles.isValidKey(pair.first.getImage(), pair.second.getString())) {
                     Hint hint = new Hint(this,
                             NbBundle.getMessage(ResourceBundleKeys.class, "ResourceBundleKeys_Unknown", pair.second.getString()),
@@ -107,28 +107,4 @@ public final class ResourceBundleKeys extends ELRule {
             }
         }
     }
-
-    /**
-     * Collects usages of resource bundles.
-     */
-    private List<Pair<AstIdentifier, AstString>> collectKeys(final Node root) {
-        final List<Pair<AstIdentifier, AstString>> result = new ArrayList<Pair<AstIdentifier, AstString>>();
-        List<Node> path = new AstPath(root).rootToLeaf();
-        for (int i = 0; i < path.size(); i++) {
-            Node node = path.get(i);
-            if (node instanceof AstIdentifier && resourceBundles.isResourceBundleIdentifier(node.getImage())) {
-                // check for i18n["my.key"] => AST for that is: identifier, brackets and string
-                if (i + 2 < path.size()) {
-                    Node brackets = path.get(i + 1);
-                    Node string = path.get(i + 2);
-                    if (brackets instanceof AstBracketSuffix
-                            && string instanceof AstString) {
-                        result.add(Pair.of((AstIdentifier) node, (AstString) string));
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
 }
