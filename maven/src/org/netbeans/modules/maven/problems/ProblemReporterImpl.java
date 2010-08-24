@@ -60,6 +60,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
@@ -269,7 +270,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 Iterator<Artifact> it = compileArts.iterator();
                 while (it.hasNext()) {
                     Artifact art =  it.next();
-                    if (art.getFile() == null || !art.getFile().exists()) {
+                    File file = art.getFile();
+                    if (file == null || !file.exists()) {
                         if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
                             //TODO create a correction action for this.
                             ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
@@ -277,8 +279,18 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                                     org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_SystemScope"),
                                     new OpenPomAction(nbproject));
                             addReport(report);
+                        } else {
+                            boolean reallyMissing = true;
+                            if (file != null) {
+                                SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(file));
+                                if (result.preferSources() && /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length > 0) {
+                                    reallyMissing = false; // #189442: typically a snapshot dep on another project
+                                }
+                            }
+                            if (reallyMissing) {
+                                missingJars.add(art);
+                            }
                         }
-                        missingJars.add(art);
                     }
                 }
                 if (missingJars.size() > 0) {
