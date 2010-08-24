@@ -167,14 +167,16 @@ class DiffViewManager implements ChangeListener {
         return master;
     }
     
-    private int rightHeightCached;
+    private int rightHeightCached, leftHeightCached;
     private void updateDifferences() {
         assert EventQueue.isDispatchThread();
         int mds = master.getDiffSerial();
-        if (mds <= cachedDiffSerial && rightContentPanel.getEditorPane().getSize().height == rightHeightCached) {
+        int currentLeftHeight = getHeight(leftContentPanel.getEditorPane()), currentRightHeight = getHeight(rightContentPanel.getEditorPane());
+        if (mds <= cachedDiffSerial && currentRightHeight == rightHeightCached && currentLeftHeight == leftHeightCached) {
             return;
         }
-        rightHeightCached = rightContentPanel.getEditorPane().getSize().height;
+        rightHeightCached = currentRightHeight;
+        leftHeightCached = currentLeftHeight;
         cachedDiffSerial = mds;
         computeDecorations();
         master.getEditorPane1().getLinesActions().repaint();
@@ -193,16 +195,10 @@ class DiffViewManager implements ChangeListener {
     }
 
     public HighLight[] getSecondHighlights() {
-        if (EventQueue.isDispatchThread()) {
-            updateDifferences();
-        }
         return secondHilitesCached;
     }
 
     public HighLight[] getFirstHighlights() {
-        if (EventQueue.isDispatchThread()) {
-            updateDifferences();
-        }
         return firstHilitesCached;
     }
     
@@ -562,6 +558,23 @@ class DiffViewManager implements ChangeListener {
             JComponent mydivider = master.getMyDivider();
             mydivider.paint(mydivider.getGraphics());
         }
+    }
+
+    private int getHeight (DecoratedEditorPane editorPane) {
+        int height = 0;
+        try {
+            View rootView = Utilities.getDocumentView(editorPane);
+            int lineNumber = Utilities.getLineOffset((BaseDocument) editorPane.getDocument(), editorPane.getDocument().getLength());
+            if (lineNumber > 0) --lineNumber;
+            View view = rootView.getView(lineNumber);
+            Rectangle rec = editorPane.modelToView(view.getEndOffset() - 1);
+            if (rec != null) {
+                height = (int) (rec.getY() + rec.getHeight());
+            }
+        } catch (BadLocationException ex) {
+            //
+        }
+        return height;
     }
     
     public static class DifferencePosition {

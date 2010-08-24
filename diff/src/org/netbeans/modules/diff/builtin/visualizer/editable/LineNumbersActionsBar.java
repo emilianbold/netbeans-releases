@@ -351,52 +351,32 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
 
         int currentDifference = master.getMaster().getCurrentDifference();
         List<HotSpot> newActionIcons = new ArrayList<HotSpot>();
-        if (master.isFirst()) {
-            int idx = 0;
-            for (DiffViewManager.DecoratedDifference dd : diffs) {
-                g.setColor(master.getMaster().getColorLines());
-                g.setStroke(currentDifference == idx ? master.getMaster().getBoldStroke() : cs);                            
-                g.drawLine(0, dd.getTopLeft(), clip.width, dd.getTopLeft());
-                if (dd.getBottomLeft() != -1) {
-                    g.drawLine(0, dd.getBottomLeft(), clip.width, dd.getBottomLeft());
-                }
-                if (actionsEnabled && dd.canRollback()) {
-                    if (dd.getDiff().getType() != Difference.ADD) {
-                        Rectangle hotSpot = new Rectangle(1, dd.getTopLeft() + actionsYOffset, actionIconsWidth, actionIconsHeight);
-                        if (hotSpot.contains(lastMousePosition) || idx == currentDifference) {
-                            g.drawImage(insertActiveImage, hotSpot.x, hotSpot.y, this);
-                        } else {
-                            g.drawImage(insertImage, hotSpot.x, hotSpot.y, this);
-                        }
-                        newActionIcons.add(new HotSpot(hotSpot, dd.getDiff()));
-                    }
-                }
-                idx++;
+        int idx = 0;
+        for (DiffViewManager.DecoratedDifference dd : diffs) {
+            int bottom = master.isFirst() ? dd.getBottomLeft() : dd.getBottomRight();
+            int top = master.isFirst() ? dd.getTopLeft() : dd.getTopRight();
+            g.setColor(master.getMaster().getColorLines());
+            g.setStroke(currentDifference == idx ? master.getMaster().getBoldStroke() : cs);
+            g.drawLine(0, top, clip.width, top);
+            if (bottom != -1) {
+                g.drawLine(0, bottom, clip.width, bottom);
             }
-        } else {
-            int idx = 0;
-            for (DiffViewManager.DecoratedDifference dd : diffs) {
-                g.setColor(master.getMaster().getColorLines());
-                g.setStroke(currentDifference == idx ? master.getMaster().getBoldStroke() : cs);                            
-                g.drawLine(clip.x, dd.getTopRight(), clip.x + clip.width, dd.getTopRight());
-                if (dd.getBottomRight() != -1) {
-                    g.drawLine(clip.x, dd.getBottomRight(), clip.x + clip.width, dd.getBottomRight());
-                }
-                if (actionsEnabled && dd.canRollback()) {
-                    if (dd.getDiff().getType() == Difference.ADD) {
-                        Rectangle hotSpot = new Rectangle(offset + 1, dd.getTopRight() + actionsYOffset, actionIconsWidth, actionIconsHeight);
-                        if (hotSpot.contains(lastMousePosition) || idx == currentDifference) {
-                            g.drawImage(removeActiveImage, hotSpot.x, hotSpot.y, this);
-                        } else {
-                            g.drawImage(removeImage, hotSpot.x, hotSpot.y, this);
-                        }
-                        newActionIcons.add(new HotSpot(hotSpot, dd.getDiff()));
+            if (actionsEnabled && dd.canRollback()) {
+                if (master.isFirst() && dd.getDiff().getType() != Difference.ADD
+                        || !master.isFirst() && dd.getDiff().getType() == Difference.ADD) {
+                    Image activeImage = master.isFirst() ? insertActiveImage : removeActiveImage;
+                    Image image = master.isFirst() ? insertImage : removeImage;
+                    Rectangle hotSpot = new Rectangle(1, top + actionsYOffset, actionIconsWidth, actionIconsHeight);
+                    if (hotSpot.contains(lastMousePosition) || idx == currentDifference) {
+                        g.drawImage(activeImage, hotSpot.x, hotSpot.y, this);
+                    } else {
+                        g.drawImage(image, hotSpot.x, hotSpot.y, this);
                     }
+                    newActionIcons.add(new HotSpot(hotSpot, dd.getDiff()));
                 }
-                idx++;
             }
+            idx++;
         }
-
         hotspots = newActionIcons;
         
         int linesXOffset = master.isFirst() ? actionsWidth : 0;
@@ -426,7 +406,7 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
                 if (rec1 == null || rec2 == null) {
                     break;
                 }
-                yOffset = rec1.y + rec1.height - lineHeight / 4;
+                yOffset = rec1.y + rec1.height - rec1.height / 4;
                 lineHeight = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
                 g.drawString(formatLineNumber(++lineNumber), linesXOffset, yOffset);
             }
