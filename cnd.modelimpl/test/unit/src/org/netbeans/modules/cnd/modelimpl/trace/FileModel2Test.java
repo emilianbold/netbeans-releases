@@ -73,6 +73,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ189777() throws Exception {
+        // IZ#189777:  unresolved enum with bits info 
+        performTest("iz189777.c");
+    }
+    
     public void testIZ164583() throws Exception {
         // IZ#164583: Inaccuracy tests: unstable results in MySQL
         performTest("iz164583.cpp");
