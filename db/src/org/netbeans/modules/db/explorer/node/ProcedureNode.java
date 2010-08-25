@@ -253,9 +253,11 @@ public class ProcedureNode extends BaseNode {
                 Statement stat = connection.getConnection().createStatement();
                 ResultSet rs = stat.executeQuery("SELECT * FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
                 while(rs.next()) {
-                    //String params = rs.getString("param_list");
-                    source = rs.getString("body"); // NOI18N
-                    //System.out.println(create + "(" + params + ")" + '\n' + code);
+                    String params = rs.getString("param_list"); // NOI18N
+                    String body = rs.getString("body"); // NOI18N
+                    source = "CREATE PROCEDURE " + getName() + '\n' + // NOI18N
+                            '(' + params + ")" + '\n' + // NOI18N
+                            body;
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
