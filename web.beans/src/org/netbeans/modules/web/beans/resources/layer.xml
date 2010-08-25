@@ -136,4 +136,11 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="org-netbeans-modules-java-hints">
+    	<folder name="rules">
+    		<folder name="errors">
+    			<file name="org-netbeans-modules-web-beans-hints-CreateQualifier.instance"/>
+    		</folder>
+    	</folder>
+    </folder>
 </filesystem>
