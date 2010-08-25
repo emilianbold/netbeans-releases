@@ -111,12 +111,14 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
     @Override
     public ProgressObject incrementalDeploy(TargetModuleID module, AppChangeDescriptor changes) {
-        boolean redeploy = changes.classesChanged() || changes.descriptorChanged()
+        // HOTFIX 189774 - TODO need to go back to this and fix properly
+        boolean redeploy = true;
+        /*changes.classesChanged() || changes.descriptorChanged()
                 || changes.ejbsChanged() || changes.manifestChanged() || changes.serverDescriptorChanged();
         if (changes instanceof DeploymentChangeDescriptor) {
             DeploymentChangeDescriptor deploymentChanges = (DeploymentChangeDescriptor) changes;
             redeploy = redeploy || deploymentChanges.serverResourcesChanged();
-        }
+        }*/
 
         if (!redeploy) {
             WLProgressObject progress = new WLProgressObject(module);
