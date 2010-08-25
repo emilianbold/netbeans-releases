@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -68,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -92,6 +94,7 @@ public class EntityClosure {
     private Set<String> wantedEntities = new HashSet<String>();
     private Set<String> selectedEntities = new HashSet<String>();
     private Set<String> referencedEntities = new HashSet<String>();
+    private HashMap<String,Entity> fqnEntityMap = new HashMap<String,Entity>();
     
     private boolean closureEnabled = true;
     private Project project;
@@ -144,6 +147,7 @@ public class EntityClosure {
         availableEntityInstances.addAll(entities);
         for (Entity en : entities) {
             availableEntities.add(en.getClass2());
+            fqnEntityMap.put(en.getClass2(), en);
         }
         availableEntities.removeAll(selectedEntities);
         changeSupport.fireChange();
