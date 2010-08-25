@@ -41,16 +41,12 @@
  */
 package org.netbeans.modules.dlight.spi.impl;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
-import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
-import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -59,101 +55,58 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 
 public final class TimerTicker
-    extends IndicatorDataProvider<TimerIDPConfiguration>
-    implements Runnable {
+        extends IndicatorDataProvider<TimerIDPConfiguration>
+        implements Runnable {
 
-    private static final DataTableMetadata TABLE_METADATA = new DataTableMetadata(
-            TimerIDPConfiguration.TIME_ID, Collections.singletonList(TimerIDPConfiguration.TIME_INFO), null);
-
-    private final Lock lock = new Lock();
-    private final IndicatorDataProviderConfiguration configuration;
+    private static final List<DataTableMetadata> metadata;
+    private static final List<String> columnNames;
     private long startTime = 0;
     private Future<?> tickerService;
 
+    static {
+        DataTableMetadata tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
+                Collections.singletonList(TimerIDPConfiguration.TIME_INFO), null);
+        metadata = Collections.singletonList(tableMetadata);
+        columnNames = tableMetadata.getColumnNames();
+    }
 
     TimerTicker(TimerIDPConfiguration configuration) {
-        this.configuration = configuration;
+        super("Timer"); // NOI18N
     }
 
-    private void targetStarted(DLightTarget target) {
-        synchronized (lock) {
-            resetIndicators();
-            tickerService = DLightExecutorService.scheduleAtFixedRate(
+    @Override
+    protected synchronized void targetStarted(DLightTarget target) {
+        resetIndicators();
+        tickerService = DLightExecutorService.scheduleAtFixedRate(
                 this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
-            startTime = System.currentTimeMillis();
-        }
+        startTime = System.currentTimeMillis();
     }
 
-    private void targetFinished(DLightTarget target) {
-        synchronized (lock) {
-            tickerService.cancel(true);
-            tickerService = null;
-        }
+    @Override
+    protected synchronized void targetFinished(DLightTarget target) {
+        tickerService.cancel(true);
+        tickerService = null;
     }
 
+    @Override
     public void run() {
-        DataRow data = new DataRow(
-                TABLE_METADATA.getColumnNames(),
+        DataRow data = new DataRow(columnNames,
                 Collections.singletonList(System.currentTimeMillis() - startTime));
 
         notifyIndicators(Collections.singletonList(data));
     }
 
     @Override
-    public Collection<DataTableMetadata> getDataTablesMetadata() {
-        return Collections.singletonList(TABLE_METADATA);
-    }
-
-    public void targetStateChanged(DLightTargetChangeEvent event) {
-        switch (event.state) {
-            case RUNNING:
-                targetStarted(event.target);
-                return;
-            case FAILED:
-                targetFinished(event.target);
-                return;
-            case TERMINATED:
-                targetFinished(event.target);
-                return;
-            case DONE:
-                targetFinished(event.target);
-                return;
-            case STOPPED:
-                targetFinished(event.target);
-                return;
-        }
-    }
-
-    public ValidationStatus validate(DLightTarget objectToValidate) {
+    protected ValidationStatus doValidation(DLightTarget target) {
         return ValidationStatus.validStatus();
-    }
-
-    public void invalidate() {
-        //throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public ValidationStatus getValidationStatus() {
-        // throw new UnsupportedOperationException("Not supported yet.");
-        return ValidationStatus.validStatus();
-    }
-
-    public void addValidationListener(ValidationListener listener) {
-        //throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void removeValidationListener(ValidationListener listener) {
-        // throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public String getName() {
-        return "Timer"; //NOI18N
-    }
-
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
-
     }
 
-    private final static class Lock {
+    @Override
+    public List<DataTableMetadata> getDataTablesMetadata() {
+        return metadata;
     }
 }
