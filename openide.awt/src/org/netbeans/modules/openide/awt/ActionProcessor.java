@@ -70,6 +70,7 @@ import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
@@ -124,7 +125,13 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 if (COMPLETIONS == null) {
                     String pathCompletions = System.getProperty(ActionReference.class.getName() + ".completion");
                     if (pathCompletions != null) {
-                        ClassLoader l = Thread.currentThread().getContextClassLoader();
+                        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+                        if (l == null) {
+                            l = Thread.currentThread().getContextClassLoader();
+                        }
+                        if (l == null) {
+                            l = ActionProcessor.class.getClassLoader();
+                        }
                         try {
                             COMPLETIONS = (Processor)Class.forName(pathCompletions, true, l).newInstance();
                         } catch (Exception ex) {
