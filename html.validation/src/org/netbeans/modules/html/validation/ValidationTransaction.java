@@ -22,6 +22,7 @@
  */
 package org.netbeans.modules.html.validation;
 
+import java.net.URL;
 import org.netbeans.modules.html.validation.patched.RootNamespaceSniffer;
 import org.netbeans.modules.html.validation.patched.BufferingRootNamespaceSniffer;
 import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
@@ -82,6 +83,7 @@ import org.whattf.io.DataUri;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -201,10 +203,42 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return new ValidationTransaction();
     }
 
+    private static void  initializeLocalEntities_HACK() {
+        //some of the validator's resources are read directly by URLConnection-s
+        //using no entity resolver. The URLs are first checked in System properties
+        //and if there's no property value defined the default network URL (http://...)
+        //is used. This causes the support not working offline and if online
+        //makes the initialization really slow.
+
+        //hacked by loading the resources from the internall files cache via
+        //returned internall URLs.
+
+        //IMO should be fixed in validator.nu by using the local cache entity resolver.
+
+        //MessageEmitterAdapter:
+        URL url = LocalCacheEntityResolver.getResource("http://wiki.whatwg.org/wiki/MicrosyntaxDescriptions");
+        System.setProperty("nu.validator.spec.microsyntax-descriptions", url.toExternalForm());
+
+        url = LocalCacheEntityResolver.getResource("http://wiki.whatwg.org/wiki/Validator.nu_alt_advice");
+        System.setProperty("nu.validator.spec.alt-advice", url.toExternalForm());
+
+        //CharsetData:
+        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/character-sets");
+        System.setProperty("org.whattf.datatype.charset-registry", url.toExternalForm());
+
+        //LanguageData:
+        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/language-subtag-registry");
+        System.setProperty("org.whattf.datatype.lang-registry", url.toExternalForm());
+
+
+    }
+
     private static synchronized void initialize() {
         if (INITIALIZED) {
             return;
         }
+
+        initializeLocalEntities_HACK();
 
         try {
             LOGGER.fine("Starting initialization.");
