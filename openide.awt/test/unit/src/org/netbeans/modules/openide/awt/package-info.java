@@ -40,65 +40,13 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.el;
+@ActionReferences({
+    @ActionReference(path="pkg/one", position=100, id=@ActionID(category="Fool", id="action.one")),
+    @ActionReference(path="pkg/two", position=100, id=@ActionID(category="Pool", id="action.two"))
+})
+package org.netbeans.modules.openide.awt;
 
-import com.sun.el.parser.Node;
-import com.sun.el.parser.NodeVisitor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.el.ELException;
-import org.openide.util.Parameters;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 
-/**
- * AST path for Expression Language AST nodes.
- *
- * @author Erno Mononen
- */
-public final class AstPath {
-
-    private final List<Node> nodes = new ArrayList<Node>();
-    private final Node root;
-
-    public AstPath(Node root) {
-        Parameters.notNull("root", root);
-        this.root = root;
-        init();
-    }
-
-    private void init() {
-        root.accept(new NodeVisitor() {
-
-            @Override
-            public void visit(Node node) throws ELException {
-                nodes.add(node);
-            }
-        });
-    }
-
-    public Node getRoot() {
-        return root;
-    }
-
-    public List<Node> rootToLeaf() {
-        return nodes;
-    }
-
-    public List<Node> leafToRoot() {
-        List<Node> copy = new ArrayList<Node>(nodes);
-        Collections.reverse(copy);
-        return copy;
-    }
-
-    public List<Node> rootToNode(Node node) {
-        List<Node> result = new ArrayList<Node>();
-        for (Node each : nodes) {
-            result.add(each);
-            if (each.equals(node)) {
-                break;
-            }
-        }
-        return result;
-    }
-
-}

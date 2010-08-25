@@ -1944,22 +1944,24 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     FileImpl file = (FileImpl) include.getIncludeFile();
                     if (file != null && file.isValid()) {
                         TokenStream ts = file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
+                        if (ts != null) {
+                            CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, 0);
+                            parser.fix_fake_class_members();
+                            AST ast = parser.getAST();
 
-                        CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, 0);
-                        parser.fix_fake_class_members();
-                        AST ast = parser.getAST();
 
-
-                        CsmDeclaration.Kind kind = cls.getKind();
-                        CsmVisibility visibility = CsmVisibility.PRIVATE;
-                        if(kind == CsmDeclaration.Kind.CLASS) {
-                            visibility = CsmVisibility.PRIVATE;
-                        } else if( kind == CsmDeclaration.Kind.STRUCT ||
-                                kind == CsmDeclaration.Kind.UNION) {
-                            visibility = CsmVisibility.PUBLIC;
+                            CsmDeclaration.Kind kind = cls.getKind();
+                            CsmVisibility visibility = CsmVisibility.PRIVATE;
+                            if(kind == CsmDeclaration.Kind.CLASS) {
+                                visibility = CsmVisibility.PRIVATE;
+                            } else if( kind == CsmDeclaration.Kind.STRUCT ||
+                                    kind == CsmDeclaration.Kind.UNION) {
+                                visibility = CsmVisibility.PUBLIC;
+                            }
+                            cls.fixFakeRender(file, visibility, ast, false);
+                        } else {
+                            APTUtils.LOG.log(Level.WARNING, "fixFakeIncludeRegistrations: file {0} has not tokens, probably empty or removed?", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N                            
                         }
-                        cls.fixFakeRender(file, visibility, ast, false);
-
                         wereFakes = true;
                     }
                 }

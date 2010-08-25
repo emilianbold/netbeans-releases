@@ -57,6 +57,8 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import java.awt.event.KeyEvent;
 import javax.swing.JEditorPane;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.InputEvent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -68,6 +70,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
@@ -640,8 +643,10 @@ public class GeneralPHP extends JellyTestCase {
     }
 
     public JDialogOperator selectPHPFromEditorOptions(int mode) {
-
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
+    
+            new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
+        
+        Sleep(1000);
         JDialogOperator window = new JDialogOperator("Options");
         if (mode == 0) {
         window.pressKey(KeyEvent.VK_RIGHT);
@@ -716,5 +721,9 @@ public class GeneralPHP extends JellyTestCase {
                 String.valueOf(arrayDeclarationIndentation));
 
 
+    }
+    
+    protected  String getPlatform() {
+        return System.getProperty("os.name").toLowerCase(); 
     }
 }

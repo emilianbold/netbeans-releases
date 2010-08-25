@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.customizer;
 
+import org.netbeans.modules.maven.TestSkippingChecker;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextArea;
 import org.junit.AfterClass;
@@ -72,18 +73,18 @@ public class ActionMappingsTest {
         area.setText("");
         ActionMappings.SkipTestsAction act = new ActionMappings.SkipTestsAction(area);
         act.actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, "X"));
-        assertTrue(area.getText().contains("maven.test.skip=true"));
+        assertTrue(area.getText().contains(TestSkippingChecker.PROP_SKIP_TEST + "=true"));
 
-        area.setText("maven.test.skip=false");
+        area.setText(TestSkippingChecker.PROP_SKIP_TEST + "=false");
         act.actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, "X"));
-        assertTrue(area.getText().contains("maven.test.skip=true"));
+        assertTrue(area.getText().contains(TestSkippingChecker.PROP_SKIP_TEST + "=true"));
 
-        area.setText("maven.test.skip = false\nyyy=xxx");
+        area.setText(TestSkippingChecker.PROP_SKIP_TEST + " = false\nyyy=xxx");
         act.actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, "X"));
-        assertTrue(area.getText().contains("maven.test.skip=true"));
+        assertTrue(area.getText().contains(TestSkippingChecker.PROP_SKIP_TEST + "=true"));
 
-        area.setText("aaa=bbb\nmaven.test.skip =    false   \nyyy=xxx");
+        area.setText("aaa=bbb\n" + TestSkippingChecker.PROP_SKIP_TEST + " =    false   \nyyy=xxx");
         act.actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, "X"));
-        assertTrue(area.getText().contains("maven.test.skip=true"));
+        assertTrue(area.getText().contains(TestSkippingChecker.PROP_SKIP_TEST + "=true"));
     }
 }

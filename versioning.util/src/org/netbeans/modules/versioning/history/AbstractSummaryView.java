@@ -46,39 +46,21 @@ package org.netbeans.modules.versioning.history;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import javax.swing.*;
-import javax.swing.text.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.File;
-import java.lang.Object;
 import java.util.*;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.plaf.TextUI;
-import javax.swing.plaf.basic.BasicTreeUI;
-import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeCellRenderer;
-import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Hyperlink;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -212,7 +194,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         resultsTree.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                onPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsTree));
+                onPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsTree), getSelection(null));
             }
         });
 
@@ -268,12 +250,8 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
 
     @Override
     public void componentResized(ComponentEvent e) {
-        // XXX hack -> force cell width, needed only for visible rows!!!
+        // XXX hack -> force cell width, might be needed only for visible rows!!!
         // XXX
-
-//        System.out.println(" resized !!! ");
-//        panel.validate();
-
         ResultModel tm = ((ResultModel) resultsTree.getModel());
         int c = rootNode.getChildCount();
         TreeNode[] nodes = new TreeNode[c];
@@ -373,10 +351,24 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     }
 
     private void onPopup(MouseEvent e) {
-        onPopup(e.getPoint());
+        onPopup(e.getPoint(), getSelection(e.getPoint()));
     }
 
-    protected abstract void onPopup(Point p);
+    protected abstract void onPopup(Point p, Object[] selection);
+
+    private Object[] getSelection(Point p) {
+        TreePath[] paths = resultsTree.getSelectionPaths();
+        if(paths == null || paths.length == 0) {
+            assert p != null;
+            paths = new TreePath[] {resultsTree.getPathForLocation(p.x, p.y)};
+        }
+        Object[] selection = new Object[paths.length];
+        for (int i = 0; i < paths.length; i++) {
+            TreePath path = paths[i];
+            selection[i] = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+        }
+        return selection;
+    }
 
     public JComponent getComponent() {
         return scrollPane;

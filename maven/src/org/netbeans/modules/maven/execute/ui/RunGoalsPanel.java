@@ -54,7 +54,6 @@ import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
-import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.customizer.PropertySplitter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.codehaus.plexus.util.StringUtils;
@@ -63,6 +62,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.TestSkippingChecker;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 
@@ -242,7 +242,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             token = split.nextPair();
         }
         if (cbSkipTests.isSelected()) {
-            props.setProperty(ActionMappings.PROP_SKIP_TEST, "true"); //NOI18N
+            props.setProperty(TestSkippingChecker.PROP_SKIP_TEST, "true"); //NOI18N
         }
         mapp.setProperties(props);
 
@@ -281,7 +281,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             token = split.nextPair();
         }
         if (cbSkipTests.isSelected()) {
-            props.setProperty(ActionMappings.PROP_SKIP_TEST, "true"); //NOI18N
+            props.setProperty(TestSkippingChecker.PROP_SKIP_TEST, "true"); //NOI18N
         }
         rc.setProperties(props);
         rc.setRecursive(isRecursive());
@@ -446,10 +446,10 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void cbSkipTestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSkipTestsActionPerformed
         String current = taProperties.getText();
-        if (current.contains(ActionMappings.PROP_SKIP_TEST)) {
-            taProperties.setText(current.replaceAll(".*maven\\.test\\.skip\\s*=\\s*[a-z]*\\s*.*", "maven.test.skip=" + (cbSkipTests.isSelected() ? "true" : "false"))); //NOI18N
+        if (current.contains(TestSkippingChecker.PROP_SKIP_TEST)) {
+            taProperties.setText(current.replaceAll(".*\\Q" + TestSkippingChecker.PROP_SKIP_TEST + "\\E\\s*=\\s*[a-z]*\\s*.*", TestSkippingChecker.PROP_SKIP_TEST + "=" + (cbSkipTests.isSelected() ? "true" : "false"))); //NOI18N
         } else if (cbSkipTests.isSelected()) {
-            taProperties.setText(taProperties.getText() + "\nmaven.test.skip=true"); //NOI18N
+            taProperties.setText(taProperties.getText() + "\n" + TestSkippingChecker.PROP_SKIP_TEST + "=true"); //NOI18N
         }
         
     }//GEN-LAST:event_cbSkipTestsActionPerformed

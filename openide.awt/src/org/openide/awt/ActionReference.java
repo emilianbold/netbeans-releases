@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,9 +13,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,68 +34,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.el;
+package org.openide.awt;
 
-import com.sun.el.parser.Node;
-import com.sun.el.parser.NodeVisitor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.el.ELException;
-import org.openide.util.Parameters;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.openide.filesystems.FileUtil;
 
-/**
- * AST path for Expression Language AST nodes.
+/** Registers an action under associated identifier specified by separate
+ * {@link ActionID} annotation on the same element. Usually it is used together
+ * with {@link ActionRegistration}.
  *
- * @author Erno Mononen
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since 7.27
  */
-public final class AstPath {
-
-    private final List<Node> nodes = new ArrayList<Node>();
-    private final Node root;
-
-    public AstPath(Node root) {
-        Parameters.notNull("root", root);
-        this.root = root;
-        init();
-    }
-
-    private void init() {
-        root.accept(new NodeVisitor() {
-
-            @Override
-            public void visit(Node node) throws ELException {
-                nodes.add(node);
-            }
-        });
-    }
-
-    public Node getRoot() {
-        return root;
-    }
-
-    public List<Node> rootToLeaf() {
-        return nodes;
-    }
-
-    public List<Node> leafToRoot() {
-        List<Node> copy = new ArrayList<Node>(nodes);
-        Collections.reverse(copy);
-        return copy;
-    }
-
-    public List<Node> rootToNode(Node node) {
-        List<Node> result = new ArrayList<Node>();
-        for (Node each : nodes) {
-            result.add(each);
-            if (each.equals(node)) {
-                break;
-            }
-        }
-        return result;
-    }
-
+@Retention(RetentionPolicy.SOURCE)
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
+public @interface ActionReference {
+    /** Into which location one wants to place the reference?
+     * Translates to {@link FileUtil#getConfigFile(java.lang.String)}.
+     */
+    String path();
+    
+    /** Position in the location.
+     */
+    int position() default Integer.MAX_VALUE;
+    
+    /** Identification of the action this reference shall point to.
+     * Usually this is specified as {@link ActionID} peer annotation, but
+     * in case one was to create references to actions defined by someone else,
+     * one can specify the id() here.
+     */
+    ActionID id() default @ActionID(id="",category="");
+    
+    /** One can specify name of the reference. This is not necessary,
+     * then it is deduced from associated {@link ActionID}.
+     */
+    String name() default "";
 }

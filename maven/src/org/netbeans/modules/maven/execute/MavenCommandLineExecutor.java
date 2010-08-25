@@ -302,6 +302,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         if (react) {
             toRet.add("--projects");
+            // XXX might be better to supply relative path from executionDirectory, e.g. 'war'
             toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
         }
 
