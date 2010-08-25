@@ -541,15 +541,15 @@ public class MakeJNLP extends Task {
             if (n.endsWith(".jar")) {
                 n = n.substring(0, n.length() - 4);
             }
-            
+            File ext = new File(new File(targetFile, dashcnb), s.replace("../", "").replace('/', '-'));
+
             if (isSigned(e) != null) {
                 Copy copy = (Copy)getProject().createTask("copy");
                 copy.setFile(e);
-                File t = new File(new File(targetFile, dashcnb), s.replace('/', '-'));
-                copy.setTofile(t);
+                copy.setTofile(ext);
                 copy.execute();
                 
-                String extJnlpName = dashcnb + '-' + t.getName().replaceFirst("\\.jar$", "") + ".jnlp";
+                String extJnlpName = dashcnb + '-' + ext.getName().replaceFirst("\\.jar$", "") + ".jnlp";
                 File jnlp = new File(targetFile, extJnlpName);
 
                 FileWriter writeJNLP = new FileWriter(jnlp);
@@ -562,7 +562,7 @@ public class MakeJNLP extends Task {
                 writeJNLP.write("  </information>\n");
                 writeJNLP.write(permissions +"\n");
                 writeJNLP.write("  <resources>\n");
-                writeJNLP.write(constructJarHref(t, dashcnb));
+                writeJNLP.write(constructJarHref(ext, dashcnb));
                 writeJNLP.write("  </resources>\n");
                 writeJNLP.write("  <component-desc/>\n");
                 writeJNLP.write("</jnlp>\n");
@@ -570,7 +570,6 @@ public class MakeJNLP extends Task {
                 
                 fileWriter.write("    <extension name='" + e.getName().replaceFirst("\\.jar$", "") + "' href='" + extJnlpName + "'/>\n");
             } else {
-                File ext = new File(new File(targetFile, dashcnb), s.replace('/', '-'));
                 signOrCopy(e, ext);
 
                 fileWriter.write(constructJarHref(ext, dashcnb));
