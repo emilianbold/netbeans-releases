@@ -90,7 +90,7 @@ final class JavadocCompletionUtils {
      * <p>See {@link JavadocCompletionUtilsTest#testIsInvalidDocInstance} for
      * test cases
      */
-    static final Pattern JAVADOC_EMPTY = Pattern.compile("(\\s*\\**\\s*\n)*\\s*\\**\\s*"); // NOI18N
+    static final Pattern JAVADOC_EMPTY = Pattern.compile("(\\s*\\**\\s*\n)*\\s*\\**\\s*\\**"); // NOI18N
     static final Pattern JAVADOC_FIRST_WHITE_SPACE = Pattern.compile("[ \\t]*\\**[ \\t]*"); // NOI18N
     private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
             JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT);

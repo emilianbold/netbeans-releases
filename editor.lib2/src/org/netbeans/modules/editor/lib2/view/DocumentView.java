@@ -484,8 +484,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     // checkDocumentLocked() - unnecessary - doc.render() called
                     try {
                         ((EditorTabExpander) tabExpander).updateTabSize();
-                        if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
-                            viewUpdates.reinitViews();
+                        if (lengthyAtomicEdit == 0) { // Not in lengthy atomic edit
+                            if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
+                                viewUpdates.reinitViews();
+                            } // At the end of lengthy edit the views will be released and recreated automatically
                         }
                     } finally {
                         mutex.unlock();
@@ -1213,6 +1215,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     protected StringBuilder appendViewInfoCore(StringBuilder sb, int indent, int importantChildIndex) {
         super.appendViewInfoCore(sb, indent, importantChildIndex);
         sb.append("; incomingMod=").append(incomingModification);
+        sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit);
+        Document doc = getDocument();
+        sb.append("\nDoc: ").append(ViewUtils.toString(doc));
         return sb;
     }
 

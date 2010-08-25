@@ -307,6 +307,8 @@ final class ViewBuilder {
             }
             StringBuilder sb = new StringBuilder(200);
             sb.append("ViewBuilder.createViews():\n");
+            Document doc = dReplace.view.getDocument();
+            sb.append("Creation for document: ").append(doc).append('\n');
             if (fReplace != null) {
                 sb.append("fReplace:").append(fReplace);
             }
