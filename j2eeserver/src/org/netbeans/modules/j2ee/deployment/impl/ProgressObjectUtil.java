@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
@@ -89,10 +90,10 @@ public class ProgressObjectUtil {
             ProgressListener listener = new ProgressListener() {
                 public void handleProgressEvent(ProgressEvent progressEvent) {
                     DeploymentStatus status = progressEvent.getDeploymentStatus();
-                    if (status.isCompleted()) {
+                    if (status.isCompleted() || status.getState() == StateType.RELEASED) {
                         completed.set(true);
                     }
-                    if (status.isCompleted() || status.isFailed()) {
+                    if (status.isCompleted() || status.isFailed() || status.getState() == StateType.RELEASED) {
                         progressFinished.countDown();
                     }
                 }
@@ -102,7 +103,7 @@ public class ProgressObjectUtil {
                 // the completion event might have arrived before the progress listener 
                 // was registered, wait only if not yet finished
                 DeploymentStatus status = po.getDeploymentStatus();
-                if (!status.isCompleted() && !status.isFailed()) {
+                if (!status.isCompleted() && !status.isFailed() && status.getState() != StateType.RELEASED) {
                     try {
                         if (timeout == 0) {
                             progressFinished.await();
