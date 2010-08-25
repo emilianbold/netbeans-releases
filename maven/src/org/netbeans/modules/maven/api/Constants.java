@@ -68,12 +68,6 @@ public interface Constants {
     public static final String HINT_LICENSE = "netbeans.hint.license"; //NOI18N
 
     /**
-     * Maven property that when set forces netbeans to use external maven instance
-     * instead of the embedded Maven.
-    public static final String HINT_USE_EXTERNAL = "netbeans.hint.useExternalMaven"; //NOI18N
-     */ 
-    
-    /**
      * Maven property that designates the jdk platform to use in the IDE on classpath for project.
      * Equivalent to the "platform.active" property in Ant based projects.
      * Workaround for issue http://www.netbeans.org/issues/show_bug.cgi?id=104974

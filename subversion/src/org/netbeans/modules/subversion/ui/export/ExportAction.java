@@ -103,7 +103,7 @@ public class ExportAction extends ContextAction {
         
         File fromFile = roots[0];
 
-        final RequestProcessor rp = createRequestProcessor(nodes);
+        final RequestProcessor rp = createRequestProcessor(ctx);
         final boolean hasChanges = files.length > 0;
         final Export export = new Export(fromFile, hasChanges);
         if(export.showDialog()) {

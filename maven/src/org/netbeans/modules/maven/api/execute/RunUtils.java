@@ -67,35 +67,6 @@ public final class RunUtils {
      *  execute maven build in netbeans execution engine.
      */
     public static ExecutorTask executeMaven(RunConfig config) {
-        /*
-        MavenExecutor exec;
-        boolean useEmbedded = false;
-        if (config.getProject() != null) {
-            //TODO somehow use the config.getMavenProject() call rather than looking up the
-            // AuxiliaryProperties from lookup. The loaded project can be different from the executed one.
-            AuxiliaryProperties props = config.getProject().getLookup().lookup(AuxiliaryProperties.class);
-            String val = props.get(Constants.HINT_USE_EXTERNAL, true);
-            if ("false".equalsIgnoreCase(val)) { //NOI18N
-                useEmbedded = true;
-            }
-        }
-        
-        if (!useEmbedded && MavenSettings.canFindExternalMaven()) {
-            exec = new MavenCommandLineExecutor(config);
-        } else {
-            if (!warningShown && DontShowAgainSettings.getDefault().showWarningAboutEmbeddedBuild()) {
-                WarnPanel panel = new WarnPanel(NbBundle.getMessage(RunUtils.class, "HINT_EmbeddedBuild"));
-                NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
-                DialogDisplayer.getDefault().notify(dd);
-                if (panel.disabledWarning()) {
-                    DontShowAgainSettings.getDefault().dontshowWarningAboutEmbeddedBuildAnymore();
-                }
-                
-                warningShown = true;
-            }
-            exec = new MavenJavaExecutor(config);
-        }
-         */
         MavenExecutor exec = new MavenCommandLineExecutor(config);
         return executeMavenImpl(config.getTaskDisplayName(), exec);
     }

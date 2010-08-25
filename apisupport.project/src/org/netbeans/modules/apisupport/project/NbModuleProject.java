@@ -74,6 +74,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.apisupport.project.layers.PathCompletions;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
@@ -171,6 +172,10 @@ public final class NbModuleProject implements Project {
     private Map<FileObject,Element> extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleProviderImpl typeProvider;
+    
+    {
+        PathCompletions.register();
+    }
     
     public NbModuleProject(AntProjectHelper helper) throws IOException {
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
