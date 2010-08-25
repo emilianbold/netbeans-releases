@@ -571,8 +571,8 @@ class DiffViewManager implements ChangeListener {
             int lineNumber = Utilities.getLineOffset((BaseDocument) editorPane.getDocument(), editorPane.getDocument().getLength());
             if (lineNumber > 0) --lineNumber;
             View view = rootView.getView(lineNumber);
-            Rectangle rec = editorPane.modelToView(view.getEndOffset() - 1);
-            if (rec != null) {
+            Rectangle rec;
+            if (view != null && (rec = editorPane.modelToView(view.getEndOffset() - 1)) != null) {
                 height = (int) (rec.getY() + rec.getHeight());
             }
         } catch (BadLocationException ex) {
