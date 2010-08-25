@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -642,11 +644,16 @@ public class MakeJNLP extends Task {
         signOrCopy(ext, null);
     }
 
-    private static String relative(File file, File root) {
+    private String relative(File file, File root) {
         String sfile = file.toString().replace(File.separatorChar, '/');
         String sroot = (root.toString() + File.separator).replace(File.separatorChar, '/');
         if (sfile.startsWith(sroot)) {
-            return sfile.substring(sroot.length());
+            try {
+                String result = new URI(null, sfile.substring(sroot.length()), null).normalize().getPath();
+                return result;
+            } catch (URISyntaxException x) {
+                throw new BuildException(x, getLocation()); // or just ignore?
+            }
         }
         return sfile;
     }
