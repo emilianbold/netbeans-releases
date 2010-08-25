@@ -707,4 +707,11 @@ public class ActionProcessorTest extends NbTestCase {
         assertTrue("Contains hint", os.toString().contains("Utilities.stringToKey"));
     }
     
+    public void testReferenceWithoutPosition() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Shortcuts/C-F2.shadow");
+        assertNotNull(fo);
+        assertEquals("Actions/eager/direct-two.instance", fo.getAttribute("originalFile"));
+        assertEquals(null, fo.getAttribute("position"));
+    }
+
 }
