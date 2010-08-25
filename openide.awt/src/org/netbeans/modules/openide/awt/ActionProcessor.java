@@ -140,7 +140,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                             COMPLETIONS = this;
                         }
                     } else {
-                        COMPLETIONS = this;
+                        return res;
                     }
                 }
                 if (COMPLETIONS != null && COMPLETIONS != this) {
