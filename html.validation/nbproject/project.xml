@@ -67,6 +67,37 @@
                 <package>com.ibm.icu.math</package>
                 <package>com.ibm.icu.text</package>
                 <package>com.ibm.icu.util</package>
+                <package>com.thaiopensource.datatype</package>
+                <package>com.thaiopensource.datatype.xsd</package>
+                <package>com.thaiopensource.datatype.xsd.regex</package>
+                <package>com.thaiopensource.datatype.xsd.regex.java</package>
+                <package>com.thaiopensource.datatype.xsd.regex.xerces2</package>
+                <package>com.thaiopensource.relaxng</package>
+                <package>com.thaiopensource.relaxng.exceptions</package>
+                <package>com.thaiopensource.relaxng.impl</package>
+                <package>com.thaiopensource.relaxng.jarv</package>
+                <package>com.thaiopensource.relaxng.match</package>
+                <package>com.thaiopensource.relaxng.parse</package>
+                <package>com.thaiopensource.relaxng.parse.compact</package>
+                <package>com.thaiopensource.relaxng.parse.sax</package>
+                <package>com.thaiopensource.relaxng.util</package>
+                <package>com.thaiopensource.util</package>
+                <package>com.thaiopensource.validate</package>
+                <package>com.thaiopensource.validate.auto</package>
+                <package>com.thaiopensource.validate.jarv</package>
+                <package>com.thaiopensource.validate.mns</package>
+                <package>com.thaiopensource.validate.nrl</package>
+                <package>com.thaiopensource.validate.nvdl</package>
+                <package>com.thaiopensource.validate.picl</package>
+                <package>com.thaiopensource.validate.prop.rng</package>
+                <package>com.thaiopensource.validate.prop.schematron</package>
+                <package>com.thaiopensource.validate.prop.wrap</package>
+                <package>com.thaiopensource.validate.rng</package>
+                <package>com.thaiopensource.validate.schematron</package>
+                <package>com.thaiopensource.validate.xerces</package>
+                <package>com.thaiopensource.xml.out</package>
+                <package>com.thaiopensource.xml.sax</package>
+                <package>com.thaiopensource.xml.util</package>
                 <package>nu.validator.collections</package>
                 <package>nu.validator.gnu.xml.aelfred2</package>
                 <package>nu.validator.httpclient.ssl</package>
@@ -125,6 +156,8 @@
                 <package>org.mozilla.javascript.xmlimpl</package>
                 <package>org.netbeans.modules.html.validation</package>
                 <package>org.netbeans.modules.html.validation.patched</package>
+                <package>org.relaxng.datatype</package>
+                <package>org.relaxng.datatype.helpers</package>
                 <package>org.whattf.checker</package>
                 <package>org.whattf.checker.jing</package>
                 <package>org.whattf.checker.schematronequiv</package>
