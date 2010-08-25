@@ -54,38 +54,13 @@ import org.openide.util.RequestProcessor;
 /**
  * @author Jiri Rechtacek
  */
-public class ViewSourceCodeAction extends QueryAction {
+public class ViewSourceCodeAction extends BaseAction {
 
     @Override
     public String getName() {
         return NbBundle.getMessage(ViewSourceCodeAction.class, "LBL_ViewSourceCodeAction_Name");
     }
     
-//    @Override
-//    protected String getDefaultQuery(Node[] activatedNodes) {
-//
-//        DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
-//
-//        SQLIdentifiers.Quoter quoter;
-//
-//        try {
-//            DatabaseMetaData dmd = connection.getConnection().getMetaData();
-//            quoter = SQLIdentifiers.createQuoter(dmd);
-//
-//            SchemaNameProvider provider = activatedNodes[0].getLookup().lookup(SchemaNameProvider.class);
-//
-//            String onome;
-//            onome = getQualifiedTableName(activatedNodes[0].getName(), connection, provider, quoter);
-//
-//            return "select * from " + onome; // NOI18N
-//        } catch (SQLException ex) {
-//            String message = NbBundle.getMessage(QueryAction.class, "ShowDataError", ex.getMessage()); // NOI18N
-//            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-//            return "";
-//        }
-//    }
-//    
-//
     @Override
     protected void performAction(final Node[] activatedNodes) {
         final DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
@@ -101,8 +76,6 @@ public class ViewSourceCodeAction extends QueryAction {
                                 SQLEditorSupport.openSQLEditor(connection.getDatabaseConnection(), expression, false);
                             } catch (Exception exc) {
                                 Logger.getLogger(ViewSourceCodeAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage() + " while executing expression " + expression, exc); // NOI18N
-//                            String message = NbBundle.getMessage (ViewDataAction.class, "ShowDataError", exc.getMessage()); // NOI18N
-//                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                             }
                         }
                     });

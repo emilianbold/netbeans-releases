@@ -232,15 +232,13 @@ public class ProcedureNode extends BaseNode {
         Trigger
     }
     
-    public static class MySQL extends ProcedureNode implements SchemaNameProvider {
-        private final MetadataElementHandle<Procedure> handle;
+    public static class MySQL extends ProcedureNode {
         private final DatabaseConnection connection;
         
         @SuppressWarnings("unchecked")
         private MySQL(NodeDataLookup lookup, NodeProvider provider) {
             super(lookup, provider);
             connection = getLookup().lookup(DatabaseConnection.class);
-            handle = getLookup().lookup(MetadataElementHandle.class);
         }
 
         @Override
@@ -265,65 +263,15 @@ public class ProcedureNode extends BaseNode {
             return source;
         }
 
-        @Override
-        public String getSchemaName() {
-            MetadataModel metaDataModel = connection.getMetadataModel();
-            final String[] array = new String[1];
-
-            try {
-                metaDataModel.runReadAction(
-                    new Action<Metadata>() {
-                    @Override
-                        public void run(Metadata metaData) {
-                            Procedure view = handle.resolve(metaData);
-                            if (view != null) {
-                                array[0] = view.getParent().getName();
-                            }
-                        }
-                    }
-                );
-            } catch (MetadataModelException e) {
-                NodeRegistry.handleMetadataModelException(ProcedureNode.class, connection, e, true);
-            }
-
-            return array[0];
-        }
-
-        @Override
-        public String getCatalogName() {
-            MetadataModel metaDataModel = connection.getMetadataModel();
-            final String[] array = new String[1];
-
-            try {
-                metaDataModel.runReadAction(
-                    new Action<Metadata>() {
-                    @Override
-                        public void run(Metadata metaData) {
-                            Procedure view = handle.resolve(metaData);
-                            if (view != null) {
-                                array[0] = view.getParent().getParent().getName();
-                            }
-                        }
-                    }
-                );
-            } catch (MetadataModelException e) {
-                NodeRegistry.handleMetadataModelException(ProcedureNode.class, connection, e, true);
-            }
-
-            return array[0];
-        }
-        
     }
     
-    public static class Oracle extends ProcedureNode implements SchemaNameProvider {
-        private final MetadataElementHandle<Procedure> handle;
+    public static class Oracle extends ProcedureNode {
         private final DatabaseConnection connection;
         
         @SuppressWarnings("unchecked")
         private Oracle(NodeDataLookup lookup, NodeProvider provider) {
             super(lookup, provider);
             connection = getLookup().lookup(DatabaseConnection.class);
-            handle = getLookup().lookup(MetadataElementHandle.class);
         }
 
         @Override
@@ -349,54 +297,5 @@ public class ProcedureNode extends BaseNode {
             return sb.toString();
         }
 
-        @Override
-        public String getSchemaName() {
-            MetadataModel metaDataModel = connection.getMetadataModel();
-            final String[] array = new String[1];
-
-            try {
-                metaDataModel.runReadAction(
-                    new Action<Metadata>() {
-                    @Override
-                        public void run(Metadata metaData) {
-                            Procedure view = handle.resolve(metaData);
-                            if (view != null) {
-                                array[0] = view.getParent().getName();
-                            }
-                        }
-                    }
-                );
-            } catch (MetadataModelException e) {
-                NodeRegistry.handleMetadataModelException(ProcedureNode.class, connection, e, true);
-            }
-
-            return array[0];
-        }
-
-        @Override
-        public String getCatalogName() {
-            MetadataModel metaDataModel = connection.getMetadataModel();
-            final String[] array = new String[1];
-
-            try {
-                metaDataModel.runReadAction(
-                    new Action<Metadata>() {
-                    @Override
-                        public void run(Metadata metaData) {
-                            Procedure view = handle.resolve(metaData);
-                            if (view != null) {
-                                array[0] = view.getParent().getParent().getName();
-                            }
-                        }
-                    }
-                );
-            } catch (MetadataModelException e) {
-                NodeRegistry.handleMetadataModelException(ProcedureNode.class, connection, e, true);
-            }
-
-            return array[0];
-        }
-        
     }
-    
 }
