@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
@@ -95,6 +96,22 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(AstNodeUtils.query(root, "html/head/title"));
         assertNotNull(AstNodeUtils.query(root, "html/body"));
         assertNotNull(AstNodeUtils.query(root, "html/body/div"));
+    }
+
+     public void testAttributes() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body onclick=\"alert()\"></body></html>");
+        AstNode root = result.root();
+//        AstNodeUtils.dumpTree(root);
+        assertNotNull(root);
+        AstNode body = AstNodeUtils.query(root, "html/body");
+        assertNotNull(body);
+
+        assertEquals(1, body.getAttributes().size());
+
+        Attribute attr = body.getAttributes().iterator().next();
+        assertNotNull(attr);
+        assertEquals("onclick", attr.name());
+        assertEquals("alert()", attr.value());
     }
 
     public void testProblemsReporting() throws ParseException {
@@ -250,6 +267,24 @@ public class Html5ParserTest extends NbTestCase {
         assertTrue(possible.contains(titleTag));
         assertFalse(possible.contains(headTag));
 
+    }
+
+
+    public void testParseUnfinishedTagFollowedByChars() throws ParseException {
+        String code = "<!doctype html> \n"
+                + "<html>    \n"
+                + "<title>dd</title>\n"
+                + "<s\n" //the tag is unfinished during typing
+                + "ahoj\n" //this text is considered as the tag's attribute (correctly)
+                + "</body>\n"
+                + "</html> ";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNodeUtils.dumpTree(root);
     }
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {

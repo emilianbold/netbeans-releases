@@ -514,6 +514,14 @@ public class AstNode {
             b.append("]");
         }
 
+        b.append('{');
+        //attributes
+        for(Attribute a : getAttributes()) {
+            b.append(a.toString());
+            b.append(',');
+        }
+        b.append('}');
+
         //attched messages
         for (ProblemDescription d : getDescriptions()) {
             b.append(d.getKey());
@@ -630,6 +638,13 @@ public class AstNode {
                         (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
             }
         }
+
+        @Override
+        public String toString() {
+            return "Attr[" + name() + "(" + nameOffset() + ")=" + value + "(" + valueOffset() + ")]";
+        }
+
+
     }
 
     private static class RootAstNode extends AstNode {

@@ -405,7 +405,12 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected void addAttributesToElement(AstNode node, HtmlAttributes attributes) throws SAXException {
-        for (int i = 0; i < attributes.getLength(); i++) {
+        //there are situations (when the code is corrupted) when 
+        //the attributes recorded during lexing (lexical states switching)
+        //do not contain all the attrs from HtmlAttributes.
+        int attrs_count = Math.min(attributes.getLength(), attrs.size());
+
+        for (int i = 0; i < attrs_count; i++) {
             //XXX I assume the attributes order is the same as in the source code
             AttrInfo attrInfo = attrs.elementAt(i);
             AstNode.Attribute attr = factory.createAttribute(
