@@ -41,6 +41,7 @@ package org.netbeans.modules.html.validation;
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+import java.io.File;
 import java.util.Collection;
 import org.netbeans.modules.html.parser.*;
 import java.io.IOException;
@@ -59,6 +60,22 @@ public class ValidationTransactionTest extends NbTestCase {
 
     public ValidationTransactionTest(String name) {
         super(name);
+
+        setup();
+    }
+
+    private void setup() {
+        //needed by org.whattf.datatype.data.* classes - directly read via network, not entity resolver! why?
+        String localEntitiesHome = "/Users/marekfukala/sources/validator.nu-checker/local-entities/";
+        String iana = "file://" + localEntitiesHome + "www.iana.org/assignments/";
+
+        System.setProperty("org.whattf.datatype.lang-registry", iana + "language-subtag-registry");
+        System.setProperty("org.whattf.datatype.charset-registry", iana + "character-sets");
+
+
+        //MessageEmitterAdapter
+        System.setProperty("nu.validator.spec.microsyntax-descriptions", "file://" + localEntitiesHome + "wiki.whatwg.org/wiki/MicrosyntaxDescriptions");
+        System.setProperty("nu.validator.spec.alt-advice","file://" + localEntitiesHome + "wiki.whatwg.org/wiki/Validator.nu_alt_advice");
     }
 
     public static Test xsuite() {
