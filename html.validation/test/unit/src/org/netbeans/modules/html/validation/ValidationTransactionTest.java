@@ -43,7 +43,6 @@ package org.netbeans.modules.html.validation;
  */
 import java.io.File;
 import java.util.Collection;
-import org.netbeans.modules.html.parser.*;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;

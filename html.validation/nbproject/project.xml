@@ -15,15 +15,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.html.parser</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -100,6 +91,15 @@
                 <package>com.thaiopensource.xml.util</package>
                 <package>nu.validator.collections</package>
                 <package>nu.validator.gnu.xml.aelfred2</package>
+                <package>nu.validator.htmlparser.annotation</package>
+                <package>nu.validator.htmlparser.common</package>
+                <package>nu.validator.htmlparser.dom</package>
+                <package>nu.validator.htmlparser.extra</package>
+                <package>nu.validator.htmlparser.impl</package>
+                <package>nu.validator.htmlparser.io</package>
+                <package>nu.validator.htmlparser.rewindable</package>
+                <package>nu.validator.htmlparser.sax</package>
+                <package>nu.validator.htmlparser.xom</package>
                 <package>nu.validator.httpclient.ssl</package>
                 <package>nu.validator.io</package>
                 <package>nu.validator.java</package>
@@ -107,6 +107,7 @@
                 <package>nu.validator.localentities</package>
                 <package>nu.validator.messages</package>
                 <package>nu.validator.messages.types</package>
+                <package>nu.validator.saxtree</package>
                 <package>nu.validator.security</package>
                 <package>nu.validator.servlet</package>
                 <package>nu.validator.servlet.imagereview</package>
@@ -198,6 +199,10 @@
             <class-path-extension>
                 <runtime-relative-path>ext/validator.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/validator.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/htmlparser.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/htmlparser.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/non-schema.jar</runtime-relative-path>

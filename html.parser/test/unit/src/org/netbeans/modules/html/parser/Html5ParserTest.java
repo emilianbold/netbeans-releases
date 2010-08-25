@@ -274,8 +274,8 @@ public class Html5ParserTest extends NbTestCase {
         String code = "<!doctype html> \n"
                 + "<html>    \n"
                 + "<title>dd</title>\n"
-                + "<s\n" //the tag is unfinished during typing
-                + "ahoj\n" //this text is considered as the tag's attribute (correctly)
+                + "<b\n" //the tag is unfinished during typing
+                + "      a\n" //this text is considered as the tag's attribute (correctly)
                 + "</body>\n"
                 + "</html> ";
 
