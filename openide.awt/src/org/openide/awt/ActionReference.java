@@ -62,7 +62,7 @@ public @interface ActionReference {
     
     /** Position in the location.
      */
-    int position() default -1;
+    int position() default Integer.MAX_VALUE;
     
     /** Identification of the action this reference shall point to.
      * Usually this is specified as {@link ActionID} peer annotation, but
