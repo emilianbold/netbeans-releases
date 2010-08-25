@@ -145,10 +145,10 @@ public class MyProjectNode extends LeafNode {
             }
         };
         this.project = project;
-        this.project.addPropertyChangeListener( projectListener );
         this.accessor = ProjectAccessor.getDefault();
         this.maccessor = MessagingAccessor.getDefault();
         this.qaccessor = QueryAccessor.getDefault();
+        this.project.addPropertyChangeListener( projectListener );
         this.mh = maccessor.getMessaging(project);
         this.mh.addPropertyChangeListener(projectListener);
         project.getKenaiProject().getKenai().addPropertyChangeListener(projectListener);
