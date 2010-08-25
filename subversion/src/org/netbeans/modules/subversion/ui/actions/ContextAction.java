@@ -329,6 +329,16 @@ public abstract class ContextAction extends NodeAction {
         return false;
     }
     
+    protected RequestProcessor createRequestProcessor(Context ctx) {
+        SVNUrl repository = null;
+        try {
+            repository = getSvnUrl(ctx);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, false);
+        }
+        return Subversion.getInstance().getRequestProcessor(repository);
+    }
+
     protected RequestProcessor createRequestProcessor(Node[] nodes) {
         SVNUrl repository = null;
         try {
