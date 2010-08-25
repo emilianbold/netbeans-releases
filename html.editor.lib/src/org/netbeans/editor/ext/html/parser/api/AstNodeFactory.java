@@ -73,8 +73,8 @@ public class AstNodeFactory {
         return new AstNode.Attribute(name, value, nameOffset, valueOffset);
     }
 
-    public AstNode createRootNode() {
-        return AstNode.createRootNode(-1, -1, null);
+    public AstNode createRootNode(int from, int to) {
+        return AstNode.createRootNode(from, to, null);
     }
     
 }

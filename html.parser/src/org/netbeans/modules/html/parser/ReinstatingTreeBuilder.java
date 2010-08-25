@@ -141,7 +141,7 @@ public class ReinstatingTreeBuilder extends TreeBuilder<AstNode>{
 
     @Override
     protected AstNode createHtmlElementSetAsRoot(HtmlAttributes ha) throws SAXException {
-        return AstNodeFactory.shared().createRootNode();
+        return AstNodeFactory.shared().createRootNode(-1,-1);
     }
 
     @Override

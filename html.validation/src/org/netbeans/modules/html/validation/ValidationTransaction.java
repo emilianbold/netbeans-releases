@@ -722,6 +722,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         htmlParser.setMappingLangToXmlLang(true);
         htmlParser.setHtml4ModeCompatibleWithXhtml1Schemata(true);
         htmlParser.setHeuristics(Heuristics.ALL);
+        htmlParser.setEntityResolver(entityResolver);
     }
 
     protected Validator validatorByDoctype(int schemaId) throws SAXException,

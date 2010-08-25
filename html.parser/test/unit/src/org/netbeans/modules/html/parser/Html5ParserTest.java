@@ -83,12 +83,12 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(root);
         assertNotNull(AstNodeUtils.query(root, "html/body/section/div")); //html/body are generated
 
-//        AstNodeUtils.dumpTree(root);
     }
 
     public void testHtmlAndBodyTags() throws ParseException {
         HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
         AstNode root = result.root();
+//        AstNodeUtils.dumpTree(root);
         assertNotNull(root);
         assertNotNull(AstNodeUtils.query(root, "html"));
         assertNotNull(AstNodeUtils.query(root, "html/head"));

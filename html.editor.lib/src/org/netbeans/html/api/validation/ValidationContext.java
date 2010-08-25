@@ -42,7 +42,8 @@
 
 package org.netbeans.html.api.validation;
 
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -50,14 +51,26 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public final class ValidationContext {
 
-    private Snapshot snapshot;
+    private String source;
+    private FileObject file;
+    private HtmlVersion version;
 
-    public ValidationContext(Snapshot snapshot) {
-        this.snapshot = snapshot;
+    public ValidationContext(String source, HtmlVersion version, FileObject file) {
+        this.source = source;
+        this.file = file;
+        this.version = version;
     }
 
-    public Snapshot getSnapshot() {
-        return snapshot;
+    public FileObject getFile() {
+        return file;
     }
-    
+
+    public String getSource() {
+        return source;
+    }
+
+    public HtmlVersion getVersion() {
+        return version;
+    }
+
 }

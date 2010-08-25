@@ -90,7 +90,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     //holds found attributes of an open tag
     private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
 
-    public AstNodeTreeBuilder() {
+    public AstNodeTreeBuilder(AstNode rootNode) {
+        this.root = rootNode;
         factory = AstNodeFactory.instance();
     }
 
@@ -365,8 +366,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if(DEBUG) {
             System.out.println("+HTML ROOT");
         }
-        
-        root = factory.createRootNode();
 
         AstNode rootTag = createElement("http://www.w3.org/1999/xhtml", "html", attributes);
         stack.push(root);

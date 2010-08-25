@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ElementName;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.StackNode;
@@ -55,6 +57,7 @@ import nu.validator.htmlparser.impl.StateSnapshot;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
@@ -64,6 +67,10 @@ import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
+import org.netbeans.html.api.validation.ValidationContext;
+import org.netbeans.html.api.validation.ValidationException;
+import org.netbeans.html.api.validation.Validator;
+import org.netbeans.html.api.validation.ValidatorService;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.ErrorHandler;
@@ -80,8 +87,9 @@ public class Html5Parser implements HtmlParser {
 
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
         try {
-            InputSource is = new InputSource(new StringReader(new StringBuilder(source.getSourceCode()).toString()));
-            final AstNodeTreeBuilder treeBuilder = new AstNodeTreeBuilder();
+            String code = source.getSourceCode().toString();
+            InputSource is = new InputSource(new StringReader(code));
+            final AstNodeTreeBuilder treeBuilder = new AstNodeTreeBuilder(AstNodeFactory.shared().createRootNode(0, code.length()));
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
             final Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
 
@@ -115,6 +123,23 @@ public class Html5Parser implements HtmlParser {
             Driver driver = new Driver(tokenizer);
             driver.tokenize(is);
             AstNode root = treeBuilder.getRoot();
+
+            //html 5 source are validated by the validator.nu,
+            //if there's no such validator available, use the errors from the parser itself
+            if(preferedVersion == HtmlVersion.HTML5) {
+                Validator html5validator = ValidatorService.getValidator(preferedVersion);
+                if(html5validator != null) {
+                    ValidationContext context = new ValidationContext(code, preferedVersion, source.getSourceFileObject());
+                    try {
+                        Collection<ProblemDescription> validatorProblems = html5validator.validate(context).getProblems();
+                        return new Html5ParserResult(source, root, validatorProblems, preferedVersion);
+                    } catch (ValidationException ex) {
+                        Logger.getLogger(Html5Parser.class.getName()).log(Level.WARNING,
+                                "Error during validating file " + source.getSourceFileObject(),
+                                ex);
+                    }
+                }
+            }
 
             return new Html5ParserResult(source, root, problems, preferedVersion);
 

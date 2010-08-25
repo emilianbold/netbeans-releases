@@ -69,9 +69,9 @@ public class AstNode {
     };
     private String name;
     private NodeType nodeType;
-    private int startOffset;
-    private int endOffset;
-    private int logicalEndOffset;
+    protected int startOffset;
+    protected int endOffset;
+    protected int logicalEndOffset;
     private List<AstNode> children = null;
     private AstNode parent = null;
     private Map<String, Attribute> attributes = null;
@@ -637,7 +637,7 @@ public class AstNode {
         private static String ROOT_NODE_NAME = "root"; //NOI18N
         private DTD dtd;
 
-        RootAstNode(int startOffset, int endOffset, DTD dtd) {
+        private RootAstNode(int startOffset, int endOffset, DTD dtd) {
             super(ROOT_NODE_NAME, NodeType.ROOT, startOffset, endOffset, false);
             this.dtd = dtd;
         }
@@ -646,8 +646,6 @@ public class AstNode {
         public boolean isRootNode() {
             return true;
         }
-
-
 
         @Override
         public List<Element> getAllPossibleElements() {

@@ -42,11 +42,11 @@
 
 package org.netbeans.modules.html.validation;
 
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.ValidationResult;
 import org.netbeans.html.api.validation.Validator;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
 
@@ -59,11 +59,14 @@ public class ValidatorImpl implements Validator {
 
     @Override
     public ValidationResult validate(ValidationContext context) throws ValidationException {
+        assert canValidate(context.getVersion());
+        
         try {
-            Snapshot snap = context.getSnapshot();
+
             ValidationTransaction validatorTransaction = ValidationTransaction.getInstance();
 
-            validatorTransaction.validateCode(snap.getText().toString());
+            String source = context.getSource();
+            validatorTransaction.validateCode(source);
 
             return new ValidationResult(this, context, validatorTransaction.getFoundProblems(), validatorTransaction.isSuccess());
 
@@ -75,7 +78,18 @@ public class ValidatorImpl implements Validator {
 
     @Override
     public String getValidatorName() {
-        return "Henri Sivonen's validator";
+        return "validator.nu"; //NOI18N
+    }
+
+    @Override
+    //XXX the validator can also validate html4, but for now such validation is done by the old SGML parser
+    public boolean canValidate(HtmlVersion version) {
+        switch(version) {
+            case HTML5:
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

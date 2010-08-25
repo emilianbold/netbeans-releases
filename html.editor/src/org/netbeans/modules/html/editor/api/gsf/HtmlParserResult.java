@@ -261,7 +261,7 @@ public class HtmlParserResult extends ParserResult {
             errors.addAll(getParseResultErrors());
             errors.addAll(extractErrorsFromAST());
             errors.addAll(findLexicalErrors());
-            errors.addAll(getValidationResults());
+//            errors.addAll(getValidationResults());
         }
         return errors;
     }
@@ -271,47 +271,47 @@ public class HtmlParserResult extends ParserResult {
         this.isValid = false;
     }
 
-    private Collection<Error> getValidationResults() {
-
-        //use the filtered snapshot or use the namespaces filtering facility in the nu.validator
-        Collection<ValidationResult> results =
-                ValidatorService.getDefault().validate(new ValidationContext(getSnapshot()));
-
-
-        if (!results.isEmpty()) {
-
-            //XXX just use first for now
-            ValidationResult validatorResult = results.iterator().next();
-
-            if (!validatorResult.isSuccess()) {
-
-                Collection<Error> errs = new ArrayList<Error>();
-                for (ProblemDescription pd : validatorResult.getProblems()) {
-
-                    DefaultError error =
-                            new DefaultError(pd.getKey(),
-                            "nu.validator issue",
-                            pd.getText(),
-                            validatorResult.getContext().getSnapshot().getSource().getFileObject(),
-                            pd.getFrom(),
-                            pd.getTo(),
-                            false /* not line error */,
-                            forProblemType(pd.getType()));
-                    errs.add(error);
-                }
-
-                return errs;
-
-
-
-            }
-        }
-
-        return Collections.emptyList();
-
-
-
-    }
+//    private Collection<Error> getValidationResults() {
+//
+//        //use the filtered snapshot or use the namespaces filtering facility in the nu.validator
+//        Collection<ValidationResult> results =
+//                ValidatorService.getDefault().getValidators(new ValidationContext(getSnapshot().getText().toString(), getSnapshot().getSource().getFileObject()));
+//
+//
+//        if (!results.isEmpty()) {
+//
+//            //XXX just use first for now
+//            ValidationResult validatorResult = results.iterator().next();
+//
+//            if (!validatorResult.isSuccess()) {
+//
+//                Collection<Error> errs = new ArrayList<Error>();
+//                for (ProblemDescription pd : validatorResult.getProblems()) {
+//
+//                    DefaultError error =
+//                            new DefaultError(pd.getKey(),
+//                            "nu.validator issue",
+//                            pd.getText(),
+//                            validatorResult.getContext().getFile(),
+//                            pd.getFrom(),
+//                            pd.getTo(),
+//                            false /* not line error */,
+//                            forProblemType(pd.getType()));
+//                    errs.add(error);
+//                }
+//
+//                return errs;
+//
+//
+//
+//            }
+//        }
+//
+//        return Collections.emptyList();
+//
+//
+//
+//    }
 
     private Collection<Error> getParseResultErrors() {
         Collection<Error> diagnostics = new ArrayList<Error>();

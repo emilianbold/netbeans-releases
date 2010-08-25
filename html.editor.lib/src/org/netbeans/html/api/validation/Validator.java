@@ -42,11 +42,15 @@
 
 package org.netbeans.html.api.validation;
 
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+
 /**
  *
  * @author marekfukala
  */
 public interface Validator {
+
+    public boolean canValidate(HtmlVersion version);
 
     public ValidationResult validate(ValidationContext context) throws ValidationException;
 

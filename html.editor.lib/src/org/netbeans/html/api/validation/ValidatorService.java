@@ -42,10 +42,8 @@
 
 package org.netbeans.html.api.validation;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.openide.util.Lookup;
 
 /**
@@ -54,30 +52,15 @@ import org.openide.util.Lookup;
  */
 public class ValidatorService {
 
-    private static ValidatorService instance;
-
-    private static final Logger LOGGER = Logger.getLogger(ValidatorService.class.getName());
-
-    public static synchronized ValidatorService getDefault() {
-        if(instance == null) {
-            instance = new ValidatorService();
-        }
-        return instance;
-    }
-
-    public Collection<ValidationResult> validate(ValidationContext context) {
-        Collection<ValidationResult> result = new ArrayList<ValidationResult>();
-
+    public static Validator getValidator(HtmlVersion version) {
         Collection<? extends Validator> validators = Lookup.getDefault().lookupAll(Validator.class);
         for(Validator v : validators) {
-            try {
-                result.add(v.validate(context));
-            } catch (ValidationException ex) {
-                LOGGER.log(Level.INFO, null, ex);
+            if(v.canValidate(version)) {
+                return v;
             }
         }
 
-        return result;
+        return null;
     }
    
 
