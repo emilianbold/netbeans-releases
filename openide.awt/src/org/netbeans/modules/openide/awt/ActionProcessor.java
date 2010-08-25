@@ -84,6 +84,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class ActionProcessor extends LayerGeneratingProcessor {
     private static final String IDENTIFIER = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; // NOI18N
     private static final Pattern FQN = Pattern.compile(IDENTIFIER + "(?:[.]" + IDENTIFIER + ")*"); // NOI18N
+    private static final String[] DEFAULT_COMPLETIONS = { "Menu", "Toolbars", "Shortcuts", "Loaders" }; // NOI18N
     private Processor COMPLETIONS;
 
     @Override
@@ -106,10 +107,20 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
          */
         if (annotation.getAnnotationType().asElement().getSimpleName().toString().contains(ActionReference.class.getSimpleName())) {
             if (member.getSimpleName().contentEquals("path")) {
+                if (userText.startsWith("\"")) {
+                    userText = userText.substring(1);
+                }
+                
                 Set<Completion> res = new HashSet<Completion>();
-                res.add(Completions.of("Menu/", NbBundle.getMessage(ActionProcessor.class, "REGISTER ACTION IN MENU")));
-                res.add(Completions.of("Toolbar/", NbBundle.getMessage(ActionProcessor.class, "REGISTER ACTION IN TOOLBAR")));
-                res.add(Completions.of("Shortcuts/", NbBundle.getMessage(ActionProcessor.class, "GIVE ACTION A KEYBOARD SHORTCUT")));
+                for (String c : DEFAULT_COMPLETIONS) {
+                    if (c.startsWith(userText)) {
+                        res.add(Completions.of("\"" + c + '/', NbBundle.getMessage(ActionProcessor.class, "HINT_" + c)));
+                    }
+                }
+                if (!res.isEmpty()) {
+                    return res;
+                }
+                
                 if (COMPLETIONS == null) {
                     String pathCompletions = System.getProperty(ActionReference.class.getName() + ".completion");
                     if (pathCompletions != null) {
