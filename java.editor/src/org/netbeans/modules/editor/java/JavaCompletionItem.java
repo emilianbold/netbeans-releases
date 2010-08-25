@@ -223,8 +223,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new AttributeItem(info, elem, type, substitutionOffset, isDeprecated);
     }
     
-    public static final JavaCompletionItem createAttributeValueItem(CompilationInfo info, String value, boolean quoted, String documentation, TypeElement element, int substitutionOffset) {
-        return new AttributeValueItem(info, value, quoted, documentation, element, substitutionOffset);
+    public static final JavaCompletionItem createAttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset) {
+        return new AttributeValueItem(info, value, documentation, element, substitutionOffset);
     }
 
     public static final JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
@@ -2629,14 +2629,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private JavaCompletionItem delegate;
         private String value;
-        private boolean quoted;
+        private boolean quoteAdded;
         private String documentation;
         private String leftText;
 
-        private AttributeValueItem(CompilationInfo info, String value, boolean quoted, String documentation, TypeElement element, int substitutionOffset) {
+        private AttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset) {
             super(substitutionOffset);
+            if (value.charAt(0) == '\"' && value.charAt(value.length() - 1) != '\"') { //NOI18N
+                value = value + '\"'; //NOI18N
+                quoteAdded = true;
+            } else {
+                quoteAdded = false;
+            }
             this.value = value;
-            this.quoted = quoted;
             this.documentation = documentation;
             if (element != null)
                 delegate = createTypeItem(info, element, (DeclaredType)element.asType(), substitutionOffset, true, false, false, false, false, false);
@@ -2651,7 +2656,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
-            return delegate != null ? delegate.getInsertPrefix() : quoted ? "\"" + value + "\"" : value; //NOI18N
+            return delegate != null ? delegate.getInsertPrefix() : value; //NOI18N
         }
 
         public CompletionTask createDocumentationTask() {            
@@ -2721,7 +2726,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
-        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
             if (delegate != null) {
                 if (toAdd == null || ".".equals(toAdd)) { //NOI18N
                     toAdd = ".class"; //NOI18N
@@ -2730,8 +2735,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
                 delegate.substituteText(c, offset, len, toAdd);
             } else {
+                if (toAdd == null && value.charAt(value.length() - 1) == '\"') {
+                    TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(c.getDocument()), offset + len);
+                    if (sequence != null && sequence.moveNext() && sequence.token().id() == JavaTokenId.STRING_LITERAL
+                            && sequence.token().length() == len + 1) {
+                        len++;
+                    }
+                }
                 super.substituteText(c, offset, len, toAdd);
-                if (quoted)
+                if (toAdd == null && quoteAdded)
                     c.setCaretPosition(c.getCaretPosition() - 1);
             }
         }
