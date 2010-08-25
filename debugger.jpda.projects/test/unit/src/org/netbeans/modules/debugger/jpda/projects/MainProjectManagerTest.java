@@ -37,62 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.spi;
 
-import java.util.Set;
-import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
-import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
-import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
-import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+package org.netbeans.modules.debugger.jpda.projects;
 
-/**
- *
- * @author mt154047
- *
- */
-@ServiceProviders({
-    @ServiceProvider(service = DataCollectorFactory.class),
-    @ServiceProvider(service = IndicatorDataProviderFactory.class)
-})
-public final class SunStudioDataCollectorFactory
-        implements DataCollectorFactory<SunStudioDCConfiguration>,
-        IndicatorDataProviderFactory<SunStudioDCConfiguration> {
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
-    private SunStudioDataCollector currentCollector = null;
+public class MainProjectManagerTest extends NbTestCase {
 
-    @Override
-    public SunStudioDataCollector create(SunStudioDCConfiguration configuration) {
-        SunStudioDCConfigurationAccessor confInfo =
-                SunStudioDCConfigurationAccessor.getDefault();
+    public MainProjectManagerTest(String name) {
+        super(name);
+    }
 
-        Set<CollectedInfo> collectedInfoList =
-                confInfo.getCollectedInfo(configuration);
-
-        synchronized (this) {
-            if (currentCollector == null) {
-                currentCollector = new SunStudioDataCollector(collectedInfoList);
-            } else {
-                currentCollector.addCollectedInfo(collectedInfoList);
+    public void testLeakedProject() throws Exception {
+        class MockProject implements Project {
+            public @Override FileObject getProjectDirectory() {
+                return FileUtil.createMemoryFileSystem().getRoot();
             }
-
-            return currentCollector;
+            public @Override Lookup getLookup() {
+                return Lookup.EMPTY;
+            }
         }
+        Project p = new MockProject();
+        MainProjectManager mpm = MainProjectManager.getDefault();
+        OpenProjects.getDefault().open(new Project[] {p}, false);
+        OpenProjects.getDefault().setMainProject(p);
+        OpenProjects.getDefault().setMainProject(null);
+        OpenProjects.getDefault().close(new Project[] {p});
+        mpm.enable(p);
+        Reference<?> r = new WeakReference<Object>(p);
+        p = null;
+        assertGC("can collect project after closing", r);
     }
 
-    @Override
-    public String getID() {
-        return SunStudioIDsProvider.DATA_COLLECTOR_ID;
-    }
-
-    @Override
-    public void reset() {
-        synchronized (this) {
-            currentCollector = null;
-        }
-    }
 }
