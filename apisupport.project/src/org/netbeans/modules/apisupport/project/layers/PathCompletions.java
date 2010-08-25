@@ -63,7 +63,9 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.Status;
 
 /** Provides code completion items for any annotation that needs to understand
  * the content of a layer.
@@ -76,6 +78,7 @@ public final class PathCompletions implements Processor {
     
     public static void register() {
         System.setProperty("org.openide.awt.ActionReference.completion", PathCompletions.class.getName());
+        LOG.finest("Registering property"); // NOI18N
     }
     
     @Override
@@ -137,9 +140,24 @@ public final class PathCompletions implements Processor {
                 return arr;
             }
             for (FileObject fo : from.getChildren()) {
-                if (fo.getPath().startsWith(userText)) {
-                    LOG.log(Level.FINE, "Accepting: {0}", fo);
-                    arr.add(Completions.of(fo.getPath()));
+                if (fo.isFolder() && fo.getPath().startsWith(userText)) {
+                    String localizedName = null;
+                    final String name = fo.getNameExt();
+                    try {
+                        final Status status = fo.getFileSystem().getStatus();
+                        String n = status.annotateName(name, Collections.singleton(fo));
+                        if (!n.equals(name)) {
+                            localizedName = n;
+                        }
+                    } catch (FileStateInvalidException ex) {
+                        // ok
+                    }
+                    LOG.log(Level.FINE, "Accepting: {0} as {1}", new Object[] { fo, localizedName });
+                    if (localizedName == null) {
+                        arr.add(Completions.of("\"" + fo.getPath() + "/"));
+                    } else {
+                        arr.add(Completions.of("\"" + fo.getPath() + "/", localizedName));
+                    }
                 } else {
                     LOG.log(Level.FINE, "Ignoring: {0}", fo);
                 }
