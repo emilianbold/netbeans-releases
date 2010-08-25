@@ -37,56 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
+@ActionReferences({
+    @ActionReference(path="pkg/one", position=100, id=@ActionID(category="Fool", id="action.one")),
+    @ActionReference(path="pkg/two", position=100, id=@ActionID(category="Pool", id="action.two"))
+})
+package org.netbeans.modules.openide.awt;
 
-import java.util.Properties;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.options.MavenSettings;
-import org.netbeans.spi.project.ActionProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 
-/**
- *
- * @author mkleint
- */
-public class TestSkippingChecker implements PrerequisitesChecker {
-
-    /**
-     * Skip test execution.
-     * Do not use maven.test.skip as that skips also compilation; see #189466 for background.
-     * http://maven.apache.org/plugins/maven-surefire-plugin/examples/skipping-test.html
-     */
-    public static final String PROP_SKIP_TEST = "skipTests"; // NOI18N
-
-    public TestSkippingChecker() {
-    }
-
-    public boolean checkRunConfig(RunConfig config) {
-        String action = config.getActionName();
-        if (ActionProvider.COMMAND_TEST.equals(action) ||
-            ActionProvider.COMMAND_TEST_SINGLE.equals(action) ||
-            ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action) ||
-            "profile-tests".equals(action)) { //NOI18N - profile-tests is not really nice but well.
-            return true;
-        }
-        if (MavenSettings.getDefault().isSkipTests()) {
-            if (config.getPreExecution() != null) {
-                checkRunConfig(config.getPreExecution());
-            }
-            Properties props = config.getProperties();
-            if (props == null) {
-                props = new Properties();
-            }
-            if (!props.containsKey(PROP_SKIP_TEST)) {
-                props.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
-                config.setProperties(props);
-            }
-        }
-
-        return true;
-    }
-
-}

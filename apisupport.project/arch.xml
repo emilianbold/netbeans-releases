@@ -668,6 +668,14 @@ made subject to such option by the copyright holder.
       by enhanced UI logger to let netbeans.org project know which APIs are
       used to most.
       </api>
+      <api name="org.openide.awt.ActionReference.completion" category="devel" group="systemproperty" type="import">
+          <code>apisupport.project</code> registers a 
+          <a href="@JDK@/javax/annotation/processing/Processor.html">Processor</a>
+          implementation to provide
+          items representing valid paths in current project for
+          <a href="@org-openide-awt@/org/openide/awt/ActionReference.html#path()">
+          ActionReference.path()</a>.
+      </api>
   </p>
  </answer>
 

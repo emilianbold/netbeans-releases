@@ -44,8 +44,6 @@ package org.netbeans.modules.maven.customizer;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractListModel;
@@ -54,7 +52,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -83,7 +80,7 @@ import org.openide.util.WeakListeners;
  *
  * @author mkleint
  */
-public class CompilePanel extends javax.swing.JPanel implements WindowFocusListener {
+public class CompilePanel extends javax.swing.JPanel {
     private static final String[] LABELS = new String[] {
         NbBundle.getMessage(CompilePanel.class, "COS_ALL"),
         NbBundle.getMessage(CompilePanel.class, "COS_APP"),
@@ -357,16 +354,6 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, platformId, true);
             }
         };
-        /*
-        checkExternalMaven();
-        */
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        // for external maven availability checking
-        SwingUtilities.getWindowAncestor(this).addWindowFocusListener(this);
     }
 
     private JavaPlatform getSelPlatform () {
@@ -374,26 +361,6 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 get(Constants.HINT_JDK_PLATFORM, true);
         return BootClassPathImpl.getActivePlatform(platformId);
     }
-
-    /*
-    private boolean isExternalMaven () {
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        String val = props.get(Constants.HINT_USE_EXTERNAL, true);
-        boolean useEmbedded = "false".equalsIgnoreCase(val);
-        return !useEmbedded && MavenSettings.canFindExternalMaven();
-    }
-    private void checkExternalMaven () {
-        if (isExternalMaven()) {
-            lblWarnPlatform.setVisible(false);
-            btnSetupHome.setVisible(false);
-            comJavaPlatform.setEnabled(true);
-        } else {
-            comJavaPlatform.setEnabled(false);
-            lblWarnPlatform.setVisible(true);
-            btnSetupHome.setVisible(true);
-        }
-    }
-     */
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -568,16 +535,6 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         return null;
     }
 
-    public void windowGainedFocus(WindowEvent e) {
-        /*
-        checkExternalMaven();
-         */
-    }
-
-    public void windowLostFocus(WindowEvent e) {
-        // no op
-    }
-
     private static class PlatformsModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
 
         private JavaPlatform[] data;
@@ -636,10 +593,10 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
 
             if ( isSelected ) {
                 setBackground(list.getSelectionBackground());
-                setForeground(/*isExternalMaven() ? */list.getSelectionForeground()/* : java.awt.SystemColor.textInactiveText*/);
+                setForeground(list.getSelectionForeground());
             } else {
                 setBackground(list.getBackground());
-                setForeground(/*isExternalMaven() ? */list.getForeground()/* : java.awt.SystemColor.textInactiveText*/);
+                setForeground(list.getForeground());
             }
 
             return this;
