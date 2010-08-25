@@ -249,7 +249,7 @@ public class JSFClientGenerator {
                 for (ExecutableElement method : JpaControllerUtil.getEntityMethods(jc)) {
                     String methodName = method.getSimpleName().toString();
                     if (methodName.startsWith("get")) {
-                        Element f = fieldAccess[0] ? JpaControllerUtil.guessField(controller, method) : method;
+                        Element f = fieldAccess[0] ? JpaControllerUtil.guessField(method) : method;
                         if (f != null) {
                             if (JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.Id") ||
                                     JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.EmbeddedId")) {
@@ -1411,13 +1411,13 @@ public class JSFClientGenerator {
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
                     if (embeddable[0]) {
-                        Set<ExecutableElement> methods = embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType);
+                        Set<ExecutableElement> methods = embeddedPkSupport.getPkAccessorMethods(entityType);
                         boolean missedSetters = false;
                         for (ExecutableElement pkMethod : methods) {
-                            if (embeddedPkSupport.isRedundantWithRelationshipField(workingCopy, entityType, pkMethod)) {
+                            if (embeddedPkSupport.isRedundantWithRelationshipField(entityType, pkMethod)) {
                                 codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
-                                    fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(workingCopy, entityType, pkMethod) + ");\n");
-                                if(!embeddedPkSupport.getPkSetterMethodExist(workingCopy, entityType, pkMethod)) {
+                                    fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(entityType, pkMethod) + ");\n");
+                                if(!embeddedPkSupport.getPkSetterMethodExist(entityType, pkMethod)) {
                                     missedSetters = true;
                                 }
                             }
