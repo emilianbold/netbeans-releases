@@ -169,10 +169,6 @@ public class ActionMappings extends javax.swing.JPanel {
         this();
         actionmappings = mapp;        
         loadMappings();
-        /*
-        btnSetup.setVisible(false);
-        cbCommandLine.setVisible(false);
-         */
         cbRecursively.setVisible(false);
         comConfiguration.setVisible(false);
         lblConfiguration.setVisible(false);
@@ -220,78 +216,6 @@ public class ActionMappings extends javax.swing.JPanel {
         setupConfigurations();
         
         loadMappings();
-        /*
-        btnSetup.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnSetup.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
-            }
-            
-        });
-        commandLineUpdater = new CheckBoxUpdater(cbCommandLine) {
-            public Boolean getValue() {
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
-                    if (profprops != null && profprops.getProperty(Constants.HINT_USE_EXTERNAL) != null) {
-                        return Boolean.valueOf(prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL));
-                    }
-                }
-                org.netbeans.modules.maven.model.pom.Properties mdlprops = handle.getPOMModel().getProject().getProperties();
-                String val;
-                if (mdlprops != null) {
-                    val = mdlprops.getProperty(Constants.HINT_USE_EXTERNAL);
-                    if (val != null) {
-                        return Boolean.valueOf(val);
-                    }
-                }
-                val = handle.getRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, true);
-                if (val != null) {
-                    return Boolean.valueOf(val);
-                }
-                return null;
-            }
-
-            public void setValue(Boolean value) {
-                boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, true) != null;
-                //TODO also try to take the value in pom vs inherited pom value into account.
-
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
-                    if (profprops != null && profprops.getProperty(Constants.HINT_USE_EXTERNAL) != null) {
-                        prof.getProperties().setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString());
-                        if (hasConfig) {
-                        // in this case clean up the auxiliary config
-                            handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, null, true);
-                        }
-                        handle.markAsModified(handle.getProfileModel());
-                        return;
-                    }
-                }
-
-                if (handle.getProject().getProperties().containsKey(Constants.HINT_USE_EXTERNAL)) {
-                    org.netbeans.modules.maven.model.pom.Properties mdlprops = handle.getPOMModel().getProject().getProperties();
-                    if (mdlprops == null) {
-                        mdlprops = handle.getPOMModel().getFactory().createProperties();
-                        handle.getPOMModel().getProject().setProperties(mdlprops);
-                    }
-                    mdlprops.setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString()); //NOI18N
-                    handle.markAsModified(handle.getPOMModel());
-                    if (hasConfig) {
-                        // in this case clean up the auxiliary config
-                        handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, null, true);
-                    }
-                    return;
-                }
-                handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, value == null ? null : value.toString(), true);
-            }
-
-            public boolean getDefaultValue() {
-                return true;
-            }
-        };
-         */
         clearFields();
         comboListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
