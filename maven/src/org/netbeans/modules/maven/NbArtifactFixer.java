@@ -54,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * #189442: tries to associate snapshot artifacts with their owners.
- * @see ReactorArtifactRepository
+ * Inspired by {@code org.apache.maven.ReactorReader}.
  */
 @ServiceProvider(service=ArtifactFixer.class)
 public class NbArtifactFixer implements ArtifactFixer {

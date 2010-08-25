@@ -49,10 +49,10 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.sonatype.aether.TransferCancelledException;
-import org.sonatype.aether.TransferEvent;
-import org.sonatype.aether.TransferListener;
-import org.sonatype.aether.TransferResource;
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferListener;
+import org.sonatype.aether.transfer.TransferResource;
 
 /**
  *
