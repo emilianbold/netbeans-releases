@@ -118,7 +118,7 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
             for (ExecutableElement method : methods) {
                 String methodName = method.getSimpleName().toString();
                 if (methodName.startsWith("get")) {
-                    int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
+                    int isRelationship = JpaControllerUtil.isRelationship(method, fieldAccess);
                     String name = methodName.substring(3);
                     String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
                     if (EntityClass.isId(controller, method, fieldAccess)) {
@@ -130,8 +130,8 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
                                 if (embeddedPkSupport == null) {
                                     embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
                                 }
-                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, bean)) {
-                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, bean, pkMethod)) {
+                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(bean)) {
+                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(bean, pkMethod)) {
                                         String pkMethodName = pkMethod.getSimpleName().toString();
                                         String pkPropTitle = pkMethodName.substring(3);
                                         String pkPropName = propName + "." + JpaControllerUtil.getPropNameFromMethod(pkMethodName);
