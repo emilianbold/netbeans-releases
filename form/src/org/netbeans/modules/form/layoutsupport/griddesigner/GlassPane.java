@@ -418,17 +418,27 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @param g graphics object.
      */
     private void paintResizing(Graphics g) {
+        int xDelta = newGridX - gridInfo.getGridX(focusedComponent);
+        int yDelta = newGridY - gridInfo.getGridY(focusedComponent);
+        int heightDelta = newGridHeight - gridInfo.getGridHeight(focusedComponent);
+        int widthDelta = newGridWidth - gridInfo.getGridWidth(focusedComponent);
         g.setColor(GridDesigner.SELECTION_COLOR);
         g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
         g.setColor(HIGHLIGHT_COLOR);
         int[] columnBounds = gridInfo.getColumnBounds();
-        int x = extendedBound(columnBounds, newGridX);
-        int width = extendedBound(columnBounds, newGridX+newGridWidth)-x;
         int[] rowBounds = gridInfo.getRowBounds();
-        int y = extendedBound(rowBounds, newGridY);
-        int height = extendedBound(rowBounds, newGridY+newGridHeight)-y;
-        Point p = fromComponentPane(new Point(x, y));
-        g.fillRect(p.x, p.y, width, height);
+        Point shift = fromComponentPane(new Point());
+        for (Component selComp : selection) {
+            int newCompGridX = gridInfo.getGridX(selComp)+xDelta;
+            int newCompGridWidth = gridInfo.getGridWidth(selComp)+widthDelta;
+            int newCompGridY = gridInfo.getGridY(selComp)+yDelta;
+            int newCompGridHeight = gridInfo.getGridHeight(selComp)+heightDelta;
+            int x = extendedBound(columnBounds, newCompGridX);
+            int width = extendedBound(columnBounds, newCompGridX+newCompGridWidth)-x;
+            int y = extendedBound(rowBounds, newCompGridY);
+            int height = extendedBound(rowBounds, newCompGridY+newCompGridHeight)-y;
+            g.fillRect(x+shift.x, y+shift.y, width, height);
+        }
     }
     
     private Rectangle selectionResizingBounds(Component selComp) {
