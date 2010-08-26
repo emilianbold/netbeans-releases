@@ -60,7 +60,7 @@ public class ValidationTransactionTest extends NbTestCase {
         super(name);
     }
 
-    public static Test suite() {
+    public static Test xsuite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidationTransactionTest("testErrorneousSources"));
         return suite;
@@ -69,9 +69,9 @@ public class ValidationTransactionTest extends NbTestCase {
     public void testBasic() throws SAXException, IOException, ParseException {
 //        ValidationTransaction.enableDebug();
 
-//        validate("<!doctype html> <html><head><title>hello</title></head><body><div>ahoj!</div></body></html>", true);
-//        validate("<!doctype html> chybi open tag</div>", false);
-//        validate("<!doctype html> <div> chybi close tag", false);
+        validate("<!doctype html> <html><head><title>hello</title></head><body><div>ahoj!</div></body></html>", true);
+        validate("<!doctype html> chybi open tag</div>", false);
+        validate("<!doctype html> <div> chybi close tag", false);
 
         validate("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
                 + "<html><head><title>hello</title></head>\n"
@@ -79,14 +79,14 @@ public class ValidationTransactionTest extends NbTestCase {
                 + "<div>ahoj!</Xiv>\n"
                 + "</body></html>\n", false);
 
-//        validate("1\n"
-//                + "23\n"
-//                + "345\n"
-//                + "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
-//                + "<html><head><title>hello</title></head>\n"
-//                + "<body>\n"
-//                + "<div>ahoj!</Xiv>\n"
-//                + "</body></html>\n", false);
+        validate("1\n"
+                + "23\n"
+                + "345\n"
+                + "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
+                + "<html><head><title>hello</title></head>\n"
+                + "<body>\n"
+                + "<div>ahoj!</Xiv>\n"
+                + "</body></html>\n", false);
 
     }
 
@@ -102,7 +102,7 @@ public class ValidationTransactionTest extends NbTestCase {
     }
 
     private void validate(String code, boolean expectedPass) throws SAXException {
-        System.out.print("Validating " + code + "...");
+        System.out.print("Validating code " + code.length() + " chars long...");
         ValidationTransaction vt = ValidationTransaction.getInstance();
         vt.validateCode(code);
         assertEquals(expectedPass, vt.isSuccess());
@@ -111,11 +111,6 @@ public class ValidationTransactionTest extends NbTestCase {
 
         assertEquals(expectedPass, problems.isEmpty());
 
-        if(!expectedPass) {
-            for(ProblemDescription pd : problems) {
-//                System.out.println(pd.dump(code));
-            }
-        }
-        System.out.println("done in " + vt.getValidationTime() + " ms.");
+        System.out.println("done in " + vt.getValidationTime() + " ms with " + problems.size() + " problems.");
     }
 }

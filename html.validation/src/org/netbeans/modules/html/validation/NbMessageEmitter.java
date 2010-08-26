@@ -275,8 +275,6 @@ public class NbMessageEmitter extends MessageEmitter {
                 columnto = 1;
             }
 
-            System.out.println("Message '" + writer + "' lf=" + linefrom + ", cf=" + columnfrom + ", lt=" + lineto + ", ct=" + columnto);
-
             from = linesMapper.getSourceOffsetForLocation(linefrom - 1, columnfrom - 1);
             to = linesMapper.getSourceOffsetForLocation(lineto - 1, columnto);
         }

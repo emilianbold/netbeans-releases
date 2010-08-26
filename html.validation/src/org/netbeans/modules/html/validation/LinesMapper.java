@@ -102,12 +102,12 @@ public class LinesMapper implements CharacterHandler {
     @Override
     public void end() throws SAXException {
         //no-op
-        System.out.println("Lines:");
-        for (int i = 0; i < lines.size(); i++) {
-            Line l = lines.get(i);
-            System.out.println(l);
-        }
-        System.out.println("------------");
+//        System.out.println("Lines:");
+//        for (int i = 0; i < lines.size(); i++) {
+//            Line l = lines.get(i);
+//            System.out.println(l);
+//        }
+//        System.out.println("------------");
     }
 
     @Override
@@ -181,7 +181,7 @@ public class LinesMapper implements CharacterHandler {
 
         @Override
         public String toString() {
-            return "Line{" + "start=" + start + "end=" + end + "cr=" + cr + "lf=" + lf + "}: '" + getText() + "'";
+            return "Line{" + start + "-" + end + " "+ (cr ? "\\r" : "") + (lf ? "\\n" : "") + " '" + getText() + "'";
         }
         
     }
