@@ -63,6 +63,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
@@ -75,6 +76,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
@@ -95,6 +97,7 @@ public class EntityClosure {
     private Set<String> selectedEntities = new HashSet<String>();
     private Set<String> referencedEntities = new HashSet<String>();
     private HashMap<String,Entity> fqnEntityMap = new HashMap<String,Entity>();
+    private HashMap<String,Boolean> fqnIdExistMap = new HashMap<String,Boolean>();
     
     private boolean closureEnabled = true;
     private Project project;
@@ -117,6 +120,7 @@ public class EntityClosure {
         this.model = entityClassScope.getEntityMappingsModel(true);
         this.project = project;
         readHelper = MetadataModelReadHelper.create(model, new MetadataModelAction<EntityMappingsMetadata, List<Entity>>() {
+            @Override
             public List<Entity> run(EntityMappingsMetadata metadata) {
                 return Arrays.<Entity>asList(metadata.getRoot().getEntity());
             }
@@ -125,9 +129,11 @@ public class EntityClosure {
     
     private void initialize() {
         readHelper.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 if (readHelper.getState() == State.FINISHED) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             try {
                                 addAvaliableEntities(new HashSet<Entity>(readHelper.getResult()));
@@ -143,11 +149,45 @@ public class EntityClosure {
         readHelper.start();
     }
     
-    public void addAvaliableEntities(Set<Entity> entities) {
+    public void addAvaliableEntities(final Set<Entity> entities) {
         availableEntityInstances.addAll(entities);
-        for (Entity en : entities) {
-            availableEntities.add(en.getClass2());
-            fqnEntityMap.put(en.getClass2(), en);
+        
+        JavaSource source = null;
+        try {
+            source = model.runReadAction(new MetadataModelAction<EntityMappingsMetadata, JavaSource>() {
+
+                @Override
+                public JavaSource run(EntityMappingsMetadata metadata) throws Exception {
+                    return metadata.createJavaSource();
+                }
+            });
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        final Set<String> result = new HashSet<String>();
+
+        if( source!=null ) {
+            try {
+                source.runUserActionTask(new Task<CompilationController>() {
+
+                    @Override
+                    public void run(CompilationController parameter) throws Exception {
+                        for (Entity en : entities) {
+                            availableEntities.add(en.getClass2());
+                            fqnEntityMap.put(en.getClass2(), en);
+                            PersistentObject po = (PersistentObject) en;
+                            ElementHandle<TypeElement> teh = po.getTypeElementHandle();
+                            TypeElement te = teh.resolve(parameter);
+                            fqnIdExistMap.put(en.getClass2(), JpaControllerUtil.haveId(te));
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         availableEntities.removeAll(selectedEntities);
         changeSupport.fireChange();
@@ -273,6 +313,7 @@ public class EntityClosure {
         }
 
         JavaSource source = model.runReadAction(new MetadataModelAction<EntityMappingsMetadata, JavaSource>() {
+            @Override
             public JavaSource run(EntityMappingsMetadata metadata) throws Exception {
                 return metadata.createJavaSource();
             }
@@ -281,6 +322,7 @@ public class EntityClosure {
         final Set<String> result = new HashSet<String>();
 
         source.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController parameter) throws Exception {
                 TypeElement entity = parameter.getElements().getTypeElement(entityClass);
                 for (Element element : entity.getEnclosedElements()){
@@ -353,6 +395,7 @@ public class EntityClosure {
         try {
             Future result = model.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, Boolean>() {
 
+                @Override
                 public Boolean run(EntityMappingsMetadata metadata) throws Exception {
                     return true;
                 }
@@ -373,6 +416,7 @@ public class EntityClosure {
     private boolean isFieldAccess(final String entity) throws MetadataModelException, IOException {
         Boolean result = model.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Boolean>() {
             
+            @Override
             public Boolean run(EntityMappingsMetadata metadata) throws Exception {
                 for (Entity e : metadata.getRoot().getEntity()){
                     if (e.getClass2().equals(entity)){
@@ -384,6 +428,14 @@ public class EntityClosure {
         });
         
         return result;
+    }
+
+    Boolean haveId(String entityFqn) {
+        return fqnIdExistMap.get(entityFqn);
+    }
+
+    Entity getEntity(String entityFqn){
+        return fqnEntityMap.get(entityFqn);
     }
     
     /**
@@ -482,6 +534,7 @@ public class EntityClosure {
             return entities;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             refresh();
         }
