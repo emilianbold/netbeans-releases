@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.api;
+package org.netbeans.modules.cnd.litemodel.api;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface Configuration {
+public abstract class ModelAccessor {
+    private static final ModelAccessor EMPTY = new Empty();
 
-    /**
-     * Returns project configuration.
-     * Contains one for one-language project or two items.
-     */
-    List<ProjectProperties> getProjectConfiguration();
-    
-    /**
-     * Returns configuration dependencies
-     */
-    List<String> getDependencies();
+    /** default instance */
+    private static ModelAccessor defaultAccessor;
 
-    /**
-     * Returns list of source files properties. 
-     */
-    List<SourceFileProperties> getSourcesConfiguration();
+    protected ModelAccessor() {
+    }
 
-    /**
-     * Returns list of all included files.
-     * If provider can detect it. 
+    /** Static method to obtain the resolver.
+     * @return the resolver
      */
-    List<String> getIncludedFiles();
+    public static ModelAccessor getDefault() {
+        /*no need for sync synchronized access*/
+        if (defaultAccessor != null) {
+            return defaultAccessor;
+        }
+        defaultAccessor = Lookup.getDefault().lookup(ModelAccessor.class);
+        return defaultAccessor == null ? EMPTY : defaultAccessor;
+    }
+
+    public abstract Model createModel(Project project);
+
+    private static final class Empty extends ModelAccessor {
+        private Empty() {
+        }
+
+        @Override
+        public Model createModel(Project project) {
+            return new Model(){
+
+                @Override
+                public Map<String, Declaration> getFile(String path) {
+                    return Collections.<String, Declaration>emptyMap();
+                }
+            };
+        }
+    }
 }

@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -241,7 +242,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls){
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
         String root = "";
         if (p != null) {
@@ -276,7 +277,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 }
                 
                 @Override
-                public List<Configuration> getDependencies() {
+                public List<String> getDependencies() {
                     return null;
                 }
                 
@@ -288,7 +289,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                             set = detectMakeLog(project);
                         }
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set},null, project);
+                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null);
                         }
                     }
                     return myFileProperties;

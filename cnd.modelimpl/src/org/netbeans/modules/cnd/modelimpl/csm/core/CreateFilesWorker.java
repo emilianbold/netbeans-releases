@@ -49,11 +49,13 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileModelProvider;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -61,11 +63,24 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 final class CreateFilesWorker {
+    private FileModel lwm;
+    private boolean lwmInited;
     private final ProjectBase project;
     private final RequestProcessor PROJECT_FILES_WORKER = new RequestProcessor("Project Files", CndUtils.getNumberCndWorkerThreads()); // NOI18N
 
     CreateFilesWorker(ProjectBase project) {
         this.project = project;
+    }
+
+    private synchronized FileModel getLWM() {
+        if (!lwmInited) {
+            FileModelProvider provider = Lookup.getDefault().lookup(FileModelProvider.class);
+            if (provider != null) {
+                lwm = provider.getFileModel(project);
+            }
+            lwmInited = true;
+        }
+        return lwm;
     }
 
     void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources,
@@ -110,7 +125,7 @@ final class CreateFilesWorker {
         }
     }
 
-    private static class CreateFileRunnable implements Runnable {
+    private class CreateFileRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
         private final List<NativeFileItem> nativeFileItems;
         private final boolean sources;
@@ -168,7 +183,7 @@ final class CreateFilesWorker {
                 ModelSupport.trace(nativeFileItem);
             }
             try {
-                project.createIfNeed(nativeFileItem, sources, validator, reparseOnEdit, reparseOnPropertyChanged);
+                project.createIfNeed(nativeFileItem, sources, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
                 if (project.isValidating() && RepositoryUtils.getRepositoryErrorCount(project) > 0) {
                     enougth.set(true);
                     return false;
@@ -179,6 +194,4 @@ final class CreateFilesWorker {
             return true;
         }
     }
-
-
 }

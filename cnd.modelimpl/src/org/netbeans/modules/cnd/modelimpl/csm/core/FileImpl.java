@@ -1799,6 +1799,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    public void setLwmReady() {
+        synchronized (changeStateLock) {
+             state = State.PARSED;
+             postParse();
+        }
+    }
+
     public final State getState() {
         synchronized (changeStateLock) {
             return state;

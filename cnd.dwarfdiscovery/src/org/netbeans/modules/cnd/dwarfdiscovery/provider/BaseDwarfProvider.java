@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -100,13 +101,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         isStoped.set(true);
     }
 
-    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project){
+    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project, Set<String> dlls){
         CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
         RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
         try{
             Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
             for (String file : objFileName) {
-                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project);
+                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls);
                 rp.post(r);
             }
             try {
@@ -125,7 +126,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
 
-    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project) {
+    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls) {
         if (isStoped.get()) {
             return true;
         }
@@ -145,7 +146,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 restrictCompileRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
             }
         }
-        for (SourceFileProperties f : getSourceFileProperties(file, map, project)) {
+        for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls)) {
             if (isStoped.get()) {
                 break;
             }
@@ -260,7 +261,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return new ApplicableImpl(res > 0, top, res, sunStudio > res/2);
     }
     
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project) {
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try {
@@ -326,10 +327,15 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                 }
             }
-            //System.out.println("Required DLLs:"); // NOI18N
-            //for(String dll : dump.readPubNames()) {
-            //    System.out.println("\t"+dll); // NOI18N
-            //}
+            if (dlls != null) {
+                List<String> pubNames = dump.readPubNames();
+                synchronized(dlls) {
+                    for(String dll : pubNames) {
+                        dlls.add(dll);
+                    }
+
+                }
+            }
         } catch (FileNotFoundException ex) {
             // Skip Exception
             if (TRACE_READ_EXCEPTIONS) {
@@ -461,20 +467,22 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private Progress progress;
         private CountDownLatch countDownLatch;
         private ProjectProxy project;
+        private Set<String> dlls;
 
-        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project){
+        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls){
             this.file = file;
             this.map = map;
             this.progress = progress;
             this.countDownLatch = countDownLatch;
             this.project = project;
+            this.dlls = dlls;
         }
         @Override
         public void run() {
             try {
                 if (!isStoped.get()) {
                     Thread.currentThread().setName("Parallel analyzing "+file); // NOI18N
-                    processObjectFile(file, map, progress, project);
+                    processObjectFile(file, map, progress, project, dlls);
                 }
             } finally {
                 countDownLatch.countDown();

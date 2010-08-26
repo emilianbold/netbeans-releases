@@ -100,6 +100,19 @@ public class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> 
         }
     }
 
+    // constructot for LWM factory
+    InheritanceImpl(CsmFile file, CsmScope scope, CsmType ancestorType, CsmVisibility visibility, boolean virtual, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.scope = UIDCsmConverter.scopeToUID(scope);
+        if (visibility == null) {
+            this.visibility = ((CsmDeclaration)scope).getKind() == CsmDeclaration.Kind.STRUCT ? CsmVisibility.PUBLIC: CsmVisibility.PRIVATE;
+        } else {
+            this.visibility = visibility;
+        }
+        this.virtual = virtual;
+        this.ancestorType = ancestorType;
+    }
+
     @Override
     public boolean isVirtual() {
         return virtual;
