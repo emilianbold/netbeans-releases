@@ -559,7 +559,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             updateAnnotationFiles();
             ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
             pi.addPropertyChangeListener(this);
-            ProjectUtils.getInformation(provider.getProject()).addPropertyChangeListener(this);
+//            ProjectUtils.getInformation(provider.getProject()).addPropertyChangeListener(this);
         }
 
         public Folder getFolder() {
