@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.dwarfdump;
+package org.netbeans.modules.cnd.dwarfdiscovery.litemodel;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -50,8 +50,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
+import org.netbeans.modules.cnd.litemodel.api.Declaration;
 
 /**
  *
@@ -85,10 +87,10 @@ public class DwarfRenderer {
     public Map<String, Map<String, Declaration>> getLWM() {
         Map<String, Map<String, Declaration>> res = new TreeMap<String, Map<String, Declaration>>();
         for (Declaration d : sourceInfoMap) {
-            Map<String, Declaration> map = res.get(d.filePath);
+            Map<String, Declaration> map = res.get(d.getFileName());
             if (map == null) {
                 map = new TreeMap<String, Declaration>();
-                res.put(d.filePath, map);
+                res.put(d.getFileName(), map);
             }
             map.put(d.getQName(), d);
         }
@@ -102,13 +104,13 @@ public class DwarfRenderer {
         processEntries(compilationUnit, compilationUnit.getDeclarations(false), null);
     }
 
-    private void processEntries(CompilationUnit compilationUnit, List<DwarfEntry> declarations, Declaration parent) throws IOException {
+    private void processEntries(CompilationUnit compilationUnit, List<DwarfEntry> declarations, MyDeclaration parent) throws IOException {
         for (DwarfEntry entry : declarations) {
             prosessEntry(compilationUnit, entry, parent);
         }
     }
 
-    private void prosessEntry(CompilationUnit compilationUnit, DwarfEntry entry, Declaration parent) throws IOException {
+    private void prosessEntry(CompilationUnit compilationUnit, DwarfEntry entry, MyDeclaration parent) throws IOException {
         if (antiLoop.contains(entry.getRefference())) {
             return;
         }
@@ -122,9 +124,9 @@ public class DwarfRenderer {
             case DW_TAG_SUN_dtor:
             case DW_TAG_SUN_function_template:
             {
-                Declaration functionToLine = null;
+                MyDeclaration functionToLine = null;
                 if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
-                    functionToLine = new Declaration(filePath, compDir, entry, onePath);
+                    functionToLine = new MyDeclaration(filePath, compDir, entry, onePath);
                     if (functionToLine.getQName() != null) {
                         sourceInfoMap.add(functionToLine);
                     } else {
@@ -133,7 +135,7 @@ public class DwarfRenderer {
                         }
                     }
                 } else if (parent != null && parent.getLine() >= 0 && parent.getFileName() != null) {
-                    functionToLine = new Declaration(entry, parent, onePath);
+                    functionToLine = new MyDeclaration(entry, parent, onePath);
                     if (functionToLine.getQName() != null) {
                         sourceInfoMap.add(functionToLine);
                     } else {
@@ -162,7 +164,7 @@ public class DwarfRenderer {
                 DwarfEntry inh = compilationUnit.getReferencedType(entry);
                 if (inh != null) {
                     if (parent != null && parent.getLine() >= 0 && parent.getFileName() != null) {
-                        Declaration functionToLine = new Declaration(entry, parent, inh, onePath);
+                        MyDeclaration functionToLine = new MyDeclaration(entry, parent, inh, onePath);
                         if (functionToLine.getQName() != null) {
                             sourceInfoMap.add(functionToLine);
                         } else {
@@ -179,7 +181,7 @@ public class DwarfRenderer {
                 DwarfEntry friend = compilationUnit.getReferencedFriend(entry);
                 if (friend != null) {
                     if (parent != null && parent.getLine() >= 0 && parent.getFileName() != null) {
-                        Declaration functionToLine = new Declaration(entry, parent, friend, onePath);
+                        MyDeclaration functionToLine = new MyDeclaration(entry, parent, friend, onePath);
                         if (functionToLine.getQName() != null) {
                             sourceInfoMap.add(functionToLine);
                         } else {
@@ -193,9 +195,9 @@ public class DwarfRenderer {
             }
             case DW_TAG_namespace:
             {
-                Declaration aParent = null;
+                MyDeclaration aParent = null;
                 if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
-                    aParent = new Declaration(filePath, compDir, entry, onePath);
+                    aParent = new MyDeclaration(filePath, compDir, entry, onePath);
                     if (aParent.getQName() != null) {
                         sourceInfoMap.add(aParent);
                     } else {
@@ -215,9 +217,9 @@ public class DwarfRenderer {
             case DW_TAG_union_type:
             case DW_TAG_enumeration_type:
             {
-                Declaration aParent = null;
+                MyDeclaration aParent = null;
                 if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
-                    aParent = new Declaration(filePath, compDir, entry, onePath);
+                    aParent = new MyDeclaration(filePath, compDir, entry, onePath);
                     if (aParent.getQName() != null) {
                         sourceInfoMap.add(aParent);
                     } else {
@@ -236,9 +238,9 @@ public class DwarfRenderer {
             case DW_TAG_array_type:
             case DW_TAG_ptr_to_member_type:
             {
-                Declaration functionToLine = null;
+                MyDeclaration functionToLine = null;
                 if (entry.getLine() >= 0 && entry.getDeclarationFilePath() != null) {
-                    functionToLine = new Declaration(filePath, compDir, entry, onePath);
+                    functionToLine = new MyDeclaration(filePath, compDir, entry, onePath);
                     if (functionToLine.getQName() != null) {
                         sourceInfoMap.add(functionToLine);
                     } else {
@@ -257,24 +259,29 @@ public class DwarfRenderer {
         }
     }
 
-    public static final class Declaration {
+    private static final class MyDeclaration implements Declaration {
         private final int baseLine;
         private final String filePath;
-        private final TAG kind;
+        private final Kind kind;
         private final String qname;
         private String referencedType;
 
-        public Declaration(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException {
-            kind = entry.getKind();
+        public MyDeclaration(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException {
+            kind = kind2kind(entry.getKind());
             baseLine = entry.getLine();
             qname = initName(entry, onePath);
             this.filePath = initPath(filePath, compDir, entry, onePath);
+        }
+
+        private Kind kind2kind(org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG tag) {
+            return Kind.valueOf(tag.toString().substring(7));
         }
 
         private void setReferencedType(DwarfEntry entry, Map<String, String> onePath) throws IOException {
             referencedType = getString(entry.getType(), onePath);
         }
 
+        @Override
         public String getReferencedType(){
             return referencedType;
         }
@@ -287,32 +294,36 @@ public class DwarfRenderer {
             }
         }
 
-        public Declaration(DwarfEntry entry, Declaration parent, Map<String, String> onePath) throws IOException {
-            kind = entry.getKind();
+        public MyDeclaration(DwarfEntry entry, MyDeclaration parent, Map<String, String> onePath) throws IOException {
+            kind = kind2kind(entry.getKind());
             baseLine = parent.getLine();
             qname = initName(entry, onePath);
             this.filePath = parent.getFileName();
         }
 
-        public Declaration(DwarfEntry entry, Declaration parent, DwarfEntry reference, Map<String, String> onePath) throws IOException {
-            kind = entry.getKind();
+        public MyDeclaration(DwarfEntry entry, MyDeclaration parent, DwarfEntry reference, Map<String, String> onePath) throws IOException {
+            kind = kind2kind(entry.getKind());
             baseLine = parent.getLine();
             qname = initName(reference, onePath);
             this.filePath = parent.getFileName();
         }
 
+        @Override
         public String getFileName() {
             return filePath;
         }
 
+        @Override
         public int getLine() {
             return baseLine;
         }
 
-        public TAG getKind() {
+        @Override
+        public Kind getKind() {
             return kind;
         }
 
+        @Override
         public String getQName() {
             return qname;
         }
@@ -385,8 +396,8 @@ public class DwarfRenderer {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof Declaration) {
-                Declaration other = (Declaration) obj;
+            if (obj instanceof MyDeclaration) {
+                MyDeclaration other = (MyDeclaration) obj;
                 if (baseLine != other.baseLine) {
                     return false;
                 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.dwarfdump.reader;
 
-package org.netbeans.modules.cnd.discovery.api;
-
-import java.util.List;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface Configuration {
+public final class MyRandomAccessFile extends RandomAccessFile {
 
-    /**
-     * Returns project configuration.
-     * Contains one for one-language project or two items.
-     */
-    List<ProjectProperties> getProjectConfiguration();
-    
-    /**
-     * Returns configuration dependencies
-     */
-    List<String> getDependencies();
+    private final MappedByteBuffer buffer;
+    private final FileChannel channel;
 
-    /**
-     * Returns list of source files properties. 
-     */
-    List<SourceFileProperties> getSourcesConfiguration();
+    public MyRandomAccessFile(String fileName) throws IOException {
+        super(fileName, "r"); // NOI18N
+        channel = getChannel();
+        buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+    }
 
-    /**
-     * Returns list of all included files.
-     * If provider can detect it. 
-     */
-    List<String> getIncludedFiles();
+    @Override
+    public int read() throws IOException {
+        if (buffer.remaining() == 0) {
+            return -1;
+        } else {
+            return 0xff & buffer.get();
+        }
+    }
+
+    public MappedByteBuffer getBuffer() {
+        return buffer;
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        buffer.get(b, off, len);
+        return len;
+    }
+
+    @Override
+    public long getFilePointer() throws IOException {
+        return buffer.position();
+    }
+
+    @Override
+    public void seek(long pos) throws IOException {
+        buffer.position((int) pos);
+    }
+
+    public void dispose() {
+        try {
+            buffer.clear();
+            channel.close();
+            close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 }

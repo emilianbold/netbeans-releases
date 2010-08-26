@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  */
 public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionParameterList, CsmParameter> implements CsmFunctionParameterList {
 
-    private FunctionParameterListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+    public FunctionParameterListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
         super(file, start, end, parameters);
     }
 

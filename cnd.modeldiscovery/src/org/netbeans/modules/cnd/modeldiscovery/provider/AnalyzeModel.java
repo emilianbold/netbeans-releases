@@ -305,7 +305,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         }
        
         @Override
-        public List<Configuration> getDependencies() {
+        public List<String> getDependencies() {
             return null;
         }
         
