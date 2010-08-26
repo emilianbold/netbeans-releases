@@ -264,7 +264,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             currentMarks = createMergedMarks(markProviders);
         }
         
-        return currentMarks;
+        return new ArrayList<Mark>(currentMarks);
     }
     
     /*package private*/ static List<Mark> getStatusesForLineImpl(int line, SortedMap<Integer, List<Mark>> marks) {

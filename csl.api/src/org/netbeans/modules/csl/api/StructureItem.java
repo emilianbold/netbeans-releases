@@ -72,4 +72,17 @@ public interface StructureItem {
     public abstract boolean equals(Object o);
     @Override
     public abstract int hashCode();
+
+    public interface CollapsedDefault extends StructureItem {
+
+        /**
+         * Returns whether this StructureItem should be collapsed
+         * when shown for the first time in Navigator.
+         * @since 2.7.0
+         * @return true, if it should be
+         */
+        boolean isCollapsedByDefault ();
+
+    }
+
 }
