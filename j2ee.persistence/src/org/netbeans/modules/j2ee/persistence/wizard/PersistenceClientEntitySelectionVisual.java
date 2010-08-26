@@ -128,7 +128,14 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
 
     private Set<String> getSelectedEntities(JList list) {
         Set<String> result = new HashSet<String>();
-        for (Object elem : list.getSelectedValues()){
+        for (Object elem : Util.getSelectedItems(list, true)){
+            result.add((String) elem);
+        }
+        return result;
+    }
+    private Set<String> getEnabledEntities(JList list) {
+        Set<String> result = new HashSet<String>();
+        for (Object elem : Util.getEnabledItems(list)){
             result.add((String) elem);
         }
         return result;
@@ -317,7 +324,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonRemoveAllActionPerformed
 
     private void buttonAddAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddAllActionPerformed
-        entityClosure.addAllEntities();
+        entityClosure.addEntities(getEnabledEntities(listAvailable));
         listAvailable.clearSelection();
         updateButtons();
         changeSupport.fireChange();
@@ -438,14 +445,15 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     }
 
     private void updateButtons() {
-        buttonAdd.setEnabled(listAvailable.getSelectedValues().length > 0);
+        Set selectedItems = Util.getSelectedItems(listAvailable, true);
+        buttonAdd.setEnabled(!selectedItems.isEmpty());
         updateAddAllButton();
         buttonRemove.setEnabled(listSelected.getSelectedValues().length > 0);
         buttonRemoveAll.setEnabled(entityClosure.getSelectedEntities().size() > 0);
     }
 
     private void updateAddAllButton(){
-        buttonAddAll.setEnabled(entityClosure.getAvailableEntities().size() > 0);
+        buttonAddAll.setEnabled(!Util.getEnabledItems(listAvailable).isEmpty());
     }
     
     public void updatePersistenceUnitButton() {
@@ -540,14 +548,14 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 } else {
                     Logger.getLogger("global").log(Level.INFO, "Entity:" + value + " returns null from getClass2(); see IZ 80024"); //NOI18N
                 }
-                if( available && entityClosure.haveId(entity.getClass2())!=Boolean.TRUE){
+                if(disableNoIdSelection && available && entityClosure.haveId(entity.getClass2())!=Boolean.TRUE){
                     text += " (" + NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoId") + ")";//NOI18N
                     disable = disableNoIdSelection;
                 }
             }
             if (text == null) {
                 text = value.toString();
-                if( available && entityClosure.haveId(text)!=Boolean.TRUE && entityClosure.getEntity(text)!=null){
+                if(disableNoIdSelection && available && entityClosure.haveId(text)!=Boolean.TRUE && entityClosure.getEntity(text)!=null){
                     text += " (" + NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoId") + ")";//NOI18N
                     disable = disableNoIdSelection;
                 }
