@@ -56,7 +56,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
  */
 public final class SignalSupport {
 
-    private static WeakHashMap<ExecutionEnvironment, SignalSupport> cache =
+    private static final WeakHashMap<ExecutionEnvironment, SignalSupport> cache =
             new WeakHashMap<ExecutionEnvironment, SignalSupport>();
     private NativeProcessBuilder npb;
     private String[] args = new String[2];
