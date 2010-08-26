@@ -73,8 +73,9 @@ public class Html5ParserTest extends NbTestCase {
 
     public static Test xsuite(){
         AstNodeTreeBuilder.DEBUG = true;
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
 	TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testParseUnfinishedCode"));
+        suite.addTest(new Html5ParserTest("testParseFileLongerThan2048chars"));
         return suite;
     }
 
@@ -304,7 +305,40 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(root);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testParseFileLongerThan2048chars() throws ParseException {
+        StringBuilder b = new StringBuilder();
+        for(int i = 0; i < 2048; i++) {
+            b.append('*');
+        }
+
+        String code = "<!doctype html>\n"
+                + "<html>\n"
+                + "<title></title>\n"
+                + "<body>\n"
+                + b.toString()
+                + "</body>\n"
+                + "</html>\n";
+
+//        System.out.println("code len = " + code.length());
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNode body = AstNodeUtils.query(result.root(), "html/body");
+        assertNotNull(body);
+        
+        AstNode bodyEnd = body.getMatchingTag();
+        assertNotNull(bodyEnd);
+        
+        assertEquals(2094, bodyEnd.startOffset());
+        assertEquals(2101, bodyEnd.endOffset());
+
+//        AstNodeUtils.dumpTree(root);
     }
 
 
