@@ -215,7 +215,12 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
 
         public void run(CompilationInfo info) {
             cancel.set(false);
-            manager.setRootContext(TreeNode.getTree(info, new TreePath(info.getCompilationUnit()), cancel));
+            
+            Node tree = TreeNode.getTree(info, new TreePath(info.getCompilationUnit()), cancel);
+
+            if (!cancel.get()) {
+                manager.setRootContext(tree);
+            }
         }
         
     }
