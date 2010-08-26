@@ -91,6 +91,17 @@ public class ValidationTransactionTest extends NbTestCase {
 
     }
 
+    public void testErrorneousSources() throws SAXException {
+        //IIOBE from LinesMapper.getSourceOffsetForLocation(LinesMapper.java:129)
+        validate("<!doctype html> "
+                + "<html>    "
+                + "<title>dd</title>"
+                + "<b"
+                + "a"
+                + "</body>"
+                + "</html>    ", false);
+    }
+
     private void validate(String code, boolean expectedPass) throws SAXException {
         System.out.print("Validating " + code + "...");
         ValidationTransaction vt = ValidationTransaction.getInstance();
