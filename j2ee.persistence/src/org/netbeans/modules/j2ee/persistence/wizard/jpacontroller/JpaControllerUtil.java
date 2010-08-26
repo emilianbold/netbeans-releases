@@ -460,6 +460,31 @@ public class JpaControllerUtil {
         return isFieldXable;
     }
     
+    /**
+     * check if there is id in the entity
+     * @param typeElement
+     * @return true if id is present
+     */
+    public static boolean haveId(final TypeElement clazz) {
+        boolean idDetected = false;
+        TypeElement typeElement = clazz;
+        while (typeElement != null && !idDetected) {
+            if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
+                for (Element element : typeElement.getEnclosedElements()) {
+                    if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
+                        idDetected = true;
+                    }
+                }
+            }
+            typeElement = getSuperclassTypeElement(typeElement);
+        }
+        if (!idDetected) {
+            return false;//
+        } else {
+            return true;
+        }
+    }
+
     public static ExecutableElement getIdGetter(final boolean isFieldAccess, final TypeElement typeElement) {
         ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(typeElement);
         for (ExecutableElement method : methods) {
@@ -865,7 +890,7 @@ public class JpaControllerUtil {
                     MethodTree mtree = (MethodTree)tree;
                     List<? extends VariableTree> mTreeParameters = mtree.getParameters();
                     if(mtree.getName().toString().equals("<init>") &&
-                            (mTreeParameters == null || mTreeParameters.size() == 0) &&
+                            (mTreeParameters == null || mTreeParameters.isEmpty()) &&
                             !wc.getTreeUtilities().isSynthetic(wc.getTrees().getPath(wc.getCompilationUnit(), classTree))) {
                             constructor = mtree;
                             break;

@@ -3,6 +3,17 @@
 <filesystem>
     <folder name="Editors">
         <folder name="text">
+            <folder name="x-el">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.el.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
             <folder name="xhtml">
                 <folder name="HyperlinkProviders">
                     <file name="ELHyperlinkProvider.instance">

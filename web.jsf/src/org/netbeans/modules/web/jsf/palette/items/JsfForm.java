@@ -141,7 +141,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                 String methodName = method.getSimpleName().toString();
                 if (methodName.startsWith("get")) {
                     List<ExecutableElement> pkMethods = null;
-                    boolean isId = isId(controller, method, fieldAccess);
+                    boolean isId = isId(method, fieldAccess);
                     boolean isGenerated = false;
                     if (isId) {
                         isGenerated = JpaControllerUtil.isGenerated(method, fieldAccess);
@@ -269,14 +269,14 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                 ( formType == FORM_TYPE_EDIT && (isId || isEmbeddedPkMethod || isMethodRedundantWithItsPkFields || isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != JpaControllerUtil.REL_TO_MANY ) ||
                 (formType == FORM_TYPE_NEW && (isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != JpaControllerUtil.REL_TO_MANY) ) {
             //non editable
-            String temporal = ( isRelationship == JpaControllerUtil.REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
+            String temporal = ( isRelationship == JpaControllerUtil.REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(method, fieldAccess) : null;
             String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"" + (isRelationship == JpaControllerUtil.REL_NONE ? "" : " ") + "#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += temporal == null ? "/>\n" : ">\n<f:convertDateTime pattern=\"{4}\" />\n</h:outputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( isRelationship == JpaControllerUtil.REL_NONE && (formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) ) {
             //editable
-            String temporal = controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ? getTemporal(controller, method, fieldAccess) : null;
+            String temporal = controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ? getTemporal(method, fieldAccess) : null;
             String template = temporal == null ? "<h:outputText value=\"{0}:\"/>\n" : "<h:outputText value=\"{0} ({4}):\"/>\n";
             Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(method) : method;
             boolean isLob = JpaControllerUtil.isAnnotatedWith(fieldElement, "javax.persistence.Lob");

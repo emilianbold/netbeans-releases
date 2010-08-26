@@ -140,7 +140,7 @@ public abstract class EntityClass {
     
     protected abstract String createBody(JTextComponent target, boolean surroundWithFView) throws IOException;
     
-    static boolean isId(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
+    static boolean isId(ExecutableElement method, boolean isFieldAccess) {
         Element element = isFieldAccess ? JpaControllerUtil.guessField(method) : method;
         if (element != null) {
             if (JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.Id") || JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.EmbeddedId")) { // NOI18N
@@ -150,7 +150,7 @@ public abstract class EntityClass {
         return false;
     }
     
-    static String getTemporal(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
+    static String getTemporal(ExecutableElement method, boolean isFieldAccess) {
         Element element = isFieldAccess ? JpaControllerUtil.guessField(method) : method;
         if (element != null) {
             AnnotationMirror annotationMirror = JpaControllerUtil.findAnnotation(element, "javax.persistence.Temporal"); // NOI18N

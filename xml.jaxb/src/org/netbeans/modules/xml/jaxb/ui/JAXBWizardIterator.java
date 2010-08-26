@@ -53,7 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
+import org.netbeans.modules.xml.jaxb.spi.SchemaCompiler;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -166,10 +166,11 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         DataObject dTemplate = DataObject.find( template );  
         
         try {
-            Schema nSchema = ProjectHelper.importResources(project, 
-                    wiz, null);
-            ProjectHelper.addSchema2Model(project, nSchema);                    
-            ProjectHelper.compileXSDs(project, true);
+            SchemaCompiler schemaCompiler = CompilerFinder.findCompiler(project);
+            if (schemaCompiler != null) {
+                schemaCompiler.importResources(wiz);
+                schemaCompiler.compileSchema(wiz);
+            }
         } catch (Throwable ex ){
             //Exceptions.printStackTrace(ioe);
             String msg = NbBundle.getMessage(JAXBWizardIterator.class, 
