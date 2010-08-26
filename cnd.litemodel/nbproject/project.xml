@@ -23,7 +23,7 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <test-dependencies>
+            <!--test-dependencies>
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
@@ -36,7 +36,7 @@
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
-            </test-dependencies>
+            </test-dependencies-->
             <friend-packages>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
