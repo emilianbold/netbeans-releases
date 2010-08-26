@@ -57,9 +57,12 @@ import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JList;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
@@ -723,5 +726,34 @@ public class Util {
             }
         }
         return persistenceUnit;
+    }
+
+
+    //UI support
+    public static Set getSelectedItems(JList list, boolean enabledOnly)
+    {
+        Set result = new HashSet();
+
+        int[] selected = list.getSelectedIndices();
+        for (int i = 0; i < selected.length; i++) {
+            Object item = list.getModel().getElementAt(selected[i]);
+            if(enabledOnly){
+                if(!list.getCellRenderer().getListCellRendererComponent(list, item, selected[i], false, false).isEnabled())continue;
+            }
+            result.add(item);
+        }
+
+        return result;
+    }
+    public static Set getEnabledItems(JList list)
+    {
+        Set result = new HashSet();
+        for (int i = 0; i < list.getModel().getSize(); i++) {
+            Object item = list.getModel().getElementAt(i);
+            if(!list.getCellRenderer().getListCellRendererComponent(list, item, i, false, false).isEnabled())continue;
+            result.add(item);
+        }
+
+        return result;
     }
 }

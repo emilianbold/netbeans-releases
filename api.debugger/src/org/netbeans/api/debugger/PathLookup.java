@@ -42,14 +42,18 @@
 
 package org.netbeans.api.debugger;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -74,196 +78,142 @@ class PathLookup extends org.openide.util.Lookup {
 
     @Override
     public <T> Result<T> lookup(Template<T> template) {
-        return resultJustForPath(delegate.lookup(template));
+        return new PathLookupResult<T>(template.getType(), delegate.lookup(template), path);
     }
 
     @Override
     public <T> Result<T> lookupResult(Class<T> clazz) {
-        return resultJustForPath(delegate.lookupResult(clazz));
-    }
-
-    private <T> Result<T> resultJustForPath(Result<T> result) {
-        int l = path.length() + 1;
-        int count = 0;
-        Collection<? extends Item<T>> allItems = result.allItems();
-        for (Item<T> it : allItems) {
-            String filePath = it.getId();
-            assert filePath.startsWith(path) : "File path '"+filePath+"' does not start with searched path '"+path+"'";
-            if (filePath.indexOf('/', l) > 0) {
-                // This and further items are from a different folder
-                // We have to return a restricted result
-                break;
-            }
-            count++;
-        }
-        if (count < allItems.size()) {
-            return new PathLookupResult<T>(result, count);
-        }
-        return result;
+        return new PathLookupResult<T>(clazz, delegate.lookupResult(clazz), path);
     }
 
     static class PathLookupResult<T> extends Result<T> {
 
-        private Result<T> orig;
-        private int n;
+        private static final List ORIG_ITEMS = new ArrayList(0);
 
-        PathLookupResult(Result<T> orig, int n) {
+        private final Class<T> clazz;
+        private final Result<T> orig;
+        private Collection<Item<T>> items;
+        private final String path;
+        private final LookupListener ll = new PathLookupListener();
+        private final List<LookupListener> listeners = new ArrayList<LookupListener>();
+
+        PathLookupResult(Class<T> clazz, Result<T> orig, String path) {
+            this.clazz = clazz;
             this.orig = orig;
-            this.n = n;
+            this.path = path;
+            orig.addLookupListener(WeakListeners.create(LookupListener.class, ll, orig));
         }
 
         @Override
         public void addLookupListener(LookupListener l) {
-            orig.addLookupListener(l);
+            //orig.addLookupListener(l);
+            synchronized (listeners) {
+                if (!listeners.contains(l)) {
+                    listeners.add(l);
+                }
+            }
         }
 
         @Override
         public void removeLookupListener(LookupListener l) {
-            orig.removeLookupListener(l);
+            //orig.removeLookupListener(l);
+            synchronized (listeners) {
+                listeners.remove(l);
+            }
+        }
+
+        private static <T> List<Item<T>> itemsJustForPath(Class<T> clazz, Result<T> result, String path) {
+            int l = path.length() + 1;
+            Collection<? extends Item<T>> allItems = result.allItems();
+            List<Item<T>> pathItems = new ArrayList<Item<T>>(allItems.size());
+            for (Item<T> it : allItems) {
+                String filePath = it.getId();
+                assert filePath.startsWith(path) : "File path '"+filePath+"' does not start with searched path '"+path+"'";
+                if (filePath.indexOf('/', l) < l) {
+                    // This item is from current folder
+                    pathItems.add(it);
+                }
+            }
+            if (pathItems.size() == allItems.size()) {
+                return (List<Item<T>>) ORIG_ITEMS;
+            }
+            return pathItems;
+        }
+        
+        private synchronized Collection<Item<T>> getItems() {
+            if (items == null) {
+                items = itemsJustForPath(clazz, orig, path);
+            }
+            return items;
         }
 
         @Override
         public Collection<? extends T> allInstances() {
-            return new PathLookupCollection(orig.allInstances(), n);
+            //return new PathLookupCollection(orig.allInstances(), n);
+            Collection<? extends Item<T>> items = getItems();
+            if (items == ORIG_ITEMS) {
+                return orig.allInstances();
+            }
+            ArrayList<T> list = new ArrayList<T>(items.size());
+            for (Item<T> item : items) {
+                T obj = item.getInstance();
+
+                if (clazz.isInstance(obj)) {
+                    list.add(obj);
+                }
+            }
+
+            return Collections.unmodifiableList(list);
         }
 
         @Override
         public Set<Class<? extends T>> allClasses() {
-            return new PathLookupSet(orig.allClasses(), n);
+            //return new PathLookupSet(orig.allClasses(), n);
+            Collection<? extends Item<T>> items = getItems();
+            if (items == ORIG_ITEMS) {
+                return orig.allClasses();
+            }
+            Set<Class<? extends T>> s = new HashSet<Class<? extends T>>();
+            for (Item<T> item : items) {
+                Class<? extends T> clazz = item.getType();
+
+                if (clazz != null) {
+                    s.add(clazz);
+                }
+            }
+            s = Collections.unmodifiableSet(s);
+            return s;
         }
 
         @Override
         public Collection<? extends Item<T>> allItems() {
-            return new PathLookupCollection(orig.allItems(), n);
+            Collection<? extends Item<T>> items = getItems();
+            if (items == ORIG_ITEMS) {
+                return orig.allItems();
+            } else {
+                return items;
+            }
         }
 
-        private static class PathLookupCollection<IT> implements Collection<IT> {
+        private class PathLookupListener implements LookupListener {
 
-            private Collection<IT> delegate;
-            private int n;
-
-            PathLookupCollection(Collection<IT> delegate, int n) {
-                this.delegate = delegate;
-                this.n = n;
-            }
-
-            public int size() {
-                return n;
-            }
-
-            public boolean isEmpty() {
-                return n == 0;
-            }
-
-            public boolean contains(Object o) {
-                Iterator it = iterator();
-                for (int i = 0; i < n; i++) {
-                    Object e = it.next();
-                    if (o == e || o != null && o.equals(e)) {
-                        return true;
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                items = null;
+                List<LookupListener> lls;
+                synchronized (listeners) {
+                    if (listeners.isEmpty()) {
+                        return;
+                    } else {
+                        lls = new ArrayList<LookupListener>(listeners);
                     }
                 }
-                return false;
-            }
-
-            public Iterator<IT> iterator() {
-                return new PathLookupIterator(delegate.iterator(), n);
-            }
-
-            public Object[] toArray() {
-                Object[] arr = new Object[n];
-                Iterator it = iterator();
-                for (int i = 0; i < n; i++) {
-                    arr[i] = it.next();
-                }
-                return arr;
-            }
-
-            public <T> T[] toArray(T[] a) {
-                if (a.length < n) {
-                    a = (T[]) java.lang.reflect.Array.
-                        newInstance(a.getClass().getComponentType(), n);
-                }
-                System.arraycopy(toArray(), 0, a, 0, n);
-                if (a.length > n) {
-                    a[n] = null;
-                }
-                return a;
-            }
-
-            public boolean add(IT o) {
-                throw new UnsupportedOperationException("Not supported.");
-            }
-
-            public boolean remove(Object o) {
-                throw new UnsupportedOperationException("Not supported.");
-            }
-
-            public boolean containsAll(Collection<?> c) {
-                for (Iterator it = c.iterator(); it.hasNext(); ) {
-                    if (!contains(it.next())) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            public boolean addAll(Collection<? extends IT> c) {
-                throw new UnsupportedOperationException("Not supported.");
-            }
-
-            public boolean removeAll(Collection<?> c) {
-                throw new UnsupportedOperationException("Not supported.");
-            }
-
-            public boolean retainAll(Collection<?> c) {
-                throw new UnsupportedOperationException("Not supported.");
-            }
-
-            public void clear() {
-                delegate.clear();
-            }
-
-        }
-
-        private static class PathLookupSet<IT> extends PathLookupCollection<IT> implements Set<IT> {
-
-            PathLookupSet(Set<IT> delegate, int n) {
-                super(delegate, n);
-            }
-
-        }
-
-
-        private static class PathLookupIterator<IIT> implements Iterator<IIT> {
-
-            private int i;
-            private Iterator<IIT> delegate;
-            private int n;
-
-            PathLookupIterator (Iterator<IIT> delegate, int n) {
-                this.delegate = delegate;
-                this.n = n;
-                this.i = 0;
-            }
-
-            public boolean hasNext() {
-                return i < n;
-            }
-
-            public IIT next() {
-                if (i < n) {
-                    i++;
-                    return delegate.next();
-                } else {
-                    throw new NoSuchElementException("Index = "+i+", size = "+n);
+                LookupEvent lev = new LookupEvent(PathLookupResult.this);
+                for (LookupListener ll : lls) {
+                    ll.resultChanged(lev);
                 }
             }
-
-            public void remove() {
-                throw new UnsupportedOperationException("Not supported.");
-            }
-
+            
         }
 
     }

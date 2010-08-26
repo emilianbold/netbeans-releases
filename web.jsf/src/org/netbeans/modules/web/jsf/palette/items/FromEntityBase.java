@@ -216,7 +216,7 @@ public abstract class FromEntityBase {
                 FieldDesc fd = new FieldDesc(controller, method, bean, initValueGetters);
                 if (fd.isValid()) {
                     int relationship = fd.getRelationship();
-                    if (EntityClass.isId(controller, method, fd.isFieldAccess())) {
+                    if (EntityClass.isId(method, fd.isFieldAccess())) {
                         fd.setPrimaryKey();
                         TypeMirror rType = method.getReturnType();
                         if (TypeKind.DECLARED == rType.getKind()) {
@@ -262,7 +262,7 @@ public abstract class FromEntityBase {
         for (ExecutableElement method : methods) {
             FieldDesc fd = new FieldDesc(controller, method, bean, false);
             if (fd.isValid()) {
-                if (EntityClass.isId(controller, method, fd.isFieldAccess())) {
+                if (EntityClass.isId(method, fd.isFieldAccess())) {
                     return method;
                 }
             }
@@ -519,7 +519,7 @@ public abstract class FromEntityBase {
                 dateTimeFormat = "";
                 TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType(); // NOI18N
                 if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
-                    String temporal = EntityClass.getTemporal(controller, method, isFieldAccess());
+                    String temporal = EntityClass.getTemporal(method, isFieldAccess());
                     if (temporal != null) {
                         dateTimeFormat = EntityClass.getDateTimeFormat(temporal);
                     }

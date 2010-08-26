@@ -49,14 +49,13 @@ import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.CharBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -304,7 +303,30 @@ public final class ModuleDeleterImpl  {
             if (fileName.equals (configFile)) {
                 continue;
             }
-            File file = InstalledFileLocator.getDefault ().locate (fileName, moduleInfo.getCodeNameBase (), false);
+            Set <File> files = InstalledFileLocator.getDefault ().locateAll (fileName, moduleInfo.getCodeNameBase (), false);
+            File file = null;
+            if (files.size() > 0) {
+                file = files.iterator().next();
+                if (files.size() > 1) {
+                    boolean found = false;
+                    for (File f : files) {
+                        if (f.getPath().startsWith(updateTracking.getParentFile().getParentFile().getPath())) {
+                            file = f;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        err.log(Level.WARNING,
+                                "InstalledFileLocator doesn't choose the right file with file name " + fileName
+                                + " for module " + moduleInfo.getCodeNameBase()
+                                + " since a few files were returned : " + Arrays.toString(files.toArray()) +
+                                ", and since none are in the same cluster as update tracking file " + updateTracking +
+                                " will use " + file);
+                    }
+                }
+            }
+
             if (file == null) {
                 err.log (Level.WARNING, "InstalledFileLocator doesn't locate file " + fileName + " for module " + moduleInfo.getCodeNameBase ());
                 continue;

@@ -734,6 +734,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             helpCtx = new HelpCtx("persistence_entity_selection_javaee5");  //NOI18N
         }
 
+        wizard.putProperty(PersistenceClientEntitySelection.DISABLENOIDSELECTION, Boolean.TRUE);
         WizardDescriptor.Panel secondPanel = new ValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
                         helpCtx, wizard)); // NOI18N
