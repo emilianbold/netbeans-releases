@@ -310,7 +310,7 @@ public class Html5ParserTest extends NbTestCase {
 
     public void testParseFileLongerThan2048chars() throws ParseException {
         StringBuilder b = new StringBuilder();
-        for(int i = 0; i < 2048; i++) {
+        for(int i = 0; i < 2048*3; i++) {
             b.append('*');
         }
 
@@ -335,8 +335,8 @@ public class Html5ParserTest extends NbTestCase {
         AstNode bodyEnd = body.getMatchingTag();
         assertNotNull(bodyEnd);
         
-        assertEquals(2094, bodyEnd.startOffset());
-        assertEquals(2101, bodyEnd.endOffset());
+        assertEquals(6190, bodyEnd.startOffset());
+        assertEquals(6197, bodyEnd.endOffset());
 
 //        AstNodeUtils.dumpTree(root);
     }
