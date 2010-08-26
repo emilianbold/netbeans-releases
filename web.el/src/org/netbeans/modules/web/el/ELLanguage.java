@@ -44,6 +44,7 @@ package org.netbeans.modules.web.el;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
@@ -93,5 +94,14 @@ public class ELLanguage extends DefaultLanguageConfig {
         return new ELHintsProvider();
     }
 
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new ELOccurrencesFinder();
+    }
 
 }
