@@ -94,10 +94,8 @@ public class LinesMapper implements CharacterHandler {
     }
 
     private void newLine(int from) {
-        if (currentLine != null) {
-            lines.add(currentLine);
-        }
         currentLine = new Line(from);
+        lines.add(currentLine);
     }
 
     @Override
