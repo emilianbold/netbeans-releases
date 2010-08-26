@@ -319,7 +319,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
              buffer.setStart(pos + 1);
          }
 +
-+        currentBufferGlobalOffset = pos;
++        currentBufferGlobalOffset += pos;
 +
          return lastCR;
      }
