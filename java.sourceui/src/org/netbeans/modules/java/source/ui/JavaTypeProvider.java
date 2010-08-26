@@ -56,6 +56,7 @@ import javax.swing.Icon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -66,6 +67,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
@@ -86,28 +88,31 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public class JavaTypeProvider implements TypeProvider {
     private static final Logger LOGGER = Logger.getLogger(JavaTypeProvider.class.getName());
-    private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );
     private Set<CacheItem> cache;
     private volatile boolean isCanceled = false;
     private final TypeElementFinder.Customizer customizer;
     private ClasspathInfo cpInfo;
     private static final Level LEVEL = Level.FINE;
 
+    @Override
     public String name() {
         return "java"; // NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         // TODO - i18n
         return "Java Classes";
     }
 
+    @Override
     public void cleanup() {
         isCanceled = false;
 //        cache = null;
         setCache(null);
     }
 
+    @Override
     public void cancel() {
         isCanceled = true;
     }
@@ -121,6 +126,7 @@ public class JavaTypeProvider implements TypeProvider {
         this.customizer = customizer;
     }
 
+    @Override
     public void computeTypeNames(Context context, final Result res) {
         isCanceled = false;
         String text = context.getText();
@@ -171,13 +177,11 @@ public class JavaTypeProvider implements TypeProvider {
                     } catch (FileStateInvalidException fsie) {
                         continue;
                     }
-
-                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(rootUrl));
                     if ( isCanceled ) {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( rootUrl, ci, false ) );
+                        sources.add(new CacheItem( rootUrl, ClassPath.SOURCE));
                     }
                 }
 
@@ -204,12 +208,11 @@ public class JavaTypeProvider implements TypeProvider {
                             continue;
                         }
                     }
-                    ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );
                     if ( isCanceled ) {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( rootUrl, ci, true ) );
+                        sources.add(new CacheItem( rootUrl, ClassPath.BOOT));
                     }
                 }
             } else { // user provided classpath
@@ -221,37 +224,33 @@ public class JavaTypeProvider implements TypeProvider {
 
                 // bootPath
                 for (ClassPath.Entry entry : bootRoots) {
-                    ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(entry.getURL()), EMPTY_CLASSPATH, EMPTY_CLASSPATH);
                     if ( isCanceled ) {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( entry.getURL(), ci, true ) );
+                        sources.add(new CacheItem( entry.getURL(),ClassPath.BOOT));
                     }
                 }
 
                 // classPath
                 for (ClassPath.Entry entry : compileRoots) {
-                    ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, ClassPathSupport.createClassPath(entry.getURL()), EMPTY_CLASSPATH);
                     if ( isCanceled ) {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( entry.getURL(), ci, true ) );
+                        sources.add( new CacheItem(entry.getURL(),ClassPath.COMPILE));
                     }
                 }
 
                 // sourcePath
                 for (ClassPath.Entry entry : sourceRoots) {
-                    ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(entry.getURL()));
                     if ( isCanceled ) {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( entry.getURL(), ci, false ) );
+                        sources.add(new CacheItem(entry.getURL(),ClassPath.SOURCE));
                     }
                 }
-
             }
 
             if ( !isCanceled ) {
@@ -301,18 +300,18 @@ public class JavaTypeProvider implements TypeProvider {
             default:
                 textForQuery = text;
         }
-        LOGGER.fine("Text For Query '" + text + "'.");
+        LOGGER.log(Level.FINE, "Text For Query ''{0}''.", text);
         if (customizer != null) {
             c = getCache();
             if (c != null) {
                 for (final CacheItem ci : c) {
                     final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (customizer.query(
-                            ci.classpathInfo, textForQuery, nameKind,
+                            ci.getClasspathInfo(), textForQuery, nameKind,  //Needs to pass slow cpinfo to keep compatibility
                             EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
                     ));
                     if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
                         names.addAll(customizer.query(
-                            ci.classpathInfo, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX,
+                            ci.getClasspathInfo(), textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, //Needs to pass slow cpinfo to keep compatibility
                             EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
                         ));
                     }
@@ -328,13 +327,13 @@ public class JavaTypeProvider implements TypeProvider {
 
         } else {
             ClassIndexManager.getDefault().addClassIndexManagerListener(new ClassIndexManagerListener() {
-
+                @Override
                 public void classIndexAdded(ClassIndexManagerEvent event) {
                     synchronized (JavaTypeProvider.this) {
                         JavaTypeProvider.this.notify();
                     }
                 }
-
+                @Override
                 public void classIndexRemoved(ClassIndexManagerEvent event) {
                 }
             });
@@ -342,14 +341,12 @@ public class JavaTypeProvider implements TypeProvider {
                 c = getCache();
                 if (c == null) return;
                 for (final CacheItem ci : getCache()) {
-                    @SuppressWarnings("unchecked")
-                    final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (ci.classpathInfo.getClassIndex().getDeclaredTypes(
-                            textForQuery, nameKind, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
-                    ));
+                    if (isCanceled) {
+                        return;
+                    }
+                    final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (ci.getDeclaredTypes(textForQuery,nameKind));
                     if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                        names.addAll(ci.classpathInfo.getClassIndex().getDeclaredTypes(
-                            textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
-                        ));
+                        names.addAll(ci.getDeclaredTypes(textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX));
                     }
                     for (ElementHandle<TypeElement> name : names) {
                         JavaTypeDescription td = new JavaTypeDescription(ci, name);
@@ -391,54 +388,37 @@ public class JavaTypeProvider implements TypeProvider {
        return sb.toString();
     }
 
-    private static Logger log = Logger.getLogger(JavaTypeProvider.class.getName());
-
     private Set<CacheItem> getCache() {
-        if (cache == null && log.isLoggable(LEVEL)) {
-            log.log(LEVEL, "Returning null cache entries.", new Exception());
+        if (cache == null && LOGGER.isLoggable(LEVEL)) {
+            LOGGER.log(LEVEL, "Returning null cache entries.", new Exception());
         }
         return cache;
     }
 
     private void setCache(Set<CacheItem> cache) {
-        if (log.isLoggable(LEVEL)) {
-            log.log(LEVEL, "Setting cache entries from " + this.cache + " to " + cache + ".", new Exception());
+        if (LOGGER.isLoggable(LEVEL)) {
+            LOGGER.log(LEVEL, "Setting cache entries from " + this.cache + " to " + cache + ".", new Exception());
         }
         this.cache = cache;
     }
 
-    static class CacheItem {
-
-        public final boolean isBinary;
+    //@NotTreadSafe
+    static final class CacheItem {
+        
         public final URL root;
-        public final ClasspathInfo classpathInfo;
         public String projectName;
         public Icon projectIcon;
-        private ClassPath.Entry defEntry;
+        private final boolean isBinary;
+        private ClasspathInfo cpInfo;
+        private ClassIndex index;
+        private final String cpType;
         private FileObject cachedRoot;
 
-        public CacheItem ( URL root, ClasspathInfo classpathInfo, boolean isBinary ) {
-            this.isBinary = isBinary;
+        public CacheItem (final URL root, final String cpType) {
+            this.cpType = cpType;
+            this.isBinary = ClassPath.BOOT.equals(cpType) || ClassPath.COMPILE.equals(cpType);
             this.root = root;
-            this.classpathInfo = classpathInfo;
         }
-
-//        Removed because of bad performance To reenable see diff between 1.15 and 1.16
-//        
-//        public ClassPath.Entry getDefiningEntry () {
-//            if (defEntry == null) {
-//                ClassPath defCp = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);                    
-//                if (defCp != null) {
-//                    for (ClassPath.Entry e : defCp.entries()) {
-//                        if (fileObject.equals(e.getRoot())) {
-//                            defEntry = e;
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//            return defEntry;
-//        }
 
         @Override
         public int hashCode () {
@@ -485,6 +465,30 @@ public class JavaTypeProvider implements TypeProvider {
                 initProjectInfo();
             }
             return projectIcon;
+        }
+        
+        public ClasspathInfo getClasspathInfo() {
+            if (cpInfo == null) {            
+                final ClassPath cp = ClassPathSupport.createClassPath(root);
+                cpInfo = isBinary ? 
+                    ClassPath.BOOT.equals(cpType) ?
+                        ClasspathInfo.create(cp,ClassPath.EMPTY,ClassPath.EMPTY):
+                        ClasspathInfo.create(ClassPath.EMPTY,cp,ClassPath.EMPTY):
+                    ClasspathInfo.create(ClassPath.EMPTY,ClassPath.EMPTY,cp);                
+            }
+            return cpInfo;
+        }
+        
+        public  Set<ElementHandle<TypeElement>> getDeclaredTypes(final String name, final NameKind kind) {
+            if (index == null) {
+                final ClassPath cp = ClassPathSupport.createClassPath(root);
+                index = isBinary ? 
+                    ClassPath.BOOT.equals(cpType) ?
+                        JavaSourceAccessor.getINSTANCE().createClassIndex(cp,ClassPath.EMPTY,ClassPath.EMPTY,false):
+                        JavaSourceAccessor.getINSTANCE().createClassIndex(ClassPath.EMPTY,cp,ClassPath.EMPTY,false):
+                    JavaSourceAccessor.getINSTANCE().createClassIndex(ClassPath.EMPTY,ClassPath.EMPTY,cp,false);
+            }
+            return index.getDeclaredTypes(name,kind,EnumSet.of(isBinary?ClassIndex.SearchScope.DEPENDENCIES:ClassIndex.SearchScope.SOURCE));
         }
 
         private void initProjectInfo() {

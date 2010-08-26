@@ -58,7 +58,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
@@ -153,7 +152,7 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
         return new DeployOnSaveClassInterceptor() {
             public ArtifactListener.Artifact convert(ArtifactListener.Artifact original) {
                 NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
-                FileObject targetClasses = FileUtilities.convertStringToFileObject(prj.getMavenProject().getBuild().getOutputDirectory());
+                FileObject targetClasses = FileUtil.toFileObject(prj.getOutputDirectory(false));
                 FileObject clazz = FileUtil.toFileObject(original.getFile());
                 if (targetClasses != null && clazz != null) {
                     String path = FileUtil.getRelativePath(targetClasses, clazz);

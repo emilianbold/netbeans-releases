@@ -61,69 +61,76 @@ import org.openide.filesystems.FileObject;
  * @author Radek Matous
  */
 public class AliasedElement implements FullyQualifiedElement {
-
+    public enum Trait {ALIAS, ELEMENT};
     protected final FullyQualifiedElement element;
     private final AliasedName aliasedName;
-    private QualifiedName fqn;
+    private QualifiedName aliasFqn;
+    private Trait trait = Trait.ELEMENT;
 
     public AliasedElement(final AliasedName aliasedName, final FullyQualifiedElement element) {
         this.aliasedName = aliasedName;
         this.element = element;
     }
 
-    public final String getRealName() {
-        return element.getName();
+    public final QualifiedName getNamespaceName(final Trait traitOfName) {
+        return getFullyQualifiedName(traitOfName).toNamespaceName();
     }
 
-    public final QualifiedName getRealNamespaceName() {
-        return element.getNamespaceName();
+    public final String getName(final Trait traitOfName) {
+        return getFullyQualifiedName(traitOfName).getName();
+    }
+
+    public final synchronized  QualifiedName getFullyQualifiedName(final Trait traitOfName) {
+        if (traitOfName.equals(Trait.ALIAS)) {
+            if (aliasFqn == null) {
+                aliasFqn = element.getFullyQualifiedName();
+                final LinkedList<String> originalSegments = aliasFqn.getSegments();
+                final LinkedList<String> toReplaceSegments = aliasedName.getRealName().getSegments();
+                final LinkedList<String> resultSegments = new LinkedList<String>();
+                assert toReplaceSegments.size() > 0;
+                final String firstSegment = toReplaceSegments.get(0);
+                for (int i = 0; i < originalSegments.size(); i++) {
+                    final String nextSegment = originalSegments.get(i);
+                    if (i <= (originalSegments.size() - toReplaceSegments.size()) && NameKind.exact(nextSegment).matchesName(PhpElementKind.INDEX, firstSegment)) {
+                        List<String> subList = originalSegments.subList(i, i + toReplaceSegments.size());
+                        if (subList.equals(toReplaceSegments)) {
+                            resultSegments.add(aliasedName.getAliasName());
+                            i += (subList.size() - 1);
+                        } else {
+                            resultSegments.add(nextSegment);
+                        }
+                    } else {
+                        resultSegments.add(nextSegment);
+                    }
+                }
+                aliasFqn = QualifiedName.create(true, resultSegments);
+            }
+            return aliasFqn;
+        }
+        return element.getFullyQualifiedName();
     }
 
     @Override
     public final QualifiedName getNamespaceName() {
-        return getFullyQualifiedName().toNamespaceName();
+        return getNamespaceName(trait);
     }
 
     @Override
     public final String getName() {
-        return getFullyQualifiedName().getName();
+        return getName(trait);
     }
 
     public final boolean isNameAliased() {
-        return !NameKind.exact(getName()).matchesName(element);
+        return !NameKind.exact(getName(Trait.ALIAS)).matchesName(element);
     }
     public final boolean isNamespaceNameAliased() {
-        return !NameKind.exact(getNamespaceName()).matchesName(element);
+        return !NameKind.exact(getNamespaceName(Trait.ALIAS)).matchesName(element);
     }
 
     @Override
-    public final synchronized  QualifiedName getFullyQualifiedName() {
-        if (fqn == null) {
-            fqn = element.getFullyQualifiedName();
-            final LinkedList<String> originalSegments = fqn.getSegments();
-            final LinkedList<String> toReplaceSegments = aliasedName.getRealName().getSegments();
-            final LinkedList<String> resultSegments = new LinkedList<String>();
-            assert toReplaceSegments.size() > 0;
-            final String firstSegment = toReplaceSegments.get(0);
-            for (int i = 0; i < originalSegments.size(); i++) {
-                final String nextSegment = originalSegments.get(i);
-                if (i <= (originalSegments.size() - toReplaceSegments.size()) && NameKind.exact(nextSegment).matchesName(PhpElementKind.INDEX, firstSegment)) {
-                    List<String> subList = originalSegments.subList(i, i + toReplaceSegments.size());
-                    if (subList.equals(toReplaceSegments)) {
-                        resultSegments.add(aliasedName.getAliasName());
-                        i += (subList.size() - 1);
-                    } else {
-                        resultSegments.add(nextSegment);
-                    }
-                } else {
-                    resultSegments.add(nextSegment);
-                }
-            }
-            fqn = QualifiedName.create(true, resultSegments);
-        }
-        return fqn;
+    public final QualifiedName getFullyQualifiedName() {
+        return getFullyQualifiedName(trait);
     }
-
 
     @Override
     public final boolean isAliased() {
@@ -198,5 +205,19 @@ public class AliasedElement implements FullyQualifiedElement {
     @Override
     public final OffsetRange getOffsetRange(ParserResult result) {
         return element.getOffsetRange(result);
+    }
+
+    /**
+     * @return the trait
+     */
+    public Trait getTrait() {
+        return trait;
+    }
+
+    /**
+     * @param trait the trait to set
+     */
+    public void setTrait(Trait trait) {
+        this.trait = trait;
     }
 }

@@ -46,11 +46,14 @@ package org.netbeans.modules.cnd.dwarfdump.dwarfconsts;
 
 import java.util.HashMap;
 
+/**
+ * value of DW_AT_accessibility
+ */
 public enum ACCESS {
 
     DW_ACCESS_public(0x1, "public"), // NOI18N
-    DW_ACCESS_private(0x2, "private"), // NOI18N
-    DW_ACCESS_protected(0x3, "protected"); // NOI18N
+    DW_ACCESS_protected(0x2, "protected"), // NOI18N
+    DW_ACCESS_private(0x3, "private"); // NOI18N
     
     private static final HashMap<Integer, ACCESS> hashmap = new HashMap<Integer, ACCESS>();
     private final int value;

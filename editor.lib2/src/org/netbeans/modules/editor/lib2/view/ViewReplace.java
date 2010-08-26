@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 
@@ -57,7 +58,7 @@ import org.netbeans.lib.editor.util.ArrayUtilities;
  * @author Miloslav Metelka
  */
 
-final class ViewReplace<V extends EditorBoxView, CV extends EditorView> {
+final class ViewReplace<V extends EditorBoxView<CV>, CV extends EditorView> {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewReplace.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewReplace.class.getName());
@@ -104,6 +105,26 @@ final class ViewReplace<V extends EditorBoxView, CV extends EditorView> {
 
     EditorView childViewAtIndex() {
         return view.getEditorView(index);
+    }
+    
+    void retainSpans() {
+        // Attempt to retain spans of existing (paragraph) views to avoid blinking
+        if (added != null && removeCount == added.size()) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("RetainSpans: index=" + index + ", count=" + removeCount + '\n');
+            }
+            for (int i = 0; i < removeCount; i++) {
+                CV v = view.getEditorView(index + i);
+                ParagraphView pv = (ParagraphView) v;
+                float height = pv.getMinorAxisSpan();
+                ParagraphView npv = (ParagraphView) added.get(i);
+                npv.setMinorAxisSpan(height);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("RetainSpans: [" + (index + i) + "]: " + height + '\n');
+                }
+            }
+            LOG.fine("RetainSpans: -----------\n");
+        }
     }
 
     EditorBoxView.ReplaceResult replaceViews(int offsetDelta, Shape alloc) {

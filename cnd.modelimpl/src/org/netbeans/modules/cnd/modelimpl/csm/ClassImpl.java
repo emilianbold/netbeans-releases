@@ -466,10 +466,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private boolean renderBitField(AST token) {
 
             AST typeAST = token.getFirstChild();
-            if (typeAST == null ||
-                    (typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
-                    typeAST.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+            if (typeAST == null) {
                 return false;
+            }
+            if (typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                if (typeAST.getType() == CPPTokenTypes.LITERAL_enum) {
+                    typeAST = typeAST.getNextSibling();
+                }
+                if (typeAST == null || (typeAST.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                    return false;
+                }
             }
 
             // common type for all bit fields

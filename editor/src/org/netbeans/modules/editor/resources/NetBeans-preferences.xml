@@ -257,6 +257,9 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.Boolean" name="lineNumberVisible" xml:space="preserve">
         <value><![CDATA[false]]></value>
     </entry>
+    <entry category="private" javaType="java.lang.String" name="text-line-wrap" xml:space="preserve">
+        <value><![CDATA[none]]></value>
+    </entry>
     
     <entry category="deprecated" javaType="methodvalue" name="formatter" xml:space="preserve">
         <value><![CDATA[org.netbeans.modules.editor.impl.ComplexValueSettingsFactory.getFormatterValue]]></value>

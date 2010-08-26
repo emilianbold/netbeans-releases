@@ -139,7 +139,6 @@ import org.openide.util.RequestProcessor;
         if (err != null) {
             String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying", remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage());
             err.printf("%s\n", message); // NOI18N
-            err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
             err.printf("%s\n", message); // NOI18N
         }
     }
@@ -175,8 +174,14 @@ import org.openide.util.RequestProcessor;
         final BufferedReader rcInputStreamReader = ProcessUtils.getReader(rcInputStream, executionEnvironment.isRemote());
         final PrintWriter rcOutputStreamWriter = ProcessUtils.getWriter(rcOutputStream, executionEnvironment.isRemote());
         localController = new RfsLocalController(
-                executionEnvironment, files, rcInputStreamReader,
+                executionEnvironment, files, remoteControllerProcess, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
+
+        // A workaround for remote instable tests failure
+        int sleep = Integer.getInteger("rfs.instable.sleep", 0); // NOI18N
+        if (sleep > 0) {
+            Thread.sleep(sleep);
+        }
 
         if (!localController.init()) {
             remoteControllerProcess.destroy();

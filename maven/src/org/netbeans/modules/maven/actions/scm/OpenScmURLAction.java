@@ -62,6 +62,7 @@ import org.openide.util.RequestProcessor;
  * @deprecated Replaced by actions in Artifact viewer window, see #164992
  * @author Anuradha G
  */
+@Deprecated
 public class OpenScmURLAction extends AbstractAction {
 
     private Artifact artifact;

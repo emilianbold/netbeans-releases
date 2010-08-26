@@ -71,6 +71,8 @@ import org.netbeans.modules.form.RADComponentNode;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
+import org.netbeans.modules.form.fakepeer.FakePeerContainer;
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -157,7 +159,12 @@ public class GridDesigner extends JPanel implements Customizer {
         configureGridInfo(replicator);
         initLeftColumn();
         innerPane.add(glassPane);
-        innerPane.add(mainPanel);
+        FakePeerContainer fakePeerContainer = new FakePeerContainer();
+        fakePeerContainer.setLayout(new BorderLayout());
+        fakePeerContainer.setBackground(mainPanel.getBackground());
+        fakePeerContainer.setFont(FakePeerSupport.getDefaultAWTFont());
+        fakePeerContainer.add(mainPanel);
+        innerPane.add(fakePeerContainer);
     }
 
     private void configureGridInfo(VisualReplicator replicator) {

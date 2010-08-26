@@ -2173,9 +2173,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     public @Override String toString() {
         return super.toString() +
-            ", mimeType = '" + mimeType + "'" + //NOI18N
-            ", kitClass = " + deprecatedKitClass + // NOI18N
-            ", length = " + getLength() + // NOI18N
+            ", mimeType='" + mimeType + "'" + //NOI18N
+            ", kitClass=" + deprecatedKitClass + // NOI18N
+            ", length=" + getLength() + // NOI18N
+            ", version=" + org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentVersion(this) + // NOI18N
             ", file=" + getProperty(StreamDescriptionProperty); //NOI18N
     }
 

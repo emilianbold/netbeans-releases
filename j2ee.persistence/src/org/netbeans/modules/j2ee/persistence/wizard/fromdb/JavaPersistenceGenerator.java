@@ -789,24 +789,37 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 private final MethodTree setter;
 
                 public Property(Modifier modifier, List<AnnotationTree> annotations, String type, String name) throws IOException {
-                    this(modifier, annotations, genUtils.createType(type, typeElement), name);
+                    this(modifier, annotations, genUtils.createType(type, typeElement), name, false);
                 }
 
                 public Property(Modifier modifier, List<AnnotationTree> annotations, TypeMirror type, String name) throws IOException {
-                    this(modifier, annotations, copy.getTreeMaker().Type(type), name);
+                    this(modifier, annotations, copy.getTreeMaker().Type(type), name, false);
                 }
 
-                private Property(Modifier modifier, List<AnnotationTree> annotations, Tree typeTree, String name) throws IOException {
+                private Property(Modifier modifier, List<AnnotationTree> annotations, TypeMirror type, String name, boolean xmlTransient) throws IOException {
+                    this(modifier, annotations, copy.getTreeMaker().Type(type), name, xmlTransient);
+                }
+
+                private Property(Modifier modifier, List<AnnotationTree> annotations, Tree typeTree, String name, boolean xmlTransient) throws IOException {
                     TreeMaker make = copy.getTreeMaker();
                     field = make.Variable(
                             make.Modifiers(EnumSet.of(modifier), fieldAccess ? annotations : Collections.<AnnotationTree>emptyList()),
                             name,
                             typeTree,
                             null);
-                    getter = genUtils.createPropertyGetterMethod(
-                            make.Modifiers(EnumSet.of(Modifier.PUBLIC), fieldAccess ? Collections.<AnnotationTree>emptyList() : annotations),
-                            name,
-                            typeTree);
+                    if (xmlTransient) {
+                        AnnotationTree xmlTransientAn = genUtils.createAnnotation("javax.xml.bind.annotation.XmlTransient"); //NOI18N
+                        getter = genUtils.createPropertyGetterMethod(
+                                make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.<AnnotationTree>singletonList(xmlTransientAn)),
+                                name,
+                                typeTree);
+                    } else {
+                        getter = genUtils.createPropertyGetterMethod(
+                                make.Modifiers(EnumSet.of(Modifier.PUBLIC), fieldAccess ? Collections.<AnnotationTree>emptyList() : annotations),
+                                name,
+                                typeTree);
+                    }
+
                     setter = genUtils.createPropertySetterMethod(
                             genUtils.createModifiers(Modifier.PUBLIC),
                             name,
@@ -1277,7 +1290,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 // Create the relationship annotation 
                 annotations.add(genUtils.createAnnotation("javax.persistence." + relationAnn, annArguments)); // NOI18N
 
-                properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));
+                if (generateJAXBAnnotations && role.isToMany()) {
+                    properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName, true));
+                } else {
+                    properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));
+                }
             }
 
             /**

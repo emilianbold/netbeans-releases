@@ -81,7 +81,7 @@ public class CreateDomain extends Thread {
     private boolean register;
 
     public CreateDomain(String uname, String pword, File platformLocation, 
-            Map<String, String> ip, GlassfishInstanceProvider gip, boolean register) {
+            Map<String, String> ip, GlassfishInstanceProvider gip, boolean register, boolean useDefaultPorts) {
         this.uname = uname;
         this.pword = pword;
         this.platformLocation = platformLocation;
@@ -90,21 +90,27 @@ public class CreateDomain extends Thread {
         this.gip = gip;
         map.putAll(ip);
         this.register = register;
-        computePorts(ip,map);
+        computePorts(ip,map, useDefaultPorts);
     }
 
-    static private void computePorts(Map<String, String> ip, Map<String, String> createProps) {
+    static private void computePorts(Map<String, String> ip, Map<String, String> createProps, boolean useDefaultPorts) {
         int portBase = 8900;
         int kicker = ((new Date()).toString() + ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)+ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() % 40000;
         kicker = kicker < 0 ? -kicker : kicker;
         
         int httpPort = portBase + kicker + 80;
         int adminPort = portBase + kicker + 48;
+        if (useDefaultPorts) {
+            httpPort = 8080;
+            adminPort = 4848;
+        }
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
         createProps.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         createProps.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
-        createProps.put(CreateDomain.PORTBASE, Integer.toString(portBase+kicker));
+        if (!useDefaultPorts) {
+            createProps.put(CreateDomain.PORTBASE, Integer.toString(portBase+kicker));
+        }
     }
 
     @Override
@@ -133,21 +139,37 @@ public class CreateDomain extends Thread {
             if ("".equals(pword)) { // NOI18N
                 arrnd = gip.getNoPasswordCreatDomainCommand(startScript, jarLocation,domainDir,map.get(PORTBASE),uname,domain);
             } else {
-                arrnd = new String[] {startScript,
-                    "-client",  // NOI18N
-                    "-jar",  // NOI18N
-                    jarLocation,
-                    "create-domain", //NOI18N
-                    "--domaindir", //NOI18N
-                    domainDir,
-                    "--portbase", //NOI18N
-                    map.get(PORTBASE),
-                    "--user", //NOI18N
-                    uname,
-                    "--passwordfile", //NOI18N
-                    passWordFile.getAbsolutePath(),
-                    domain
-                };                
+                if (null == map.get(PORTBASE)) {
+                    arrnd = new String[] {startScript,
+                        "-client",  // NOI18N
+                        "-jar",  // NOI18N
+                        jarLocation,
+                        "create-domain", //NOI18N
+                        "--domaindir", //NOI18N
+                        domainDir,
+                        "--portbase", //NOI18N
+                        map.get(PORTBASE),
+                        "--user", //NOI18N
+                        uname,
+                        "--passwordfile", //NOI18N
+                        passWordFile.getAbsolutePath(),
+                        domain
+                    };
+                } else {
+                    arrnd = new String[] {startScript,
+                        "-client",  // NOI18N
+                        "-jar",  // NOI18N
+                        jarLocation,
+                        "create-domain", //NOI18N
+                        "--domaindir", //NOI18N
+                        domainDir,
+                        "--user", //NOI18N
+                        uname,
+                        "--passwordfile", //NOI18N
+                        passWordFile.getAbsolutePath(),
+                        domain
+                    };
+                }
             }
 
             ProgressHandle ph = null;
@@ -240,6 +262,7 @@ public class CreateDomain extends Thread {
             return notFired;
         }
 
+        @Override
         synchronized public boolean cancel() {
             notFired = false;
             p.destroy();
@@ -293,6 +316,7 @@ public class CreateDomain extends Thread {
     
     private static void showInformation(final String msg){
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
@@ -302,6 +326,7 @@ public class CreateDomain extends Thread {
     
     private static void showError(final String msg){
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);

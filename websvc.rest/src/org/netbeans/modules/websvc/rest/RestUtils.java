@@ -432,4 +432,15 @@ public class RestUtils {
         }
         return false;
     }
+
+    public static boolean isJavaEE6(Project project) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            Profile profile = webModule.getJ2eeProfile();
+            if (Profile.JAVA_EE_6_WEB == profile || Profile.JAVA_EE_6_FULL == profile) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

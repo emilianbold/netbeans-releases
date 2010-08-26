@@ -97,7 +97,7 @@ public final class DeleteLocalAction extends ContextAction {
                 performDelete(ctx, this);
             }
         };
-        support.start(createRequestProcessor(nodes));        
+        support.start(createRequestProcessor(ctx));
     }
     
     public static void performDelete(Context ctx, SvnProgressSupport support) {

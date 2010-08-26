@@ -54,7 +54,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.embedder.MavenEmbedderLogger;
+import org.apache.maven.execution.ExecutionEvent;
+import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.monitor.event.EventMonitor;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.embedder.exec.MyLifecycleExecutor;
@@ -74,7 +75,7 @@ import org.openide.windows.OutputWriter;
  * handling of output coming from maven builds.
  * @author Milos Kleint 
  */
-class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, MavenEmbedderLogger {
+class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, ExecutionListener {
     private static final String SEC_MOJO_EXEC = "mojo-execute";//NOI18N
     private static final String SEC_PRJ_EXEC = "project-execute";//NOI18N
     private static final String SEC_REAC_EXEC = "reactor-execute";//NOI18N
@@ -87,7 +88,7 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     
     private InputStream in;
     
-    private int threshold = MavenEmbedderLogger.LEVEL_INFO;
+//    private int threshold = MavenEmbedderLogger.LEVEL_INFO;
     
 
     private AggregateProgressHandle handle;
@@ -185,27 +186,28 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     
     public void debug(String string) {
         if (isDebugEnabled()) {
-            processMultiLine(string, stdOut, "DEBUG");//NOI18N
+            processMultiLine(string, stdOut, Level.DEBUG);
         }
     }
     
     public void debug(String string, Throwable throwable) {
         if (isDebugEnabled()) {
-            processMultiLine(string, stdOut, "DEBUG");//NOI18N
+            processMultiLine(string, stdOut, Level.DEBUG);
             throwable.printStackTrace(stdOut);
         }
     }
     
     public boolean isDebugEnabled()    {
-        return threshold == MavenEmbedderLogger.LEVEL_DEBUG;
+        return false;
+//TODO        return threshold == MavenEmbedderLogger.LEVEL_DEBUG;
     }
     
     public void info(String string)    {
-        processMultiLine(string, stdOut, /*"INFO"*/ "");//NOI18N
+        processMultiLine(string, stdOut, Level.INFO);
     }
     
     public void info(String string, Throwable throwable)    {
-        processMultiLine( string, stdOut, /*"INFO"*/ "");//NOI18N
+        processMultiLine( string, stdOut, Level.INFO);
         throwable.printStackTrace(stdOut);
     }
     
@@ -216,23 +218,23 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     public void warn(String string)    {
         if (string.startsWith("Unable to get resource from repository")) { //NOI18N
             if (isDebugEnabled()) {
-                processMultiLine(string, stdOut, "DEBUG");//NOI18N
+                processMultiLine(string, stdOut, Level.DEBUG);
             }
             return;
         }
         //TEMPORARY - only relevant when 2.1 gets out
         if (string.startsWith("The <pluginRepositories/> section of the POM has been deprecated")) { //NOI18N
             if (isDebugEnabled()) {
-                processMultiLine(string, stdOut, "DEBUG");//NOI18N
+                processMultiLine(string, stdOut, Level.DEBUG);
             }
             return;
         }
         
-        processMultiLine(string, stdOut, "WARN");//NOI18N
+        processMultiLine(string, stdOut, Level.WARNING);
     }
     
     public void warn(String string, Throwable throwable)    {
-        processMultiLine(string, stdOut, "WARN");//NOI18N
+        processMultiLine(string, stdOut, Level.WARNING);
         throwable.printStackTrace(stdOut);
     }
     
@@ -241,11 +243,11 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     }
     
     public void error(String string)    {
-        processMultiLine(string, stdErr, "ERROR");//NOI18N
+        processMultiLine(string, stdErr, Level.ERROR);
     }
     
     public void error(String string, Throwable throwable)    {
-        processMultiLine(string, stdErr, "ERROR");//NOI18N
+        processMultiLine(string, stdErr, Level.ERROR);
         throwable.printStackTrace(stdErr);
     }
     
@@ -254,11 +256,11 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     }
     
     public void fatalError(String string)    {
-        processMultiLine(string, stdErr, "FATAL");//NOI18N
+        processMultiLine(string, stdErr, Level.FATAL);
     }
     
     public void fatalError(String string, Throwable throwable)    {
-        processMultiLine(string, stdErr, "FATAL");//NOI18N
+        processMultiLine(string, stdErr, Level.FATAL);
         throwable.printStackTrace(stdErr);
     }
     
@@ -266,13 +268,13 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
         return true;
     }
     
-    public void setThreshold(int i)    {
-        threshold = i;
-    }
-    
-    public int getThreshold()    {
-        return threshold;
-    }
+//    public void setThreshold(int i)    {
+//        threshold = i;
+//    }
+//
+//    public int getThreshold()    {
+//        return threshold;
+//    }
  
     
     PrintStream getErr() {
@@ -317,6 +319,74 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     @Override
     protected InputOutput getIO() {
         return this.inputOutput;
+    }
+
+    public void projectDiscoveryStarted(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void sessionStarted(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void sessionEnded(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void projectSkipped(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void projectStarted(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void projectSucceeded(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void projectFailed(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void mojoSkipped(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void mojoStarted(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void mojoSucceeded(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void mojoFailed(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forkStarted(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forkSucceeded(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forkFailed(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forkedProjectStarted(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forkedProjectSucceeded(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forkedProjectFailed(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     private class StreamBridge extends PrintStream implements Runnable {
@@ -484,16 +554,16 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
         
         private void doPrint() {
             assert Thread.holdsLock(this);
-            processMultiLine(buff.toString(), writer, "");//NOI18N
+            processMultiLine(buff.toString(), writer, Level.INFO);
             buff.setLength(0);
         }
 
     }
 
-    @Override
-    MavenEmbedderLogger getLogger() {
-        return this;
-    }
+//    @Override
+//    MavenEmbedderLogger getLogger() {
+//        return this;
+//    }
 
     public void close() {
     }

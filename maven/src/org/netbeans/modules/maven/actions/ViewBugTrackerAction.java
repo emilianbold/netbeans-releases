@@ -61,6 +61,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Anuradha
  */
+@Deprecated
 public class ViewBugTrackerAction extends AbstractAction {
 
     private Artifact artifact;

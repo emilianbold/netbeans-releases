@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.JComponent;
@@ -58,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * The main class of the custom wizard for registering a new server instance.
@@ -79,6 +79,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * at creation time and can be changed via the properties sheet
      */
     private static final String DEFAULT_DEBUGGER_PORT = "8787"; // NOI18N
+
+    public static final String DEFAULT_MAC_MEM_OPTS = "-Xmx1024m -XX:PermSize=256m"; // NOI18N
 
     /**
      * The parent wizard descriptor
@@ -153,6 +155,9 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
         props.put(WLPluginProperties.DOMAIN_NAME, domainName);
         props.put(WLPluginProperties.PORT_ATTR, port);
+        if (Utilities.isMac()) {
+            props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
+        }
 
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, username, password, displayName, props);

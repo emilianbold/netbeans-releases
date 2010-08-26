@@ -39,30 +39,37 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.indexer;
 
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 
-/**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
- */
 public class Installer extends ModuleInstall {
-    private static final Logger LOG = Logger.getLogger(Installer.class.getName());
 
-    @Override
-    public void close() {
-        super.close();
-
-        // ugly brutal, please fix if you know better solution
-        for (Thread t : RemoteIndexTransferListener.getActiveTransfersOrScans()) {
-            LOG.warning("Killing Maven Repo Transfer thread on system exit..."); //NOI18N
-            t.stop();
+    @SuppressWarnings("deprecation")
+    public @Override void close() {
+        Logger LOG = Logger.getLogger(Installer.class.getName());
+        if (!Cancellation.cancelAll()) {
+            // Cf. #188883. Hard to kill HTTP connections.
+            for (Thread t : RemoteIndexTransferListener.getActiveTransfersOrScans()) {
+                LOG.log(Level.WARNING, "Killing Maven Repo Transfer thread {0} on system exit...", t.getName());
+                t.interrupt();
+                try {
+                    t.join(1000);
+                } catch (InterruptedException x) {
+                    LOG.log(Level.INFO, null, x);
+                }
+                if (t.isAlive()) {
+                    LOG.warning("...hard stop required.");
+                    t.stop(new Cancellation());
+                }
+            }
         }
 
         Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);

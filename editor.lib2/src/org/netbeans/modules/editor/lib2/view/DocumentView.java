@@ -309,7 +309,17 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (lineWrapType == null) {
             return 0f; // Return zero until parent and etc. gets initialized
         }
-        return super.getPreferredSpan(axis);
+        float span = super.getPreferredSpan(axis);
+        if (axis == View.Y_AXIS) {
+            // Add extra span when component in viewport
+            Component parent;
+            if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
+                JViewport viewport = (JViewport) parent;
+                int viewportHeight = viewport.getExtentSize().height;
+                span += viewportHeight / 3;
+            }
+        }
+        return span;
     }
 
     @Override
@@ -422,6 +432,23 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
     }
 
+    @Override
+    public void preferenceChanged(View childView, boolean width, boolean height) {
+        super.preferenceChanged(childView, width, height);
+        if (childView == null) { // Track component resizes
+            if (LOG.isLoggable(Level.FINER)) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.INFO, "Cause of DocumentView.preferenceChanged()", new Exception()); // NOI18N
+                }
+                float prefWidth = getPreferredSpan(View.X_AXIS);
+                float prefHeight = getPreferredSpan(View.Y_AXIS);
+                String changed = (width ? "T" : "F") + "x" + (height ? "T" : "F"); // NOI18N
+                LOG.finer("DocumentView-preferenceChanged: WxH[" + changed + "]:" + // NOI18N
+                        prefWidth + "x" + prefHeight + '\n'); // NOI18N
+            }
+        }
+    }
+
     void checkViewsInited() {
         if (children == null && textComponent != null) {
             // Check whether Graphics can be constructed (only if component is part of hierarchy)
@@ -457,8 +484,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     // checkDocumentLocked() - unnecessary - doc.render() called
                     try {
                         ((EditorTabExpander) tabExpander).updateTabSize();
-                        if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
-                            viewUpdates.reinitViews();
+                        if (lengthyAtomicEdit == 0) { // Not in lengthy atomic edit
+                            if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
+                                viewUpdates.reinitViews();
+                            } // At the end of lengthy edit the views will be released and recreated automatically
                         }
                     } finally {
                         mutex.unlock();
@@ -587,21 +616,26 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 public void resultChanged(LookupEvent ev) {
                     @SuppressWarnings("unchecked")
                     final Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
-                    getDocument().render(new Runnable() {
+                    SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            PriorityMutex mutex = getMutex();
-                            if (mutex != null) {
-                                mutex.lock();
-                                // checkDocumentLocked() - unnecessary - doc.render() called
-                                try {
-                                    if (textComponent != null) {
-                                        updateDefaultFontAndColors(result);
+                            getDocument().render(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PriorityMutex mutex = getMutex();
+                                    if (mutex != null) {
+                                        mutex.lock();
+                                        // checkDocumentLocked() - unnecessary - doc.render() called
+                                        try {
+                                            if (textComponent != null) {
+                                                updateDefaultFontAndColors(result);
+                                            }
+                                        } finally {
+                                            mutex.unlock();
+                                        }
                                     }
-                                } finally {
-                                    mutex.unlock();
                                 }
-                            }
+                            });
                         }
                     });
                 }
@@ -1181,6 +1215,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     protected StringBuilder appendViewInfoCore(StringBuilder sb, int indent, int importantChildIndex) {
         super.appendViewInfoCore(sb, indent, importantChildIndex);
         sb.append("; incomingMod=").append(incomingModification);
+        sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit);
+        Document doc = getDocument();
+        sb.append("\nDoc: ").append(ViewUtils.toString(doc));
         return sb;
     }
 

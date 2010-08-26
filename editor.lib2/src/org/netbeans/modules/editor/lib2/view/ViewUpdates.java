@@ -281,6 +281,7 @@ public final class ViewUpdates implements DocumentListener {
                         if (rStartOffset < childStartOffset) {
                             rebuildNecessary = true;
                         }
+                        rebuildNecessary = true; // Force rebuild until 183219 gets resolved
                         if (!rebuildNecessary) {
                             // Possibly clear text layout for the child view
                             if (childView instanceof TextLayoutView) {
@@ -425,6 +426,7 @@ public final class ViewUpdates implements DocumentListener {
                     boolean localEdit = ((removeOffset == childStartOffset && removeEndOffset < childEndOffset) ||
                             (removeOffset > childStartOffset && removeEndOffset <= childEndOffset));
                     rebuildNecessary = !localEdit;
+                    rebuildNecessary = true; // Force rebuild until 183219 gets resolved
                     if (!rebuildNecessary) {
                         // Possibly clear text layout for the child view
                         if (childView instanceof TextLayoutView) {

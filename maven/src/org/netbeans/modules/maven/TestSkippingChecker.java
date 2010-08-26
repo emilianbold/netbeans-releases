@@ -52,7 +52,14 @@ import org.netbeans.spi.project.ActionProvider;
  *
  * @author mkleint
  */
-class TestSkippingChecker implements PrerequisitesChecker {
+public class TestSkippingChecker implements PrerequisitesChecker {
+
+    /**
+     * Skip test execution.
+     * Do not use maven.test.skip as that skips also compilation; see #189466 for background.
+     * http://maven.apache.org/plugins/maven-surefire-plugin/examples/skipping-test.html
+     */
+    public static final String PROP_SKIP_TEST = "skipTests"; // NOI18N
 
     public TestSkippingChecker() {
     }
@@ -73,8 +80,8 @@ class TestSkippingChecker implements PrerequisitesChecker {
             if (props == null) {
                 props = new Properties();
             }
-            if (!props.containsKey("maven.test.skip")) { //NOI18N
-                props.setProperty("maven.test.skip", "true"); //NOI18N
+            if (!props.containsKey(PROP_SKIP_TEST)) {
+                props.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
                 config.setProperties(props);
             }
         }

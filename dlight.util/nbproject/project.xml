@@ -60,8 +60,17 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.analytics.indicators</friend>
+                <friend>com.sun.tools.analytics.management</friend>
+                <friend>com.sun.tools.analytics.targets</friend>
+                <friend>com.sun.tools.analytics.targets.gui</friend>
+                <friend>com.sun.tools.analytics.utils</friend>
+                <friend>com.sun.tools.dlight.amp</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
+                <friend>com.sun.tools.dlight.lint</friend>
+                <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>com.sun.tools.dlight.targets</friend>
+                <friend>com.sun.tools.dlight.ui</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
@@ -76,6 +85,7 @@
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
+                <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.extras</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
@@ -84,16 +94,15 @@
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.msa</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.procfs</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
-                <friend>com.sun.tools.dlight.amp</friend>
-                <friend>com.sun.tools.dlight.spi.impl</friend>
-                <friend>org.netbeans.modules.dlight.xml</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
+                <friend>org.netbeans.modules.dlight.xml</friend>
                 <package>org.netbeans.modules.dlight.util</package>
                 <package>org.netbeans.modules.dlight.util.ui</package>
                 <package>org.netbeans.modules.dlight.util.usagetracking</package>

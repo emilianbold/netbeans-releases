@@ -359,6 +359,10 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     
     abstract protected String[] getBreakableProperties();
 
+    protected final Project getProject() {
+        return project;
+    }
+
     protected final String[] createListOfBreakableProperties(SourceRoots sources, SourceRoots tests, String[] otherBreakableProperties) {
         String[] srcRootProps = sources.getRootProperties();
         String[] testRootProps = tests.getRootProperties();

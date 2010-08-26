@@ -267,18 +267,19 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
-                <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.clearcase</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.mercurial</friend>
                 <friend>org.netbeans.modules.perforce</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <friend>org.netbeans.modules.versioning.indexingbridge</friend>
+                <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>
                 <package>org.netbeans.modules.proxy</package>
                 <package>org.netbeans.modules.turbo</package>
                 <package>org.netbeans.modules.versioning.annotate</package>
                 <package>org.netbeans.modules.versioning.diff</package>
+                <package>org.netbeans.modules.versioning.history</package>
                 <package>org.netbeans.modules.versioning.historystore</package>
                 <package>org.netbeans.modules.versioning.hooks</package>
                 <package>org.netbeans.modules.versioning.util</package>

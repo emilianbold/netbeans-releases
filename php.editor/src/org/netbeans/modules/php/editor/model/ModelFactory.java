@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  * @author Radek Matous
@@ -51,7 +51,7 @@ public class ModelFactory {
     private ModelFactory() {}
 
     @NonNull
-    public static Model getModel(ParserResult info) {
+    public static Model getModel(PHPParseResult info) {
         return new Model(info);
     }
     

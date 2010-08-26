@@ -42,7 +42,8 @@
 package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
-import java.util.Collections;
+import java.util.List;
+import javax.swing.Action;
 
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBGroupInfo;
@@ -50,9 +51,9 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -60,11 +61,8 @@ import org.openide.util.RequestProcessor;
  * @author Anuradha
  */
 public class GroupNode extends AbstractNode {
-    private RepositoryInfo info;
-    /** Creates a new instance of GroupNode */
     public GroupNode(RepositoryInfo info,String id) {
-        super(new GroupChildren(info,id));
-        this.info=info;
+        super(Children.create(new GroupChildren(info, id), true));
         setName(id);
         setDisplayName(id);
     }
@@ -87,39 +85,22 @@ public class GroupNode extends AbstractNode {
         setDisplayName(groupInfo.getName());
     }
 
-    static class GroupChildren extends Children.Keys {
+    static class GroupChildren extends ChildFactory<String> {
 
         private String id;
         private RepositoryInfo info;
-        /** Creates a new instance of GroupListChildren */
         public GroupChildren(RepositoryInfo info,String group) {
             this.info = info;
             id = group;
         }
 
-        protected Node[] createNodes(Object key) {
-            if (GroupListChildren.LOADING == key) {
-                return new Node[]{GroupListChildren.createLoadingNode()};
-            }
-            String artifactId = (String) key;
-            return new Node[]{new ArtifactNode(info,id, artifactId)};
+        protected @Override Node createNodeForKey(String key) {
+            return new ArtifactNode(info, id, key);
         }
 
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            setKeys(Collections.singletonList(GroupListChildren.LOADING));
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    setKeys(RepositoryQueries.getArtifacts(id, info));
-                }
-            });
-        }
-
-        @Override
-        protected void removeNotify() {
-            super.removeNotify();
-            setKeys(Collections.EMPTY_LIST);
+        protected @Override boolean createKeys(List<String> toPopulate) {
+            toPopulate.addAll(RepositoryQueries.getArtifacts(id, info));
+            return true;
         }
     }
 
@@ -131,5 +112,9 @@ public class GroupNode extends AbstractNode {
     @Override
     public Image getOpenedIcon(int arg0) {
         return NodeUtils.getTreeFolderIcon(true);
+    }
+
+    public @Override Action[] getActions(boolean context) {
+        return new Action[0];
     }
 }

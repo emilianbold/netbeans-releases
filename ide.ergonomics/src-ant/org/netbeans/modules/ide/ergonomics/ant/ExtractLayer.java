@@ -321,6 +321,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
                                     bundles.put(suffix, ra);
                                 }
                                 ra.add(new ZipResource(jar, "UTF-8", zipEntry));
+                                ra.add(new StringResource("\n\n"));
                             }
                             if (copyPattern.matcher(je.getName()).matches()) {
                                 ZipEntry zipEntry = new ZipEntry(je);

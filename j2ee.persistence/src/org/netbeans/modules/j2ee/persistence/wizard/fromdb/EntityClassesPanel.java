@@ -110,10 +110,14 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private final boolean puRequired;
 
 
-    private EntityClassesPanel(boolean puRequired) {
+    private EntityClassesPanel(boolean puRequired, boolean JAXBRequired) {
         this.puRequired = puRequired;
 
         initComponents();
+
+        if (JAXBRequired) {
+            generateJAXBCheckBox.setEnabled(false);
+        }
 
         tableActionsPopup.add(new AllToUpdateAction());
         tableActionsPopup.add(new AllToRecreateAction());
@@ -427,6 +431,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
         });
 
+        generateJAXBCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(generateJAXBCheckBox, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_GenerateJAXBAnnotations")); // NOI18N
         generateJAXBCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_ToolTipJAXB")); // NOI18N
         generateJAXBCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -453,7 +458,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(createPUCheckbox)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(cmpFieldsInInterfaceCheckBox)
@@ -553,11 +558,17 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         private Project project;
         private boolean cmp;
         private boolean puRequired;
+        private boolean JAXBRequired;
 
         private List<Provider> providers;
 
         public WizardPanel(){
             this(false);
+        }
+
+        public WizardPanel(boolean persistenceUnitRequired, boolean JAXBRequired){
+            puRequired = persistenceUnitRequired;
+            this.JAXBRequired = JAXBRequired;
         }
 
         public WizardPanel(boolean persistenceUnitRequired){
@@ -567,7 +578,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         @Override
         public EntityClassesPanel getComponent() {
             if (component == null) {
-                component = new EntityClassesPanel(puRequired);
+                component = new EntityClassesPanel(puRequired, JAXBRequired);
                 component.addChangeListener(this);
             }
             return component;

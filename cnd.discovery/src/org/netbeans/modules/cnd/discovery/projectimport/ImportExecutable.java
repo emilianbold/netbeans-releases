@@ -212,8 +212,10 @@ public class ImportExecutable {
     private void saveMakeConfigurationDescriptor() {
         ConfigurationDescriptorProvider pdp = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-        makeConfigurationDescriptor.setModified();
-        makeConfigurationDescriptor.save();
-        makeConfigurationDescriptor.checkForChangedItems(lastSelectedProject, null, null);
+        if (makeConfigurationDescriptor != null) {
+            makeConfigurationDescriptor.setModified();
+            makeConfigurationDescriptor.save();
+            makeConfigurationDescriptor.checkForChangedItems(lastSelectedProject, null, null);
+        }
     }
 }

@@ -10,6 +10,16 @@
             <header-extensions>h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
+            <sourceRootList>
+                <sourceRootElem>.</sourceRootElem>
+            </sourceRootList>
+            <confList>
+                <confElem>Debug32</confElem>
+                <confElem>Debug64</confElem>
+                <confElem>Release32</confElem>
+                <confElem>Release64</confElem>
+                <confElem>Test_filedata_32</confElem>
+            </confList>
         </data>
     </configuration>
 </project>

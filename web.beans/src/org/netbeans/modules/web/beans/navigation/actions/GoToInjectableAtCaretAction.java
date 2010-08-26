@@ -87,6 +87,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.Result;
@@ -154,16 +155,13 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-        ClassPath boot = getClassPath( project , ClassPath.BOOT);
-        ClassPath compile = getClassPath(project, ClassPath.COMPILE );
-        ClassPath src = getClassPath(project , ClassPath.SOURCE);
-        if ( boot == null || compile == null || src == null ){
+        
+        MetaModelSupport support = new MetaModelSupport(project);
+        final MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
+        if ( metaModel == null ){
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-        ModelUnit modelUnit = ModelUnit.create( boot, compile , src);
-        final MetadataModel<WebBeansModel> metaModel = WebBeansModelFactory.
-            getMetaModel( modelUnit );
         
         /*
          *  this list will contain variable element name and TypeElement 
@@ -230,35 +228,6 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
         return true;
     }
     
-    private ClassPath getClassPath( Project project, String type ) {
-        ClassPathProvider provider = project.getLookup().lookup( 
-                ClassPathProvider.class);
-        if ( provider == null ){
-            return null;
-        }
-        Sources sources = project.getLookup().lookup(Sources.class);
-        if ( sources == null ){
-            return null;
-        }
-        SourceGroup[] sourceGroups = sources.getSourceGroups( 
-                JavaProjectConstants.SOURCES_TYPE_JAVA );
-        SourceGroup[] webGroup = sources.getSourceGroups(
-                WebProjectConstants.TYPE_WEB_INF);
-        ClassPath[] paths = new ClassPath[ sourceGroups.length+webGroup.length];
-        int i=0;
-        for (SourceGroup sourceGroup : sourceGroups) {
-            FileObject rootFolder = sourceGroup.getRootFolder();
-            paths[ i ] = provider.findClassPath( rootFolder, type);
-            i++;
-        }
-        for (SourceGroup sourceGroup : webGroup) {
-            FileObject rootFolder = sourceGroup.getRootFolder();
-            paths[ i ] = provider.findClassPath( rootFolder, type);
-            i++;
-        }
-        return ClassPathSupport.createProxyClassPath( paths );
-    }
-
     /**
      * Variable element is resolved based on containing type element 
      * qualified name and simple name of variable itself.

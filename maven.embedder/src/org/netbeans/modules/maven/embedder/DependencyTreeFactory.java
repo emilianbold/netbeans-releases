@@ -47,14 +47,10 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -63,17 +59,22 @@ import org.openide.util.Exceptions;
 public class DependencyTreeFactory {
 
     public static DependencyNode createDependencyTree(MavenProject project, MavenEmbedder embedder, String scope) {
-        try {
-            PlexusContainer container = embedder.getPlexusContainer();
-            DependencyTreeBuilder builder = (DependencyTreeBuilder) container.lookup(DependencyTreeBuilder.ROLE);
-            ArtifactFactory factory = (ArtifactFactory)container.lookup(ArtifactFactory.ROLE);
-            ArtifactMetadataSource source = (ArtifactMetadataSource)container.lookup(ArtifactMetadataSource.ROLE);
-            ArtifactCollector collector = (ArtifactCollector)container.lookup(ArtifactCollector.ROLE);
-            return createDependencyTree(project, builder, embedder.getLocalRepository(), factory, source, collector, scope);
-        } catch (ComponentLookupException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        
+        //TODO: check alternative for deprecated maven components 
+        DependencyTreeBuilder builder = embedder.lookupComponent(DependencyTreeBuilder.class);
+        assert builder !=null : "DependencyTreeBuilder component not found in maven";
+
+        ArtifactFactory factory = embedder.lookupComponent(ArtifactFactory.class);
+        assert factory !=null : "ArtifactFactory component not found in maven";
+
+        ArtifactMetadataSource source = embedder.lookupComponent(ArtifactMetadataSource.class);
+        assert source !=null : "ArtifactMetadataSource component not found in maven";
+
+        ArtifactCollector collector = embedder.lookupComponent(ArtifactCollector.class);
+        assert collector !=null : "ArtifactCollector component not found in maven";
+       
+        return createDependencyTree(project, builder, embedder.getLocalRepository(), factory, source, collector, scope);
+
     }
 
 

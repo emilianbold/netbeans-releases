@@ -364,10 +364,7 @@ public class BaseKit extends DefaultEditorKit {
 
     /* package */ static final boolean LINEWRAP_ENABLED;
     static {
-        String value = System.getProperty("org.netbeans.editor.linewrap");
-        LINEWRAP_ENABLED = (value != null)
-                ? value.equalsIgnoreCase("true")
-                : true; // false for NB6.9 Beta
+        LINEWRAP_ENABLED = HighlightingManager.LINEWRAP_ENABLED;
     }
 
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {

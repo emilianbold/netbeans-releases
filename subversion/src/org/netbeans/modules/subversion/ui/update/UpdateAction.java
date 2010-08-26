@@ -133,7 +133,7 @@ public class UpdateAction extends ContextAction {
                 update(ctx, this, getContextDisplayName(nodes), revision);
             }
         };                    
-        support.start(createRequestProcessor(nodes));
+        support.start(createRequestProcessor(ctx));
     }
 
     protected SVNRevision getRevision (Context ctx) {

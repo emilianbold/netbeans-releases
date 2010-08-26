@@ -104,7 +104,7 @@ public abstract class PhpElementImpl implements PhpElement {
     private final String fileUrl;
     private final int offset;
     private final ElementQuery elementQuery;
-    private FileObject fileObject;
+    protected FileObject fileObject;
 
     public static PhpElementImpl create(final String variableName, final String in, final int offset, final FileObject fo, final PhpElementKind kind) {
         return new PhpElementImpl(variableName, in, null, offset, null) {

@@ -83,22 +83,30 @@ public final class WLConnectionSupport {
     }
 
     public <T> T executeAction(final JMXAction<T> action) throws Exception {
+        InstanceProperties instanceProperties = deploymentManager.getInstanceProperties();
+        String host = instanceProperties.getProperty(WLPluginProperties.HOST_ATTR);
+        String port = instanceProperties.getProperty(WLPluginProperties.PORT_ATTR);
+        if ((host == null || host.trim().length() == 0
+                && (port == null || port.trim().length() == 0))) {
+            // getDomainProperties instantiate DocumentBuilderFactory
+            // if we would od it inside call such factory could be loaded
+            // from weblogic classes causing troubles, see #189483
+            Properties domainProperties = WLPluginProperties.getDomainProperties(
+                    instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
+            host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
+            port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
+        }
+        
+        final String resolvedHost = host;
+        final String resolvedPort = port;
+
         return executeAction(new Callable<T>() {
 
             @Override
             public T call() throws Exception {
-                InstanceProperties instanceProperties = deploymentManager.getInstanceProperties();
-                String host = instanceProperties.getProperty(WLPluginProperties.HOST_ATTR);
-                String port = instanceProperties.getProperty(WLPluginProperties.PORT_ATTR);
-                if ((host == null || host.trim().length() == 0
-                        && (port == null || port.trim().length() == 0))) {
-                    Properties domainProperties = WLPluginProperties.getDomainProperties(
-                            instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
-                    host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
-                    port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
-                }
-                JMXServiceURL url = new JMXServiceURL("iiop", host.trim(), // NOI18N
-                        Integer.parseInt(port.trim()), action.getPath());
+
+                JMXServiceURL url = new JMXServiceURL("iiop", resolvedHost.trim(), // NOI18N
+                        Integer.parseInt(resolvedPort.trim()), action.getPath());
 
                 Map<String, String> env = new HashMap<String, String>();
                 env.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES,

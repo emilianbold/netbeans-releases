@@ -57,6 +57,7 @@ import org.openide.DialogDisplayer;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -71,12 +72,17 @@ import org.openide.util.RequestProcessor;
 public class RepositoryNode extends AbstractNode {
 
     private RepositoryInfo info;
+    private final GroupListChildren children;
 
     private static final RequestProcessor RPrefreshindex = new RequestProcessor(RefreshIndexAction.class.getName(),1);
 
     public RepositoryNode(RepositoryInfo info) {
-        super(new GroupListChildren(info));
+        this(info, new GroupListChildren(info));
+    }
+    private RepositoryNode(RepositoryInfo info, GroupListChildren children) {
+        super(Children.create(children, true));
         this.info = info;
+        this.children = children;
         setName(info.getId());
         setDisplayName(info.getName());
     }
@@ -233,7 +239,7 @@ public class RepositoryNode extends AbstractNode {
                 setDisplayName(info.getName());
                 fireIconChange();
                 fireOpenedIconChange();
-                ((GroupListChildren)getChildren()).refreshGroups();
+                children.setInfo(info);
             }
 
         }

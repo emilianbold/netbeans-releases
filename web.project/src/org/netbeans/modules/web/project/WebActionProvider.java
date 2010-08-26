@@ -98,6 +98,7 @@ import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.ui.ServletScanObserver;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
@@ -650,20 +651,21 @@ class WebActionProvider extends BaseActionProvider {
         if (!result.isParsingSuccess()) {
             modified = true;
         } else {
-            List includes = result.getPageInfo().getDependants();
-            if ((includes != null) && (includes.size() > 0)) {
-                long jspTS = jsp.lastModified().getTime();
-                int size = includes.size();
-                for (int i = 0; i <
-                        size; i++) {
-                    String filename = (String) includes.get(i);
-                    filename =
-                            FileUtil.toFile(wm.getDocumentBase()).getPath() + filename;
-                    File f = new File(filename);
-                    long incTS = f.lastModified();
-                    if (incTS > jspTS) {
-                        modified = true;
-                        break;
+            PageInfo pi = result.getPageInfo();
+            if (pi != null) {
+                List includes = pi.getDependants();
+                if ((includes != null) && (includes.size() > 0)) {
+                    long jspTS = jsp.lastModified().getTime();
+                    int size = includes.size();
+                    for (int i = 0; i < size; i++) {
+                        String filename = (String) includes.get(i);
+                        filename = FileUtil.toFile(wm.getDocumentBase()).getPath() + filename;
+                        File f = new File(filename);
+                        long incTS = f.lastModified();
+                        if (incTS > jspTS) {
+                            modified = true;
+                            break;
+                        }
                     }
                 }
             }

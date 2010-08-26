@@ -95,7 +95,7 @@ public class Commit extends GeneralPHP
     "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*/?>";
 
   static private final String CLASS_PHP_INITIAL_CONTENT =
-    "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofPHPClass**@author" + System.getProperty( "user.name" ) + "*/classPHPClass{//putyourcodehere}?>";
+    "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofnewPHPClass**@author" + System.getProperty( "user.name" ) + "*/classnewPHPClass{//putyourcodehere}?>";
 
   static private final int COMPLETION_LIST_INCLASS = 22;
 
@@ -455,8 +455,12 @@ public class Commit extends GeneralPHP
 
     // Insert constructor
     Sleep( 1500 );
-    eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
-    Sleep( 1500 );
+    if (!getPlatform().equals("mac os x")) {
+        eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    } else {
+        eoPHP.pressKey( KeyEvent.VK_I, InputEvent.CTRL_MASK );
+      }
+    Sleep( 5000 );
 
     JDialogOperator jdInsetter = new JDialogOperator( );
     JListOperator jlList = new JListOperator( jdInsetter );
@@ -488,7 +492,11 @@ public class Commit extends GeneralPHP
 
     boolean b = true;
     // Insert get
-    eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+     if (!getPlatform().equals("mac os x")) {
+        eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    } else {
+        eoPHP.pressKey( KeyEvent.VK_I, InputEvent.CTRL_MASK );
+      }
     Sleep( 1500 );
 
     jdInsetter = new JDialogOperator( );

@@ -43,12 +43,14 @@
 package org.netbeans.modules.web.el;
 
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import org.netbeans.modules.web.el.hints.ELHintsProvider;
 
 /**
  * CSL language for Expression Language
@@ -80,5 +82,16 @@ public class ELLanguage extends DefaultLanguageConfig {
     public EmbeddingIndexerFactory getIndexerFactory() {
         return new ELIndexer.Factory();
     }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return new ELHintsProvider();
+    }
+
 
 }

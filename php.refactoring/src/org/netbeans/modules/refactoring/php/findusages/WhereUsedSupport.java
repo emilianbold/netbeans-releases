@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
@@ -78,6 +79,7 @@ import org.netbeans.modules.php.editor.model.FindUsageSupport;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -186,7 +188,7 @@ public final class WhereUsedSupport {
         }
     }
 
-    public static WhereUsedSupport getInstance(final ParserResult info, final int offset) {
+    public static WhereUsedSupport getInstance(final PHPParseResult info, final int offset) {
         Model model = ModelFactory.getModel(info);
         final Occurence occurence = model.getOccurencesSupport(offset).getOccurence();
         final Set<ModelElement> declarations = new HashSet<ModelElement>();
@@ -202,9 +204,11 @@ public final class WhereUsedSupport {
 
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
-                                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-                                Model modelForDeclaration = ModelFactory.getModel(parameter);
-                                declarations.add(modelForDeclaration.findDeclaration(declarationElement));
+                                Result parserResult = resultIterator.getParserResult();
+                                if (parserResult instanceof PHPParseResult) {
+                                    Model modelForDeclaration = ModelFactory.getModel((PHPParseResult)parserResult);
+                                    declarations.add(modelForDeclaration.findDeclaration(declarationElement));
+                                }
                             }
                         });
                     } else {
@@ -215,7 +219,7 @@ public final class WhereUsedSupport {
                     return null;
                 }
             }
-            final Index indexQuery = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            final Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(info));
             FileObject fileObject = info.getSnapshot().getSource().getFileObject();
             return getInstance(declarations, indexQuery, fileObject, offset);
         }

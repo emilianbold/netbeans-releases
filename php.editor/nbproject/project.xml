@@ -442,6 +442,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.php.dbgp</friend>
+                <friend>org.netbeans.modules.php.nette</friend>
                 <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
@@ -454,5 +455,11 @@
                 <package>org.netbeans.modules.php.editor.parser.astnodes.visitors</package>
             </friend-packages>
         </data>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>netbeans</word>
+            <word>org</word>
+            <word>php</word>
+            <word>PHPDoc</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>

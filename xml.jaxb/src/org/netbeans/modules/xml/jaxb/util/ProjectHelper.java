@@ -57,6 +57,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -1135,15 +1137,25 @@ public class ProjectHelper {
         }
     }
 
-    public static void addJaxbApiEndorsed(FileObject srcRoot) throws IOException {
-            ClassPath classPath = ClassPath.getClassPath(srcRoot, CLASSPATH_ENDORSED);
-            if (classPath == null || classPath.findResource("javax/xml/bind/JAXBElement.class") == null) { //NOI18N
-                Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAXB_ENDORSED);
-                if (jaxWsApiLib == null) {
-                    jaxWsApiLib = createJaxbApiLibrary();
-                }
-                ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, CLASSPATH_ENDORSED);
+    private static void addJaxbApiEndorsed(FileObject srcRoot) throws IOException {
+        String sample = "javax/xml/bind/JAXBElement.class"; // NOI18N
+        ClassPath classPath = ClassPath.getClassPath(srcRoot, CLASSPATH_ENDORSED);
+        if (classPath == null || classPath.findResource(sample) == null) {
+            Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAXB_ENDORSED);
+            if (jaxWsApiLib == null) {
+                jaxWsApiLib = createJaxbApiLibrary();
             }
+            try {
+                ProjectClassPathModifier.addLibraries(new Library[] {jaxWsApiLib}, srcRoot, CLASSPATH_ENDORSED);
+            } catch (UnsupportedOperationException x) {
+                classPath = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
+                if (classPath == null || classPath.findResource(sample) == null) {
+                    Logger.getLogger(ProjectHelper.class.getName()).log(Level.WARNING, "Could not add JAXB at all: {0}", x.getMessage());
+                } else {
+                    Logger.getLogger(ProjectHelper.class.getName()).log(Level.WARNING, "Could not add JAXB override: {0}", x.getMessage());
+                }
+            }
+        }
     }
 
     private static FileObject getSourceRoot(Project prj) {

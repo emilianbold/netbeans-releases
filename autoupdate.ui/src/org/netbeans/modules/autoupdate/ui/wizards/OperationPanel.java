@@ -46,7 +46,10 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -156,6 +159,14 @@ public class OperationPanel extends javax.swing.JPanel {
     
     public void setBody (final String msg, final Set<UpdateElement> updateElements) {
         final List<UpdateElement> elements = new ArrayList<UpdateElement> (updateElements);
+        
+        Collections.sort(elements, new Comparator<UpdateElement>() {
+
+                public int compare(UpdateElement o1, UpdateElement o2) {
+                    return Collator.getInstance().compare(o1.getDisplayName(), o2.getDisplayName());
+                }
+            });
+        
         if (SwingUtilities.isEventDispatchThread ()) {
             setBodyInEQ (msg, elements);
         } else {

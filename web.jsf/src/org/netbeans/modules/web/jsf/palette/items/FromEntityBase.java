@@ -227,8 +227,8 @@ public abstract class FromEntityBase {
                                     embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
                                 }
                                 String propName = fd.getPropertyName();
-                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, bean)) {
-                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, bean, pkMethod)) {
+                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(bean)) {
+                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(bean, pkMethod)) {
                                         String pkMethodName = pkMethod.getSimpleName().toString();
                                         fd = new FieldDesc(controller, pkMethod, bean);
                                         fd.setLabel(pkMethodName.substring(3));
@@ -509,7 +509,7 @@ public abstract class FromEntityBase {
 
         public int getRelationship() {
             if (relationship == null) {
-                relationship = Integer.valueOf(JpaControllerUtil.isRelationship(controller, method, isFieldAccess()));
+                relationship = Integer.valueOf(JpaControllerUtil.isRelationship(method, isFieldAccess()));
             }
             return relationship.intValue();
         }
@@ -529,7 +529,7 @@ public abstract class FromEntityBase {
         }
 
         private boolean isBlob() {
-            Element fieldElement = isFieldAccess() ? JpaControllerUtil.guessField(controller, method) : method;
+            Element fieldElement = isFieldAccess() ? JpaControllerUtil.guessField(method) : method;
             if (fieldElement == null) {
                 fieldElement = method;
             }
@@ -582,7 +582,7 @@ public abstract class FromEntityBase {
         }
 
         private boolean isRequired() {
-            return !JpaControllerUtil.isFieldOptionalAndNullable(controller, method, isFieldAccess());
+            return !JpaControllerUtil.isFieldOptionalAndNullable(method, isFieldAccess());
         }
 
     }

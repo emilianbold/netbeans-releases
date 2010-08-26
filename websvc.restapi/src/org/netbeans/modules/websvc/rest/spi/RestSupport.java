@@ -372,9 +372,12 @@ public abstract class RestSupport {
         copyFile(testdir, "images/pbsel.png");
         copyFile(testdir, "images/bg_gradient.gif");
         copyFile(testdir, "images/pname.png");
+        copyFile(testdir, "images/level1_deselect.jpg");
         copyFile(testdir, "images/level1_selected-1lvl.jpg");
         copyFile(testdir, "images/primary-enabled.gif");
         copyFile(testdir, "images/masthead.png");
+        copyFile(testdir, "images/masthead_link_enabled.gif");
+        copyFile(testdir, "images/masthead_link_roll.gif");
         copyFile(testdir, "images/primary-roll.gif");
         copyFile(testdir, "images/pbdis.png");
         copyFile(testdir, "images/secondary-enabled.gif");

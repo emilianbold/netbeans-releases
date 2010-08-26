@@ -1254,6 +1254,8 @@ exists or setup the property manually. For example like this:
                                 <propertyref prefix="run-sys-prop."/>
                                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
                             </syspropertyset>
+                            <env key="APPCPATH" path="${{javac.classpath}}"/>
+                            <sysproperty key="java.system.class.loader" value="org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader"/>
                             <customize/>
                         </java>
                     </sequential>

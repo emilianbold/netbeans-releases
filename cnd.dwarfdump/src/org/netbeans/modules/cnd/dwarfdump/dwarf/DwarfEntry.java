@@ -116,12 +116,12 @@ public class DwarfEntry {
             case DW_TAG_compile_unit:
                 return getName();
             case DW_TAG_lexical_block:
-                return null;
+                return getName();
         }
         
         String aName = getName();
         String pname = parent.getQualifiedName();
-        String qname = (pname != null && aName != null && !pname.equals("") && !aName.equals("")) ? pname + "::" + aName : null;  // NOI18N
+        String qname = (pname != null && aName != null && !pname.equals("") && !aName.equals("")) ? pname + "::" + aName : aName;  // NOI18N
 
         return qname;
     }

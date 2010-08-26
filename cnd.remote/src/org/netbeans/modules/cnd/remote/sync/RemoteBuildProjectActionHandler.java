@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
@@ -189,6 +190,9 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             System.setProperty(testWorkerRunningProp, "false"); // NOI18N
             for (ExecutionListener l : listeners) {
                 l.executionFinished(-8);
+            }
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
             }
         }
     }

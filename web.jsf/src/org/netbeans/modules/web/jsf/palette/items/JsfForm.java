@@ -144,7 +144,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                     boolean isId = isId(controller, method, fieldAccess);
                     boolean isGenerated = false;
                     if (isId) {
-                        isGenerated = JpaControllerUtil.isGenerated(controller, method, fieldAccess);
+                        isGenerated = JpaControllerUtil.isGenerated(method, fieldAccess);
                         TypeMirror t = method.getReturnType();
                         TypeMirror tstripped = JpaControllerUtil.stripCollection(t, controller.getTypes());
                         if (TypeKind.DECLARED == tstripped.getKind()) {
@@ -157,8 +157,8 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
                                 if (embeddedPkSupport == null) {
                                     embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
                                 }
-                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, entityType)) {
-                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, entityType, pkMethod)) {
+                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(entityType)) {
+                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(entityType, pkMethod)) {
                                         pkMethods.add(pkMethod);
                                     }
                                 }
@@ -183,7 +183,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
         String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType();
         String methodName = method.getSimpleName().toString();
-        int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
+        int isRelationship = JpaControllerUtil.isRelationship(method, fieldAccess);
         String name = methodName.substring(3);
         String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
         TypeMirror t = method.getReturnType();
@@ -203,7 +203,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
         }
         String simpleRelType = JpaControllerUtil.simpleClassName(relType); //just "Pavilion"
         String relatedController = JpaControllerUtil.fieldFromClassName(simpleRelType);
-        boolean fieldOptionalAndNullable = JpaControllerUtil.isFieldOptionalAndNullable(controller, method, fieldAccess);
+        boolean fieldOptionalAndNullable = JpaControllerUtil.isFieldOptionalAndNullable(method, fieldAccess);
         String requiredMessage = fieldOptionalAndNullable ? null : "The " + propName + " field is required.";
 
         //only applies if method/otherSide are relationship methods
@@ -213,12 +213,12 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
             if (embeddedPkSupport == null) {
                 embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
             }
-            isMethodRedundantWithItsPkFields = embeddedPkSupport.isRedundantWithPkFields(controller, bean, method);
+            isMethodRedundantWithItsPkFields = embeddedPkSupport.isRedundantWithPkFields(bean, method);
             if (!isMethodRedundantWithItsPkFields) {
                 ExecutableElement otherSide = JpaControllerUtil.getOtherSideOfRelation(controller, method, fieldAccess);
                 if (otherSide != null) {
                     TypeElement relTypeElement = controller.getElements().getTypeElement(relType);
-                    isOtherSideRedundantWithItsPkFields = embeddedPkSupport.isRedundantWithPkFields(controller, relTypeElement, otherSide);
+                    isOtherSideRedundantWithItsPkFields = embeddedPkSupport.isRedundantWithPkFields(relTypeElement, otherSide);
                 }
             }
         }
@@ -278,7 +278,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
             //editable
             String temporal = controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ? getTemporal(controller, method, fieldAccess) : null;
             String template = temporal == null ? "<h:outputText value=\"{0}:\"/>\n" : "<h:outputText value=\"{0} ({4}):\"/>\n";
-            Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+            Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(method) : method;
             boolean isLob = JpaControllerUtil.isAnnotatedWith(fieldElement, "javax.persistence.Lob");
             template += isLob ? "<h:inputTextarea rows=\"4\" cols=\"30\"" : "<h:inputText";
             template += " id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
@@ -363,7 +363,7 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
             for (ExecutableElement method : methods) {
                 String methodName = method.getSimpleName().toString();
                 if (methodName.startsWith("get")) {
-                    int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
+                    int isRelationship = JpaControllerUtil.isRelationship(method, fieldAccess);
                     String name = methodName.substring(3);
                     String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
                     if (isRelationship == JpaControllerUtil.REL_TO_MANY) {

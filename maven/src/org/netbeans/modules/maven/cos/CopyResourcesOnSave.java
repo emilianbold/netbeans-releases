@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.maven.cos;
 
-import hidden.org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.DirectoryScanner;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +52,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.apache.maven.model.Resource;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -335,21 +334,14 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         if (resources == null) {
             return null;
         }
-        MavenProject mav = nbproj.getMavenProject();
         FileObject target = null;
         //now figure the destination output folder
-        if (mav.getBuild() != null) {
-            File fil = new File(test ? mav.getBuild().getTestOutputDirectory() : mav.getBuild().getOutputDirectory());
-            fil = FileUtil.normalizeFile(fil);
-            File stamp = new File(fil, CosChecker.NB_COS);
-            if (stamp.exists()) {
-                target = FileUtil.toFileObject(fil);
-            } else {
-                // no compile on save stamp, means no copying, classes don't get copied/compiled either.
-                return null;
-            }
+        File fil = nbproj.getOutputDirectory(test);
+        File stamp = new File(fil, CosChecker.NB_COS);
+        if (stamp.exists()) {
+            target = FileUtil.toFileObject(fil);
         } else {
-            //no output dir means no copying.
+            // no compile on save stamp, means no copying, classes don't get copied/compiled either.
             return null;
         }
 
@@ -360,7 +352,6 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
             if (fo != null && FileUtil.isParentOf(fo, child)) {
                 String path = FileUtil.getRelativePath(fo, child);
                 //now check includes and excludes
-                @SuppressWarnings("unchecked")
                 List<String> incls = res.getIncludes();
                 if (incls.size() == 0) {
                     incls = Arrays.asList(CosChecker.DEFAULT_INCLUDES);
@@ -375,7 +366,6 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                 if (!included) {
                     break;
                 }
-                @SuppressWarnings("unchecked")
                 List<String> excls = new ArrayList<String>(res.getExcludes());
                 excls.addAll(Arrays.asList(DirectoryScanner.DEFAULTEXCLUDES));
                 for (String excl : excls) {

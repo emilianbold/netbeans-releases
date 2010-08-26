@@ -42,9 +42,12 @@ final class WhereUsedQueryElement extends SimpleRefactoringElementImplementation
             OffsetRange orig = eLElement.getOriginalOffset();
             int astLineStart = GsfUtilities.getRowStart(text, orig.getStart());
             int astLineEnd = GsfUtilities.getRowEnd(text, orig.getEnd());
-
             OffsetRange nodeOffset = new OffsetRange(targetNode.startOffset(), targetNode.endOffset());
-            return RefactoringUtil.encodeAndHighlight(text.subSequence(astLineStart, astLineEnd).toString(), eLElement.getExpression(), nodeOffset).trim();
+            int expressionStart = orig.getStart() - astLineStart;
+            int expressionEnd = expressionStart + (orig.getEnd() - orig.getStart());
+            OffsetRange expressionOffset = new OffsetRange(expressionStart, expressionEnd);
+            CharSequence line = text.subSequence(astLineStart, astLineEnd);
+            return RefactoringUtil.encodeAndHighlight(line.toString(), expressionOffset, nodeOffset).trim();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
             return eLElement.getExpression();
