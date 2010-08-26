@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -178,10 +179,13 @@ public class OutputFileManager extends CachingFileManager {
         if (siblingURL == null) {
             throw new IllegalArgumentException ("sibling == null");
         }
-        final File activeRoot = getClassFolderForSourceImpl (siblingURL);
+        File activeRoot = getClassFolderForSourceImpl (siblingURL);
         if (activeRoot == null) {
-            //Deleted project
-            throw new InvalidSourcePath ();
+            activeRoot = getClassFolderForApt(siblingURL);
+            if (activeRoot == null) {
+                //Deleted project
+                throw new InvalidSourcePath ();
+            }
         }
         if (File.separatorChar != '/') {    //NOI18N
             relativeName = relativeName.replace('/', File.separatorChar);   //NOI18N
@@ -249,27 +253,22 @@ public class OutputFileManager extends CachingFileManager {
 	return null;
     }
         
-    private File getClassFolderForApt(final javax.tools.FileObject sibling, final String baseName) {
-        return sibling == null ? getClassFolderForApt(baseName) : getClassFolderForApt(sibling);
+    private File getClassFolderForApt(final javax.tools.FileObject sibling, final String baseName) throws IOException {
+        return sibling == null ? getClassFolderForApt(baseName) : getClassFolderForApt(sibling.toUri().toURL());
     }
 
-    private File getClassFolderForApt(final javax.tools.FileObject sibling) {
-        try {
-            final URL surl = sibling.toUri().toURL();
-            for (ClassPath.Entry entry : apt.entries()) {
-                if (FileObjects.isParentOf(entry.getURL(), surl)) {
-                    final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());
-                    if (classFolder != null) {
-                        try {
-                            return new File(classFolder.toURI());
-                        } catch (URISyntaxException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+    private File getClassFolderForApt(final @NotNull URL surl) {
+        for (ClassPath.Entry entry : apt.entries()) {
+            if (FileObjects.isParentOf(entry.getURL(), surl)) {
+                final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());
+                if (classFolder != null) {
+                    try {
+                        return new File(classFolder.toURI());
+                    } catch (URISyntaxException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(Exceptions.attachMessage(e, "sibling class=" + sibling.getClass() + ", uri=" + sibling.toUri().toASCIIString()));
         }
         return null;
     }
