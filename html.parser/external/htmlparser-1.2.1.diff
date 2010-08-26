@@ -264,16 +264,18 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
      /**
       * Magic value for UTF-16 operations.
       */
-@@ -471,6 +353,8 @@
+@@ -471,6 +353,10 @@
  
      private Interner interner;
  
 +    private TokenizerStateListener stateListener;
 +
++    private int currentBufferGlobalOffset; //holds the offset of the current buffer relative to the beginning of the input source
++
      // [NOCPP[
  
      protected LocatorImpl ampersandLocation;
-@@ -481,6 +365,7 @@
+@@ -481,6 +367,7 @@
          this.newAttributesEachTime = newAttributesEachTime;
          this.bmpChar = new char[1];
          this.astralChar = new char[2];
@@ -281,7 +283,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
      }
  
      // ]NOCPP]
-@@ -499,7 +384,21 @@
+@@ -499,7 +386,22 @@
          // ]NOCPP]
          this.bmpChar = new char[1];
          this.astralChar = new char[2];
@@ -296,14 +298,33 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
 +
 +    private int changeState(int current, int state, int offset) {
 +        if(stateListener != null) {
-+            stateListener.stateChanged(current, state, offset);
++            //we need to use the real offset in the source, not just the buffer offset...
++            stateListener.stateChanged(current, state, currentBufferGlobalOffset + offset);
 +        }
 +        return state;
 +    }
      
      public void setInterner(Interner interner) {
          this.interner = interner;
-@@ -1412,8 +1311,8 @@
+@@ -1328,6 +1230,7 @@
+         }
+         startErrorReporting();
+         // ]NOCPP]
++        currentBufferGlobalOffset = 0;
+     }
+ 
+     public boolean tokenizeBuffer(UTF16Buffer buffer) throws SAXException {
+@@ -1380,6 +1283,9 @@
+         } else {
+             buffer.setStart(pos + 1);
+         }
++
++        currentBufferGlobalOffset = pos;
++
+         return lastCR;
+     }
+ 
+@@ -1412,8 +1318,8 @@
                                  flushChars(buf, pos);
                                  clearStrBufAndAppendCurrentC(c);
                                  rememberAmpersandLocation('\u0000');
@@ -314,7 +335,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '<':
                                  /*
-@@ -1428,7 +1327,7 @@
+@@ -1428,7 +1334,7 @@
                                   */
                                  flushChars(buf, pos);
  
@@ -323,7 +344,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break dataloop; // FALL THROUGH continue
                              // stateloop;
                              case '\u0000':
-@@ -1479,7 +1378,7 @@
+@@ -1479,7 +1385,7 @@
                               */
                              clearStrBufAndAppendForceWrite((char) (c + 0x20));
                              /* then switch to the tag name state. */
@@ -332,7 +353,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              /*
                               * (Don't emit the token yet; further details will
                               * be filled in before it is emitted.)
-@@ -1498,7 +1397,7 @@
+@@ -1498,7 +1404,7 @@
                               */
                              clearStrBufAndAppendCurrentC(c);
                              /* then switch to the tag name state. */
@@ -341,7 +362,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              /*
                               * (Don't emit the token yet; further details will
                               * be filled in before it is emitted.)
-@@ -1512,14 +1411,14 @@
+@@ -1512,14 +1418,14 @@
                                   * U+0021 EXCLAMATION MARK (!) Switch to the
                                   * markup declaration open state.
                                   */
@@ -358,7 +379,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '?':
                                  /*
-@@ -1530,7 +1429,7 @@
+@@ -1530,7 +1436,7 @@
                                   * Switch to the bogus comment state.
                                   */
                                  clearLongStrBufAndAppendToComment(c);
@@ -367,7 +388,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /*
-@@ -1545,7 +1444,7 @@
+@@ -1545,7 +1451,7 @@
                                  tokenHandler.characters(Tokenizer.LT_GT, 0, 2);
                                  /* Switch to the data state. */
                                  cstart = pos + 1;
@@ -376,7 +397,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              default:
                                  /*
-@@ -1561,7 +1460,7 @@
+@@ -1561,7 +1467,7 @@
                                   * the data state.
                                   */
                                  cstart = pos;
@@ -385,7 +406,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                          }
-@@ -1580,7 +1479,7 @@
+@@ -1580,7 +1486,7 @@
                              case '\r':
                                  silentCarriageReturn();
                                  strBufToElementNameString();
@@ -394,7 +415,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break stateloop;
                              case '\n':
                                  silentLineFeed();
-@@ -1593,7 +1492,7 @@
+@@ -1593,7 +1499,7 @@
                                   * Switch to the before attribute name state.
                                   */
                                  strBufToElementNameString();
@@ -403,7 +424,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break tagnameloop;
                              // continue stateloop;
                              case '/':
-@@ -1602,7 +1501,7 @@
+@@ -1602,7 +1508,7 @@
                                   * start tag state.
                                   */
                                  strBufToElementNameString();
@@ -412,7 +433,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /*
-@@ -1610,7 +1509,12 @@
+@@ -1610,7 +1516,12 @@
                                   * tag token.
                                   */
                                  strBufToElementNameString();
@@ -425,7 +446,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  if (shouldSuspend) {
                                      break stateloop;
                                  }
-@@ -1680,14 +1584,20 @@
+@@ -1680,14 +1591,20 @@
                                   * U+002F SOLIDUS (/) Switch to the self-closing
                                   * start tag state.
                                   */
@@ -447,7 +468,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  if (shouldSuspend) {
                                      break stateloop;
                                  }
-@@ -1739,7 +1649,7 @@
+@@ -1739,7 +1656,7 @@
                                  /*
                                   * Switch to the attribute name state.
                                   */
@@ -456,7 +477,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break beforeattributenameloop;
                              // continue stateloop;
                          }
-@@ -1758,7 +1668,7 @@
+@@ -1758,7 +1675,7 @@
                              case '\r':
                                  silentCarriageReturn();
                                  attributeNameComplete();
@@ -465,7 +486,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break stateloop;
                              case '\n':
                                  silentLineFeed();
-@@ -1772,7 +1682,7 @@
+@@ -1772,7 +1689,7 @@
                                   * Switch to the after attribute name state.
                                   */
                                  attributeNameComplete();
@@ -474,7 +495,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '/':
                                  /*
-@@ -1781,7 +1691,7 @@
+@@ -1781,7 +1698,7 @@
                                   */
                                  attributeNameComplete();
                                  addAttributeWithoutValue();
@@ -483,7 +504,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '=':
                                  /*
-@@ -1789,7 +1699,7 @@
+@@ -1789,7 +1706,7 @@
                                   * attribute value state.
                                   */
                                  attributeNameComplete();
@@ -492,7 +513,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break attributenameloop;
                              // continue stateloop;
                              case '>':
-@@ -1799,7 +1709,13 @@
+@@ -1799,7 +1716,13 @@
                                   */
                                  attributeNameComplete();
                                  addAttributeWithoutValue();
@@ -506,7 +527,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  if (shouldSuspend) {
                                      break stateloop;
                                  }
-@@ -1877,7 +1793,7 @@
+@@ -1877,7 +1800,7 @@
                                   * attribute value (double-quoted) state.
                                   */
                                  clearLongStrBufForNextState();
@@ -515,7 +536,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break beforeattributevalueloop;
                              // continue stateloop;
                              case '&':
-@@ -1887,7 +1803,7 @@
+@@ -1887,7 +1810,7 @@
                                   * input character.
                                   */
                                  clearLongStrBuf();
@@ -524,7 +545,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  noteUnquotedAttributeValue();
                                  reconsume = true;
                                  continue stateloop;
-@@ -1897,7 +1813,7 @@
+@@ -1897,7 +1820,7 @@
                                   * value (single-quoted) state.
                                   */
                                  clearLongStrBufForNextState();
@@ -533,7 +554,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /*
-@@ -1908,7 +1824,13 @@
+@@ -1908,7 +1831,13 @@
                                   * Emit the current tag token.
                                   */
                                  addAttributeWithoutValue();
@@ -547,7 +568,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  if (shouldSuspend) {
                                      break stateloop;
                                  }
-@@ -1943,7 +1865,7 @@
+@@ -1943,7 +1872,7 @@
                                   * state.
                                   */
  
@@ -556,7 +577,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  noteUnquotedAttributeValue();
                                  continue stateloop;
                          }
-@@ -1970,7 +1892,7 @@
+@@ -1970,7 +1899,7 @@
                                   */
                                  addAttributeWithValue();
  
@@ -565,7 +586,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break attributevaluedoublequotedloop;
                              // continue stateloop;
                              case '&':
-@@ -1983,7 +1905,7 @@
+@@ -1983,7 +1912,7 @@
                                  clearStrBufAndAppendCurrentC(c);
                                  rememberAmpersandLocation('\"');
                                  returnState = state;
@@ -574,7 +595,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\r':
                                  appendLongStrBufCarriageReturn();
-@@ -2020,7 +1942,7 @@
+@@ -2020,7 +1949,7 @@
                          switch (c) {
                              case '\r':
                                  silentCarriageReturn();
@@ -583,7 +604,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break stateloop;
                              case '\n':
                                  silentLineFeed();
-@@ -2033,14 +1955,14 @@
+@@ -2033,14 +1962,14 @@
                                   * (LF) U+000C FORM FEED (FF) U+0020 SPACE
                                   * Switch to the before attribute name state.
                                   */
@@ -600,7 +621,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break afterattributevaluequotedloop;
                              // continue stateloop;
                              case '>':
-@@ -2048,7 +1970,12 @@
+@@ -2048,7 +1977,12 @@
                                   * U+003E GREATER-THAN SIGN (>) Emit the current
                                   * tag token.
                                   */
@@ -613,7 +634,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  if (shouldSuspend) {
                                      break stateloop;
                                  }
-@@ -2065,7 +1992,7 @@
+@@ -2065,7 +1999,7 @@
                                   * Reconsume the character in the before
                                   * attribute name state.
                                   */
@@ -622,7 +643,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                          }
-@@ -2089,7 +2016,13 @@
+@@ -2089,7 +2023,13 @@
                              // [NOCPP[
                              errHtml4XmlVoidSyntax();
                              // ]NOCPP]
@@ -637,7 +658,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              if (shouldSuspend) {
                                  break stateloop;
                              }
-@@ -2104,7 +2037,7 @@
+@@ -2104,7 +2044,7 @@
                               * Reconsume the character in the before attribute
                               * name state.
                               */
@@ -646,7 +667,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              continue stateloop;
                      }
-@@ -2126,7 +2059,7 @@
+@@ -2126,7 +2066,7 @@
                              case '\r':
                                  silentCarriageReturn();
                                  addAttributeWithValue();
@@ -655,7 +676,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break stateloop;
                              case '\n':
                                  silentLineFeed();
-@@ -2140,7 +2073,7 @@
+@@ -2140,7 +2080,7 @@
                                   * Switch to the before attribute name state.
                                   */
                                  addAttributeWithValue();
@@ -664,7 +685,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '&':
                                  /*
-@@ -2152,7 +2085,7 @@
+@@ -2152,7 +2092,7 @@
                                  clearStrBufAndAppendCurrentC(c);
                                  rememberAmpersandLocation('>');
                                  returnState = state;
@@ -673,7 +694,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /*
-@@ -2160,7 +2093,13 @@
+@@ -2160,7 +2100,13 @@
                                   * tag token.
                                   */
                                  addAttributeWithValue();
@@ -687,7 +708,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  if (shouldSuspend) {
                                      break stateloop;
                                  }
-@@ -2232,14 +2171,14 @@
+@@ -2232,14 +2178,14 @@
                                   * start tag state.
                                   */
                                  addAttributeWithoutValue();
@@ -704,7 +725,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /*
-@@ -2247,7 +2186,13 @@
+@@ -2247,7 +2193,13 @@
                                   * tag token.
                                   */
                                  addAttributeWithoutValue();
@@ -718,7 +739,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  if (shouldSuspend) {
                                      break stateloop;
                                  }
-@@ -2294,7 +2239,7 @@
+@@ -2294,7 +2246,7 @@
                                  /*
                                   * Switch to the attribute name state.
                                   */
@@ -727,7 +748,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -2333,11 +2278,11 @@
+@@ -2333,11 +2285,11 @@
                          switch (c) {
                              case '>':
                                  emitComment(0, pos);
@@ -741,7 +762,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break boguscommentloop;
                              case '\r':
                                  appendLongStrBufCarriageReturn();
-@@ -2366,25 +2311,25 @@
+@@ -2366,25 +2318,25 @@
                                  maybeAppendSpaceToBogusComment();
                                  // ]NOCPP]
                                  emitComment(0, pos);
@@ -771,7 +792,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -2427,20 +2372,20 @@
+@@ -2427,20 +2379,20 @@
                          switch (c) {
                              case '-':
                                  clearLongStrBufAndAppendToComment(c);
@@ -795,7 +816,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                      continue stateloop;
                                  } else {
                                      // fall through
-@@ -2448,7 +2393,7 @@
+@@ -2448,7 +2400,7 @@
                              default:
                                  errBogusComment();
                                  clearLongStrBuf();
@@ -804,7 +825,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                          }
-@@ -2465,12 +2410,12 @@
+@@ -2465,12 +2417,12 @@
                                  break stateloop;
                              case '-':
                                  clearLongStrBufForNextState();
@@ -819,7 +840,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                          }
-@@ -2495,7 +2440,7 @@
+@@ -2495,7 +2447,7 @@
                                   * start dash state.
                                   */
                                  appendLongStrBuf(c);
@@ -828,7 +849,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /*
-@@ -2507,15 +2452,15 @@
+@@ -2507,15 +2459,15 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -847,7 +868,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break commentstartloop;
                              case '\u0000':
                                  c = '\uFFFD';
-@@ -2529,7 +2474,7 @@
+@@ -2529,7 +2481,7 @@
                                  /*
                                   * Switch to the comment state.
                                   */
@@ -856,7 +877,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break commentstartloop;
                              // continue stateloop;
                          }
-@@ -2551,7 +2496,7 @@
+@@ -2551,7 +2503,7 @@
                                   * end dash state
                                   */
                                  appendLongStrBuf(c);
@@ -865,7 +886,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break commentloop;
                              // continue stateloop;
                              case '\r':
-@@ -2593,16 +2538,16 @@
+@@ -2593,16 +2545,16 @@
                                   * end state
                                   */
                                  appendLongStrBuf(c);
@@ -885,7 +906,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\u0000':
                                  c = '\uFFFD';
-@@ -2617,7 +2562,7 @@
+@@ -2617,7 +2569,7 @@
                                  /*
                                   * Switch to the comment state.
                                   */
@@ -894,7 +915,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -2642,7 +2587,7 @@
+@@ -2642,7 +2594,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -903,7 +924,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '-':
                                  /* U+002D HYPHEN-MINUS (-) Parse error. */
-@@ -2665,22 +2610,22 @@
+@@ -2665,22 +2617,22 @@
                                   * end space state.
                                   */
                                  adjustDoubleHyphenAndAppendToLongStrBufAndErr(c);
@@ -930,7 +951,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\u0000':
                                  c = '\uFFFD';
-@@ -2695,7 +2640,7 @@
+@@ -2695,7 +2647,7 @@
                                  /*
                                   * Switch to the comment state.
                                   */
@@ -939,7 +960,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -2720,7 +2665,7 @@
+@@ -2720,7 +2672,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -948,7 +969,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '-':
                                  /*
-@@ -2731,7 +2676,7 @@
+@@ -2731,7 +2683,7 @@
                                  /*
                                   * Switch to the comment end dash state.
                                   */
@@ -957,7 +978,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case ' ':
                              case '\t':
-@@ -2764,7 +2709,7 @@
+@@ -2764,7 +2716,7 @@
                                  /*
                                   * Switch to the comment state.
                                   */
@@ -966,7 +987,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -2790,7 +2735,7 @@
+@@ -2790,7 +2742,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -975,7 +996,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '-':
                                  /*
-@@ -2802,7 +2747,7 @@
+@@ -2802,7 +2754,7 @@
                                  /*
                                   * Switch to the comment end dash state.
                                   */
@@ -984,7 +1005,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\r':
                                  appendLongStrBufCarriageReturn();
-@@ -2825,7 +2770,7 @@
+@@ -2825,7 +2777,7 @@
                                  /*
                                   * Switch to the comment state.
                                   */
@@ -993,7 +1014,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -2847,7 +2792,7 @@
+@@ -2847,7 +2799,7 @@
                               * state
                               */
                              appendLongStrBuf(c);
@@ -1002,7 +1023,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              continue stateloop;
                          case '>':
                              errPrematureEndOfComment();
-@@ -2856,15 +2801,15 @@
+@@ -2856,15 +2808,15 @@
                              /*
                               * Switch to the data state.
                               */
@@ -1021,7 +1042,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              continue stateloop;
                          case '\u0000':
                              c = '\uFFFD';
-@@ -2879,7 +2824,7 @@
+@@ -2879,7 +2831,7 @@
                              /*
                               * Switch to the comment state.
                               */
@@ -1030,7 +1051,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              continue stateloop;
                      }
                      // XXX reorder point
-@@ -2898,14 +2843,14 @@
+@@ -2898,14 +2850,14 @@
                                  appendLongStrBuf(c);
                              } else {
                                  errBogusComment();
@@ -1047,7 +1068,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              break markupdeclarationdoctypeloop;
                              // continue stateloop;
-@@ -2929,7 +2874,7 @@
+@@ -2929,7 +2881,7 @@
                          switch (c) {
                              case '\r':
                                  silentCarriageReturn();
@@ -1056,7 +1077,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break stateloop;
                              case '\n':
                                  silentLineFeed();
-@@ -2942,7 +2887,7 @@
+@@ -2942,7 +2894,7 @@
                                   * (LF) U+000C FORM FEED (FF) U+0020 SPACE
                                   * Switch to the before DOCTYPE name state.
                                   */
@@ -1065,7 +1086,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break doctypeloop;
                              // continue stateloop;
                              default:
-@@ -2954,7 +2899,7 @@
+@@ -2954,7 +2906,7 @@
                                   * Reconsume the current character in the before
                                   * DOCTYPE name state.
                                   */
@@ -1074,7 +1095,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  break doctypeloop;
                              // continue stateloop;
-@@ -3007,7 +2952,7 @@
+@@ -3007,7 +2959,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1083,7 +1104,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\u0000':
                                  c = '\uFFFD';
-@@ -3033,7 +2978,7 @@
+@@ -3033,7 +2985,7 @@
                                  /*
                                   * Switch to the DOCTYPE name state.
                                   */
@@ -1092,7 +1113,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break beforedoctypenameloop;
                              // continue stateloop;
                          }
-@@ -3052,7 +2997,7 @@
+@@ -3052,7 +3004,7 @@
                              case '\r':
                                  silentCarriageReturn();
                                  strBufToDoctypeName();
@@ -1101,7 +1122,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break stateloop;
                              case '\n':
                                  silentLineFeed();
-@@ -3066,7 +3011,7 @@
+@@ -3066,7 +3018,7 @@
                                   * Switch to the after DOCTYPE name state.
                                   */
                                  strBufToDoctypeName();
@@ -1110,7 +1131,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break doctypenameloop;
                              // continue stateloop;
                              case '>':
-@@ -3079,7 +3024,7 @@
+@@ -3079,7 +3031,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1119,7 +1140,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\u0000':
                                  c = '\uFFFD';
-@@ -3142,18 +3087,18 @@
+@@ -3142,18 +3094,18 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1141,7 +1162,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              default:
                                  /*
-@@ -3169,7 +3114,7 @@
+@@ -3169,7 +3121,7 @@
                                  /*
                                   * Switch to the bogus DOCTYPE state.
                                   */
@@ -1150,7 +1171,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -3194,14 +3139,14 @@
+@@ -3194,14 +3146,14 @@
                              if (folded != Tokenizer.UBLIC[index]) {
                                  bogusDoctype();
                                  // forceQuirks = true;
@@ -1167,7 +1188,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              break doctypeublicloop;
                              // continue stateloop;
-@@ -3249,7 +3194,7 @@
+@@ -3249,7 +3201,7 @@
                                   * then switch to the DOCTYPE public identifier
                                   * (double-quoted) state.
                                   */
@@ -1176,7 +1197,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break beforedoctypepublicidentifierloop;
                              // continue stateloop;
                              case '\'':
-@@ -3263,7 +3208,7 @@
+@@ -3263,7 +3215,7 @@
                                   * then switch to the DOCTYPE public identifier
                                   * (single-quoted) state.
                                   */
@@ -1185,7 +1206,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /* U+003E GREATER-THAN SIGN (>) Parse error. */
-@@ -3280,7 +3225,7 @@
+@@ -3280,7 +3232,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1194,7 +1215,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              default:
                                  bogusDoctype();
-@@ -3292,7 +3237,7 @@
+@@ -3292,7 +3244,7 @@
                                  /*
                                   * Switch to the bogus DOCTYPE state.
                                   */
@@ -1203,7 +1224,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -3313,7 +3258,7 @@
+@@ -3313,7 +3265,7 @@
                                   * DOCTYPE public identifier state.
                                   */
                                  publicIdentifier = longStrBufToString();
@@ -1212,7 +1233,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break doctypepublicidentifierdoublequotedloop;
                              // continue stateloop;
                              case '>':
-@@ -3334,7 +3279,7 @@
+@@ -3334,7 +3286,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1221,7 +1242,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\r':
                                  appendLongStrBufCarriageReturn();
-@@ -3396,7 +3341,7 @@
+@@ -3396,7 +3348,7 @@
                                   * then switch to the DOCTYPE system identifier
                                   * (double-quoted) state.
                                   */
@@ -1230,7 +1251,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break afterdoctypepublicidentifierloop;
                              // continue stateloop;
                              case '\'':
-@@ -3410,7 +3355,7 @@
+@@ -3410,7 +3362,7 @@
                                   * then switch to the DOCTYPE system identifier
                                   * (single-quoted) state.
                                   */
@@ -1239,7 +1260,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /*
-@@ -3421,7 +3366,7 @@
+@@ -3421,7 +3373,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1248,7 +1269,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              default:
                                  bogusDoctype();
-@@ -3433,7 +3378,7 @@
+@@ -3433,7 +3385,7 @@
                                  /*
                                   * Switch to the bogus DOCTYPE state.
                                   */
@@ -1257,7 +1278,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -3454,7 +3399,7 @@
+@@ -3454,7 +3406,7 @@
                                   * DOCTYPE system identifier state.
                                   */
                                  systemIdentifier = longStrBufToString();
@@ -1266,7 +1287,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  /*
-@@ -3474,7 +3419,7 @@
+@@ -3474,7 +3426,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1275,7 +1296,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\r':
                                  appendLongStrBufCarriageReturn();
-@@ -3534,7 +3479,7 @@
+@@ -3534,7 +3486,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1284,7 +1305,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              default:
                                  /*
-@@ -3543,7 +3488,7 @@
+@@ -3543,7 +3495,7 @@
                                   * to on.)
                                   */
                                  bogusDoctypeWithoutQuirks();
@@ -1293,7 +1314,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break afterdoctypesystemidentifierloop;
                              // continue stateloop;
                          }
-@@ -3572,7 +3517,7 @@
+@@ -3572,7 +3524,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1302,7 +1323,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\r':
                                  silentCarriageReturn();
-@@ -3609,14 +3554,14 @@
+@@ -3609,14 +3561,14 @@
                              }
                              if (folded != Tokenizer.YSTEM[index]) {
                                  bogusDoctype();
@@ -1319,7 +1340,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              break doctypeystemloop;
                              // continue stateloop;
-@@ -3664,7 +3609,7 @@
+@@ -3664,7 +3616,7 @@
                                   * then switch to the DOCTYPE system identifier
                                   * (double-quoted) state.
                                   */
@@ -1328,7 +1349,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\'':
                                  /*
-@@ -3677,7 +3622,7 @@
+@@ -3677,7 +3629,7 @@
                                   * then switch to the DOCTYPE system identifier
                                   * (single-quoted) state.
                                   */
@@ -1337,7 +1358,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break beforedoctypesystemidentifierloop;
                              // continue stateloop;
                              case '>':
-@@ -3695,7 +3640,7 @@
+@@ -3695,7 +3647,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1346,7 +1367,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              default:
                                  bogusDoctype();
-@@ -3707,7 +3652,7 @@
+@@ -3707,7 +3659,7 @@
                                  /*
                                   * Switch to the bogus DOCTYPE state.
                                   */
@@ -1355,7 +1376,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -3728,7 +3673,7 @@
+@@ -3728,7 +3680,7 @@
                                   * DOCTYPE system identifier state.
                                   */
                                  systemIdentifier = longStrBufToString();
@@ -1364,7 +1385,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  errGtInSystemId();
-@@ -3745,7 +3690,7 @@
+@@ -3745,7 +3697,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1373,7 +1394,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\r':
                                  appendLongStrBufCarriageReturn();
-@@ -3787,7 +3732,7 @@
+@@ -3787,7 +3739,7 @@
                                   * DOCTYPE public identifier state.
                                   */
                                  publicIdentifier = longStrBufToString();
@@ -1382,7 +1403,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '>':
                                  errGtInPublicId();
-@@ -3804,7 +3749,7 @@
+@@ -3804,7 +3756,7 @@
                                  /*
                                   * Switch to the data state.
                                   */
@@ -1391,7 +1412,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\r':
                                  appendLongStrBufCarriageReturn();
-@@ -3841,7 +3786,7 @@
+@@ -3841,7 +3793,7 @@
                                  appendLongStrBuf(c);
                              } else {
                                  errBogusComment();
@@ -1400,7 +1421,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                              }
-@@ -3849,7 +3794,7 @@
+@@ -3849,7 +3801,7 @@
                              continue;
                          } else {
                              cstart = pos; // start coalescing
@@ -1409,7 +1430,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              break; // FALL THROUGH continue stateloop;
                          }
-@@ -3868,7 +3813,7 @@
+@@ -3868,7 +3820,7 @@
                          switch (c) {
                              case ']':
                                  flushChars(buf, pos);
@@ -1418,7 +1439,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break cdatasectionloop; // FALL THROUGH
                              case '\u0000':
                                  emitReplacementCharacter(buf, pos);
-@@ -3892,13 +3837,13 @@
+@@ -3892,13 +3844,13 @@
                          c = checkChar(buf, pos);
                          switch (c) {
                              case ']':
@@ -1434,7 +1455,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                          }
-@@ -3912,12 +3857,12 @@
+@@ -3912,12 +3864,12 @@
                      switch (c) {
                          case '>':
                              cstart = pos + 1;
@@ -1449,7 +1470,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              continue stateloop;
  
-@@ -3944,7 +3889,7 @@
+@@ -3944,7 +3896,7 @@
                                   */
                                  addAttributeWithValue();
  
@@ -1458,7 +1479,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '&':
                                  /*
-@@ -3956,7 +3901,7 @@
+@@ -3956,7 +3908,7 @@
                                  clearStrBufAndAppendCurrentC(c);
                                  rememberAmpersandLocation('\'');
                                  returnState = state;
@@ -1467,7 +1488,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break attributevaluesinglequotedloop;
                              // continue stateloop;
                              case '\r':
-@@ -4019,7 +3964,7 @@
+@@ -4019,7 +3971,7 @@
                              if ((returnState & (~1)) == 0) {
                                  cstart = pos;
                              }
@@ -1476,7 +1497,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              continue stateloop;
                          case '#':
-@@ -4028,12 +3973,12 @@
+@@ -4028,12 +3980,12 @@
                               * SIGN.
                               */
                              appendStrBuf('#');
@@ -1491,7 +1512,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                              }
-@@ -4042,7 +3987,7 @@
+@@ -4042,7 +3994,7 @@
                              hi = (NamedCharacters.NAMES.length - 1);
                              candidate = -1;
                              strBufMark = 0;
@@ -1500,7 +1521,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              // FALL THROUGH continue stateloop;
                      }
-@@ -4118,7 +4063,7 @@
+@@ -4118,7 +4070,7 @@
                          if ((returnState & (~1)) == 0) {
                              cstart = pos;
                          }
@@ -1509,7 +1530,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                          reconsume = true;
                          continue stateloop;
                      } else {
-@@ -4161,7 +4106,7 @@
+@@ -4161,7 +4113,7 @@
                                       */
                                      errNoNamedCharacterMatch();
                                      appendStrBufToLongStrBuf();
@@ -1518,7 +1539,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                      reconsume = true;
                                      continue stateloop;
                                  }
-@@ -4207,7 +4152,7 @@
+@@ -4207,7 +4159,7 @@
                          if ((returnState & (~1)) == 0) {
                              cstart = pos;
                          }
@@ -1527,7 +1548,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                          reconsume = true;
                          continue stateloop;
                          /*
-@@ -4250,7 +4195,7 @@
+@@ -4250,7 +4202,7 @@
                               * interpret it as a hexadecimal number.
                               */
                              appendStrBuf(c);
@@ -1536,7 +1557,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              continue stateloop;
                          default:
                              /*
-@@ -4261,7 +4206,7 @@
+@@ -4261,7 +4213,7 @@
                               * When it comes to interpreting the number,
                               * interpret it as a decimal number.
                               */
@@ -1545,7 +1566,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              reconsume = true;
                              // FALL THROUGH continue stateloop;
                      }
-@@ -4297,7 +4242,7 @@
+@@ -4297,7 +4249,7 @@
                                  if ((returnState & (~1)) == 0) {
                                      cstart = pos + 1;
                                  }
@@ -1554,7 +1575,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  // FALL THROUGH continue stateloop;
                                  break decimalloop;
                              } else {
-@@ -4307,7 +4252,7 @@
+@@ -4307,7 +4259,7 @@
                                  if ((returnState & (~1)) == 0) {
                                      cstart = pos + 1;
                                  }
@@ -1563,7 +1584,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              }
                          } else {
-@@ -4328,7 +4273,7 @@
+@@ -4328,7 +4280,7 @@
                                  if ((returnState & (~1)) == 0) {
                                      cstart = pos;
                                  }
@@ -1572,7 +1593,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                              } else {
-@@ -4336,7 +4281,7 @@
+@@ -4336,7 +4288,7 @@
                                  if ((returnState & (~1)) == 0) {
                                      cstart = pos;
                                  }
@@ -1581,7 +1602,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  // FALL THROUGH continue stateloop;
                                  break decimalloop;
-@@ -4348,7 +4293,7 @@
+@@ -4348,7 +4300,7 @@
                      // WARNING previous state sets reconsume
                      // XXX inline this case if the method size can take it
                      handleNcrValue(returnState);
@@ -1590,7 +1611,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                      continue stateloop;
                      // XXX reorder point
                  case HEX_NCR_LOOP:
-@@ -4388,7 +4333,7 @@
+@@ -4388,7 +4340,7 @@
                                  if ((returnState & (~1)) == 0) {
                                      cstart = pos + 1;
                                  }
@@ -1599,7 +1620,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              } else {
                                  errNoDigitsInNCR();
-@@ -4397,7 +4342,7 @@
+@@ -4397,7 +4349,7 @@
                                  if ((returnState & (~1)) == 0) {
                                      cstart = pos + 1;
                                  }
@@ -1608,7 +1629,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              }
                          } else {
-@@ -4418,7 +4363,7 @@
+@@ -4418,7 +4370,7 @@
                                  if ((returnState & (~1)) == 0) {
                                      cstart = pos;
                                  }
@@ -1617,7 +1638,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                              } else {
-@@ -4426,7 +4371,7 @@
+@@ -4426,7 +4378,7 @@
                                  if ((returnState & (~1)) == 0) {
                                      cstart = pos;
                                  }
@@ -1626,7 +1647,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                              }
-@@ -4489,7 +4434,7 @@
+@@ -4489,7 +4441,7 @@
                                  flushChars(buf, pos);
  
                                  returnState = state;
@@ -1635,7 +1656,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break cdataloop; // FALL THRU continue
                              // stateloop;
                              case '\u0000':
-@@ -4522,7 +4467,7 @@
+@@ -4522,7 +4474,7 @@
                              case '!':
                                  tokenHandler.characters(Tokenizer.LT_GT, 0, 1);
                                  cstart = pos;
@@ -1644,7 +1665,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break tagopennonpcdataloop; // FALL THRU
                              // continue
                              // stateloop;
-@@ -4539,7 +4484,7 @@
+@@ -4539,7 +4491,7 @@
                                       */
                                      index = 0;
                                      clearStrBufForNextState();
@@ -1653,7 +1674,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                      continue stateloop;
                                  } // else fall through
                              default:
-@@ -4553,7 +4498,7 @@
+@@ -4553,7 +4505,7 @@
                                   * the data state.
                                   */
                                  cstart = pos;
@@ -1662,7 +1683,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                          }
-@@ -4567,12 +4512,12 @@
+@@ -4567,12 +4519,12 @@
                          c = checkChar(buf, pos);
                          switch (c) {
                              case '-':
@@ -1677,7 +1698,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                          }
-@@ -4586,11 +4531,11 @@
+@@ -4586,11 +4538,11 @@
                          c = checkChar(buf, pos);
                          switch (c) {
                              case '-':
@@ -1691,7 +1712,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                          }
-@@ -4606,20 +4551,20 @@
+@@ -4606,20 +4558,20 @@
                              case '-':
                                  continue;
                              case '>':
@@ -1716,7 +1737,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break escapehyphenhyphenloop;
                              // continue stateloop;
                          }
-@@ -4633,7 +4578,7 @@
+@@ -4633,7 +4585,7 @@
                          c = checkChar(buf, pos);
                          switch (c) {
                              case '-':
@@ -1725,7 +1746,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  break escapeloop; // FALL THRU continue
                              // stateloop;
                              case '\u0000':
-@@ -4657,20 +4602,20 @@
+@@ -4657,20 +4609,20 @@
                          c = checkChar(buf, pos);
                          switch (c) {
                              case '-':
@@ -1750,7 +1771,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                          }
                      }
-@@ -4723,7 +4668,7 @@
+@@ -4723,7 +4675,7 @@
                                          0, 2);
                                  emitStrBuf();
                                  cstart = pos;
@@ -1759,7 +1780,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  reconsume = true;
                                  continue stateloop;
                              }
-@@ -4738,7 +4683,7 @@
+@@ -4738,7 +4690,7 @@
                              switch (c) {
                                  case '\r':
                                      silentCarriageReturn();
@@ -1768,7 +1789,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                      break stateloop;
                                  case '\n':
                                      silentLineFeed();
-@@ -4752,14 +4697,19 @@
+@@ -4752,14 +4704,19 @@
                                       * SPACE Switch to the before attribute name
                                       * state.
                                       */
@@ -1789,7 +1810,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                      if (shouldSuspend) {
                                          break stateloop;
                                      }
-@@ -4772,7 +4722,7 @@
+@@ -4772,7 +4729,7 @@
                                       * U+002F SOLIDUS (/) Switch to the
                                       * self-closing start tag state.
                                       */
@@ -1798,7 +1819,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                      continue stateloop;
                                  default:
                                      // [NOCPP[
-@@ -4787,7 +4737,7 @@
+@@ -4787,7 +4744,7 @@
                                          cstart = pos; // don't drop the
                                                        // character
                                      }
@@ -1807,7 +1828,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                      continue stateloop;
                              }
                          }
-@@ -4811,7 +4761,7 @@
+@@ -4811,7 +4768,7 @@
                               * Switch to the data state.
                               */
                              cstart = pos + 1;
@@ -1816,7 +1837,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              continue stateloop;
                          case '\r':
                              silentCarriageReturn();
-@@ -4821,7 +4771,7 @@
+@@ -4821,7 +4778,7 @@
                               * Switch to the bogus comment state.
                               */
                              clearLongStrBufAndAppendToComment('\n');
@@ -1825,7 +1846,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              break stateloop;
                          case '\n':
                              silentLineFeed();
-@@ -4831,7 +4781,7 @@
+@@ -4831,7 +4788,7 @@
                               * Switch to the bogus comment state.
                               */
                              clearLongStrBufAndAppendToComment('\n');
@@ -1834,7 +1855,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                              continue stateloop;
                          case '\u0000':
                              c = '\uFFFD';
-@@ -4856,7 +4806,7 @@
+@@ -4856,7 +4813,7 @@
                                   * emit the token yet; further details will be
                                   * filled in before it is emitted.)
                                   */
@@ -1843,7 +1864,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              } else {
                                  /* Anything else Parse error. */
-@@ -4865,7 +4815,7 @@
+@@ -4865,7 +4822,7 @@
                                   * Switch to the bogus comment state.
                                   */
                                  clearLongStrBufAndAppendToComment(c);
@@ -1852,7 +1873,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              }
                      }
-@@ -4894,7 +4844,7 @@
+@@ -4894,7 +4851,7 @@
                                  clearStrBufAndAppendCurrentC(c);
                                  additional = '\u0000';
                                  returnState = state;
@@ -1861,7 +1882,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '<':
                                  /*
-@@ -4910,7 +4860,7 @@
+@@ -4910,7 +4867,7 @@
                                  flushChars(buf, pos);
  
                                  returnState = state;
@@ -1870,7 +1891,7 @@ Index: src/nu/validator/htmlparser/impl/Tokenizer.java
                                  continue stateloop;
                              case '\u0000':
                                  emitReplacementCharacter(buf, pos);
-@@ -5709,6 +5659,12 @@
+@@ -5709,6 +5666,12 @@
          return -1;
      }
  
@@ -1990,6 +2011,18 @@ Index: src/nu/validator/htmlparser/impl/ElementName.java
      A,
      B,
      G,
+Index: src/nu/validator/htmlparser/io/Driver.java
+===================================================================
+--- src/nu/validator/htmlparser/io/Driver.java	(revision 584)
++++ src/nu/validator/htmlparser/io/Driver.java	(working copy)
+@@ -231,6 +231,7 @@
+                 }
+             }
+         } catch (Throwable tr) {
++            tr.printStackTrace();
+             t = tr;
+         } finally {
+             try {
 Index: src/nu/validator/htmlparser/common/TokenizerStateListener.java
 ===================================================================
 --- src/nu/validator/htmlparser/common/TokenizerStateListener.java	(revision 0)
