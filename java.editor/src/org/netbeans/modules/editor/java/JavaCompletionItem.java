@@ -51,6 +51,7 @@ import com.sun.source.util.Trees;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.*;
@@ -65,6 +66,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
@@ -86,6 +88,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -284,6 +287,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 int caretOffset = component.getSelectionEnd();
                 substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
                 evt.consume();
+            }
+        } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.CTRL_MASK) > 0) {
+            JTextComponent component = (JTextComponent)evt.getSource();
+            int caretOffset = component.getSelectionEnd();
+            Document doc = component.getDocument();
+            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), caretOffset);
+            if (ts != null && (ts.moveNext() || ts.movePrevious())) {
+                if (ts.token().id() == JavaTokenId.IDENTIFIER
+                        || ts.token().id().primaryCategory().startsWith("keyword") //NOI18N
+                        || ts.token().id().primaryCategory().startsWith("string")) { //NOI18N
+                    try {
+                        doc.remove(caretOffset, ts.offset() + ts.token().length() - caretOffset);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         }
     }

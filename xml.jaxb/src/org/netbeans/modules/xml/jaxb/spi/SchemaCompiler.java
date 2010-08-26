@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,14 +13,14 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,43 +31,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.completion;
+package org.netbeans.modules.xml.jaxb.spi;
 
-import java.awt.GraphicsConfiguration;
-import java.awt.Rectangle;
-import javax.swing.text.JTextComponent;
+import org.openide.WizardDescriptor;
 
 /**
- * Provides screen bounds
- * @author Max Sauer
+ *
+ * @author mkuchtiak
  */
-public class ScreenBoundsProvider {
-    
-    /** Relative width of screen covered by CC */
-    static final double COMPL_COVERAGE = 0.4;
-    
-    /** Relative maximum width of screen covered by CC */
-    static final double MAX_COMPL_COVERAGE = 0.9;
-    
-    private static Rectangle screenBounds;
-    
-    static Rectangle getScreenBounds(JTextComponent editorComponent) {
-        if (screenBounds == null) {
-            GraphicsConfiguration configuration = editorComponent != null
-                    ? editorComponent.getGraphicsConfiguration() : null;
-            screenBounds = configuration != null
-                    ? configuration.getBounds() : new Rectangle();
-        }
-        return screenBounds;
-    }
-    
-    static void clear() {
-        screenBounds = null;
-    }
+public interface SchemaCompiler {
+    void compileSchema(WizardDescriptor wiz);
+    void importResources(WizardDescriptor wiz) throws java.io.IOException;
 }
