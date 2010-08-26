@@ -945,9 +945,6 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             throw e;
         }
 
-        long b = System.currentTimeMillis();
-
-        System.out.println("URL " + url + " resolved in " + (b - a) + " ms.");
         SchemaReader sr = null;
         if ("application/relax-ng-compact-syntax".equals(schemaInput.getType())) {
             sr = CompactSchemaReader.getInstance();
@@ -957,7 +954,6 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.FINE, "Used AutoSchemaReader");
         }
         long c = System.currentTimeMillis();
-        System.out.println("SchemaReader created in " + (c - b) + " ms.");
 
         Schema sch = sr.createSchema(schemaInput, pMap);
         LOGGER.log(Level.FINE, "Schema created in " + (System.currentTimeMillis() - c) + " ms.");

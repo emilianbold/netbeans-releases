@@ -83,6 +83,7 @@ public class LinesMapper implements CharacterHandler {
                     newLine(i + 1);
                     break;
                 default:
+                    currentLine.setEnd(i + 1);
                     if (prevWasCr) {
                         //only \r (on old Mac-s)
                         prevWasCr = false;
@@ -116,6 +117,10 @@ public class LinesMapper implements CharacterHandler {
         prevWasCr = false;
     }
 
+    public int getLinesCount() {
+        return lines.size();
+    }
+
     public Line getLine(int linenum) {
         return lines.get(linenum);
     }
@@ -139,6 +144,7 @@ public class LinesMapper implements CharacterHandler {
 
         public Line(int offset) {
             this.start = offset;
+            this.end = offset;
         }
 
         public void setCR() {

@@ -41,7 +41,6 @@ package org.netbeans.modules.html.validation;
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-import java.io.File;
 import java.util.Collection;
 import java.io.IOException;
 import junit.framework.Test;
@@ -61,14 +60,14 @@ public class ValidationTransactionTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite() {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new ValidationTransactionTest("testParseUnfinishedCode"));
+        suite.addTest(new ValidationTransactionTest("testErrorneousSources"));
         return suite;
     }
 
     public void testBasic() throws SAXException, IOException, ParseException {
-        ValidationTransaction.enableDebug();
+//        ValidationTransaction.enableDebug();
 
 //        validate("<!doctype html> <html><head><title>hello</title></head><body><div>ahoj!</div></body></html>", true);
 //        validate("<!doctype html> chybi open tag</div>", false);
@@ -114,7 +113,7 @@ public class ValidationTransactionTest extends NbTestCase {
 
         if(!expectedPass) {
             for(ProblemDescription pd : problems) {
-                System.out.println(pd.dump(code));
+//                System.out.println(pd.dump(code));
             }
         }
         System.out.println("done in " + vt.getValidationTime() + " ms.");
