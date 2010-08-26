@@ -142,7 +142,7 @@ public class Offset2LineService {
                     char c = line.charAt(0);
                     if (c >= '0' && c <= '9') {
                         // line-offset table
-                        String[] split = line.split(",");
+                        String[] split = line.split(","); // NOI18N
                         if (split.length > 2) {
                             try {
                                 lines.add(Integer.valueOf(split[0]));
