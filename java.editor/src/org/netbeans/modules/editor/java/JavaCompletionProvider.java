@@ -4536,9 +4536,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     ts.movePrevious();
                 int len = offset - ts.offset();
                 if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
-                        ts.token().id().primaryCategory().startsWith("keyword") ||
-                        ts.token().id().primaryCategory().startsWith("string") ||
-                        ts.token().id().primaryCategory().equals("literal"))
+                        ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                        ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                        ts.token().id().primaryCategory().equals("literal")) //NOI18N
                         && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
                     prefix = ts.token().toString().substring(0, len);
                     offset = ts.offset();
