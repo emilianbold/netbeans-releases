@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.nio.ByteOrder;
 
 /**
  * I decided not to extend RandomAccessFile because in this case I cannot
@@ -59,7 +59,7 @@ import java.io.RandomAccessFile;
  * @author ak119685
  */
 public class ByteStreamReader implements DataInput {
-    private RandomAccessFile file = null;
+    private MyRandomAccessFile file = null;
     private String fileName;
     private int dataEncoding = 0;
     private int fileClass = 0;
@@ -69,7 +69,7 @@ public class ByteStreamReader implements DataInput {
     public static final int MSB = 2;
     private final byte[] buffer = new byte[8];
     
-    public ByteStreamReader(String fname, RandomAccessFile reader) {
+    public ByteStreamReader(String fname, MyRandomAccessFile reader) {
         file = reader;
         this.fileName = fname;
     }
@@ -92,6 +92,11 @@ public class ByteStreamReader implements DataInput {
     public void setDataEncoding(int encoding) {
         if (encoding == LSB || encoding == MSB) {
             dataEncoding = encoding;
+            if (encoding == LSB) {
+                file.getBuffer().order(ByteOrder.LITTLE_ENDIAN);
+            } else {
+                file.getBuffer().order(ByteOrder.BIG_ENDIAN);
+            }
         } else {
             throw new IllegalArgumentException("Wrong Data Encoding specified (" + encoding + ")."); // NOI18N
         }
@@ -144,12 +149,14 @@ public class ByteStreamReader implements DataInput {
     
     @Override
     public short readShort() throws IOException {
-        return (short)readNumber(2);
+        return file.getBuffer().getShort();
+        //return (short)readNumber(2);
     }
     
     @Override
     public int readInt() throws IOException {
-        return (int)readNumber(4);
+        return file.getBuffer().getInt();
+        //return (int)readNumber(4);
     }
     
     public long readDWlen() throws IOException {
@@ -162,7 +169,8 @@ public class ByteStreamReader implements DataInput {
     
     @Override
     public long readLong() throws IOException {
-        return readNumber(8);
+        return file.getBuffer().getLong();
+        //return readNumber(8);
     }
     
     public byte[] read(byte b[]) throws IOException {
@@ -172,12 +180,14 @@ public class ByteStreamReader implements DataInput {
     
     @Override
     public void readFully(byte[] b) throws IOException {
-        file.readFully(b);
+        file.getBuffer().get(b);
+        //file.readFully(b);
     }
     
     @Override
     public void readFully(byte[] b, int off, int len) throws IOException {
-        file.readFully(b, off, len);
+        file.getBuffer().get(b, off, len);
+        //file.readFully(b, off, len);
     }
     
     @Override
@@ -192,7 +202,8 @@ public class ByteStreamReader implements DataInput {
     
     @Override
     public byte readByte() throws IOException {
-        return file.readByte();
+        return file.getBuffer().get();
+        //return file.readByte();
     }
     
     @Override
