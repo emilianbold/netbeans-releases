@@ -108,7 +108,8 @@ public class Offset2LineService {
         String fileName = null;
         int baseLine = 0;
         List<Integer> lines = new ArrayList<Integer>();
-        List<Integer> offsets = new ArrayList<Integer>();
+        List<Integer> startOffset = new ArrayList<Integer>();
+        List<Integer> endOffset = new ArrayList<Integer>();
         while ((line=out.readLine())!= null){
             line = line.trim();
             if (line.length() == 0) {
@@ -130,7 +131,8 @@ public class Offset2LineService {
                     try {
                         baseLine = Integer.parseInt(line);
                         lines.clear();
-                        offsets.clear();
+                        startOffset.clear();
+                        endOffset.clear();
                         state++;
                     } catch (NumberFormatException ex) {
                         state = 0;
@@ -140,20 +142,19 @@ public class Offset2LineService {
                     char c = line.charAt(0);
                     if (c >= '0' && c <= '9') {
                         // line-offset table
-                        int i = line.indexOf(',');
-                        if (i > 0) {
+                        String[] split = line.split(",");
+                        if (split.length > 2) {
                             try {
-                                Integer lineNumber = Integer.valueOf(line.substring(0,i));
-                                Integer offset = Integer.valueOf(line.substring(i+1));
-                                lines.add(lineNumber);
-                                offsets.add(offset);
+                                lines.add(Integer.valueOf(split[0]));
+                                startOffset.add(Integer.valueOf(split[1]));
+                                endOffset.add(Integer.valueOf(split[2]));
                             } catch (NumberFormatException ex) {
                                 state = 0;
                             }
                         }
                     } else {
                         // end of table
-                        sourceInfoMap.put(functionName, createAbstractFunctionToLine(fileName, baseLine, lines, offsets));
+                        sourceInfoMap.put(functionName, createAbstractFunctionToLine(fileName, baseLine, lines, startOffset, endOffset));
                         functionName = line;
                         state = 1;
                     }
@@ -161,18 +162,18 @@ public class Offset2LineService {
             }
         }
         if (state > 1) {
-            sourceInfoMap.put(functionName, createAbstractFunctionToLine(fileName, baseLine, lines, offsets));
+            sourceInfoMap.put(functionName, createAbstractFunctionToLine(fileName, baseLine, lines, startOffset, endOffset));
         }
         onePath = null;
         return sourceInfoMap;
     }
 
     private AbstractFunctionToLine createAbstractFunctionToLine(String fileName, int baseLine,
-            List<Integer> lines, List<Integer> offsets) {
+            List<Integer> lines, List<Integer> startOffsets, List<Integer> endOffsets) {
         if (lines.isEmpty()) {
             return new DeclarationToLine(fileName, baseLine, onePath);
         } else {
-            return new FunctionToLine(fileName, baseLine, lines, offsets, onePath);
+            return new FunctionToLine(fileName, baseLine, lines, startOffsets, endOffsets, onePath);
         }
     }
 
@@ -366,6 +367,15 @@ public class Offset2LineService {
                     return false;
                 }
                 return true;
+            } else if (obj instanceof FunctionToLine) {
+                FunctionToLine other = (FunctionToLine) obj;
+                if (!filePath.equals(other.filePath)) {
+                    return false;
+                }
+                if (baseLine != other.baseLine) {
+                    return false;
+                }
+                return other.endOffsetStorage.length == 0;
             }
             return false;
         }
@@ -373,9 +383,11 @@ public class Offset2LineService {
 
     private static final class FunctionToLine extends AbstractFunctionToLine {
         private final int[] lineStorage;
-        private final int[] offsetStorage;
+        private final int[] startOffsetStorage;
+        private final int[] endOffsetStorage;
         private final int baseLine;
         private final String filePath;
+        //boolean print;
 
         public FunctionToLine(String filePath, String compDir, DwarfEntry entry, TreeSet<LineNumber> numbers, Map<String, String> onePath) throws IOException {
             assert entry.getKind() == TAG.DW_TAG_subprogram;
@@ -384,39 +396,51 @@ public class Offset2LineService {
             this.filePath = initPath(filePath, compDir, entry, onePath);
             long base =entry.getLowAddress();
             long baseHihg =entry.getHighAddress();
-            //System.err.println(""+entry);
+            //print = entry.getName().equals("threadfunc");
+            //if (print)  {
+            //    System.err.println(""+entry);
+            //}
             List<Integer> lineStorageList = new ArrayList<Integer>();
-            List<Integer> offsetStorageList = new ArrayList<Integer>();
+            List<Integer> startOffsetStorageList = new ArrayList<Integer>();
+            List<Integer> endOffsetStorageList = new ArrayList<Integer>();
             for(LineNumber l : numbers) {
-                if (l.endOffset>=base && l.endOffset <= baseHihg) {
-                    //System.err.println(""+l);
+                if (l.startOffset >= base && l.endOffset <= baseHihg) {
+                    //if (print) System.err.println(""+l);
                     lineStorageList.add(l.line);
-                    offsetStorageList.add((int)(l.endOffset - base));
+                    startOffsetStorageList.add((int)(l.startOffset - base));
+                    endOffsetStorageList.add((int)(l.endOffset - base));
                 }
             }
             lineStorage = new int[lineStorageList.size()];
-            offsetStorage = new int[offsetStorageList.size()];
+            startOffsetStorage = new int[startOffsetStorageList.size()];
+            endOffsetStorage = new int[endOffsetStorageList.size()];
             for (int i = 0; i < lineStorageList.size(); i++){
                 lineStorage[i] = lineStorageList.get(i);
-                offsetStorage[i] = offsetStorageList.get(i);
+                startOffsetStorage[i] = startOffsetStorageList.get(i);
+                endOffsetStorage[i] = endOffsetStorageList.get(i);
             }
         }
 
-        public FunctionToLine(String filePath, int baseLine, List<Integer> lines, List<Integer> offsets, Map<String, String> onePath) {
-            assert lines.size() == offsets.size();
+        public FunctionToLine(String filePath, int baseLine, List<Integer> lines, List<Integer> startOffsets, List<Integer> endOffsets, Map<String, String> onePath) {
+            assert lines.size() == startOffsets.size();
             this.baseLine = baseLine;
             this.filePath = getPath(filePath, onePath);
             lineStorage = new int[lines.size()];
-            offsetStorage = new int[offsets.size()];
+            startOffsetStorage = new int[startOffsets.size()];
+            endOffsetStorage = new int[endOffsets.size()];
             for(int i = 0; i < lines.size(); i++) {
                 lineStorage[i] = lines.get(i);
-                offsetStorage[i] = offsets.get(i);
+                startOffsetStorage[i] = startOffsets.get(i);
+                endOffsetStorage[i] = endOffsets.get(i);
             }
         }
 
         @Override
         public SourceLineInfo getLine(int offset){
-            if (offset <= 0) {
+            //if (print) {
+            //    System.err.println("");
+            //}
+            if (offset < 0) {
                 if (baseLine > 0) {
                     return new SourceLineInfo(filePath, baseLine);
                 } else {
@@ -427,13 +451,10 @@ public class Offset2LineService {
                 return null;
             }
             int res = -1;
-            int delta = Integer.MAX_VALUE;
-            for (int i = 0; i < offsetStorage.length; i++) {
-                if (offsetStorage[i] > offset) {
-                    int d = offsetStorage[i] - offset;
-                    if (d < delta) {
+            for (int i = 0; i < startOffsetStorage.length; i++) {
+                if (startOffsetStorage[i] <= offset && offset < endOffsetStorage[i]) {
+                    if (res == -1) {
                         res = i;
-                        delta = d;
                     }
                 }
             }
@@ -449,7 +470,7 @@ public class Offset2LineService {
             buf.append("\n\tBase Line:  ").append(baseLine); // NOI18N
             if (lineStorage.length>0) {
                 for(int i = 0; i < lineStorage.length; i++) {
-                    buf.append("\n\tLine: ").append(lineStorage[i]).append("\t (").append(offsetStorage[i]).append(")"); // NOI18N
+                    buf.append("\n\tLine: ").append(lineStorage[i]).append("\t (").append(startOffsetStorage[i]).append('-').append(endOffsetStorage[i]).append(")"); // NOI18N
                 }
                 //buf.append("\n\tStart Line: ").append(lineStorage[0]).append("\t (").append(offsetStorage[0]).append(")"); // NOI18N
                 //buf.append("\n\tEnd Line:   ").append(lineStorage[lineStorage.length - 1]).append("\t (").append(offsetStorage[lineStorage.length - 1]).append(")"); // NOI18N
@@ -462,7 +483,7 @@ public class Offset2LineService {
             out.println(filePath);
             out.println(""+baseLine); // NOI18N
             for(int i = 0; i < lineStorage.length; i++) {
-                out.println(""+lineStorage[i]+","+offsetStorage[i]); // NOI18N
+                out.println(""+lineStorage[i]+","+startOffsetStorage[i]+","+endOffsetStorage[i]); // NOI18N
             }
         }
 
@@ -483,11 +504,20 @@ public class Offset2LineService {
                     if (lineStorage[i] != other.lineStorage[i]) {
                         return false;
                     }
-                    if (offsetStorage[i] != other.offsetStorage[i]) {
+                    if (startOffsetStorage[i] != other.startOffsetStorage[i]) {
                         return false;
                     }
                 }
                 return true;
+            } else if (obj instanceof DeclarationToLine) {
+                DeclarationToLine other = (DeclarationToLine) obj;
+                if (!filePath.equals(other.filePath)) {
+                    return false;
+                }
+                if (baseLine != other.baseLine) {
+                    return false;
+                }
+                return lineStorage.length == 0;
             }
             return false;
         }
