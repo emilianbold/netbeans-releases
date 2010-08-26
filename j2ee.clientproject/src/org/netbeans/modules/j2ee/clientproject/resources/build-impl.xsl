@@ -279,7 +279,10 @@ made subject to such option by the copyright holder.
                 <property name="excludes" value=""/>
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
-                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                    <and>
+                        <isset property="endorsed.classpath"/>
+                        <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                    </and>
                 </condition>
             </target>
             
@@ -1275,10 +1278,9 @@ exists or setup the property manually. For example like this:
                             </xsl:if>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                            <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
+                            <jvmarg line="${{run.jvmargs.param}}"/>
                             <arg line="${{j2ee.appclient.tool.args}}"/>
                             <arg line="-client ${{client.jar}}"/>
-                            <arg line="${{j2ee.appclient.mainclass.tool.param}}"/>
                             <arg line="${{application.args.param}}"/>
                             <classpath>
                                 <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
