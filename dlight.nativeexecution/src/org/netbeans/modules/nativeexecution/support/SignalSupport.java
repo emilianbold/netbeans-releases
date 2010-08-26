@@ -144,4 +144,9 @@ public final class SignalSupport {
 
         return result;
     }
+
+    public synchronized int killgrp(Signal signal, int pid) {
+        // negative pid means send signal to process group (see man kill)
+        return kill(signal, -pid);
+    }
 }
