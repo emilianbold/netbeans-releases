@@ -176,6 +176,9 @@ public class Html5ParserTest extends NbTestCase {
         AstNode root = result.root();
 
         assertNotNull(root);
+        
+//        AstNodeUtils.dumpTree(root);
+
         AstNode html = AstNodeUtils.query(root, "html");
         assertNotNull(html);
 
@@ -284,8 +287,27 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(root);
 
+//        AstNodeUtils.dumpTree(root);
+    }
+
+
+    public void testParseNotMatchingBodyTags() throws ParseException {
+        String code = "<!doctype html>\n"
+                + "<html>\n"
+                + "<title></title>\n"
+                + "<body>\n"
+                + "</body>\n"
+                + "</html>\n";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
         AstNodeUtils.dumpTree(root);
     }
+
+
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
         HtmlSource source = new HtmlSource(code);

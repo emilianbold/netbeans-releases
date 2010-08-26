@@ -69,24 +69,17 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     public static boolean DEBUG = false;
     public static boolean DEBUG_STATES = false;
-
     private final AstNodeFactory factory;
     private AstNode root;
-
     //element's internall offsets
     private int tag_lt_offset;
     private int tag_gt_offset;
-    
     private boolean self_closing_starttag;
-
     //stack of opened tags
     private Stack<AstNode> stack = new Stack<AstNode>();
-
     //stack of encountered end tags
     LinkedList<AstNode> physicalEndTagsQueue = new LinkedList<AstNode>();
-
     private ElementName startTag;
-
     //holds found attributes of an open tag
     private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
 
@@ -102,50 +95,84 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     public AstNode getCurrentNode() {
         return stack.peek();
     }
-    
+
     @Override
     protected void elementPopped(String namespace, String name, AstNode t) throws SAXException {
         if (DEBUG) {
-            System.out.println("-" + t + (t.isVirtual() ? "[virtual]" : "") +  "; stack:" + dumpStack());
+            System.out.println("-" + t + (t.isVirtual() ? "[virtual]" : "") + "; stack:" + dumpStack());
         }
-        
+
         AstNode top = stack.pop();
         assert top == t;
 
-        //try if the first end tag in the queue matches to the popped node
-        AstNode node = physicalEndTagsQueue.peekLast();
-        if (node != null) {
-            if (node.name().equals(t.name())) {
-                //it seems that the end tag corresponds to the popped node
-                
-                //remove the end tag from the queue
-                physicalEndTagsQueue.pollLast();
-                
-                //add the end tag node to its parent
-                if(!stack.isEmpty()) {
-                    stack.peek().addChild(node);
-                }
-
-                //set matching node
-                t.setMatchingNode(node);
-                node.setMatchingNode(t);
-
-                //set logical end of the paired open tag
-                t.setLogicalEndOffset(node.endOffset());
-
-            } else {
-                //set logical range of the current open tag node to the beginning of the current open tag node
-                t.setLogicalEndOffset(node.startOffset());
+        AstNode match = null;
+        for (AstNode n : physicalEndTagsQueue) {
+            if (n.name().equals(t.name())) {
+                match = n;
+                break;
             }
         }
 
-        if(stack.size() == 1 /* only root tag in the stack */ && !physicalEndTagsQueue.isEmpty()) {
+        if (match != null) {
+            //remove all until the found element
+            List<AstNode> toremove = physicalEndTagsQueue.subList(0, physicalEndTagsQueue.indexOf(match) + 1);
+
+            if (toremove.size() > 1) {
+                //there are some stray end tags, add them to the current open tag node
+                for (AstNode n : toremove.subList(0, toremove.size() - 1)) {
+                    t.addChild(n);
+                }
+            }
+            //and remove all the end tags
+            toremove.clear();
+
+            //add the end tag node to its parent
+            if (!stack.isEmpty()) {
+                stack.peek().addChild(match);
+            }
+
+            //set matching node
+            t.setMatchingNode(match);
+            match.setMatchingNode(t);
+
+            //set logical end of the paired open tag
+            t.setLogicalEndOffset(match.endOffset());
+        }
+
+//        //try if the first end tag in the queue matches to the popped node
+//        AstNode node = physicalEndTagsQueue.peekFirst();
+//        if (node != null) {
+//            if (node.name().equals(t.name())) {
+//                //it seems that the end tag corresponds to the popped node
+//
+//                //remove the end tag from the queue
+//                physicalEndTagsQueue.pollFirst();
+//
+//                //add the end tag node to its parent
+//                if(!stack.isEmpty()) {
+//                    stack.peek().addChild(node);
+//                }
+//
+//                //set matching node
+//                t.setMatchingNode(node);
+//                node.setMatchingNode(t);
+//
+//                //set logical end of the paired open tag
+//                t.setLogicalEndOffset(node.endOffset());
+//
+//            } else {
+//                //set logical range of the current open tag node to the beginning of the current open tag node
+//                t.setLogicalEndOffset(node.startOffset());
+//            }
+//        }
+
+        if (stack.size() == 1 /* only root tag in the stack */ && !physicalEndTagsQueue.isEmpty()) {
             //there are no nodes on the stack, but there are some physical endtags left
-            if(DEBUG) {
+            if (DEBUG) {
                 System.out.println("LEFT in stack of end tags: " + dumpEndTags());
             }
             //attach all the stray end tags to the currently popped node
-            for(ListIterator<AstNode> leftEndTags = physicalEndTagsQueue.listIterator(); leftEndTags.hasNext(); ) {
+            for (ListIterator<AstNode> leftEndTags = physicalEndTagsQueue.listIterator(); leftEndTags.hasNext();) {
                 AstNode left = leftEndTags.next();
                 t.addChild(left);
                 leftEndTags.remove();
@@ -175,7 +202,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         while ((head = physicalEndTagsQueue.poll()) != null) {
             stack.peek().addChild(head);
         }
-        
+
         super.elementPushed(namespace, name, t);
     }
 
@@ -186,7 +213,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     private String dumpEndTags() {
         return collectionOfNodesToString(physicalEndTagsQueue);
     }
-    
+
     private String collectionOfNodesToString(Collection<AstNode> col) {
         StringBuilder b = new StringBuilder();
         b.append('[');
@@ -197,12 +224,12 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         }
         b.append(']');
         return b.toString();
-        
+
     }
 
     @Override
     public void stateChanged(int from, int to, int offset) {
-        if(DEBUG_STATES) {
+        if (DEBUG_STATES) {
             System.out.println(STATE_NAMES[from] + " -> " + STATE_NAMES[to] + " at " + offset);
         }
 
@@ -212,7 +239,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case CLOSE_TAG_OPEN_NOT_PCDATA:
-                switch(from) {
+                switch (from) {
                     case TAG_OPEN_NON_PCDATA:
                         //close tag in CDATA (e.g. </style> tag after embedded stylesheet)
                         tag_lt_offset = offset - 1; //the state transition happens after <'/' char found
@@ -237,7 +264,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case ATTRIBUTE_NAME:
-                switch(from) {
+                switch (from) {
                     case BEFORE_ATTRIBUTE_NAME:
                         //switching to attribute name
                         AttrInfo ainfo = new AttrInfo();
@@ -248,10 +275,10 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case BEFORE_ATTRIBUTE_VALUE:
-                switch(from) {
+                switch (from) {
                     case ATTRIBUTE_NAME:
                         attrs.peek().equalSignOffset = offset;
-                         break;
+                        break;
                 }
                 break;
 
@@ -267,7 +294,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.NONE;
                 attrs.peek().valueOffset = offset;
                 break;
-                
+
         }
     }
 
@@ -294,10 +321,10 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if (DEBUG) {
             System.out.print("endTag " + en.name + "(" + tagBeginningOffset() + " - " + tagEndOffset() + ")");
         }
-        
+
         physicalEndTagsQueue.add(factory.createEndTag(en.name, tagBeginningOffset(), tagEndOffset()));
 
-        if(DEBUG) {
+        if (DEBUG) {
             System.out.println("end tags: " + dumpEndTags());
 
         }
@@ -305,11 +332,11 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         super.endTag(en);
     }
 
-    public  int tagBeginningOffset() {
+    public int tagBeginningOffset() {
         return tag_lt_offset;
     }
 
-    public  int tagEndOffset() {
+    public int tagEndOffset() {
         return tag_gt_offset + 1 /* 1 == the '>' length */;
     }
 
@@ -343,9 +370,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     @Override
     protected AstNode createElement(String namespace, String name, HtmlAttributes attributes) throws SAXException {
 
-        if (DEBUG) {
-            System.out.println("ns=" + namespace);
-        }
         AstNode node;
         if (startTag != null && startTag.name.equals(name)) {
             node = factory.createOpenTag(name, tag_lt_offset, tag_gt_offset + 1, self_closing_starttag);
@@ -363,7 +387,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected AstNode createHtmlElementSetAsRoot(HtmlAttributes attributes) throws SAXException {
-        if(DEBUG) {
+        if (DEBUG) {
             System.out.println("+HTML ROOT");
         }
 
@@ -371,7 +395,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         stack.push(root);
 
         root.addChild(rootTag);
-        
+
         return rootTag;
     }
 
@@ -424,11 +448,13 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     }
 
     private static class AttrInfo {
+
         public int nameOffset, equalSignOffset, valueOffset;
         public ValueQuotation valueQuotationType;
+
         private enum ValueQuotation {
+
             NONE, SINGLE, DOUBLE;
         }
     }
-    
 }
