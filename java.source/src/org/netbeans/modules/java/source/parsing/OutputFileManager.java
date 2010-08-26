@@ -47,7 +47,6 @@ package org.netbeans.modules.java.source.parsing;
 import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashSet;
