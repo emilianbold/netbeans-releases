@@ -147,6 +147,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
@@ -508,7 +509,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             });
 
         } else {
-            start2(executor, additionalArgv, this, connectExisting);
+            CndRemote.validate(ddi.getHostName(), new Runnable() {
+                public void run() {
+                    start2(executor, additionalArgv, DbxDebuggerImpl.this, connectExisting);
+                }
+            });
         }
     }
 
