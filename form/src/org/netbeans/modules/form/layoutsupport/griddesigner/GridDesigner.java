@@ -54,6 +54,10 @@ import java.awt.LayoutManager;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
@@ -200,15 +204,14 @@ public class GridDesigner extends JPanel implements Customizer {
         setDesignedContainer((RADVisualContainer)bean);
     }
 
-    private RADVisualComponent selection;
-    public void setSelection(Component selectedComp) {
-        selection = null;
+    private Set<RADVisualComponent> metaSelection = new HashSet<RADVisualComponent>();
+    public void setSelection(Set<Component> selection) {
+        metaSelection.clear();
         RADVisualContainer metacont = (RADVisualContainer)replicator.getTopMetaComponent();
         for (RADVisualComponent metacomp : metacont.getSubComponents()) {
             Component comp = (Component)replicator.getClonedComponent(metacomp);
-            if (comp == selectedComp) {
-                selection = metacomp;
-                break;
+            if (selection.contains(comp)) {
+                metaSelection.add(metacomp);
             }
         }
         updatePropertySheet();
@@ -223,51 +226,62 @@ public class GridDesigner extends JPanel implements Customizer {
         return selectedNodeListener;
     }
 
+    boolean updateScheduled = false;
     private PropertyChangeListener createSelectedNodeListener() {
         return new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!glassPane.isUserActionInProgress()) {
-                    glassPane.updateLayout();
-                    updateCustomizer();
+                    if (!updateScheduled) {
+                        updateScheduled = true;
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateScheduled = false;
+                                glassPane.updateLayout();
+                                updateCustomizer();
+                            }
+                        });
+                    }
                 }
             }
         };
     }
 
-    private Node selectedNode;
+    private List<Node> selectedNodes = new ArrayList<Node>();
     private void updatePropertySheet() {
-        Node[] nodes;
-        if (selection == null) {
-            nodes = new Node[0];
-            setSelectedNode(null);
-        } else {
-            RADComponentNode node = selection.getNodeReference();
+        List<Node> nodes = new ArrayList<Node>(metaSelection.size());
+        for (RADVisualComponent metacomp : metaSelection) {
+            RADComponentNode node = metacomp.getNodeReference();
             if (node == null) {
-                // "selection" was just added and the node reference is not initialized yet
+                // "metacomp" was just added and the node reference is not initialized yet
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        setSelectedNode(new LayoutConstraintsNode(selection.getNodeReference()));
-                        sheet.setNodes(new Node[] {selectedNode});
+                        List<Node> nodes = new ArrayList<Node>(metaSelection.size());
+                        for (RADVisualComponent metacomp : metaSelection) {
+                            nodes.add(new LayoutConstraintsNode(metacomp.getNodeReference()));
+                        }
+                        setSelectedNodes(nodes);
+                        sheet.setNodes(nodes.toArray(new Node[nodes.size()]));
                     }
                 });
                 return;
             } else {
-                setSelectedNode(new LayoutConstraintsNode(selection.getNodeReference()));
-                nodes = new Node[] {selectedNode};
+                nodes.add(new LayoutConstraintsNode(node));
             }
         }
-        sheet.setNodes(nodes);
+        setSelectedNodes(nodes);
+        sheet.setNodes(nodes.toArray(new Node[nodes.size()]));
     }
 
-    void setSelectedNode(Node node) {
-        if (selectedNode != null) {
-            selectedNode.removePropertyChangeListener(getSelectedNodeListener());
+    void setSelectedNodes(List<Node> nodes) {
+        for (Node node : selectedNodes) {
+            node.removePropertyChangeListener(getSelectedNodeListener());
         }
-        this.selectedNode = node;
-        if (selectedNode != null) {
-            selectedNode.addPropertyChangeListener(getSelectedNodeListener());
+        this.selectedNodes = nodes;
+        for (Node node : selectedNodes) {
+            node.addPropertyChangeListener(getSelectedNodeListener());
         }
     }
 
