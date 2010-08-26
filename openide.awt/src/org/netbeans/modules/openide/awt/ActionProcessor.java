@@ -107,7 +107,10 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         System.err.println("userText: " + userText);
          */
         if (annotation.getAnnotationType().asElement().getSimpleName().toString().contains(ActionReference.class.getSimpleName())) {
-            if (member.getSimpleName().contentEquals("path")) {
+            if (member.getSimpleName().contentEquals("path")) { // NOI18N
+                if (userText == null) {
+                    userText = "";
+                }
                 if (userText.startsWith("\"")) {
                     userText = userText.substring(1);
                 }
