@@ -99,6 +99,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     private boolean createPU = true;//right now this panel is used in wizards with required pu (but need to handle if pu already created)
 
     private EntityClosure entityClosure;
+    private final boolean disableNoIdSelection;
 
 
     /** Creates new form CrudSetupPanel */
@@ -115,6 +116,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         };
         listAvailable.getSelectionModel().addListSelectionListener(selectionListener);
         listSelected.getSelectionModel().addListSelectionListener(selectionListener);
+        disableNoIdSelection = wizard.getProperty(PersistenceClientEntitySelection.DISABLENOIDSELECTION) == Boolean.TRUE;
     }
 
     /**
@@ -527,6 +529,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text = null;
+            boolean disable = false;
             if (value instanceof Entity) {
                 Entity entity = ((Entity) value);
                 text = entity.getClass2();
@@ -537,12 +540,17 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 } else {
                     Logger.getLogger("global").log(Level.INFO, "Entity:" + value + " returns null from getClass2(); see IZ 80024"); //NOI18N
                 }
-                if( available && true){
-                    ;
+                if( available && entityClosure.haveId(entity.getClass2())!=Boolean.TRUE){
+                    text += " (" + NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoId") + ")";//NOI18N
+                    disable = disableNoIdSelection;
                 }
             }
             if (text == null) {
                 text = value.toString();
+                if( available && entityClosure.haveId(text)!=Boolean.TRUE && entityClosure.getEntity(text)!=null){
+                    text += " (" + NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoId") + ")";//NOI18N
+                    disable = disableNoIdSelection;
+                }
             }
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
@@ -551,7 +559,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
-            setEnabled(entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value));
+            setEnabled((entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value)) && !disable);
             setFont(list.getFont());
             setText(text);
             return this;
