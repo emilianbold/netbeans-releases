@@ -250,7 +250,10 @@ is divided into following sections:
                 </condition>
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
-                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                    <and>
+                        <isset property="endorsed.classpath"/>
+                        <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                    </and>
                 </condition>
             </target>
 
