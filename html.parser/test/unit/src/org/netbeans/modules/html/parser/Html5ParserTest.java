@@ -338,7 +338,7 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(6190, bodyEnd.startOffset());
         assertEquals(6197, bodyEnd.endOffset());
 
-//        AstNodeUtils.dumpTree(root);
+        AstNodeUtils.dumpTree(root);
     }
 
 
