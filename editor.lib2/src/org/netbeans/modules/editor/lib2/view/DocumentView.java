@@ -133,6 +133,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     static final char PRINTING_TAB = '\u00BB'; // \u21FE
     static final char PRINTING_NEWLINE = '\u00B6';
     static final char LINE_CONTINUATION = '\u21A9';
+    static final char LINE_CONTINUATION_ALTERNATE = '\u2190';
 
     /**
      * Text component's client property for the mutex doing synchronization
@@ -1097,7 +1098,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     TextLayout getLineContinuationCharTextLayout() {
         if (lineContinuationTextLayout == null) {
-            lineContinuationTextLayout = createTextLayout(String.valueOf(LINE_CONTINUATION), defaultFont);
+            char lineContinuationChar = LINE_CONTINUATION;
+            if (!defaultFont.canDisplay(lineContinuationChar)) {
+                lineContinuationChar = LINE_CONTINUATION_ALTERNATE;
+            }
+            lineContinuationTextLayout = createTextLayout(String.valueOf(lineContinuationChar), defaultFont);
         }
         return lineContinuationTextLayout;
     }
