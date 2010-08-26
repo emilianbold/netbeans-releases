@@ -237,31 +237,43 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     elementView.setAutoWaitCursor(false);
                     manager.setRootContext(new ElementNode( description, ClassMemberPanelUI.this, fileObject ) );
 
-                    boolean expand = true;
+                    int expandDepth = -1;
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(fileObject.getMIMEType());
                     if (language != null && language.getStructure() != null) {
                         StructureScanner scanner = language.getStructure();
                         Configuration configuration = scanner.getConfiguration();
                         if (configuration != null) {
-                            expand = configuration.getExpandDepth() != 0;
+                            expandDepth = configuration.getExpandDepth();
                         }
                     }
-                    if (expand) {
-                        boolean scrollOnExpand = elementView.getScrollOnExpand();
-                        elementView.setScrollOnExpand( false );
-                        elementView.expandAll();
-                        elementView.setScrollOnExpand( scrollOnExpand );
-                    } else {
-                        // Expand just the top levels, especially if we're dealing with a mimeroot
-                        Node[] nodes = manager.getRootContext().getChildren().getNodes();
-                        for (Node node : nodes) {
-                            elementView.expandNode(node);
-                        }
-                    }
+                    boolean scrollOnExpand = elementView.getScrollOnExpand();
+                    elementView.setScrollOnExpand( false );
+                    expandNode (manager.getRootContext(), 0, expandDepth);
+                    elementView.setScrollOnExpand( scrollOnExpand );
                     elementView.setAutoWaitCursor(true);
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});
+                }
+
+                private void expandNode(Node node, int currentDepth, int maxDepth) {
+                    if (maxDepth >= 0  &&  currentDepth >= maxDepth) {
+                        return;
+                    }
+                    if (! (node instanceof ElementNode)) {
+                        return;
+                    }
+                    ElementNode elementNode = (ElementNode) node;
+                    final StructureItem structureItem = elementNode.getDescription();
+                    if (structureItem instanceof StructureItem.CollapsedDefault) {
+                        if (((StructureItem.CollapsedDefault) structureItem).isCollapsedByDefault()) {
+                            return;
+                        }
+                    }
+                    elementView.expandNode(elementNode);
+                    for (Node subNode : elementNode.getChildren().getNodes()) {
+                        expandNode(subNode, currentDepth + 1, maxDepth);
+                    }
                 }
             } );
             
