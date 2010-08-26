@@ -484,10 +484,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     // checkDocumentLocked() - unnecessary - doc.render() called
                     try {
                         ((EditorTabExpander) tabExpander).updateTabSize();
-                        if (lengthyAtomicEdit == 0) { // Not in lengthy atomic edit
-                            if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
-                                viewUpdates.reinitViews();
-                            } // At the end of lengthy edit the views will be released and recreated automatically
+                        if (isReinitable()) { // Not in lengthy atomic edit
+                            viewUpdates.reinitViews();
+                        } else if (children != null) {
+                            releaseChildren(false);
                         }
                     } finally {
                         mutex.unlock();
@@ -931,6 +931,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     boolean isUpdatable() {
         return textComponent != null && children != null && (lengthyAtomicEdit <= 0);
+    }
+    
+    boolean isReinitable() {
+        return textComponent != null && fontRenderContext != null && 
+                (lengthyAtomicEdit <= 0) && !incomingModification;
     }
 
     /**
