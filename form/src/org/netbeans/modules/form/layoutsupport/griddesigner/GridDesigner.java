@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -91,18 +92,28 @@ import org.openide.util.NbBundle;
 public class GridDesigner extends JPanel implements Customizer {
     /** Color of the selection. */
     public static final Color SELECTION_COLOR = FormLoaderSettings.getInstance().getSelectionBorderColor();
+    /** Image of the resizing handle. */
     public static final Image RESIZE_HANDLE = ImageUtilities.loadImageIcon("org/netbeans/modules/form/resources/resize_handle.png", false).getImage(); // NOI18N
+    /** The "main" panel of the designer. */
     private JPanel innerPane;
+    /** Glass pane of the designer. */
     private GlassPane glassPane;
+    /** Replicator used to clone components for the designer. */
     private VisualReplicator replicator;
+    /** Property sheet. */
     private PropertySheet sheet;
-    private JSplitPane splitPane;
+    /** Grid customizer (part of the panel on the left side). */
     private GridCustomizer customizer;
 
+    /**
+     * Sets the designer container.
+     * 
+     * @param metaContainer designer container.
+     */
     private void setDesignedContainer(RADVisualContainer metaContainer) {
         FormModel formModel = metaContainer.getFormModel();
         setLayout(new BorderLayout());
-        splitPane = new JSplitPane();
+        JSplitPane splitPane = new JSplitPane();
         innerPane = new JPanel() {
             @Override
             public boolean isOptimizedDrawingEnabled() {
@@ -160,8 +171,8 @@ public class GridDesigner extends JPanel implements Customizer {
         layout.setVerticalGroup(vGroup);
         mainPanel.setLayout(layout);
         glassPane.setPanes(innerPane, container);
-        configureGridInfo(replicator);
-        initLeftColumn();
+        configureGridManager();
+        splitPane.setLeftComponent(initLeftColumn());
         innerPane.add(glassPane);
         FakePeerContainer fakePeerContainer = new FakePeerContainer();
         fakePeerContainer.setLayout(new BorderLayout());
@@ -171,7 +182,10 @@ public class GridDesigner extends JPanel implements Customizer {
         innerPane.add(fakePeerContainer);
     }
 
-    private void configureGridInfo(VisualReplicator replicator) {
+    /**
+     * Configures the appropriate {@code GridManager}.
+     */
+    private void configureGridManager() {
         RADVisualContainer metacont = (RADVisualContainer)replicator.getTopMetaComponent();
         Object bean = replicator.getClonedComponent(metacont);
         Container container = metacont.getContainerDelegate(bean);
@@ -183,8 +197,13 @@ public class GridDesigner extends JPanel implements Customizer {
         glassPane.setGridManager(gridManager);
         customizer = gridManager.getCustomizer(glassPane);
     }
-    
-    private void initLeftColumn() {
+
+    /**
+     * Creates and initialized the components on the left side.
+     * 
+     * @return component that represents the left side.
+     */
+    private JComponent initLeftColumn() {
         sheet = new PropertySheet();
         sheet.setPreferredSize(new Dimension(300, 500));
         JPanel leftPanel;
@@ -196,15 +215,28 @@ public class GridDesigner extends JPanel implements Customizer {
             leftPanel.add(sheet);
             leftPanel.add(customizer.getComponent(), BorderLayout.PAGE_START);
         }
-        splitPane.setLeftComponent(leftPanel);
+        return leftPanel;
     }
 
+    /**
+     * Implementation of {@code Customizer} interface (sets the object
+     * to customize).
+     * 
+     * @param bean bean to customize.
+     */
     @Override
     public void setObject(Object bean) {
         setDesignedContainer((RADVisualContainer)bean);
     }
 
+    /** Selected meta-components. */
     private Set<RADVisualComponent> metaSelection = new HashSet<RADVisualComponent>();
+    
+    /**
+     * Sets selection.
+     * 
+     * @param selection new selection.
+     */
     public void setSelection(Set<Component> selection) {
         metaSelection.clear();
         RADVisualContainer metacont = (RADVisualContainer)replicator.getTopMetaComponent();
@@ -218,7 +250,14 @@ public class GridDesigner extends JPanel implements Customizer {
         updateCustomizer();
     }
 
+    /** Listener for property changes on selected nodes. */
     private PropertyChangeListener selectedNodeListener;
+
+    /**
+     * Returns listener for property changes on selected nodes.
+     * 
+     * @return listener for property changes on selected nodes.
+     */
     private PropertyChangeListener getSelectedNodeListener() {
         if (selectedNodeListener == null) {
             selectedNodeListener = createSelectedNodeListener();
@@ -226,13 +265,26 @@ public class GridDesigner extends JPanel implements Customizer {
         return selectedNodeListener;
     }
 
+    /** Determines whether update of glassPane has been scheduled. */
     boolean updateScheduled = false;
+    
+    /**
+     * Creates {@code selectedNodeListner}.
+     * 
+     * @return {@code selectedNodeListner}.
+     */
     private PropertyChangeListener createSelectedNodeListener() {
         return new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!glassPane.isUserActionInProgress()) {
                     if (!updateScheduled) {
+                        // This method is called several times when a change
+                        // is done to some property (in property sheet)
+                        // when several components are selected.
+                        // Avoiding partial refresh - waiting till
+                        // other invocations/property modifications
+                        // are finished.
                         updateScheduled = true;
                         EventQueue.invokeLater(new Runnable() {
                             @Override
@@ -248,7 +300,10 @@ public class GridDesigner extends JPanel implements Customizer {
         };
     }
 
+    /** Nodes selected in the property sheet. */
     private List<Node> selectedNodes = new ArrayList<Node>();
+    
+    /** Updates the property sheet according to the current selection. */
     private void updatePropertySheet() {
         List<Node> nodes = new ArrayList<Node>(metaSelection.size());
         for (RADVisualComponent metacomp : metaSelection) {
@@ -275,6 +330,11 @@ public class GridDesigner extends JPanel implements Customizer {
         sheet.setNodes(nodes.toArray(new Node[nodes.size()]));
     }
 
+    /**
+     * Sets the selected nodes in the property sheet.
+     * 
+     * @param nodes new selection in the property sheet.
+     */
     void setSelectedNodes(List<Node> nodes) {
         for (Node node : selectedNodes) {
             node.removePropertyChangeListener(getSelectedNodeListener());
@@ -285,6 +345,10 @@ public class GridDesigner extends JPanel implements Customizer {
         }
     }
 
+    /**
+     * Updates the grid customizer (part of the left side of the designer)
+     * according to the current selection.
+     */
     void updateCustomizer() {
         if (customizer != null) {
             DesignerContext context = glassPane.currentContext();
@@ -292,8 +356,16 @@ public class GridDesigner extends JPanel implements Customizer {
         }
     }
 
+    /**
+     * Node that shows just layout constraints of the given {@code RADComponentNode}.
+     */
     static class LayoutConstraintsNode extends FilterNode {
 
+        /**
+         * Creates a new {@code LayoutConstraintsNode} based on the given node.
+         * 
+         * @param original the original node this node should be based on.
+         */
         LayoutConstraintsNode(Node original) {
             super(original);
         }

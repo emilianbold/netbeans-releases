@@ -103,7 +103,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
     /** Selected components. */
     private Set<Component> selection = new HashSet<Component>();
+    /** Focused component, i.e., component recently clicked. */
     private Component focusedComponent;
+    /** Modifiers of the last mouse press. */
     private int mouseModifiers;
     /** Selected columns. */
     private BitSet selectedColumns = new BitSet();
@@ -177,10 +179,23 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         this.componentPane = componentPane;
     }
 
+    /**
+     * Determines whether some user action is in progress, i.e,
+     * if some animation is running.
+     * 
+     * @return {@code true} if some user action is in progress,
+     * returns {@code false} otherwise.
+     */
     public boolean isUserActionInProgress() {
         return animation;
     }
 
+    /**
+     * Updates the layout in the grid designer according to the current
+     * state of the model (meta-data). This method should be called
+     * when some change is not done through {@code gridManager}
+     * (for example, for changes made through property sheet).
+     */
     public void updateLayout() {
         performAction(new AbstractGridAction() {
             @Override
@@ -837,6 +852,15 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         return context;
     }
 
+    /**
+     * Updates the current context of the designer according to the given
+     * designer context. This method is used to update the designer context
+     * according to needs of grid actions (it is invoked when a grid
+     * action is finised).
+     * 
+     * @param context designer context that should be reflected
+     * the designer/glass pane.
+     */
     void updateCurrentContext(DesignerContext context) {
         setSelection(context.getSelectedComponents());
     }
@@ -859,6 +883,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         }
     }
 
+    /**
+     * Performs the given {@code GridAction}.
+     * 
+     * @param action grid action to perform.
+     */
     @Override
     public void performAction(GridAction action) {
         GridActionWrapper wrapper = new GridActionWrapper(action);
@@ -866,10 +895,21 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         wrapper.actionPerformed(null);
     }
 
+    /**
+     * Sets the selection.
+     * 
+     * @param selComp component that should be the only selected component,
+     * if it is {@code null} then the current selection is cleared.
+     */
     void setSelection(Component selComp) {
         setSelection((selComp==null) ? Collections.EMPTY_SET : Collections.singleton(selComp));
     }
-    
+
+    /**
+     * Sets the selection.
+     * 
+     * @param selection new selection.
+     */
     void setSelection(Set<Component> selection) {
         if (selection == this.selection) {
             return;
@@ -881,10 +921,16 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         designer.setSelection(selection);
     }
 
+    /**
+     * Processes key events.
+     * 
+     * @param e key event.
+     */
     @Override
     protected void processKeyEvent(KeyEvent e) {
         int keyCode = e.getKeyCode();
         if ((keyCode == KeyEvent.VK_ESCAPE) && (moving || resizing)) {
+            // Cancel moving and resizing when Esc is pressed.
             moving = false;
             resizing = false;
             repaint();
@@ -1143,6 +1189,14 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             animLayer.animate();
         }
 
+        /**
+         * Returns larger copy of the passed array. The additional slots
+         * of this array are filled by the last value of the original array.
+         * 
+         * @param original original array.
+         * @param newLength length of the new array.
+         * @return extended array.
+         */
         private int[] extendArray(int[] original, int newLength) {
             int[] result = new int[newLength];
             System.arraycopy(original, 0, result, 0, original.length);
