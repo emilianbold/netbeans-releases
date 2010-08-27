@@ -93,8 +93,8 @@ public final class WLPluginProperties {
     private static final Collection EXPECTED_FILES = new ArrayList();
 
     static {
-        EXPECTED_FILES.add("common");        // NOI18N
-        EXPECTED_FILES.add("modules");    // NOI18N
+        EXPECTED_FILES.add("common"); // NOI18N
+        EXPECTED_FILES.add("server/bin"); // NOI18N
         EXPECTED_FILES.add("server/lib/weblogic.jar"); // NOI18N
         //EXPECTED_FILES.add(".product.properties"); // NOI18N
     }
