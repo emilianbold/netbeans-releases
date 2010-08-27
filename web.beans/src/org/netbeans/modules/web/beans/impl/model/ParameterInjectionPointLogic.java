@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -55,9 +56,13 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
+import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
+import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 import org.openide.util.NbBundle;
 
 
@@ -65,7 +70,9 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
+abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic 
+    implements WebBeansModelProvider 
+{
 
     static final String DISPOSES_ANNOTATION = 
             "javax.enterprise.inject.Disposes";                     // NOI18N
@@ -170,5 +177,93 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
                     NbBundle.getMessage( WebBeansModelProviderImpl.class, 
                             "ERR_NoInjectPoint" , element.getSimpleName()));
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
+     */
+    public Result lookupInjectables( VariableElement element,
+            DeclaredType parentType, AbstractModelImplementation modelImpl )
+    {
+        WebBeansModelImplementation impl = WebBeansModelProviderImpl.
+            getImplementation( modelImpl );
+        DeclaredType parent = parentType;
+        if ( parent == null ){
+            TypeElement type = 
+                impl.getHelper().getCompilationController().getElementUtilities().
+                    enclosingTypeElement(element);
+            
+            
+            boolean isDeclaredType = ( type.asType() instanceof DeclaredType );
+            if ( isDeclaredType ){
+                parent = (DeclaredType)type.asType();
+            }
+            if ( !isDeclaredType) {
+                return new DefinitionErrorResult(element,  parentType, 
+                        NbBundle.getMessage(WebBeansModelProviderImpl.class, 
+                                "ERR_BadParent", element.getSimpleName(),
+                                 type!= null? type.toString(): null));
+            }
+        }
+        TypeMirror elementType = getParameterType( element , parent , 
+                impl.getHelper().getCompilationController(),
+                INSTANCE_INTERFACE);
+        Result result = doFindVariableInjectable(element, elementType, 
+                impl, true);
+        return null;
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isDynamicInjectionPoint(javax.lang.model.element.VariableElement)
+     */
+    public boolean isDynamicInjectionPoint( VariableElement element , 
+            AbstractModelImplementation modelImpl) 
+    {
+        WebBeansModelImplementation impl = WebBeansModelProviderImpl.
+            getImplementation( modelImpl );
+        TypeMirror type = getParameterType(element, null, 
+                impl.getHelper().getCompilationController(), 
+                        INSTANCE_INTERFACE);
+        if ( type != null ){
+            try {
+                return isInjectionPoint(element, impl);
+            }
+            catch ( InjectionPointDefinitionError e ){
+                return false;
+            }
+        }
+        return false;
+    }
+    
+    protected TypeMirror getParameterType( Element element , DeclaredType parentType,
+            CompilationController compilationController, String... interfaceFqns) 
+    {
+        TypeMirror parameterType = null;
+        TypeMirror elementType = null;
+        if ( parentType == null ) {
+            elementType = element.asType();
+        }
+        else {
+            elementType = compilationController.getTypes().asMemberOf(parentType, element);
+        }
+        if ( elementType instanceof DeclaredType ){
+            DeclaredType declaredType = (DeclaredType)elementType;
+            Element elementDeclaredType = declaredType.asElement();
+            if ( elementDeclaredType.getKind() == ElementKind.INTERFACE ){
+                String typeFqn = ((TypeElement)elementDeclaredType).
+                    getQualifiedName().toString();
+                for (String interfaceFqn : interfaceFqns) {
+                    if (interfaceFqn.equals(typeFqn)) {
+                        List<? extends TypeMirror> typeArguments = declaredType
+                                .getTypeArguments();
+                        if (typeArguments.size() > 0) {
+                            parameterType = typeArguments.get(0);
+                        }
+                    }
+                }
+            }
+        }
+        return parameterType;
     }
 }
