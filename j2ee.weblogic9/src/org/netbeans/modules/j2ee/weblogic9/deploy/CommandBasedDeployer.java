@@ -110,7 +110,7 @@ public final class CommandBasedDeployer {
 
     private static final int TIMEOUT = 300000;
 
-    private static boolean showConsole = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");
+    private static final boolean SHOW_CONSOLE = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");
 
     private final WLDeploymentManager deploymentManager;
 
@@ -652,7 +652,7 @@ public final class CommandBasedDeployer {
                 }
             });
         }
-        if (!showConsole) {
+        if (!SHOW_CONSOLE) {
             descriptor = descriptor.inputOutput(InputOutput.NULL);
         }
         return ExecutionService.newService(builder, descriptor, "weblogic.Deployer " + command);

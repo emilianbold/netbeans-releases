@@ -88,22 +88,25 @@ public class ProgressObjectUtil {
         try {
             final CountDownLatch progressFinished = new CountDownLatch(1);
             ProgressListener listener = new ProgressListener() {
+                @Override
                 public void handleProgressEvent(ProgressEvent progressEvent) {
                     DeploymentStatus status = progressEvent.getDeploymentStatus();
-                    if (status.isCompleted() || status.getState() == StateType.RELEASED) {
+                    LOGGER.log(Level.FINEST, "Received progress state {0}", status.getState());
+                    if (status.isCompleted()) {
                         completed.set(true);
                     }
-                    if (status.isCompleted() || status.isFailed() || status.getState() == StateType.RELEASED) {
+                    if (status.isCompleted() || status.isFailed() || StateType.RELEASED.equals(status.getState())) {
                         progressFinished.countDown();
                     }
                 }
             };
+            LOGGER.log(Level.FINEST, "Adding progress listener {0}", listener);
             po.addProgressListener(listener);
             try {
                 // the completion event might have arrived before the progress listener 
                 // was registered, wait only if not yet finished
                 DeploymentStatus status = po.getDeploymentStatus();
-                if (!status.isCompleted() && !status.isFailed() && status.getState() != StateType.RELEASED) {
+                if (!status.isCompleted() && !status.isFailed() && !StateType.RELEASED.equals(status.getState())) {
                     try {
                         if (timeout == 0) {
                             progressFinished.await();
@@ -118,6 +121,10 @@ public class ProgressObjectUtil {
                     }
                 } else if (status.isCompleted()) {
                     completed.set(true);
+                }
+                // report suspicious behaviour
+                if (StateType.RELEASED.equals(status.getState())) {
+                    LOGGER.log(Level.WARNING, "Received RELEASED state from {0}", po);
                 }
             } finally {
                 po.removeProgressListener(listener);
