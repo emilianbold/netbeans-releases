@@ -409,6 +409,8 @@ public abstract class FromEntityBase {
                 return "Long.valueOf("+param+")";
             } else if ("Short".equals(idType.toString()) || "java.lang.Short".equals(idType.toString())) {
                 return "Short.valueOf("+param+")";
+            } else if ("BigDecimal".equals(idType.toString()) || "java.math.BigDecimal".equals(idType.toString())) {
+                return "new BigDecimal("+param+")";
             }
         }
         return param;

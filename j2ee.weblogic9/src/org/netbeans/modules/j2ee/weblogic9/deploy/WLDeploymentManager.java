@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.weblogic9.deploy;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -61,10 +62,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ActionType;
@@ -83,6 +88,7 @@ import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.MBeanServerConnection;
@@ -96,8 +102,8 @@ import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -115,7 +121,18 @@ public class WLDeploymentManager implements DeploymentManager2 {
     
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentManager.class.getName());
 
+    private static final boolean DEBUG_JSR88 = Boolean.getBoolean(WLDeploymentManager.class.getName() + ".debugJsr88");
+
+    private static final Map<ServerProgressObject, DeploymentStatus> OBJECTS_TO_POLL = new HashMap<ServerProgressObject, DeploymentStatus>();
+
+    /** <i>GuardedBy(WLDeploymentManager.class)</i> */
+    private static final RequestProcessor OBJECT_POLL_RP = new RequestProcessor("ProgressObject Poll", 1);
+
     static {
+        if (DEBUG_JSR88) {
+            System.setProperty("weblogic.deployer.debug", "all"); // NOI18N
+        }
+
         WLConnectionSupport.WLDeploymentManagerAccessor.setDefault(new WLConnectionSupport.WLDeploymentManagerAccessor() {
 
             @Override
@@ -142,6 +159,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     /* GuardedBy("this") */
     private InstanceProperties instanceProperties;
+
+    /* GuardedBy("this") */
+    private DeploymentManager manager;
 
     public WLDeploymentManager(WLDeploymentFactory factory, String uri,
             String host, String port, boolean disconnected, WLMutableState mutableState) {
@@ -228,6 +248,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
         WLConnectionSupport support = new WLConnectionSupport(this);
         return support.executeAction(new Callable<T>() {
 
+            // so far this is synchronized on WLConnectionSupport level
+            // perhaps we will make it weaker in future sycnhroniing just
+            // this block
             @Override
             public T call() throws Exception {
                 try {
@@ -235,11 +258,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
                             getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR),
                             getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR),
                             host, port);
-                    try {
-                        return action.execute(manager);
-                    } finally {
-                        manager.release();
-                    }
+                    
+                    return action.execute(manager);
                 } catch (DeploymentManagerCreationException ex) {
                     throw new ExecutionException(ex);
                 }
@@ -247,8 +267,29 @@ public class WLDeploymentManager implements DeploymentManager2 {
         });
     }
 
-    private static DeploymentManager getDeploymentManager(String username,
+    private synchronized DeploymentManager getDeploymentManager(String username,
             String password, String host, String port) throws DeploymentManagerCreationException {
+
+        assert Thread.currentThread().getContextClassLoader() instanceof WLClassLoader;
+
+        if (manager != null) {
+            // this should work even if some older WL release does not have this
+            // method in such case DM is created always from scratch
+            try {
+                Method m = manager.getClass().getMethod("isConnected", (Class[]) null); // NOI18N
+                Object o = m.invoke(manager, (Object[]) null);
+                if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
+                    return manager;
+                }
+            } catch (NoSuchMethodException ex) {
+                // go through to release
+            } catch (IllegalAccessException ex) {
+                // go through to release
+            } catch (InvocationTargetException ex) {
+                // go through to release
+            }
+            manager.release();
+        }
 
         DeploymentManagerCreationException dmce = null;
         try {
@@ -258,7 +299,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
                     new Class[]{String.class, String.class, String.class, String.class});
             Object o = m.invoke(null, new Object[]{host, port, username, password});
             if (DeploymentManager.class.isAssignableFrom(o.getClass())) {
-                return (DeploymentManager) o;
+                manager = (DeploymentManager) o;
+                return manager;
             } else {
                 dmce = new DeploymentManagerCreationException(
                         "Instance created by WebLogic is not DeploymentManager instance.");
@@ -545,8 +587,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
             return executeAction(new Action<ProgressObject>() {
                 @Override
                 public ProgressObject execute(DeploymentManager manager) throws ExecutionException {
-                    return new ServerProgressObject(
-                            manager.redeploy(translateTargetModuleIDsToServer(targetModuleID), (File) null, null));
+                    return registerProgressObject(new ServerProgressObject(
+                            manager.redeploy(translateTargetModuleIDsToServer(targetModuleID), (File) null, null)));
                 }
             });
         } catch (Exception ex) {
@@ -622,6 +664,16 @@ public class WLDeploymentManager implements DeploymentManager2 {
             }
         }
         return deployTargets.toArray(new Target[deployTargets.size()]);
+    }
+
+    private static ProgressObject registerProgressObject(ServerProgressObject po) {
+        synchronized (WLDeploymentManager.class) {
+            if (WLDeploymentManager.OBJECTS_TO_POLL.isEmpty()) {
+                WLDeploymentManager.OBJECT_POLL_RP.post(new ProgressObjectPoll());
+            }
+            WLDeploymentManager.OBJECTS_TO_POLL.put(po, po.getDeploymentStatus());
+        }
+        return po;
     }
 
     private static interface Action<T> {
@@ -729,6 +781,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
         private final ProgressObject po;
 
+        private final List<ProgressListener> listeners = new CopyOnWriteArrayList<ProgressListener>();
+
         public ServerProgressObject(ProgressObject po) {
             this.po = po;
         }
@@ -770,13 +824,65 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
         @Override
         public void addProgressListener(ProgressListener pl) {
-            po.addProgressListener(pl);
+            listeners.add(pl);
         }
 
         @Override
         public void removeProgressListener(ProgressListener pl) {
-            po.removeProgressListener(pl);
+            listeners.remove(pl);
+        }
+        
+        public void fireProgressEvent(DeploymentStatus status) {
+            ProgressEvent event = new ProgressEvent(this, null, status);
+            for (ProgressListener listener : listeners) {
+                listener.handleProgressEvent(event);
+            }
         }
     }
 
+    private static class ProgressObjectPoll implements Runnable {
+
+        @Override
+        public void run() {
+            while (true) {
+                Map<ServerProgressObject, DeploymentStatus> current = null;
+                synchronized (WLDeploymentManager.class) {
+                    current = new HashMap<ServerProgressObject, DeploymentStatus>(WLDeploymentManager.OBJECTS_TO_POLL);
+                }
+
+                for (Map.Entry<ServerProgressObject, DeploymentStatus> entry : current.entrySet()) {
+                    DeploymentStatus status = entry.getKey().getDeploymentStatus();
+                    if ((status == null) ? (entry.getValue() != null) : !status.equals(entry.getValue())) {
+                        entry.getKey().fireProgressEvent(status);
+                    }
+                    entry.setValue(status);
+                }
+
+                synchronized (WLDeploymentManager.class) {
+                    WLDeploymentManager.OBJECTS_TO_POLL.putAll(current);
+                    for (Iterator<Map.Entry<ServerProgressObject, DeploymentStatus>> it = WLDeploymentManager.OBJECTS_TO_POLL.entrySet().iterator(); it.hasNext();) {
+                        DeploymentStatus status = it.next().getValue();
+                        if (StateType.COMPLETED.equals(status.getState())
+                                || StateType.FAILED.equals(status.getState())
+                                || StateType.RELEASED.equals(status.getState())) {
+                            it.remove();
+                        }
+                    }
+
+                    if (WLDeploymentManager.OBJECTS_TO_POLL.isEmpty()) {
+                        return;
+                    }
+                }
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+
+    }
 }

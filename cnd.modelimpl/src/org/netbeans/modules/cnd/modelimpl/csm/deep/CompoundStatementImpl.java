@@ -60,16 +60,18 @@ import java.io.IOException;
  */
 public class CompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
 
-    private List<CsmStatement> statements;
+    private volatile List<CsmStatement> statements;
 
     public CompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
 
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.COMPOUND;
     }
 
+    @Override
     public final List<CsmStatement> getStatements() {
         if (statements == null) {
             renderStatements(getStartRenderingAst());
@@ -90,6 +92,12 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
     }
 
     private void renderStatements(AST ast) {
+        // to prevent re-rendering recursions initialize with empty list
+        // and replace with real content at the end
+        // we do not use extra sync here, because it's ok in case of real 
+        // call of this functions from different threads to render twice;
+        // key point is non-null value of 'statements' field to prevent recursions
+        statements = Collections.emptyList();
         List<CsmStatement> out = new ArrayList<CsmStatement>();
         if (ast != null) {
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
@@ -102,6 +110,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         statements = out;
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         @SuppressWarnings("unchecked")
         Collection<CsmScopeElement> out = (Collection<CsmScopeElement>) (List<?>) getStatements();

@@ -48,7 +48,7 @@ import java.io.File;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.util.FileSysUtil;
-import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
