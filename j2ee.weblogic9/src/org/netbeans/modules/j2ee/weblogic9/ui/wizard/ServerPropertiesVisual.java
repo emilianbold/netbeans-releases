@@ -47,37 +47,19 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * The second panel of the custom wizard used for registering an instance of
@@ -193,23 +175,12 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         // set the child directories/files that should be present and validate
         // the directory as the domain root
 
-        // the layout is different for 90b and 90, temporarilly leaving both
-        // versions in for testing TODO: remove
         String[] children = {
                     "servers", // NOI18N
                     "config", // NOI18N
                     "config/config.xml", // NOI18N
-                    "init-info/domain-info.xml", // NOI18N
         };
-        boolean is90 = hasChildren(path, children);
-        String[] children90b = {
-                    "servers", // NOI18N
-                    "config", // NOI18N
-                    "config/config.xml", // NOI18N
-                    "domain-info.xml", // NOI18N
-        };
-        boolean is90b = hasChildren(path, children90b);
-        return is90 || is90b;
+        return hasChildren(path, children);
     }
 
     /**
