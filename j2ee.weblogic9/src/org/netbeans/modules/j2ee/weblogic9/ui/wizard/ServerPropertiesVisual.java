@@ -47,37 +47,21 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * The second panel of the custom wizard used for registering an instance of
@@ -92,7 +76,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
 
     private transient WLInstantiatingIterator instantiatingIterator;
-    
+
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+
     private boolean isProductionModeEnabled;
     
     /**
@@ -166,15 +152,20 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             }
         }
 
-        // save the data to the parent instantiating iterator
-        instantiatingIterator.setUrl(getUrl());
-        instantiatingIterator.setDomainRoot(domainPathField.getText());
-        instantiatingIterator.setUsername(usernameField.getText());
-        instantiatingIterator.setPassword(new String(passwordField.getPassword()));
-        instantiatingIterator.setPort(portField.getText().trim());
-        instantiatingIterator.setDomainName( item.getDomainName() );
-        instantiatingIterator.setHost(hostField.getText().trim());
-        // everything seems ok
+        if (item != null) {
+            // save the data to the parent instantiating iterator
+            instantiatingIterator.setUrl(getUrl());
+            instantiatingIterator.setDomainRoot(domainPathField.getText());
+            instantiatingIterator.setUsername(usernameField.getText());
+            instantiatingIterator.setPassword(new String(passwordField.getPassword()));
+            instantiatingIterator.setPort(portField.getText().trim());
+            instantiatingIterator.setDomainName(item.getDomainName());
+            instantiatingIterator.setHost(hostField.getText().trim());
+            // everything seems ok
+        } else {
+            // TODO message or something similar
+            return false;
+        }
         return true;
     }
 
@@ -193,23 +184,12 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         // set the child directories/files that should be present and validate
         // the directory as the domain root
 
-        // the layout is different for 90b and 90, temporarilly leaving both
-        // versions in for testing TODO: remove
         String[] children = {
                     "servers", // NOI18N
                     "config", // NOI18N
                     "config/config.xml", // NOI18N
-                    "init-info/domain-info.xml", // NOI18N
         };
-        boolean is90 = hasChildren(path, children);
-        String[] children90b = {
-                    "servers", // NOI18N
-                    "config", // NOI18N
-                    "config/config.xml", // NOI18N
-                    "domain-info.xml", // NOI18N
-        };
-        boolean is90b = hasChildren(path, children90b);
-        return is90 || is90b;
+        return hasChildren(path, children);
     }
 
     /**
@@ -245,9 +225,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      *
      * @return a vector with the local instances
      */
-    private Vector getServerInstances() {
+    private List<Instance> getServerInstances() {
         // initialize the resulting vector
-        Vector result = new Vector();
+        List<Instance> result = new ArrayList<Instance>();
 
         // get the list of registered profiles
         String[] domains = WLPluginProperties
@@ -255,12 +235,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
         // for each domain get the list of instances
         for (int i = 0; i < domains.length; i++) {
-
             Properties properties = WLPluginProperties.getDomainProperties(domains[i]);
-            String name = properties.getProperty( WLPluginProperties.ADMIN_SERVER_NAME);
-            String port = properties.getProperty( WLPluginProperties.PORT_ATTR);
-            String host = properties.getProperty( WLPluginProperties.HOST_ATTR );
-            String domainName = properties.getProperty( WLPluginProperties.DOMAIN_NAME );
+            String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
+            String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
+            String host = properties.getProperty(WLPluginProperties.HOST_ATTR );
+            String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME );
             Boolean isProductionMode = (Boolean)properties.get(
                     WLPluginProperties.PRODUCTION_MODE);
             if ((name != null) && (!name.equals(""))) { // NOI18N
@@ -307,13 +286,14 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Listeners section
-    ////////////////////////////////////////////////////////////////////////////
     /**
-     * The registrered listeners vector
+     * Adds a listener
+     *
+     * @param listener the listener to be added
      */
-    private final Vector listeners = new Vector();
+    public void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
+    }
 
     /**
      * Removes a registered listener
@@ -321,45 +301,12 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      * @param listener the listener to be removed
      */
     public void removeChangeListener(ChangeListener listener) {
-        if (listeners != null) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
+        listeners.remove(listener);
     }
 
-    /**
-     * Adds a listener
-     *
-     * @param listener the listener to be added
-     */
-    public void addChangeListener(ChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    /**
-     * Fires a change event originating from this panel
-     */
     private void fireChangeEvent() {
         ChangeEvent event = new ChangeEvent(this);
-        fireChangeEvent(event);
-    }
-
-    /**
-     * Fires a custom change event
-     *
-     * @param event the event
-     */
-    private void fireChangeEvent(ChangeEvent event) {
-        Vector targetListeners;
-        synchronized (listeners) {
-            targetListeners = (Vector) listeners.clone();
-        }
-
-        for (int i = 0; i < targetListeners.size(); i++) {
-            ChangeListener listener = (ChangeListener) targetListeners.elementAt(i);
+        for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
         }
     }
@@ -574,7 +521,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         /**
          * A vector with the instances
          */
-        private Vector instances;
+        private List<Instance> instances;
 
         /**
          * The index of the selected instance, or -1 if there is no selection
@@ -586,7 +533,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          *
          * @param instances a vector with the locally found instances
          */
-        public InstancesModel(Vector instances) {
+        public InstancesModel(List<Instance> instances) {
             // save the instances
             this.instances = instances;
 
@@ -613,7 +560,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @return the instance at the given index
          */
         public Object getElementAt(int index) {
-            return instances.elementAt(index);
+            return instances.get(index);
         }
 
         /**
@@ -632,7 +579,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         public Object getSelectedItem() {
             // if there are no instances return null
-            if (instances.size() == 0) {
+            if (instances.isEmpty()) {
                 return null;
             }
             // #168297
@@ -641,7 +588,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             }
 
             // return the element at the index
-            return instances.elementAt(selectedIndex);
+            return instances.get(selectedIndex);
         }
 
     }
@@ -653,6 +600,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      * @author Kirill Sorokin
      */
     private static class Instance {
+
         /**
          * Instance's name, it is used a the parameter to the startup/shutdown
          * scripts
@@ -693,8 +641,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @param domainPath the instance's profile path
          */
         public Instance(String name, String host, String port, String domainPath,
-                String domainName, boolean isProductionModeEnabled) 
-        {
+                String domainName, boolean isProductionModeEnabled) {
             // save the properties
             this.name = name;
             this.host = host;
