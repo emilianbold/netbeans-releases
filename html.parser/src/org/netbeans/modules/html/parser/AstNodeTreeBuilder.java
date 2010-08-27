@@ -102,8 +102,22 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
             System.out.println("-" + t + (t.isVirtual() ? "[virtual]" : "") + "; stack:" + dumpStack());
         }
 
-        AstNode top = stack.pop();
-        assert top == t;
+
+        //normally the stack.pop() == t, but under some circumstances when the code is broken
+        //this doesn't need to be true. In such case drop all the nodes from top
+        //of the stack until we find t node.
+        AstNode top = null;
+        while(!stack.isEmpty()) {
+            top = stack.pop();
+            if(top == t) {
+                break;
+            }
+            //if we got here the parse tree is broken, so just try not to throw exceptions :-)
+        }
+        if(top != t) {
+            throw new IllegalStateException("Stack's top " + top + " is not the same as " + t);
+        }
+        
 
         AstNode match = null;
         for (AstNode n : physicalEndTagsQueue) {

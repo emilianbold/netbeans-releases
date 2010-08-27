@@ -71,11 +71,11 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite(){
+    public static Test suite(){
         AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
 	TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testParseFileLongerThan2048chars"));
+        suite.addTest(new Html5ParserTest("test_A_TagProblem"));
         return suite;
     }
 
@@ -362,6 +362,32 @@ public class Html5ParserTest extends NbTestCase {
         
         assertEquals(6190, bodyEnd.startOffset());
         assertEquals(6197, bodyEnd.endOffset());
+
+        AstNodeUtils.dumpTree(root);
+    }
+
+    public void test_A_TagProblem() throws ParseException {
+        //
+        //java.lang.AssertionError
+        //at org.netbeans.modules.html.parser.AstNodeTreeBuilder.elementPopped(AstNodeTreeBuilder.java:106)
+        //
+
+        //such broken source really confuses the html parser
+        String code = "<!DOCTYPE html>\n"
+                + "<html>\n"
+                + "     <title>HTML5 Demo: geolocation</title>\n"
+                + "     <body>\n"
+                + "         <a>  \n"
+                + "         <footer>\n"
+                + "             <a>\n"
+                + "         </footer> \n"
+                + "     </body>\n" //from some reason the tree builder pushes <a> open tag node here?!?!?
+                + "</html>  \n";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
 
         AstNodeUtils.dumpTree(root);
     }
