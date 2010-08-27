@@ -237,7 +237,23 @@ abstract class Sampler implements Runnable, ActionListener {
         
         System.err.println("Connecting to " + u);
         JMXServiceURL url = new JMXServiceURL(u);
-        JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
+        JMXConnector jmxc = null;
+        Exception ex = null;
+        for (int i = 0; i < 100; i++) {
+            try {
+                jmxc = JMXConnectorFactory.connect(url, null);
+                break;
+            } catch (IOException e) {
+                ex = e;
+                System.err.println("Connection failed. Will retry in 300ms.");
+                Thread.sleep(300);
+            }
+        }
+        if (jmxc == null) {
+            ex.printStackTrace();
+            System.err.println("Cannot connect to " + u);
+            System.exit(3);
+        }
         MBeanServerConnection server = jmxc.getMBeanServerConnection();
         
         final ThreadMXBean threadMXBean = ManagementFactory.newPlatformMXBeanProxy(
