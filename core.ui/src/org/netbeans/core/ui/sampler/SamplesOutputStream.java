@@ -42,8 +42,6 @@
 
 package org.netbeans.core.ui.sampler;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -59,10 +57,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 import javax.management.openmbean.CompositeData;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -101,23 +95,20 @@ class SamplesOutputStream {
     Map<Long, ThreadInfo> lastThreadInfos;
     Map<StackTraceElement, StackTraceElement> steCache;
     List<Sample> samples;
-    volatile ProgressHandle progress;
+    Sampler progress;
 
     static boolean isSupported() {
         return toCompositeDataMethod != null;
     }
 
-    SamplesOutputStream(OutputStream os) throws IOException {
+    SamplesOutputStream(OutputStream os, Sampler progress) throws IOException {
+        this.progress = progress;
         outStream = os;
         writeHeader(os);
 //        out = new ObjectOutputStream(os);
         lastThreadInfos = new HashMap();
         steCache = new HashMap(8*1024);
         samples = new ArrayList(1024);
-    }
-
-    SamplesOutputStream(File file) throws IOException {
-        this(new FileOutputStream(file));
     }
 
     void writeSample(ThreadInfo[] infos, long time, long selfThreadId) throws IOException {
@@ -212,41 +203,15 @@ class SamplesOutputStream {
     }
 
     private void openProgress() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            // log warnining
-            return;
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(SamplesOutputStream.class, "Save_Progress"));
-                progress.start(STEPS);
-            }
-        });
+        progress.openProgress(STEPS);
     }
 
     private void closeProgress() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            return;
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                progress.finish();
-                progress = null;
-            }
-        });
+        progress.closeProgress();
     }
 
     private void step(int i) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            return;
-        }
-        if (progress != null) {
-            progress.progress(i);
-        }
+        progress.progress(i);
     }
 
     private static class Sample {
