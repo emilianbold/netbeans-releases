@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.jaxb.util;
+package org.netbeans.modules.xml.jaxb.spi;
 
 import java.math.BigDecimal;
 import org.openide.WizardDescriptor;
@@ -51,7 +51,7 @@ import org.openide.WizardDescriptor;
  *
  * @author gpatil
  */
-public class JAXBWizModuleConstants {
+public interface JAXBWizModuleConstants {
     public static final String LAST_BROWSED_SCHEMA_DIR = "last.browsed.schema.dir" ;  //NOI18N
     public static final String LAST_BROWSED_BINDING_DIR = "last.browsed.binding.dir" ; //NOI18N
     public static final String LAST_BROWSED_CATALOG_DIR = "last.browsed.catalog.dir" ; //NOI18N
@@ -96,8 +96,6 @@ public class JAXBWizModuleConstants {
     public static final String JAXB_COMPILE_TARGET = "jaxb-code-generation"; //NOI18N
     public static final String JAXB_CLEAN_COMPILE_TARGET = "jaxb-clean-code-generation"; //NOI18N
     public static final BigDecimal LATEST_CFG_VERSION = new BigDecimal("1.0"); //NOI18n
-    
-    private JAXBWizModuleConstants() {
-    }
+
 }
 

@@ -37,26 +37,27 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.jaxb.ui;
+package org.netbeans.modules.maven.jaxws.wizards;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.xml.jaxb.spi.SchemaCompiler;
 import org.netbeans.modules.xml.jaxb.spi.SchemaCompilerProvider;
-import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 
 /**
  *
  * @author mkuchtiak
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.jaxb.spi.SchemaCompilerProvider.class)
-public class AntSchemaCompilerProvider implements  SchemaCompilerProvider {
+public class MavenSchemaCompilerProvider implements SchemaCompilerProvider {
 
     @Override
     public SchemaCompiler getSchemaCompiler(Project project) {
-        if (ProjectHelper.getFOForProjectBuildFile(project) != null) {
-            return new AntSchemaCompiler(project);
+        if (project.getLookup().lookup(NbMavenProject.class) != null) {
+            return new MavenSchemaCompiler(project);
+        } else {
+            return null;
         }
-        return null;
     }
 
 }

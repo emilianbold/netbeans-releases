@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.xml.jaxb.util;
 
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;

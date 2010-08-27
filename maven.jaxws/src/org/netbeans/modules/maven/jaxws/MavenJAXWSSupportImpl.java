@@ -223,7 +223,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
     public URL getCatalog() {
         File catalogFile = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), CATALOG_PATH);
         try {
-            return catalogFile.toURL();
+            return catalogFile.toURI().toURL();
         } catch (MalformedURLException ex) {
             return null;
         }
