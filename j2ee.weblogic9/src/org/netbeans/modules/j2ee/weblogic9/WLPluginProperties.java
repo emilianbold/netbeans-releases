@@ -89,22 +89,16 @@ import org.xml.sax.SAXException;
  * @author Ivan Sidorkin
  */
 public final class WLPluginProperties {
-    
-    public enum Vendor {
-        ORACLE("Oracle"),
-        SUN("Sun");
-        
-        Vendor(String name ){
-            this.name = name;
-        }
-        
-        public String toString() {
-            return name;
-        }
-        
-        private final String name; 
-    }
 
+    private static final Collection EXPECTED_FILES = new ArrayList();
+
+    static {
+        EXPECTED_FILES.add("common");        // NOI18N
+        EXPECTED_FILES.add("modules");    // NOI18N
+        EXPECTED_FILES.add("server/lib/weblogic.jar"); // NOI18N
+        //EXPECTED_FILES.add(".product.properties"); // NOI18N
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
 
     private static final String CONFIG_XML = "config/config.xml"; //NOI18N
@@ -611,21 +605,12 @@ public final class WLPluginProperties {
         return NbPreferences.forModule(WLPluginProperties.class);
     }
 
-    private static Collection fileColl = new java.util.ArrayList();
-
-    static {
-        fileColl.add("common");        // NOI18N
-        fileColl.add("common/bin");    // NOI18N
-        fileColl.add("server/lib/weblogic.jar"); // NOI18N
-        fileColl.add(".product.properties"); // NOI18N
-    }
-
     public static boolean isGoodServerLocation(File candidate){
         if (null == candidate ||
                 !candidate.exists() ||
                 !candidate.canRead() ||
                 !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, fileColl)) {
+                !hasRequiredChildren(candidate, EXPECTED_FILES)) {
             return false;
         }
         return true;
@@ -783,4 +768,21 @@ public final class WLPluginProperties {
         return true;
     }
 
+    public static enum Vendor {
+
+        ORACLE("Oracle"), // NOI18N
+
+        SUN("Sun"); // NOI18N
+
+        private final String name;
+
+        Vendor(String name ){
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 }
