@@ -41,10 +41,14 @@ package org.netbeans.modules.refactoring.java.test;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 
@@ -63,7 +67,34 @@ public class InnerToOutterTest extends RefactoringTestBase {
                       new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; }"));
     }
 
-    private void performEncapsulateFieldsTest() throws Exception {
+    public void test138204a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
+        performEncapsulateFieldsTest();
+        verifyContent(src,
+                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
+    }
+
+    public void test138204b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() { A.S.f(); t();} } }"));
+        performEncapsulateFieldsTest();
+        verifyContent(src,
+                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
+                      new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
+    }
+
+    public void test138204c() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
+        performEncapsulateFieldsTest(new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
+        verifyContent(src,
+                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } }"));
+    }
+
+    private void performEncapsulateFieldsTest(Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
         
         JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
@@ -84,8 +115,12 @@ public class InnerToOutterTest extends RefactoringTestBase {
         r[0].setReferenceName(null);
 
         RefactoringSession rs = RefactoringSession.create("Session");
-        assertNull(r[0].prepare(rs));
-        assertNull(rs.doRefactoring(true));
+        List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r[0].prepare(rs));
+        addAllProblems(problems, rs.doRefactoring(true));
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
     }
 
 }
