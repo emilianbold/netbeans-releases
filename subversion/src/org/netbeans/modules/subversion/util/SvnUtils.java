@@ -477,6 +477,7 @@ public class SvnUtils {
         List<String> path = new ArrayList<String>();
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
+        File lastManaged = file;
         while (isManaged(file)) {
             fileIsManaged = true;
 
@@ -524,6 +525,7 @@ public class SvnUtils {
 
             path.add(0, file.getName());
             File parent = file.getParentFile();
+            lastManaged = file;
             if (parent == null) {
                 // .svn in root folder
                 break;
@@ -533,7 +535,7 @@ public class SvnUtils {
 
         }
         if(repositoryURL == null && fileIsManaged) {
-            Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] {file});
+            Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] { lastManaged });
             // The file is managed but we haven't found the repository URL in it's metadata -
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
@@ -541,7 +543,7 @@ public class SvnUtils {
             // pure java client suport -> without dispatching to our metadata parser
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
         } else if(!fileIsManaged) {
-            Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] {file});
+            Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] { lastManaged });
         }
         return repositoryPath;
     }
@@ -566,6 +568,7 @@ public class SvnUtils {
 
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
+        File lastManaged = file;
         while (isManaged(file)) {
             fileIsManaged = true;
             ISVNInfo info = null;
@@ -590,6 +593,7 @@ public class SvnUtils {
             }
 
             File parent = file.getParentFile();
+            lastManaged = file;
             if (parent == null) {
                 // .svn in root folder
                 break;
@@ -599,20 +603,20 @@ public class SvnUtils {
 
         }
         if(repositoryURL == null && fileIsManaged) {
-            Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] {file});
+            Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] { lastManaged });
             // The file is managed but we haven't found the repository URL in it's metadata -
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
         } else if(!fileIsManaged) {
-            Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] {file});
+            Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] { lastManaged });
             // XXX #168094 logging
             Level oldLevel = Subversion.LOG.getLevel();
             Subversion.LOG.setLevel(Level.FINE);
-            Subversion.LOG.log(Level.INFO, "getRepositoryRootUrl: file {0} {1}", new Object[] {file, VersioningSupport.getOwner(file)});
+            Subversion.LOG.log(Level.INFO, "getRepositoryRootUrl: file {0} {1}", new Object[] { lastManaged, VersioningSupport.getOwner(lastManaged) });
             Subversion.LOG.setLevel(oldLevel);
-            if (!file.exists()) {
-                Subversion.LOG.log(Level.INFO, "getRepositoryRootUrl: file {0} does not exist", new Object[] {file});
+            if (!lastManaged.exists()) {
+                Subversion.LOG.log(Level.INFO, "getRepositoryRootUrl: file {0} does not exist", new Object[] { lastManaged });
             }
         }
         return repositoryURL;
