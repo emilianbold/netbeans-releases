@@ -37,61 +37,22 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javaee.beanvalidation;
+package org.netbeans.modules.javaee.beanvalidation.spi;
 
-import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.javaee.beanvalidation.api.BeanValidationConfig;
-import org.netbeans.modules.javaee.beanvalidation.spi.BeanValidationConfigProvider;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
+import org.netbeans.modules.javaee.beanvalidation.impl.BeanValidationConfigProviderImpl;
 
 /**
  *
- * @author alexeybutenko
+ * @author alexey butenko
  */
-public class ValidationMappingIterator extends AbstractIterator{
-    private static final String defaultName = "constraint";   //NOI18N
+public abstract class BeanValidationConfigProvider {
 
-    public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
-        String targetName = Templates.getTargetName(wizard);
-        FileObject targetDir = Templates.getTargetFolder(wizard);
-
-        FileObject fo = DDHelper.createConstraintXml(Profile.JAVA_EE_6_FULL, targetDir, targetName);
-        if (fo != null) {
-            Project project = Templates.getProject(wizard);
-            registerConstraint(project, fo);
-            return Collections.singleton(DataObject.find(fo));
-        } else {
-            return Collections.<DataObject>emptySet();
-        }
+    public static final BeanValidationConfigProvider getDefault() {
+        return BeanValidationConfigProviderImpl.getInstance();
     }
 
-    @Override
-    public String getDefaultName() {
-        return defaultName;
-    }
-
-    /**
-     * Register constraint in the validation.xml
-     * @param fo
-     */
-    private void registerConstraint(Project project, FileObject fo) {
-        BeanValidationConfigProvider provider = BeanValidationConfigProvider.getDefault();
-        if (provider != null) {
-            List<BeanValidationConfig> configList = provider.getConfigs(project);
-            if (!configList.isEmpty()) {
-                BeanValidationConfig config = configList.get(0);
-                config.addConstraintMapping(fo);
-            }
-        }
-    }
-
+    public abstract List<BeanValidationConfig> getConfigs(Project project);
 }
