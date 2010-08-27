@@ -257,7 +257,7 @@ public final class WLPluginProperties {
      *
      * @return an array if strings with the domains' paths
      */
-    public static String[] getRegisteredDomainPaths(String serverRoot){
+    public static String[] getRegisteredDomainPaths(String serverRoot) {
         // init the resulting vector
         List<String> result = new ArrayList<String>();
 
@@ -291,9 +291,9 @@ public final class WLPluginProperties {
                 result.add(path);
             }
         } catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);   // NOI18N
+            LOGGER.log(Level.INFO, null, e);   // NOI18N
         } catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);   // NOI18N
+            LOGGER.log(Level.INFO, null, e);   // NOI18N
         } finally {
             try {
                 // close the stream
@@ -301,7 +301,7 @@ public final class WLPluginProperties {
                     lnr.close();
                 }
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
+                LOGGER.log(Level.INFO, null, e);  // NOI18N
             }
         }
 
@@ -419,16 +419,16 @@ public final class WLPluginProperties {
             }
         }
         catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
+            LOGGER.log(Level.INFO, null, e);
         }
         catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
+            LOGGER.log(Level.INFO, null, e);
         }
         catch (ParserConfigurationException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
+            LOGGER.log(Level.INFO, null, e);
         }
         catch (SAXException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
+            LOGGER.log(Level.INFO, null, e);
         }
         finally {
             try {
@@ -437,7 +437,7 @@ public final class WLPluginProperties {
                 }
             }
             catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
+                LOGGER.log(Level.INFO, null, e);
             }
         }
         return properties;
@@ -446,151 +446,142 @@ public final class WLPluginProperties {
     /**
      * Returns map of JDK configuration which is used for starting server
      */
-    public static Properties getRuntimeProperties(String domainPath){
+    public static Properties getRuntimeProperties(String domainPath) {
         Properties properties = new Properties();
         Properties javaHomeVendors = new Properties();
         String beaJavaHome = null;
         String sunJavaHome = null; 
-        properties.put( JAVA_HOME, javaHomeVendors );
+        properties.put(JAVA_HOME, javaHomeVendors);
         try {
-            if ( Utilities.isWindows()) {
+            if (Utilities.isWindows()) {
                 String setDomainEnv = domainPath + "/bin/setDomainEnv.cmd"; // NOI18N
                 File file = new File(setDomainEnv);
                 if (!file.exists()) {
-                    Logger.getLogger("global")
-                            .log(Level.INFO,
-                                    "Domain environment "
-                                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
-                                            + "changed externally"); // NOI18N
+                    LOGGER.log(Level.INFO, "Domain environment "
+                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
+                            + "changed externally"); // NOI18N
                     return properties;
                 }
                 BufferedReader reader = new BufferedReader(new FileReader(file));
-                String line;
-                String vendorName = null;
-                boolean vendorsSection = false;
-                boolean defaultVendorInit = false;
-                while ((line = reader.readLine()) != null) {
-                    Matcher bea = WIN_BEA_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher sun = WIN_SUN_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher vendor = WIN_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
-                    Matcher javaHomeMatcher = WIN_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher defaultVendor = WIN_DEFAULT_VENDOR_PATTERN.matcher(line);
+                try {
+                    String line;
+                    String vendorName = null;
+                    boolean vendorsSection = false;
+                    boolean defaultVendorInit = false;
+                    while ((line = reader.readLine()) != null) {
+                        Matcher bea = WIN_BEA_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher sun = WIN_SUN_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher vendor = WIN_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
+                        Matcher javaHomeMatcher = WIN_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher defaultVendor = WIN_DEFAULT_VENDOR_PATTERN.matcher(line);
 
-                    if ( vendor.matches()){
-                        vendorsSection = true;
-                        vendorName = line.substring(vendor.start(1), vendor.end(1))
-                            .trim(); 
-                        continue;
-                    }
-                    else if ( javaHomeMatcher.matches()){
-                        if ( vendorName != null ){
-                            javaHomeVendors.put(vendorName, line.substring(
-                                    javaHomeMatcher.start(1), javaHomeMatcher.end(1))
-                                    .trim() );
-                        }
-                        else if (defaultVendorInit){
-                            javaHomeVendors.put("", line.substring(
-                                    javaHomeMatcher.start(1), javaHomeMatcher.end(1))
-                                    .trim() );
-                            defaultVendorInit = false;
-                        }
-                        continue;
-                    }
-                    else {
-                        vendorName = null;
-                    }
-                    if (bea.matches()) {
-                        beaJavaHome = line.substring(bea.start(1), bea.end(1))
+                        if (vendor.matches()) {
+                            vendorsSection = true;
+                            vendorName = line.substring(vendor.start(1), vendor.end(1))
                                 .trim();
+                            continue;
+                        } else if (javaHomeMatcher.matches()) {
+                            if (vendorName != null) {
+                                javaHomeVendors.put(vendorName, line.substring(
+                                        javaHomeMatcher.start(1), javaHomeMatcher.end(1))
+                                        .trim() );
+                            } else if (defaultVendorInit) {
+                                javaHomeVendors.put("", line.substring(
+                                        javaHomeMatcher.start(1), javaHomeMatcher.end(1))
+                                        .trim() );
+                                defaultVendorInit = false;
+                            }
+                            continue;
+                        } else {
+                            vendorName = null;
+                        }
+                        if (bea.matches()) {
+                            beaJavaHome = line.substring(bea.start(1), bea.end(1))
+                                    .trim();
+                        } else if (sun.matches()) {
+                            sunJavaHome = line.substring(sun.start(1), sun.end(1))
+                                    .trim();
+                        } else if (vendorsSection && defaultVendor.matches()) {
+                            defaultVendorInit = true;
+                            vendorsSection = false;
+                        }
                     }
-                    else if (sun.matches()) {
-                        sunJavaHome = line.substring(sun.start(1), sun.end(1))
-                                .trim();
-                    }
-                    else if ( vendorsSection && defaultVendor.matches( )){
-                        defaultVendorInit = true;
-                        vendorsSection = false;
-                    }
+                } finally {
+                    reader.close();
                 }
-            }
-            else {
+            } else {
                 String setDomainEnv = domainPath + "/bin/setDomainEnv.sh"; // NOI18N
                 File file = new File(setDomainEnv);
                 if (!file.exists()) {
-                    Logger.getLogger("global")
-                            .log(Level.INFO,
-                                    "Domain environment "
-                                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
-                                            + "changed externally"); // NOI18N
+                    LOGGER.log(Level.INFO, "Domain environment "
+                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
+                            + "changed externally"); // NOI18N
                     return properties;
                 }
                 BufferedReader reader = new BufferedReader(new FileReader(file));
-                String line;
-                String vendorName = null;
-                boolean vendorsSection = false;
-                boolean defaultVendorInit = false;
-                while ((line = reader.readLine()) != null) {
-                    Matcher bea = SHELL_BEA_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher sun = SHELL_SUN_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher vendor = SHELL_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
-                    Matcher javaHomeMatcher = SHELL_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher defaultVendor = SHELL_DEFAULT_VENDOR_PATTERN.matcher(line);
-                    
-                    if ( vendor.matches()){
-                        vendorsSection = true;
-                        vendorName = line.substring(vendor.start(1), vendor.end(1))
-                            .trim(); 
-                        continue;
-                    }
-                    else if ( javaHomeMatcher.matches()){
-                        if ( vendorName != null ){
-                            javaHomeVendors.put(vendorName, unquote(line.substring(
-                                    javaHomeMatcher.start(2), javaHomeMatcher.end(2))
-                                    .trim() ));
-                        }
-                        else if (defaultVendorInit){
-                            javaHomeVendors.put("", unquote(line.substring(
-                                    javaHomeMatcher.start(2), javaHomeMatcher.end(2))
-                                    .trim() ));
-                            defaultVendorInit = false;
-                        }
-                        continue;
-                    }
-                    else {
-                        vendorName = null;
-                    }
-                    if (bea.matches()) {
-                        beaJavaHome = line.substring(bea.start(2), bea.end(2))
+                try {
+                    String line;
+                    String vendorName = null;
+                    boolean vendorsSection = false;
+                    boolean defaultVendorInit = false;
+                    while ((line = reader.readLine()) != null) {
+                        Matcher bea = SHELL_BEA_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher sun = SHELL_SUN_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher vendor = SHELL_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
+                        Matcher javaHomeMatcher = SHELL_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher defaultVendor = SHELL_DEFAULT_VENDOR_PATTERN.matcher(line);
+
+                        if (vendor.matches()) {
+                            vendorsSection = true;
+                            vendorName = line.substring(vendor.start(1), vendor.end(1))
                                 .trim();
+                            continue;
+                        } else if (javaHomeMatcher.matches()) {
+                            if (vendorName != null) {
+                                javaHomeVendors.put(vendorName, unquote(line.substring(
+                                        javaHomeMatcher.start(2), javaHomeMatcher.end(2))
+                                        .trim() ));
+                            } else if (defaultVendorInit) {
+                                javaHomeVendors.put("", unquote(line.substring(
+                                        javaHomeMatcher.start(2), javaHomeMatcher.end(2))
+                                        .trim() ));
+                                defaultVendorInit = false;
+                            }
+                            continue;
+                        } else {
+                            vendorName = null;
+                        }
+                        if (bea.matches()) {
+                            beaJavaHome = line.substring(bea.start(2), bea.end(2))
+                                    .trim();
+                        } else if (sun.matches()) {
+                            sunJavaHome = line.substring(sun.start(2), sun.end(2))
+                                    .trim();
+                        } else if (vendorsSection && defaultVendor.matches()){
+                            defaultVendorInit = true;
+                            vendorsSection = false;
+                        }
                     }
-                    else if (sun.matches()) {
-                        sunJavaHome = line.substring(sun.start(2), sun.end(2))
-                                .trim();
-                    }
-                    else if ( vendorsSection && defaultVendor.matches( )){
-                        defaultVendorInit = true;
-                        vendorsSection = false;
-                    }
+                } finally {
+                    reader.close();
                 }
             }
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, null, e);
         }
-        catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
+        if (beaJavaHome != null) {
+            properties.put(BEA_JAVA_HOME, unquote(beaJavaHome));
         }
-        catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
-        }
-        if ( beaJavaHome != null ){
-            properties.put( BEA_JAVA_HOME , unquote(beaJavaHome) );
-        }
-        if ( sunJavaHome != null ){
-            properties.put( SUN_JAVA_HOME, unquote(sunJavaHome));
+        if (sunJavaHome != null) {
+            properties.put(SUN_JAVA_HOME, unquote(sunJavaHome));
         }
         return properties;
     }
     
-    private static String unquote(String value ){
-        String quote = "\"";            // NOI18N
+    private static String unquote(String value) {
+        String quote = "\""; // NOI18N
         String result = value ;
         if ( result.startsWith(quote)){
             result = result.substring(1);
