@@ -44,15 +44,12 @@ package org.netbeans.modules.editor.impl;
 
 import java.util.Collection;
 import java.util.prefs.Preferences;
-import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.text.IndentEngine;
@@ -86,25 +83,29 @@ public final class ComplexValueSettingsFactory {
     // 'formatter' setting
     // -----------------------------------------------------------------------
 
-    public static final Object getFormatterValue(MimePath mimePath, String settingName) {
-        assert settingName.equals(NbEditorDocument.FORMATTER) : "The getFormatter factory called for '" + settingName + "'"; //NOI18N
+// This was moved to editor.deprecated.pre65formatting module as well as the layer preferences.xml
+// which accesses this method.
+//
+//    public static final Object getFormatterValue(MimePath mimePath, String settingName) {
+//        assert settingName.equals(NbEditorDocument.FORMATTER) : "The getFormatter factory called for '" + settingName + "'"; //NOI18N
+//
+//        IndentEngine eng = getIndentEngine(mimePath);
+//
+//        if (eng != null) {
+//            if (eng instanceof FormatterIndentEngine) {
+//                return ((FormatterIndentEngine)eng).getFormatter();
+//            } else {
+//                EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
+//                if (kit != null) {
+//                    return new IndentEngineFormatter(kit.getClass(), eng);
+//                }
+//            }
+//        }
+//        
+//        return null;
+//    }
 
-        IndentEngine eng = getIndentEngine(mimePath);
-
-        if (eng != null) {
-            if (eng instanceof FormatterIndentEngine) {
-                return ((FormatterIndentEngine)eng).getFormatter();
-            } else {
-                EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
-                if (kit != null) {
-                    return new IndentEngineFormatter(kit.getClass(), eng);
-                }
-            }
-        }
-        
-        return null;
-    }
-
+    // This is not called from a layer, but from NbEditorDocument and e.d.pre65formatting/.../ComplexValueSettingsFactory.getFormatterValue
     public static final IndentEngine getIndentEngine(MimePath mimePath) {
         IndentEngine eng = null;
 

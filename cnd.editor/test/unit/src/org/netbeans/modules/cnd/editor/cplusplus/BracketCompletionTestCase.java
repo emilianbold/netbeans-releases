@@ -33,6 +33,8 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.openide.util.Exceptions;
 
 /**
  * Class was taken from java
