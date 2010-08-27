@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -73,14 +74,21 @@ public class ConfigurationDescriptorProvider {
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private FileObject projectDirectory;
+    private Project project = null;
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
     private String relativeOffset = null;
 
     private List<FileObject> trackedFiles;
     private volatile boolean needReload;
-    
+
     public ConfigurationDescriptorProvider(FileObject projectDirectory) {
+        this.project = null;
+        this.projectDirectory = projectDirectory;
+    }
+    
+    public ConfigurationDescriptorProvider(Project project, FileObject projectDirectory) {
+        this.project = project;
         this.projectDirectory = projectDirectory;
     }
     
@@ -146,6 +154,7 @@ public class ConfigurationDescriptorProvider {
     //                        }
                     try {
                         MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
+                        newDescriptor.setProject(project);
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         if (projectDescriptor == null || newDescriptor == null) {
                             projectDescriptor = newDescriptor;
