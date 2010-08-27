@@ -79,6 +79,7 @@ public class VCSContextTest extends NbTestCase {
         File userdir = new File(getWorkDir() + "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        System.setProperty("data.root.dir", dataRootDir.getAbsolutePath());
         FileObject fo = FileUtil.toFileObject(getDataDir());
     }
 
@@ -133,9 +134,9 @@ public class VCSContextTest extends NbTestCase {
 
     public void testSubstract() throws IOException {
         MockServices.setServices(DummySharabilityImplementations.class);
-        VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root-with-exclusions"))});
+        VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root-with-exclusions")), new DummyProjectNode(new File(dataRootDir, "workdir/root-with-exclusions/folder"))});
         assertTrue(ctx.getRootFiles().size() == 1);
-        assertEquals(1, ctx.getFiles().size());
+        assertEquals(2, ctx.getFiles().size());
         assertEquals(2, ctx.getExclusions().size());
         assertEquals(2, ctx.computeFiles(new DummyFileDilter()).size());
     }
