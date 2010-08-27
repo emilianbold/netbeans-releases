@@ -53,7 +53,7 @@ public class AntSchemaCompilerProvider implements  SchemaCompilerProvider {
 
     @Override
     public SchemaCompiler getSchemaCompiler(Project project) {
-        if (ProjectHelper.getFOForBindingBuildFile(project) != null) {
+        if (ProjectHelper.getFOForProjectBuildFile(project) != null) {
             return new AntSchemaCompiler(project);
         }
         return null;
