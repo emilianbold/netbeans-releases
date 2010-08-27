@@ -73,6 +73,7 @@ public class VCSContextTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         dataRootDir = getDataDir();
@@ -85,41 +86,41 @@ public class VCSContextTest extends NbTestCase {
 
     public void testForEmptyNodes() {
         VCSContext ctx = VCSContext.forNodes(new Node[0]);
-        assertTrue(ctx.getRootFiles().size() == 0);
-        assertTrue(ctx.getFiles().size() == 0);
-        assertTrue(ctx.getExclusions().size() == 0);
-        assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 0);
+        assertTrue(ctx.getRootFiles().isEmpty());
+        assertTrue(ctx.getFiles().isEmpty());
+        assertTrue(ctx.getExclusions().isEmpty());
+        assertTrue(ctx.computeFiles(new DummyFileDilter()).isEmpty());
     }
 
     public void testForFileNodes() {
         VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(dataRootDir) });
         assertTrue(ctx.getRootFiles().size() == 1);
         assertTrue(ctx.getFiles().size() == 1);
-        assertTrue(ctx.getExclusions().size() == 0);
+        assertTrue(ctx.getExclusions().isEmpty());
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);
 
         ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(dataRootDir), new DummyFileNode(dataRootDir) });
         assertTrue(ctx.getRootFiles().size() == 1);
         assertTrue(ctx.getFiles().size() == 1);
-        assertTrue(ctx.getExclusions().size() == 0);
+        assertTrue(ctx.getExclusions().isEmpty());
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);
 
         ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(dataRootDir), new DummyFileNode(new File(dataRootDir, "dummy")) });
         assertTrue(ctx.getRootFiles().size() == 1);
         assertTrue(ctx.getFiles().size() == 2);
-        assertTrue(ctx.getExclusions().size() == 0);
+        assertTrue(ctx.getExclusions().isEmpty());
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);
 
         ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(new File(dataRootDir, "dummy2")), new DummyFileNode(new File(dataRootDir, "dummy")) });
         assertTrue(ctx.getRootFiles().size() == 2);
         assertTrue(ctx.getFiles().size() == 2);
-        assertTrue(ctx.getExclusions().size() == 0);
+        assertTrue(ctx.getExclusions().isEmpty());
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 2);
         
         ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(new File(dataRootDir, "workdir/root")), new DummyFileNode(new File(dataRootDir, "workdir/root/a.txt")) });
         assertTrue(ctx.getRootFiles().size() == 1);
         assertTrue(ctx.getFiles().size() == 2);
-        assertTrue(ctx.getExclusions().size() == 0);
+        assertTrue(ctx.getExclusions().isEmpty());
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);        
     }
 
@@ -128,7 +129,7 @@ public class VCSContextTest extends NbTestCase {
         assertTrue(ctx.getRootFiles().size() == 1);
         assertTrue(ctx.getFiles().size() == 1);
         assertTrue(ctx.getExclusions().size() == 1);
-        assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 0);
+        assertTrue(ctx.computeFiles(new DummyFileDilter()).isEmpty());
     }
 
 
@@ -153,6 +154,7 @@ public class VCSContextTest extends NbTestCase {
             this.acceptAll = acceptAll;
         }
 
+        @Override
         public boolean accept(File pathname) {
             return acceptAll;
         }
@@ -181,10 +183,12 @@ public class VCSContextTest extends NbTestCase {
             file.createNewFile();
         }
 
+        @Override
         public FileObject getProjectDirectory() {
             return FileUtil.toFileObject(file);
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookups.fixed(file);
         }
@@ -192,6 +196,7 @@ public class VCSContextTest extends NbTestCase {
 
     public static class DummySharabilityImplementations implements SharabilityQueryImplementation {
 
+        @Override
         public int getSharability(File file) {
             if (!file.getAbsolutePath().startsWith(System.getProperty("data.root.dir"))) {
                 return SharabilityQuery.UNKNOWN;
