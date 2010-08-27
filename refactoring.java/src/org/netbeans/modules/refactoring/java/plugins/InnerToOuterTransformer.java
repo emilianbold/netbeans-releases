@@ -105,14 +105,16 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             if (current.getModifiers().contains(Modifier.PRIVATE)) {
                 referencedPrivateElement.add(getCurrentElement());
             }
-            IdentifierTree m;
-            if (refactoring.getReferenceName()==null || current.getModifiers().contains(Modifier.STATIC)) {
-                m = make.Identifier(outer.getSimpleName().toString() + "." + node.getName().toString()); // NOI18N
-            } else {
-                m = make.Identifier(refactoring.getReferenceName() + "." + node.getName().toString()); // NOI18N
+            if (!workingCopy.getTypes().isSubtype(inner.asType(), getCurrentElement().getEnclosingElement().asType())) {
+                IdentifierTree m;
+                if (refactoring.getReferenceName()==null || current.getModifiers().contains(Modifier.STATIC)) {
+                    m = make.Identifier(outer.getSimpleName().toString() + "." + node.getName().toString()); // NOI18N
+                } else {
+                    m = make.Identifier(refactoring.getReferenceName() + "." + node.getName().toString()); // NOI18N
+                }
+
+                rewrite(node, m);
             }
-             
-            rewrite(node, m);
         } else if (isInInnerClass) {
             GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy); // helper
             // #it is impossible to call GeneratorUtilities.importFQNs
