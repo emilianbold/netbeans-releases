@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.web.el;
 
+import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import java.util.ArrayList;
@@ -138,6 +140,51 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
         }
 
         this.occurrences = findMatchingTypes(parserResult, target, matching);
+        if (this.occurrences.isEmpty()) {
+            // perhaps the caret is on a resource bundle key node
+            this.occurrences = findMatchingResourceBundleKeys(target, parserResult);
+        }
+    }
+
+    private Map<OffsetRange, ColoringAttributes> findMatchingResourceBundleKeys(Pair<ELElement, Node> target, ELParserResult parserResult) {
+        ResourceBundles resourceBundles = ResourceBundles.get(parserResult.getFileObject());
+        if (!resourceBundles.canHaveBundles()) {
+            return Collections.emptyMap();
+        }
+        List<Pair<AstIdentifier, AstString>> keys = new ArrayList<Pair<AstIdentifier, AstString>>();
+        // the logic here is a bit strange, maybe should add new methods to ResourceBundles
+        // for a more straightforward computation.
+        // first, check whether the current EL elements has keys
+        keys.addAll(resourceBundles.collectKeys(target.first.getNode()));
+        if (keys.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // second, if yes, check whether it has a key matching to the node under the caret
+        boolean found = false;
+        for (Pair<AstIdentifier, AstString> pair : keys) {
+            if (pair.second.equals(target.second)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return Collections.emptyMap();
+        }
+        // third: collect the other matching keys and return them
+        Map<OffsetRange, ColoringAttributes> result = new HashMap<OffsetRange, ColoringAttributes>();
+        for (ELElement each : parserResult.getElements()) {
+            if (!each.isValid()) {
+                continue;
+            }
+            for (Pair<AstIdentifier, AstString> candidate : resourceBundles.collectKeys(each.getNode())) {
+                if (candidate.second.equals(target.second)) {
+                    OffsetRange range = each.getOriginalOffset(candidate.second);
+                    result.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                }
+            }
+        }
+        return result;
     }
 
     private Map<OffsetRange, ColoringAttributes> findMatchingTypes(ELParserResult parserResult, Pair<ELElement,Node> target, List<Pair<ELElement,Node>> candidates) {
