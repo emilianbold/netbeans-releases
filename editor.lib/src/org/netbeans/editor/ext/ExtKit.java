@@ -46,7 +46,6 @@ package org.netbeans.editor.ext;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
@@ -67,7 +66,6 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.Formatter;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.NavigationHistory;
@@ -370,7 +368,7 @@ public class ExtKit extends BaseKit {
         
         protected final void debugPopupMenuItem(JMenuItem item, Action action) {
             if (debugPopupMenu) {
-                StringBuffer sb = new StringBuffer("POPUP: "); // NOI18N
+                StringBuilder sb = new StringBuilder("POPUP: "); // NOI18N
                 if (item != null) {
                     sb.append('"'); //NOI18N
                     sb.append(item.getText());
@@ -1043,7 +1041,10 @@ public class ExtKit extends BaseKit {
     }
 
 
-    // Completion customized actions
+    /** 
+     * @deprecated Please do not subclass this class. Use Typing Hooks instead, for details see
+     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+     */
 //    @EditorActionRegistration(
 //            name = defaultKeyTypedAction,
 //            shortDescription = editorBundleHash + defaultKeyTypedAction
@@ -1081,33 +1082,18 @@ public class ExtKit extends BaseKit {
             }
         }
 
-        /** Check the characters that should cause reindenting the line. */
+        // --------------------------------------------------------------------
+        // SPI
+        // --------------------------------------------------------------------
+
+        /** 
+         * Check the characters that should cause reindenting the line. 
+         * 
+         * @deprecated Please use <a href="@org-netbeans-modules-editor-indent@/org/netbeans/modules/editor/indent/spi/AutomatedIndenting.html">AutomatedIndentig</a>
+         *   or Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
         protected void checkIndentHotChars(JTextComponent target, String typedText) {
-            BaseDocument doc = Utilities.getDocument(target);
-            if (doc != null) {
-                Caret caret = target.getCaret();
-                Formatter f = doc.getFormatter();
-                if (f instanceof ExtFormatter) {
-                    ExtFormatter ef = (ExtFormatter)f;
-                    int[] fmtBlk = ef.getReformatBlock(target, typedText);
-
-                    if (fmtBlk != null) {
-                        try {
-                            fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
-                            fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
-
-                            //this was the of #18922, that causes the bug #20198
-                            //ef.reformat(doc, fmtBlk[0], fmtBlk[1]);
-
-                            //bugfix of the bug #20198. Bug #18922 is fixed too as well as #6968
-                            ef.reformat(doc, fmtBlk[0], fmtBlk[1], true);
-                            
-                        } catch (BadLocationException e) {
-                        } catch (IOException e) {
-                        }
-                    }
-                }
-            }
         }
 
 
@@ -1117,37 +1103,6 @@ public class ExtKit extends BaseKit {
          *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
          */
         protected void checkCompletion(JTextComponent target, String typedText) {
-// XXX: remove
-//            Completion completion = ExtUtilities.getCompletion(target);
-//
-//            BaseDocument doc = (BaseDocument)target.getDocument();
-//            ExtSyntaxSupport extSup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-//            
-//            if (completion != null && typedText.length() > 0) {
-//                if( !completion.isPaneVisible() ) {
-//                    if (completion.isAutoPopupEnabled()) {
-//                        int result = extSup.checkCompletion( target, typedText, false );
-//                        if ( result == ExtSyntaxSupport.COMPLETION_POPUP ) {
-//                            completion.popup(true);
-//                        } else if ( result == ExtSyntaxSupport.COMPLETION_CANCEL ) {
-//                            completion.cancelRequest();
-//                        }
-//                    }
-//                } else {
-//                    int result = extSup.checkCompletion( target, typedText, true );
-//                    switch( result ) {
-//                        case ExtSyntaxSupport.COMPLETION_HIDE:
-//                            completion.setPaneVisible(false);
-//                            break;
-//                        case ExtSyntaxSupport.COMPLETION_REFRESH:
-//                            completion.refresh(false);
-//                            break;
-//                        case ExtSyntaxSupport.COMPLETION_POST_REFRESH:
-//                            completion.refresh(true);
-//                            break;
-//                    }
-//                }
-//            }
         }
     }
 
@@ -1225,6 +1180,10 @@ public class ExtKit extends BaseKit {
 
     }
 
+    /** 
+     * @deprecated Please do not subclass this class. Use Typing Hooks instead, for details see
+     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+     */
   public static class ExtDeleteCharAction extends DeleteCharAction {
 
     public ExtDeleteCharAction(String nm, boolean nextChar) {

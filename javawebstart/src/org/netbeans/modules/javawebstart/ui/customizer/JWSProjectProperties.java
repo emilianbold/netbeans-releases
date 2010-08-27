@@ -129,6 +129,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     public static final String JNLP_SIGNED = "jnlp.signed";
     public static final String JNLP_MIXED_CODE = "jnlp.mixed.code";
+
+    public static final String JNLP_SIGNING = "jnlp.signing";
+    public static final String JNLP_SIGNING_KEYSTORE = "jnlp.sign.keystore";
+    public static final String JNLP_SIGNING_KEY = "jnlp.sign.keyalias";
     
     public static final String CB_TYPE_LOCAL = "local";
     public static final String CB_TYPE_WEB = "web";
@@ -190,7 +194,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
     JToggleButton.ToggleButtonModel allowOfflineModel;
-    JToggleButton.ToggleButtonModel signedModel;
     
     ComboBoxModel codebaseModel;
     ComboBoxModel appletClassModel;
@@ -223,7 +226,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         
             enabledModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_ENABLED);
             allowOfflineModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_OFFLINE);
-            signedModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_SIGNED);
             iconDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_ICON);
             appletWidthDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_APPLET_WIDTH);
             appletHeightDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_APPLET_HEIGHT);
@@ -234,6 +236,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             appletClassModel = new AppletClassComboBoxModel(project);
             mixedCodeModel = createMixedCodeModel(j2sePropEval.evaluator());
             initRadioButtons();
+
+            initSigning(evaluator);
 
             extResProperties = readProperties(evaluator, JNLP_EXT_RES_PREFIX, extResSuffixes);
             appletParamsProperties = readProperties(evaluator, JNLP_APPLET_PARAMS_PREFIX, appletParamsSuffixes);
@@ -313,7 +317,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         } else {
             applicationDescButtonModel.setSelected(true);
         }
-        
+
     }
     
     private void storeRest(EditableProperties editableProps) {
@@ -381,6 +385,12 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
             editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
         }
+        // store signing info
+        editableProps.setProperty(JNLP_SIGNING, signing);
+        editableProps.setProperty(JNLP_SIGNING_KEY, signingKeyAlias);
+        editableProps.setProperty(JNLP_SIGNING_KEYSTORE, signingKeyStore);
+        editableProps.setProperty(JNLP_SIGNED, "".equals(signing) ? "false" : "true");
+
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
         storeProperties(editableProps, appletParamsProperties, JNLP_APPLET_PARAMS_PREFIX);
@@ -770,6 +780,27 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                 }
             }
             return null;
+        }
+    }
+
+    // "key", "generated"
+    String signing;
+    String signingKeyStore;
+    String signingKeyAlias;
+
+    static String SIGNING_GENERATED = "generated";
+    static String SIGNING_KEY = "key";
+
+    private void initSigning(PropertyEvaluator eval) {
+        signing = eval.getProperty(JNLP_SIGNING);
+        if (signing == null) signing = "";
+        signingKeyStore = eval.getProperty(JNLP_SIGNING_KEYSTORE);
+        if (signingKeyStore == null) signingKeyStore = "";
+        signingKeyAlias = eval.getProperty(JNLP_SIGNING_KEY);
+        if (signingKeyAlias == null) signingKeyAlias = "";
+        // compatibility
+        if ("".equals(signing) && "true".equals(eval.getProperty(JNLP_SIGNED))) {
+            signing = SIGNING_GENERATED;
         }
     }
 

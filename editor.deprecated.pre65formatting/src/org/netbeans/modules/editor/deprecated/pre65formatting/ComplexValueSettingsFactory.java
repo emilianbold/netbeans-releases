@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,25 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.indent;
+package org.netbeans.modules.editor.deprecated.pre65formatting;
 
-import javax.swing.text.Document;
-import org.netbeans.editor.Formatter;
-import org.netbeans.modules.editor.lib.FormatterOverride;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.FormatterIndentEngine;
+import org.netbeans.modules.editor.IndentEngineFormatter;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.openide.text.IndentEngine;
 
 /**
- * Indentation and code reformatting services for a swing text document.
  *
- * @author Miloslav Metelka
+ * @author vita
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.lib.FormatterOverride.class)
-public final class FormatterOverrideImpl implements FormatterOverride {
+public final class ComplexValueSettingsFactory {
 
-    public Formatter getFormatter(Document doc, Formatter defaultFormatter) {
-        // Always override and possibly delegate to default formatter
-        return new FormatterImpl(defaultFormatter, doc);
+    private ComplexValueSettingsFactory() {
+        // no-op
     }
+    
+    // -----------------------------------------------------------------------
+    // 'formatter' setting
+    // -----------------------------------------------------------------------
 
+    public static Object getFormatterValue(MimePath mimePath, String settingName) {
+        assert settingName.equals(NbEditorDocument.FORMATTER) : "The getFormatter factory called for '" + settingName + "'"; //NOI18N
+
+        IndentEngine eng = org.netbeans.modules.editor.impl.ComplexValueSettingsFactory.getIndentEngine(mimePath);
+
+        if (eng != null) {
+            if (eng instanceof FormatterIndentEngine) {
+                return ((FormatterIndentEngine)eng).getFormatter();
+            } else {
+                EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
+                if (kit != null) {
+                    return new IndentEngineFormatter(kit.getClass(), eng);
+                }
+            }
+        }
+        
+        return null;
+    }
 }
