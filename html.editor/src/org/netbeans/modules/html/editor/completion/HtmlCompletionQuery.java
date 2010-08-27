@@ -318,8 +318,9 @@ public class HtmlCompletionQuery extends UserTask {
                 try {
                     HtmlParseResult htmlResult = parserResult.getSyntaxAnalyzerResult().parseHtml();
                     Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, HtmlTagType.OPEN_TAG);
+                    Collection<HtmlTag> allTags = htmlResult.getAllTags();
                     Collection<HtmlTag> filteredByPrefix = filterHtmlElements(possibleOpenTags, preText);
-                    result.addAll(translateHtmlTags(documentItemOffset - 1, filteredByPrefix));
+                    result.addAll(translateHtmlTags(documentItemOffset - 1, filteredByPrefix, allTags));
                 } catch (org.netbeans.editor.ext.html.parser.api.ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -346,7 +347,8 @@ public class HtmlCompletionQuery extends UserTask {
                  try {
                     HtmlParseResult htmlResult = parserResult.getSyntaxAnalyzerResult().parseHtml();
                     Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, HtmlTagType.OPEN_TAG);
-                    result.addAll(translateHtmlTags(offset - 1, possibleOpenTags));
+                    Collection<HtmlTag> allTags = htmlResult.getAllTags();
+                    result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
                 } catch (org.netbeans.editor.ext.html.parser.api.ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -655,11 +657,14 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     //TODO add the "all" support once the metadata are exposed somewhere
-    List<CompletionItem> translateHtmlTags(int offset, Collection<HtmlTag> possible/*, Collection<DTD.Element> all*/) {
+    List<CompletionItem> translateHtmlTags(int offset, Collection<HtmlTag> possible, Collection<HtmlTag> all) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(possible.size());
-//        all.removeAll(possible); //remove possible elements
+        all.removeAll(possible); //remove possible elements
         for (HtmlTag e : possible) {
             result.add(item4HtmlTag(e, offset, true));
+        }
+        for (HtmlTag e : all) {
+            result.add(item4HtmlTag(e, offset, false));
         }
         return result;
     }

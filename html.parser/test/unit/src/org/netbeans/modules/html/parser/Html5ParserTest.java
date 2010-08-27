@@ -273,6 +273,31 @@ public class Html5ParserTest extends NbTestCase {
 
     }
 
+        public void testAllowDialogInDiv() throws ParseException {
+        HtmlParseResult result = parse("<!doctype html>"
+                + "<html>\n"
+                + "<title>title</title>\n"
+                + "<body>\n"
+                + "<div>\n"
+                
+                + "</div>\n"
+                + "</body>\n"
+                + "</html>\n");
+
+        assertNotNull(result.root());
+
+        AstNode div = AstNodeUtils.query(result.root(), "html/body/div");
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(div, HtmlTagType.OPEN_TAG);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag divTag = new HtmlTagImpl("div");
+        HtmlTag dialogTag = new HtmlTagImpl("dialog");
+
+        assertTrue(possible.contains(divTag));
+        assertFalse(possible.contains(dialogTag));
+
+    }
 
     public void testParseUnfinishedTagFollowedByChars() throws ParseException {
         String code = "<!doctype html> \n"

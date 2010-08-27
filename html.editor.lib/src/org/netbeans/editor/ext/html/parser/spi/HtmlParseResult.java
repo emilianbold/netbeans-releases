@@ -56,5 +56,7 @@ public interface HtmlParseResult extends ParseResult {
 
     /** experimental - may be refactored out of this class */
     public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type);
+
+    public Collection<HtmlTag> getAllTags();
     
 }

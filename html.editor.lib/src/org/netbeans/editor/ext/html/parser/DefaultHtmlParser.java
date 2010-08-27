@@ -39,11 +39,16 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
@@ -63,8 +68,26 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author marekfukala
  */
-@ServiceProvider(service=HtmlParser.class, position=10)
+@ServiceProvider(service = HtmlParser.class, position = 10)
 public class DefaultHtmlParser implements HtmlParser {
+
+    private static final Map<HtmlVersion, Collection<HtmlTag>> ALL_TAGS_MAP = new EnumMap<HtmlVersion, Collection<HtmlTag>>(HtmlVersion.class);
+
+    private static synchronized Collection<HtmlTag> getAllTags(HtmlVersion version) {
+        Collection<HtmlTag> value = ALL_TAGS_MAP.get(version);
+        if (value == null) {
+            DTD dtd = version.getDTD();
+            assert dtd != null;
+
+            List<Element> all = dtd.getElementList("");
+            value = new ArrayList<HtmlTag>();
+            for (Element e : all) {
+                value.add(DTD2HtmlTag.getTagForElement(e));
+            }
+            ALL_TAGS_MAP.put(version, value);
+        }
+        return value;
+    }
 
     @Override
     public boolean canParse(HtmlVersion version) {
@@ -79,13 +102,13 @@ public class DefaultHtmlParser implements HtmlParser {
                 || version == HtmlVersion.XHTML10_TRANSATIONAL
                 || version == HtmlVersion.XHTML10_FRAMESET
                 || version == HtmlVersion.XHTML11;
-                
+
     }
 
     @Override
-    public HtmlParseResult parse(HtmlSource source, HtmlVersion version, Lookup lookup) throws ParseException {
+    public HtmlParseResult parse(HtmlSource source, final HtmlVersion version, Lookup lookup) throws ParseException {
         assert version != HtmlVersion.HTML5;
-        
+
         SyntaxAnalyzerElements elements = lookup.lookup(SyntaxAnalyzerElements.class);
         assert elements != null;
 
@@ -95,7 +118,7 @@ public class DefaultHtmlParser implements HtmlParser {
 
             @Override
             public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type) {
-                if(type == HtmlTagType.OPEN_TAG) {
+                if (type == HtmlTagType.OPEN_TAG) {
                     return DTD2HtmlTag.convert(AstNodeUtils.getPossibleOpenTagElements(afterNode));
                 } else {
                     //TODO implement
@@ -103,8 +126,12 @@ public class DefaultHtmlParser implements HtmlParser {
                 }
             }
 
+            @Override
+            public Collection<HtmlTag> getAllTags() {
+                return DefaultHtmlParser.getAllTags(version);
+            }
+
         };
 
     }
-
 }

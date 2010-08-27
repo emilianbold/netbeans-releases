@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.parser;
 
 import java.io.IOException;
@@ -82,8 +81,20 @@ import org.xml.sax.SAXParseException;
  *
  * @author marekfukala
  */
-@ServiceProvider(service=HtmlParser.class, position=100)
+@ServiceProvider(service = HtmlParser.class, position = 100)
 public class Html5Parser implements HtmlParser {
+
+    private static Collection<HtmlTag> ALL_TAGS;
+
+    private static synchronized Collection<HtmlTag> getAllTags() {
+        if (ALL_TAGS == null) {
+            ALL_TAGS = new ArrayList<HtmlTag>();
+            for (ElementName element : ElementName.ELEMENT_NAMES) {
+                ALL_TAGS.add(HtmlTagProvider.getTagForElement(element));
+            }
+        }
+        return ALL_TAGS;
+    }
 
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
         try {
@@ -96,15 +107,15 @@ public class Html5Parser implements HtmlParser {
             treeBuilder.setErrorHandler(new ErrorHandler() {
 
                 public void warning(SAXParseException exception) throws SAXException {
-                   handleProblem(exception, ProblemDescription.WARNING);
+                    handleProblem(exception, ProblemDescription.WARNING);
                 }
 
                 public void error(SAXParseException exception) throws SAXException {
-                   handleProblem(exception, ProblemDescription.ERROR);
+                    handleProblem(exception, ProblemDescription.ERROR);
                 }
 
                 public void fatalError(SAXParseException exception) throws SAXException {
-                   handleProblem(exception, ProblemDescription.FATAL);
+                    handleProblem(exception, ProblemDescription.FATAL);
                 }
 
                 private void handleProblem(SAXException exception, int problemType) {
@@ -113,12 +124,11 @@ public class Html5Parser implements HtmlParser {
                     ProblemDescription problem = ProblemDescription.create("nokey", //NOI18N
                             exception.getLocalizedMessage(),
                             problemType,
-//                            current.startOffset(), current.endOffset());
+                            //                            current.startOffset(), current.endOffset());
                             treeBuilder.tagBeginningOffset(), treeBuilder.tagEndOffset());
 
                     problems.add(problem);
                 }
-
             });
             Driver driver = new Driver(tokenizer);
             driver.tokenize(is);
@@ -126,9 +136,9 @@ public class Html5Parser implements HtmlParser {
 
             //html 5 source are validated by the validator.nu,
             //if there's no such validator available, use the errors from the parser itself
-            if(preferedVersion == HtmlVersion.HTML5) {
+            if (preferedVersion == HtmlVersion.HTML5) {
                 Validator html5validator = ValidatorService.getValidator(preferedVersion);
-                if(html5validator != null) {
+                if (html5validator != null) {
                     ValidationContext context = new ValidationContext(code, preferedVersion, source.getSourceFileObject());
                     try {
                         Collection<ProblemDescription> validatorProblems = html5validator.validate(context).getProblems();
@@ -165,12 +175,11 @@ public class Html5Parser implements HtmlParser {
                 || version == HtmlVersion.XHTML11;
     }
 
-
     public static StateSnapshot makeTreeBuilderSnapshot(AstNode node) {
         int treeBuilderState = node.treeBuilderState;
         List<StackNode> stack = new ArrayList<StackNode>();
-        while(node != null && !node.isRootNode()) {
-            stack.add(0, new StackNode("http://www.w3.org/1999/xhtml", (ElementName)node.elementName, node));
+        while (node != null && !node.isRootNode()) {
+            stack.add(0, new StackNode("http://www.w3.org/1999/xhtml", (ElementName) node.elementName, node));
             node = node.parent();
         }
 
@@ -187,30 +196,30 @@ public class Html5Parser implements HtmlParser {
 
         public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, HtmlTagType type) {
             List<HtmlTag> possible = new ArrayList<HtmlTag>();
-            if(type == HtmlTagType.OPEN_TAG) {
+            if (type == HtmlTagType.OPEN_TAG) {
                 //open tags
                 StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
                 ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);
 
                 HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
-                for(ElementName element : ElementName.ELEMENT_NAMES) {
+                for (ElementName element : ElementName.ELEMENT_NAMES) {
                     int group = element.group;
                     Boolean enabled = enabledGroups.get(group);
 
-                    if(enabled == null) {
+                    if (enabled == null) {
                         //not checked yet
 
                         //XXX is it even correct to assume that the result
                         //will be the same for all members of one group????
-                        
+
 //                        System.out.print("element " + element + "...");
                         enabled = builder.canFollow(node, element);
 //                        System.out.println(enabled ? "+" : "-");
                         enabledGroups.put(group, enabled);
 
-                        if(enabled.booleanValue()) {
+                        if (enabled.booleanValue()) {
                             //add all element from the group as possible
-                            for(ElementName member : ElementNameGroups.getElementForTreeBuilderGroup(group)) {
+                            for (ElementName member : ElementNameGroups.getElementForTreeBuilderGroup(group)) {
                                 possible.add(HtmlTagProvider.getTagForElement(member));
                             }
 
@@ -219,25 +228,27 @@ public class Html5Parser implements HtmlParser {
                     }
 
                 }
-                
+
 
             } else {
                 //end tags
                 do {
-                    ElementName element = (ElementName)node.elementName;
-                    if(element != null) {
+                    ElementName element = (ElementName) node.elementName;
+                    if (element != null) {
                         //TODO if(element is not empty tag (end tag forbidden) {
-                            possible.add(0, HtmlTagProvider.getTagForElement(element));
+                        possible.add(0, HtmlTagProvider.getTagForElement(element));
                         //}
                     }
-                } while((node = node.parent()) != null && !node.isRootNode());
+                } while ((node = node.parent()) != null && !node.isRootNode());
 
             }
 
             return possible;
         }
 
+        public Collection<HtmlTag> getAllTags() {
+            return Html5Parser.getAllTags();
+        }
+        
     }
-
-
 }
