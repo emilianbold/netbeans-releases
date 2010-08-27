@@ -282,20 +282,20 @@ public class ServerLocationVisual extends JPanel {
     }
 
     /**
-     * Removes a registered listener
-     *
-     * @param listener the listener to be removed
-     */
-    public void removeChangeListener(ChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    /**
      * Adds a listener
      *
      * @param listener the listener to be added
      */
     public void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Removes a registered listener
+     *
+     * @param listener the listener to be removed
+     */
+    public void removeChangeListener(ChangeListener listener) {
         listeners.remove(listener);
     }
 

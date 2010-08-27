@@ -417,26 +417,20 @@ public final class WLPluginProperties {
                     }
                 }
             }
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             LOGGER.log(Level.INFO, null, e);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             LOGGER.log(Level.INFO, null, e);
-        }
-        catch (ParserConfigurationException e) {
+        } catch (ParserConfigurationException e) {
             LOGGER.log(Level.INFO, null, e);
-        }
-        catch (SAXException e) {
+        } catch (SAXException e) {
             LOGGER.log(Level.INFO, null, e);
-        }
-        finally {
+        } finally {
             try {
                 if (inputStream != null) {
                     inputStream.close();
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
@@ -608,7 +602,7 @@ public final class WLPluginProperties {
     }
 
     /**
-     * Checks whether the server root contains weblogic.jar of version 9 or 10.
+     * Checks whether the server root contains weblogic.jar of version 9, 10 or 11.
      */
     public static boolean isSupportedVersion(Version version) {
         return version != null && (Integer.valueOf(9).equals(version.getMajor())

@@ -47,8 +47,10 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -74,7 +76,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
 
     private transient WLInstantiatingIterator instantiatingIterator;
-    
+
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+
     private boolean isProductionModeEnabled;
     
     /**
@@ -216,9 +220,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      *
      * @return a vector with the local instances
      */
-    private Vector getServerInstances() {
+    private List<Instance> getServerInstances() {
         // initialize the resulting vector
-        Vector result = new Vector();
+        List<Instance> result = new ArrayList<Instance>();
 
         // get the list of registered profiles
         String[] domains = WLPluginProperties
@@ -226,12 +230,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
         // for each domain get the list of instances
         for (int i = 0; i < domains.length; i++) {
-
             Properties properties = WLPluginProperties.getDomainProperties(domains[i]);
-            String name = properties.getProperty( WLPluginProperties.ADMIN_SERVER_NAME);
-            String port = properties.getProperty( WLPluginProperties.PORT_ATTR);
-            String host = properties.getProperty( WLPluginProperties.HOST_ATTR );
-            String domainName = properties.getProperty( WLPluginProperties.DOMAIN_NAME );
+            String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
+            String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
+            String host = properties.getProperty(WLPluginProperties.HOST_ATTR );
+            String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME );
             Boolean isProductionMode = (Boolean)properties.get(
                     WLPluginProperties.PRODUCTION_MODE);
             if ((name != null) && (!name.equals(""))) { // NOI18N
@@ -278,13 +281,14 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Listeners section
-    ////////////////////////////////////////////////////////////////////////////
     /**
-     * The registrered listeners vector
+     * Adds a listener
+     *
+     * @param listener the listener to be added
      */
-    private final Vector listeners = new Vector();
+    public void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
+    }
 
     /**
      * Removes a registered listener
@@ -292,45 +296,12 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      * @param listener the listener to be removed
      */
     public void removeChangeListener(ChangeListener listener) {
-        if (listeners != null) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
+        listeners.remove(listener);
     }
 
-    /**
-     * Adds a listener
-     *
-     * @param listener the listener to be added
-     */
-    public void addChangeListener(ChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    /**
-     * Fires a change event originating from this panel
-     */
     private void fireChangeEvent() {
         ChangeEvent event = new ChangeEvent(this);
-        fireChangeEvent(event);
-    }
-
-    /**
-     * Fires a custom change event
-     *
-     * @param event the event
-     */
-    private void fireChangeEvent(ChangeEvent event) {
-        Vector targetListeners;
-        synchronized (listeners) {
-            targetListeners = (Vector) listeners.clone();
-        }
-
-        for (int i = 0; i < targetListeners.size(); i++) {
-            ChangeListener listener = (ChangeListener) targetListeners.elementAt(i);
+        for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
         }
     }
@@ -545,7 +516,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         /**
          * A vector with the instances
          */
-        private Vector instances;
+        private List<Instance> instances;
 
         /**
          * The index of the selected instance, or -1 if there is no selection
@@ -557,7 +528,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          *
          * @param instances a vector with the locally found instances
          */
-        public InstancesModel(Vector instances) {
+        public InstancesModel(List<Instance> instances) {
             // save the instances
             this.instances = instances;
 
@@ -584,7 +555,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @return the instance at the given index
          */
         public Object getElementAt(int index) {
-            return instances.elementAt(index);
+            return instances.get(index);
         }
 
         /**
@@ -603,7 +574,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         public Object getSelectedItem() {
             // if there are no instances return null
-            if (instances.size() == 0) {
+            if (instances.isEmpty()) {
                 return null;
             }
             // #168297
@@ -612,7 +583,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             }
 
             // return the element at the index
-            return instances.elementAt(selectedIndex);
+            return instances.get(selectedIndex);
         }
 
     }
@@ -624,6 +595,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      * @author Kirill Sorokin
      */
     private static class Instance {
+
         /**
          * Instance's name, it is used a the parameter to the startup/shutdown
          * scripts
@@ -664,8 +636,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @param domainPath the instance's profile path
          */
         public Instance(String name, String host, String port, String domainPath,
-                String domainName, boolean isProductionModeEnabled) 
-        {
+                String domainName, boolean isProductionModeEnabled) {
             // save the properties
             this.name = name;
             this.host = host;
