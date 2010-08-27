@@ -23,6 +23,8 @@
 package org.netbeans.modules.html.validation;
 
 import java.net.URL;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.html.validation.patched.RootNamespaceSniffer;
 import org.netbeans.modules.html.validation.patched.BufferingRootNamespaceSniffer;
 import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
@@ -75,6 +77,7 @@ import nu.validator.xml.TypedInputSource;
 import nu.validator.xml.WiretapXMLReaderWrapper;
 import nu.validator.xml.dataattributes.DataAttributeDroppingSchemaWrapper;
 import nu.validator.xml.langattributes.XmlLangAttributeDroppingSchemaWrapper;
+import org.openide.util.NbBundle;
 
 import org.whattf.checker.XmlPiChecker;
 
@@ -83,7 +86,6 @@ import org.whattf.io.DataUri;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -134,6 +136,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             public void close() throws SecurityException {
             }
         });
+    }
+
+    static {
+        enableDebug();
     }
 
     private static final Pattern SPACE = Pattern.compile("\\s+");
@@ -238,6 +244,12 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             return;
         }
 
+        ProgressHandle progress = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(ValidationTransaction.class, "MSG_InitHTMLValidation")); //NOI18N
+
+        progress.start();
+        progress.switchToIndeterminate();
+
         initializeLocalEntities_HACK();
 
         try {
@@ -262,6 +274,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 labels.add(s[2]);
                 urls.add(s[3]);
             }
+
+//            progress.start(10 * (urls.size() + 50) /* reading the html spec */);
+//            progress.progress(NbBundle.getMessage(ValidationTransaction.class, "MSG_LoadingSchemaFiles"));
 
             LOGGER.fine("Finished reading config.");
 
@@ -345,6 +360,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                     if (schemaMap.get(url) == null && !isCheckerUrl(url)) {
                         Schema sch = schemaByUrl(url, er, pMap);
                         schemaMap.put(url, sch);
+//                        progress.progress(10);
                     }
                 }
             }
@@ -369,8 +385,12 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 i++;
             }
 
+//            progress.progress(NbBundle.getMessage(ValidationTransaction.class, "MSG_LoadingHtmlSpecification"));
             LOGGER.fine("Reading spec.");
+
             html5spec = Html5SpecBuilder.parseSpec(LocalCacheEntityResolver.getHtml5SpecAsStream());
+//            progress.progress(50);
+            
             LOGGER.fine("Spec read.");
 
             LOGGER.fine("Initialization complete.");
@@ -379,6 +399,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            progress.finish();
+        
         }
     }
 

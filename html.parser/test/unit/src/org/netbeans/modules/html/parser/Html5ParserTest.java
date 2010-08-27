@@ -75,7 +75,7 @@ public class Html5ParserTest extends NbTestCase {
         AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
 	TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("test_A_TagProblem"));
+        suite.addTest(new Html5ParserTest("testParseTreeAfterOpenedTag"));
         return suite;
     }
 
@@ -383,6 +383,23 @@ public class Html5ParserTest extends NbTestCase {
                 + "         </footer> \n"
                 + "     </body>\n" //from some reason the tree builder pushes <a> open tag node here?!?!?
                 + "</html>  \n";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testParseTreeAfterOpenedTag() throws ParseException {
+        String code = "<!DOCTYPE html>\n"
+                + "<html>\n"
+                + "<title>HTML5 Demo: geolocation</title>\n"
+                + "<body>\n"
+                + "<div></\n"
+                + "</body>\n"
+                + "</html>\n";
 
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
