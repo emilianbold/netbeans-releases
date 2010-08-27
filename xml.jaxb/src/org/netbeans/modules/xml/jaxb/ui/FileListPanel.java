@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
-import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 
 /**
  *
