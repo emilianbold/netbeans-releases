@@ -152,15 +152,20 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             }
         }
 
-        // save the data to the parent instantiating iterator
-        instantiatingIterator.setUrl(getUrl());
-        instantiatingIterator.setDomainRoot(domainPathField.getText());
-        instantiatingIterator.setUsername(usernameField.getText());
-        instantiatingIterator.setPassword(new String(passwordField.getPassword()));
-        instantiatingIterator.setPort(portField.getText().trim());
-        instantiatingIterator.setDomainName( item.getDomainName() );
-        instantiatingIterator.setHost(hostField.getText().trim());
-        // everything seems ok
+        if (item != null) {
+            // save the data to the parent instantiating iterator
+            instantiatingIterator.setUrl(getUrl());
+            instantiatingIterator.setDomainRoot(domainPathField.getText());
+            instantiatingIterator.setUsername(usernameField.getText());
+            instantiatingIterator.setPassword(new String(passwordField.getPassword()));
+            instantiatingIterator.setPort(portField.getText().trim());
+            instantiatingIterator.setDomainName(item.getDomainName());
+            instantiatingIterator.setHost(hostField.getText().trim());
+            // everything seems ok
+        } else {
+            // TODO message or something similar
+            return false;
+        }
         return true;
     }
 
