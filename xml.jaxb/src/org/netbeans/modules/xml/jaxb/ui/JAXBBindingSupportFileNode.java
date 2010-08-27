@@ -37,7 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.actions.JAXBRefreshAction;
 import org.netbeans.modules.xml.jaxb.actions.JAXBWizardOpenXSDIntoEditorAction;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardSchemaNode.JAXBWizardSchemaNodeChildren;
-import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;

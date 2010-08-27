@@ -59,7 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.xml.jaxb.util.FileSysUtil;
-import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
