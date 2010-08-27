@@ -74,9 +74,7 @@ import org.openide.util.NbBundle;
  *
  */
 @org.openide.util.lookup.ServiceProvider(service=WebBeansModelProvider.class)
-public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic 
-    implements WebBeansModelProvider 
-{
+public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic {
 
     public Result getInjectable(VariableElement element, DeclaredType parentType, 
             AbstractModelImplementation impl) 
@@ -108,27 +106,6 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         return null;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
-     */
-    public Result lookupInjectables( VariableElement element,
-            DeclaredType parentType, AbstractModelImplementation modelImpl )
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isDynamicInjectionPoint(javax.lang.model.element.VariableElement)
-     */
-    public boolean isDynamicInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl) 
-    {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isInjectionPoint(javax.lang.model.element.VariableElement)
      */
@@ -184,16 +161,20 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         List<? extends AnnotationMirror> annotations = impl.getHelper().
             getCompilationController().getElements().getAllAnnotationMirrors( 
                     element);
+        
+        boolean event = getParameterType(element, null, impl.getHelper().
+                getCompilationController(), EVENT_INTERFACE) != null;
+        
         for (AnnotationMirror annotationMirror : annotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
-            if ( isQualifier( annotationElement , impl.getHelper()) ){
+            if ( isQualifier( annotationElement , impl.getHelper(), event) ){
                 result.add( annotationMirror );
             }
         }
         return result;
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getName(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
      */
@@ -408,7 +389,7 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
     }
 
-    private static WebBeansModelImplementation getImplementation(
+    static WebBeansModelImplementation getImplementation(
             AbstractModelImplementation impl )
     {
         WebBeansModelImplementation modelImpl = null;

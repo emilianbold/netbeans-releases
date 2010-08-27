@@ -97,10 +97,10 @@ public final class WebBeansModel {
      * This method differs from {@link #getInjectable(VariableElement, DeclaredType)}
      * by injection point type. Injection point could be defined via 
      * programmatic lookup which is dynamically specify injectable type.
-     * Such situation appears when injection point uses Instance<?> interface. 
+     * Such situation appears when injection point uses Instance<?> or Event<?> interface. 
      * In case of @Any binding usage this list will contain all 
      * possible binding types for <code>element</code>  ( all beans 
-     * that implements or extends type parameter for Instance<> ). 
+     * that implements or extends type parameter for Instance<> or Event<> ). 
      * 
      * See <code>parentType</code> parameter explanation in 
      * {@link #getInjectable(VariableElement, DeclaredType)}.
@@ -146,7 +146,7 @@ public final class WebBeansModel {
     /**
      * Test if variable element is injection point that is used for
      * programmatic lookup. It could happen if variable declared via 
-     * Instance<?> interface with binding annotations.
+     * Instance<?> or Event<?> interface with qualifier annotations.
      * Typesafe resolution in this case could not be done 
      * statically and method 
      * {@link #lookupInjectables(VariableElement, DeclaredType)} should

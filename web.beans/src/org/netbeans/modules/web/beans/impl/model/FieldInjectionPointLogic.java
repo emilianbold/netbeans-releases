@@ -89,6 +89,12 @@ abstract class FieldInjectionPointLogic {
     
     static final String INJECT_ANNOTATION = 
                         "javax.inject.Inject";                      // NOI18N
+    
+    static final String EVENT_INTERFACE = 
+                        "javax.enterprise.event.Event";             // NOI18N
+    
+    static final String INSTANCE_INTERFACE = 
+                        "javax.enterprise.inject.Instance";         // NOI18N
 
     static final Logger LOGGER = Logger.getLogger(WebBeansModelProvider.class
             .getName());
@@ -176,6 +182,10 @@ abstract class FieldInjectionPointLogic {
         catch(InjectionPointDefinitionError e ){
             return new DefinitionErrorResult(element, elementType, e.getMessage());
         }
+        
+        Element typeElement = modelImpl.getHelper().getCompilationController()
+                .getTypes().asElement(elementType);
+    
         /*
          * Single @Default annotation means increasing types that 
          * is eligible for injection. Each bean without any qualifiers
@@ -203,7 +213,7 @@ abstract class FieldInjectionPointLogic {
             newQualifier = annotationElement.getQualifiedName().contentEquals( 
                     NEW_QUALIFIER_ANNOTATION );
         }
-        if ( (quilifierAnnotations.size() == 0 && anyQualifier) || 
+        if ( (quilifierAnnotations.size() == 0 && anyQualifier) ||
                 defaultQualifier )
         {
             LOGGER.fine("Found built-in binding "+annotationName); // NOI18N
@@ -238,7 +248,7 @@ abstract class FieldInjectionPointLogic {
             
             /*
              * Now <code>typesWithQualifiers</code> contains appropriate types
-             * which has required qualifer with required parameters ( if any ).
+             * which has required qualifier with required parameters ( if any ).
              * Next step is filter types via typesafe resolution.
              */
             filterBindingsByType( element , elementType, typesWithQualifiers , 
@@ -283,11 +293,17 @@ abstract class FieldInjectionPointLogic {
     }
 
     protected boolean isQualifier( TypeElement element, 
-            AnnotationModelHelper helper)
+            AnnotationModelHelper helper, boolean event )
     {
-        QualifierChecker checker = QualifierChecker.get();
+        QualifierChecker checker = QualifierChecker.get( event );
         checker.init( element , helper );
         return checker.check();
+    }
+    
+    protected boolean isQualifier( TypeElement element, 
+            AnnotationModelHelper helper )
+    {
+        return isQualifier(element, helper, false);
     }
     
     protected Set<Element> getChildSpecializes( Element productionElement,
@@ -564,7 +580,7 @@ abstract class FieldInjectionPointLogic {
             Set<Element> productionElements,WebBeansModelImplementation model )
     {
         TypeProductionFilter filter = TypeProductionFilter.get( );
-        filter.init(element, elementType, model);
+        filter.init( elementType, element.getSimpleName().toString(), model);
         filter.filter( productionElements );
         return filter.getResult();
     }
@@ -629,7 +645,7 @@ abstract class FieldInjectionPointLogic {
         
         // Now filter all found child classes according to real element type ( type mirror )  
         TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init( element , elementType, model );
+        filter.init( elementType, element.getSimpleName().toString(), model );
         filter.filter( result );
         return result;
     }
@@ -639,13 +655,13 @@ abstract class FieldInjectionPointLogic {
             WebBeansModelImplementation modelImpl )
     {
         TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init( element , elementType, modelImpl );
+        filter.init( elementType, element.getSimpleName().toString(), modelImpl );
         filter.filter( typesWithBindings );
     }
     
     private Set<Element> getProductions( 
             List<AnnotationMirror> qualifierAnnotations ,
-            final WebBeansModelImplementation model ) 
+            final WebBeansModelImplementation model) 
     {
         List<Set<Element>> bindingCollections = 
             new ArrayList<Set<Element>>( qualifierAnnotations.size());
@@ -657,18 +673,18 @@ abstract class FieldInjectionPointLogic {
          * In this case original method will have @Default along with 
          * qualifiers "inherited" from specialized methods.  
          */
-        boolean hasCurrent = model.getHelper().getAnnotationsByType( 
+        boolean hasDefault = model.getHelper().getAnnotationsByType( 
                 qualifierAnnotations ).get(DEFAULT_QUALIFIER_ANNOTATION) != null ;
         Set<Element> currentBindings = new HashSet<Element>();
         for (AnnotationMirror annotationMirror : qualifierAnnotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
             String annotationFQN = annotationElement.getQualifiedName().toString();
-            findAnnotation(model, bindingCollections, annotationFQN , hasCurrent,
+            findAnnotation(model, bindingCollections, annotationFQN , hasDefault,
                     currentBindings );
         }
 
-        if ( hasCurrent ){
+        if ( hasDefault ){
             bindingCollections.add( currentBindings );
         }
         
@@ -700,22 +716,24 @@ abstract class FieldInjectionPointLogic {
                     new AnnotationHandler() {
                         public void handleAnnotation( TypeElement type, 
                                 Element element,AnnotationMirror annotation )
-                        {
-                            if ( AnnotationObjectProvider.hasAnnotation(element, 
-                                    PRODUCER_ANNOTATION, model.getHelper()))
-                            {
-                                bindings.add( element );
-                                bindings.addAll(getChildSpecializes( element , 
-                                        model ));
-                                if ( annotationFQN.contentEquals( 
-                                        DEFAULT_QUALIFIER_ANNOTATION )){
-                                    currentBindings.addAll( bindings );
+                                {
+                                    if (AnnotationObjectProvider.hasAnnotation(
+                                            element, PRODUCER_ANNOTATION,
+                                            model.getHelper()))
+                                    {
+                                        bindings.add(element);
+                                        bindings.addAll(getChildSpecializes(
+                                                element, model));
+                                        if (annotationFQN
+                                                .contentEquals(DEFAULT_QUALIFIER_ANNOTATION))
+                                        {
+                                            currentBindings.addAll(bindings);
+                                        }
+                                        else {
+                                            bindingCollections.add(bindings);
+                                        }
+                                    }
                                 }
-                                else {
-                                    bindingCollections.add( bindings );
-                                }
-                            }
-                        }
                     });
             if ( hasCurrent ){
                 for (Element element : bindings) {
@@ -734,7 +752,7 @@ abstract class FieldInjectionPointLogic {
     }
 
     private Set<TypeElement> getBindingTypes( List<AnnotationMirror> qualifierAnnotations ,
-            WebBeansModelImplementation modelImpl )
+            WebBeansModelImplementation modelImpl)
     {
         List<Set<BindingQualifier>> bindingCollections = 
             new ArrayList<Set<BindingQualifier>>( qualifierAnnotations.size());
@@ -743,7 +761,7 @@ abstract class FieldInjectionPointLogic {
          * One need to handle special case with @Default annotation 
          * in case of specialization. There can be a case 
          * when bean doesn't explicitly declare @Default but 
-         * specialize other beans with several appropriate qualifiers.
+         * specializes other beans with several appropriate qualifiers.
          * In this case original bean will have @Default along with 
          * qualifiers "inherited" from specialized beans.  
          */
@@ -752,23 +770,26 @@ abstract class FieldInjectionPointLogic {
         Set<BindingQualifier> defaultQualifiers = new HashSet<BindingQualifier>();
         for (AnnotationMirror annotationMirror : qualifierAnnotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
-            TypeElement annotationElement = (TypeElement)type.asElement();
-            String annotationFQN = annotationElement.getQualifiedName().toString();
-            PersistentObjectManager<BindingQualifier> manager = modelImpl.getManager( 
-                    annotationFQN );
+            TypeElement annotationElement = (TypeElement) type.asElement();
+            String annotationFQN = annotationElement.getQualifiedName()
+                    .toString();
+            PersistentObjectManager<BindingQualifier> manager = modelImpl
+                    .getManager(annotationFQN);
             Collection<BindingQualifier> bindings = manager.getObjects();
-            if ( annotationFQN.contentEquals( DEFAULT_QUALIFIER_ANNOTATION )){
-                defaultQualifiers.addAll( bindings );
+            if (annotationFQN.contentEquals(DEFAULT_QUALIFIER_ANNOTATION)) {
+                defaultQualifiers.addAll(bindings);
             }
             else {
-                bindingCollections.add( new HashSet<BindingQualifier>( bindings) );
-                if ( hasDefault ){
+                bindingCollections.add(new HashSet<BindingQualifier>(bindings));
+                if (hasDefault) {
                     for (BindingQualifier binding : bindings) {
-                        if ( AnnotationObjectProvider.checkDefault(
-                                binding.getTypeElement(), modelImpl.getHelper()))
+                        if (AnnotationObjectProvider
+                                .checkDefault(binding.getTypeElement(),
+                                        modelImpl.getHelper()))
                         {
-                            defaultQualifiers.add( new BindingQualifier( 
-                                    modelImpl.getHelper(), binding.getTypeElement(), 
+                            defaultQualifiers.add(new BindingQualifier(
+                                    modelImpl.getHelper(), binding
+                                            .getTypeElement(),
                                     DEFAULT_QUALIFIER_ANNOTATION));
                         }
                     }
@@ -813,6 +834,8 @@ abstract class FieldInjectionPointLogic {
     }
     
     private static class InjectionPointDefinitionError extends Exception{
+        private static final long serialVersionUID = -1568276063434281036L;
+
         private InjectionPointDefinitionError(String msg){
             super( msg );
         }
