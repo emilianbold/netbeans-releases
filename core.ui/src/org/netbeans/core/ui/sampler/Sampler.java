@@ -45,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -53,6 +55,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 
 
 abstract class Sampler implements Runnable, ActionListener {
@@ -79,6 +85,11 @@ abstract class Sampler implements Runnable, ActionListener {
     Sampler(String n) {
         name = n;
     }
+    
+    /** Returns the bean to use for sampling.
+     * @return instance of the bean to take thread dumps from
+     */
+    protected abstract ThreadMXBean getThreadMXBean();
 
     /** Allows subclasses to handle created snapshot
      * @param arr the content of the snapshot
@@ -96,6 +107,12 @@ abstract class Sampler implements Runnable, ActionListener {
      */
     protected abstract void cancelTimer();
 
+    /** Methods for displaying progress.
+     */
+    protected abstract void openProgress(int steps);
+    protected abstract void closeProgress();
+    protected abstract void progress(int i);
+    
     private void updateStats(long timestamp) {
         if (laststamp != 0) {
             double diff = (timestamp - laststamp) / 1000000.0;
@@ -115,10 +132,10 @@ abstract class Sampler implements Runnable, ActionListener {
     public synchronized void run() {
         assert !running;
         running = true;
-        final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+        final ThreadMXBean threadBean = getThreadMXBean();
         out = new ByteArrayOutputStream(64 * 1024);
         try {
-            samplesStream = new SamplesOutputStream(out);
+            samplesStream = new SamplesOutputStream(out, this);
         } catch (IOException ex) {
             printStackTrace(ex);
             return;
@@ -193,5 +210,90 @@ abstract class Sampler implements Runnable, ActionListener {
             out = null;
             samplesStream = null;
         }
+    }
+    
+    //
+    // Support for sampling from command line
+    //
+    
+    public static void main(String... args) throws Exception {
+        if (args.length != 2) {
+            System.out.println("Usage: <port> <snapshot.npss>");
+            System.out.println();
+            System.out.println("First of all start your application with following parameters:");
+            System.out.println("  -Dcom.sun.management.jmxremote.authenticate=false");
+            System.out.println("  -Dcom.sun.management.jmxremote.ssl=false");
+            System.out.println("  -Dcom.sun.management.jmxremote.port=<port>");
+            System.out.println("Then you can start this sampler with correct port and file to write snapshot to.");
+            System.exit(1);
+        }
+        
+        String u = args[0];
+        try {
+            u = "service:jmx:rmi:///jndi/rmi://localhost:" + Integer.parseInt(args[0]) + "/jmxrmi";
+        } catch (NumberFormatException ex) {
+            // OK, use args[0]
+        }
+        
+        System.err.println("Connecting to " + u);
+        JMXServiceURL url = new JMXServiceURL(u);
+        JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
+        MBeanServerConnection server = jmxc.getMBeanServerConnection();
+        
+        final ThreadMXBean threadMXBean = ManagementFactory.newPlatformMXBeanProxy(
+            server,ManagementFactory.THREAD_MXBEAN_NAME,ThreadMXBean.class
+        );
+        final File output = new File(args[1]);
+        class CLISampler extends Sampler {
+            CLISampler() {
+                super("");
+            }
+            
+            @Override
+            protected ThreadMXBean getThreadMXBean() {
+                return threadMXBean;
+            }
+
+            @Override
+            protected void saveSnapshot(byte[] arr) throws IOException {
+                FileOutputStream os = new FileOutputStream(output);
+                os.write(arr);
+                os.close();
+            }
+
+            @Override
+            protected void printStackTrace(Throwable ex) {
+                ex.printStackTrace();
+                System.exit(2);
+            }
+
+            @Override
+            protected void cancelTimer() {
+                // nothing
+            }
+
+            @Override
+            protected void openProgress(int steps) {
+            }
+
+            @Override
+            protected void closeProgress() {
+            }
+
+            @Override
+            protected void progress(int i) {
+                System.out.print("#");
+                System.out.flush();
+            }
+        }
+        
+        CLISampler s = new CLISampler();
+        s.run();
+        System.out.println("Press enter to generate sample into " + output);
+        System.in.read();
+        s.actionPerformed(new ActionEvent(s, 0, ""));
+        System.out.println();
+        System.out.println("Sample written to " + output);
+        System.exit(0);
     }
 }

@@ -52,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,6 +61,8 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingWorker;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -223,6 +226,8 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     }
     
     private static final class InternalSampler extends Sampler {
+        private ProgressHandle progress;
+        
         InternalSampler(String thread) {
             super(thread);
         }
@@ -275,6 +280,47 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                 Exceptions.printStackTrace(ex);
             }
         }
+
+        @Override
+        protected ThreadMXBean getThreadMXBean() {
+            return ManagementFactory.getThreadMXBean();
+        }
+
         
+        protected void openProgress(final int steps) {
+            if (EventQueue.isDispatchThread()) {
+                // log warnining
+                return;
+            }
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelfSamplerAction.class, "Save_Progress"));
+                    progress.start(steps);
+                }
+            });
+        }
+        protected void closeProgress() {
+            if (EventQueue.isDispatchThread()) {
+                return;
+            }
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    progress.finish();
+                    progress = null;
+                }
+            });
+        }
+        protected void progress(int i) {
+            if (EventQueue.isDispatchThread()) {
+                return;
+            }
+            if (progress != null) {
+                progress.progress(i);
+            }
+        }
     }
 }
