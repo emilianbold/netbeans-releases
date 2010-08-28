@@ -76,6 +76,10 @@ public class ProcedureNode extends BaseNode {
     private static final String ICONBASE_F = "org/netbeans/modules/db/resources/function.png";
     private static final String ICONBASE_T = "org/netbeans/modules/db/resources/trigger.png";
     private static final String FOLDER = "Procedure"; //NOI18N
+    
+    private static final String DELIMITER = "%%"; // NOI18N
+    private static final String SPACE = " "; // NOI18N
+    private static final String NEW_LINE = "\n"; // NOI18N
 
     /**
      * Create an instance of ProcedureNode.
@@ -221,6 +225,10 @@ public class ProcedureNode extends BaseNode {
         return "";
     }
     
+    public String getDDL() {
+        return "";
+    }
+    
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ProcedureNode.class);
@@ -255,7 +263,7 @@ public class ProcedureNode extends BaseNode {
                 while(rs.next()) {
                     String params = rs.getString("param_list"); // NOI18N
                     String body = rs.getString("body"); // NOI18N
-                    source = "CREATE PROCEDURE " + getName() + '\n' + // NOI18N
+                    source = "PROCEDURE " + getName() + '\n' + // NOI18N
                             '(' + params + ")" + '\n' + // NOI18N
                             body;
                 }
@@ -263,6 +271,24 @@ public class ProcedureNode extends BaseNode {
                 Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
             }
             return source;
+        }
+
+        @Override
+        public boolean isEditSourceSupported() {
+            return true;
+        }
+
+        @Override
+        public String getDDL() {
+            StringBuilder expression = new StringBuilder();
+            // set delimiter
+            expression.append("DELIMITER ").append(DELIMITER).append(NEW_LINE); // NOI18N
+            expression.append("DROP PROCEDURE ").append(getName()).append(SPACE).append(DELIMITER).append(NEW_LINE);
+            expression.append("CREATE ").append(getSource());
+            expression.append(SPACE).append(DELIMITER).append(SPACE).append(NEW_LINE); // NOI18N
+            // unset delimiter
+            expression.append("DELIMITER ; ").append(NEW_LINE); // NOI18N
+            return expression.toString();
         }
 
     }
@@ -297,6 +323,23 @@ public class ProcedureNode extends BaseNode {
                 Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
             }
             return sb.toString();
+        }
+
+        @Override
+        public boolean isEditSourceSupported() {
+            return true;
+        }
+
+        @Override
+        public String getDDL() {
+            StringBuilder expression = new StringBuilder();
+            // set delimiter
+            expression.append("DELIMITER ").append(DELIMITER).append(NEW_LINE); // NOI18N
+            expression.append(getSource());
+            expression.append(SPACE).append(DELIMITER).append(NEW_LINE); // NOI18N
+            // unset delimiter
+            expression.append("DELIMITER ; ").append(NEW_LINE); // NOI18N
+            return expression.toString();
         }
 
     }
