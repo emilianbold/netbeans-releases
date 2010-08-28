@@ -364,7 +364,7 @@ public class SQLEditorSupport extends DataEditorSupport
         final RequestProcessor.Task task = rp.create(executor);
         executor.setTask(task);
         task.schedule(0);
-        if ((sql.toUpperCase().indexOf("CREATE") != -1) && (sql.toUpperCase().indexOf("DROP") != -1)) { // NOI18N
+        if ((sql.toUpperCase().indexOf("CREATE") != -1) || (sql.toUpperCase().indexOf("DROP") != -1)) { // NOI18N
             task.addTaskListener(new TaskListener() {
                 @Override
                 public void taskFinished(Task task) {
