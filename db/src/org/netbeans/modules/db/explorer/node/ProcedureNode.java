@@ -375,19 +375,25 @@ public class ProcedureNode extends BaseNode {
         @Override
         public String getSource() {
             StringBuilder sb = new StringBuilder();
+            String owner = "";
             try {
                 Statement stat = connection.getConnection().createStatement();
                 // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
-                String q = "SELECT TEXT FROM sys.dba_source WHERE name = '" + getName() + "'" // NOI18N
+                String q = "SELECT TEXT, OWNER FROM sys.dba_source WHERE name = '" + getName() + "'" // NOI18N
                         + " ORDER BY LINE"; // NOI18N
                 ResultSet rs = stat.executeQuery(q);
                 while(rs.next()) {
                     sb.append(rs.getString("text")); // NOI18N
+                    owner = rs.getString("owner"); // NOI18N
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
             }
-            return sb.toString();
+            if (connection.getSchema().equalsIgnoreCase(owner)) {
+                return sb.toString();
+            } else {
+                return fqn(sb.toString(), owner);
+            }
         }
 
         @Override
@@ -406,6 +412,19 @@ public class ProcedureNode extends BaseNode {
             // unset delimiter
             expression.append("DELIMITER ; ").append(NEW_LINE); // NOI18N
             return expression.toString();
+        }
+
+        private String fqn(String source, String owner) {
+            String fqSource = source;
+            String toFind = "PROCEDURE "; // NOI18N
+            int nameIdx = source.indexOf(toFind);
+            if (nameIdx != -1) {
+                fqSource = source.substring(0, nameIdx + toFind.length()) +
+                        owner +
+                        '.' + // NOI18N
+                        source.substring(nameIdx + toFind.length()).trim();
+            }
+            return fqSource;
         }
 
     }
