@@ -44,6 +44,7 @@ package org.netbeans.modules.db.explorer.action;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.dlg.ViewProcedureDialog;
 import org.netbeans.modules.db.explorer.node.ProcedureNode;
 import org.netbeans.modules.db.explorer.sql.editor.SQLEditorSupport;
 import org.openide.nodes.Node;
@@ -63,6 +64,14 @@ public class ViewSourceCodeAction extends BaseAction {
     
     @Override
     protected void performAction(final Node[] activatedNodes) {
+        final DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
+        if (connection != null) {
+            ProcedureNode pn = activatedNodes[0].getLookup().lookup(ProcedureNode.class);
+            ViewProcedureDialog.showProcedure(pn.getName(), pn.getParams(), pn.getBody());
+        }
+    }
+
+    protected void performAction2(final Node[] activatedNodes) {
         final DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
         if (connection != null) {
             RequestProcessor.getDefault().post(

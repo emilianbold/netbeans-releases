@@ -221,6 +221,14 @@ public class ProcedureNode extends BaseNode {
         return false;
     }
     
+    public String getParams() {
+        return "";
+    }
+    
+    public String getBody() {
+        return "";
+    }
+
     public String getSource() {
         return "";
     }
@@ -272,6 +280,38 @@ public class ProcedureNode extends BaseNode {
             }
             return source;
         }
+
+        @Override
+        public String getParams() {
+            String params = "";
+            try {
+                Statement stat = connection.getConnection().createStatement();
+                ResultSet rs = stat.executeQuery("SELECT * FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
+                while(rs.next()) {
+                    params = rs.getString("param_list"); // NOI18N
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get params of procedure " + getName());
+            }
+            return params;
+        }
+
+        @Override
+        public String getBody() {
+            String body = "";
+            try {
+                Statement stat = connection.getConnection().createStatement();
+                ResultSet rs = stat.executeQuery("SELECT * FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
+                while(rs.next()) {
+                    body = rs.getString("body"); // NOI18N
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
+            }
+            return body;
+        }
+        
+        
 
         @Override
         public boolean isEditSourceSupported() {
