@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Rob Englander
+ * @author Rob Englander, Jiri Rechtacek
  */
 public class ProcedureNode extends BaseNode {
     private static final String ICONBASE_P = "org/netbeans/modules/db/resources/procedure.png";
@@ -77,7 +77,7 @@ public class ProcedureNode extends BaseNode {
     private static final String ICONBASE_T = "org/netbeans/modules/db/resources/trigger.png";
     private static final String FOLDER = "Procedure"; //NOI18N
     
-    private static final String DELIMITER = "%%"; // NOI18N
+    private static final String DELIMITER = "@@"; // NOI18N
     private static final String SPACE = " "; // NOI18N
     private static final String NEW_LINE = "\n"; // NOI18N
 
@@ -323,6 +323,7 @@ public class ProcedureNode extends BaseNode {
             StringBuilder expression = new StringBuilder();
             // set delimiter
             expression.append("DELIMITER ").append(DELIMITER).append(NEW_LINE); // NOI18N
+            // DDL
             expression.append("DROP PROCEDURE ").append(getName()).append(SPACE).append(DELIMITER).append(NEW_LINE);
             expression.append("CREATE ").append(getSource());
             expression.append(SPACE).append(DELIMITER).append(SPACE).append(NEW_LINE); // NOI18N
@@ -347,6 +348,30 @@ public class ProcedureNode extends BaseNode {
             return true;
         }
 
+        @Override
+        public String getBody() {
+            String source = getSource();
+            String body = "";
+            int beginIdx = source.indexOf("BEGIN"); // NOI18N
+            if (beginIdx != -1) {
+                body = source.substring(beginIdx);
+            }
+            return body;
+        }
+
+        @Override
+        public String getParams() {
+            String source = getSource();
+            String params = "";
+            int beginIdx = source.indexOf("BEGIN"); // NOI18N
+            int lIdx = source.indexOf('('); // NOI18N
+            int rIdx = source.indexOf(')'); // NOI18N
+            if (lIdx != -1 && rIdx != -1 && lIdx < beginIdx) {
+                params = source.substring(lIdx, rIdx + 1);
+            }
+            return params;
+        }
+        
         @Override
         public String getSource() {
             StringBuilder sb = new StringBuilder();
@@ -375,7 +400,8 @@ public class ProcedureNode extends BaseNode {
             StringBuilder expression = new StringBuilder();
             // set delimiter
             expression.append("DELIMITER ").append(DELIMITER).append(NEW_LINE); // NOI18N
-            expression.append(getSource());
+            // DDL
+            expression.append("CREATE OR REPLACE ").append(getSource());
             expression.append(SPACE).append(DELIMITER).append(NEW_LINE); // NOI18N
             // unset delimiter
             expression.append("DELIMITER ; ").append(NEW_LINE); // NOI18N
