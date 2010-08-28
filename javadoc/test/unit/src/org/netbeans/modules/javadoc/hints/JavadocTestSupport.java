@@ -38,7 +38,6 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -48,7 +47,6 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -81,8 +79,11 @@ public abstract class JavadocTestSupport extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), new JavaKit());
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {
+//        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), new JavaKit());
+        SourceUtilsTestUtil.prepareTest(new String[] {
+            "org/netbeans/modules/java/editor/resources/layer.xml"
+        },
+        new Object[] {
             new Pool(),
             new MockMimeLookup(),
         });
