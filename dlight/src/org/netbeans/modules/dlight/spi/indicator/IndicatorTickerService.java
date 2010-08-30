@@ -43,10 +43,9 @@ package org.netbeans.modules.dlight.spi.indicator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 
 /**
  *
@@ -55,105 +54,52 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 final class IndicatorTickerService {
 
     private static final IndicatorTickerService instance = new IndicatorTickerService();
-    private Future tickerService;
-    private boolean started = false;
-    private static final class Lock{};
-    private final Object lock = new Lock();
-    private final Object listenersLock = new Object();
     private final List<TickerListener> listeners = new ArrayList<TickerListener>();
+    private DLightScheduledTask tickerTask;
+    private final Lock lock = new Lock();
 
     private IndicatorTickerService() {
     }
 
     static IndicatorTickerService getInstance() {
-        synchronized(instance.lock){
-            if (!instance.started){
-                instance.startIfNeed();
-            }
-        }
         return instance;
     }
 
-    void notifyListeners() {
-        TickerListener[] ll;
-
-        synchronized (listenersLock) {
-            ll = listeners.toArray(new TickerListener[0]);
-            if (ll.length == 0){
-                return;
-            }
-        }
-
-        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
-
-        // Will do notification in parallel, but wait until all listeners
-        // finish processing of event.
-        for (final TickerListener l : ll) {
-            DLightExecutorService.submit(new Runnable() {
-
-                public void run() {
-                    try {
-                        l.tick();
-                    } finally {
-                        doneFlag.countDown();
-                    }
-                }
-            }, "Notifying " + l); // NOI18N
-        }
-
-        try {
-            doneFlag.await();
-        } catch (InterruptedException ex) {
-        }
-    }
-
-    void startIfNeed() {
-        synchronized (lock) {
-            if (!started) {
-                tickerService = DLightExecutorService.scheduleAtFixedRate(
-                    new Runnable() {
-                        public void run() {
-                            notifyListeners() ;
-                        }
-                    }, 1, TimeUnit.SECONDS, "IndicatorTickerService"); // NOI18N
-                    started = true;
-            }
-        }
-
-    }
-
     void subsribe(TickerListener l) {
-        synchronized (listenersLock) {
-            if (!listeners.contains(l)) {
-                listeners.add(l);
+        synchronized (lock) {
+            listeners.add(l);
+
+            if (tickerTask == null) {
+                tickerTask = DLightExecutorService.scheduleAtFixedRate(
+                        new Notifier(), 1, TimeUnit.SECONDS,
+                        "IndicatorTickerService"); // NOI18N
             }
         }
     }
 
     void unsubscribe(TickerListener l) {
-        synchronized (listenersLock) {
+        synchronized (lock) {
             listeners.remove(l);
-            //stop of there are no any listeners
-            if (listeners.isEmpty()){
-                synchronized(lock){
-                    if (started){
-                        tickerService.cancel(true);
-                        started = false;
-                    }
+        }
+    }
+
+    private class Notifier implements Runnable {
+
+        @Override
+        public void run() {
+            synchronized (lock) {
+                for (TickerListener l : listeners) {
+                    l.tick();
+                }
+
+                if (listeners.isEmpty() && tickerTask != null) {
+                    tickerTask.cancel(1);
+                    tickerTask = null;
                 }
             }
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        synchronized(lock){
-            if (started){
-                tickerService.cancel(true);
-            }
-        }
+    private static final class Lock {
     }
-
-
 }

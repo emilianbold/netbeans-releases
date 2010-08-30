@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -68,37 +67,35 @@ import org.netbeans.modules.dlight.perfan.storage.impl.ExperimentStatistics;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.ThreadsStatistic;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 
 public class MonitorsUpdateService {
 
     private static final Pattern METRIC_LINE_PATTERN = Pattern.compile("^ *([0-9]+(?:,[0-9]*)?) [^<]*$"); // NOI18N
     private static final DecimalFormat METRIC_FORMAT = new DecimalFormat();
+
     static {
         METRIC_FORMAT.getDecimalFormatSymbols().setDecimalSeparator(',');
     }
-
     private static final Metrics LEAK_METRICS = Metrics.constructFrom(
             Arrays.asList(SunStudioDCConfiguration.c_leakSize),
             Arrays.asList(SunStudioDCConfiguration.c_leakSize));
     private static final List<String> LEAK_COLNAMES = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()));
-
     private static final Metrics SYNC_METRICS = Metrics.constructFrom(
             Arrays.asList(SunStudioDCConfiguration.c_eSync),
             Arrays.asList(SunStudioDCConfiguration.c_eSync));
     private static final List<String> SYNC_COLNAMES = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()));
-
     private static final List<String> DATARACE_COLNAMES = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_Datarace.getColumnName()));
-
     private static final List<String> DEADLOCK_COLNAMES = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_Deadlocks.getColumnName()));
-
     private static final Logger log = DLightLogger.getLogger(MonitorsUpdateService.class);
     private final SunStudioDataCollector ssdc;
     private final ExecutionEnvironment execEnv;
@@ -180,6 +177,7 @@ public class MonitorsUpdateService {
             requestsQueue.offer(new Object());
         }
 
+        @Override
         public void run() {
             if (erprintSession != null) {
                 throw new IllegalStateException("Updater can be started only once!"); // NOI18N
@@ -187,7 +185,9 @@ public class MonitorsUpdateService {
 
             erprintSession = ErprintSession.createNew(execEnv, sproHome, experimentDir, ssdc);
 
-            final Future<?> notifyer = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
+            final DLightScheduledTask notifyer = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
+
+                @Override
                 public void run() {
                     if (!isStopped) {
                         requestsQueue.offer(new Object());
@@ -280,15 +280,15 @@ public class MonitorsUpdateService {
                         }
 
                     } catch (Throwable ex) {
-                        ex.printStackTrace();
-                        log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService: " + ex.toString());
+                        log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService: {0}", ex.toString()); // NOI18N
+                        Exceptions.printStackTrace(ex);
                     } finally {
                         ssdc.updateIndicators(newData);
                     }
                 }
             } finally {
                 if (notifyer != null) {
-                    notifyer.cancel(false);
+                    notifyer.cancel(1);
                 }
 
                 if (erprintSession != null) {
@@ -314,6 +314,5 @@ public class MonitorsUpdateService {
             }
             return sum;
         }
-
     }
 }

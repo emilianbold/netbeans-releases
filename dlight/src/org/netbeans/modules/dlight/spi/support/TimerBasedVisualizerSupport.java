@@ -43,17 +43,18 @@ package org.netbeans.modules.dlight.spi.support;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 
 public final class TimerBasedVisualizerSupport implements ComponentListener {
 
+    private static final Lock lock = new Lock();
     private final Visualizer visualizer;
     private final TimeDuration refreshInterval;
-    private Future future;
+    private DLightScheduledTask task;
     private boolean isShown = true;
 
     public TimerBasedVisualizerSupport(final Visualizer visualizer, final TimeDuration refreshInterval) {
@@ -61,32 +62,40 @@ public final class TimerBasedVisualizerSupport implements ComponentListener {
         this.refreshInterval = refreshInterval;
     }
 
-    private final void startTimer() {
-        if (future != null && !future.isCancelled()) {
-            return;
-        }
-
-        future = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
-
-            public void run() {
-                visualizer.refresh();
+    private void startTimer() {
+        synchronized (lock) {
+            if (task != null) {
+                return;
             }
-        }, refreshInterval.getValueIn(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS,
-                "TimerBasedVisualizerSupport: timer for " + visualizer.toString()); // NOI18N
-    }
 
-    private final void stopTimer() {
-        if (future != null) {
-            future.cancel(false);
+            task = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
+
+                @Override
+                public void run() {
+                    visualizer.refresh();
+                }
+            }, refreshInterval.getValueIn(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS,
+                    "TimerBasedVisualizerSupport: timer for " + visualizer.toString()); // NOI18N
         }
     }
 
+    private void stopTimer() {
+        synchronized (lock) {
+            if (task != null) {
+                task.cancel(refreshInterval.getValueIn(TimeUnit.SECONDS));
+            }
+        }
+    }
+
+    @Override
     public void componentResized(ComponentEvent e) {
     }
 
+    @Override
     public void componentMoved(ComponentEvent e) {
     }
 
+    @Override
     public void componentShown(ComponentEvent e) {
         if (isShown) {
             return;
@@ -100,6 +109,7 @@ public final class TimerBasedVisualizerSupport implements ComponentListener {
         }
     }
 
+    @Override
     public void componentHidden(ComponentEvent e) {
         stopTimer();
         isShown = false;
@@ -111,5 +121,8 @@ public final class TimerBasedVisualizerSupport implements ComponentListener {
 
     public void stop() {
         stopTimer();
+    }
+
+    private static final class Lock {
     }
 }
