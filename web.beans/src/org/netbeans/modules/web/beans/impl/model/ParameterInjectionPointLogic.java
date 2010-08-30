@@ -58,7 +58,6 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
@@ -84,21 +83,17 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
             DeclaredType parentType , WebBeansModelImplementation model) 
     {
         DeclaredType parent = parentType;
-        if ( parent == null ){
-            TypeElement type = 
-                model.getHelper().getCompilationController().getElementUtilities().
-                    enclosingTypeElement(element);
-            boolean isDeclaredType = ( type.asType() instanceof DeclaredType );
-            if ( isDeclaredType ){
-                parent = (DeclaredType)type.asType();
-            }
-            if ( !isDeclaredType) {
-                return new DefinitionErrorResult(element,  parentType, 
-                        NbBundle.getMessage(WebBeansModelProviderImpl.class, 
-                                "ERR_BadParent", element.getSimpleName(),
-                                 type!= null? type.toString(): null));
-            }
+        try {
+            parent = getParent(element, parentType, model);
         }
+        catch (DefinitionError e) {
+            TypeElement type = e.getElement();
+            return new DefinitionErrorResult(element,  parentType, 
+                    NbBundle.getMessage(WebBeansModelProviderImpl.class, 
+                            "ERR_BadParent", element.getSimpleName(),
+                             type!= null? type.toString(): null));
+        }
+        
         ExecutableElement parentMethod = (ExecutableElement)element.
             getEnclosingElement();
         ExecutableType methodType = (ExecutableType)model.getHelper().
@@ -188,28 +183,23 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         WebBeansModelImplementation impl = WebBeansModelProviderImpl.
             getImplementation( modelImpl );
         DeclaredType parent = parentType;
-        if ( parent == null ){
-            TypeElement type = 
-                impl.getHelper().getCompilationController().getElementUtilities().
-                    enclosingTypeElement(element);
-            
-            
-            boolean isDeclaredType = ( type.asType() instanceof DeclaredType );
-            if ( isDeclaredType ){
-                parent = (DeclaredType)type.asType();
-            }
-            if ( !isDeclaredType) {
-                return new DefinitionErrorResult(element,  parentType, 
-                        NbBundle.getMessage(WebBeansModelProviderImpl.class, 
-                                "ERR_BadParent", element.getSimpleName(),
-                                 type!= null? type.toString(): null));
-            }
+        try {
+            parent = getParent(element, parentType, impl);
         }
+        catch (DefinitionError e) {
+            TypeElement type = e.getElement();
+            return new DefinitionErrorResult(element,  parentType, 
+                    NbBundle.getMessage(WebBeansModelProviderImpl.class, 
+                            "ERR_BadParent", element.getSimpleName(),
+                             type!= null? type.toString(): null));
+        }
+        
         TypeMirror elementType = getParameterType( element , parent , 
                 impl.getHelper().getCompilationController(),
                 INSTANCE_INTERFACE);
         Result result = doFindVariableInjectable(element, elementType, 
                 impl, true);
+        // TODO: return appropriate result based on <code>result</code>
         return null;
     }
 
@@ -229,7 +219,9 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
             try {
                 return isInjectionPoint(element, impl);
             }
-            catch ( InjectionPointDefinitionError e ){
+            catch ( org.netbeans.modules.web.beans.api.model.
+                    InjectionPointDefinitionError e )
+            {
                 return false;
             }
         }
