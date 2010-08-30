@@ -452,15 +452,21 @@ public class HtmlCompletionQuery extends UserTask {
                     argName = argName.toLowerCase(Locale.ENGLISH);
                 }
 
-                DTD.Element tag = node.getDTDElement();
-                DTD.Attribute arg = tag == null ? null : tag.getAttribute(argName);
+                HtmlTag tag = htmlResult.getTag(node.name());
+                if(tag == null) {
+                    return null;
+                }
+                HtmlTagAttribute attribute = tag.getAttribute(argName);
+                if(attribute == null) {
+                    return null;
+                }
 
                 result = new ArrayList<CompletionItem>();
 
                 if (id != HTMLTokenId.VALUE) {
                     anchor = offset;
-                    if (arg != null) {
-                        result.addAll(translateValues(anchor, arg.getValueList("")));
+                    if (attribute != null) {
+                        result.addAll(translateValues(anchor, attribute.getPossibleValues()));
                         ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
                         if (valuesCompletion != null) {
                             result.addAll(valuesCompletion.getItems(file, offset, ""));
@@ -486,8 +492,8 @@ public class HtmlCompletionQuery extends UserTask {
 
                     anchor = documentItemOffset + (quotationChar != null ? 1 : 0);
 
-                    if (arg != null) {
-                        result.addAll(translateValues(documentItemOffset, arg.getValueList(prefix), quotationChar));
+                    if (attribute != null) {
+                        result.addAll(translateValues(documentItemOffset, filter(attribute.getPossibleValues(), prefix), quotationChar));
                         ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
                         if (valuesCompletion != null) {
                             result.addAll(valuesCompletion.getItems(file, offset, prefix));
@@ -610,6 +616,17 @@ public class HtmlCompletionQuery extends UserTask {
 
     }
 
+    private Collection<String> filter(Collection<?> col, String prefix) {
+        Collection<String> filtered = new ArrayList<String>();
+        for(Object o : col) {
+            String s = o.toString();
+            if(s.startsWith(prefix)) {
+                filtered.add(s);
+            }
+        }
+        return filtered;
+    }
+
     private Collection<HtmlTagAttribute> filterAttributes(Collection<HtmlTagAttribute> attrs, String prefix) {
         Collection<HtmlTagAttribute> filtered = new ArrayList<HtmlTagAttribute>();
         for(HtmlTagAttribute ta : attrs) {
@@ -713,11 +730,11 @@ public class HtmlCompletionQuery extends UserTask {
         return result;
     }
 
-    List<HtmlCompletionItem> translateValues(int offset, List values) {
+    Collection<HtmlCompletionItem> translateValues(int offset, Collection<String> values) {
         return translateValues(offset, values, null);
     }
 
-    List<HtmlCompletionItem> translateValues(int offset, List values, String quotationChar) {
+    Collection<HtmlCompletionItem> translateValues(int offset, Collection<String> values, String quotationChar) {
         if (values == null) {
             return Collections.emptyList();
         }
@@ -725,8 +742,8 @@ public class HtmlCompletionQuery extends UserTask {
         if (quotationChar != null) {
             offset++; //shift the offset after the quotation
         }
-        for (Iterator i = values.iterator(); i.hasNext();) {
-            result.add(HtmlCompletionItem.createAttributeValue(((DTD.Value) i.next()).getName(), offset));
+        for (String value : values) {
+            result.add(HtmlCompletionItem.createAttributeValue(value, offset));
         }
         return result;
     }

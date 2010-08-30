@@ -157,6 +157,10 @@ public class HtmlTagProvider {
             return false;
         }
 
+        public HtmlTagAttribute getAttribute(String name) {
+            return getHtmlTagAttribute(name);
+        }
+
     }
 
     private static class SimpleHtmlTagAttribute implements HtmlTagAttribute {

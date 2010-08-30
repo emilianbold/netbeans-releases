@@ -145,6 +145,15 @@ public class DTD2HtmlTag {
         public boolean hasOptionalEndTag() {
             return element.hasOptionalEnd();
         }
+
+        @Override
+        public HtmlTagAttribute getAttribute(String name) {
+            Attribute attr = element.getAttribute(name);
+            if(attr == null) {
+                return null;
+            }
+            return getHtmlTagAttribute(attr);
+        }
     }
 
      private static class Attribute2HtmlTagAttribute implements HtmlTagAttribute {
@@ -179,10 +188,17 @@ public class DTD2HtmlTag {
             }
         }
 
-        //TODO implement!
         @Override
         public Collection<String> getPossibleValues() {
-            return Collections.emptyList();
+            Collection<DTD.Value> values = attr.getValueList(null);
+            if(values == null) {
+                return Collections.emptyList();
+            }
+            Collection<String> res = new LinkedList<String>();
+            for(DTD.Value v : values) {
+                res.add(v.getName());
+            }
+            return res;
         }
 
     }

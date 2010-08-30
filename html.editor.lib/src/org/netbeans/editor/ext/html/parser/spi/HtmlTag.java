@@ -54,6 +54,8 @@ public interface HtmlTag {
 
     public Collection<HtmlTagAttribute> getAttributes();
 
+    public HtmlTagAttribute getAttribute(String name);
+
     public boolean isEmpty(); //forbidden end tag
 
     public boolean hasOptionalOpenTag();
