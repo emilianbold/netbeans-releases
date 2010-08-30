@@ -152,7 +152,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private final WLProductProperties productProperties = new WLProductProperties(this);
 
-    private final WLMutableState mutableState;
+    private final WLSharedState mutableState;
 
     private final boolean disconnected;
 
@@ -175,7 +175,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private boolean initialized;
 
     public WLDeploymentManager(WLDeploymentFactory factory, String uri,
-            String host, String port, boolean disconnected, WLMutableState mutableState) {
+            String host, String port, boolean disconnected, WLSharedState mutableState) {
         this.factory = factory;
         this.uri = uri;
         this.host = host;

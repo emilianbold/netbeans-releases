@@ -58,7 +58,7 @@ import org.openide.util.ChangeSupport;
  *
  * @author Petr Hejl
  */
-public class WLMutableState {
+public class WLSharedState {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -73,7 +73,7 @@ public class WLMutableState {
     /* <i>GuardedBy("this")</i> */
     private Process serverProcess;
 
-    public WLMutableState(InstanceProperties ip) {
+    public WLSharedState(InstanceProperties ip) {
         this.ip = ip;
     }
 
