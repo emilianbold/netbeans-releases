@@ -43,7 +43,6 @@ package org.netbeans.modules.dlight.spi.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
@@ -53,6 +52,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 
 public final class TimerTicker
         extends IndicatorDataProvider<TimerIDPConfiguration>
@@ -61,7 +61,7 @@ public final class TimerTicker
     private static final List<DataTableMetadata> metadata;
     private static final List<String> columnNames;
     private long startTime = 0;
-    private Future<?> tickerService;
+    private DLightScheduledTask tickerTask;
 
     static {
         DataTableMetadata tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
@@ -77,15 +77,15 @@ public final class TimerTicker
     @Override
     protected synchronized void targetStarted(DLightTarget target) {
         resetIndicators();
-        tickerService = DLightExecutorService.scheduleAtFixedRate(
+        tickerTask = DLightExecutorService.scheduleAtFixedRate(
                 this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
         startTime = System.currentTimeMillis();
     }
 
     @Override
     protected synchronized void targetFinished(DLightTarget target) {
-        tickerService.cancel(true);
-        tickerService = null;
+        tickerTask.cancel(1);
+        tickerTask = null;
     }
 
     @Override

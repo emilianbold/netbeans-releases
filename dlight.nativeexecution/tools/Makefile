@@ -48,7 +48,10 @@ testit :sh= uname -s
 CFLAGS-Linux := -fPIC
 CFLAGS-SunOS := -fPIC
 CFLAGS-Mac_OS_X := -fPIC
+LDFLAGS-SunOS := -lposix4
 FLAG64:=$(shell (echo ${PLATFORM_DIR} | grep 64 >/dev/null && echo -m64) || echo -m32)
+
+LDFLAGS := $(LDFLAGS-$(OSFAMILY))
 
 DIST=../release/bin/nativeexecution
 BUILD=./build
@@ -67,7 +70,7 @@ pty_open: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
 sigqueue: init
-	gcc ${CFLAGS} ${FLAG64} -lposix4 -o ${APP_PATH}/$@ $@.c
+	gcc ${CFLAGS} ${FLAG64} ${LDFLAGS} -o ${APP_PATH}/$@ $@.c
 
 clean:
 	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}
