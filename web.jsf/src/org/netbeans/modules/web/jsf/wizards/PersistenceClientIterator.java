@@ -151,6 +151,8 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final FileObject javaPackageRoot = (FileObject)wizard.getProperty(WizardProperties.JAVA_PACKAGE_ROOT_FILE_OBJECT);
         final String jpaControllerPkg = (String) wizard.getProperty(WizardProperties.JPA_CLASSES_PACKAGE);
         final String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        final FileObject resourcePackageRoot = (sgs.length > 0) ? sgs[0].getRootFolder() : javaPackageRoot;
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         final boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
 
@@ -217,7 +219,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                                 Sources srcs = ProjectUtils.getSources(project);
                                 SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
                                 FileObject webRoot = sgWeb[0].getRootFolder();
-                                generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot, bundleName, javaPackageRoot);
+                                generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot, bundleName, javaPackageRoot, resourcePackageRoot);
                                 PersistenceUtils.logUsage(PersistenceClientIterator.class, "USG_PERSISTENCE_JSF", new Object[]{entities.size(), preferredLanguage});
                             } else {
                                 generateJsfControllers(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
@@ -427,7 +429,8 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             int progressIndex,
             FileObject webRoot,
             String bundleName,
-            FileObject javaPackageRoot) throws IOException {
+            FileObject javaPackageRoot,
+            FileObject resourcePackageRoot) throws IOException {
         String progressMsg;
 
         //copy util classes
@@ -540,9 +543,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         params.put("entities", bundleData);
         params.put("comment", Boolean.FALSE);
         String bundleFileName = getBundleFileName(bundleName);
-        FileObject target = javaPackageRoot.getFileObject(bundleFileName);
+        FileObject target = resourcePackageRoot.getFileObject(bundleFileName);
         if (target == null) {
-            target = FileUtil.createData(javaPackageRoot, bundleFileName);
+            target = FileUtil.createData(resourcePackageRoot, bundleFileName);
         }
         JSFPaletteUtilities.expandJSFTemplate(template, params, target);
 
