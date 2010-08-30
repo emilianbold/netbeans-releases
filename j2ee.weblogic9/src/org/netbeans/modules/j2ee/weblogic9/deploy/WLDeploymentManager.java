@@ -94,6 +94,8 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
@@ -163,6 +165,15 @@ public class WLDeploymentManager implements DeploymentManager2 {
     /* GuardedBy("this") */
     private DeploymentManager manager;
 
+    /* GuardedBy("this") */
+    private Version serverVersion;
+
+    /* GuardedBy("this") */
+    private boolean webProfile;
+
+    /* GuardedBy("this") */
+    private boolean initialized;
+
     public WLDeploymentManager(WLDeploymentFactory factory, String uri,
             String host, String port, boolean disconnected, WLMutableState mutableState) {
         this.factory = factory;
@@ -194,6 +205,27 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return port;
     }
 
+    @CheckForNull
+    public synchronized Version getServerVersion() {
+        init();
+        return serverVersion;
+    }
+
+    public synchronized boolean isWebProfile() {
+        init();
+        return webProfile;
+    }
+
+    /**
+     * Returns the InstanceProperties object for the current server instance.
+     */
+    public synchronized InstanceProperties getInstanceProperties() {
+        if (instanceProperties == null) {
+            instanceProperties = InstanceProperties.getInstanceProperties(uri);
+        }
+        return instanceProperties;
+    }
+
     public void addDomainChangeListener(ChangeListener listener) {
         mutableState.addDomainChangeListener(listener);
     }
@@ -210,19 +242,24 @@ public class WLDeploymentManager implements DeploymentManager2 {
         mutableState.setRestartNeeded(restartNeeded);
     }
 
-    /**
-     * Returns the InstanceProperties object for the current server instance.
-     */
-    public final synchronized InstanceProperties getInstanceProperties() {
-        if (instanceProperties == null) {
-            this.instanceProperties = InstanceProperties.getInstanceProperties(uri);
+    public Process getServerProcess() {
+        return mutableState.getServerProcess();
+    }
 
-        }
-        return instanceProperties;
+    public synchronized void setServerProcess(Process serverProcess) {
+        mutableState.setServerProcess(serverProcess);
     }
 
     public WLProductProperties getProductProperties() {
         return productProperties;
+    }
+
+    private synchronized void init() {
+        if (initialized) {
+            return;
+        }
+        serverVersion = WLPluginProperties.getServerVersion(WLPluginProperties.getServerRoot(this, true));
+        webProfile = WLPluginProperties.isWebProfile(WLPluginProperties.getServerRoot(this, true));
     }
 
     private synchronized ClassLoader getWLClassLoader() {

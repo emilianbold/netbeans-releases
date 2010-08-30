@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLMutableState;
 import org.openide.util.NbBundle;
@@ -68,6 +69,10 @@ public class WLDeploymentFactory implements DeploymentFactory {
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
 
     public static final int DEFAULT_PORT = 7001;
+
+    public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
+
+    public static final Version VERSION_11 = Version.fromJsr277NotationWithFallback("11"); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentFactory.class.getName());
 

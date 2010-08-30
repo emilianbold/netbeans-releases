@@ -113,6 +113,7 @@ public final class WLPluginProperties {
     public static final String ADMIN_SERVER_NAME= "adminName";      // NOI18N
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
     public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
+    public static final String DOMAIN_VERSION = "domainVersion";  // NOI18N
     
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N
@@ -233,6 +234,18 @@ public final class WLPluginProperties {
 
     @CheckForNull
     public static File getServerLibDirectory(WLDeploymentManager manager, boolean fallback) {
+        File server = getServerRoot(manager, fallback);
+        if (server != null) {
+            File serverLib = new File(server, "server" + File.separator + "lib"); // NOI18N
+            if (serverLib.exists() && serverLib.isDirectory()) {
+                return serverLib;
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    public static File getServerRoot(WLDeploymentManager manager, boolean fallback) {
         String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         // if serverRoot is null, then we are in a server instance registration process, thus this call
         // is made from InstanceProperties creation -> WLPluginProperties singleton contains
@@ -241,9 +254,9 @@ public final class WLPluginProperties {
             server = WLPluginProperties.getLastServerRoot();
         }
         if (server != null) {
-            File serverLib = new File(new File(server), "server" + File.separator + "lib"); // NOI18N
-            if (serverLib.exists() && serverLib.isDirectory()) {
-                return serverLib;
+            File serverFile = new File(server);
+            if (serverFile.exists() && serverFile.isDirectory()) {
+                return serverFile;
             }
         }
         return null;
@@ -315,7 +328,7 @@ public final class WLPluginProperties {
      * Method implementation should be extended for additional properties. 
      * return server configuration properties 
      */
-    public static Properties getDomainProperties( String domainPath ) {
+    public static Properties getDomainProperties(String domainPath) {
         Properties properties = new Properties();
         String configPath = domainPath + "/config/config.xml"; // NOI18N
 
@@ -327,9 +340,9 @@ public final class WLPluginProperties {
             // open the stream from the instances config file
             File config = new File(configPath);
             if ( !config.exists()){
-                Logger.getLogger("global").log(Level.INFO, "Domain config file " +
-                		"is not found. Probavly server configuration was " +
-                		"changed externally"); // NOI18N
+                LOGGER.log(Level.FINE, "Domain config file "
+                        + "is not found. Probably server configuration was "
+                        + "changed externally"); // NOI18N
                 return properties;
             }
             inputStream = new FileInputStream(config);
@@ -350,8 +363,10 @@ public final class WLPluginProperties {
                 if ("name".equals(child.getNodeName())) {
                     String domainName = child.getFirstChild().getNodeValue();
                     properties.put(DOMAIN_NAME, domainName);
-                }
-                else if ("production-mode-enabled".equals(child.getNodeName())) {
+                } else if ("domain-version".equals(child.getNodeName())) {
+                    String domainVersion = child.getFirstChild().getNodeValue();
+                    properties.put(DOMAIN_VERSION, domainVersion);
+                } else if ("production-mode-enabled".equals(child.getNodeName())) {
                     String isEnabled = child.getFirstChild().getNodeValue();
                     properties.put(PRODUCTION_MODE, "true".equals( isEnabled ));
                     
@@ -675,7 +690,7 @@ public final class WLPluginProperties {
         return new File[] {weblogicJar};
     }
 
-    public static Version getVersion(File serverRoot) {
+    public static Version getServerVersion(File serverRoot) {
         File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
         if (!weblogicJar.exists()) {
             return null;
@@ -707,13 +722,14 @@ public final class WLPluginProperties {
         return null;
     }
 
-    public static String getWeblogicDomainVersion(String domainRoot) {
+    public static Version getDomainVersion(InstanceProperties props) {
         // Domain config file
-        File config = new File(domainRoot, CONFIG_XML);
+        File config = getDomainConfigFile(props);
 
         // Check if the file exists
-        if (!config.exists())
+        if (config == null || !config.exists()) {
             return null;
+        }
 
         try {
             InputSource source = new InputSource(new FileInputStream(config));
@@ -721,18 +737,50 @@ public final class WLPluginProperties {
 
             // Retrieve domain version
             if (d.getElementsByTagName("domain-version").getLength() > 0) {
-                return d.getElementsByTagName("domain-version").item(0).getTextContent();
+                String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
+                return  strVersion != null ? Version.fromJsr277NotationWithFallback(strVersion) : null;
             }
 
         } catch(FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
         } catch(IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
         } catch(SAXException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
         }
 
         return null;
+    }
+
+    public static boolean isWebProfile(File serverRoot) {
+        File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
+        if (!weblogicJar.exists()) {
+            return false;
+        }
+        try {
+            // JarInputStream cannot be used due to problem in weblogic.jar in Oracle Weblogic Server 10.3
+            JarFile jar = new JarFile(weblogicJar);
+            try {
+                Manifest manifest = jar.getManifest();
+                String implementationTitle = null;
+                if (manifest != null) {
+                    implementationTitle = manifest.getMainAttributes()
+                            .getValue("Implementation-Title"); // NOI18N
+                }
+                if (implementationTitle != null) { // NOI18N
+                    return implementationTitle.contains("WebProfile"); // NOI18N
+                }
+            } finally {
+                try {
+                    jar.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINEST, null, ex);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, null, e);
+        }
+        return false;
     }
 
     private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {

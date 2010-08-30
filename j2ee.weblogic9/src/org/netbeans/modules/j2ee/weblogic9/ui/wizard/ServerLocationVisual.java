@@ -120,7 +120,7 @@ public class ServerLocationVisual extends JPanel {
         }
         location = serverRoot.getPath();
 
-        Version version = WLPluginProperties.getVersion(serverRoot);
+        Version version = WLPluginProperties.getServerVersion(serverRoot);
 
         if (!WLPluginProperties.isSupportedVersion(version)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_VERSION");  // NOI18N
@@ -139,6 +139,7 @@ public class ServerLocationVisual extends JPanel {
 
         // set the server root in the parent instantiating iterator
         instantiatingIterator.setServerRoot(location);
+        instantiatingIterator.setServerVersion(version);
 
         // everything seems ok
         return true;

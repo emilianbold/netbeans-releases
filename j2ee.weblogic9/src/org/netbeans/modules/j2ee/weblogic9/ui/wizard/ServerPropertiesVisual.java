@@ -44,19 +44,25 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -68,18 +74,15 @@ import org.openide.util.NbBundle;
  * the server. Here user should choose among the the existing local instances,
  * or enter the host/port/username/password conbination for a remote one
  *
- * @author Kirill Sorokin
  * @author Petr Hejl
  */
 public class ServerPropertiesVisual extends javax.swing.JPanel {
-
-    private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
 
     private transient WLInstantiatingIterator instantiatingIterator;
 
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
-    private boolean isProductionModeEnabled;
+    private final List<Instance> instances = new ArrayList<Instance>();
     
     /**
      * Creates a new instance of the ServerPropertiesVisual. It initializes all
@@ -100,6 +103,35 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 ServerPropertiesPanel.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
 
         initComponents();
+
+        localInstancesCombo.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                fireChangeEvent();
+            }
+        });
+        localInstancesCombo.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fireChangeEvent();
+            }
+        });
+        usernameField.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                fireChangeEvent();
+            }
+        });
+        passwordField.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                fireChangeEvent();
+            }
+        });
     }
     
     public boolean valid(WizardDescriptor wizardDescriptor) {
@@ -108,59 +140,70 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
+
+        // perhaps we could use just strings in combo
+        // not sure about the domain with same name - use directory ?
+        Object item = localInstancesCombo.getEditor().getItem();
+        Instance instance = null;
+        if (item instanceof Instance) {
+            instance = (Instance) item;
+        } else {
+            instance = getServerInstance(item.toString().trim());
+        }
+        if (instance == null) {
+            String value = item.toString().trim();
+            for (Instance inst : instances) {
+                if (value.equals(inst.getDomainName())) {
+                    instance = inst;
+                    break;
+                }
+            }
+        }
+
         // check the profile root directory for validity
-        if (!isValidDomainRoot(domainPathField.getText())) {
+        if (instance == null || !isValidDomainRoot(instance.getDomainPath())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
             return false;
         }
 
-        if (InstanceProperties.getInstanceProperties(getUrl()) != null) {
+        if (instance != null && InstanceProperties.getInstanceProperties(getUrl(instance)) != null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
             return false;
         }
 
-        // check the host field (not empty)
-        if (hostField.getText().trim().length() < 1) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_HOST"))); // NOI18N
-        }
-
-        // check the port field (not empty and a positive integer)
-        if (portField.getText().trim().length() < 1) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PORT"))); // NOI18N
-        }
-        if (!portField.getText().trim().matches("[0-9]+")) {  // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_PORT"))); // NOI18N
+        if (instance != null && instance.getDomainVersion() != null
+                && instantiatingIterator.getServerVersion() != null
+                && !instantiatingIterator.getServerVersion().equals(instance.getDomainVersion())) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
+                            ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
         }
         
-        if ( isProductionModeEnabled ){
+        if (instance != null && instance.isProductionModeEnabled()){
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
                             ServerPropertiesVisual.class, "WARN_PRODUCTION_MODE"))); // NOI18N
         }
 
-        Instance item = (Instance) localInstancesCombo.getSelectedItem();
         // show a hint for sample domain
-        if (item != null && item.getName().startsWith("examples")) { // NOI18N
+        if (instance != null && instance.getName().startsWith("examples")) { // NOI18N
             if (passwordField.getPassword().length <= 0) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                         WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
             }
         }
 
-        if (item != null) {
+        if (instance != null) {
             // save the data to the parent instantiating iterator
-            instantiatingIterator.setUrl(getUrl());
-            instantiatingIterator.setDomainRoot(domainPathField.getText());
+            instantiatingIterator.setUrl(getUrl(instance));
+            instantiatingIterator.setDomainRoot(instance.getDomainPath());
             instantiatingIterator.setUsername(usernameField.getText());
             instantiatingIterator.setPassword(new String(passwordField.getPassword()));
-            instantiatingIterator.setPort(portField.getText().trim());
-            instantiatingIterator.setDomainName(item.getDomainName());
-            instantiatingIterator.setHost(hostField.getText().trim());
+            instantiatingIterator.setPort(instance.getPort());
+            instantiatingIterator.setDomainName(instance.getDomainName());
+            instantiatingIterator.setHost(instance.getPort());
             // everything seems ok
         } else {
             // TODO message or something similar
@@ -169,10 +212,10 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         return true;
     }
 
-    private String getUrl() {
-        return WLDeploymentFactory.URI_PREFIX + hostField.getText()
-                + ":" + portField.getText() + ":" + instantiatingIterator.getServerRoot() // NOI18N;
-                + ":" + domainPathField.getText(); // NOI18N;
+    private String getUrl(Instance instance) {
+        return WLDeploymentFactory.URI_PREFIX + instance.getHost()
+                + ":" + instance.getPort() + ":" + instantiatingIterator.getServerRoot() // NOI18N;
+                + ":" + instance.getDomainPath(); // NOI18N;
     }
 
     /**
@@ -235,55 +278,54 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
         // for each domain get the list of instances
         for (int i = 0; i < domains.length; i++) {
-            Properties properties = WLPluginProperties.getDomainProperties(domains[i]);
-            String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
-            String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
-            String host = properties.getProperty(WLPluginProperties.HOST_ATTR );
-            String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME );
-            Boolean isProductionMode = (Boolean)properties.get(
-                    WLPluginProperties.PRODUCTION_MODE);
-            if ((name != null) && (!name.equals(""))) { // NOI18N
-                // address and port have minOccurs=0 and are missing in 90
-                // examples server
-                port = (port == null || port.equals("")) // NOI18N
-                ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
-                        : port;
-                host = (host == null || host.equals("")) ? "localhost" // NOI18N
-                        : host;
-                result.add(new Instance(name, host, port, domains[i], domainName,
-                        isProductionMode != null && isProductionMode ));
+            Instance localInstance = getServerInstance(domains[i]);
+            if (localInstance != null) {
+                result.add(localInstance);
             }
         }
 
         // convert the vector to an array and return
         return result;
     }
+    
+    private Instance getServerInstance(String domainPath) {
+        Properties properties = WLPluginProperties.getDomainProperties(domainPath);
+        if (properties.isEmpty()) {
+            return null;
+        }
+
+        String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
+        String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
+        String host = properties.getProperty(WLPluginProperties.HOST_ATTR);
+        String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
+        String versionString = properties.getProperty(WLPluginProperties.DOMAIN_VERSION);
+        Version domainVersion = versionString != null ? Version.fromJsr277NotationWithFallback(versionString) : null;
+
+        Boolean isProductionMode = (Boolean)properties.get(
+                WLPluginProperties.PRODUCTION_MODE);
+        if ((name != null) && (!name.equals(""))) { // NOI18N
+            // address and port have minOccurs=0 and are missing in 90
+            // examples server
+            port = (port == null || port.equals("")) // NOI18N
+            ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
+                    : port;
+            host = (host == null || host.equals("")) ? "localhost" // NOI18N
+                    : host;
+            return new Instance(name, host, port, domainPath, domainName, domainVersion,
+                    isProductionMode != null && isProductionMode);
+        }
+        return null;
+    }
+
 
     /**
      * Updates the local instances combobox model with the fresh local
      * instances list
      */
     public void updateInstancesList() {
-        localInstancesCombo.setModel(new InstancesModel(getServerInstances()));
-        updateInstanceInfo();
-    }
-
-    /**
-     * Updates the selected local instance information, i.e. profile path,
-     * host, port.
-     */
-    private void updateInstanceInfo() {
-        // get the selected local instance
-        Instance instance = (Instance) localInstancesCombo.getSelectedItem();
-
-        if (instance != null) {
-            // set the fields' values
-            domainPathField.setText(instance.getDomainPath());
-            hostField.setText(instance.getHost());
-            portField.setText(instance.getPort());
-            isProductionModeEnabled  = instance.isProductionModeEnabled();
-        }
-
+        instances.clear();
+        instances.addAll(getServerInstances());
+        localInstancesCombo.setModel(new DefaultComboBoxModel(instances.toArray()));
     }
 
     /**
@@ -319,164 +361,113 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        UpdateListener updateListener = new UpdateListener();
         localInstancesLabel = new javax.swing.JLabel();
-        localInstancesCombo = new javax.swing.JComboBox(new InstancesModel(getServerInstances()));
-        domainPathLabel = new javax.swing.JLabel();
-        domainPathField = new javax.swing.JTextField();
-        hostLabel = new javax.swing.JLabel();
-        hostField = new javax.swing.JTextField();
-        portLabel = new javax.swing.JLabel();
-        portField = new javax.swing.JTextField();
+        localInstancesCombo = new javax.swing.JComboBox(new javax.swing.DefaultComboBoxModel(getServerInstances().toArray()));
         usernameLabel = new javax.swing.JLabel();
         usernameField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
-
-        setLayout(new java.awt.BorderLayout());
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+        browseButton = new javax.swing.JButton();
+        explanationLabel = new javax.swing.JLabel();
 
         localInstancesLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         localInstancesLabel.setLabelFor(localInstancesCombo);
         org.openide.awt.Mnemonics.setLocalizedText(localInstancesLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_LOCAL_INSTANCE")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel1.add(localInstancesLabel, gridBagConstraints);
 
+        localInstancesCombo.setEditable(true);
         localInstancesCombo.addItemListener(new LocalInstancesItemListener());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
-        jPanel1.add(localInstancesCombo, gridBagConstraints);
-        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
-
-        domainPathLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        domainPathLabel.setLabelFor(domainPathField);
-        org.openide.awt.Mnemonics.setLocalizedText(domainPathLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_DOMAIN_LOCATION")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel1.add(domainPathLabel, gridBagConstraints);
-
-        domainPathField.setColumns(20);
-        domainPathField.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
-        jPanel1.add(domainPathField, gridBagConstraints);
-        domainPathField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_domainPathField")); // NOI18N
-
-        hostLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        hostLabel.setLabelFor(hostField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_HOST")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel1.add(hostLabel, gridBagConstraints);
-
-        hostField.setEditable(false);
-        hostField.getDocument().addDocumentListener(updateListener);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
-        jPanel1.add(hostField, gridBagConstraints);
-        hostField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_hostField")); // NOI18N
-
-        portLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        portLabel.setLabelFor(portField);
-        org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_PORT")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel1.add(portLabel, gridBagConstraints);
-
-        portField.setColumns(15);
-        portField.setEditable(false);
-        portField.getDocument().addDocumentListener(updateListener);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
-        jPanel1.add(portField, gridBagConstraints);
-        portField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_portField")); // NOI18N
 
         usernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         usernameLabel.setLabelFor(usernameField);
         org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_USERNAME")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel1.add(usernameLabel, gridBagConstraints);
 
         usernameField.setColumns(15);
-        usernameField.setText(DEFAULT_USERNAME);
-        usernameField.getDocument().addDocumentListener(updateListener);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
-        jPanel1.add(usernameField, gridBagConstraints);
-        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
+        usernameField.setText("weblogic"); // NOI18N
 
         passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_PASSWORD")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel1.add(passwordLabel, gridBagConstraints);
 
         passwordField.setColumns(15);
-        passwordField.getDocument().addDocumentListener(updateListener);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
-        jPanel1.add(passwordField, gridBagConstraints);
-        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
 
-        add(jPanel1, java.awt.BorderLayout.NORTH);
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.browseButton.text")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+
+        explanationLabel.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.explanationLabel.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(localInstancesLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(localInstancesCombo, 0, 293, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(browseButton))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(passwordLabel)
+                    .add(usernameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(passwordField, 0, 0, Short.MAX_VALUE)
+                    .add(usernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))
+                .add(208, 208, 208))
+            .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(localInstancesLabel)
+                    .add(localInstancesCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(explanationLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(usernameLabel)
+                    .add(usernameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(passwordLabel)
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
+        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        // TODO add your handling code here:
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        Object item = localInstancesCombo.getEditor().getItem();
+        if (item != null) {
+            chooser.setSelectedFile(new File(item.toString()));
+        }
+        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+            localInstancesCombo.getEditor().setItem(chooser.getSelectedFile().getAbsolutePath());
+            fireChangeEvent();
+        }
+    }//GEN-LAST:event_browseButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField domainPathField;
-    private javax.swing.JLabel domainPathLabel;
-    private javax.swing.JTextField hostField;
-    private javax.swing.JLabel hostLabel;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton browseButton;
+    private javax.swing.JLabel explanationLabel;
     private javax.swing.JComboBox localInstancesCombo;
     private javax.swing.JLabel localInstancesLabel;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
-    private javax.swing.JTextField portField;
-    private javax.swing.JLabel portLabel;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
@@ -485,15 +476,15 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private class UpdateListener implements DocumentListener {
 
         public void changedUpdate(DocumentEvent e) {
-            fireChangeEvent();
+            //fireChangeEvent();
         }
 
         public void removeUpdate(DocumentEvent e) {
-            fireChangeEvent();
+            //fireChangeEvent();
         }
 
         public void insertUpdate(DocumentEvent e) {
-            fireChangeEvent();
+            //fireChangeEvent();
         }
     }
 
@@ -503,92 +494,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private class LocalInstancesItemListener implements ItemListener {
 
         public void itemStateChanged(ItemEvent e) {
-            updateInstanceInfo();
-            isValid();
-        }
-
-    }
-
-
-    /**
-     * A combobox model that represents the list of local instances. It
-     * contains a vector of objects of Instance class that contain all data
-     * for the instance
-     *
-     * @author Kirill Sorokin
-     */
-    private static class InstancesModel extends AbstractListModel implements ComboBoxModel {
-        /**
-         * A vector with the instances
-         */
-        private List<Instance> instances;
-
-        /**
-         * The index of the selected instance, or -1 if there is no selection
-         */
-        private int selectedIndex = 0;
-
-        /**
-         * Creates a new instance of InstancesModel
-         *
-         * @param instances a vector with the locally found instances
-         */
-        public InstancesModel(List<Instance> instances) {
-            // save the instances
-            this.instances = instances;
-
-            // set the selected index to zero
-            this.selectedIndex = 0;
-        }
-
-        /**
-         * Sets the selected index to the index of the supplied item
-         *
-         * @param item the instance which should be selected
-         */
-        public void setSelectedItem(Object item) {
-            // set the index to the given item's index or to -1
-            // if the item does not exists
-            selectedIndex = instances.indexOf(item);
-        }
-
-        /**
-         * Get the instance with the specified instance
-         *
-         * @param index the index of the desired instance
-         *
-         * @return the instance at the given index
-         */
-        public Object getElementAt(int index) {
-            return instances.get(index);
-        }
-
-        /**
-         * Returns the total number of instances
-         *
-         * @return the number of instances
-         */
-        public int getSize() {
-            return instances.size();
-        }
-
-        /**
-         * Returns the instance at the selected index
-         *
-         * @return the instance at the selected index
-         */
-        public Object getSelectedItem() {
-            // if there are no instances return null
-            if (instances.isEmpty()) {
-                return null;
-            }
-            // #168297
-            if (selectedIndex == -1) {
-                return null;
-            }
-
-            // return the element at the index
-            return instances.get(selectedIndex);
+            fireChangeEvent();
         }
 
     }
@@ -632,6 +538,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         private boolean isProductionModeEnabled;
 
+        private Version domainVersion;
+
         /**
          * Creates a new instance of Instance
          *
@@ -641,13 +549,14 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @param domainPath the instance's profile path
          */
         public Instance(String name, String host, String port, String domainPath,
-                String domainName, boolean isProductionModeEnabled) {
+                String domainName, Version domainVersion, boolean isProductionModeEnabled) {
             // save the properties
             this.name = name;
             this.host = host;
             this.port = port;
             this.domainPath = domainPath;
             this.domainName = domainName;
+            this.domainVersion = domainVersion;
             this.isProductionModeEnabled = isProductionModeEnabled;
         }
 
@@ -760,13 +669,21 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             isProductionModeEnabled = productionMode;
         }
 
+        public Version getDomainVersion() {
+            return domainVersion;
+        }
+
+        public void setDomainVersion(Version domainVersion) {
+            this.domainVersion = domainVersion;
+        }
+
         /**
          * An overriden version of the Object's toString() so that the
          * instance is displayed properly in the combobox
          */
         @Override
         public String toString() {
-            return name + " [" + host + ":" + port + "]"; // NOI18N
+            return domainPath;//domainName;
         }
     }
 }
