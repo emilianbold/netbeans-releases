@@ -47,6 +47,7 @@ import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -83,6 +84,14 @@ public interface WebBeansModelProvider {
     List<Element> getNamedElements( AbstractModelImplementation impl );
 
     String getName( Element element,
+            AbstractModelImplementation modelImplementation );
+
+    List<ExecutableElement> getObservers( VariableElement element,
+            DeclaredType parentType,
+            AbstractModelImplementation modelImplementation );
+
+    List<VariableElement> getEventInjectionPoints( ExecutableElement element,
+            DeclaredType parentType,
             AbstractModelImplementation modelImplementation );
 
 }

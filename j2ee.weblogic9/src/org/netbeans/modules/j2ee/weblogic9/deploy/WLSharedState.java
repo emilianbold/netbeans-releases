@@ -58,7 +58,7 @@ import org.openide.util.ChangeSupport;
  *
  * @author Petr Hejl
  */
-public class WLMutableState {
+public class WLSharedState {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -70,8 +70,10 @@ public class WLMutableState {
     /* <i>GuardedBy("this")</i> */
     private boolean restartNeeded;
 
+    /* <i>GuardedBy("this")</i> */
+    private Process serverProcess;
 
-    public WLMutableState(InstanceProperties ip) {
+    public WLSharedState(InstanceProperties ip) {
         this.ip = ip;
     }
 
@@ -102,6 +104,14 @@ public class WLMutableState {
 
     public synchronized void setRestartNeeded(boolean restartNeeded) {
         this.restartNeeded = restartNeeded;
+    }
+
+    public synchronized Process getServerProcess() {
+        return serverProcess;
+    }
+
+    public synchronized void setServerProcess(Process serverProcess) {
+        this.serverProcess = serverProcess;
     }
 
     private class DomainChangeListener implements FileChangeListener {

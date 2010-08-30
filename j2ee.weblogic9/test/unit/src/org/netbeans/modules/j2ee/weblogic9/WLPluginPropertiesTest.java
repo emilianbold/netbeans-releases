@@ -69,13 +69,13 @@ public class WLPluginPropertiesTest extends NbTestCase {
         libFolder.mkdirs();
         File file = new File(libFolder, "weblogic.jar");
         createJar(file, "Implementation-Version: 10.0.0.0");
-        assertTrue(WLPluginProperties.isSupportedVersion(WLPluginProperties.getVersion(baseFolder)));
+        assertTrue(WLPluginProperties.isSupportedVersion(WLPluginProperties.getServerVersion(baseFolder)));
         createJar(file, "Implementation-Version: 9.0.0.0");
-        assertTrue(WLPluginProperties.isSupportedVersion(WLPluginProperties.getVersion(baseFolder)));
+        assertTrue(WLPluginProperties.isSupportedVersion(WLPluginProperties.getServerVersion(baseFolder)));
         createJar(file, "Implementation-Version: 8.0.0.0");
-        assertFalse(WLPluginProperties.isSupportedVersion(WLPluginProperties.getVersion(baseFolder)));
+        assertFalse(WLPluginProperties.isSupportedVersion(WLPluginProperties.getServerVersion(baseFolder)));
         createJar(file, "Missing-Implementation-Version: 10.0.0.0");
-        assertFalse(WLPluginProperties.isSupportedVersion(WLPluginProperties.getVersion(baseFolder)));
+        assertFalse(WLPluginProperties.isSupportedVersion(WLPluginProperties.getServerVersion(baseFolder)));
     }
     
     private void createJar(File file, String manifestLine) throws Exception {
