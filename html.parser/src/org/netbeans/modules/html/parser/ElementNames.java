@@ -44,17 +44,22 @@ package org.netbeans.modules.html.parser;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import nu.validator.htmlparser.impl.ElementName;
 
 /**
  *
  * @author marekfukala
  */
-public class ElementNameGroups {
+public class ElementNames {
 
-    private static HashMap<Integer, Collection<ElementName>> MAP = new HashMap<Integer, Collection<ElementName>>();
+    private static Map<Integer, Collection<ElementName>> MAP = null;
+    private static Map<String, ElementName> ELEMENTS = null;
 
     public static synchronized Collection<ElementName> getElementForTreeBuilderGroup(int group) {
+        if(MAP == null) {
+            MAP = new HashMap<Integer, Collection<ElementName>>();
+        }
         Collection<ElementName> members = MAP.get(group);
         if (members == null) {
             members = new ArrayList<ElementName>();
@@ -68,4 +73,15 @@ public class ElementNameGroups {
 
         return members;
     }
+
+    public static synchronized ElementName forName(String elementName) {
+        if(ELEMENTS == null) {
+            ELEMENTS = new HashMap<String, ElementName>();
+            for(ElementName en : ElementName.ELEMENT_NAMES) {
+                ELEMENTS.put(en.name, en);
+            }
+        }
+        return ELEMENTS.get(elementName);
+    }
+    
 }

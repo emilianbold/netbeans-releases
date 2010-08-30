@@ -58,18 +58,18 @@ public class ElementNameGroupsTest extends NbTestCase {
 
 
     public void testGetElementForTreeBuilderGroup() {
-        Collection<ElementName> members = ElementNameGroups.getElementForTreeBuilderGroup(ElementName.A.group);
+        Collection<ElementName> members = ElementNames.getElementForTreeBuilderGroup(ElementName.A.group);
         assertTrue(members.contains(ElementName.A));
         assertEquals(1, members.size()); //only one member group
 
-        members = ElementNameGroups.getElementForTreeBuilderGroup(ElementName.B.group);
+        members = ElementNames.getElementForTreeBuilderGroup(ElementName.B.group);
         assertTrue(members.contains(ElementName.B));
         assertTrue(members.contains(ElementName.BIG));
         assertTrue(members.contains(ElementName.CODE));
         assertFalse(members.contains(ElementName.A));
         assertFalse(members.contains(ElementName.FONT));
 
-        members = ElementNameGroups.getElementForTreeBuilderGroup(4343); //nonexisting group
+        members = ElementNames.getElementForTreeBuilderGroup(4343); //nonexisting group
         assertTrue(members.isEmpty());
 
     }

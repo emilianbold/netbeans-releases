@@ -45,9 +45,12 @@ package org.netbeans.modules.html.parser;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ElementName;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
 
 /**
  *
@@ -55,7 +58,10 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
  */
 public class HtmlTagProvider {
 
+    private static Logger LOGGER = Logger.getLogger(HtmlTagProvider.class.getName());
+
     private static HashMap<ElementName, HtmlTag> MAP = new HashMap<ElementName, HtmlTag>();
+    private static HashMap<String, HtmlTagAttribute> ATTRS_MAP = new HashMap<String, HtmlTagAttribute>();
 
     public static synchronized HtmlTag getTagForElement(ElementName elementName) {
         HtmlTag impl = MAP.get(elementName);
@@ -66,12 +72,39 @@ public class HtmlTagProvider {
         return impl;
     }
 
+    private static synchronized HtmlTagAttribute getHtmlTagAttribute(String attributeName) {
+        HtmlTagAttribute attr = ATTRS_MAP.get(attributeName);
+        if(attr == null) {
+            attr = new SimpleHtmlTagAttribute(attributeName);
+            ATTRS_MAP.put(attributeName, attr);
+        }
+        return attr;
+    }
+
     private static class ElementName2HtmlTagAdapter implements HtmlTag {
 
-     private ElementName element;
+         private ElementName element;
+         private Collection<HtmlTagAttribute> attrs;
 
         private ElementName2HtmlTagAdapter(ElementName element) {
             this.element = element;
+            this.attrs = wrap(ElementAttributes.getAttrNamesForElement(element.name));
+        }
+
+        private Collection<HtmlTagAttribute> wrap(Collection<String> attrNames) {
+            if(attrNames == null) {
+                return Collections.emptyList();
+            }
+            Collection<HtmlTagAttribute> attributes = new LinkedList<HtmlTagAttribute>();
+            for(String an : attrNames) {
+                HtmlTagAttribute hta = getHtmlTagAttribute(an);
+                if(hta != null) {
+                    attributes.add(hta);
+                } else {
+                    LOGGER.info("Unknown attribute " + an + " requested.");//NOI18N
+                }
+            }
+            return attributes;
         }
 
         public String getName() {
@@ -105,9 +138,8 @@ public class HtmlTagProvider {
             return "ElementName2HtmlTagAdapter{" + "name=" + getName() + '}';
         }
 
-        //TODO implement!
         public Collection<HtmlTagAttribute> getAttributes() {
-            return Collections.emptyList();
+            return attrs;
         }
 
         //TODO implement!
@@ -123,6 +155,32 @@ public class HtmlTagProvider {
         //TODO implement!
         public boolean hasOptionalEndTag() {
             return false;
+        }
+
+    }
+
+    private static class SimpleHtmlTagAttribute implements HtmlTagAttribute {
+
+        private String name;
+
+        public SimpleHtmlTagAttribute(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isRequired() {
+            return false;
+        }
+
+        public HtmlTagAttributeType getType() {
+            return HtmlTagAttributeType.GENERIC;
+        }
+
+        public Collection<String> getPossibleValues() {
+            return Collections.emptyList();
         }
 
     }

@@ -58,5 +58,7 @@ public interface HtmlParseResult extends ParseResult {
     public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type);
 
     public Collection<HtmlTag> getAllTags();
+
+    public HtmlTag getTag(String tagName);
     
 }

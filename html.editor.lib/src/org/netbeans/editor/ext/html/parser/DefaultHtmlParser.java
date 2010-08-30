@@ -131,6 +131,16 @@ public class DefaultHtmlParser implements HtmlParser {
                 return DefaultHtmlParser.getAllTags(version);
             }
 
+            @Override
+            public HtmlTag getTag(String tagName) {
+                DTD.Element element = version.getDTD().getElement(tagName);
+                assert element != null;
+                if(element == null) {
+                    return null;
+                }
+                return DTD2HtmlTag.getTagForElement(element);
+            }
+
         };
 
     }

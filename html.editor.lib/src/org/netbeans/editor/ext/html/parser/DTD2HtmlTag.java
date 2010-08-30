@@ -45,10 +45,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Attribute;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
 
 /**
  *
@@ -58,7 +62,10 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
  */
 public class DTD2HtmlTag {
 
+    private static final Logger LOGGER = Logger.getLogger(DTD2HtmlTag.class.getName());
+
     private static HashMap<DTD.Element, HtmlTag> MAP = new HashMap<DTD.Element, HtmlTag>();
+    private static HashMap<Attribute, HtmlTagAttribute> ATTRS_MAP = new HashMap<Attribute, HtmlTagAttribute>();
 
     public static synchronized HtmlTag getTagForElement(DTD.Element elementName) {
         HtmlTag impl = MAP.get(elementName);
@@ -77,24 +84,51 @@ public class DTD2HtmlTag {
         return converted;
     }
 
+    private static synchronized HtmlTagAttribute getHtmlTagAttribute(Attribute attribute) {
+        HtmlTagAttribute attr = ATTRS_MAP.get(attribute);
+        if(attr == null) {
+            attr = new Attribute2HtmlTagAttribute(attribute);
+            ATTRS_MAP.put(attribute, attr);
+        }
+        return attr;
+    }
+
 
     private static class DTDElement2HtmlTagAdapter implements HtmlTag {
 
         private DTD.Element element;
+        private Collection<HtmlTagAttribute> attrs;
 
         public DTDElement2HtmlTagAdapter(Element element) {
             this.element = element;
+            this.attrs = wrap(element.getAttributeList(null));
         }
+
+         private Collection<HtmlTagAttribute> wrap(Collection<Attribute> attrNames) {
+            if(attrNames == null) {
+                return Collections.emptyList();
+            }
+            Collection<HtmlTagAttribute> attributes = new LinkedList<HtmlTagAttribute>();
+            for(Attribute an : attrNames) {
+                HtmlTagAttribute hta = getHtmlTagAttribute(an);
+                if(hta != null) {
+                    attributes.add(hta);
+                } else {
+                    LOGGER.info("Unknown attribute " + an + " requested.");//NOI18N
+                }
+            }
+            return attributes;
+        }
+
 
         @Override
         public String getName() {
             return element.getName();
         }
 
-        //TODO implement
         @Override
         public Collection<HtmlTagAttribute> getAttributes() {
-            return Collections.emptyList();
+            return attrs;
         }
 
         @Override
@@ -111,5 +145,45 @@ public class DTD2HtmlTag {
         public boolean hasOptionalEndTag() {
             return element.hasOptionalEnd();
         }
+    }
+
+     private static class Attribute2HtmlTagAttribute implements HtmlTagAttribute {
+
+        private Attribute attr;
+
+        public Attribute2HtmlTagAttribute(Attribute attr) {
+            this.attr = attr;
+        }
+
+        @Override
+        public String getName() {
+            return attr.getName();
+        }
+
+        @Override
+        public boolean isRequired() {
+            return attr.isRequired();
+        }
+
+        @Override
+        public HtmlTagAttributeType getType() {
+            switch(attr.getType()) {
+                case Attribute.TYPE_BOOLEAN:
+                    return HtmlTagAttributeType.BOOLEAN;
+                case Attribute.TYPE_SET:
+                    return HtmlTagAttributeType.SET;
+                case Attribute.TYPE_BASE:
+                    return HtmlTagAttributeType.GENERIC;
+                default:
+                    return HtmlTagAttributeType.GENERIC;
+            }
+        }
+
+        //TODO implement!
+        @Override
+        public Collection<String> getPossibleValues() {
+            return Collections.emptyList();
+        }
+
     }
 }

@@ -219,7 +219,7 @@ public class Html5Parser implements HtmlParser {
 
                         if (enabled.booleanValue()) {
                             //add all element from the group as possible
-                            for (ElementName member : ElementNameGroups.getElementForTreeBuilderGroup(group)) {
+                            for (ElementName member : ElementNames.getElementForTreeBuilderGroup(group)) {
                                 possible.add(HtmlTagProvider.getTagForElement(member));
                             }
 
@@ -248,6 +248,15 @@ public class Html5Parser implements HtmlParser {
 
         public Collection<HtmlTag> getAllTags() {
             return Html5Parser.getAllTags();
+        }
+
+        public HtmlTag getTag(String tagName) {
+            ElementName element = ElementNames.forName(tagName);
+            assert element != null;
+            if(element == null) {
+                return null;
+            }
+            return HtmlTagProvider.getTagForElement(element);
         }
         
     }
