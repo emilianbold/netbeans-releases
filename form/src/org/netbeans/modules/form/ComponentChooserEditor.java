@@ -74,6 +74,7 @@ public class ComponentChooserEditor implements PropertyEditor,
     private static String defaultText = null;
 
     private FormModel formModel;
+    private FormProperty property;
     private List<RADComponent> components;
     private Class[] beanTypes = null;
     private int componentCategory = 0;
@@ -128,19 +129,22 @@ public class ComponentChooserEditor implements PropertyEditor,
         int extraValues = 0;        
         int count = 0;
         String[] names;                                    
-        
+
+        boolean includeNone = shouldIncludeNone();
         if( isDefaultValue() ) {
-            extraValues = 2;        
+            extraValues = includeNone ? 2 : 1;
             count = compList.size() + extraValues;
             names = new String[count];                                    
             names[0] = defaultString();            
         } else {
-            extraValues = 1;        
+            extraValues = includeNone ? 1 : 0;
             count = compList.size() + extraValues;
             names = new String[count];                                                
         } 
-        names[extraValues - 1] = noneString();
-        
+        if (includeNone) {
+            names[extraValues - 1] = noneString();
+        }
+
         if (count > extraValues) {
             for (int i=extraValues; i < count; i++)
                 names[i] = ((RADComponent)compList.get(i-extraValues)).getName();
@@ -148,6 +152,29 @@ public class ComponentChooserEditor implements PropertyEditor,
         }
 
         return names;
+    }
+
+    /**
+     * Determines whether none/null value should be offered by this
+     * property editor.
+     * 
+     * @return {@code true} if none/null value should be offered
+     * or {@code false} otherwise.
+     */
+    private boolean shouldIncludeNone() {
+        // Do not include null/none for some properties that cannot handle it
+        boolean include = true;
+        if (property instanceof RADProperty) {
+            RADProperty radProperty = (RADProperty)property;
+            String propName = radProperty.getName();
+            RADComponent metacomp = radProperty.getRADComponent();
+            Object instance = metacomp.getBeanInstance();
+            if ((instance instanceof javax.swing.text.JTextComponent)
+                    && "caret".equals(propName)) { // NOI18N
+                include = false;
+            }
+        }
+        return include;
     }
 
     private boolean isDefaultValue() {
@@ -228,6 +255,7 @@ public class ComponentChooserEditor implements PropertyEditor,
     @Override
     public void setContext(FormModel model, FormProperty prop) {
         formModel = model;
+        property = prop;
     }
 
     // FormAwareEditor implementation
