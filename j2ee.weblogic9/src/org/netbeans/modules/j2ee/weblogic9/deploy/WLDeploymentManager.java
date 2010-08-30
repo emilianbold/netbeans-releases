@@ -559,9 +559,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex.getCause());
 
-                // just a fallback
-                try {
+            // just a fallback
+            try {
                 return executeAction(new Action<Target[]>() {
+
+                    @Override
                     public Target[] execute(DeploymentManager manager) throws ExecutionException {
                         return manager.getTargets();
                     }
