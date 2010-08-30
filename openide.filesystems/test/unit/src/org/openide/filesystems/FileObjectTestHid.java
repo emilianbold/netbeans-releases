@@ -2809,7 +2809,28 @@ public class FileObjectTestHid extends TestBaseHid {
             // it this way.
         }
     }
+
+    public void testCreateDataWithSlash() throws Exception {
+        checkSetUp();
+        final FileObject fold = getTestFolder1(root);
+        try {
+            FileObject none = fold.createData("name/slash");
+            fail("FileObject shall not be created: " + none);
+        } catch (IOException ex) {
+            // OK
+        }
+    }
     
+    public void testCreateDataWithBackSlash() throws Exception {
+        checkSetUp();
+        final FileObject fold = getTestFolder1(root);
+        try {
+            FileObject none = fold.createData("name\\backslash");
+            fail("FileObject shall not be created: " + none);
+        } catch (IOException ex) {
+            // OK
+        }
+    }
  
     /*#46885: File not refreshed in editor if modified externally the first time after an internal modification*/
     public void testExternalChange () throws Exception {        

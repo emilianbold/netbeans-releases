@@ -270,7 +270,14 @@ is divided into following sections:
                 <property name="excludes" value=""/>            
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
-                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                    <and>
+                        <isset property="endorsed.classpath"/>
+                        <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                    </and>
+                </condition>
+                <!-- #189395 - temporary workaround till GlassFish issue #13144 is fixed -->
+                <condition property="is.server.weblogic" value="true">
+                    <equals arg1="j2ee.server.type" arg2="WebLogic9"/>
                 </condition>
             </target>
             
@@ -1006,7 +1013,7 @@ exists or setup the property manually. For example like this:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
-            <target name="library-inclusion-in-archive" depends="compile">
+            <target name="library-inclusion-in-archive" depends="compile" if="is.server.weblogic">
 <!--                <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
@@ -1015,6 +1022,44 @@ exists or setup the property manually. For example like this:
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
                     </copyfiles>
                 </xsl:for-each>    -->
+                <xsl:for-each select="//ejbjarproject3:included-library">
+                    <basename>
+                        <xsl:variable name="included.prop.name">
+                            <xsl:value-of select="."/>
+                        </xsl:variable>
+                        <xsl:attribute name="property">
+                            <xsl:value-of select="concat('manifest.', $included.prop.name)"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="file">
+                            <xsl:value-of select="concat('${', $included.prop.name, '}')"/>
+                        </xsl:attribute>
+                    </basename>
+                </xsl:for-each>
+                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                    <xsl:if test="//ejbjarproject3:included-library">
+                        <attribute>
+                            <xsl:attribute name="name">Extension-List</xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:for-each select="//ejbjarproject3:included-library">
+                                    <xsl:value-of select="concat('jar-', position(), ' ')"/>
+                                </xsl:for-each>
+                            </xsl:attribute>
+                        </attribute>
+                        <xsl:for-each select="//ejbjarproject3:included-library">
+                            <attribute>
+                                <xsl:attribute name="name">
+                                    <xsl:value-of select="concat('jar-', position(), '-Extension-Name')"/>
+                                </xsl:attribute>
+                                <xsl:attribute name="value">
+                                    <xsl:variable name="included.prop.name">
+                                        <xsl:value-of select="."/>
+                                    </xsl:variable>
+                                    <xsl:value-of select="concat('${manifest.', $included.prop.name, '}')"/>
+                                </xsl:attribute>
+                            </attribute>
+                        </xsl:for-each>
+                    </xsl:if>
+                </manifest>
             </target> 
             
             <target name="library-inclusion-in-manifest" depends="compile">
