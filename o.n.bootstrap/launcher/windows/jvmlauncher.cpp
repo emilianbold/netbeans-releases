@@ -137,9 +137,14 @@ bool JvmLauncher::start(const char *mainClassName, const list<string> &args, con
         logMsg("\t%s", it->c_str());
     }
 
-    if (javaExePath.empty() || (javaClientDllPath.empty() && javaServerDllPath.empty())) {
-        if (!initialize("")) {
-            return false;
+    if (!javaExePath.empty() && javaClientDllPath.empty() && javaServerDllPath.empty()) {
+        logMsg("Found only java.exe at %s. No DLLs. Falling back to java.exe\n", javaExePath.c_str());
+        separateProcess = true;
+    } else {
+        if (javaExePath.empty() || (javaClientDllPath.empty() && javaServerDllPath.empty())) {
+            if (!initialize("")) {
+                return false;
+            }
         }
     }
 

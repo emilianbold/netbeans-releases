@@ -9,17 +9,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 import org.openide.util.Exceptions;
 
 /**
@@ -54,35 +53,34 @@ public class TimerTaskExecutionServiceTest {
     /**
      * Test of registerTimerTask method, of class TimerTaskExecutionService.
      */
-
     @Ignore // Disabled because was very unstable
     @Test
     public void testRegisterTimerTask() {
         System.out.println("registerTimerTask");//NOI18N
 
-        int count = 1000;
+        int count = 100;
         final List<Worker> workers = new ArrayList<Worker>();
-        final List<Future> tasks = Collections.synchronizedList(new ArrayList<Future>());
-        final CountDownLatch start = new CountDownLatch(1);
-
+        final List<DLightScheduledTask> tasks = Collections.synchronizedList(new ArrayList<DLightScheduledTask>());
 
         for (int i = 0; i < count; i++) {
-            workers.add(new Worker(i));
+            workers.add(new Worker());
         }
 
         final Random r = new Random();
 
         Runnable runnable = new Runnable() {
 
+            @Override
             public void run() {
-                try {
-                    start.await();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
+                int id = 0;
                 for (Worker worker : workers) {
-                    tasks.add(DLightExecutorService.scheduleAtFixedRate(worker, r.nextInt(4) + 1, TimeUnit.SECONDS, "testRegisterTimerTask"));//NOI18N
+                    // will start this worker at fixed rate 
+                    // (every 1, 2, 3, 4 or 5 seconds)
+                    int rate = r.nextInt(4) + 1;
+
+                    DLightScheduledTask task = DLightExecutorService.scheduleAtFixedRate(
+                            worker, rate, TimeUnit.SECONDS, "testRegisterTimerTask " + (++id));
+                    tasks.add(task);
                 }
             }
         };
@@ -93,7 +91,17 @@ public class TimerTaskExecutionServiceTest {
         t1.start();
         t2.start();
 
-        start.countDown();
+        try {
+            t1.join();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        try {
+            t2.join();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
         // Threads creation takes a while - so some tasks may be already called
         // before others were not even scheduled yet... This will affect
@@ -121,20 +129,8 @@ public class TimerTaskExecutionServiceTest {
 
         countInvokations = false;
 
-        try {
-            t1.join();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        try {
-            t2.join();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        for (Future task : tasks) {
-            task.cancel(true);
+        for (DLightScheduledTask task : tasks) {
+            task.cancel();
         }
 
         int size = 15;
@@ -177,14 +173,9 @@ public class TimerTaskExecutionServiceTest {
 
     private static class Worker implements Runnable {
 
-        private final int id;
-        private int invokations;
+        private int invokations = 0;
 
-        public Worker(int id) {
-            this.id = id;
-            invokations = 0;
-        }
-
+        @Override
         public void run() {
 
             if (countInvokations) {

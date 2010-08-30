@@ -44,14 +44,11 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
@@ -65,6 +62,7 @@ import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData;
 import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -78,19 +76,22 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
  * @author Misha Dmitriev
  * @author Alexander Simon (adapted for CND)
  */
-public class ThreadsDataManager {
+public final class ThreadsDataManager {
+
+    private static final class Lock {
+    }
     private final List<ThreadStateColumnImpl> threadData = new ArrayList<ThreadStateColumnImpl>(); // Per-thread array of points at which thread's state changes
+    private final CopyOnWriteArrayList<DataManagerListener> listeners =
+            new CopyOnWriteArrayList<DataManagerListener>();
+    private final Object lock = new Lock();
     private boolean threadsMonitoringEnabled = true;
     private long endTime; // Timestamp of threadData end
     private long startTime; // Timestamp of threadData start
-    private final Set<DataManagerListener> listeners = new HashSet<DataManagerListener>();
     private ThreadMapSummaryData summary;
     private ThreadMapDataProvider provider;
     private int threadNameFormat = 0;
     private ThreadNameUpdateTask updater = new ThreadNameUpdateTask();
-    private ScheduledFuture<?> updateNameTask;
-    private static final class Lock {}
-    private final Object lock = new Lock();
+    private DLightScheduledTask updateNameTask;
     private boolean fillThreadNames = false;
 
     /**
@@ -106,9 +107,7 @@ public class ThreadsDataManager {
      * @param listener threadData listener to add
      */
     public void addDataListener(DataManagerListener listener) {
-        synchronized(listeners) {
-            listeners.add(listener);
-        }
+        listeners.addIfAbsent(listener);
     }
 
     /**
@@ -117,22 +116,15 @@ public class ThreadsDataManager {
      * @param listener threadData listener to remove
      */
     public void removeDataListener(DataManagerListener listener) {
-        synchronized(listeners) {
-            listeners.remove(listener);
-        }
+        listeners.remove(listener);
     }
 
     /**
      * Notifies all listeners about the threadData change.
      */
     private void fireDataChanged() {
-        Set<DataManagerListener> toNotify;
-        synchronized (listeners) {
-            toNotify = new HashSet<DataManagerListener>(listeners);
-        }
-        Iterator<DataManagerListener> iterator = toNotify.iterator();
-        while (iterator.hasNext()) {
-            iterator.next().dataChanged();
+        for (DataManagerListener l : listeners) {
+            l.dataChanged();
         }
     }
 
@@ -140,13 +132,8 @@ public class ThreadsDataManager {
      * Notifies all listeners about the reset of threads data.
      */
     private void fireDataReset() {
-        Set<DataManagerListener> toNotify;
-        synchronized (listeners) {
-            toNotify = new HashSet<DataManagerListener>(listeners);
-        }
-        Iterator<DataManagerListener> iterator = toNotify.iterator();
-        while (iterator.hasNext()) {
-            iterator.next().dataReset();
+        for (DataManagerListener l : listeners) {
+            l.dataReset();
         }
     }
 
@@ -181,11 +168,11 @@ public class ThreadsDataManager {
 
     public synchronized String findThreadName(int threadID) {
         for (int i = 0; i < threadData.size(); i++) {
-            if (threadData.get(i).getThreadID() == threadID){
+            if (threadData.get(i).getThreadID() == threadID) {
                 return threadData.get(i).getName();
             }
         }
-        return ""+threadID; //NOI18N
+        return "" + threadID; //NOI18N
     }
 
     /**
@@ -218,13 +205,13 @@ public class ThreadsDataManager {
         summary = summaryData;
     }
 
-    public synchronized ThreadSummaryColumnImpl getThreadSummary(int i){
+    public synchronized ThreadSummaryColumnImpl getThreadSummary(int i) {
         i = getThreadData(i).getThreadID();
         final ThreadMapSummaryData summaryData = summary;
         List<StateDuration> state = null;
         if (summaryData != null) {
-            for(ThreadSummaryData data : summaryData.getThreadsData()){
-                if (data.getThreadInfo().getThreadId() == i){
+            for (ThreadSummaryData data : summaryData.getThreadsData()) {
+                if (data.getThreadInfo().getThreadId() == i) {
                     state = data.getThreadSummary();
                 }
             }
@@ -255,9 +242,9 @@ public class ThreadsDataManager {
         startTime = session.getStartTime();
         endTime = 0;
         if (threadsMonitoringEnabled) {
-            for(int i = 0; i < threadSize; i++){
+            for (int i = 0; i < threadSize; i++) {
                 ThreadStateColumnImpl col = threadData.get(i);
-                endTime = Math.max(endTime, col.getThreadStateAt(col.size()-1).getTimeStamp());
+                endTime = Math.max(endTime, col.getThreadStateAt(col.size() - 1).getTimeStamp());
             }
             fireDataChanged(); // all listeners are notified about threadData change */
         }
@@ -267,23 +254,23 @@ public class ThreadsDataManager {
         }
     }
 
-    private void mergeData(MonitoredData monitoredData, long requestFrom){
+    private void mergeData(MonitoredData monitoredData, long requestFrom) {
         int updateThreadSize = monitoredData.getThreadsSize();
         if (updateThreadSize == 0) {
             return;
         }
         Map<Integer, Integer> IdToNumber = new LinkedHashMap<Integer, Integer>();
-        for(int i = 0; i < updateThreadSize; i++){
+        for (int i = 0; i < updateThreadSize; i++) {
             ThreadInfo info = monitoredData.getThreadInfo(i);
             IdToNumber.put(info.getThreadId(), i);
         }
         // merge old state and increment
         int oldThreadSize = threadData.size();
-        for(int i = 0; i < oldThreadSize; i++){
+        for (int i = 0; i < oldThreadSize; i++) {
             ThreadStateColumnImpl col = threadData.get(i);
             Integer number = IdToNumber.get(col.getThreadID());
             if (number != null) {
-                long lastState = col.getThreadStateAt(col.size()-1).getTimeStamp();
+                long lastState = col.getThreadStateAt(col.size() - 1).getTimeStamp();
                 if (requestFrom == 0) {
                     col.clearStates();
                     lastState = -1;
@@ -317,22 +304,23 @@ public class ThreadsDataManager {
         }
     }
 
-    public synchronized void startup(SessionState sessionState){
+    public synchronized void startup(SessionState sessionState) {
         if (sessionState == SessionState.ANALYZE) {
             if (updateNameTask != null) {
-                updateNameTask.cancel(true);
+                updateNameTask.cancel();
+                updateNameTask = null;
             }
             fillThreadNames = true;
         } else {
-            if (updateNameTask == null || updateNameTask.isDone()){
+            if (updateNameTask == null) {
                 updateNameTask = DLightExecutorService.scheduleAtFixedRate(updater, 5, TimeUnit.SECONDS, "updateNameTask"); //NOI18N
             }
         }
     }
 
-    public synchronized void shutdown(SessionState sessionState){
+    public synchronized void shutdown(SessionState sessionState) {
         if (updateNameTask != null) {
-            updateNameTask.cancel(true);
+            updateNameTask.cancel();
         }
         if (sessionState == SessionState.ANALYZE) {
             fillThreadNames = true;
@@ -350,14 +338,13 @@ public class ThreadsDataManager {
         fireDataReset(); // all listeners are notified about threadData change
     }
 
-
     public ThreadsDataManager(long endTime, long startTime, ThreadMapSummaryData summary, ThreadMapDataProvider provider) {
         this.endTime = endTime;
         this.startTime = startTime;
         this.summary = summary;
         this.provider = provider;
     }
-    
+
     void setThreadNameFormat(int format, boolean init) {
         if (threadNameFormat != format) {
             threadNameFormat = format;
@@ -372,23 +359,19 @@ public class ThreadsDataManager {
         switch (threadNameFormat) {
             case 2:
             case 1:
-                {
-                    DLightExecutorService.submit(updater, "urgentUpdateNameTask"); //NOI18N
-                    break;
-                }
+                DLightExecutorService.submit(updater, "urgentUpdateNameTask"); //NOI18N
+                break;
             case 0:
             default:
-                {
-                    for (ThreadStateColumnImpl col : threadData) {
-                        col.resetName();
-                    }
-                    fireDataChanged();
-                    break;
+                for (ThreadStateColumnImpl col : threadData) {
+                    col.resetName();
                 }
+                fireDataChanged();
+                break;
         }
     }
 
-    int getThreadNameFormat(){
+    int getThreadNameFormat() {
         return threadNameFormat;
     }
 
@@ -440,10 +423,10 @@ public class ThreadsDataManager {
         }
     }
 
-    private boolean isValidDump(ThreadSnapshot dump, int lookAt){
-        if (dump.getStack().size() > lookAt){
+    private boolean isValidDump(ThreadSnapshot dump, int lookAt) {
+        if (dump.getStack().size() > lookAt) {
             String s = dump.getStack().get(0).getFunction().getQuilifiedName();
-            if ("_start".equals(s)||"_lwp_start".equals(s)) { //NOI18N
+            if ("_start".equals(s) || "_lwp_start".equals(s)) { //NOI18N
                 return true;
             }
         }
@@ -451,60 +434,73 @@ public class ThreadsDataManager {
     }
 
     private void updateName(String newName, int id) {
-        for (ThreadStateColumnImpl col : threadData){
+        for (ThreadStateColumnImpl col : threadData) {
             if (col.getThreadID() == id) {
-                col.updateName(newName+ " ("+id+")"); //NOI18N
+                col.updateName(newName + " (" + id + ")"); //NOI18N
                 break;
             }
         }
     }
 
     static class MergedThreadInfo {
+
         private String name;
         private final LinkedList<ProcessID> processes = new LinkedList<ProcessID>();
-        private MergedThreadInfo(ThreadInfo info, long startTime){
+
+        private MergedThreadInfo(ThreadInfo info, long startTime) {
             this.name = info.getThreadName();
             processes.add(new ProcessID(info, startTime));
         }
+
         String getThreadName() {
             return name;
         }
+
         void setThreadName(String newName) {
             name = newName;
         }
+
         int getThreadId() {
             return processes.getFirst().getId();
         }
+
         void resetName() {
             name = processes.getFirst().getThreadInfo().getThreadName();
         }
+
         long getStartTimeStamp() {
             return processes.getFirst().getStartTimeStamp();
         }
     }
 
     private static final class ProcessID {
+
         private final ThreadInfo info;
         private final long startTimeStamp;
+
         private ProcessID(ThreadInfo info, long startTimeStamp) {
             this.info = info;
             this.startTimeStamp = startTimeStamp;
         }
+
         private int getId() {
             return info.getThreadId();
         }
+
         private ThreadInfo getThreadInfo() {
             return info;
         }
+
         private long getStartTimeStamp() {
             return startTimeStamp;
         }
     }
 
     private final class ThreadNameUpdateTask implements Runnable {
+
+        @Override
         public void run() {
             updateThreadNames();
         }
     }
-
 }

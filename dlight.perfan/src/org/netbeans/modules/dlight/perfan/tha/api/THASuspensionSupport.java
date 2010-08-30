@@ -46,10 +46,10 @@ import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -66,7 +66,7 @@ import org.openide.util.Exceptions;
 public final class THASuspensionSupport {
 
     private final ExecutionEnvironment execEnv;
-    private final ScheduledFuture<?> future;
+    private final DLightScheduledTask notifyTask;
     private final Listener listener;
     private final int pid;
     private volatile Status status = Status.INIT;
@@ -78,7 +78,7 @@ public final class THASuspensionSupport {
         this.listener = listener;
         this.state = initiallyResumed ? State.RESUMED : State.SUSPENDED;
 
-        future = startMonitor();
+        notifyTask = startMonitor();
     }
 
     public static THASuspensionSupport getSupportFor(ExecutionEnvironment execEnv, int pid, Listener listener, boolean initiallyResumed) {
@@ -99,6 +99,7 @@ public final class THASuspensionSupport {
         if (status == Status.ENABLED && resume != resumed) {
             Runnable r = new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         Future<Integer> rc = CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGUSR1, null);
@@ -121,7 +122,7 @@ public final class THASuspensionSupport {
         }
     }
 
-    private ScheduledFuture<?> startMonitor() {
+    private DLightScheduledTask startMonitor() {
         try {
             // Will monitor the process with PID == pid
             HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
@@ -140,7 +141,7 @@ public final class THASuspensionSupport {
 
     private synchronized void stopMonitor(Status status) {
         this.status = status;
-        future.cancel(false);
+        notifyTask.cancel(1);
         listener.statusChanged(status);
     }
 
@@ -153,6 +154,7 @@ public final class THASuspensionSupport {
             this.npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         }
 
+        @Override
         public void run() {
             try {
                 Process p = npb.call();
