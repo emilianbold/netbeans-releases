@@ -39,15 +39,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.indicator;
+
+import java.util.EventListener;
 
 /**
  *
  * @author mt154047
  */
-interface TickerListener {
+public interface TickerListener extends EventListener {
 
-    void tick();
-
+    public void tick();
 }
