@@ -611,7 +611,7 @@ final class ModuleList implements Stamps.Updater {
         }
     }
 
-    final Map<String,Map<String,Object>> readCache() throws IOException {
+    final Map<String,Map<String,Object>> readCache() {
         InputStream is = Stamps.getModulesJARs().asStream("all-modules.dat"); // NOI18N
         if (is == null) {
             // schedule write for later
@@ -619,30 +619,35 @@ final class ModuleList implements Stamps.Updater {
             return null;
         }
         LOG.log(Level.FINEST, "Reading cache all-modules.dat");
-        ObjectInputStream ois = new ObjectInputStream(is);
-        
-        Map<String,Map<String,Object>> ret = new HashMap<String, Map<String, Object>>(1333);
-        while (is.available() > 0) {
-            Map<String, Object> prop = readStatus(ois, false);
-            if (prop == null) {
-                LOG.log(Level.CONFIG, "Cache is invalid all-modules.dat");
-                return null;
+        try {
+            ObjectInputStream ois = new ObjectInputStream(is);
+
+            Map<String,Map<String,Object>> ret = new HashMap<String, Map<String, Object>>(1333);
+            while (is.available() > 0) {
+                Map<String, Object> prop = readStatus(ois, false);
+                if (prop == null) {
+                    LOG.log(Level.CONFIG, "Cache is invalid all-modules.dat");
+                    return null;
+                }
+                Set<?> deps;
+                try {
+                    deps = (Set<?>) ois.readObject();
+                } catch (ClassNotFoundException ex) {
+                    throw new IOException(ex);
+                }
+                prop.put("deps", deps);
+                String cnb = (String)prop.get("name"); // NOI18N
+                ret.put(cnb, prop);
             }
-            Set<?> deps;
-            try {
-                deps = (Set<?>) ois.readObject();
-            } catch (ClassNotFoundException ex) {
-                throw (IOException)new IOException(ex.getMessage()).initCause(ex);
-            }
-            prop.put("deps", deps);
-            String cnb = (String)prop.get("name"); // NOI18N
-            ret.put(cnb, prop);
+
+
+            is.close();
+            return ret;
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "Cannot read cache", ex);
+            writeCache();
+            return null;
         }
-
-
-        is.close();
-
-        return ret;
     }
 
     final void writeCache() {
