@@ -252,10 +252,9 @@ try {
 -->
  <answer id="compat-deprecation">
   <p>
-   The new API should coexist with existing APIs mainly
-   <a href="@org-openide-text@/org/openide/text/IndentEngine.html">IndentEngine</a>
-   <a href="@org-netbeans-modules-editor-lib@/org/netbeans/editor/Formatter.html">Formatter</a>
-   but in the future we would like to deprecate the mentioned APIs.
+   The new API can coexist with the old formatting APIs (eg. <code>org.openide.text.IndentEngine</code>
+   and <code>org.netbeans.editor.Formatter</code>). However, all clients are encouraged
+   to update their modules and use this new API.
   </p>
  </answer>
 
