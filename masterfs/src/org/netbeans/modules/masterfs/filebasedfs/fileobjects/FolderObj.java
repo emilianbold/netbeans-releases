@@ -241,7 +241,7 @@ public final class FolderObj extends BaseFileObj {
     
     public final FileObject createDataImpl(final String name, final String ext) throws java.io.IOException {
         if (name.indexOf('\\') != -1 || name.indexOf('/') != -1) {//NOI18N
-            throw new IllegalArgumentException(name);
+            throw new IOException("Requested name contains invalid characters: " + name); // NOI18N
         }
         
         final ChildrenCache childrenCache = getChildrenCache();        
