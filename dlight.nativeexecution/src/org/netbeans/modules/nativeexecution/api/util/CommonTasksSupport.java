@@ -398,4 +398,32 @@ public final class CommonTasksSupport {
             }
         }, descr);
     }
+
+    /**
+     * Queue a signal to a process (sigqueue)
+     *
+     * @param execEnv  execution environment of the process
+     * @param pid  pid of the process
+     * @param signo  signal number
+     * @param value  signal value
+     * @param error  if not <tt>null</tt> and some error occurs,
+     *        an error message will be written to this <tt>Writer</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the signal task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> sigqueue(final ExecutionEnvironment execEnv,
+            final int pid,
+            final int signo,
+            final int value,
+            final Writer error) {
+        final String descr = "Sigqueue " + signo + " with value " + value + " to " + pid; // NOI18N
+
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
+            public Integer call() throws Exception {
+                SignalSupport support = SignalSupport.getSignalSupportFor(execEnv);
+                return support.sigqueue(pid, signo, value);
+            }
+        }, descr);
+    }
 }

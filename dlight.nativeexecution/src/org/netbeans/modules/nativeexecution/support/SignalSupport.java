@@ -49,6 +49,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,11 +59,16 @@ public final class SignalSupport {
 
     private static final WeakHashMap<ExecutionEnvironment, SignalSupport> cache =
             new WeakHashMap<ExecutionEnvironment, SignalSupport>();
-    private NativeProcessBuilder npb;
+    private final NativeProcessBuilder killNpb;
+    private final ExecutionEnvironment exEnv;
+    private final boolean useShell;
+
     private String[] args = new String[2];
-    private boolean useShell;
     private int last_pid = -1;
     private Signal last_signal = null;
+
+    private static final HelperUtility sigqueueHelperUtility =
+            new HelperUtility("bin/nativeexecution/$osname-${platform}$_isa/sigqueue"); // NOI18N
 
     public static synchronized SignalSupport getSignalSupportFor(ExecutionEnvironment execEnv) throws IOException {
         if (!HostInfoUtils.isHostInfoAvailable(execEnv)) {
@@ -71,18 +77,15 @@ public final class SignalSupport {
 
         SignalSupport result = cache.get(execEnv);
         if (result == null) {
-            result = new SignalSupport();
-            result.init(execEnv);
+            result = new SignalSupport(execEnv);
             cache.put(execEnv, result);
         }
 
         return result;
     }
 
-    private SignalSupport() {
-    }
-
-    private void init(ExecutionEnvironment execEnv) throws IOException {
+    private SignalSupport(ExecutionEnvironment execEnv) throws IOException {
+        this.exEnv = execEnv;
         String command = null;
         boolean _useShell = false;
 
@@ -106,15 +109,15 @@ public final class SignalSupport {
         useShell = _useShell;
 
         if (command != null) {
-            npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(command);
+            killNpb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            killNpb.setExecutable(command);
         } else {
-            npb = null;
+            killNpb = null;
         }
     }
 
     public synchronized int kill(Signal signal, int pid) {
-        if (npb == null) {
+        if (killNpb == null) {
             return -1;
         }
 
@@ -131,13 +134,13 @@ public final class SignalSupport {
                 args[1] = Integer.toString(pid);
             }
 
-            npb.setArguments(args);
+            killNpb.setArguments(args);
         }
 
         int result = -1;
 
         try {
-            Process p = npb.call();
+            Process p = killNpb.call();
             result = p.waitFor();
         } catch (Exception ex) {
         }
@@ -148,5 +151,20 @@ public final class SignalSupport {
     public synchronized int killgrp(Signal signal, int pid) {
         // negative pid means send signal to process group (see man kill)
         return kill(signal, -pid);
+    }
+
+    public int sigqueue(int pid, int signo, int value) {
+        try {
+            String path = sigqueueHelperUtility.getPath(exEnv);
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
+            npb.setExecutable(path);
+            npb.setArguments(String.valueOf(pid), String.valueOf(signo), String.valueOf(value));
+            return npb.call().waitFor();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return 1;
     }
 }

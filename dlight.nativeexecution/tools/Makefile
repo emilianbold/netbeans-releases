@@ -55,7 +55,7 @@ BUILD=./build
 
 APP_PATH=${DIST}/${PLATFORM_DIR}
 
-all: init privp process_start pty_open
+all: init privp process_start pty_open sigqueue
 
 privp: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
@@ -65,6 +65,9 @@ process_start: init
 
 pty_open: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
+
+sigqueue: init
+	gcc ${CFLAGS} ${FLAG64} -lposix4 -o ${APP_PATH}/$@ $@.c
 
 clean:
 	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}
