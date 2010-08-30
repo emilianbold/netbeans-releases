@@ -80,11 +80,13 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSu
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
@@ -160,10 +162,18 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             profiles.add(Profile.J2EE_14);
             
             // Check for WebLogic Server 10x to allow Java EE 5 Projects
-            String version = WLPluginProperties.getWeblogicDomainVersion(dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR));
+            Version version = WLPluginProperties.getDomainVersion(dm.getInstanceProperties());
             
-            if (version != null && version.contains("10")) { // NOI18N
-                profiles.add(Profile.JAVA_EE_5);
+            if (version != null) {
+                if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
+                    profiles.add(Profile.JAVA_EE_5);
+                }
+                if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_11)) {
+                    if (!dm.isWebProfile()) {
+                        profiles.add(Profile.JAVA_EE_6_FULL);
+                    }
+                    profiles.add(Profile.JAVA_EE_6_WEB);
+                }
             }
 
             domainChangeListener = new DomainChangeListener(this);

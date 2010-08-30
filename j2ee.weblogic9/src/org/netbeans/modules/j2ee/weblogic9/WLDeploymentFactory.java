@@ -51,8 +51,9 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLMutableState;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLSharedState;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,6 +69,10 @@ public class WLDeploymentFactory implements DeploymentFactory {
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
 
     public static final int DEFAULT_PORT = 7001;
+
+    public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
+
+    public static final Version VERSION_11 = Version.fromJsr277NotationWithFallback("11"); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentFactory.class.getName());
 
@@ -92,8 +97,8 @@ public class WLDeploymentFactory implements DeploymentFactory {
      * <p>
      * <i>GuardedBy(WLDeploymentFactory.class)</i>
      */
-    private static Map<InstanceProperties, WLMutableState> stateCache =
-            new WeakHashMap<InstanceProperties, WLMutableState>();
+    private static Map<InstanceProperties, WLSharedState> stateCache =
+            new WeakHashMap<InstanceProperties, WLSharedState>();
 
     /**
      * The singleton factory method
@@ -137,7 +142,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
                 return dm;
             }
 
-            WLMutableState mutableState = getMutableState(props);
+            WLSharedState mutableState = getMutableState(props);
 
             String[] parts = uri.split(":"); // NOI18N
             String host = parts[3].substring(2);
@@ -162,7 +167,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException("Could not create deployment manager for " + uri);
         }
 
-        WLMutableState mutableState = getMutableState(props);
+        WLSharedState mutableState = getMutableState(props);
 
         // FIXME optimize (can we use singleton disconnected manager ?)
         String[] parts = uri.split(":"); // NOI18N
@@ -182,10 +187,10 @@ public class WLDeploymentFactory implements DeploymentFactory {
         return NbBundle.getMessage(WLDeploymentFactory.class, "TXT_displayName");
     }
 
-    private static synchronized WLMutableState getMutableState(InstanceProperties props) {
-        WLMutableState mutableState = stateCache.get(props);
+    private static synchronized WLSharedState getMutableState(InstanceProperties props) {
+        WLSharedState mutableState = stateCache.get(props);
         if (mutableState == null) {
-            mutableState = new WLMutableState(props);
+            mutableState = new WLSharedState(props);
             stateCache.put(props, mutableState);
         }
         mutableState.configure();
