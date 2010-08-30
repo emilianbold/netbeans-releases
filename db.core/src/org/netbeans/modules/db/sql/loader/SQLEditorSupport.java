@@ -92,6 +92,8 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.windows.CloneableOpenSupport;
 
 /** 
@@ -359,9 +361,19 @@ public class SQLEditorSupport extends DataEditorSupport
             return;
         }
         SQLExecutor executor = new SQLExecutor(this, conn, sql, startOffset, endOffset);
-        RequestProcessor.Task task = rp.create(executor);
+        final RequestProcessor.Task task = rp.create(executor);
         executor.setTask(task);
         task.schedule(0);
+        if ((sql.toUpperCase().indexOf("CREATE") != -1) || (sql.toUpperCase().indexOf("DROP") != -1)) { // NOI18N
+            task.addTaskListener(new TaskListener() {
+                @Override
+                public void taskFinished(Task task) {
+                    task.removeTaskListener(this);
+                    refresh();
+                }
+
+            });
+        }
     }
     
     synchronized boolean isExecuting() {
@@ -426,6 +438,13 @@ public class SQLEditorSupport extends DataEditorSupport
         } else {
             rp.post(run);
         }
+    }
+    
+    private void refresh() {
+        if (dbconn == null) {
+            return ;
+        }
+        ConnectionManager.getDefault().refreshConnectionInExplorer(dbconn);
     }
     
     private SQLExecutionLoggerImpl createLogger() {

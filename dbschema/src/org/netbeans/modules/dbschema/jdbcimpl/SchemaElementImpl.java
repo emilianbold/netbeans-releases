@@ -354,7 +354,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                 rs = dmd.getImportedKeys(catalog, schema, tables.get(i).toString());
 
             if (rs != null) {
-                HashMap rset = new HashMap();
+                Map rset = new HashMap();
                 String c1, c2, s1, s2;
                 while (rs.next()) {
                     if (bridge != null) {
@@ -514,7 +514,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                         if (rs != null) {
                             if (! all) {
                                 String colName;
-                                HashMap rset = new HashMap();
+                                Map rset = new HashMap();
                                 while (rs.next()) {
                                     if (bridge != null) {
                                         rset = bridge.getDriverSpecification().getRow();
@@ -593,7 +593,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                             rs = cp.getDatabaseMetaData().getImportedKeys(cp.getConnection().getCatalog(), cp.getSchema(), tables.get(j).toString());
                         
                         if (rs != null) {
-                            HashMap rset = new HashMap();
+                            Map rset = new HashMap();
                             LinkedList local = new LinkedList();
                             LinkedList ref = new LinkedList();
                             LinkedList fk = new LinkedList();
