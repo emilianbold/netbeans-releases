@@ -43,53 +43,37 @@
 package org.netbeans.modules.html.parser;
 
 import java.util.Collection;
-import nu.validator.htmlparser.impl.ElementName;
 import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author marekfukala
  */
-public class ElementNameGroupsTest extends NbTestCase {
+public class ElementAttributesTest extends NbTestCase {
 
-    public ElementNameGroupsTest(String name) {
+    public ElementAttributesTest(String name) {
         super(name);
     }
 
+    public void testAttributes() {
+        Collection<String> attrs = ElementAttributes.getAttrNamesForElement("div"); //only global attrs
+        
+        assertNotNull(attrs);
+        assertTrue(attrs.contains("class"));
+        assertTrue(attrs.contains("onclick"));
+        
+        assertFalse(attrs.contains("bla"));
+        assertFalse(attrs.contains("href"));
 
-    public void testGetElementForTreeBuilderGroup() {
-        Collection<ElementName> members = ElementNameGroups.getElementForTreeBuilderGroup(ElementName.A.group);
-        assertTrue(members.contains(ElementName.A));
-        assertEquals(1, members.size()); //only one member group
+        attrs = ElementAttributes.getAttrNamesForElement("meta"); //some specific attrs as well
 
-        members = ElementNameGroups.getElementForTreeBuilderGroup(ElementName.B.group);
-        assertTrue(members.contains(ElementName.B));
-        assertTrue(members.contains(ElementName.BIG));
-        assertTrue(members.contains(ElementName.CODE));
-        assertFalse(members.contains(ElementName.A));
-        assertFalse(members.contains(ElementName.FONT));
+        assertNotNull(attrs);
+        assertTrue(attrs.contains("class"));
+        assertTrue(attrs.contains("onclick"));
+        assertTrue(attrs.contains("http-equiv"));
 
-        members = ElementNameGroups.getElementForTreeBuilderGroup(4343); //nonexisting group
-        assertTrue(members.isEmpty());
-
+        assertFalse(attrs.contains("bla"));
+        assertFalse(attrs.contains("href"));
     }
-
-    //for generation of the list of html elements in HtmlSpecTest in html.validation module
-//    public void testGenerateAttributesList() {
-//        StringBuilder sb = new StringBuilder();
-//        int i = 0;
-//        for(ElementName en : ElementName.ELEMENT_NAMES) {
-//            sb.append('"');
-//            sb.append(en.name);
-//            sb.append('"');
-//            sb.append(',');
-//            sb.append(' ');
-//            if(++i % 8 == 0) {
-//                sb.append('\n');
-//            }
-//        }
-//
-//        System.out.println(sb);
-//    }
 
 }
