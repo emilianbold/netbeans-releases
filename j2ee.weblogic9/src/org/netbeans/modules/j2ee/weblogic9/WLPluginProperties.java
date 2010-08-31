@@ -51,7 +51,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -276,18 +275,22 @@ public final class WLPluginProperties {
 
         // is the server root was not defined, return an empty array of domains
         if (serverRoot == null) {
-            return new String[0];
+            return new String[] {};
         }
 
         // init the input stream for the file and the w3c document object
         File file = new File(serverRoot + File.separator
                 + DOMAIN_LIST.replaceAll("/", Matcher.quoteReplacement(File.separator)));
-        LineNumberReader lnr = null;
+        if (!file.exists() || file.canRead()) {
+            return new String[] {};
+        }
+
+        BufferedReader lnr = null;
 
         // read the list file line by line fetching out the domain paths
         try {
             // create a new reader for the FileInputStream
-            lnr = new LineNumberReader(new InputStreamReader(new FileInputStream(file)));
+            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
             // read the lines
             String line;
