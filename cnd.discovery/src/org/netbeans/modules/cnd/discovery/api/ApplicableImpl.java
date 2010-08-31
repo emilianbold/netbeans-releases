@@ -42,21 +42,32 @@
 
 package org.netbeans.modules.cnd.discovery.api;
 
+import java.util.List;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
+
 /**
  *
  * @author Alexander Simon
  */
-public final class ApplicableImpl implements DiscoveryExtensionInterface.Applicable {
+public final class ApplicableImpl implements Applicable {
     private final String compiler;
     private final boolean applicable;
     private final int weight;
     private final boolean sunStudio;
+    private final List<String> dependencies;
+    private final String sourceRoot;
+    private final Position position;
 
-    public ApplicableImpl(boolean applicable, String compiler, int weight, boolean sunStudio) {
+    public ApplicableImpl(boolean applicable, String compiler, int weight, boolean sunStudio,
+            List<String> dependencies, String sourceRoot, Position position) {
         this.compiler = compiler;
         this.applicable = applicable;
         this.weight = weight;
         this.sunStudio = sunStudio;
+        this.dependencies = dependencies;
+        this.sourceRoot = sourceRoot;
+        this.position = position;
     }
 
     @Override
@@ -74,10 +85,25 @@ public final class ApplicableImpl implements DiscoveryExtensionInterface.Applica
         return weight;
     }
 
-    public static final DiscoveryExtensionInterface.Applicable NotApplicable = new ApplicableImpl(false, null, 0, false);
+    public static final DiscoveryExtensionInterface.Applicable NotApplicable = new ApplicableImpl(false, null, 0, false, null, null, null);
 
     @Override
     public boolean isSunStudio() {
         return sunStudio;
+    }
+
+    @Override
+    public List<String> getDependencies() {
+        return dependencies;
+    }
+
+    @Override
+    public String getSourceRoot() {
+        return sourceRoot;
+    }
+
+    @Override
+    public Position getMainFunction() {
+        return position;
     }
 }

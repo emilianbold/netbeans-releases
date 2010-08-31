@@ -603,6 +603,16 @@ public class OpenSolaris extends KnownProject {
         public void setCompilerName(String compiler) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
+
+        @Override
+        public List<String> getDependencies() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public void setDependencies(List<String> dependencies) {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
     }
     
     private static class DiscoveryProviderImpl implements DiscoveryProvider {
