@@ -343,7 +343,7 @@ public class HtmlCompletionQuery extends UserTask {
                 result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
 
                 if(HtmlPreferences.completionOffersEndTagAfterLt()) {
-                    result.addAll(getPossibleEndTags(node, undeclaredTagsLeafNode, offset, ""));
+                    result.addAll(getPossibleEndTags(htmlResult, node, undeclaredTagsLeafNode, offset, ""));
                 }
             }
 
@@ -359,12 +359,12 @@ public class HtmlCompletionQuery extends UserTask {
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</"))) { // NOI18N
             //complete end tags without prefix
             anchor = offset;
-            result = getPossibleEndTags(node, undeclaredTagsLeafNode, offset, "");
+            result = getPossibleEndTags(htmlResult, node, undeclaredTagsLeafNode, offset, "");
 
         } else if (id == HTMLTokenId.TAG_CLOSE) { // NOI18N
             //complete end tags with prefix
             anchor = documentItemOffset;
-            result = getPossibleEndTags(node, undeclaredTagsLeafNode, offset, preText);
+            result = getPossibleEndTags(htmlResult, node, undeclaredTagsLeafNode, offset, preText);
 
         } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
             anchor = offset;
@@ -557,26 +557,41 @@ public class HtmlCompletionQuery extends UserTask {
         return result;
     }
 
-    private List<CompletionItem> getPossibleEndTags(AstNode leaf, AstNode undeclaredTagsLeafNode, int offset, String prefix) {
+    private List<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, AstNode leaf, AstNode undeclaredTagsLeafNode, int offset, String prefix) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
-        items.addAll(getPossibleHtmlEndTags(leaf, offset, prefix));
-        items.addAll(getPossibleHtmlEndTags(undeclaredTagsLeafNode, offset, prefix));
+        items.addAll(getPossibleEndTags(htmlResult, leaf, offset, prefix));
+        items.addAll(getPossibleHtmlEndTagsForUndeclaredComponents(undeclaredTagsLeafNode, offset, prefix));
 
         return items;
     }
 
-    private List<CompletionItem> getPossibleHtmlEndTags(AstNode leaf, int offset, String prefix) {
+    private Collection<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, AstNode leaf, int offset, String prefix) {
+        Collection<HtmlTag> possible = htmlResult.getPossibleTagsInContext(leaf, HtmlTagType.END_TAG);
+        Collection<CompletionItem> items = new ArrayList<CompletionItem>();
+        int order = 0;
+        for(HtmlTag tag : possible) {
+            //XXX this wont' work now since the API exposes only the tags desceriptions, not the physical nodes
+
+//            //distance from the caret position - lower number, higher precedence
+//            //this will ensure the two end tags list from html and undeclared content being properly ordered
+//            int order = offset - leaf.startOffset();
+//
+            String tagName = isXHtml ? tag.getName() : (lowerCase ? tag.getName().toLowerCase(Locale.ENGLISH) : tag.getName().toUpperCase(Locale.ENGLISH));
+            items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order++, getEndTagType(leaf)));
+        }
+        return items;
+    }
+
+    private List<CompletionItem> getPossibleHtmlEndTagsForUndeclaredComponents(AstNode leaf, int offset, String prefix) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
 
         for (;;) {
             if (leaf.type() == AstNode.NodeType.ROOT) {
                 break;
             }
-            //if dtd element and doesn't have forbidden end tag
-            if ((leaf.getDTDElement() == null || !AstNodeUtils.hasForbiddenEndTag(leaf)) &&
-                    leaf.type() == AstNode.NodeType.OPEN_TAG) {
 
-                String tagName = leaf.name();
+            if (leaf.type() == AstNode.NodeType.OPEN_TAG) {
+                String tagName = isXHtml ? leaf.name() : (lowerCase ? leaf.name().toLowerCase(Locale.ENGLISH) : leaf.name().toUpperCase(Locale.ENGLISH));
                 if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                     //TODO - distinguish unmatched and matched tags in the completion!!!
                     //TODO - mark required and optional end tags somehow
@@ -593,15 +608,10 @@ public class HtmlCompletionQuery extends UserTask {
                     break;
                 }
             }
-
-
+            
             leaf = leaf.parent();
-
             assert leaf != null;
-
-
         }
-
         return items;
     }
 
@@ -632,17 +642,6 @@ public class HtmlCompletionQuery extends UserTask {
         for(HtmlTagAttribute ta : attrs) {
             if(ta.getName().startsWith(prefix)) {
                 filtered.add(ta);
-            }
-        }
-        return filtered;
-    }
-
-    private Collection<DTD.Element> filterElements(Collection<DTD.Element> elements, String elementNamePrefix) {
-        List<DTD.Element> filtered = new ArrayList<DTD.Element>();
-        elementNamePrefix = elementNamePrefix.toLowerCase(Locale.ENGLISH);
-        for (DTD.Element e : elements) {
-            if (e.getName().toLowerCase(Locale.ENGLISH).startsWith(elementNamePrefix)) {
-                filtered.add(e);
             }
         }
         return filtered;

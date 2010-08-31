@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
@@ -59,6 +60,7 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -118,11 +120,26 @@ public class DefaultHtmlParser implements HtmlParser {
 
             @Override
             public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type) {
-                if (type == HtmlTagType.OPEN_TAG) {
-                    return DTD2HtmlTag.convert(AstNodeUtils.getPossibleOpenTagElements(afterNode));
-                } else {
-                    //TODO implement
-                    return Collections.emptyList();
+                switch(type) {
+                    case OPEN_TAG:
+                        return DTD2HtmlTag.convert(AstNodeUtils.getPossibleOpenTagElements(afterNode));
+                    case END_TAG:
+                        Collection<AstNode> possibleEndTags = AstNodeUtils.getPossibleEndTagElements(afterNode);
+                        Collection<HtmlTag> result = new LinkedList<HtmlTag>();
+                        for(AstNode node : possibleEndTags) {
+                            if(node.getDTDElement() != null) {
+                                //DTD element bound node
+                                result.add(DTD2HtmlTag.getTagForElement(node.getDTDElement()));
+                            } else {
+                                //non-dtd node
+                                result.add(new UnknownHtmlTag(node.name()));
+                            }
+                        }
+                        return result;
+
+                    default:
+                        assert false : "A new member added to the HtmlTagType enum - add the rule here!"; //NOI18N
+                        return Collections.emptyList();
                 }
             }
 
@@ -144,4 +161,45 @@ public class DefaultHtmlParser implements HtmlParser {
         };
 
     }
+
+    private static class UnknownHtmlTag implements HtmlTag {
+
+        private String name;
+
+        public UnknownHtmlTag(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public Collection<HtmlTagAttribute> getAttributes() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public HtmlTagAttribute getAttribute(String name) {
+            return null;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public boolean hasOptionalOpenTag() {
+            return false;
+        }
+
+        @Override
+        public boolean hasOptionalEndTag() {
+            return false;
+        }
+
+    }
+
 }

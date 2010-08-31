@@ -46,6 +46,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -195,7 +196,7 @@ public class Html5Parser implements HtmlParser {
         }
 
         public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, HtmlTagType type) {
-            List<HtmlTag> possible = new ArrayList<HtmlTag>();
+            Collection<HtmlTag> possible = new HashSet<HtmlTag>();
             if (type == HtmlTagType.OPEN_TAG) {
                 //open tags
                 StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
@@ -236,7 +237,7 @@ public class Html5Parser implements HtmlParser {
                     ElementName element = (ElementName) node.elementName;
                     if (element != null) {
                         //TODO if(element is not empty tag (end tag forbidden) {
-                        possible.add(0, HtmlTagProvider.getTagForElement(element));
+                        possible.add(HtmlTagProvider.getTagForElement(element));
                         //}
                     }
                 } while ((node = node.parent()) != null && !node.isRootNode());

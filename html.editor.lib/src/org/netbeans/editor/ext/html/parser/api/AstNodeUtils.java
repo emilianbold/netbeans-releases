@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -332,6 +333,31 @@ public class AstNodeUtils {
         return null;
     }
 
+    public static Collection<AstNode> getPossibleEndTagElements(AstNode leaf) {
+        Collection<AstNode> possible = new LinkedList<AstNode>();
+
+        for (;;) {
+            if (leaf.type() == AstNode.NodeType.ROOT) {
+                break;
+            }
+
+            //if dtd element and doesn't have forbidden end tag
+            if ((leaf.getDTDElement() == null || !AstNodeUtils.hasForbiddenEndTag(leaf))
+                    && leaf.type() == AstNode.NodeType.OPEN_TAG) {
+
+                possible.add(leaf);
+
+                //check if the tag needs to have a matching tag and if is matched already
+                if (leaf.needsToHaveMatchingTag() && leaf.getMatchingTag() == null) {
+                    //if not, any of its parent cannot be closed here
+                    break;
+                }
+            }
+            leaf = leaf.parent();
+            assert leaf != null;
+        }
+        return possible;
+    }
 
 
     public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode node) {
