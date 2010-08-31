@@ -179,6 +179,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
                             ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
+            return false;
         }
         
         if (instance != null && instance.isProductionModeEnabled()){
@@ -196,6 +197,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         }
 
         if (instance != null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", instance.getDomainName()))); // NOI18N
+
             // save the data to the parent instantiating iterator
             instantiatingIterator.setUrl(getUrl(instance));
             instantiatingIterator.setDomainRoot(instance.getDomainPath());
@@ -204,10 +208,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             instantiatingIterator.setPort(instance.getPort());
             instantiatingIterator.setDomainName(instance.getDomainName());
             instantiatingIterator.setHost(instance.getPort());
-            // everything seems ok
-        } else {
-            // TODO message or something similar
-            return false;
         }
         return true;
     }
@@ -451,8 +451,10 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         Object item = localInstancesCombo.getEditor().getItem();
-        if (item != null) {
+        if (item != null && item.toString().trim().length() > 0) {
             chooser.setSelectedFile(new File(item.toString()));
+        } else {
+            chooser.setSelectedFile(new File(instantiatingIterator.getServerRoot()));
         }
         if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
             localInstancesCombo.getEditor().setItem(chooser.getSelectedFile().getAbsolutePath());

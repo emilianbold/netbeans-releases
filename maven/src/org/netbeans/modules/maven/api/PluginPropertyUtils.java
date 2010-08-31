@@ -390,8 +390,9 @@ public class PluginPropertyUtils {
                 Xpp3Dom[] childs = source.getChildren(singleproperty);
                 for (Xpp3Dom ch : childs) {
                     try {
-                        Object evaluated = eval.evaluate(ch.getValue().trim());
-                        toRet.add(evaluated != null ? ("" + evaluated) : ch.getValue().trim());  //NOI18N
+                        String chvalue = ch.getValue()==null ? "" : ch.getValue().trim();  //NOI18N
+                        Object evaluated = eval.evaluate(chvalue);
+                        toRet.add(evaluated != null ? ("" + evaluated) : chvalue);  //NOI18N
                     } catch (ExpressionEvaluationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
