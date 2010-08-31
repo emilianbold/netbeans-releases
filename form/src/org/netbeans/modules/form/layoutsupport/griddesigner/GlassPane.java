@@ -1292,27 +1292,18 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             int heightDelta = newGridHeight - info.getGridHeight(focusedComponent);
             int widthDelta = newGridWidth - info.getGridWidth(focusedComponent);
             GridUtils.removePaddingComponents(gridManager);
-            if (xDelta != 0) {
+            if ((xDelta != 0) || (yDelta != 0) || (widthDelta != 0) || (heightDelta != 0)) {
                 for (Component selComp : selection) {
                     int gridX = info.getGridX(selComp);
-                    gridManager.setGridX(selComp, gridX+xDelta);
-                }
-            }
-            if (yDelta != 0) {
-                for (Component selComp : selection) {
                     int gridY = info.getGridY(selComp);
-                    gridManager.setGridY(selComp, gridY+yDelta);
-                }
-            }
-            if (widthDelta != 0) {
-                for (Component selComp : selection) {
                     int width = info.getGridWidth(selComp);
-                    gridManager.setGridWidth(selComp, width+widthDelta);
-                }
-            }
-            if (heightDelta != 0) {
-                for (Component selComp : selection) {
                     int height = info.getGridHeight(selComp);
+                    // We set all grid location properties even when
+                    // just one changes to avoid unexpected behaviour
+                    // caused by GridBagConstraint.RELATIVE or REMAINDER
+                    gridManager.setGridX(selComp, gridX+xDelta);
+                    gridManager.setGridY(selComp, gridY+yDelta);
+                    gridManager.setGridWidth(selComp, width+widthDelta);
                     gridManager.setGridHeight(selComp, height+heightDelta);
                 }
             }

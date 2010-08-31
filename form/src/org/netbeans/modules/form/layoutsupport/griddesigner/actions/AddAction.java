@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
+import org.openide.util.NbBundle;
 
 /**
  * Action that allows to add a new component into the grid.
@@ -123,6 +124,8 @@ public class AddAction extends AbstractGridAction {
             }
         });
         menu.disableHack();
+        String name = NbBundle.getMessage(AddAction.class, "AddAction_Name"); // NOI18N
+        menu.setText(name);
         return menu;
     }
 

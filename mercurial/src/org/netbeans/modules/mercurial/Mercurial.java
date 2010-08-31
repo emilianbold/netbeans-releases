@@ -186,7 +186,7 @@ public class Mercurial {
             @Override
             public void run() {
                 HgKenaiAccessor.getInstance().registerVCSNoficationListener();
-                synchronized(this) {
+                synchronized(Mercurial.this) {
                     checkVersionIntern();
                 }
             }
@@ -197,12 +197,12 @@ public class Mercurial {
 
     private void checkVersionIntern() {
         version = HgCommand.getHgVersion();
-        LOG.log(Level.FINE, "version: {0}", version); // NOI18N
         if (version != null) {
             goodVersion = isSupportedVersion(version);
         } else {
             goodVersion = false;
         }
+        LOG.log(goodVersion ? Level.FINE : Level.INFO, "version: {0}", version); // NOI18N
         gotVersion = true;
     }
 

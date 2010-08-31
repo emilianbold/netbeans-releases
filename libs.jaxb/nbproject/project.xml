@@ -29,14 +29,6 @@
                 <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.identity.profile.api</friend>
                 <friend>org.netbeans.modules.xml.jaxb</friend>
-                <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
-                <friend>org.netbeans.modules.websvc.saas.api</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen.php</friend>
-                <friend>org.netbeans.modules.websvc.saas.services.strikeiron</friend>
-                <friend>org.netbeans.modules.websvc.saas.ui</friend>
                 <friend>org.netbeans.modules.websvc.jaxws21api</friend>
                 <friend>org.netbeans.modules.websvc.metro.model</friend>
                 <package>com.sun.tools.xjc</package>

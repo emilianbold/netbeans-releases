@@ -348,11 +348,11 @@ public abstract class CLIHandler extends Object {
         Runnable runWhenHome
     ) {
         String userDir = System.getProperty("netbeans.user.dir");
-        System.err.println("nud: " + userDir);
+        //System.err.println("nud: " + userDir);
         if (userDir == null) {
             userDir = System.getProperty ("user.dir");
         }
-        System.err.println(" ud: " + userDir);
+        //System.err.println(" ud: " + userDir);
         return initialize(
             new Args(args, is, os, err, userDir), 
             (Integer)null, 
