@@ -768,7 +768,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
 private void cbJsfComponentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbJsfComponentsActionPerformed
     // TODO add your handling code here:
-    panel.setJsfComponentsLibrary(((ComponentsLibraryItem)cbJsfComponents.getSelectedItem()).getLibrary());
+    panel.setJsfComponentDescriptor(((ComponentsLibraryItem)cbJsfComponents.getSelectedItem()).getJsfComponentDescriptor());
 }//GEN-LAST:event_cbJsfComponentsActionPerformed
     
     
@@ -1132,7 +1132,7 @@ private void cbJsfComponentsActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     private void updateJsfComponents() {
-        panel.setJsfComponentsLibrary(((ComponentsLibraryItem)cbJsfComponents.getSelectedItem()).getLibrary());
+        panel.setJsfComponentDescriptor(((ComponentsLibraryItem)cbJsfComponents.getSelectedItem()).getJsfComponentDescriptor());
     }
 
     private void enableDefinedLibraryComponent(boolean enabled){
@@ -1300,6 +1300,10 @@ private void cbJsfComponentsActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         public ComponentsLibraryItem(JsfComponentDescriptor jsfComponentsProvider) {
             this.jsfComponentsProvider = jsfComponentsProvider;
+        }
+
+        public JsfComponentDescriptor getJsfComponentDescriptor() {
+            return jsfComponentsProvider;
         }
 
         public Library getLibrary() {
