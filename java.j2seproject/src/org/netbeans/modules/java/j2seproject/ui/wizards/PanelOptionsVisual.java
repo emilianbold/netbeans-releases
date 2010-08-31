@@ -50,10 +50,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -213,7 +209,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         if (main.length() == 0) {
             main.append(NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"));
         }
-        return String.format("%s.%s", pkg.toString(), main.toString());   //NOI18N        
+        return pkg.length() == 0 ? main.toString() : String.format("%s.%s", pkg.toString(), main.toString());   //NOI18N        
     }    
     /** This method is called from within the constructor to
      * initialize the form.
