@@ -47,6 +47,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.JComponent;
+import org.netbeans.modules.form.FormLoaderSettings;
 
 /**
  * Utilities of the grid designer.
@@ -100,6 +101,10 @@ public class GridUtils {
      */
     public static void addPaddingComponents(GridManager manager, int columnNo, int rowNo) {
         manager.updateLayout();
+        boolean shouldPad = FormLoaderSettings.getInstance().getPadEmptyCells();
+        if (!shouldPad) {
+            return;
+        }
         if (manager.getContainer().getComponentCount() == 0) {
             // Some layout managers (like GridBagLayout) do not layout empty
             // containers => add one obvious padding before revalidation
