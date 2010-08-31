@@ -179,6 +179,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
                             ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
+            return false;
         }
         
         if (instance != null && instance.isProductionModeEnabled()){
