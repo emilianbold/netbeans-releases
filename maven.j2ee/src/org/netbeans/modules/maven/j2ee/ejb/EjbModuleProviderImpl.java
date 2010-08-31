@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.j2ee.ejb;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -62,7 +63,10 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -102,6 +106,7 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
      * @param file 
      * @return 
      */
+    @Override
     public EjbJar findEjbJar(FileObject file) {
         Project proj = FileOwnerQuery.getOwner (file);
         if (proj != null) {
@@ -122,6 +127,7 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
      * 
      * @return 
      */
+    @Override
     public synchronized J2eeModule getJ2eeModule() {
         if (j2eemodule == null) {
             j2eemodule = J2eeModuleFactory.createJ2eeModule(ejbimpl);
@@ -133,11 +139,13 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
      * 
      * @return 
      */
+    @Override
     public ModuleChangeReporter getModuleChangeReporter() {
         return ejbimpl;
     }
 
 
+    @Override
     public void setServerInstanceID(String string) {
         String oldone = null;
         if (serverInstanceID != null) {
@@ -172,9 +180,8 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
     public FileObject[] getSourceRoots() {
         ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE);
-        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         List<URL> resUris = new ArrayList<URL>();
-        for (URI uri : prj.getResources(false)) {
+        for (URI uri : mavenproject.getResources(false)) {
             try {
                 resUris.add(uri.toURL());
             } catch (MalformedURLException ex) {
@@ -198,6 +205,7 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
         return toRet.toArray(new FileObject[0]);
     }
 
+    @Override
     public EjbJar[] getEjbJars() {
         if (ejbimpl.isValid()) {
             if (apiEjbJar == null) {
@@ -208,4 +216,18 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
         return new EjbJar[0];
     }
     
+    @Override
+    public File[] getRequiredLibraries() {
+        ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+        ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.COMPILE);
+        List<File> files = new ArrayList<File>();
+        for (FileObject fo : cp.getRoots()) {
+            fo = FileUtil.getArchiveFile(fo);
+            if (fo == null) {
+                continue;
+            }
+            files.add(FileUtil.toFile(fo));
+        }
+        return files.toArray(new File[files.size()]);
+    }
 }
