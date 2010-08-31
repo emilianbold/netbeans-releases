@@ -207,7 +207,7 @@ public class GridDesigner extends JPanel implements Customizer {
     }
 
     /**
-     * Creates and initialized the components on the left side.
+     * Creates and initializes components on the left side.
      * 
      * @return component that represents the left side.
      */
