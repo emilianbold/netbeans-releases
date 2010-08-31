@@ -2971,7 +2971,7 @@ public class HgCommand {
             // even when it fails when for instance adding an already tracked file to
             // the repository - we will have to examine the output in the context of the
             // calling func and raise exceptions there if needed
-            Mercurial.LOG.log(Level.INFO, "execEnv():  execEnv(): IOException", e); // NOI18N
+            Mercurial.LOG.log(HG_VERSION_CMD.equals(command.get(1)) ? Level.FINE : Level.INFO, "execEnv():  execEnv(): IOException", e); // NOI18N
 
             // Handle low level Mercurial failures
             if (isErrorArgsTooLong(e.getMessage())){
