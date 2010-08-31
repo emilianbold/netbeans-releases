@@ -297,7 +297,7 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
     
-    <target name="-jnlp-init-keystore" depends="-jnlp-init-keystore-props,-check-keystore-exists" unless="jnlp.signjar.keystore.exists">
+    <target name="-jnlp-init-keystore" depends="-jnlp-init-signing,-jnlp-init-keystore1,-jnlp-init-keystore2,-check-keystore-exists" unless="jnlp.signjar.keystore.exists">
         <echo message="${application.vendor}" file="${helper.file}"/>
         <loadfile property="application.vendor.filtered" srcfile="${helper.file}">
             <filterchain>
@@ -314,12 +314,25 @@ made subject to such option by the copyright holder.
     <target name="-check-keystore-exists">
         <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
     </target>
-    
-    <target name="-jnlp-init-keystore-props">
-        <property name="jnlp.signjar.keystore" value="${basedir}/build/nb-jws.ks"/>
+
+    <target name="-jnlp-init-signing">
+        <condition property="generated.key.signing">
+            <equals arg1="${jnlp.signing}" arg2="generated" trim="true"/>
+        </condition>
+    </target>
+
+    <target name="-jnlp-init-keystore1" if="generated.key.signing">
+        <property name="jnlp.signjar.keystore" value="${basedir}/build/nb-jws.ks" />
         <property name="jnlp.signjar.storepass" value="storepass"/>
         <property name="jnlp.signjar.keypass" value="keypass"/>
         <property name="jnlp.signjar.alias" value="nb-jws"/>
+    </target>
+
+    <target name="-jnlp-init-keystore2" unless="generated.key.signing">
+        <property name="jnlp.signjar.keystore" value="${jnlp.signing.keystore}" />
+        <property name="jnlp.signjar.storepass" value="${jnlp.signing.storepass}"/>
+        <property name="jnlp.signjar.keypass" value="${jnlp.signing.keypass}"/>
+        <property name="jnlp.signjar.alias" value="${jnlp.signing.alias}"/>
     </target>
 
     <!-- Signing -->

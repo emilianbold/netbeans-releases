@@ -56,14 +56,20 @@ final public class JsfComponentDescriptor {
     private final String libraryName;
     private final String description;
     private final JSFVersion jsfVersion;
+    private final String welcomeBody;
+    private final String namespace;
+    private final String nsPrefix;
 
-    public JsfComponentDescriptor(String libraryName, String name, JSFVersion jsfVersion, String description) {
+    public JsfComponentDescriptor(String libraryName, String name, JSFVersion jsfVersion, String description, String welcomeBody, String namespace, String nsPrefix) {
         Parameters.notNull("name", name); // NOI18N
         Parameters.notNull("libraryName", libraryName); // NOI18N
         this.libraryName = libraryName;
         this.name = name;
         this.jsfVersion = jsfVersion;
         this.description = description;
+        this.welcomeBody = welcomeBody;
+        this.namespace = namespace;
+        this.nsPrefix = nsPrefix;
     }
 
     public JSFVersion getJsfVersion() {
@@ -110,5 +116,15 @@ final public class JsfComponentDescriptor {
         return getName();
     }
 
-    
+    public String getWelcomeBody() {
+        return welcomeBody;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getNsPrefix() {
+        return nsPrefix;
+    }
 }
