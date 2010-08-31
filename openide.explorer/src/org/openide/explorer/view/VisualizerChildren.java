@@ -249,10 +249,15 @@ final class VisualizerChildren extends Object {
         if (idxs.length == 0) {
             return;
         }
+        if (visNodes.isEmpty()) {
+            return;
+        }
         
         assert visNodes.size() > idxs[idxs.length - 1] : dumpEventInfo(ev);
 
+        int prev = Integer.MAX_VALUE;
         for (int i = idxs.length - 1; i >= 0; i--) {
+            assert idxs[i] < prev : "Indexes have to be descendant. Prev: " + prev + " next: " + idxs[i] + " at " + i;
             VisualizerNode visNode = visNodes.remove(idxs[i]);
             ev.removed.add(visNode != null ? visNode : VisualizerNode.EMPTY);
         }

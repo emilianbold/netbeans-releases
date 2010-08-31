@@ -52,6 +52,7 @@ import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -279,11 +280,18 @@ public final class IndexingManager {
      *   the folders lying outside of all source folders will be checked for source roots
      *   that they contain and these source roots will be rescanned.
      *   <p>Can be <code>null</code> in which case all indices for
-     *   all roots will be refreshed.
+     *   all roots will be refreshed. The files have to be normalized, @see FileUtil#normalizeFile
      *
      * @since 1.24
      */
     public void refreshAllIndices(boolean fullRescan, boolean wait, File... filesOrFolders) {
+        boolean ae = false;
+        assert ae = true;
+        if (ae) {
+            for (final File file : filesOrFolders) {
+                assert file.equals(FileUtil.normalizeFile(file)) : String.format("File: %s is not normalized.", file.toString());   //NOI18N
+            }
+        }
         RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, (Object []) filesOrFolders);
     }
 

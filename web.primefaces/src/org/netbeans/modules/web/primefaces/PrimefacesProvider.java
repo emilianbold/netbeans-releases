@@ -55,12 +55,28 @@ import org.openide.util.NbBundle;
  */
 
 public class PrimefacesProvider implements JsfComponentProvider {
+    private final static String NS_PREFIX = "p";    //NOI18N
+    private final static String NAMESPACE = "http://primefaces.prime.com.tr/ui"; //NOI18N
 
     @Override
     public Set<JsfComponentDescriptor> getComponents() {
         JsfComponentDescriptor descriptor = new JsfComponentDescriptor(NbBundle.getMessage(PrimefacesProvider.class, "LBL_Library_Name"),
                                                 NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces"), JSFVersion.JSF_2_0,
-                                                NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"));
+                                                NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"), getWelcomeMessageBody(), getNamespace(), getNsPrefix());
         return Collections.singleton(descriptor);
+    }
+
+    private static String getWelcomeMessageBody() {
+        String body = "    <"+NS_PREFIX+":panel header=\"Hello From\">\n" + //NOI18N
+                      "            <"+NS_PREFIX+":linkButton href=\"http://www.primefaces.org/labs\" value=\"Prime Faces\"/>\n" +    //NOI18N
+                      "        </"+NS_PREFIX+":panel>"; //NOI18N
+        return body;
+    }
+    private static String getNamespace() {
+        return NAMESPACE; //NOI18N
+    }
+
+    private static String getNsPrefix() {
+        return NS_PREFIX;
     }
 }

@@ -68,6 +68,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
@@ -654,6 +655,15 @@ public class CompilationUnit {
         if( macinfoTable != null ) {
             macinfoTable.dump(out);
         }
+
+        Set<LineNumber> numbers = getLineNumbers();
+        if (numbers != null && numbers.size() > 0) {
+            numbers = new TreeSet<LineNumber>(numbers);
+            for(LineNumber line : numbers) {
+                out.println(line);
+            }
+        }
+
         
         out.println();
     }

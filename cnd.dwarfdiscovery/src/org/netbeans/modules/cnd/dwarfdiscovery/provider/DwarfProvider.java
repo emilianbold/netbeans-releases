@@ -128,7 +128,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                     return ProjectImpl.divideByLanguage(getSourcesConfiguration());
                 }
                 
-                public List<Configuration> getDependencies() {
+                public List<String> getDependencies() {
                     return null;
                 }
                 
@@ -136,7 +136,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                     if (myFileProperties == null){
                         String[] objFileNames = (String[])getProperty(EXECUTABLES_KEY).getValue();
                         if (objFileNames != null) {
-                            myFileProperties = getSourceFileProperties(objFileNames,null, null);
+                            myFileProperties = getSourceFileProperties(objFileNames,null, null, null);
                         }
                     }
                     return myFileProperties;

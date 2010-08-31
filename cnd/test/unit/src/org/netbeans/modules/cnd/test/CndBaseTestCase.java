@@ -68,6 +68,8 @@ import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
+import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter;
+import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -236,13 +238,13 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
     protected void setUpMime() {
         mimePath1 = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath1, new CCKit());
+        MockMimeLookup.setInstances(mimePath1, new CCKit(), new Reformatter.Factory());
         mimePath2 = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath2, new HKit());
+        MockMimeLookup.setInstances(mimePath2, new HKit(), new Reformatter.Factory());
         mimePath3 = MimePath.parse(MIMENames.C_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath3, new CKit());
+        MockMimeLookup.setInstances(mimePath3, new CKit(), new Reformatter.Factory());
         mimePath4 = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath4, new FKit());
+        MockMimeLookup.setInstances(mimePath4, new FKit(), new FortranReformatter.Factory());
         mimePath5 = MimePath.parse(MIMENames.ASM_MIME_TYPE);
         // TODO: add needed dependency in all dependant test cases to use real asm editor kit
         //MockMimeLookup.setInstances(mimePath5, new AsmEditorKit());

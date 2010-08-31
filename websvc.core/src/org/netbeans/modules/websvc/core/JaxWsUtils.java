@@ -429,7 +429,7 @@ public class JaxWsUtils {
                         if (bindingElement != null) {
                             List<ExpressionTree> bindingAttrs = new ArrayList<ExpressionTree>();
                             bindingAttrs.add(make.Assignment(make.Identifier("value"), //NOI18N
-                                    make.Identifier(OLD_SOAP12_NAMESPACE))); //NOI18N
+                                    make.Literal(OLD_SOAP12_NAMESPACE))); //NOI18N
                             AnnotationTree bindingAnnotation = make.Annotation(
                                     make.QualIdent(bindingElement),
                                     bindingAttrs);

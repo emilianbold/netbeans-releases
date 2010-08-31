@@ -3236,40 +3236,31 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
 
-        private void addAttributeValues(Env env, Element element, AnnotationMirror annotation, ExecutableElement member) {
+        private void addAttributeValues(Env env, Element element, AnnotationMirror annotation, ExecutableElement member) throws IOException {
             CompilationController controller = env.getController();
-            Elements elements = controller.getElements();
+            TreeUtilities tu = controller.getTreeUtilities();
+            ElementUtilities eu = controller.getElementUtilities();
             String prefix = env.getPrefix();
             for (javax.annotation.processing.Completion completion : SourceUtils.getAttributeValueCompletions(controller, element, annotation, member, prefix)) {
-                String value = completion.getValue();
-                boolean quoted = false;
-                TypeElement typeElement = null;
-                TypeMirror type = member.getReturnType();
-                if (type.getKind() == TypeKind.ARRAY) {
-                    type = ((ArrayType)type).getComponentType();
-                }
-                if (type.getKind() == TypeKind.DECLARED) {
-                    CharSequence fqn = ((TypeElement)((DeclaredType)type).asElement()).getQualifiedName();
-                    if ("java.lang.String".contentEquals(fqn)) { //NOI18N
-                        if (prefix != null && prefix.startsWith("\"")) { //NOI18N
-                            anchorOffset++;
-                        } else if (!value.startsWith("\"")) //NOI18N
-                            quoted = true;
-                    } else if ("java.lang.Class".contentEquals(fqn)) {
-                        String name;
-                        if (value.endsWith(".class")) { //NOI18N
-                            name = value.substring(0, value.length() - 6);
-                        } else {
-                            name = value;
-                            value += ".class"; //NOI18N
-                        }
-                        typeElement = elements.getTypeElement(name);
-                        if (typeElement != null && !startsWith(env, typeElement.getSimpleName().toString(), prefix))
-                            continue;
-                        env.addToExcludes(typeElement);
+                String value = completion.getValue().trim();
+                if (value.length() > 0) {
+                    TypeMirror type = member.getReturnType();
+                    TypeElement typeElement = null;
+                    while (type.getKind() == TypeKind.ARRAY) {
+                        type = ((ArrayType)type).getComponentType();
                     }
+                    if (type.getKind() == TypeKind.DECLARED) {
+                        CharSequence fqn = ((TypeElement)((DeclaredType)type).asElement()).getQualifiedName();
+                        if ("java.lang.Class".contentEquals(fqn)) {
+                            String name = value.endsWith(".class") ?  value.substring(0, value.length() - 6) : value; //NOI18N
+                            TypeMirror tm = tu.parseType(name, eu.outermostTypeElement(element));
+                            typeElement = tm != null && tm.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)tm).asElement() : null;
+                            if (typeElement != null && startsWith(env, typeElement.getSimpleName().toString(), prefix))
+                                env.addToExcludes(typeElement);
+                        }
+                    }
+                    results.add(JavaCompletionItem.createAttributeValueItem(env.getController(), value, completion.getMessage(), typeElement, anchorOffset));
                 }
-                results.add(JavaCompletionItem.createAttributeValueItem(env.getController(), value, quoted, completion.getMessage(), typeElement, anchorOffset));
             }
         }
 
@@ -4545,9 +4536,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     ts.movePrevious();
                 int len = offset - ts.offset();
                 if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
-                        ts.token().id().primaryCategory().startsWith("keyword") ||
-                        ts.token().id().primaryCategory().startsWith("string") ||
-                        ts.token().id().primaryCategory().equals("literal"))
+                        ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                        ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                        ts.token().id().primaryCategory().equals("literal")) //NOI18N
                         && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
                     prefix = ts.token().toString().substring(0, len);
                     offset = ts.offset();

@@ -53,8 +53,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
-import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.spi.SchemaCompiler;
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -165,18 +165,18 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         FileObject template = Templates.getTemplate( wiz );
         DataObject dTemplate = DataObject.find( template );  
         
-        try {
-            Schema nSchema = ProjectHelper.importResources(project, 
-                    wiz, null);
-            ProjectHelper.addSchema2Model(project, nSchema);                    
-            ProjectHelper.compileXSDs(project, true);
-        } catch (Throwable ex ){
-            //Exceptions.printStackTrace(ioe);
-            String msg = NbBundle.getMessage(JAXBWizardIterator.class, 
-                    "MSG_ErrorReadingSchema");//NOI18N
-            wiz.putProperty(JAXBWizModuleConstants.WIZ_ERROR_MSG, msg); 
-            project.getProjectDirectory().getFileSystem().refresh(true);
-            throw new IOException(msg);
+        SchemaCompiler schemaCompiler = CompilerFinder.findCompiler(project);
+        if (schemaCompiler != null) {
+            try {
+                schemaCompiler.importResources(wiz);
+            } catch (Throwable ex ) {
+                String msg = NbBundle.getMessage(JAXBWizardIterator.class,
+                        "MSG_ErrorReadingSchema");//NOI18N
+                wiz.putProperty(JAXBWizModuleConstants.WIZ_ERROR_MSG, msg);
+                project.getProjectDirectory().getFileSystem().refresh(true);
+                throw new IOException(msg);
+            }
+            schemaCompiler.compileSchema(wiz);
         }
 
         ProjectHelper.addJaxbApiEndorsed(project);

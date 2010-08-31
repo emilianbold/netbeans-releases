@@ -53,6 +53,7 @@ import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
@@ -186,6 +187,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String domainName;
     private String port;
     private String host;
+    private Version serverVersion;
 
 
     /**
@@ -304,6 +306,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Version getServerVersion() {
+        return serverVersion;
+    }
+
+    public void setServerVersion(Version serverVersion) {
+        this.serverVersion = serverVersion;
     }
 
     ////////////////////////////////////////////////////////////////////////////

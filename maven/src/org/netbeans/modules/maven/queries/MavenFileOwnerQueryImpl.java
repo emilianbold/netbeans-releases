@@ -148,7 +148,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             if (parentArt != null) {
                 String artifactID = parentArt.getName(); // commons-math
                 String version = parentVer.getName(); // 2.1
-                if (nm.startsWith(artifactID + '-' + version + '.')) {
+                if (nm.startsWith(artifactID + '-' + version)) {
                     File parentGroup = parentArt.getParentFile(); // ~/.m2/repository/org/apache/commons
                     if (parentGroup != null) {
                         // Split rest into separate method, to avoid linking EmbedderFactory unless and until needed.

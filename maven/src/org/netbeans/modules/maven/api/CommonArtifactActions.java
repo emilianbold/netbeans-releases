@@ -66,14 +66,10 @@ import org.openide.util.NbBundle;
  */
 public class CommonArtifactActions {
     
-    public static Action createViewProjectHomeAction(Artifact artifact, List<ArtifactRepository> repos) {
+    public @Deprecated static Action createViewProjectHomeAction(Artifact artifact, List<ArtifactRepository> repos) {
         return new ViewProjectHomeAction(artifact, repos);
     }
-    /**
-     * @deprecated use th method with list of remote repos.
-     * @param artifact
-     * @return
-     */
+
     public @Deprecated static Action createViewProjectHomeAction(Artifact artifact) {
        return createViewProjectHomeAction(artifact,
                Collections.singletonList(
@@ -86,15 +82,10 @@ public class CommonArtifactActions {
 
     }
     
-    public static Action createViewBugTrackerAction(Artifact artifact, List<ArtifactRepository> repos) {
+    public @Deprecated static Action createViewBugTrackerAction(Artifact artifact, List<ArtifactRepository> repos) {
         return new ViewBugTrackerAction(artifact, repos);
     }
 
-    /**
-     * @deprecated
-     * @param artifact
-     * @return
-     */
     public @Deprecated static Action createViewBugTrackerAction(Artifact artifact) {
        return createViewBugTrackerAction(artifact,
                Collections.singletonList(
@@ -102,15 +93,10 @@ public class CommonArtifactActions {
                "http://repo1.maven.org/maven2", "central"))); //NOI18N
     }
     
-    public static Action createSCMActions(Artifact artifact, List<ArtifactRepository> repos) {
+    public @Deprecated static Action createSCMActions(Artifact artifact, List<ArtifactRepository> repos) {
         return new SCMActions(artifact, repos);
     }
 
-    /**
-     * @deprecated
-     * @param artifact
-     * @return
-     */
     public @Deprecated static Action createSCMActions(Artifact artifact) {
        return createSCMActions(artifact,
                Collections.singletonList(

@@ -57,9 +57,11 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-client-1.1.5.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-core-1.1.5.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-json-1.1.5.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-multipart-1.1.5.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-server-1.1.5.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-spring-1.1.5.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jettison-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/mimepull-1.4.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-client-1.1.5.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-signature-1.1.5.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
@@ -81,6 +83,7 @@ made subject to such option by the copyright holder.
         <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.1.5.1/jersey-json-1.1.5.1.pom</resource>
         <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.1.5.1/jersey-server-1.1.5.1.pom</resource>
         <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-client/1.1.5.1/jersey-client-1.1.5.1.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-multipart/1.1.5.1/jersey-multipart-1.1.5.1.pom</resource>
         <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-client/1.1.5.1/oauth-client-1.1.5.1.pom</resource>
         <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-signature/1.1.5.1/oauth-signature-1.1.5.1.pom</resource>
     </volume>

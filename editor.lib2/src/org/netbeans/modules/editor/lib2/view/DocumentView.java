@@ -133,6 +133,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     static final char PRINTING_TAB = '\u00BB'; // \u21FE
     static final char PRINTING_NEWLINE = '\u00B6';
     static final char LINE_CONTINUATION = '\u21A9';
+    static final char LINE_CONTINUATION_ALTERNATE = '\u2190';
 
     /**
      * Text component's client property for the mutex doing synchronization
@@ -484,8 +485,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     // checkDocumentLocked() - unnecessary - doc.render() called
                     try {
                         ((EditorTabExpander) tabExpander).updateTabSize();
-                        if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
+                        if (isReinitable()) { // Not in lengthy atomic edit
                             viewUpdates.reinitViews();
+                        } else if (children != null) {
+                            releaseChildren(false);
                         }
                     } finally {
                         mutex.unlock();
@@ -930,6 +933,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     boolean isUpdatable() {
         return textComponent != null && children != null && (lengthyAtomicEdit <= 0);
     }
+    
+    boolean isReinitable() {
+        return textComponent != null && fontRenderContext != null && 
+                (lengthyAtomicEdit <= 0) && !incomingModification;
+    }
 
     /**
      * It should be called with +1 once it's detected that there's a lengthy atomic edit
@@ -1090,7 +1098,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     TextLayout getLineContinuationCharTextLayout() {
         if (lineContinuationTextLayout == null) {
-            lineContinuationTextLayout = createTextLayout(String.valueOf(LINE_CONTINUATION), defaultFont);
+            char lineContinuationChar = LINE_CONTINUATION;
+            if (!defaultFont.canDisplay(lineContinuationChar)) {
+                lineContinuationChar = LINE_CONTINUATION_ALTERNATE;
+            }
+            lineContinuationTextLayout = createTextLayout(String.valueOf(lineContinuationChar), defaultFont);
         }
         return lineContinuationTextLayout;
     }
@@ -1213,6 +1225,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     protected StringBuilder appendViewInfoCore(StringBuilder sb, int indent, int importantChildIndex) {
         super.appendViewInfoCore(sb, indent, importantChildIndex);
         sb.append("; incomingMod=").append(incomingModification);
+        sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit);
+        Document doc = getDocument();
+        sb.append("\nDoc: ").append(ViewUtils.toString(doc));
         return sb;
     }
 

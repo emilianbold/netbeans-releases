@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -82,7 +83,7 @@ public class FindNameTest extends NbTestCase {
     }
 
     public void testFftImageTransformer() {
-        baseTest(0x381, "FastFourierTransform::Transform", "fftimagetransformer", false);
+        baseTest(0x381, "FastFourierTransform::Transform", "fftimagetransformer", true);
     }
 
     public void testPkgConfig() {
@@ -134,7 +135,27 @@ public class FindNameTest extends NbTestCase {
     }
 
     public void testProfilingdemo2() {
-        baseTest(0x36, "threadfunc", "profilingdemo", true);
+        baseTest(0x36, "threadfunc", "profilingdemo", false);
+    }
+
+    private DwarfEntry findFunction(String function, List<DwarfEntry> decls) throws IOException {
+        for (DwarfEntry entry : decls) {
+            if (entry.getKind() == TAG.DW_TAG_subprogram || entry.getKind() == TAG.DW_TAG_member) {
+                String name = entry.getName();
+                //System.err.println("Function:"+entry.getQualifiedName());
+                if (name.equals(function) || entry.getQualifiedName().equals(function)) {
+                    if (entry.getLowAddress() != 0) {
+                        return entry;
+                    }
+                }
+             } else if (entry.getKind() == TAG.DW_TAG_class_type){
+                 DwarfEntry res = findFunction(function, entry.getMembers());
+                 if (res != null) {
+                     return res;
+                 }
+             }
+        }
+        return null;
     }
 
     private void baseTest(long shift, String function, String executable, boolean full) {
@@ -154,63 +175,51 @@ public class FindNameTest extends NbTestCase {
             serviceInfo.put(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
             serviceInfo.put(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal()));
             fileInfo = provider.getSourceFileInfo(function, -1, shift, serviceInfo);
-            if (full) {
-                Dwarf dwarf = new Dwarf(executable);
-                try {
-                    Iterator<CompilationUnit> iterator = dwarf.iteratorCompilationUnits();
-                    loop:while(iterator.hasNext()) {
-                        CompilationUnit unit = iterator.next();
-                        //System.err.println("Unit:"+unit.getSourceFileFullName());
-                        for (DwarfEntry entry : unit.getDeclarations(false)){
-                            if (entry.getKind() == TAG.DW_TAG_subprogram){
-                                String name = entry.getName();
-                                //System.err.println("Function:"+entry.getQualifiedName());
-                                if (name.equals(function) || entry.getQualifiedName().equals(function)) {
-                                    base = entry.getLowAddress();
-                                    if (base == 0) {
-                                        continue;
-                                    }
-                                    //System.err.println(""+entry);
-                                    Set<LineNumber> numbers = unit.getLineNumbers();
-                                    TreeSet<LineNumber> sorted = new TreeSet<LineNumber>(numbers);
-                                    //for(LineNumber l : sorted) {
-                                    //    System.err.println(""+l);
-                                    //}
-                                    long target = base + shift;
-                                    System.err.println("base   address: 0x"+Long.toHexString(base));
-                                    System.err.println("target address: 0x"+Long.toHexString(target));
-                                    LineNumber prev = null;
-                                    long prevOffset = Long.MAX_VALUE;
-                                    for (LineNumber n : sorted) {
-                                        if (n.startOffset <= target) {
-                                            if (target < n.endOffset) {
-                                                candidate = n;
-                                                break;
-                                            }
-                                        }
-                                        if (prevOffset <= target && target < n.startOffset) {
-                                            candidate = prev;
-                                            break;
-                                        }
-                                        prevOffset = n.endOffset;
-                                        prev = n;
-                                    }
-                                    System.err.println("Dwarf Map:\t" + candidate);
-                                    number = unit.getLineNumber(target);
-                                    //unit.getSourceFileFullName();
-                                    System.err.println("Dwarf Proces:\t" + number);
-                                    if (number != null) {
-                                        break loop;
-                                    }
+            Dwarf dwarf = new Dwarf(executable);
+            try {
+                Iterator<CompilationUnit> iterator = dwarf.iteratorCompilationUnits();
+                loop:while(iterator.hasNext()) {
+                    CompilationUnit unit = iterator.next();
+                    //System.err.println("Unit:"+unit.getSourceFileFullName());
+                    DwarfEntry entry = findFunction(function, unit.getDeclarations(false));
+                    if (entry != null) {
+                        base = entry.getLowAddress();
+                        //System.err.println(""+entry);
+                        Set<LineNumber> numbers = unit.getLineNumbers();
+                        TreeSet<LineNumber> sorted = new TreeSet<LineNumber>(numbers);
+                        //for(LineNumber l : sorted) {
+                        //    System.err.println(""+l);
+                        //}
+                        long target = base + shift;
+                        System.err.println("base   address: 0x"+Long.toHexString(base));
+                        System.err.println("target address: 0x"+Long.toHexString(target));
+                        LineNumber prev = null;
+                        long prevOffset = Long.MAX_VALUE;
+                        for (LineNumber n : sorted) {
+                            if (n.startOffset <= target) {
+                                if (target < n.endOffset) {
+                                    candidate = n;
+                                    break;
                                 }
-                            } else if (entry.getKind() == TAG.DW_TAG_class_type){
-                                //System.err.println(""+entry);
                             }
+                            if (candidate == null && prevOffset <= target && target < n.startOffset) {
+                                candidate = prev;
+                                //break;
+                            }
+                            prevOffset = n.endOffset;
+                            prev = n;
+                        }
+                        System.err.println("Dwarf Map:\t" + candidate);
+                        number = unit.getLineNumber(target);
+                        //unit.getSourceFileFullName();
+                        System.err.println("Dwarf Proces:\t" + number);
+                        if (number != null) {
+                            break loop;
                         }
                     }
-                } finally {
-                    dwarf.dispose();
                 }
+            } finally {
+                dwarf.dispose();
             }
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
@@ -222,19 +231,28 @@ public class FindNameTest extends NbTestCase {
         if (fileInfo != null) {
             System.err.println("Dwarf Provider:\t" + fileInfo.getFileName() + ":" + fileInfo.getLine());
         }
-        if (full) {
-            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN){
-                Dwarf2NameFinder source = getDwarfSource(executable);
-                source.lookup(base + shift);
-                System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
-                assertEquals(number.line, source.getLineNumber());
-            }
-            assertNotNull(fileInfo);
-            assertNotNull(number);
-            assertNotNull(candidate);
-            assertEquals(number.line, candidate.line);
+        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN){
+            Dwarf2NameFinder source = getDwarfSource(executable);
+            source.lookup(base + shift);
+            System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+            assertEquals(number.line, source.getLineNumber());
+        }
+        assertNotNull(fileInfo);
+        assertNotNull(number);
+        assertNotNull(candidate);
+        assertEquals(number.line, candidate.line);
+        String file1 = number.file.replace('\\', '/');
+        if (file1.indexOf('/') >= 0) {
+            file1 = file1.substring(file1.lastIndexOf('/')+1);
+        }
+        String file2 = fileInfo.getFileName().replace('\\', '/');
+        if (file2.indexOf('/') >= 0) {
+            file2 = file2.substring(file2.lastIndexOf('/')+1);
+        }
+        if (file2.equals(file1)) {
+            assertEquals(number.line, fileInfo.getLine());
         } else {
-            assertNotNull(fileInfo);
+            assertFalse(full);
         }
         //if (line.indexOf(", line ")>0) {
         //    assertTrue(line.indexOf(" "+number.line+" ")>=0);
