@@ -489,23 +489,18 @@ public class CompilationUnit {
             setSpecializations(child);
         }
     }
-    
-    private DwarfEntry readEntry(int level, boolean readChildren) throws IOException {
+
+    private DwarfEntry readEntry(int level) throws IOException {
         long refference = reader.getFilePointer() - debugInfoSectionOffset - unit_offset;
         long idx = reader.readUnsignedLEB128();
-        
         if (idx == 0) {
             return null;
         }
-        
         DwarfAbbriviationTableEntry abbreviationEntry = abbr_table.getEntry(idx);
-        
         if (abbreviationEntry == null) {
             return null;
         }
-        
         DwarfEntry entry = new DwarfEntry(this, abbreviationEntry, refference, level);
-        entries.put(refference, entry);
         for (int i = 0; i < abbreviationEntry.getAttributesCount(); i++) {
             DwarfAttribute attr = abbreviationEntry.getAttribute(i);
             long dif = reader.getFilePointer() - debugInfoSectionOffset;
@@ -521,14 +516,21 @@ public class CompilationUnit {
                 entry.addValue(reader.readAttrValue(attr));
             }
         }
+        return entry;
+    }
 
-        if (readChildren == true && entry.hasChildren()) {
+    private DwarfEntry readEntry(int level, boolean readChildren) throws IOException {
+        DwarfEntry entry = readEntry(level);
+        if (entry == null) {
+            return null;
+        }
+        entries.put(entry.getRefference(), entry);
+        if (readChildren  && entry.hasChildren()) {
             DwarfEntry child;
             while ((child = readEntry(level + 1, true)) != null) {
                 entry.addChild(child);
             }
         }
-        
         return entry;
     }
     
@@ -577,6 +579,35 @@ public class CompilationUnit {
         // Read pubnames section first
         getPubnamesTable();
         return getDebugInfo(true).getChildren();
+    }
+
+    public List<DwarfEntry> getTopLevelEntries() throws IOException {
+        // Read pubnames section first
+        getPubnamesTable();
+        reader.seek(debugInfoOffset);
+        DwarfEntry aRoot = readEntry(0);
+        if (aRoot == null) {
+            return null;
+        }
+        if (aRoot.hasChildren()) {
+            while (true) {
+                DwarfEntry child = readEntry(1);
+                if (child == null) {
+                    break;
+                }
+                aRoot.addChild(child);
+                if (child.hasChildren()) {
+                    long sibling = child.getSibling();
+                    if (sibling == 0) {
+                        break;
+                    } else {
+                        long refference = debugInfoSectionOffset + unit_offset + sibling;
+                        reader.seek(refference);
+                    }
+                }
+            }
+        }
+        return aRoot.getChildren();
     }
     
     /**

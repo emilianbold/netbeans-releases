@@ -68,7 +68,7 @@ public class DwarfAnalyzer {
         DwarfProvider provider = new DwarfProvider() {
             @Override
             public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
-                return new ApplicableImpl(true, null, 1, false);
+                return new ApplicableImpl(true, null, 1, false, null, null, null);
             }
         };
         provider.getProperty(DwarfProvider.EXECUTABLES_KEY).setValue(files);
