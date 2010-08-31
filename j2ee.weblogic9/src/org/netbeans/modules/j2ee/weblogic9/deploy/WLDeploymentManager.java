@@ -44,24 +44,14 @@
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.AllPermission;
-import java.security.CodeSource;
-import java.security.PermissionCollection;
-import java.security.Permissions;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -134,14 +124,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (DEBUG_JSR88) {
             System.setProperty("weblogic.deployer.debug", "all"); // NOI18N
         }
-
-        WLConnectionSupport.WLDeploymentManagerAccessor.setDefault(new WLConnectionSupport.WLDeploymentManagerAccessor() {
-
-            @Override
-            public ClassLoader getWLClassLoader(WLDeploymentManager manager) {
-                return manager.getWLClassLoader();
-            }
-        });
     }
 
     private final WLDeploymentFactory factory;
@@ -155,9 +137,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private final WLSharedState mutableState;
 
     private final boolean disconnected;
-
-    /* GuardedBy("this") */
-    private WLClassLoader classLoader;
 
     /* GuardedBy("this") */
     private InstanceProperties instanceProperties;
@@ -262,25 +241,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         webProfile = WLPluginProperties.isWebProfile(WLPluginProperties.getServerRoot(this, true));
     }
 
-    private synchronized ClassLoader getWLClassLoader() {
-        if (classLoader == null) {
-            LOGGER.log(Level.FINE, "Creating classloader for {0}", this.getUri());
-            try {
-                File[] classpath = WLPluginProperties.getClassPath(this);
-                URL[] urls = new URL[classpath.length];
-                for (int i = 0; i < classpath.length; i++) {
-                    urls[i] = classpath[i].toURI().toURL();
-                }
-                classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
-                LOGGER.log(Level.FINE, "Classloader for {0} created successfully", this.getUri());
-                return classLoader;
-            } catch (MalformedURLException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            }
-        }
-        return classLoader;
-    }
-
     private <T> T executeAction(final Action<T> action) throws Exception {
         WLConnectionSupport support = new WLConnectionSupport(this);
         return support.executeAction(new Callable<T>() {
@@ -306,8 +266,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private synchronized DeploymentManager getDeploymentManager(String username,
             String password, String host, String port) throws DeploymentManagerCreationException {
-
-        assert Thread.currentThread().getContextClassLoader() instanceof WLClassLoader;
 
         if (manager != null) {
             // this should work even if some older WL release does not have this
@@ -718,56 +676,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private static interface Action<T> {
 
          T execute(DeploymentManager manager) throws ExecutionException;
-    }
-
-    private static class WLClassLoader extends URLClassLoader {
-
-        public WLClassLoader(URL[] urls, ClassLoader parent) {
-            super(urls, parent);
-        }
-
-        public void addURL(File f) throws MalformedURLException {
-            if (f.isFile()) {
-                addURL(f.toURL());
-            }
-        }
-
-        @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
-            Class<?> clazz = super.findClass(name);
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                String filename = name.replace('.', '/'); // NOI18N
-                int index = filename.indexOf('$'); // NOI18N
-                if (index > 0) {
-                    filename = filename.substring(0, index);
-                }
-                filename = filename + ".class"; // NOI18N
-
-                URL url = this.getResource(filename);
-                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
-                if (url != null) {
-                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
-                }
-            }
-            return clazz;
-        }
-
-        @Override
-        protected PermissionCollection getPermissions(CodeSource codeSource) {
-            Permissions p = new Permissions();
-            p.add(new AllPermission());
-            return p;
-        }
-
-        @Override
-        public Enumeration<URL> getResources(String name) throws IOException {
-            // get rid of annoying warnings
-            if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
-                return Collections.enumeration(Collections.<URL>emptyList());
-            }
-
-            return super.getResources(name);
-        }
     }
 
     private class ServerTargetModuleID implements TargetModuleID {

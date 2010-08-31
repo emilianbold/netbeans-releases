@@ -43,6 +43,17 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
@@ -99,6 +110,14 @@ public class WLDeploymentFactory implements DeploymentFactory {
      */
     private static Map<InstanceProperties, WLSharedState> stateCache =
             new WeakHashMap<InstanceProperties, WLSharedState>();
+
+    /*
+     * We share and cache ClassLoaders to spare resources.
+     * <p>
+     * <i>GuardedBy(WLDeploymentFactory.class)</i>
+     */
+    private static Map<InstanceProperties, WLClassLoader> classLoaderCache =
+            new WeakHashMap<InstanceProperties, WLClassLoader>();
 
     /**
      * The singleton factory method
@@ -187,6 +206,37 @@ public class WLDeploymentFactory implements DeploymentFactory {
         return NbBundle.getMessage(WLDeploymentFactory.class, "TXT_displayName");
     }
 
+    WLClassLoader getClassLoader(WLDeploymentManager manager) {
+        synchronized (WLDeploymentFactory.class) {
+            InstanceProperties props = manager.getInstanceProperties();
+            WLClassLoader classLoader = classLoaderCache.get(props);
+            if (classLoader != null) {
+                return classLoader;
+            }
+
+            // two instances may have the same classpath because of the same
+            // server root directory
+            for (Map.Entry<InstanceProperties, WLClassLoader> entry : classLoaderCache.entrySet()) {
+                // FIXME base the check on classpath - it would be more safe
+                // more expensive as well
+                String serverRootCached = entry.getKey().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+                String serverRootFresh = props.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+
+                if ((serverRootCached == null) ? (serverRootFresh == null) : serverRootCached.equals(serverRootFresh)) {
+                    classLoader = entry.getValue();
+                    break;
+                }
+            }
+
+            if (classLoader == null) {
+                classLoader = createClassLoader(manager);
+            }
+
+            classLoaderCache.put(props, classLoader);
+            return classLoader;
+        }
+    }
+
     private static synchronized WLSharedState getMutableState(InstanceProperties props) {
         WLSharedState mutableState = stateCache.get(props);
         if (mutableState == null) {
@@ -196,4 +246,72 @@ public class WLDeploymentFactory implements DeploymentFactory {
         mutableState.configure();
         return mutableState;
     }
+
+    private WLClassLoader createClassLoader(WLDeploymentManager manager) {
+        LOGGER.log(Level.FINE, "Creating classloader for {0}", manager.getUri());
+        try {
+            File[] classpath = WLPluginProperties.getClassPath(manager);
+            URL[] urls = new URL[classpath.length];
+            for (int i = 0; i < classpath.length; i++) {
+                urls[i] = classpath[i].toURI().toURL();
+            }
+            WLClassLoader classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
+            LOGGER.log(Level.FINE, "Classloader for {0} created successfully", manager.getUri());
+            return classLoader;
+        } catch (MalformedURLException e) {
+            LOGGER.log(Level.WARNING, null, e);
+        }
+        return new WLClassLoader(new URL[] {}, WLDeploymentManager.class.getClassLoader());
+    }
+
+    private static class WLClassLoader extends URLClassLoader {
+
+        public WLClassLoader(URL[] urls, ClassLoader parent) {
+            super(urls, parent);
+        }
+
+        public void addURL(File f) throws MalformedURLException {
+            if (f.isFile()) {
+                addURL(f.toURL());
+            }
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            Class<?> clazz = super.findClass(name);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                String filename = name.replace('.', '/'); // NOI18N
+                int index = filename.indexOf('$'); // NOI18N
+                if (index > 0) {
+                    filename = filename.substring(0, index);
+                }
+                filename = filename + ".class"; // NOI18N
+
+                URL url = this.getResource(filename);
+                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
+                if (url != null) {
+                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
+                }
+            }
+            return clazz;
+        }
+
+        @Override
+        protected PermissionCollection getPermissions(CodeSource codeSource) {
+            Permissions p = new Permissions();
+            p.add(new AllPermission());
+            return p;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            // get rid of annoying warnings
+            if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
+
+            return super.getResources(name);
+        }
+    }
+
 }
