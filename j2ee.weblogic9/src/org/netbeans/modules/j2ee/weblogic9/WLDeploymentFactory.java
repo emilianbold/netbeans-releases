@@ -167,7 +167,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             String host = parts[3].substring(2);
             String port = parts[4] != null ? parts[4].trim() : parts[4];
 
-            dm = new WLDeploymentManager(this, uri, host, port, false, mutableState);
+            dm = new WLDeploymentManager(uri, host, port, false, mutableState);
             managerCache.put(props, dm);
             return dm;
         }
@@ -192,7 +192,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
         String[] parts = uri.split(":"); // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4] != null ? parts[4].trim() : parts[4];
-        WLDeploymentManager dm = new WLDeploymentManager(this, uri, host, port, true, mutableState);
+        WLDeploymentManager dm = new WLDeploymentManager(uri, host, port, true, mutableState);
         return dm;
     }
 

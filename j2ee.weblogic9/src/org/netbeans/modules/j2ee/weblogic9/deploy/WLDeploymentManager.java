@@ -91,7 +91,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.openide.util.NbBundle;
@@ -100,11 +99,9 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Main class of the deployment process. This serves as a wrapper for the
- * server's DeploymentManager implementation, all calls are delegated to the
- * server's implementation, with the thread's context classloader updated
- * if necessary.
+ * server's DeploymentManager implementation.
  *
- * @author Kirill Sorokin
+
  * @author Petr Hejl
  */
 public class WLDeploymentManager implements DeploymentManager2 {
@@ -115,9 +112,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private static final boolean DEBUG_JSR88 = Boolean.getBoolean(WLDeploymentManager.class.getName() + ".debugJsr88");
 
+    /** <i>GuardedBy(WLDeploymentManager.class)</i> */
     private static final Map<ServerProgressObject, DeploymentStatus> OBJECTS_TO_POLL = new HashMap<ServerProgressObject, DeploymentStatus>();
 
-    /** <i>GuardedBy(WLDeploymentManager.class)</i> */
     private static final RequestProcessor OBJECT_POLL_RP = new RequestProcessor("ProgressObject Poll", 1);
 
     static {
@@ -125,8 +122,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
             System.setProperty("weblogic.deployer.debug", "all"); // NOI18N
         }
     }
-
-    private final WLDeploymentFactory factory;
 
     private final String uri;
     private final String host;
@@ -153,9 +148,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
     /* GuardedBy("this") */
     private boolean initialized;
 
-    public WLDeploymentManager(WLDeploymentFactory factory, String uri,
-            String host, String port, boolean disconnected, WLSharedState mutableState) {
-        this.factory = factory;
+    public WLDeploymentManager(String uri, String host, String port,
+            boolean disconnected, WLSharedState mutableState) {
         this.uri = uri;
         this.host = host;
         this.port = port;
@@ -515,7 +509,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 }
             });
         } catch (Exception ex) {
-            LOGGER.log(Level.INFO, null, ex.getCause());
+            LOGGER.log(Level.INFO, null, ex);
 
             // just a fallback
             try {
@@ -527,7 +521,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
                     }
                 });
             } catch (Exception fex) {
-                LOGGER.log(Level.INFO, null, ex.getCause());
+                LOGGER.log(Level.INFO, null, fex);
                 return new Target[] {};
             }
         }
