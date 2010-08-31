@@ -131,9 +131,14 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String JNLP_MIXED_CODE = "jnlp.mixed.code";
 
     public static final String JNLP_SIGNING = "jnlp.signing";
-    public static final String JNLP_SIGNING_KEYSTORE = "jnlp.sign.keystore";
-    public static final String JNLP_SIGNING_KEY = "jnlp.sign.keyalias";
+    public static final String JNLP_SIGNING_KEYSTORE = "jnlp.signing.keystore";
+    public static final String JNLP_SIGNING_KEY = "jnlp.signing.alias";
+    public static final String JNLP_SIGNING_KEYSTORE_PASSWORD = "jnlp.signing.storepass";
+    public static final String JNLP_SIGNING_KEY_PASSWORD = "jnlp.signing.keypass";
     
+    static final String SIGNING_GENERATED = "generated";
+    static final String SIGNING_KEY = "key";
+
     public static final String CB_TYPE_LOCAL = "local";
     public static final String CB_TYPE_WEB = "web";
     public static final String CB_TYPE_USER = "user";
@@ -173,7 +178,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     private List<Map<String,String>> extResProperties;
     private List<Map<String,String>> appletParamsProperties;
-    
+
     public static final String extResSuffixes[] = new String[] { "href", "name", "version" };
     public static final String appletParamsSuffixes[] = new String[] { "name", "value" };
 
@@ -190,6 +195,13 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     private DescType selectedDescType = null;
 
     boolean jnlpImplOldOrModified = false;
+
+    // signing
+    String signing;
+    String signingKeyStore;
+    String signingKeyAlias;
+    char [] signingKeyStorePassword;
+    char [] signingKeyPassword;
 
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
@@ -320,7 +332,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     }
     
-    private void storeRest(EditableProperties editableProps) {
+    private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
         // store codebase type
         String selItem = ((CodebaseComboBoxModel) codebaseModel).getSelectedCodebaseItem();
         String propName = null;
@@ -387,22 +399,39 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
         // store signing info
         editableProps.setProperty(JNLP_SIGNING, signing);
-        editableProps.setProperty(JNLP_SIGNING_KEY, signingKeyAlias);
-        editableProps.setProperty(JNLP_SIGNING_KEYSTORE, signingKeyStore);
         editableProps.setProperty(JNLP_SIGNED, "".equals(signing) ? "false" : "true");
+        setOrRemove(editableProps, JNLP_SIGNING_KEY, signingKeyAlias);
+        setOrRemove(editableProps, JNLP_SIGNING_KEYSTORE, signingKeyStore);
+        setOrRemove(privProps, JNLP_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
+        setOrRemove(privProps, JNLP_SIGNING_KEY_PASSWORD, signingKeyPassword);
 
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
         storeProperties(editableProps, appletParamsProperties, JNLP_APPLET_PARAMS_PREFIX);
+    }
+
+    private void setOrRemove(EditableProperties props, String name, char [] value) {
+        setOrRemove(props, name, value != null ? new String(value) : null);
+    }
+
+    private void setOrRemove(EditableProperties props, String name, String value) {
+        if (value != null) {
+            props.setProperty(name, value);
+        } else {
+            props.remove(name);
+        }
     }
     
     public void store() throws IOException {
         
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        final EditableProperties pep = new EditableProperties(true);
+        final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         
         try {
             final InputStream is = projPropsFO.getInputStream();
+            final InputStream pis = privPropsFO.getInputStream();
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
@@ -413,14 +442,33 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                             is.close();
                         }
                     }
+                    try {
+                        pep.load(pis);
+                    } finally {
+                        if (pis != null) {
+                            pis.close();
+                        }
+                    }
                     jnlpPropGroup.store(ep);
-                    storeRest(ep);
+                    storeRest(ep, pep);
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
                         lock = projPropsFO.lock();
                         os = projPropsFO.getOutputStream(lock);
                         ep.store(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                    try {
+                        lock = privPropsFO.lock();
+                        os = privPropsFO.getOutputStream(lock);
+                        pep.store(os);
                     } finally {
                         if (lock != null) {
                             lock.releaseLock();
@@ -783,14 +831,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
     }
 
-    // "key", "generated"
-    String signing;
-    String signingKeyStore;
-    String signingKeyAlias;
-
-    static String SIGNING_GENERATED = "generated";
-    static String SIGNING_KEY = "key";
-
     private void initSigning(PropertyEvaluator eval) {
         signing = eval.getProperty(JNLP_SIGNING);
         if (signing == null) signing = "";
@@ -798,6 +838,12 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         if (signingKeyStore == null) signingKeyStore = "";
         signingKeyAlias = eval.getProperty(JNLP_SIGNING_KEY);
         if (signingKeyAlias == null) signingKeyAlias = "";
+        if (eval.getProperty(JNLP_SIGNING_KEYSTORE_PASSWORD) != null) {
+            signingKeyStorePassword = eval.getProperty(JNLP_SIGNING_KEYSTORE_PASSWORD).toCharArray();
+        }
+        if (eval.getProperty(JNLP_SIGNING_KEY_PASSWORD) != null) {
+            signingKeyPassword = eval.getProperty(JNLP_SIGNING_KEY_PASSWORD).toCharArray();
+        }
         // compatibility
         if ("".equals(signing) && "true".equals(eval.getProperty(JNLP_SIGNED))) {
             signing = SIGNING_GENERATED;
