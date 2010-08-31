@@ -151,34 +151,14 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
             //set logical end of the paired open tag
             t.setLogicalEndOffset(match.endOffset());
+        } else {
+            //no match found, the open tag node's logical range should be set to something meaningful -
+            //to the latest end tag found likely causing this element to be popped
+            AstNode latestEndTag = physicalEndTagsQueue.peek();
+            if(latestEndTag != null) {
+                t.setLogicalEndOffset(latestEndTag.startOffset());
+            }
         }
-
-//        //try if the first end tag in the queue matches to the popped node
-//        AstNode node = physicalEndTagsQueue.peekFirst();
-//        if (node != null) {
-//            if (node.name().equals(t.name())) {
-//                //it seems that the end tag corresponds to the popped node
-//
-//                //remove the end tag from the queue
-//                physicalEndTagsQueue.pollFirst();
-//
-//                //add the end tag node to its parent
-//                if(!stack.isEmpty()) {
-//                    stack.peek().addChild(node);
-//                }
-//
-//                //set matching node
-//                t.setMatchingNode(node);
-//                node.setMatchingNode(t);
-//
-//                //set logical end of the paired open tag
-//                t.setLogicalEndOffset(node.endOffset());
-//
-//            } else {
-//                //set logical range of the current open tag node to the beginning of the current open tag node
-//                t.setLogicalEndOffset(node.startOffset());
-//            }
-//        }
 
         if (stack.size() == 1 /* only root tag in the stack */ && !physicalEndTagsQueue.isEmpty()) {
             //there are no nodes on the stack, but there are some physical endtags left
