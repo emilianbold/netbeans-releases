@@ -131,7 +131,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     private static final int MIN_GRID_X = 2;
     private static final int MIN_GRID_Y = 2;
 
-    public static final Preferences getPreferences() {
+    public static Preferences getPreferences() {
         return NbPreferences.forModule(FormLoaderSettings.class);
     }
     
