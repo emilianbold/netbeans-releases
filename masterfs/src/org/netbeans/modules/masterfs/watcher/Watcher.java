@@ -163,7 +163,9 @@ public class Watcher extends AnnotationProvider {
         if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             return new LinuxNotifier();
         }
-
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            return new OSXNotifier();
+        }
         return null;
     }
 
