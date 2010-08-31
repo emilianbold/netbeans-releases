@@ -42,31 +42,27 @@
 package org.netbeans.core.ui.sampler;
 
 import java.awt.AWTEvent;
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -82,7 +78,6 @@ import org.openide.util.NbBundle;
  * @author Jaroslav Bachorik, Tomas Hurka
  */
 class SelfSamplerAction extends AbstractAction implements AWTEventListener {
-
     final private static class Singleton {
 
         static final SelfSamplerAction INSTANCE = new SelfSamplerAction();
@@ -97,14 +92,17 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     private static final String SAVE_MSG = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_SavedFile");
     private static final String DEBUG_ARG = "-Xdebug"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(SelfSamplerAction.class.getName());
-    private static final int SAMPLER_RATE = 10;
-    private static final double MAX_AVERAGE = SAMPLER_RATE * 3;
-    private static final double MAX_STDDEVIATION = SAMPLER_RATE * 4;
-    private static final int MAX_SAMPLING_TIME = 5*60;  // 5 minutes
-    private static final int MAX_SAMPLES = MAX_SAMPLING_TIME * (1000/SAMPLER_RATE);
-    private final AtomicReference<Controller> RUNNING = new AtomicReference<Controller>();
+    private final AtomicReference<Sampler> RUNNING = new AtomicReference<Sampler>();
     private Boolean debugMode;
     private String lastReason;
+    private static Class defaultDataObject;
+    static {
+        try {
+            defaultDataObject = Class.forName("org.openide.loaders.DefaultDataObject"); // NOI18N
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     private SelfSamplerAction() {
@@ -130,8 +128,8 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     @Override
     public void actionPerformed(final ActionEvent e) {
         if (SamplesOutputStream.isSupported()) {
-            Controller c;
-            if (RUNNING.compareAndSet(null, c = new Controller(THREAD_NAME))) {
+            Sampler c;
+            if (RUNNING.compareAndSet(null, c = new InternalSampler(THREAD_NAME))) {
                 putValue(Action.NAME, ACTION_NAME_STOP);
                 putValue(Action.SMALL_ICON,
                         ImageUtilities.loadImageIcon(
@@ -139,7 +137,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                         , false));
                 c.run();
             } else if ((c = RUNNING.getAndSet(null)) != null) {
-                final Controller controller = c;
+                final Sampler controller = c;
 
                 setEnabled(false);
                 SwingWorker worker = new SwingWorker() {
@@ -180,15 +178,15 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     public Object getValue(String key) {
         Object o = super.getValue(key);
         if (o == null && key.startsWith("logger-") && SamplesOutputStream.isSupported() && isRunMode()) { // NOI18N
-            return new Controller(key);
+            return new InternalSampler(key);
         }
         return o;
     }
 
-    private boolean isProfileMe(Controller c) {
+    final boolean isProfileMe(Sampler c) {
         return c == RUNNING.get();
     }
-
+    
     private synchronized boolean isDebugged() {
         if (debugMode == null) {
             debugMode = Boolean.FALSE;
@@ -221,100 +219,30 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             }
         }
         if (!runMode && reason != lastReason) {
-            LOGGER.log(Level.INFO, "Slowness detector disabled - " + reason); // NOI18N
+            LOGGER.log(Level.INFO, "Slowness detector disabled - {0}", reason); // NOI18N
         }
         lastReason = reason;
         return runMode;
     }
-
-    private static final class Controller implements Runnable, ActionListener {
-
-        private static Class defaultDataObject;
-        private final String name;
-        private Timer timer;
-        private ByteArrayOutputStream out;
-        private SamplesOutputStream samplesStream;
-        private long startTime;
-        private long samples, laststamp;
-        private double max, min = Long.MAX_VALUE, sum, devSquaresSum;
-        private volatile boolean stopped;
-        private volatile boolean running;
-
-        static {
-            try {
-                defaultDataObject = Class.forName("org.openide.loaders.DefaultDataObject"); // NOI18N
-            } catch (ClassNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        Controller(String n) {
-            name = n;
-        }
-
-        private void updateStats(long timestamp) {
-            if (laststamp != 0) {
-                double diff = (timestamp - laststamp) / 1000000.0;
-                samples++;
-                sum += diff;
-                devSquaresSum += (diff - SAMPLER_RATE) * (diff - SAMPLER_RATE);
-                if (diff > max) {
-                    max = diff;
-                } else if (diff < min) {
-                    min = diff;
-                }
-            }
-            laststamp = timestamp;
+    
+    private static final class InternalSampler extends Sampler {
+        private ProgressHandle progress;
+        
+        InternalSampler(String thread) {
+            super(thread);
         }
 
         @Override
-        public synchronized void run() {
-            assert !running;
-            running = true;
-
-            final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-
-            out = new ByteArrayOutputStream(64 * 1024);
-            try {
-                samplesStream = new SamplesOutputStream(out);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return;
-            }
-            startTime = System.currentTimeMillis();
-            timer = new Timer(name);
-            timer.scheduleAtFixedRate(new TimerTask() {
-
-                @Override
-                public void run() {
-                    synchronized (Controller.this) {
-                        if (stopped) {
-                            return;
-                        }
-                        if (samples >= MAX_SAMPLES) {
-                            cancelTimer();
-                            return;
-                        }
-                        try {
-                            ThreadInfo[] infos = threadBean.dumpAllThreads(false, false);
-                            long timestamp = System.nanoTime();
-                            samplesStream.writeSample(infos, timestamp, Thread.currentThread().getId());
-                            updateStats(timestamp);
-                        } catch (Throwable ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            }, SAMPLER_RATE, SAMPLER_RATE);
+        protected void printStackTrace(Throwable ex) {
+            Exceptions.printStackTrace(ex);
         }
 
-        private void cancelTimer() {
-            timer.cancel();
+        @Override
+        protected void cancelTimer() {
             if (SelfSamplerAction.getInstance().isProfileMe(this)) {
                 // if this sampling was invoked manually via ProfileMe action
                 // stop it
-                SwingUtilities.invokeLater(new Runnable() {
-
+                EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         SelfSamplerAction.getInstance().actionPerformed(null);
@@ -322,74 +250,76 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                 });
             }
         }
-
+        
+        
+        
         @Override
-        public synchronized void actionPerformed(ActionEvent e) {
-            try {
-                assert running;
-                assert !stopped;
-                stopped = true;
-                timer.cancel();
-                if ("cancel".equals(e.getActionCommand()) || samples < 1) {    // NOI18N
-                    return;
-                }
-                double average = sum / samples;
-                double std_deviation = Math.sqrt(devSquaresSum / samples);
-                boolean writeCommand = "write".equals(e.getActionCommand());    // NOI18N
-
-                if (writeCommand) {
-                    Object[] params = new Object[]{
-                        startTime,
-                        "Samples", samples, // NOI18N
-                        "Average", average, // NOI18N
-                        "Minimum", min, // NOI18N
-                        "Maximum", max, // NOI18N
-                        "Std. deviation", std_deviation // NOI18N
-                    };
-                    Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Snapshot statistics", params);   // NOI18N
-                    if (average > MAX_AVERAGE || std_deviation > MAX_STDDEVIATION) { // do not take snapshot if the sampling was not regular enough 
-                        return;
-                    }
-                }
-                samplesStream.close();
-                samplesStream = null;
-                if (writeCommand) {
-                    DataOutputStream dos = (DataOutputStream) e.getSource();
-                    dos.write(out.toByteArray());
-                    dos.close();
-                    return;
-                }
-                // save snapshot
-                File outFile = File.createTempFile("selfsampler", SamplesOutputStream.FILE_EXT); // NOI18N
-                outFile = FileUtil.normalizeFile(outFile);
-                writeToFile(outFile);
-                // open snapshot
-                FileObject fo = FileUtil.toFileObject(outFile);
-                DataObject dobj = DataObject.find(fo);
-                if (defaultDataObject.isAssignableFrom(dobj.getClass())) {  // ugly test for DefaultDataObject
-                    String msg = MessageFormat.format(SAVE_MSG, outFile.getAbsolutePath());
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                } else {
-                    dobj.getCookie(OpenCookie.class).open();
-                }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                // just to be sure
-                out = null;
-                samplesStream = null;
+        protected void saveSnapshot(byte[] arr) throws IOException {
+            // save snapshot
+            File outFile = File.createTempFile("selfsampler", SamplesOutputStream.FILE_EXT); // NOI18N
+            outFile = FileUtil.normalizeFile(outFile);
+            writeToFile(outFile, arr);
+            // open snapshot
+            FileObject fo = FileUtil.toFileObject(outFile);
+            DataObject dobj = DataObject.find(fo);
+            if (defaultDataObject.isAssignableFrom(dobj.getClass())) {
+                // ugly test for DefaultDataObject
+                String msg = MessageFormat.format(SelfSamplerAction.SAVE_MSG, outFile.getAbsolutePath());
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+            } else {
+                dobj.getCookie(OpenCookie.class).open();
             }
         }
 
-        private void writeToFile(File file) {
+        private void writeToFile(File file, byte[] arr) {
             try {
                 FileOutputStream fstream = new FileOutputStream(file);
-
-                fstream.write(out.toByteArray());
-                out = null;
+                fstream.write(arr);
                 fstream.close();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        protected ThreadMXBean getThreadMXBean() {
+            return ManagementFactory.getThreadMXBean();
+        }
+
+        
+        protected void openProgress(final int steps) {
+            if (EventQueue.isDispatchThread()) {
+                // log warnining
+                return;
+            }
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelfSamplerAction.class, "Save_Progress"));
+                    progress.start(steps);
+                }
+            });
+        }
+        protected void closeProgress() {
+            if (EventQueue.isDispatchThread()) {
+                return;
+            }
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    progress.finish();
+                    progress = null;
+                }
+            });
+        }
+        protected void progress(int i) {
+            if (EventQueue.isDispatchThread()) {
+                return;
+            }
+            if (progress != null) {
+                progress.progress(i);
             }
         }
     }

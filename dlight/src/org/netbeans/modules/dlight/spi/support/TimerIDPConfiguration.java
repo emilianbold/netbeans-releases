@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.support;
 
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -51,11 +50,12 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
  */
 public final class TimerIDPConfiguration implements IndicatorDataProviderConfiguration {
 
-  public static final String TIME_ID = "time"; // NOI18N
-  public static final Column TIME_INFO = new Column(TIME_ID, Long.class);
-  public static final String ID = "TimerIndicatorDataProviderConfiguration_ID"; // NOI18N
+    public static final String TIME_ID = "time"; // NOI18N
+    public static final Column TIME_INFO = new Column(TIME_ID, Long.class);
+    public static final String ID = "TimerIndicatorDataProviderConfiguration_ID"; // NOI18N
 
-  public String getID() {
-    return ID;
-  }
+    @Override
+    public String getID() {
+        return ID;
+    }
 }

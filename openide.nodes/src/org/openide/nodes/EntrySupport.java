@@ -1104,7 +1104,7 @@ abstract class EntrySupport {
                         boolean found = false;
                         cnt += snapshotCount;
                         if (cnt == 0) {
-                            for (Entry entry : visibleEntries) {
+                            for (Entry entry : notNull(visibleEntries)) {
                                 EntryInfo info = entryToInfo.get(entry);
                                 if (info.currentNode() != null) {
                                     cnt++;
@@ -1145,10 +1145,11 @@ abstract class EntrySupport {
             while (true) {
                 try {
                     Children.PR.enterReadAccess();
-                    if (index >= visibleEntries.size()) {
+                    List<Entry> e = notNull(visibleEntries);
+                    if (index >= e.size()) {
                         return node;
                     }
-                    Entry entry = visibleEntries.get(index);
+                    Entry entry = e.get(index);
                     EntryInfo info = entryToInfo.get(entry);
                     node = info.getNode();
                     if (!isDummyNode(node)) {
@@ -1181,8 +1182,9 @@ abstract class EntrySupport {
                 try {
                     Children.PR.enterReadAccess();
 
-                    List<Node> toReturn = new ArrayList<Node>(visibleEntries.size());
-                    for (Entry entry : visibleEntries) {
+                    List<Entry> e = notNull(visibleEntries);
+                    List<Node> toReturn = new ArrayList<Node>(e.size());
+                    for (Entry entry : e) {
                         EntryInfo info = entryToInfo.get(entry);
                         assert !info.isHidden();
                         Node node = info.getNode();
@@ -1217,7 +1219,7 @@ abstract class EntrySupport {
             List<Node> created = new ArrayList<Node>();
             try {
                 Children.PR.enterReadAccess();
-                for (Entry entry : visibleEntries) {
+                for (Entry entry : notNull(visibleEntries)) {
                     EntryInfo info = entryToInfo.get(entry);
                     Node node = info.currentNode();
                     if (node != null) {
@@ -1235,7 +1237,7 @@ abstract class EntrySupport {
             checkInit();
             try {
                 Children.PR.enterReadAccess();
-                return visibleEntries.size();
+                return notNull(visibleEntries).size();
             } finally {
                 Children.PR.exitReadAccess();
             }
@@ -1346,12 +1348,12 @@ abstract class EntrySupport {
                 LOGGER.finer("    mustNotifySetEnties: " + mustNotifySetEntries); // NOI18N
                 LOGGER.finer("    newEntries size: " + newEntries.size() + " data:" + newEntries); // NOI18N
                 LOGGER.finer("    entries size: " + entries.size() + " data:" + entries); // NOI18N
-                LOGGER.finer("    visibleEntries size: " + visibleEntries.size() + " data:" + visibleEntries); // NOI18N
+                LOGGER.finer("    visibleEntries size: " + notNull(visibleEntries).size() + " data:" + visibleEntries); // NOI18N
                 LOGGER.finer("    entryToInfo size: " + entryToInfo.size()); // NOI18N
             }
 
             assert entries.size() == entryToInfo.size() : "Entries: " + entries.size() // NOI18N
-                    + "; vis. entries: " + visibleEntries.size() + "; Infos: " + entryToInfo.size(); // NOI18N
+                    + "; vis. entries: " + notNull(visibleEntries).size() + "; Infos: " + entryToInfo.size(); // NOI18N
 
             if (!mustNotifySetEntries && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
@@ -1511,6 +1513,14 @@ abstract class EntrySupport {
         protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry, List<Node> current, List<Node> previous) {
             if (children.parent != null && children.getEntrySupport() == this) {
                 children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, current, previous);
+            }
+        }
+
+        private static <T> List<T> notNull(List<T> it) {
+            if (it == null) {
+                return Collections.emptyList();
+            } else {
+                return it;
             }
         }
         

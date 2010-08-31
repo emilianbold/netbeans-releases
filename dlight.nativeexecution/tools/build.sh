@@ -67,7 +67,7 @@ uname -a
 
 MAKE=\`which gmake || which make\`
 cd /net/$LHOST/$PWD
-\$MAKE PLATFORM_DIR=\${PLATFORM} $@
+\$MAKE PLATFORM_DIR=\${PLATFORM} OSFAMILY=\${OSFAMILY} $@
 
 EOF
 

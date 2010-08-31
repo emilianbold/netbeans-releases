@@ -52,7 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -84,6 +83,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.TasksCachedProcessor;
 
@@ -94,7 +94,7 @@ public class ProcFSDataCollector
     private final static Logger log = DLightLogger.getLogger(ProcFSDataCollector.class);
     private TasksCachedProcessor<DLightTarget, ValidationStatus> validator =
             new TasksCachedProcessor<DLightTarget, ValidationStatus>(new ProcFSDataCollectorValidator(), false);
-    private volatile Future<?> mainLoop = null;
+    private DLightScheduledTask mainLoop = null;
     private final boolean msaEnabled, prstatEnabled;
     private SQLDataStorage sqlStorage;
     private PreparedStatement insertMSAStatement = null;
@@ -231,7 +231,7 @@ public class ProcFSDataCollector
     @Override
     protected synchronized void targetFinished(DLightTarget target) {
         if (mainLoop != null) {
-            mainLoop.cancel(true);
+            mainLoop.cancel();
             mainLoop = null;
         }
     }

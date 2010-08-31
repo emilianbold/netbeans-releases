@@ -149,6 +149,15 @@ int NbLauncher::start(int argc, char *argv[]) {
 
     const char *curDir = getCurrentDir();
     if (curDir) {
+        char olddir[MAX_PATH];
+        DWORD rc = GetCurrentDirectory(MAX_PATH, olddir);
+        if (rc == 0) {
+            logErr(true, false, "Failed to get current directory");
+        } else {
+            string od = string(olddir);
+            od.insert(0, "-J-Dnetbeans.user.dir=");
+            newArgs.add(od.c_str());
+        }
         logMsg("Changing current directory to: \"%s\"", curDir);
         SetCurrentDirectory(curDir);
     }
