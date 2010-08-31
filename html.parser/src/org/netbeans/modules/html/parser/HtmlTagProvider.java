@@ -128,8 +128,8 @@ public class HtmlTagProvider {
 
         @Override
         public int hashCode() {
-            int hash = 3;
-            hash = 47 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
+            int hash = 5;
+            hash = 67 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
             return hash;
         }
 

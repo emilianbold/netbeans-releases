@@ -288,8 +288,8 @@ public class Html5ParserTest extends NbTestCase {
         HtmlTag divTag = new HtmlTagImpl("div");
 
         Iterator<HtmlTag> possibleItr = possible.iterator();
-        assertEquals(htmlTag, possibleItr.next());
         assertEquals(bodyTag, possibleItr.next());
+        assertEquals(htmlTag, possibleItr.next());
 
         assertFalse(possible.contains(divTag));
 
