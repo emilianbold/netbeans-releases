@@ -1353,9 +1353,10 @@ public class BaseKit extends DefaultEditorKit {
 
                 // insert new line, caret moves to the new line
                 int dotPos = caret.getDot();
-                assert dotPos == insertionOffset : "dotPos=" + dotPos + " != " + "insertionOffset=" + insertionOffset; //NOI18N
-//                doc.insertString(dotPos, "\n", null); //NOI18N
-//                dotPos++;
+                assert cookie instanceof Integer || dotPos == insertionOffset :
+                            "dotPos=" + dotPos + " != " +          //NOI18N
+                            "insertionOffset=" + insertionOffset + //NOI18N
+                            "cookie=" + cookie;                    //NOI18N
                 doc.insertString(dotPos, insertionText, null);
                 dotPos += caretPosition != -1 ? caretPosition :
                           breakInsertPosition != -1 ? breakInsertPosition + 1 :
