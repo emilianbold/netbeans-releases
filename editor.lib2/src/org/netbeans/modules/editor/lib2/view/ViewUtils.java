@@ -57,6 +57,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  * Various view utilities.
@@ -275,6 +276,8 @@ public final class ViewUtils {
         }
         StringBuilder sb = new StringBuilder(100);
         sb.append(toStringNameId(doc));
+        sb.append(", Length=").append(doc.getLength());
+        sb.append(", Version=").append(DocumentUtilities.getDocumentVersion(doc));
         sb.append(", StreamDesc:");
         Object streamDesc = doc.getProperty(Document.StreamDescriptionProperty);
         if (streamDesc != null) {

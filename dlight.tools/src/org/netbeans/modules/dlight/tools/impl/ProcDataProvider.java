@@ -42,20 +42,16 @@
 package org.netbeans.modules.dlight.tools.impl;
 
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -81,67 +77,34 @@ import org.openide.util.NbBundle;
 public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConfiguration> implements DataRowConsumer {
 
     private static final String NAME = "ProcReader"; // NOI18N
-    private static final DataTableMetadata TABLE = new DataTableMetadata(
-            NAME, Arrays.asList(
-            ProcDataProviderConfiguration.SYS_TIME,
-            ProcDataProviderConfiguration.USR_TIME,
-            ProcDataProviderConfiguration.THREADS),
-            null);
-    private List<ValidationListener> validationListeners;
-    private ValidationStatus validationStatus;
+    private static final List<DataTableMetadata> metadata;
     private Future<Integer> procReaderTask;
 
+    static {
+        metadata = Collections.singletonList(new DataTableMetadata(
+                NAME, Arrays.asList(
+                ProcDataProviderConfiguration.SYS_TIME,
+                ProcDataProviderConfiguration.USR_TIME,
+                ProcDataProviderConfiguration.THREADS),
+                null));
+    }
+
     public ProcDataProvider(ProcDataProviderConfiguration configuration) {
-        validationListeners = new CopyOnWriteArrayList<ValidationListener>();
-        validationStatus = ValidationStatus.initialStatus();
+        super(NAME);
     }
 
     @Override
-    public Collection<DataTableMetadata> getDataTablesMetadata() {
-        return Collections.singletonList(TABLE);
+    public List<DataTableMetadata> getDataTablesMetadata() {
+        return metadata;
     }
 
     @Override
-    public String getName() {
-        return NAME;
-    }
-
-    public void targetStateChanged(DLightTargetChangeEvent event) {
-        switch (event.state) {
-            case RUNNING:
-                targetStarted(event.target);
-                break;
-            case DONE:
-            case FAILED:
-            case STOPPED:
-            case TERMINATED:
-                targetFinished(event.target);
-                break;
-        }
-    }
-
-    /*
-     * Synchronization protects validationStatus.
-     */
-    public synchronized ValidationStatus validate(DLightTarget target) {
-        if (validationStatus.isValid()) {
-            return validationStatus;
-        }
-
-        ValidationStatus oldStatus = validationStatus;
-        ValidationStatus newStatus = doValidation(target);
-
-        notifyStatusChanged(oldStatus, newStatus);
-
-        validationStatus = newStatus;
-        return newStatus;
-    }
-
-    private ValidationStatus doValidation(DLightTarget target) {
+    protected ValidationStatus doValidation(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             AsynchronousAction connectAction = ConnectionManager.getInstance().getConnectToAction(env, new Runnable() {
 
+                @Override
                 public void run() {
                     DLightManager.getDefault().revalidateSessions();
                 }
@@ -175,48 +138,12 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
 
         return ValidationStatus.validStatus();
     }
-
-    /*
-     * Synchronization protects validationStatus.
-     */
-    public synchronized void invalidate() {
-        validationStatus = ValidationStatus.initialStatus();
-    }
-
-    /*
-     * Synchronization protects validationStatus.
-     */
-    public synchronized ValidationStatus getValidationStatus() {
-        return validationStatus;
-    }
-
-    public void addValidationListener(ValidationListener listener) {
-        if (!validationListeners.contains(listener)) {
-            validationListeners.add(listener);
-        }
-    }
-
-    public void removeValidationListener(ValidationListener listener) {
-        validationListeners.remove(listener);
-    }
-
-    private void notifyStatusChanged(
-            final ValidationStatus oldStatus,
-            final ValidationStatus newStatus) {
-
-        if (oldStatus.equals(newStatus)) {
-            return;
-        }
-
-        for (ValidationListener validationListener : validationListeners) {
-            validationListener.validationStateChanged(this, oldStatus, newStatus);
-        }
-    }
-
     /*
      * Synchronization protects procReaderTask.
      */
-    private synchronized void targetStarted(DLightTarget target) {
+
+    @Override
+    protected synchronized void targetStarted(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
         HostInfo hostInfo = null;
         try {
@@ -254,7 +181,8 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
     /*
      * Synchronization protects procReaderTask.
      */
-    private synchronized void targetFinished(DLightTarget target) {
+    @Override
+    protected synchronized void targetFinished(DLightTarget target) {
         if (procReaderTask != null) {
             if (!procReaderTask.isDone()) {
                 procReaderTask.cancel(true);
@@ -263,6 +191,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
         }
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
@@ -279,6 +208,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      *
      * @param row  new data row
      */
+    @Override
     public void consume(DataRow row) {
         super.notifyIndicators(Collections.singletonList(row));
     }

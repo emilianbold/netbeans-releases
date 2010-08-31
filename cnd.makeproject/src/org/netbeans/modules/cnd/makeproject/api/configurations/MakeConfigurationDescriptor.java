@@ -92,6 +92,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -209,6 +210,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     @Override
     public void stateChanged(ChangeEvent e) {
         setModified();
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public Project getProject() {
@@ -1311,6 +1316,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 continue;
             }
             if (file.isDirectory()) {
+                try {
+                    String canPath = file.getCanonicalPath();
+                    String absPath = file.getAbsolutePath();
+                    if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                        // It seems we have recursive link
+                        LOGGER.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{absPath, folder.getPath()});
+                        continue;
+                    }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                    continue;
+                }
                 Folder dirfolder = folder;
                 dirfolder = folder.findFolderByName(file.getName());
                 if (dirfolder == null) {

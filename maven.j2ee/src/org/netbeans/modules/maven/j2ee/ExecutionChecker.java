@@ -287,14 +287,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         if (nbprj == null) {
             return false;
         }
-        Build build = nbprj.getMavenProject().getBuild();
-        if (build == null || build.getOutputDirectory() == null) {
-            return false;
-        }
-        File fl = new File(build.getOutputDirectory());
-        fl = FileUtil.normalizeFile(fl);
-        File check = new File(fl, NB_COS);
-        return check.exists();
+        return new File(nbprj.getOutputDirectory(false), NB_COS).exists();
     }
 
     private void removeNetbeansDeployFromActionMappings(String actionName) {

@@ -187,7 +187,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 String colName, colNull, colSize, colDec;
                 String strAutoIncrement = null;
                 if (rs != null) {
-                    HashMap rset = new HashMap();
+                    Map rset = new HashMap();
                     while (rs.next()) {
                         if (bridge != null) {
                             rset = bridge.getDriverSpecification().getRow();
@@ -320,7 +320,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 boolean unq;
                 LinkedList idxs = new LinkedList();
                 if (rs != null) {
-                    HashMap rset = new HashMap();
+                    Map rset = new HashMap();
                     String uniqueStr;
                     while (rs.next()) {
                         if (bridge != null) {
@@ -463,7 +463,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
 
         String name, fkColName, pkTableName, pkColName, c1, c2, s1, s2;
         if (rs != null) {
-            HashMap rset = new HashMap();
+            Map rset = new HashMap();
             while (rs.next()) {
                 if (bridge != null) {
                     rset = bridge.getDriverSpecification().getRow();
@@ -559,7 +559,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
             Object keySeq;
             String colName;
             if (rs != null) {
-                HashMap rset = new HashMap();
+                Map rset = new HashMap();
                 while (rs.next()) {
                     if (bridge != null) {
                         rset = bridge.getDriverSpecification().getRow();

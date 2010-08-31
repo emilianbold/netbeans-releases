@@ -66,8 +66,8 @@ public class PHPDoc extends cc {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(PHPDoc.class).addTest(
                 "automaticCommentGenerationOnFunction",
-                "automaticCommentGenerationOnClassVariable", 
-                "automaticCommentGenerationOnGlobalVariable")
+                "automaticCommentGenerationOnClassVariable") 
+//                "automaticCommentGenerationOnGlobalVariable")
                 .enableModules(".*").clusters(".*") //.gui( true )
                 );
     }

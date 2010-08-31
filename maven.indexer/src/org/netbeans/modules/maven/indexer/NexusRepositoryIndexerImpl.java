@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.maven.indexer;
 
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import java.util.Map;
 import org.apache.lucene.document.Document;
 import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
@@ -66,7 +66,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Index;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -78,12 +79,11 @@ import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.project.InvalidProjectModelException;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
@@ -102,6 +102,7 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -117,11 +118,14 @@ import org.sonatype.nexus.index.ArtifactAvailablility;
 import org.sonatype.nexus.index.ArtifactContext;
 import org.sonatype.nexus.index.ArtifactContextProducer;
 import org.sonatype.nexus.index.ArtifactInfo;
+import org.sonatype.nexus.index.Field;
 import org.sonatype.nexus.index.FlatSearchRequest;
 import org.sonatype.nexus.index.FlatSearchResponse;
+import org.sonatype.nexus.index.IndexerField;
 import org.sonatype.nexus.index.search.grouping.GGrouping;
 import org.sonatype.nexus.index.GroupedSearchRequest;
 import org.sonatype.nexus.index.GroupedSearchResponse;
+import org.sonatype.nexus.index.IndexerFieldVersion;
 import org.sonatype.nexus.index.NexusIndexer;
 import org.sonatype.nexus.index.context.IndexingContext;
 import org.sonatype.nexus.index.creator.AbstractIndexCreator;
@@ -163,18 +167,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
      */
     static final Mutex MUTEX = new Mutex();
     private Lookup lookup;
-
-    //#158083 more caching to satisfy the classloading gods..
-    private List<? extends IndexCreator> CREATORS;
-    private List<? extends IndexCreator> getLocalRepoIndexCreators() {
-        if (CREATORS == null) {
-            CREATORS = Arrays.asList(
-                new MinimalArtifactInfoIndexCreator(),
-                new JarFileContentsIndexCreator(),
-                new NbIndexCreator());
-        }
-        return CREATORS;
-    }
 
     private static final int MAX_RESULT_COUNT = 512;
     private static final int DEFAULT_MAX_CLAUSE = 1024;
@@ -220,11 +212,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 embedder = new DefaultPlexusContainer(config);
 
                 repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
-                indexer = (NexusIndexer) embedder.lookup(NexusIndexer.class);
-                searcher = (SearchEngine) embedder.lookup(SearchEngine.class);
-                remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
-                wagonManager = (WagonManager) embedder.lookup( WagonManager.class );
-                contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
+                indexer = embedder.lookup(NexusIndexer.class);
+                searcher = embedder.lookup(SearchEngine.class);
+                remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
+                wagonManager = embedder.lookup( WagonManager.class );
+                contextProducer = embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
             } catch (DuplicateRealmException ex) {
                 Exceptions.printStackTrace(ex);
@@ -273,6 +265,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     LOGGER.finer("Index Not Available :" + info.getId() + " At :" + loc.getAbsolutePath());//NOI18N
                 }
 
+                List<IndexCreator> creators = new ArrayList<IndexCreator>(3);
+                creators.add(new MinimalArtifactInfoIndexCreator());
+                creators.add(new JarFileContentsIndexCreator());
+                if (info.isLocal()) { // #164593
+                    creators.add(new NbIndexCreator());
+                }
                 try {
                     indexer.addIndexingContextForced(
                             info.getId(), // context id
@@ -281,7 +279,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
-                            info.isLocal() ? getLocalRepoIndexCreators() : indexer.FULL_INDEX);
+                            creators);
                 } catch (IOException ex) {
                     LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
                     LOGGER.log(Level.FINE, "Caused by ", ex); //NOI18N
@@ -294,7 +292,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
-                            info.isLocal() ? getLocalRepoIndexCreators() : indexer.FULL_INDEX);
+                            creators);
                 }
                 if (index) {
                     indexLoadedRepo(info, true);
@@ -401,7 +399,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext);
-                    iur.setResourceFetcher( new WagonFetcher( wagonManager, listener, null ) );
+                    iur.setResourceFetcher(new WagonFetcher(wagonManager, listener, null, null));
                     remoteIndexUpdater.fetchAndUpdateIndex(iur);
                 } finally {
                     listener.close();
@@ -831,12 +829,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     @Override
-    public List<NBVersionInfo> findByMD5(final String md5, List<RepositoryInfo> repos) {
-        //not supported
-        return Collections.<NBVersionInfo>emptyList();
-    }
-
-    @Override
     public List<NBVersionInfo> findBySHA1(final String sha1, List<RepositoryInfo> repos) {
         final RepositoryInfo[] allrepos = repos.toArray(new RepositoryInfo[repos.size()]);
         try {
@@ -1161,30 +1153,46 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     @SuppressWarnings("unchecked")
                     List<Dependency> dependencies = mp.getDependencies();
                     for (Dependency d : dependencies) {
-                        doc.add(new Field(NB_DEPENDENCY_GROUP, d.getGroupId(), Field.Store.NO, Field.Index.UN_TOKENIZED));
-                        doc.add(new Field(NB_DEPENDENCY_ARTIFACT, d.getArtifactId(), Field.Store.NO, Field.Index.UN_TOKENIZED));
-                        doc.add(new Field(NB_DEPENDENCY_VERSION, d.getVersion(), Field.Store.NO, Field.Index.UN_TOKENIZED));
+                        doc.add(FLD_NB_DEPENDENCY_GROUP.toField(d.getGroupId()));
+                        doc.add(FLD_NB_DEPENDENCY_ARTIFACT.toField(d.getArtifactId()));
+                        doc.add(FLD_NB_DEPENDENCY_VERSION.toField(d.getVersion()));
                     }
                 }
             } catch (InvalidArtifactRTException ex) {
                 ex.printStackTrace();
             }
         }
+        private static final String NS = "urn:NbIndexCreator"; // NOI18N
+        private static IndexerField FLD_NB_DEPENDENCY_GROUP = new IndexerField(new Field(null, NS, NB_DEPENDENCY_GROUP, "Dependency group"),
+                IndexerFieldVersion.V3, NB_DEPENDENCY_GROUP, "Dependency group", Store.NO, Index.NOT_ANALYZED);
+        private static IndexerField FLD_NB_DEPENDENCY_ARTIFACT = new IndexerField(new Field(null, NS, NB_DEPENDENCY_ARTIFACT, "Dependency artifact"),
+                IndexerFieldVersion.V3, NB_DEPENDENCY_ARTIFACT, "Dependency artifact", Store.NO, Index.NOT_ANALYZED);
+        private static IndexerField FLD_NB_DEPENDENCY_VERSION = new IndexerField(new Field(null, NS, NB_DEPENDENCY_VERSION, "Dependency version"),
+                IndexerFieldVersion.V3, NB_DEPENDENCY_VERSION, "Dependency version", Store.NO, Index.NOT_ANALYZED);
+        @Override
+        public Collection<IndexerField> getIndexerFields() {
+            return Arrays.asList(FLD_NB_DEPENDENCY_GROUP, FLD_NB_DEPENDENCY_ARTIFACT, FLD_NB_DEPENDENCY_VERSION);
+        }
 
         private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
             try {
-                ArtifactFactory artifactFactory = (ArtifactFactory) getEmbedder().getPlexusContainer().lookup(ArtifactFactory.class);
-                Artifact projectArtifact = artifactFactory.createProjectArtifact(
+                Artifact projectArtifact = getEmbedder().createArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
                         null);
-
-                MavenProjectBuilder builder = (MavenProjectBuilder) getEmbedder().getPlexusContainer().lookup(MavenProjectBuilder.class);
-                return builder.buildFromRepository(projectArtifact, new ArrayList(), repository);
-            } catch (InvalidProjectModelException ex) {
-                //ignore nexus is falling ???
-                LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
+                DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
+                dpbr.setLocalRepository(getEmbedder().getLocalRepository());
+                if(repository ==null || repository.equals(getEmbedder().getLocalRepository())) {
+                    dpbr.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
+                }else{
+                    dpbr.setRemoteRepositories(Arrays.asList(repository));
+                }
+                
+                ProjectBuildingResult res = getEmbedder().buildProject(projectArtifact, dpbr);
+                if (res.getProject() != null) {
+                    return res.getProject();
+                }
             } catch (ProjectBuildingException ex) {
                 LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
             } catch (Exception exception) {

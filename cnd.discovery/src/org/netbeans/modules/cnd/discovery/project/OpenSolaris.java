@@ -682,7 +682,7 @@ public class OpenSolaris extends KnownProject {
                 }
 
                 @Override
-                public List<Configuration> getDependencies() {
+                public List<String> getDependencies() {
                     return null;
                 }
 

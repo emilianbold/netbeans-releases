@@ -116,7 +116,6 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     }
 
     private void addKnownOwners(Set<Project> resultset) {
-        @SuppressWarnings("unchecked")
         List<Artifact> compileArtifacts = project.getOriginalMavenProject().getCompileArtifacts();
         for (Artifact ar : compileArtifacts) {
             File f = ar.getFile();

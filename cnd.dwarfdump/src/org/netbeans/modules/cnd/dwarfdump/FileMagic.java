@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.cnd.dwarfdump;
 
+import org.netbeans.modules.cnd.dwarfdump.reader.MyRandomAccessFile;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.LinkedList;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 /**
@@ -67,7 +67,7 @@ public class FileMagic {
         }
     }
 
-    public RandomAccessFile getReader() {
+    public MyRandomAccessFile getReader() {
         return reader;
     }
 
@@ -134,170 +134,5 @@ public class FileMagic {
     public static boolean isArchiveMagic(byte[] bytes){
         return bytes[0] == '!' && bytes[1] == '<' && bytes[2] == 'a' && bytes[3] == 'r' && // NOI18N
                 bytes[4] == 'c' && bytes[5] == 'h' && bytes[6] == '>' && bytes[7] == '\n'; // NOI18N
-    }
-
-    private static final class MyRandomAccessFile extends RandomAccessFile {
-
-        private static final int BUF_SIZE = Integer.getInteger("cnd.dwarfdump.random_access_file_buffer_size", 8 * 1024); // NOI18N
-        private static final int BUF_ALIGNMENT = 1024;
-        private static final int BUF_CACHE_SIZE = 8;
-        private String fileName;
-        private BufferCache currentCache;
-        private LinkedList<BufferCache> bufferList = new LinkedList<BufferCache>();
-        private static final boolean TRACE_STATISTIC = false;
-        private long countOfReads = 0;
-        private long countOfBufferReads = 0;
-
-        private MyRandomAccessFile(String fileName) throws IOException {
-            super(fileName, "r"); // NOI18N
-            this.fileName = fileName;
-            currentCache = new BufferCache(0);
-            invalidate();
-        }
-
-        private void invalidate() throws IOException {
-            currentCache.buf_end = 0;
-            currentCache.buf_pos = 0;
-            currentCache.real_pos = super.getFilePointer();
-        }
-
-        private int fillBuffer() throws IOException {
-            int shift = (int)(currentCache.real_pos%BUF_ALIGNMENT);
-            if (currentCache.real_pos-shift >= BUF_ALIGNMENT) {
-                shift += BUF_ALIGNMENT;
-            }
-            super.seek(currentCache.real_pos-shift);
-            if (TRACE_STATISTIC) {
-                countOfBufferReads++;
-                long real = super.getFilePointer();
-                System.err.println("Read buffer at "+real); // NOI18N
-            }
-            int n = super.read(currentCache.buffer, 0, BUF_SIZE);
-            if (n >= 0) {
-                currentCache.real_pos += n - shift;
-                currentCache.buf_end = n;
-                currentCache.buf_pos = shift;
-            }
-            return n;
-        }
-
-        @Override
-        public int read() throws IOException {
-            if (TRACE_STATISTIC) {
-                countOfReads++;
-            }
-            if (currentCache.buf_pos >= currentCache.buf_end) {
-                if (fillBuffer() < 0) {
-                    return -1;
-                }
-            }
-            if (currentCache.buf_end == 0) {
-                return -1;
-            } else {
-                return (0xff & currentCache.buffer[currentCache.buf_pos++]);
-            }
-        }
-
-        @Override
-        public int read(byte b[], int off, int len) throws IOException {
-            int leftover = currentCache.buf_end - currentCache.buf_pos;
-            if (len <= leftover) {
-                System.arraycopy(currentCache.buffer, currentCache.buf_pos, b, off, len);
-                currentCache.buf_pos += len;
-                return len;
-            }
-            for (int i = 0; i < len; i++) {
-                int c = read();
-                if (c != -1) {
-                    b[off + i] = (byte) c;
-                } else {
-                    if (i==0) {
-                        return -1;
-                    }
-                    return i;
-                }
-            }
-            return len;
-        }
-
-        @Override
-        public long getFilePointer() throws IOException {
-            long l = currentCache.real_pos;
-            return (l - currentCache.buf_end + currentCache.buf_pos);
-        }
-
-        @Override
-        public void seek(long pos) throws IOException {
-            int n = (int) (currentCache.real_pos - pos);
-            if (n >= 0 && n <= currentCache.buf_end) {
-                currentCache.buf_pos = currentCache.buf_end - n;
-                return;
-            }
-            boolean currentInList = false;
-            for(BufferCache cache : bufferList) {
-                n = (int) (cache.real_pos - pos);
-                if (n >= 0 && n <= cache.buf_end) {
-                    cache.buf_pos = cache.buf_end - n;
-                    currentCache = cache;
-                    return;
-                }
-                if (currentCache == cache) {
-                    currentInList = true;
-                }
-            }
-            // not found needed cache
-            if (currentInList) {
-                bufferList.remove(currentCache);
-            }
-            BufferCache oldest = null;
-            if (bufferList.size() >= BUF_CACHE_SIZE){
-               oldest = bufferList.removeFirst();
-            }
-            if (oldest != null) {
-                currentCache = oldest;
-            } else {
-                bufferList.addLast(currentCache);
-                currentCache = new BufferCache(pos);
-            }
-            bufferList.addLast(currentCache);
-            super.seek(pos);
-            invalidate();
-        }
-
-        public void dispose() {
-            if (TRACE_STATISTIC) {
-                if (currentCache.buffer != null) {
-                    System.err.println("File " + fileName); // NOI18N
-                    try {
-                        System.err.println("\tFile Length= " + length()); // NOI18N
-                    } catch (IOException ex) {
-                    }
-                    System.err.println("\tByte Reads=  " + countOfReads); // NOI18N
-                    System.err.println("\tBuffer Reads=" + countOfBufferReads); // NOI18N
-                }
-            }
-            try {
-                close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            currentCache.buffer = null;
-        }
-
-        private static final class BufferCache {
-            private byte buffer[] = new byte[BUF_SIZE];
-            private int buf_end = 0;
-            private int buf_pos = 0;
-            private long real_pos = 0;
-
-            private BufferCache(long realFilePointer) {
-                real_pos = realFilePointer;
-            }
-
-            @Override
-            public String toString() {
-                return "Buffer length "+buf_end+" Current buffer position "+buf_pos+" File position ["+(real_pos-buf_end)+","+real_pos+"]"; // NOI18N
-            }
-        }
     }
 }

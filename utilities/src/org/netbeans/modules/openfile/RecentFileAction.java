@@ -70,6 +70,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.StatusDisplayer;
@@ -90,6 +91,7 @@ import org.openide.util.actions.Presenter;
     displayName="#LBL_RecentFileAction_Name"
 )
 @ActionID(category="System", id="org.netbeans.modules.openfile.RecentFileAction")
+@ActionReference(path="Menu/File", position=900)
 public class RecentFileAction extends AbstractAction
         implements Presenter.Menu, PopupMenuListener, ChangeListener {
 

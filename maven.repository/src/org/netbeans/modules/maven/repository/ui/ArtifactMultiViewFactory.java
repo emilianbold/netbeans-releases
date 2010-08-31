@@ -52,7 +52,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -68,6 +68,7 @@ import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -169,24 +170,30 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     } else {
                         NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
                         @SuppressWarnings("unchecked")
-                        List<String> profiles = im.getMavenProject().getActiveProfiles();
-                        mvnprj = im.loadAlternateMavenProject(embedder, profiles, new Properties());
-                    FileObject fo = prj.getLookup().lookup(FileObject.class);
-                    if (fo != null) {
-                        ModelSource ms = Utilities.createModelSource(fo);
-                        if (ms.isEditable()) {
-                            POMModel model = POMModelFactory.getDefault().getModel(ms);
-                            if (model != null) {
-                                ic.add(model);
+                        List<Profile> profiles = im.getMavenProject().getActiveProfiles();
+                        List<String> profileIds = new ArrayList<String>();
+                        for (Profile p : profiles) {
+                            profileIds.add(p.getId());
+                        }
+                        mvnprj = im.loadAlternateMavenProject(embedder, profileIds, new Properties());
+                        FileObject fo = prj.getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            ModelSource ms = Utilities.createModelSource(fo);
+                            if (ms.isEditable()) {
+                                POMModel model = POMModelFactory.getDefault().getModel(ms);
+                                if (model != null) {
+                                    ic.add(model);
+                                }
                             }
                         }
                     }
+
+                    if(mvnprj != null){
+                        ic.add(mvnprj);
+                        DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
+                        ic.add(root);
                     }
-                    ic.add(mvnprj);
-                    DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
-                    ic.add(root);
-                } catch (ComponentLookupException ex) {
-                    Exceptions.printStackTrace(ex); //this should not happen, if it does, report.
+
                 } catch (ProjectBuildingException ex) {
                     ErrorPanel pnl = new ErrorPanel(ex);
                     DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ArtifactMultiViewFactory.class, "TIT_Error"));
@@ -195,7 +202,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     dd.setOptions(new Object[] { close });
                     dd.setClosingOptions(new Object[] { close });
                     DialogDisplayer.getDefault().notify(dd);
-                    File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
+                    File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
                     try {
                         MavenProject m = embedder.readProject(fallback);
                         m.setDescription(null);
@@ -233,9 +240,11 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         return tc;
     }
 
-    private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws ComponentLookupException, ProjectBuildingException {
-        MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
-        return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
+    private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws  ProjectBuildingException {
+        //TODO rewrite
+        MavenProjectBuilder bldr = embedder.lookupComponent(MavenProjectBuilder.class);
+        assert bldr !=null : "MavenProjectBuilder component not found in maven";
+        return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository()) ;
     }
     
     private static final String MAVEN_TC_PROPERTY = "mvn_tc_id";

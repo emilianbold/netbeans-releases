@@ -42,6 +42,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,7 @@ import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -67,6 +70,7 @@ import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -109,10 +113,37 @@ public class RefactoringTestBase extends NbTestCase {
         for (File f : files) {
             String fileContent = content.remove(f.filename);
 
-            assertEquals(f.content, fileContent);
+            assertEquals(f.content.replaceAll("[ \t\n]+", " "), fileContent.replaceAll("[ \t\n]+", " "));
         }
 
         assertTrue(content.toString(), content.isEmpty());
+    }
+
+    protected static void addAllProblems(List<Problem> problems, Problem head) {
+        while (head != null) {
+            problems.add(head);
+            head = head.getNext();
+        }
+    }
+
+    protected static void assertProblems(Iterable<? extends Problem> golden, Iterable<? extends Problem> real) {
+        Iterator<? extends Problem> g = golden.iterator();
+        Iterator<? extends Problem> r = real.iterator();
+
+        while (g.hasNext() && r.hasNext()) {
+            Problem gp = g.next();
+            Problem rp = r.next();
+
+            assertEquals(gp.isFatal(), rp.isFatal());
+            assertEquals(gp.getMessage(), rp.getMessage());
+        }
+
+        assertFalse(g.hasNext());
+        assertFalse(r.hasNext());
+    }
+
+    static {
+        NbBundle.setBranding("test");
     }
 
     protected static final class File {
@@ -130,6 +161,7 @@ public class RefactoringTestBase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        Util.allMimeTypes = new HashSet<String>();
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {
             new ClassPathProvider() {
                 public ClassPath findClassPath(FileObject file, String type) {

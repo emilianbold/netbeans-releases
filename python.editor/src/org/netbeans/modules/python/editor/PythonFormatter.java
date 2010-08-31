@@ -348,7 +348,6 @@ public class PythonFormatter implements Formatter {
 
             doc.runAtomic(new Runnable() {
                 public void run() {
-                    org.netbeans.editor.Formatter editorFormatter = null;
                     int[] computedIndents = new int[offsets.size()];
                     // Process backwards so I don't have to worry about updating offsets affected by
                     // indentation changes
@@ -409,14 +408,7 @@ public class PythonFormatter implements Formatter {
 
                         if (computedIndent != indent) {
                             try {
-                                if (context != null) {
-                                    context.modifyIndent(offset, computedIndent);
-                                } else {
-                                    if (editorFormatter == null) {
-                                        editorFormatter = doc.getFormatter();
-                                    }
-                                    editorFormatter.changeRowIndent(doc, offset, computedIndent);
-                                }
+                                context.modifyIndent(offset, computedIndent);
                             } catch (BadLocationException ex) {
                                 Exceptions.printStackTrace(ex);
                             }

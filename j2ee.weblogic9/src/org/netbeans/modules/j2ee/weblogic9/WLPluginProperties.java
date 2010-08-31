@@ -51,7 +51,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -89,22 +88,16 @@ import org.xml.sax.SAXException;
  * @author Ivan Sidorkin
  */
 public final class WLPluginProperties {
-    
-    public enum Vendor {
-        ORACLE("Oracle"),
-        SUN("Sun");
-        
-        Vendor(String name ){
-            this.name = name;
-        }
-        
-        public String toString() {
-            return name;
-        }
-        
-        private final String name; 
-    }
 
+    private static final Collection EXPECTED_FILES = new ArrayList();
+
+    static {
+        EXPECTED_FILES.add("common"); // NOI18N
+        EXPECTED_FILES.add("server/bin"); // NOI18N
+        EXPECTED_FILES.add("server/lib/weblogic.jar"); // NOI18N
+        //EXPECTED_FILES.add(".product.properties"); // NOI18N
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
 
     private static final String CONFIG_XML = "config/config.xml"; //NOI18N
@@ -119,6 +112,7 @@ public final class WLPluginProperties {
     public static final String ADMIN_SERVER_NAME= "adminName";      // NOI18N
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
     public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
+    public static final String DOMAIN_VERSION = "domainVersion";  // NOI18N
     
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N
@@ -239,6 +233,18 @@ public final class WLPluginProperties {
 
     @CheckForNull
     public static File getServerLibDirectory(WLDeploymentManager manager, boolean fallback) {
+        File server = getServerRoot(manager, fallback);
+        if (server != null) {
+            File serverLib = new File(server, "server" + File.separator + "lib"); // NOI18N
+            if (serverLib.exists() && serverLib.isDirectory()) {
+                return serverLib;
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    public static File getServerRoot(WLDeploymentManager manager, boolean fallback) {
         String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         // if serverRoot is null, then we are in a server instance registration process, thus this call
         // is made from InstanceProperties creation -> WLPluginProperties singleton contains
@@ -247,9 +253,9 @@ public final class WLPluginProperties {
             server = WLPluginProperties.getLastServerRoot();
         }
         if (server != null) {
-            File serverLib = new File(new File(server), "server" + File.separator + "lib"); // NOI18N
-            if (serverLib.exists() && serverLib.isDirectory()) {
-                return serverLib;
+            File serverFile = new File(server);
+            if (serverFile.exists() && serverFile.isDirectory()) {
+                return serverFile;
             }
         }
         return null;
@@ -263,24 +269,28 @@ public final class WLPluginProperties {
      *
      * @return an array if strings with the domains' paths
      */
-    public static String[] getRegisteredDomainPaths(String serverRoot){
+    public static String[] getRegisteredDomainPaths(String serverRoot) {
         // init the resulting vector
         List<String> result = new ArrayList<String>();
 
         // is the server root was not defined, return an empty array of domains
         if (serverRoot == null) {
-            return new String[0];
+            return new String[] {};
         }
 
         // init the input stream for the file and the w3c document object
         File file = new File(serverRoot + File.separator
                 + DOMAIN_LIST.replaceAll("/", Matcher.quoteReplacement(File.separator)));
-        LineNumberReader lnr = null;
+        if (!file.exists() || !file.canRead()) {
+            return new String[] {};
+        }
+
+        BufferedReader lnr = null;
 
         // read the list file line by line fetching out the domain paths
         try {
             // create a new reader for the FileInputStream
-            lnr = new LineNumberReader(new InputStreamReader(new FileInputStream(file)));
+            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
             // read the lines
             String line;
@@ -297,9 +307,9 @@ public final class WLPluginProperties {
                 result.add(path);
             }
         } catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);   // NOI18N
+            LOGGER.log(Level.INFO, null, e);   // NOI18N
         } catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);   // NOI18N
+            LOGGER.log(Level.INFO, null, e);   // NOI18N
         } finally {
             try {
                 // close the stream
@@ -307,7 +317,7 @@ public final class WLPluginProperties {
                     lnr.close();
                 }
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);  // NOI18N
+                LOGGER.log(Level.INFO, null, e);  // NOI18N
             }
         }
 
@@ -321,7 +331,7 @@ public final class WLPluginProperties {
      * Method implementation should be extended for additional properties. 
      * return server configuration properties 
      */
-    public static Properties getDomainProperties( String domainPath ) {
+    public static Properties getDomainProperties(String domainPath) {
         Properties properties = new Properties();
         String configPath = domainPath + "/config/config.xml"; // NOI18N
 
@@ -333,9 +343,9 @@ public final class WLPluginProperties {
             // open the stream from the instances config file
             File config = new File(configPath);
             if ( !config.exists()){
-                Logger.getLogger("global").log(Level.INFO, "Domain config file " +
-                		"is not found. Probavly server configuration was " +
-                		"changed externally"); // NOI18N
+                LOGGER.log(Level.FINE, "Domain config file "
+                        + "is not found. Probably server configuration was "
+                        + "changed externally"); // NOI18N
                 return properties;
             }
             inputStream = new FileInputStream(config);
@@ -356,8 +366,10 @@ public final class WLPluginProperties {
                 if ("name".equals(child.getNodeName())) {
                     String domainName = child.getFirstChild().getNodeValue();
                     properties.put(DOMAIN_NAME, domainName);
-                }
-                else if ("production-mode-enabled".equals(child.getNodeName())) {
+                } else if ("domain-version".equals(child.getNodeName())) {
+                    String domainVersion = child.getFirstChild().getNodeValue();
+                    properties.put(DOMAIN_VERSION, domainVersion);
+                } else if ("production-mode-enabled".equals(child.getNodeName())) {
                     String isEnabled = child.getFirstChild().getNodeValue();
                     properties.put(PRODUCTION_MODE, "true".equals( isEnabled ));
                     
@@ -423,27 +435,21 @@ public final class WLPluginProperties {
                     }
                 }
             }
-        }
-        catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
-        }
-        catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
-        }
-        catch (ParserConfigurationException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
-        }
-        catch (SAXException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
-        }
-        finally {
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (ParserConfigurationException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (SAXException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } finally {
             try {
                 if (inputStream != null) {
                     inputStream.close();
                 }
-            }
-            catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
             }
         }
         return properties;
@@ -452,151 +458,142 @@ public final class WLPluginProperties {
     /**
      * Returns map of JDK configuration which is used for starting server
      */
-    public static Properties getRuntimeProperties(String domainPath){
+    public static Properties getRuntimeProperties(String domainPath) {
         Properties properties = new Properties();
         Properties javaHomeVendors = new Properties();
         String beaJavaHome = null;
         String sunJavaHome = null; 
-        properties.put( JAVA_HOME, javaHomeVendors );
+        properties.put(JAVA_HOME, javaHomeVendors);
         try {
-            if ( Utilities.isWindows()) {
+            if (Utilities.isWindows()) {
                 String setDomainEnv = domainPath + "/bin/setDomainEnv.cmd"; // NOI18N
                 File file = new File(setDomainEnv);
                 if (!file.exists()) {
-                    Logger.getLogger("global")
-                            .log(Level.INFO,
-                                    "Domain environment "
-                                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
-                                            + "changed externally"); // NOI18N
+                    LOGGER.log(Level.INFO, "Domain environment "
+                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
+                            + "changed externally"); // NOI18N
                     return properties;
                 }
                 BufferedReader reader = new BufferedReader(new FileReader(file));
-                String line;
-                String vendorName = null;
-                boolean vendorsSection = false;
-                boolean defaultVendorInit = false;
-                while ((line = reader.readLine()) != null) {
-                    Matcher bea = WIN_BEA_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher sun = WIN_SUN_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher vendor = WIN_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
-                    Matcher javaHomeMatcher = WIN_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher defaultVendor = WIN_DEFAULT_VENDOR_PATTERN.matcher(line);
+                try {
+                    String line;
+                    String vendorName = null;
+                    boolean vendorsSection = false;
+                    boolean defaultVendorInit = false;
+                    while ((line = reader.readLine()) != null) {
+                        Matcher bea = WIN_BEA_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher sun = WIN_SUN_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher vendor = WIN_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
+                        Matcher javaHomeMatcher = WIN_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher defaultVendor = WIN_DEFAULT_VENDOR_PATTERN.matcher(line);
 
-                    if ( vendor.matches()){
-                        vendorsSection = true;
-                        vendorName = line.substring(vendor.start(1), vendor.end(1))
-                            .trim(); 
-                        continue;
-                    }
-                    else if ( javaHomeMatcher.matches()){
-                        if ( vendorName != null ){
-                            javaHomeVendors.put(vendorName, line.substring(
-                                    javaHomeMatcher.start(1), javaHomeMatcher.end(1))
-                                    .trim() );
-                        }
-                        else if (defaultVendorInit){
-                            javaHomeVendors.put("", line.substring(
-                                    javaHomeMatcher.start(1), javaHomeMatcher.end(1))
-                                    .trim() );
-                            defaultVendorInit = false;
-                        }
-                        continue;
-                    }
-                    else {
-                        vendorName = null;
-                    }
-                    if (bea.matches()) {
-                        beaJavaHome = line.substring(bea.start(1), bea.end(1))
+                        if (vendor.matches()) {
+                            vendorsSection = true;
+                            vendorName = line.substring(vendor.start(1), vendor.end(1))
                                 .trim();
+                            continue;
+                        } else if (javaHomeMatcher.matches()) {
+                            if (vendorName != null) {
+                                javaHomeVendors.put(vendorName, line.substring(
+                                        javaHomeMatcher.start(1), javaHomeMatcher.end(1))
+                                        .trim() );
+                            } else if (defaultVendorInit) {
+                                javaHomeVendors.put("", line.substring(
+                                        javaHomeMatcher.start(1), javaHomeMatcher.end(1))
+                                        .trim() );
+                                defaultVendorInit = false;
+                            }
+                            continue;
+                        } else {
+                            vendorName = null;
+                        }
+                        if (bea.matches()) {
+                            beaJavaHome = line.substring(bea.start(1), bea.end(1))
+                                    .trim();
+                        } else if (sun.matches()) {
+                            sunJavaHome = line.substring(sun.start(1), sun.end(1))
+                                    .trim();
+                        } else if (vendorsSection && defaultVendor.matches()) {
+                            defaultVendorInit = true;
+                            vendorsSection = false;
+                        }
                     }
-                    else if (sun.matches()) {
-                        sunJavaHome = line.substring(sun.start(1), sun.end(1))
-                                .trim();
-                    }
-                    else if ( vendorsSection && defaultVendor.matches( )){
-                        defaultVendorInit = true;
-                        vendorsSection = false;
-                    }
+                } finally {
+                    reader.close();
                 }
-            }
-            else {
+            } else {
                 String setDomainEnv = domainPath + "/bin/setDomainEnv.sh"; // NOI18N
                 File file = new File(setDomainEnv);
                 if (!file.exists()) {
-                    Logger.getLogger("global")
-                            .log(Level.INFO,
-                                    "Domain environment "
-                                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
-                                            + "changed externally"); // NOI18N
+                    LOGGER.log(Level.INFO, "Domain environment "
+                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
+                            + "changed externally"); // NOI18N
                     return properties;
                 }
                 BufferedReader reader = new BufferedReader(new FileReader(file));
-                String line;
-                String vendorName = null;
-                boolean vendorsSection = false;
-                boolean defaultVendorInit = false;
-                while ((line = reader.readLine()) != null) {
-                    Matcher bea = SHELL_BEA_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher sun = SHELL_SUN_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher vendor = SHELL_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
-                    Matcher javaHomeMatcher = SHELL_JAVA_HOME_PATTERN.matcher(line);
-                    Matcher defaultVendor = SHELL_DEFAULT_VENDOR_PATTERN.matcher(line);
-                    
-                    if ( vendor.matches()){
-                        vendorsSection = true;
-                        vendorName = line.substring(vendor.start(1), vendor.end(1))
-                            .trim(); 
-                        continue;
-                    }
-                    else if ( javaHomeMatcher.matches()){
-                        if ( vendorName != null ){
-                            javaHomeVendors.put(vendorName, unquote(line.substring(
-                                    javaHomeMatcher.start(2), javaHomeMatcher.end(2))
-                                    .trim() ));
-                        }
-                        else if (defaultVendorInit){
-                            javaHomeVendors.put("", unquote(line.substring(
-                                    javaHomeMatcher.start(2), javaHomeMatcher.end(2))
-                                    .trim() ));
-                            defaultVendorInit = false;
-                        }
-                        continue;
-                    }
-                    else {
-                        vendorName = null;
-                    }
-                    if (bea.matches()) {
-                        beaJavaHome = line.substring(bea.start(2), bea.end(2))
+                try {
+                    String line;
+                    String vendorName = null;
+                    boolean vendorsSection = false;
+                    boolean defaultVendorInit = false;
+                    while ((line = reader.readLine()) != null) {
+                        Matcher bea = SHELL_BEA_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher sun = SHELL_SUN_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher vendor = SHELL_JAVA_VENDOR_CHECK_PATTERN.matcher(line);
+                        Matcher javaHomeMatcher = SHELL_JAVA_HOME_PATTERN.matcher(line);
+                        Matcher defaultVendor = SHELL_DEFAULT_VENDOR_PATTERN.matcher(line);
+
+                        if (vendor.matches()) {
+                            vendorsSection = true;
+                            vendorName = line.substring(vendor.start(1), vendor.end(1))
                                 .trim();
+                            continue;
+                        } else if (javaHomeMatcher.matches()) {
+                            if (vendorName != null) {
+                                javaHomeVendors.put(vendorName, unquote(line.substring(
+                                        javaHomeMatcher.start(2), javaHomeMatcher.end(2))
+                                        .trim() ));
+                            } else if (defaultVendorInit) {
+                                javaHomeVendors.put("", unquote(line.substring(
+                                        javaHomeMatcher.start(2), javaHomeMatcher.end(2))
+                                        .trim() ));
+                                defaultVendorInit = false;
+                            }
+                            continue;
+                        } else {
+                            vendorName = null;
+                        }
+                        if (bea.matches()) {
+                            beaJavaHome = line.substring(bea.start(2), bea.end(2))
+                                    .trim();
+                        } else if (sun.matches()) {
+                            sunJavaHome = line.substring(sun.start(2), sun.end(2))
+                                    .trim();
+                        } else if (vendorsSection && defaultVendor.matches()){
+                            defaultVendorInit = true;
+                            vendorsSection = false;
+                        }
                     }
-                    else if (sun.matches()) {
-                        sunJavaHome = line.substring(sun.start(2), sun.end(2))
-                                .trim();
-                    }
-                    else if ( vendorsSection && defaultVendor.matches( )){
-                        defaultVendorInit = true;
-                        vendorsSection = false;
-                    }
+                } finally {
+                    reader.close();
                 }
             }
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, null, e);
         }
-        catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
+        if (beaJavaHome != null) {
+            properties.put(BEA_JAVA_HOME, unquote(beaJavaHome));
         }
-        catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
-        }
-        if ( beaJavaHome != null ){
-            properties.put( BEA_JAVA_HOME , unquote(beaJavaHome) );
-        }
-        if ( sunJavaHome != null ){
-            properties.put( SUN_JAVA_HOME, unquote(sunJavaHome));
+        if (sunJavaHome != null) {
+            properties.put(SUN_JAVA_HOME, unquote(sunJavaHome));
         }
         return properties;
     }
     
-    private static String unquote(String value ){
-        String quote = "\"";            // NOI18N
+    private static String unquote(String value) {
+        String quote = "\""; // NOI18N
         String result = value ;
         if ( result.startsWith(quote)){
             result = result.substring(1);
@@ -611,28 +608,19 @@ public final class WLPluginProperties {
         return NbPreferences.forModule(WLPluginProperties.class);
     }
 
-    private static Collection fileColl = new java.util.ArrayList();
-
-    static {
-        fileColl.add("common");        // NOI18N
-        fileColl.add("common/bin");    // NOI18N
-        fileColl.add("server/lib/weblogic.jar"); // NOI18N
-        fileColl.add(".product.properties"); // NOI18N
-    }
-
     public static boolean isGoodServerLocation(File candidate){
         if (null == candidate ||
                 !candidate.exists() ||
                 !candidate.canRead() ||
                 !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, fileColl)) {
+                !hasRequiredChildren(candidate, EXPECTED_FILES)) {
             return false;
         }
         return true;
     }
 
     /**
-     * Checks whether the server root contains weblogic.jar of version 9 or 10.
+     * Checks whether the server root contains weblogic.jar of version 9, 10 or 11.
      */
     public static boolean isSupportedVersion(Version version) {
         return version != null && (Integer.valueOf(9).equals(version.getMajor())
@@ -705,7 +693,7 @@ public final class WLPluginProperties {
         return new File[] {weblogicJar};
     }
 
-    public static Version getVersion(File serverRoot) {
+    public static Version getServerVersion(File serverRoot) {
         File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
         if (!weblogicJar.exists()) {
             return null;
@@ -737,13 +725,14 @@ public final class WLPluginProperties {
         return null;
     }
 
-    public static String getWeblogicDomainVersion(String domainRoot) {
+    public static Version getDomainVersion(InstanceProperties props) {
         // Domain config file
-        File config = new File(domainRoot, CONFIG_XML);
+        File config = getDomainConfigFile(props);
 
         // Check if the file exists
-        if (!config.exists())
+        if (config == null || !config.exists()) {
             return null;
+        }
 
         try {
             InputSource source = new InputSource(new FileInputStream(config));
@@ -751,18 +740,50 @@ public final class WLPluginProperties {
 
             // Retrieve domain version
             if (d.getElementsByTagName("domain-version").getLength() > 0) {
-                return d.getElementsByTagName("domain-version").item(0).getTextContent();
+                String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
+                return  strVersion != null ? Version.fromJsr277NotationWithFallback(strVersion) : null;
             }
 
         } catch(FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
         } catch(IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
         } catch(SAXException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
         }
 
         return null;
+    }
+
+    public static boolean isWebProfile(File serverRoot) {
+        File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
+        if (!weblogicJar.exists()) {
+            return false;
+        }
+        try {
+            // JarInputStream cannot be used due to problem in weblogic.jar in Oracle Weblogic Server 10.3
+            JarFile jar = new JarFile(weblogicJar);
+            try {
+                Manifest manifest = jar.getManifest();
+                String implementationTitle = null;
+                if (manifest != null) {
+                    implementationTitle = manifest.getMainAttributes()
+                            .getValue("Implementation-Title"); // NOI18N
+                }
+                if (implementationTitle != null) { // NOI18N
+                    return implementationTitle.contains("WebProfile"); // NOI18N
+                }
+            } finally {
+                try {
+                    jar.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINEST, null, ex);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, null, e);
+        }
+        return false;
     }
 
     private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
@@ -783,4 +804,21 @@ public final class WLPluginProperties {
         return true;
     }
 
+    public static enum Vendor {
+
+        ORACLE("Oracle"), // NOI18N
+
+        SUN("Sun"); // NOI18N
+
+        private final String name;
+
+        Vendor(String name ){
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 }

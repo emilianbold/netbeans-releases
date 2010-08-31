@@ -56,10 +56,8 @@ class TestPackage extends TracerPackage {
     
     private TracerProbeDescriptor descriptor1;
     private TracerProbeDescriptor descriptor2;
-//    private TracerProbeDescriptor descriptor3;
     private TracerProbe probe1;
     private TracerProbe probe2;
-//    private TracerProbe probe3;
 
     private IdeSnapshot snapshot;
     
@@ -71,12 +69,14 @@ class TestPackage extends TracerPackage {
 
     
     public TracerProbeDescriptor[] getProbeDescriptors() {
-        descriptor1 = new TracerProbeDescriptor("UI Actions", "Shows UI actions performed by the user in the IDE", null, 1, true);
-        descriptor2 = new TracerProbeDescriptor("Stack depth", "Reports the cummulative depth of all running threads", null, 2, true);
-//        descriptor3 = new TracerProbeDescriptor("Probe 3", "Probe 3 description", null, 1, true);
-        return new TracerProbeDescriptor[] { descriptor1,
-                                             descriptor2, };
-//                                             descriptor3 };
+        if (snapshot.hasUiGestures()) {
+            descriptor1 = new TracerProbeDescriptor("UI Actions", "Shows UI actions performed by the user in the IDE", null, 1, true);
+            descriptor2 = new TracerProbeDescriptor("Stack depth", "Reports the cummulative depth of all running threads", null, 2, true);
+            return new TracerProbeDescriptor[] { descriptor1, descriptor2, };
+        } else {
+            descriptor2 = new TracerProbeDescriptor("Stack depth", "Reports the cummulative depth of all running threads", null, 2, true);
+            return new TracerProbeDescriptor[] { descriptor2, };
+        }
     }
 
     public TracerProbe getProbe(TracerProbeDescriptor descriptor) {
@@ -86,9 +86,6 @@ class TestPackage extends TracerPackage {
         } else if (descriptor == descriptor2) {
             if (probe2 == null) probe2 = new TestProbe(snapshot);
             return probe2;
-//        } else if (descriptor == descriptor3) {
-//            if (probe3 == null) probe3 = new TestProbe(3);
-//            return probe3;
         } else {
             return null;
         }

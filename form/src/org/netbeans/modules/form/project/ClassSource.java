@@ -190,9 +190,11 @@ public final class ClassSource {
             }
             // Backward compatibility - we used ant-artifact
             AntArtifact aa = AntArtifactQuery.findArtifactFromFile(file);
-            Project project = aa.getProject();
-            if (project != null) {
-                return new ProjectEntry(project);
+            if (aa != null) { // Issue 189960
+                Project project = aa.getProject();
+                if (project != null) {
+                    return new ProjectEntry(project);
+                }
             }
             return null;
         } else {

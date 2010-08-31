@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -223,7 +224,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 }
                 
                 @Override
-                public List<Configuration> getDependencies() {
+                public List<String> getDependencies() {
                     return null;
                 }
                 
@@ -238,7 +239,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                             progress.start(set.size());
                         }
                         if (set.size() > 0) {
-                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null);
+                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
                         } else {
                             myFileProperties = new ArrayList<SourceFileProperties>();
                         }
@@ -357,6 +358,15 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 set.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
+                    try {
+                        String canPath = ff[i].getCanonicalPath();
+                        String absPath = ff[i].getAbsolutePath();
+                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                            continue;
+                        }
+                    } catch (IOException ex) {
+                        //Exceptions.printStackTrace(ex);
+                    }
                     gatherSubFolders(ff[i], set);
                 }
             }

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
-import java.io.RandomAccessFile;
 import org.netbeans.modules.cnd.dwarfdump.FileMagic;
 import org.netbeans.modules.cnd.dwarfdump.Magic;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
@@ -75,7 +74,7 @@ public class ElfReader extends ByteStreamReader {
     private long shiftIvArchive = 0;
     private long lengthIvArchive = 0;
     
-    public ElfReader(String fname, RandomAccessFile reader, Magic magic, long shift, long length) throws IOException {
+    public ElfReader(String fname, MyRandomAccessFile reader, Magic magic, long shift, long length) throws IOException {
         super(fname, reader);
         shiftIvArchive = shift;
         lengthIvArchive = length;

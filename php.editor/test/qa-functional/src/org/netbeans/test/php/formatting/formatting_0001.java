@@ -43,21 +43,14 @@
  */
 package org.netbeans.test.php.formatting;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.util.NameComponentChooser;
-import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
@@ -134,7 +127,9 @@ public class formatting_0001 extends formatting {
 
     public void bug181787() {
         startTest();
-        //test for always
+        if (getPlatform().equals("mac os x")) {
+            fail("Not implemented for MAC OS X yet!"); 
+        }
         setMethodParametersWrappingOptions(1);
 
         EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
@@ -193,8 +188,10 @@ public class formatting_0001 extends formatting {
     }
 
     public void Check_formatting_options_count() throws InterruptedException {
+        
         startTest();
-
+        if (getPlatform().equals("mac os x")) 
+            fail("Not implemented for MAC OS X yet!");
         JDialogOperator window = selectPHPFromEditorOptions(0);
 
         //categories - check if they are all present
@@ -253,9 +250,10 @@ public class formatting_0001 extends formatting {
         }
 
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");
+        Sleep(5000);
         String sTextUndo = eoPHP.getText();
         if (!sTextChanged.equals(sTextUndo)) {
-            fail("Undo formatting is not valid.");
+            fail("Undo formatting is not valid. Expected: \n " + sTextChanged + " \n but was \n" + sTextUndo);
         }
 
         endTest();
@@ -298,10 +296,12 @@ public class formatting_0001 extends formatting {
         JPopupMenuOperator menu = new JPopupMenuOperator();
         menu.pushMenu("Format");
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");
+        Sleep(5000);
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");
+        Sleep(5000);
         String sTextUndo = eoPHP.getText();
         if (!sTextOriginal.equals(sTextUndo)) {
-            fail("Undo formatting is not valid.");
+            fail("Undo formatting is not valid. Expected: \n" + sTextOriginal + " but was \n" + sTextUndo);
         }
 
         endTest();

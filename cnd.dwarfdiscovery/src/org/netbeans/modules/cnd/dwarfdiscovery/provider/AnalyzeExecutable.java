@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -228,29 +229,34 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
+                private Set<String> myDependencies;
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
                     return ProjectImpl.divideByLanguage(getSourcesConfiguration());
                 }
                 
                 @Override
-                public List<Configuration> getDependencies() {
-                    return null;
+                public List<String> getDependencies() {
+                    if (myDependencies == null) {
+                        getSourcesConfiguration();
+                    }
+                    return new ArrayList<String>(myDependencies);
                 }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
+                        myDependencies = new HashSet<String>();
                         String set = (String)getProperty(EXECUTABLE_KEY).getValue();
                         if (set != null && set.length() > 0) {
                             String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
                             if (add == null || add.length==0) {
-                                myFileProperties = getSourceFileProperties(new String[]{set},null, null);
+                                myFileProperties = getSourceFileProperties(new String[]{set},null, null, myDependencies);
                             } else {
                                 String[] all = new String[add.length+1];
                                 all[0] = set;
                                 System.arraycopy(add, 0, all, 1, add.length);
-                                myFileProperties = getSourceFileProperties(all,null, null);
+                                myFileProperties = getSourceFileProperties(all,null, null, myDependencies);
                             }
                         }
                     }

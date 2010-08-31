@@ -51,7 +51,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.util.Vector;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -76,7 +77,10 @@ import org.openide.util.NbBundle;
  */
 public class ServerLocationVisual extends JPanel {
 
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+
     private transient WLInstantiatingIterator instantiatingIterator;
+
     public ServerLocationVisual(WLInstantiatingIterator instantiatingIterator) {
 
         // save the instantiating iterator
@@ -107,16 +111,16 @@ public class ServerLocationVisual extends JPanel {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
             return false;
         }
-        
+
         File serverRoot = FileUtil.normalizeFile(new File(location));
-        
-        serverRoot = findServerLocation( serverRoot , wizardDescriptor );
-        if ( serverRoot == null ){
+
+        serverRoot = findServerLocation(serverRoot , wizardDescriptor);
+        if (serverRoot == null) {
             return false;
         }
         location = serverRoot.getPath();
-        
-        Version version = WLPluginProperties.getVersion(serverRoot);
+
+        Version version = WLPluginProperties.getServerVersion(serverRoot);
 
         if (!WLPluginProperties.isSupportedVersion(version)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_VERSION");  // NOI18N
@@ -135,14 +139,13 @@ public class ServerLocationVisual extends JPanel {
 
         // set the server root in the parent instantiating iterator
         instantiatingIterator.setServerRoot(location);
+        instantiatingIterator.setServerVersion(version);
 
         // everything seems ok
         return true;
     }
 
-    private File findServerLocation( File candidate , 
-            WizardDescriptor wizardDescriptor) 
-    {
+    private File findServerLocation(File candidate, WizardDescriptor wizardDescriptor) {
         if (WLPluginProperties.isGoodServerLocation(candidate)) {
             return candidate;
         }
@@ -150,21 +153,21 @@ public class ServerLocationVisual extends JPanel {
             File[] files = candidate.listFiles();
             for (File file : files) {
                 String fileName = file.getName();
-                if ( fileName.startsWith("wlserver")){                  // NOI18N
+                if (fileName.startsWith("wlserver")) { // NOI18N
                     if (WLPluginProperties.isGoodServerLocation(file)){
-                        String msg = NbBundle.getMessage(ServerLocationVisual.class, 
-                                "WARN_CHILD_SERVER_ROOT", candidate.getPath(), 
-                                file.getPath());                        // NOI18N
+                        String msg = NbBundle.getMessage(ServerLocationVisual.class,
+                                "WARN_CHILD_SERVER_ROOT", candidate.getPath(), // NOI18N
+                                file.getPath());
                         wizardDescriptor.putProperty(
-                                WizardDescriptor.PROP_WARNING_MESSAGE, 
+                                WizardDescriptor.PROP_WARNING_MESSAGE,
                                 WLInstantiatingIterator.decorateMessage(msg));
                         return file;
                     }
                 }
             }
-            String msg = NbBundle.getMessage(ServerLocationVisual.class, 
+            String msg = NbBundle.getMessage(ServerLocationVisual.class,
                     "ERR_INVALID_SERVER_ROOT");  // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(msg));
             return null;
         }
@@ -279,13 +282,14 @@ public class ServerLocationVisual extends JPanel {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Listeners section
-    ////////////////////////////////////////////////////////////////////////////
     /**
-     * The registrered listeners vector
+     * Adds a listener
+     *
+     * @param listener the listener to be added
      */
-    private Vector listeners = new Vector();
+    public void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
+    }
 
     /**
      * Removes a registered listener
@@ -293,30 +297,7 @@ public class ServerLocationVisual extends JPanel {
      * @param listener the listener to be removed
      */
     public void removeChangeListener(ChangeListener listener) {
-        if (listeners != null) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
-    }
-
-    /**
-     * Adds a listener
-     *
-     * @param listener the listener to be added
-     */
-    public void addChangeListener(ChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    /**
-     * Fires a change event originating from this panel
-     */
-    private void fireChangeEvent() {
-        ChangeEvent event = new ChangeEvent(this);
-        fireChangeEvent(event);
+        listeners.remove(listener);
     }
 
     /**
@@ -324,14 +305,9 @@ public class ServerLocationVisual extends JPanel {
      *
      * @param event the event
      */
-    private void fireChangeEvent(ChangeEvent event) {
-        Vector targetListeners;
-        synchronized (listeners) {
-            targetListeners = (Vector) listeners.clone();
-        }
-
-        for (int i = 0; i < targetListeners.size(); i++) {
-            ChangeListener listener = (ChangeListener) targetListeners.elementAt(i);
+    private void fireChangeEvent() {
+        ChangeEvent event = new ChangeEvent(this);
+        for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
         }
     }

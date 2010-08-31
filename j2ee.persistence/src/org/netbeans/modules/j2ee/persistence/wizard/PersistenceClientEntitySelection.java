@@ -57,11 +57,13 @@ import org.openide.util.HelpCtx;
  * @author Pavel Buzek
  */
 public final class PersistenceClientEntitySelection implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
+    public static String DISABLENOIDSELECTION = "disableNoIdSelection";//NOI18N, used to control if entities without id can be selected
     
     private WizardDescriptor wizardDescriptor;
     private String panelName;
     private HelpCtx helpCtx;
     private PersistenceClientEntitySelectionVisual component;
+    private boolean disableNoIdSelection = false;
     
     
     /** Create the wizard panel descriptor. */

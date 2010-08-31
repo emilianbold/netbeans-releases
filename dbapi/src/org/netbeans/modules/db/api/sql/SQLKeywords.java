@@ -437,6 +437,7 @@ public final class SQLKeywords {
         "DATETIME_INTERVAL_CODE", //NOI18N
         "DATETIME_INTERVAL_PRECISION", //NOI18N
         "DB", //NOI18N
+        "DELIMITER", // NOI18N
         "DISPATCH", //NOI18N
         "DLCOMMENT", //NOI18N
         "DLFILESIZE", //NOI18N
@@ -497,6 +498,7 @@ public final class SQLKeywords {
         "POSITION", //NOI18N
         "RECOVERY", //NOI18N
         "REPEATABLE", //NOI18N
+        "REPLACE", // NOI18N
         "RESTORE", //NOI18N
         "RETURNED_LENGTH", //NOI18N
         "RETURNED_OCTET_LENGTH", //NOI18N

@@ -59,13 +59,11 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.validation.ModelValidationResult;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
-import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.nodes.DependenciesNode;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
@@ -190,18 +188,18 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         
     }
     
-    public void addValidatorReports(InvalidProjectModelException exc) {
-        ModelValidationResult res = exc.getValidationResult();
-        if (res == null) {
-            return;
-        }
-        List messages = exc.getValidationResult().getMessages();
-        if (messages != null && messages.size() > 0) {
-            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                    NbBundle.getMessage(ProblemReporterImpl.class, "ERR_Project_validation"), exc.getValidationResult().render("\n"), new OpenPomAction(nbproject)); //NOI18N
-            addReport(report);
-        }
-    }
+//    public void addValidatorReports(InvalidProjectModelException exc) {
+//        ModelValidationResult res = exc.getValidationResult();
+//        if (res == null) {
+//            return;
+//        }
+//        List messages = exc.getValidationResult().getMessages();
+//        if (messages != null && messages.size() > 0) {
+//            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+//                    NbBundle.getMessage(ProblemReporterImpl.class, "ERR_Project_validation"), exc.getValidationResult().render("\n"), new OpenPomAction(nbproject)); //NOI18N
+//            addReport(report);
+//        }
+//    }
 
     private ModuleInfo findJ2eeModule() {
         Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
@@ -265,21 +263,34 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 checkParent(parent);
                 parent = parent.getParent();
             }
-            List compileArts = project.getTestArtifacts();
+
+            List<Artifact> compileArts = project.getTestArtifacts();
             if (compileArts != null) {
                 List<Artifact> missingJars = new ArrayList<Artifact>();
-                Iterator it = compileArts.iterator();
+                Iterator<Artifact> it = compileArts.iterator();
                 while (it.hasNext()) {
-                    NbArtifact art = (NbArtifact) it.next();
-                    if (art.getFile() != null && art.isFakedSystemDependency()) {
-                        //TODO create a correction action for this.
-                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                                org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_SystemScope"),
-                                org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_SystemScope"), 
-                                new OpenPomAction(nbproject));
-                        addReport(report);
-                    } else if (art.getFile() == null || !art.getFile().exists()) {
-                        missingJars.add(art);
+                    Artifact art =  it.next();
+                    File file = art.getFile();
+                    if (file == null || !file.exists()) {
+                        if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
+                            //TODO create a correction action for this.
+                            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
+                                    org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_SystemScope"),
+                                    org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_SystemScope"),
+                                    new OpenPomAction(nbproject));
+                            addReport(report);
+                        } else {
+                            boolean reallyMissing = true;
+                            if (file != null) {
+                                SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(file));
+                                if (result.preferSources() && /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length > 0) {
+                                    reallyMissing = false; // #189442: typically a snapshot dep on another project
+                                }
+                            }
+                            if (reallyMissing) {
+                                missingJars.add(art);
+                            }
+                        }
                     }
                 }
                 if (missingJars.size() > 0) {
@@ -292,36 +303,36 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     }
                     AbstractAction act = new DependenciesNode.ResolveDepsAction(nbproject);
                     act.putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ACT_DownloadDeps"));
-                    
+
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                             org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_NonLocal"),
                             org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NonLocal", mess),
                             act);
                     addReport(report);
                 }
-                
+
             }
         }
     }
     
     private void checkParent(final MavenProject project) {
-        //mkleint: this code is never properly reached..
         Artifact art = project.getParentArtifact();
-        if (art != null && art instanceof NbArtifact) {
+        if (art != null ) {
             
-            File parent = project.getParent().getFile();
-            if (parent != null && parent.exists()) {
-                return;
+            MavenProject parentDecl = project.getParent();
+            if (parentDecl != null) {
+                File parent = parentDecl.getFile();
+                if (parent != null && parent.exists()) {
+                    return;
+                }
             }
-            NbArtifact nbart = (NbArtifact)art;
-            //getFile to create the fake file etc..
-            nbart.getFile();
-            if (nbart.getNonFakedFile() != null && !nbart.getNonFakedFile().exists()) {
-                //TODO create a correction action for this.
+           
+            
+            if (art.getFile() != null && !art.getFile().exists()) {
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_NoParent"),
-                        org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NoParent", nbart.getId()),
-                        new OpenPomAction(nbproject));
+                        org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NoParent", art.getId()),
+                        new RevalidateAction(nbproject));
                 addReport(report);
             }
         }
@@ -343,6 +354,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             filepath = filePath;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             FileObject fo = null;
             if (filepath != null) {

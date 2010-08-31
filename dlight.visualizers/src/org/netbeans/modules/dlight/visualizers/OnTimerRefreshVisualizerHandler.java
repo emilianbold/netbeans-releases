@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
@@ -49,6 +48,7 @@ import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 
 /**
  *
@@ -59,7 +59,7 @@ final class OnTimerRefreshVisualizerHandler
     private final OnTimerTask task;
     private final long period;
     private final TimeUnit unit;
-    private Future<?> scheduledTask;
+    private DLightScheduledTask scheduledTask;
     private SessionState currentSessionState = null;
 
     protected OnTimerRefreshVisualizerHandler(OnTimerTask task, long period, TimeUnit unit) {
@@ -87,13 +87,14 @@ final class OnTimerRefreshVisualizerHandler
     }
 
     synchronized void startTimer() {
-        if (scheduledTask != null && !scheduledTask.isDone()) {
+        if (scheduledTask != null) {
             return;
         }
 
         scheduledTask = DLightExecutorService.scheduleAtFixedRate(
                 new Runnable() {
 
+                    @Override
                     public void run() {
                         task.onTimer();
                     }
@@ -101,14 +102,17 @@ final class OnTimerRefreshVisualizerHandler
     }
 
     synchronized void stopTimer() {
-        if (scheduledTask == null || scheduledTask.isDone()) {
+        if (scheduledTask == null) {
             return;
         }
 
-        scheduledTask.cancel(true);
+        scheduledTask.cancel();
+        scheduledTask = null;
+
         task.timerStopped();
     }
 
+    @Override
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         currentSessionState = newState;
 
@@ -123,6 +127,7 @@ final class OnTimerRefreshVisualizerHandler
         }
     }
 
+    @Override
     public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
         if (oldSession != null) {
             oldSession.removeSessionStateListener(this);
@@ -135,9 +140,11 @@ final class OnTimerRefreshVisualizerHandler
         }
     }
 
+    @Override
     public void sessionAdded(DLightSession newSession) {
     }
 
+    @Override
     public void sessionRemoved(DLightSession removedSession) {
         if (removedSession != null) {
             removedSession.removeSessionStateListener(this);
