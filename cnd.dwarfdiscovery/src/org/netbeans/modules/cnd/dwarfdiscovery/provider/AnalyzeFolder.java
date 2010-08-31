@@ -198,9 +198,9 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         int i = 0;
         for(String obj : set){
             i++;
-            DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj);
+            DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj, null);
             if (applicable.isApplicable()) {
-                return new ApplicableImpl(true, applicable.getCompilerName(), 50, applicable.isSunStudio());
+                return new ApplicableImpl(true, applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null);
             }
             if (i > 25) {
                 return ApplicableImpl.NotApplicable;
