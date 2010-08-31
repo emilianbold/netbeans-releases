@@ -281,7 +281,7 @@ public final class WLPluginProperties {
         // init the input stream for the file and the w3c document object
         File file = new File(serverRoot + File.separator
                 + DOMAIN_LIST.replaceAll("/", Matcher.quoteReplacement(File.separator)));
-        if (!file.exists() || file.canRead()) {
+        if (!file.exists() || !file.canRead()) {
             return new String[] {};
         }
 
