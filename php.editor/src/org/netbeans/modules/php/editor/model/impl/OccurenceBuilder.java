@@ -719,52 +719,42 @@ class OccurenceBuilder {
         final Scope scope = elementInfo.getScope();
         final ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
         String mthd = elementInfo.getName();
-        TypeElement type = (scope instanceof TypeElement) ? (TypeElement)scope : 
-            ((scope instanceof MethodScope)  ? (TypeElement)scope.getInScope() : null);
-
-        methods = type != null ? ElementFilter.forMembersOfType(type).filter(index.getMethods(NameKind.exact(mthd))) :
-            index.getMethods(NameKind.exact(mthd));
 
         Occurence.Accuracy accuracy = Accuracy.NO;
-        if (methods.size() == 1) {
-            accuracy = (elementInfo.setDeclarations(methods)) ? Accuracy.UNIQUE : null;
-            elementInfo.setDeclarations(methods);
+        if (nodeInfo != null) {
+            if (scope instanceof VariableScope) {
+                ASTNode originalNode = nodeInfo.getOriginalNode();
+                if (originalNode instanceof VariableBase) {
+                    types.addAll(getClassName((VariableScope) scope, (VariableBase) originalNode));
+                }
+            }
+        }
+        if (scope instanceof MethodScopeImpl) {
+            final Scope inScope = scope.getInScope();
+            types.add((TypeElement) inScope);
+        }
+
+        if (types.size() > 0) {
+            for (TypeElement typeElement : types) {
+                methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
+            }
+
+            if (methods.isEmpty() && types.size() == 1) {
+                accuracy = (elementInfo.setDeclarations(types)) ? Accuracy.EXACT_TYPE : null;
+                elementInfo.setDeclarations(types);
+            } else if (methods.isEmpty() && types.size() > 1) {
+                accuracy = Accuracy.MORE_TYPES;
+                elementInfo.setDeclarations(types);
+            } else if (methods.size() == 1) {
+                accuracy = Accuracy.EXACT;
+                elementInfo.setDeclarations(methods);
+            } else if (!methods.isEmpty() && !types.isEmpty()) {
+                accuracy = Accuracy.MORE_MEMBERS;
+                elementInfo.setDeclarations(methods);
+            }
         } else {
-            if (nodeInfo != null) {
-                if (scope instanceof VariableScope) {
-                    ASTNode originalNode = nodeInfo.getOriginalNode();
-                    if (originalNode instanceof VariableBase) {
-                        types.addAll(getClassName((VariableScope) scope, (VariableBase) originalNode));
-                    }
-                }
-            }
-            if (scope instanceof MethodScopeImpl) {
-                final Scope inScope =  scope.getInScope();
-                types.add((TypeElement) inScope);
-            }
-
-            if (types.size() > 0) {
-                if (!methods.isEmpty()) {
-                    methods = new HashSet<MethodElement>();
-                    for (TypeElement typeElement : types) {
-                        methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
-                    }
-                }
-
-                if (methods.isEmpty() && types.size() == 1) {
-                    accuracy = (elementInfo.setDeclarations(types)) ? Accuracy.EXACT_TYPE : null;
-                    elementInfo.setDeclarations(types);
-                } else if (methods.isEmpty() && types.size() > 1) {
-                    accuracy = Accuracy.MORE_TYPES;
-                    elementInfo.setDeclarations(types);
-                } else if (methods.size() == 1) {
-                    accuracy = Accuracy.EXACT;
-                    elementInfo.setDeclarations(methods);
-                } else if (!methods.isEmpty() && !types.isEmpty()) {
-                    accuracy = Accuracy.MORE_MEMBERS;
-                    elementInfo.setDeclarations(methods);
-                }
-            } else if (!methods.isEmpty()) {
+            methods = index.getMethods(NameKind.exact(mthd));
+            if (!methods.isEmpty()) {
                 accuracy = Accuracy.MORE;
                 elementInfo.setDeclarations(methods);
             }
