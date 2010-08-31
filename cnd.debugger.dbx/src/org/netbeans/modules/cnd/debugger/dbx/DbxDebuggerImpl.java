@@ -142,17 +142,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Autos;
 // for rebuildOnNextDebug
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RTCWindowAction;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcTopComponent;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 
 /**
  * A "service" for DebuggerEngine
@@ -575,46 +568,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         
             factory.start();
         }
-    }
-
-    public static String getDebuggerString(MakeConfiguration conf) {
-        // Figure out dbx command
-        // Copied from GdbProfile
-        CompilerSet2Configuration csconf = conf.getCompilerSet();
-        CompilerSet cs;
-
-	/* OLD
-        if (csconf.isValid()) {
-            cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csconf.getOption());
-        } else {
-            cs = CompilerSet.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), csconf.getOldName(), conf.getPlatformInfo().getPlatform());
-            CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).add(cs);
-            csconf.setValid();
-        }
-        Tool debuggerTool = cs.getTool(Tool.DebuggerTool);
-        if (debuggerTool != null) {
-            return debuggerTool.getPath();
-        }
-	 */
-
-	String csname;
-        if (csconf.isValid()) {
-            csname = csconf.getOption();
-            cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
-        } else {
-            csname = csconf.getOldName();
-
-
-            final int platform = conf.getPlatformInfo().getPlatform();
-            CompilerFlavor flavor = CompilerFlavor.toFlavor(csname, platform);
-            flavor = flavor == null ? CompilerFlavor.getUnknown(platform) : flavor;
-            cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), flavor, csname);
-            csconf.setValid();
-        }
-        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
-        if (debuggerTool != null)
-            return debuggerTool.getPath();
-        return null;
     }
 
     // interface Dbx.Factory.Listener
