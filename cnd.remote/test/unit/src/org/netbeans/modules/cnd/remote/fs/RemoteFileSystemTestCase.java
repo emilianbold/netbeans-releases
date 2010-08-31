@@ -123,7 +123,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
 
     @ForAllEnvironments
     public void testSyncDirStruct() throws Exception {
-
+        sleep(200); // FIXUP: a workaround for a very instable test failure
         String dirName = "/usr/include";
         // set up local test directory
         File rfsCache = fs.getCache();
