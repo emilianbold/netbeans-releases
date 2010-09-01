@@ -1026,26 +1026,32 @@ public class FormatVisitor extends DefaultVisitor {
 		break;
 	    case PHP_LINE_COMMENT:
 		String text = ts.token().text().toString();
-		if (ts.token().text().charAt(ts.token().length() - 1) == '\n') {
-		    text = text.substring(0, text.length() - 1);
-		    int newOffset = ts.offset() + ts.token().length() - 1;
-		    tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), text));
-		    if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n" + ts.token().text().toString()));
-			if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-			    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_LINE_COMMENTS, ts.offset()));
-			} else {
-			    ts.movePrevious();
-			}
-		    } else {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n"));
-			ts.movePrevious();
-		    }
+                if (ts.token().text().charAt(ts.token().length() - 1) == '\n') {
+                    text = text.substring(0, text.length() - 1);
+                    int newOffset = ts.offset() + ts.token().length() - 1;
+                    if (text.length() > 0) {
+                        tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), text));
+                    }
+                    if (ts.moveNext()) {
+                        if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                            tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n" + ts.token().text().toString()));
+                            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_LINE_COMMENTS, ts.offset()));
+                            } else {
+                                ts.movePrevious();
+                            }
+                        } else {
+                            tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n"));
+                            ts.movePrevious();
+                        }
+                    } else {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n"));
+                    }
 
-		} else {
-		    tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), text));
-		}
-		break;
+                } else {
+                    tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), text));
+                }
+                break;
 	    case PHP_OPENTAG:
             case T_OPEN_TAG_WITH_ECHO:
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
