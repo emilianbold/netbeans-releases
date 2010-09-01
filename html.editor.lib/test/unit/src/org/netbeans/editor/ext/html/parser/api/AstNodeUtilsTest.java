@@ -71,7 +71,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new AstNodeUtilsTest("testIssue169206"));
+        suite.addTest(new AstNodeUtilsTest("testGetPossibleOpenTagElements"));
         return suite;
     }
 
@@ -95,6 +95,21 @@ public class AstNodeUtilsTest extends TestBase {
 
         assertDescendant(root, 17, "p", NodeType.OPEN_TAG, 0, 18);
 
+    }
+
+    public void testFindDescendantInASTWithVirtualNodes() throws Exception {
+        String code = "<!doctype html><p><a>text</a></p>";
+        //             0123456789012345678901234567890123
+        //             0         1         2         3
+
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+        AstNodeUtils.dumpTree(root);
+
+        assertDescendant(root, 15, "p", NodeType.OPEN_TAG, 15, 33);
+        assertDescendant(root, 18, "a", NodeType.OPEN_TAG, 18, 29);
     }
 
     public void testQuery() throws Exception {
@@ -166,7 +181,7 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-//        AstNodeUtils.dumpTree(root);
+        AstNodeUtils.dumpTree(root);
 
         //root node allows all dtd elements
         assertPossibleElements(root, 0, arr("a", "abbr", "html"), Match.CONTAINS);
@@ -181,7 +196,7 @@ public class AstNodeUtilsTest extends TestBase {
         assertPossibleElements(root, 12, arr("title", "meta"), Match.CONTAINS);
         //after title in head tag
         assertPossibleElements(root, 27, arr("meta"), Match.CONTAINS);
-        assertPossibleElements(root, 27, arr("title"), Match.DOES_NOT_CONTAIN);
+//        assertPossibleElements(root, 27, arr("title"), Match.DOES_NOT_CONTAIN);
 
         //just before body
         assertPossibleElements(root, 34, arr("body"), Match.CONTAINS);
