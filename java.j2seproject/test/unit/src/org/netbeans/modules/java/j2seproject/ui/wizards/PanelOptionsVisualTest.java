@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,61 +34,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.wizard.api;
+package org.netbeans.modules.java.j2seproject.ui.wizards;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Alexander Simon
+ * @author Tomas Zezula
  */
-public interface DiscoveryDescriptor {
-
-    Project getProject();
-    void setProject(Project project);
+public class PanelOptionsVisualTest extends NbTestCase {
     
-    DiscoveryProvider getProvider();
-    String getProviderID();
-    void setProvider(DiscoveryProvider provider);
-
-    String getRootFolder();
-    void setRootFolder(String root);
-
-    String getBuildResult();
-    void setBuildResult(String binaryPath);
-
-    String getAditionalLibraries();
-    void setAditionalLibraries(String binaryPath);
-
-    String getBuildLog();
-    void setBuildLog(String logFile);
-
-    String getLevel();
-    void setLevel(String level);
-
-    List<ProjectConfiguration> getConfigurations();
-    void setConfigurations(List<ProjectConfiguration> configuration);
-
-    List<String> getIncludedFiles();
-    void setIncludedFiles(List<String> includedFiles);
-
-    boolean isInvokeProvider();
-    void setInvokeProvider(boolean invoke);
+    public PanelOptionsVisualTest(final String name) {
+        super(name);
+    }
     
-    boolean isSimpleMode();
-    void setSimpleMode(boolean simple);
+    
+    public void testMainClassName() {
+        assertEquals("project.Project", PanelOptionsVisual.createMainClassName("Project")); //NOI18N
+        assertEquals("test.project.TestProject", PanelOptionsVisual.createMainClassName("Test Project"));   //NOI18N        
+        assertEquals("test001.Test001", PanelOptionsVisual.createMainClassName("Test001")); //NOI18N
+        assertEquals("test.project001.TestProject001", PanelOptionsVisual.createMainClassName("Test Project001")); //NOI18N
+        assertEquals("test.project.pkg001.TestProject001", PanelOptionsVisual.createMainClassName("Test Project 001"));   //NOI18N
+        assertEquals("pkg001.Main", PanelOptionsVisual.createMainClassName("001"));    //NOI18N
+        assertEquals("testing.pkgfor.keywords.TestingForKeywords", PanelOptionsVisual.createMainClassName("Testing for keywords"));    //NOI18N
+        assertEquals("pkgfor.For", PanelOptionsVisual.createMainClassName("For"));    //NOI18N
+        assertEquals("test.project.TestProject", PanelOptionsVisual.createMainClassName("Test-Project"));   //NOI18N        
+        assertEquals("testproject.TestProject", PanelOptionsVisual.createMainClassName("TestProject"));   //NOI18N
+        assertEquals("pkg001.app.App", PanelOptionsVisual.createMainClassName("001 App"));   //NOI18N
+        assertEquals("Main", PanelOptionsVisual.createMainClassName(""));   //NOI18N
+    }
 
-    String getCompilerName();
-    void setCompilerName(String compiler);
-
-    List<String> getDependencies();
-    void setDependencies(List<String> dependencies);
-
-    void setMessage(String message);
-
-    void clean();
 }

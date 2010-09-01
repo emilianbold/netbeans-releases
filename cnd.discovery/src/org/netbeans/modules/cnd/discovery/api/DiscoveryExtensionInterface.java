@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
@@ -64,5 +65,17 @@ public interface DiscoveryExtensionInterface extends IteratorExtension {
         String getCompilerName();
 
         boolean isSunStudio();
+
+        List<String> getDependencies();
+
+        String getSourceRoot();
+
+        Position getMainFunction();
+    }
+
+    interface Position {
+        String getFilePath();
+
+        int getLine();
     }
 }

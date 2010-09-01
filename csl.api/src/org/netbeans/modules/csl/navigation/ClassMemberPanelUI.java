@@ -248,7 +248,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     }
                     boolean scrollOnExpand = elementView.getScrollOnExpand();
                     elementView.setScrollOnExpand( false );
-                    expandNode (manager.getRootContext(), 0, expandDepth);
+                    expandNodeByDefaultRecursively(manager.getRootContext(), 0, expandDepth);
                     elementView.setScrollOnExpand( scrollOnExpand );
                     elementView.setAutoWaitCursor(true);
                     long endTime = System.currentTimeMillis();
@@ -256,25 +256,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                             new Object[] {fileObject, endTime - startTime});
                 }
 
-                private void expandNode(Node node, int currentDepth, int maxDepth) {
-                    if (maxDepth >= 0  &&  currentDepth >= maxDepth) {
-                        return;
-                    }
-                    if (! (node instanceof ElementNode)) {
-                        return;
-                    }
-                    ElementNode elementNode = (ElementNode) node;
-                    final StructureItem structureItem = elementNode.getDescription();
-                    if (structureItem instanceof StructureItem.CollapsedDefault) {
-                        if (((StructureItem.CollapsedDefault) structureItem).isCollapsedByDefault()) {
-                            return;
-                        }
-                    }
-                    elementView.expandNode(elementNode);
-                    for (Node subNode : elementNode.getChildren().getNodes()) {
-                        expandNode(subNode, currentDepth + 1, maxDepth);
-                    }
-                }
             } );
             
         }
@@ -291,7 +272,35 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     public void expandNode( Node n ) {
         elementView.expandNode(n);
     }
-    
+
+    void expandNodeByDefaultRecursively(Node node) {
+        // using 0, -1 since we cannot quickly resolve currentDepth
+        expandNodeByDefaultRecursively(node, 0, -1);
+    }
+
+    private void expandNodeByDefaultRecursively(Node node, int currentDepth, int maxDepth) {
+        if (maxDepth >= 0  &&  currentDepth >= maxDepth) {
+            return;
+        }
+        if (! expandNodeByDefault (node)) {
+            return;
+        }
+        for (Node subNode : node.getChildren().getNodes()) {
+            expandNodeByDefaultRecursively(subNode, currentDepth + 1, maxDepth);
+        }
+    }
+
+    boolean expandNodeByDefault(Node node) {
+        if (node instanceof ElementNode) {
+            StructureItem item = ((ElementNode) node).getDescription();
+            if (item instanceof StructureItem.CollapsedDefault  &&  ((StructureItem.CollapsedDefault) item).isCollapsedByDefault()) {
+                return false;
+            }
+        }
+        expandNode(node);
+        return true;
+    }
+
     public Action[] getActions() {
         return actions;
     }

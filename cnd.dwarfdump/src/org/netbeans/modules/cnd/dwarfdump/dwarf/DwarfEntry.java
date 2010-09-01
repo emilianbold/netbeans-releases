@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIS;
 import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 
 /**
@@ -399,7 +400,15 @@ public class DwarfEntry {
         Object result = getAttributeValue(ATTR.DW_AT_external);
         return ((result != null) && ((Boolean)result).booleanValue());
     }
-    
+
+    public VIS getVisibility() throws IOException {
+        Object result = getAttributeValue(ATTR.DW_AT_visibility);
+        if (result instanceof Byte) {
+            return VIS.get((Byte)result);
+        }
+        return null;
+    }
+
     public boolean isNamespace() {
         return getKind().equals(TAG.DW_TAG_namespace);
     }
@@ -447,6 +456,16 @@ public class DwarfEntry {
         return (typeRef == null) ? getType() : typeRef.getType();
     }
     
+    public long getSibling() throws IOException{
+        Object refIdx = getAttributeValue(ATTR.DW_AT_sibling);
+        if (refIdx instanceof Integer) {
+            return ((Integer)refIdx).intValue();
+        } else if (refIdx instanceof Long) {
+            return ((Long)refIdx).longValue();
+        }
+        return -1;
+    }
+
     ArrayList<Object> getValues() {
         return values;
     }
