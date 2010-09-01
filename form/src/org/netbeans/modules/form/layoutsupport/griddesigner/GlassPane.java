@@ -1216,25 +1216,32 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             GridBoundsChange change = delegate.performAction(gridManager, currentContext);
             updateCurrentContext(currentContext);
             animLayer.loadEnd();
+            int[] animNewColumnBounds;
+            int[] animNewRowBounds;
             if (change == null) {
-                int[] animNewColumnBounds = gridInfo.getColumnBounds();
-                int[] animNewRowBounds = gridInfo.getRowBounds();
-                if (animNewColumnBounds.length != animOldColumnBounds.length) {
-                    if (animNewColumnBounds.length > animOldColumnBounds.length) {
-                        animOldColumnBounds = extendArray(animOldColumnBounds, animNewColumnBounds.length);
-                    } else {
-                        animNewColumnBounds = extendArray(animNewRowBounds, animOldColumnBounds.length);
-                    }
-                }
-                if (animNewRowBounds.length != animOldRowBounds.length) {
-                    if (animNewRowBounds.length > animOldRowBounds.length) {
-                        animOldRowBounds = extendArray(animOldRowBounds, animNewRowBounds.length);
-                    } else {
-                        animNewRowBounds = extendArray(animNewRowBounds, animOldRowBounds.length);
-                    }
-                }
-                change = new GridBoundsChange(animOldColumnBounds, animOldRowBounds, animNewColumnBounds, animNewRowBounds);
+                animNewColumnBounds = gridInfo.getColumnBounds();
+                animNewRowBounds = gridInfo.getRowBounds();
+            } else {
+                animOldColumnBounds = change.getOldColumnBounds();
+                animOldRowBounds = change.getOldRowBounds();
+                animNewColumnBounds = change.getNewColumnBounds();
+                animNewRowBounds = change.getNewRowBounds();
             }
+            if (animNewColumnBounds.length != animOldColumnBounds.length) {
+                if (animNewColumnBounds.length > animOldColumnBounds.length) {
+                    animOldColumnBounds = extendArray(animOldColumnBounds, animNewColumnBounds.length);
+                } else {
+                    animNewColumnBounds = extendArray(animNewColumnBounds, animOldColumnBounds.length);
+                }
+            }
+            if (animNewRowBounds.length != animOldRowBounds.length) {
+                if (animNewRowBounds.length > animOldRowBounds.length) {
+                    animOldRowBounds = extendArray(animOldRowBounds, animNewRowBounds.length);
+                } else {
+                    animNewRowBounds = extendArray(animNewRowBounds, animOldRowBounds.length);
+                }
+            }
+            change = new GridBoundsChange(animOldColumnBounds, animOldRowBounds, animNewColumnBounds, animNewRowBounds);
             
             // Update customizer
             if (customizer != null) {
