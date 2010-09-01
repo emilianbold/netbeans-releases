@@ -153,6 +153,8 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
         assertEquals("Wrong looked up object: ", 1, list.size());
         assertEquals("No test action provider instance should be created yet!", 0, TestLazyDebuggerManagerListenerAnnotated.INSTANCES.size());
         assertInstanceOf("Wrong looked up object", list.get(0), LazyDebuggerManagerListener.class);
+        l = new Lookup.MetaInf("unittest/annotated");
+        list = l.lookup(null, LazyDebuggerManagerListener.class);
         Lookup cp = new Lookup.Instance(new Object[] {});
         l.setContext(cp);
         list = l.lookup(null, LazyDebuggerManagerListener.class);
