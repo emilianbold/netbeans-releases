@@ -802,7 +802,9 @@ public final class TopLogging {
             synchronized (sb) {
                 sb.append(s);
             }
-            checkFlush();
+            if (!Thread.holdsLock(this)) {
+                checkFlush();
+            }
         }
 
         public @Override void write(byte[] b) throws IOException {
