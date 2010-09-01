@@ -1,3 +1,12 @@
+Name: HTML 5 Parser Patched
+Version: -
+License: various
+OSR: -
+Files: htmlparser-1.2.1-license
+Description: HTML4/5 parser patched for editing purposes
+Origin: validator.nu
+
+
 This is for the HTML parser as a whole except the rewindable input stream,
 and the Live DOM Viewer. 
 For the copyright notices for individual files, please see individual files.

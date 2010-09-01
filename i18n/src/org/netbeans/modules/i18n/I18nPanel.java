@@ -108,13 +108,14 @@ public class I18nPanel extends JPanel {
 
     private FileObject file;
     
-    static final long ALL_BUTTONS = 0xffffff;
-    static final long NO_BUTTONS = 0x0;
-    static final long REPLACE_BUTTON = 0xf0000;
-    static final long SKIP_BUTTON    = 0x0f000;
-    static final long INFO_BUTTON    = 0x00f00;
-    static final long CANCEL_BUTTON   = 0x000f0;
-    static final long HELP_BUTTON    = 0x0000f;
+    private static final long ALL_BUTTONS    = ~0;
+    private static final long NO_BUTTONS     = 0;
+    private static final long REPLACE_BUTTON = 1 << 0;
+    private static final long SKIP_BUTTON    = 1 << 1;
+    private static final long IGNORE_BUTTON  = 1 << 2;
+    private static final long INFO_BUTTON    = 1 << 3;
+    private static final long CANCEL_BUTTON  = 1 << 4;
+    private static final long HELP_BUTTON    = 1 << 5;
 
 
     
@@ -247,6 +248,12 @@ public class I18nPanel extends JPanel {
         return skipButton;
     }
 
+    /** Ignore button accessor. */
+    JButton getIgnoreButton() {
+        assert withButtons;
+        return ignoreButton;
+    }
+
     /** Info button accessor. */
     JButton getInfoButton() {
         assert withButtons;
@@ -335,6 +342,9 @@ public class I18nPanel extends JPanel {
         if (withButtons) {
             skipButton.getAccessibleContext().setAccessibleDescription(
                     bundle.getString("ACS_CTL_SkipButton"));            //NOI18N
+            ignoreButton.getAccessibleContext().setAccessibleDescription(
+                    bundle.getString("ACS_CTL_IgnoreButton"));            //NOI18N
+            ignoreButton.setToolTipText(bundle.getString("TT_IgnoreButton"));            //NOI18N
             cancelButton.getAccessibleContext().setAccessibleDescription(
                     bundle.getString("ACS_CTL_CancelButton"));          //NOI18N
             replaceButton.getAccessibleContext().setAccessibleDescription(
@@ -359,12 +369,14 @@ public class I18nPanel extends JPanel {
         if (withButtons) {
             replaceButton = new JButton();
             skipButton = new JButton();
+            ignoreButton = new JButton();
             infoButton = new JButton();
             cancelButton = new JButton();
             helpButton = new JButton();
 
             Mnemonics.setLocalizedText(replaceButton, bundle.getString("CTL_ReplaceButton")); // NOI18N
             Mnemonics.setLocalizedText(skipButton, bundle.getString("CTL_SkipButton")); // NOI18N
+            Mnemonics.setLocalizedText(ignoreButton, bundle.getString("CTL_IgnoreButton")); // NOI18N
             Mnemonics.setLocalizedText(infoButton, bundle.getString("CTL_InfoButton")); // NOI18N
             Mnemonics.setLocalizedText(cancelButton, bundle.getString("CTL_CloseButton")); // NOI18N
             Mnemonics.setLocalizedText(helpButton, bundle.getString("CTL_HelpButton")); // NOI18N
@@ -390,6 +402,8 @@ public class I18nPanel extends JPanel {
                         .addPreferredGap(RELATED)
                         .add(skipButton)
                         .addPreferredGap(RELATED)
+                        .add(ignoreButton)
+                        .addPreferredGap(RELATED)
                         .add(infoButton)
                         .addPreferredGap(RELATED)
                         .add(cancelButton)
@@ -399,6 +413,7 @@ public class I18nPanel extends JPanel {
                                              helpButton,
                                              infoButton,
                                              replaceButton,
+                                             ignoreButton,
                                              skipButton},
                             GroupLayout.HORIZONTAL);
         } else {
@@ -418,6 +433,7 @@ public class I18nPanel extends JPanel {
                 .add(cancelButton)
                 .add(infoButton)
                 .add(skipButton)
+                .add(ignoreButton)
                 .add(replaceButton));
         }
         vertGroup.addContainerGap();
@@ -482,6 +498,7 @@ public class I18nPanel extends JPanel {
         assert withButtons;
         replaceButton.setEnabled((buttonMask & REPLACE_BUTTON) != 0);
         skipButton.setEnabled((buttonMask & SKIP_BUTTON) != 0);
+        ignoreButton.setEnabled((buttonMask & IGNORE_BUTTON) != 0);
         infoButton.setEnabled((buttonMask & INFO_BUTTON) != 0);
         cancelButton.setEnabled((buttonMask & CANCEL_BUTTON) != 0);
         helpButton.setEnabled((buttonMask & HELP_BUTTON) != 0);               
@@ -497,6 +514,7 @@ public class I18nPanel extends JPanel {
     private JButton infoButton;
     private JButton replaceButton;
     private JButton skipButton;
+    private JButton ignoreButton;
     // End of variables declaration
 
     private EmptyPropertyPanel emptyPanel;

@@ -68,7 +68,7 @@ public class EmptyResult implements ParseResult {
 
     @Override
     public AstNode root() {
-        return AstNodeFactory.instance().createRootNode();
+        return AstNodeFactory.instance().createRootNode(-1,-1);
     }
 
     @Override

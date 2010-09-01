@@ -167,7 +167,7 @@ public class Dwarf {
 
     private List<MemberHeader> getObjectTable(RandomAccessFile reader) throws IOException{
         byte[] next = new byte[60];
-        ArrayList<MemberHeader> offsetsList= new ArrayList<MemberHeader>();
+        List<MemberHeader> offsetsList= new ArrayList<MemberHeader>();
         while(true) {
             if (reader.getFilePointer()+60 >= reader.length()){
                 break;

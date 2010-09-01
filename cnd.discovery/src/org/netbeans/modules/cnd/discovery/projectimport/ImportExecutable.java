@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -90,19 +91,17 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class ImportExecutable {
-    private static final boolean CREATE_DEPENDENCIES = true;
-    private static final boolean IMPORT_DEPENDENCIES = true;
     private static final boolean DLL_FILE_SEARCH = false;
     private static final RequestProcessor RP = new RequestProcessor(ImportExecutable.class.getName(), 2);
     private final Map<String, Object> map;
     private final Project lastSelectedProject;
-    private final String functionToOpen;
+    private final ProjectKind projectKind;
     private CreateDependencies cd;
 
-    public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, String functionToOpen) {
+    public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, ProjectKind projectKind) {
         this.map = map;
         this.lastSelectedProject = lastSelectedProject;
-        this.functionToOpen = functionToOpen;
+        this.projectKind = projectKind;
     }
 
     public void process(final DiscoveryExtension extension){
@@ -121,7 +120,7 @@ public class ImportExecutable {
                     if (applicable.isApplicable()) {
                         resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                         String additionalDependencies = null;
-                        if (IMPORT_DEPENDENCIES) {
+                        if (projectKind == ProjectKind.IncludeDependencies) {
                             additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration());
                             if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
                                 map.put("DW:libraries", additionalDependencies); // NOI18N
@@ -131,7 +130,7 @@ public class ImportExecutable {
                             try {
                                 extension.apply(map, lastSelectedProject);
                                 saveMakeConfigurationDescriptor(lastSelectedProject);
-                                if (CREATE_DEPENDENCIES && (additionalDependencies == null || additionalDependencies.isEmpty())) {
+                                if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                     cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies());
                                 }
                             } catch (IOException ex) {
@@ -144,7 +143,7 @@ public class ImportExecutable {
                 }
                 Position mainFunction = applicable.getMainFunction();
                 boolean open = true;
-                if (mainFunction != null && "main".equals(functionToOpen)) { // NOI18N
+                if (mainFunction != null) {
                     FileObject toFileObject = FileUtil.toFileObject(new File(mainFunction.getFilePath()));
                     if (toFileObject != null) {
                         if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
@@ -154,8 +153,12 @@ public class ImportExecutable {
 
                 }
                 switchModel(true, lastSelectedProject);
-                if (functionToOpen != null && open) {
-                    openFunction(functionToOpen, lastSelectedProject);
+                if (open || cd != null) {
+                    if (open) {
+                        onProjectParsingFinished("main", lastSelectedProject); // NOI18N
+                    } else {
+                        onProjectParsingFinished(null, lastSelectedProject); // NOI18N
+                    }
                 }
             }
         });
@@ -216,7 +219,7 @@ public class ImportExecutable {
 
     private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
 
-    private void openFunction(final String functionName, Project makeProject) {
+    private void onProjectParsingFinished(final String functionName, Project makeProject) {
         if (makeProject != null) {
             final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             CsmProgressListener listener = new CsmProgressAdapter() {
@@ -226,7 +229,7 @@ public class ImportExecutable {
                     if (project.getPlatformProject().equals(np)) {
                         CsmListeners.getDefault().removeProgressListener(this);
                         listeners.remove(this);
-                        if (project instanceof ProjectBase) {
+                        if (project instanceof ProjectBase && functionName != null) {
                             String from = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + ':' + functionName + '('; // NOI18N
                             Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)project).findDeclarationsByPrefix(from);
                             for(CsmOffsetableDeclaration decl : decls){

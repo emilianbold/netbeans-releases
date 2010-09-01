@@ -56,13 +56,14 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author ak119685
  */
 public class DwarfArangesSection extends ElfSection {
-    private final ArrayList<AddressRangeSet> addressRangeSets = new ArrayList<AddressRangeSet>();
+    private final List<AddressRangeSet> addressRangeSets = new ArrayList<AddressRangeSet>();
     
     /** Creates a new instance of DwarfArangesSection */
     public DwarfArangesSection(DwarfReader reader, int sectionIdx) {
@@ -73,7 +74,7 @@ public class DwarfArangesSection extends ElfSection {
         addressRangeSets.add(addressRangeSet);
     }
     
-    public ArrayList<AddressRangeSet> getAddressRangeSets() {
+    public List<AddressRangeSet> getAddressRangeSets() {
         if (addressRangeSets.isEmpty()) {
             try {
                 read();

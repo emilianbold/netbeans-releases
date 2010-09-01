@@ -684,7 +684,7 @@ public class DwarfSource implements SourceFileProperties{
             return;
         }
         int firstMacroLine = grepSourceFile(fullName).firstMacroLine;
-        ArrayList<DwarfMacinfoEntry> table = dwarfTable.getCommandLineMarcos();
+        List<DwarfMacinfoEntry> table = dwarfTable.getCommandLineMarcos();
         for (Iterator<DwarfMacinfoEntry> it = table.iterator(); it.hasNext();) {
             DwarfMacinfoEntry entry = it.next();
             String def = entry.definition;
