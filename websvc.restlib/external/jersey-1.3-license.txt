@@ -2,7 +2,7 @@ Name: Rest
 Version: 1.1
 OSR: Sun
 License: CDDL-1.0
-Files: jersey-1.1.5.1.zip, jersey-api-doc.jar, jsr311-api-doc.zip
+Files: jersey-1.3.zip, jersey-client-1.3-javadoc.jar, jersey-core-1.1.5.1-javadoc.jar, jersey-json-1.3-javadoc.jar, jersey-spring-1.3-javadoc.jar, jsr311-api-1.1.1-javadoc.jar, oauth-client-1.3-javadoc.jar, oauth-signature-1.3-javadoc.jar
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL)Version 1.0
 1. Definitions.
