@@ -79,6 +79,8 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -88,6 +90,7 @@ import org.netbeans.modules.maven.dependencies.DependencyExcludeNodeVisitor;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.dependencies.ExcludeDependencyPanel;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
@@ -324,11 +327,17 @@ public class DependencyNode extends AbstractNode {
 //        acts.add(new EditAction());
 //        acts.add(RemoveDepAction.get(RemoveDepAction.class));
 //        acts.add(new DownloadJavadocAndSourcesAction());
-        if (isAddedToCP() && !hasJavadocInRepository()) {
-            acts.add(new InstallLocalJavadocAction());
+        if (!hasJavadocInRepository()) {
+            acts.add(new DownloadJavadocSrcAction(true));
+            if (isAddedToCP()) {
+                acts.add(new InstallLocalJavadocAction());
+            }
         }
-        if (isAddedToCP() && !hasSourceInRepository()) {
-            acts.add(new InstallLocalSourcesAction());
+        if (!hasSourceInRepository()) {
+            acts.add(new DownloadJavadocSrcAction(false));
+            if (isAddedToCP()) {
+                acts.add(new InstallLocalSourcesAction());
+            }
         }
         if (isTransitive()) {
             acts.add(new ExcludeTransitiveAction());
@@ -710,6 +719,50 @@ public class DependencyNode extends AbstractNode {
         }
     }
 
+    @SuppressWarnings("serial")
+    private class DownloadJavadocSrcAction extends AbstractAction {
+        private boolean javadoc;
+        public DownloadJavadocSrcAction(boolean javadoc) {
+            putValue(Action.NAME, javadoc ? org.openide.util.NbBundle.getMessage(DependencyNode.class, "LBL_Download_Javadoc") : org.openide.util.NbBundle.getMessage(DependencyNode.class, "LBL_Download__Sources"));
+            this.javadoc = javadoc;
+        }
+
+       
+        
+        @Override
+        public void actionPerformed(ActionEvent evnt) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                   
+                    ProgressContributor contributor =AggregateProgressFactory.createProgressContributor("multi-1");
+                   
+                    String label = javadoc ? NbBundle.getMessage(DependencyNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependencyNode.class, "Progress_Source");
+                    AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label, 
+                            new ProgressContributor [] {contributor}, ProgressTransferListener.cancellable(), null);
+                    handle.start();
+                    try {
+                        ProgressTransferListener.setAggregateHandle(handle);
+
+                        if (javadoc && !hasJavadocInRepository()) {
+                            downloadJavadocSources(online, contributor, javadoc);
+                        } else if (!javadoc && !hasSourceInRepository()) {
+                            downloadJavadocSources(online, contributor, javadoc);
+                        } else {
+                            contributor.finish();
+                        }
+                        
+                    } catch (ThreadDeath d) { // download interrupted
+                    } finally {
+                        handle.finish();
+                        ProgressTransferListener.clearAggregateHandle();
+                    }
+                }
+            });
+        }
+    } 
+    
     //why oh why do we have to suffer through this??
     private static SetInCurrentAction SETINCURRENTINSTANCE = new SetInCurrentAction(Lookup.EMPTY);
 
