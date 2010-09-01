@@ -116,7 +116,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             return null;
         }
         if ( hasAny ){
-            hasAny = qualifierAnnotations.size()==1;
+            hasAny = qualifierAnnotations.size()==0;
         }
         
         final List<ObserverTriple> methodObservesParameters = 
