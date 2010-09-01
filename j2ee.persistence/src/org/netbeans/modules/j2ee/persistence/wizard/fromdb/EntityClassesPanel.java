@@ -48,16 +48,16 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
+import javax.swing.AbstractAction;
 import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -74,7 +74,6 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
@@ -108,6 +107,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
     private SelectedTables selectedTables;
     private final boolean puRequired;
+    private final JMenuItem allToUpdateItem;
+    private final JMenuItem allToRecreateItem;
 
 
     private EntityClassesPanel(boolean puRequired, boolean JAXBRequired) {
@@ -119,8 +120,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             generateJAXBCheckBox.setEnabled(false);
         }
 
-        tableActionsPopup.add(new AllToUpdateAction());
-        tableActionsPopup.add(new AllToRecreateAction());
+        allToUpdateItem = tableActionsPopup.add(new AllToUpdateAction());
+        allToRecreateItem = tableActionsPopup.add(new AllToRecreateAction());
 
         classNamesTable.getParent().setBackground(classNamesTable.getBackground());
         classNamesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
@@ -195,6 +196,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         updatePersistenceUnitButton(true);
+
+
     }
 
     public void update(TableClosure tableClosure, String tableSourceName) {
@@ -217,7 +220,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         TableUISupport.connectClassNames(classNamesTable, selectedTables);
         this.tableSourceName = tableSourceName;
-    }
+        updateSetAllButtons();
+     }
 
     public SelectedTables getSelectedTables() {
         return selectedTables;
@@ -318,6 +322,24 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             createPUWarningLabel.setToolTipText(null);
             
         }
+    }
+
+    private void updateSetAllButtons(){
+        boolean update = false;
+        boolean recreate = false;
+        if(selectedTables!=null)
+        {
+            for (Table table : selectedTables.getTables()) {
+                if(!selectedTables.getUpdateType(table).equals(UpdateType.NEW)){
+                    if(selectedTables.getUpdateType(table).equals(UpdateType.UPDATE))recreate=true;
+                    else update=true;
+                    if(update && recreate)break;
+                }
+            }
+        }
+        tableActionsButton.setEnabled(update || recreate);
+        allToUpdateItem.setEnabled(update);
+        allToRecreateItem.setEnabled(recreate);
     }
 
     private void updateSelectedTables() {
@@ -752,35 +774,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
     }
 
-    private class AllToUpdateAction implements Action {
+    private class AllToUpdateAction extends AbstractAction {
 
-        @Override
-        public Object getValue(String key) {
-            if(Action.NAME.equals(key)){
-                return NbBundle.getMessage(EntityClassesPanel.class, "LBL_UpdateAction");//NOI18N
-            }
-            return null;
-        }
-
-        @Override
-        public void putValue(String key, Object value) {
-        }
-
-        @Override
-        public void setEnabled(boolean b) {
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return true;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        public AllToUpdateAction() {
+            super(NbBundle.getMessage(EntityClassesPanel.class, "LBL_UpdateAction"));
         }
 
         @Override
@@ -791,38 +788,13 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 }
             }
             TableUISupport.connectClassNames(classNamesTable, selectedTables);
+            updateSetAllButtons();
         }
 
     }
-    private class AllToRecreateAction implements Action{
-
-        @Override
-        public Object getValue(String key) {
-            if(Action.NAME.equals(key)){
-                return NbBundle.getMessage(EntityClassesPanel.class, "LBL_RecreateAction");//NOI18N
-            }
-            return null;
-        }
-
-        @Override
-        public void putValue(String key, Object value) {
-        }
-
-        @Override
-        public void setEnabled(boolean b) {
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return true;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+    private class AllToRecreateAction extends AbstractAction{
+        public AllToRecreateAction() {
+            super(NbBundle.getMessage(EntityClassesPanel.class, "LBL_RecreateAction"));
         }
 
         @Override
@@ -833,6 +805,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 }
             }
             TableUISupport.connectClassNames(classNamesTable, selectedTables);
+            updateSetAllButtons();
         }
 
     }
