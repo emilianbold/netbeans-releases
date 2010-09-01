@@ -97,6 +97,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -135,6 +136,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String JNLP_SIGNING_KEY = "jnlp.signing.alias";
     public static final String JNLP_SIGNING_KEYSTORE_PASSWORD = "jnlp.signing.storepass";
     public static final String JNLP_SIGNING_KEY_PASSWORD = "jnlp.signing.keypass";
+    public static final String RUN_CP = "run.classpath";    //NOI18N
+    public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
+    public static final String JNLP_LAZY_JARS = "jnlp.lazy.jars";   //NOI18N
+    private static final String JNLP_LAZY_FORMAT = "jnlp.lazy.jar.%s"; //NOI18N
     
     static final String SIGNING_GENERATED = "generated";
     static final String SIGNING_KEY = "key";
@@ -202,6 +207,12 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     String signingKeyAlias;
     char [] signingKeyStorePassword;
     char [] signingKeyPassword;
+    
+    // resources
+    List<? extends File> runtimeCP;
+    List<? extends File> lazyJars;
+    private List<? extends String> lazyJarProps;
+    boolean lazyJarsChanged;
 
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
@@ -253,7 +264,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
             extResProperties = readProperties(evaluator, JNLP_EXT_RES_PREFIX, extResSuffixes);
             appletParamsProperties = readProperties(evaluator, JNLP_APPLET_PARAMS_PREFIX, appletParamsSuffixes);
-
+            
+            initResources(evaluator, project);            
             // check if the jnlp-impl.xml script is of previous version -> should be upgraded
             FileObject jnlpImlpFO = project.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
             if (jnlpImlpFO != null) {
@@ -404,6 +416,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         setOrRemove(editableProps, JNLP_SIGNING_KEYSTORE, signingKeyStore);
         setOrRemove(privProps, JNLP_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
         setOrRemove(privProps, JNLP_SIGNING_KEY_PASSWORD, signingKeyPassword);
+        
+        // store resources
+        storeResources(editableProps);
 
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
@@ -847,6 +862,53 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         // compatibility
         if ("".equals(signing) && "true".equals(eval.getProperty(JNLP_SIGNED))) {
             signing = SIGNING_GENERATED;
+        }
+    }
+    
+    private void initResources (final PropertyEvaluator eval, final Project prj) {
+        final String lz = eval.getProperty(JNLP_LAZY_JARS); //old way, when changed rewritten to new
+        final String rcp = eval.getProperty(RUN_CP);        
+        final String bc = eval.getProperty(BUILD_CLASSES);        
+        final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        final File bcDir = PropertyUtils.resolveFile(prjDir, bc);
+        final List<File> lazyFileList = new ArrayList<File>();
+        String[] paths;
+        if (lz != null) {
+            paths = PropertyUtils.tokenizePath(lz);            
+            for (String p : paths) {
+                lazyFileList.add(PropertyUtils.resolveFile(prjDir, p));
+            }
+        }
+        paths = PropertyUtils.tokenizePath(rcp);
+        final List<File> resFileList = new ArrayList<File>(paths.length);
+        final List<String> propsList = new ArrayList<String>(paths.length);
+        for (String p : paths) {
+            final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (!bcDir.equals(f)) {
+                resFileList.add(f);
+                final String lazyJarProp = String.format(JNLP_LAZY_FORMAT, f.getName());
+                if (isTrue(eval.getProperty(lazyJarProp))) {
+                    propsList.add(lazyJarProp);
+                    lazyFileList.add(f);
+                }
+            }
+        }
+        lazyJars = lazyFileList;
+        runtimeCP = resFileList;
+        lazyJarProps = propsList;
+        lazyJarsChanged = false;
+    }
+    
+    private void storeResources(final EditableProperties props) {
+        if (lazyJarsChanged) {
+            //Remove old way if exists
+            props.remove(JNLP_LAZY_JARS);            
+            for (String lazyJarProp : lazyJarProps) {
+                props.remove(lazyJarProp);
+            }
+            for (File lazyJar : lazyJars) {
+                props.setProperty(String.format(JNLP_LAZY_FORMAT, lazyJar.getName()), "true");  //NOI18N
+            }
         }
     }
 
