@@ -290,8 +290,10 @@ public class WebProjectRestSupport extends WebRestSupport {
 
     private String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
         String libName = "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
-        if (libName.startsWith(GFV3_RESTLIB)) {
+        if (libName.equals(GFV3_RESTLIB)) {
             return GFV3_RESTLIB;
+        } else if (libName.startsWith(GFV3_RESTLIB)) {
+            return GFV31_RESTLIB;
         } else {
             return libName;
         }
