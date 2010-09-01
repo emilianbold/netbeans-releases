@@ -290,7 +290,32 @@ public class I18nManager {
             i18nPanelWRef.get().getCancelButton().requestFocusInWindow();
         }
     }
-    
+
+    /**
+     * Appends //NOI18N to the current line
+     */
+    private void ignore() {
+        I18nString i18nString = null;
+        try {
+            // To call weak without check have to be save here cause strong reference in the top component have to exist.
+            i18nString = i18nPanelWRef.get().getI18nString();
+        } catch (IllegalStateException e) {
+            NotifyDescriptor.Message nd = new NotifyDescriptor.Message(
+                    I18nUtil.getBundle().getString("EXC_BadKey"),       //NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
+        i18nString.setKey(null);
+        support.getReplacer().replace(hcString, i18nString);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                skip();
+            }
+        });
+    }
+
     /** Shows info about found hard coded string. */
     private void showInfo() {
         JPanel infoPanel = support.getInfo(hcString);
@@ -364,6 +389,8 @@ public class I18nManager {
                         replace();
                     } else if (source == panel.getSkipButton()) {
                         skip();
+                    } else if (source == panel.getIgnoreButton()) {
+                        ignore();
                     } else if (source == panel.getInfoButton()) {
                         showInfo();
                     } else if (source == panel.getCancelButton()) {
@@ -374,6 +401,7 @@ public class I18nManager {
             
             i18nPanel.getReplaceButton().addActionListener(listener);
             i18nPanel.getSkipButton().addActionListener(listener);
+            i18nPanel.getIgnoreButton().addActionListener(listener);
             i18nPanel.getInfoButton().addActionListener(listener);
             i18nPanel.getCancelButton().addActionListener(listener);
             
