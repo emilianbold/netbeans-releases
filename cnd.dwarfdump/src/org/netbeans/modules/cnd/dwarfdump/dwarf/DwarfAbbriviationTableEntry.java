@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -62,7 +63,7 @@ public class DwarfAbbriviationTableEntry {
     private final long index;
     private final long tag;
     private final boolean hasChildren;
-    private final ArrayList<DwarfAttribute> attributes = new ArrayList<DwarfAttribute>();
+    private final List<DwarfAttribute> attributes = new ArrayList<DwarfAttribute>();
     
     public DwarfAbbriviationTableEntry(long index, long tag, boolean hasChildren) {
         this.index = index;
@@ -132,7 +133,7 @@ public class DwarfAbbriviationTableEntry {
         return TAG.get((int)tag);
     }
     
-    private void dumpAttributes(PrintStream out, ArrayList<Object> values) {
+    private void dumpAttributes(PrintStream out, List<Object> values) {
         for (int i = 0; i < getAttributesCount(); i++) {
             if (values == null) {
                 getAttribute(i).dump(out);
