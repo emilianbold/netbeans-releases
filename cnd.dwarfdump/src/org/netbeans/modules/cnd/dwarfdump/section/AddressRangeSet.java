@@ -53,6 +53,7 @@ package org.netbeans.modules.cnd.dwarfdump.section;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -65,7 +66,7 @@ public class AddressRangeSet {
     byte address_size;
     byte segment_descriptor_size;
     
-    private ArrayList<AddressRange> ranges = new ArrayList<AddressRange>();
+    private List<AddressRange> ranges = new ArrayList<AddressRange>();
     
     void addRange(long address, long length) {
         ranges.add(new AddressRange(address, length));
