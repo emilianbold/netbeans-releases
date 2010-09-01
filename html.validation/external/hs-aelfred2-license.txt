@@ -1,3 +1,11 @@
+Name: GNU JAXP library modified for validator.nu
+Version: -
+License: GPL2
+OSR: -
+Files: hs-aelfred2.jar
+Description: This library is a modified version of the GNU JAXP library.
+Origin: validator.nu
+
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
 

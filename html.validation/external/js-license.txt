@@ -1,3 +1,11 @@
+Name: Rhino, part of the whole Rhino library only
+Version: 1.7
+License: MPL 1.1/GPL 2.0 license. 
+OSR: -
+Files: js.jar
+Description: Rhino is an open-source implementation of JavaScript written entirely in Java. It is typically embedded into Java applications to provide scripting to end users.
+Origin: http://www.mozilla.org/rhino/ resp. validator.nu
+
 / * The contents of this file are subject to the Mozilla Public License Version
  * 1.1 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at

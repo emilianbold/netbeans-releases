@@ -1,3 +1,11 @@
+Name: Validator.nu
+Version:
+License:
+OSR: -
+Files: validator.jar
+Description: Html/Generic RelaxNG schema validator service
+Origin: validator.nu
+
 /*
  * Copyright (c) 2005, 2006 Henri Sivonen
  * Copyright (c) 2007-2010 Mozilla Foundation

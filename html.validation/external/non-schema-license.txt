@@ -1,3 +1,11 @@
+Name: validator.nu schemas
+Version: -
+License:
+OSR: -
+Files: non-schema.jar
+Description: Non relax-ng schema checks for the validator
+Origin: validator.nu
+
 /*
  * Copyright (c) 2006 Henri Sivonen
  *

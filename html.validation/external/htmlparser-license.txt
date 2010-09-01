@@ -1,3 +1,11 @@
+Name: Html4/5 parser
+Version: -
+License: various
+OSR: -
+Files: htmlparser.jar
+Description: HTML4/5 parser
+Origin: validator.nu
+
 This is for the HTML parser as a whole except the rewindable input stream,
 and the Live DOM Viewer. 
 For the copyright notices for individual files, please see individual files.
