@@ -107,13 +107,18 @@ if [ $UPLOAD_ML == 1 ]; then
 fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash build-nbi.sh
-ERROR_CODE=$?
+if [ "${SUSTAINING_BUILD}" == 1 ]; then
+   echo "This is sustaining build, installers are not produced"
+else
+   bash build-nbi.sh
+   ERROR_CODE=$?
 
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - NBI installers build failed"
-    exit $ERROR_CODE;
+   if [ $ERROR_CODE != 0 ]; then
+      echo "ERROR: $ERROR_CODE - NBI installers build failed"
+      exit $ERROR_CODE;
+   fi
 fi
+
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
