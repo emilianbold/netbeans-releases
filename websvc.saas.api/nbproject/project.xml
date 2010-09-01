@@ -14,6 +14,10 @@
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
+                 <dependency>
+                    <code-name-base>org.netbeans.libs.jaxb</code-name-base>
+                    <build-prerequisite/>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
                     <build-prerequisite/>

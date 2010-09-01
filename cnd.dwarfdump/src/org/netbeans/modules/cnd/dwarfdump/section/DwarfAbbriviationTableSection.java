@@ -60,6 +60,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -108,7 +109,7 @@ public class DwarfAbbriviationTableSection extends ElfSection {
         reader.seek(header.getSectionOffset() + offset);
         
         long idx = -1;
-        ArrayList<DwarfAbbriviationTableEntry> entries = new ArrayList<DwarfAbbriviationTableEntry>();
+        List<DwarfAbbriviationTableEntry> entries = new ArrayList<DwarfAbbriviationTableEntry>();
         DwarfAbbriviationTable table = new DwarfAbbriviationTable(offset);
         
         while (idx != 0) {

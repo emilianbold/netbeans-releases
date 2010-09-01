@@ -46,14 +46,14 @@ package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author ak119685
  */
 public class DwarfAbbriviationTable {
-    private ArrayList<DwarfAbbriviationTableEntry> entries = null;
+    private List<DwarfAbbriviationTableEntry> entries = null;
     private int numOfEntries = 0;
     //private long offset;
 
@@ -61,7 +61,7 @@ public class DwarfAbbriviationTable {
         //this.offset = offset;
     }
     
-    public void setEntries(ArrayList<DwarfAbbriviationTableEntry> entries) {
+    public void setEntries(List<DwarfAbbriviationTableEntry> entries) {
         this.entries = entries;
         this.numOfEntries = entries.size();
     }

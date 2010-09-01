@@ -598,9 +598,14 @@ public class CompilationUnit {
                 aRoot.addChild(child);
                 if (child.hasChildren()) {
                     long sibling = child.getSibling();
-                    if (sibling == 0) {
+                    if (sibling <= 0) {
                         break;
                     } else {
+                        if (sibling <= child.getRefference()) {
+                            System.err.println("Infinite loop in sibling chain");
+                            System.err.println(""+child);
+                            break;
+                        }
                         long refference = debugInfoSectionOffset + unit_offset + sibling;
                         reader.seek(refference);
                     }
@@ -622,7 +627,7 @@ public class CompilationUnit {
         // make sure that pubnames table has been read ...
         getPubnamesTable();
         
-        ArrayList<DwarfEntry> result = new ArrayList<DwarfEntry>();
+        List<DwarfEntry> result = new ArrayList<DwarfEntry>();
         
         if (limitedToFile) {
             fileEntryIdx = getStatementList().getFileEntryIdx(getSourceFileName());
