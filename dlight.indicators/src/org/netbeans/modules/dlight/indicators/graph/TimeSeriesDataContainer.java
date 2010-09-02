@@ -113,7 +113,8 @@ public final class TimeSeriesDataContainer {
         grow(bucketId + 1);
         Bucket bucket = list.get(bucketId);
         if (bucket == null) {
-            list.set(bucketId, bucket = new Bucket(aggr, newData));
+            bucket = new Bucket(aggr, newData);
+            list.set(bucketId, bucket);
         } else {
             bucket.put(newData);
         }
@@ -211,6 +212,16 @@ public final class TimeSeriesDataContainer {
                 case AVERAGE:
                     for (int i = 0; i < data.length; ++i) {
                         this.data[i] = (count * this.data[i] + data[i]) / ++count;
+                    }
+                    break;
+                case MAX:
+                    for (int i = 0; i < data.length; ++i) {
+                        this.data[i] = Math.max(this.data[i], data[i]);
+                    }
+                    break;
+                case MIN:
+                    for (int i = 0; i < data.length; ++i) {
+                        this.data[i] = Math.min(this.data[i], data[i]);
                     }
                     break;
             }
