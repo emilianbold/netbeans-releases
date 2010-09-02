@@ -58,8 +58,8 @@ public interface JPAModuleInfo {
         WEB
     }
 
-    String JPACHECKSUPPORTED = "jpaversionverification";
-    
+    String JPACHECKSUPPORTED = "jpaversionverification";//NOI18N
+    String JPAVERSIONPREFIX = "jpa";//NOI18N
     /**
      * Gets the type of our module.
      * 
