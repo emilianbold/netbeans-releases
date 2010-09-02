@@ -161,13 +161,13 @@ public final class DLightSession implements
     }
 
     @Override
-    public void collectorStateChanged(DataCollector source, CollectorState state) {
+    public void collectorStateChanged(DataCollector<?> source, CollectorState state) {
         if (collectors.contains(source) && (state == CollectorState.STOPPED || state == CollectorState.FAILED
                 || state == CollectorState.TERMINATED)) {
             collectorsDoneFlag.countDown();
             if (collectorsDoneFlag.getCount() == 0) {
-                final DLightTarget target = getExecutionContexts().get(0).getTarget();
-                if (!(target instanceof TerminatedTarget)){
+                final DLightTarget target = contexts.get(0).getTarget();
+                if (!(target instanceof TerminatedTarget)) {
                     return;
                 }
                 //terminate the session if it is not
@@ -219,6 +219,7 @@ public final class DLightSession implements
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
@@ -250,7 +251,7 @@ public final class DLightSession implements
     }
 
     List<ExecutionContext> getExecutionContexts() {
-        return contexts;
+        return Collections.<ExecutionContext>unmodifiableList(contexts);
     }
 
     void addExecutionContext(ExecutionContext context) {
@@ -394,6 +395,7 @@ public final class DLightSession implements
             target.removeTargetListener(this);
             DLightExecutorService.submit(new Runnable() {
 
+                @Override
                 public void run() {
                     DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
                 }
@@ -404,6 +406,7 @@ public final class DLightSession implements
     void start() {
         Runnable sessionRunnable = new Runnable() {
 
+            @Override
             public void run() {
                 DataStorageManager.getInstance().clearActiveStorages(DLightSession.this);
 
@@ -453,10 +456,12 @@ public final class DLightSession implements
         DLightExecutorService.submit(sessionRunnable, "DLight session"); // NOI18N
     }
 
+    @Override
     public void addDataFilterListener(DataFilterListener listener) {
         dataFiltersSupport.addDataFilterListener(listener);
     }
 
+    @Override
     public void removeDataFilterListener(DataFilterListener listener) {
         dataFiltersSupport.removeDataFilterListener(listener);
     }
@@ -465,6 +470,7 @@ public final class DLightSession implements
         return this;
     }
 
+    @Override
     public InputOutput getInputOutput() {
         if (this.state == SessionState.CONFIGURATION) {
             return null;//nothing to return, we are in configuration state
@@ -472,11 +478,13 @@ public final class DLightSession implements
         return io;
     }
 
+    @Override
     public void addDataFilter(final DataFilter filter, final boolean isAdjusting) {
         //if the filter is TimeIntervalFilter: remove first
         if (EventQueue.isDispatchThread()) {
             DLightExecutorService.submit(new Runnable() {
 
+                @Override
                 public void run() {
                     addDataFilterImpl(filter, isAdjusting);
                 }
@@ -488,7 +496,7 @@ public final class DLightSession implements
 
     }
 
-    private final void addDataFilterImpl(final DataFilter filter, final boolean isAdjusting) {
+    private void addDataFilterImpl(final DataFilter filter, final boolean isAdjusting) {
         if (filter instanceof TimeIntervalDataFilter) {
             dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class, false);
         }
@@ -502,6 +510,7 @@ public final class DLightSession implements
 
     }
 
+    @Override
     public void cleanAllDataFilter() {
         cleanAllDataFilter(true);
     }
@@ -509,7 +518,7 @@ public final class DLightSession implements
     @Override
     public void cleanAllDataFilter(boolean notify) {
         dataFiltersSupport.cleanAll();
-        if (!notify){
+        if (!notify) {
             return;
         }
         for (Visualizer<?> v : getVisualizers()) {
@@ -520,29 +529,25 @@ public final class DLightSession implements
     @Override
     public void cleanAllDataFilter(Class<?> clazz, boolean notify) {
         dataFiltersSupport.cleanAll(clazz);
-        if (!notify){
+        if (!notify) {
             return;
         }
         for (Visualizer<?> v : getVisualizers()) {
             v.refresh();
         }
     }
-    
-    
-    
-    
 
     @Override
     public void cleanAllDataFilter(Class<?> clazz) {
         cleanAllDataFilter(clazz, true);
     }
-    
 
-
+    @Override
     public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
         return dataFiltersSupport.getDataFilter(clazz);
     }
 
+    @Override
     public boolean removeDataFilter(DataFilter filter) {
         return dataFiltersSupport.removeFilter(filter);
     }
@@ -587,7 +592,7 @@ public final class DLightSession implements
 
         for (DLightTool tool : context.getTools()) {
             validTools.add(tool);
-            toolNames.append(tool.getName() + ServiceInfoDataStorage.DELIMITER);
+            toolNames.append(tool.getName()).append(ServiceInfoDataStorage.DELIMITER);
         }
 
         if (validTools.isEmpty()) {
@@ -613,7 +618,7 @@ public final class DLightSession implements
                 }
             }
         } else {
-            for (DataCollector c : collectors) {
+            for (DataCollector<?> c : collectors) {
                 c.removeDataCollectorListener(this);
                 for (DataCollectorListener l : collectorListeners) {
                     c.removeDataCollectorListener(l);
@@ -658,7 +663,7 @@ public final class DLightSession implements
                         for (IndicatorNotificationsListener l : indicatorNotificationListeners) {
                             IndicatorDataProviderAccessor.getDefault().addIndicatorDataProviderListener(idp, l);
                         }
-                        idpsNames.append(idp.getName() + ServiceInfoDataStorage.DELIMITER);
+                        idpsNames.append(idp.getName()).append(ServiceInfoDataStorage.DELIMITER);
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
 
                         for (Indicator<?> i : indicators) {
@@ -671,7 +676,7 @@ public final class DLightSession implements
                                 }
                                 target.addTargetListener(idp);
                                 if (log.isLoggable(Level.FINE)) {
-                                    log.fine("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
+                                    log.log(Level.FINE, "I have subscribed indicator {0} to indicatorDataProvider {1}", new Object[]{i, idp}); // NOI18N
                                 }
                             }
                             if (i instanceof DataFilterListener) {
@@ -734,13 +739,13 @@ public final class DLightSession implements
                     }
                 } else {
                     // Cannot find storage for this collector!
-                    log.severe("Cannot find storage for collector " + toolCollector); // NOI18N
+                    log.log(Level.SEVERE, "Cannot find storage for collector {0}", toolCollector); // NOI18N
                 }
 
                 target.addTargetListener(toolCollector);
             }
         }
-        for (DataCollector c : collectors) {
+        for (DataCollector<?> c : collectors) {
             c.addDataCollectorListener(this);
             for (DataCollectorListener l : collectorListeners) {
                 c.addDataCollectorListener(l);
@@ -812,7 +817,7 @@ public final class DLightSession implements
         Collection<DataProviderFactory> providerFactories = DataProvidersManager.getInstance().getDataProviderFactories(dataModelScheme);
 
         // If not found - just return null
-        if (providerFactories.size() == 0) {
+        if (providerFactories.isEmpty()) {
             return null;
         }
 
@@ -906,6 +911,7 @@ public final class DLightSession implements
         } else {
             DLightExecutorService.submit(new Runnable() {
 
+                @Override
                 public void run() {
                     DataStorageManager.getInstance().closeSession(DLightSession.this);
                     cleanVisualizers();
