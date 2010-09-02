@@ -213,6 +213,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (OPENJPA_JPA_PROVIDER.equals(toolName) || ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
                 return true;
             }
+
+            if("jpaversionverification".equals(toolName))return true;// NOI18N
+            if("jpa1.0".equals(toolName))return true;// NOI18N
+
             return false;
         }
         

@@ -300,11 +300,15 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         if(warning.trim().length() == 0){//may need to show warning about sourc level
             if(getCreatePersistenceUnit()){
                 String sourceLevel = SourceLevelChecker.getSourceLevel(project);
-                if(sourceLevel !=null ){//by default except some minor cases jpa 2.0 is used in this wizard
+                if(sourceLevel !=null ){
                     if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6)){
                         ArrayList<Provider> providers = Util.getProviders(project);
                         if(providers!=null && providers.size()>0 && Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(providers.get(0)))){
-                            warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
+                            if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
+                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
+                            } else {
+                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "UnsupportedJpaVersion", Persistence.VERSION_2_0);
+                            }
                         }
                     }
                 }
