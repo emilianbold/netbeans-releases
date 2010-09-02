@@ -112,7 +112,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         if (platform == null){
             return null;
         }
-        return platform.isToolSupported(JPAModuleInfo.JPACHECKSUPPORTED) ? platform.isToolSupported("jpa"+version) : null;//NOI18N
+        return platform.isToolSupported(JPAModuleInfo.JPACHECKSUPPORTED) ? platform.isToolSupported(JPAModuleInfo.JPAVERSIONPREFIX+version) : null;//NOI18N
     }
 
     @Override
