@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -139,7 +140,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String RUN_CP = "run.classpath";    //NOI18N
     public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
     public static final String JNLP_LAZY_JARS = "jnlp.lazy.jars";   //NOI18N
-    private static final String JNLP_LAZY_FORMAT = "jnlp.lazy.jar.%s"; //NOI18N
+    private static final String JNLP_LAZY_JAR = "jnlp.lazy.jar."; //NOI18N
+    private static final String JNLP_LAZY_FORMAT = JNLP_LAZY_JAR +"%s"; //NOI18N
     
     static final String SIGNING_GENERATED = "generated";
     static final String SIGNING_KEY = "key";
@@ -211,7 +213,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     // resources
     List<? extends File> runtimeCP;
     List<? extends File> lazyJars;
-    private List<? extends String> lazyJarProps;
     boolean lazyJarsChanged;
 
     // Models 
@@ -881,30 +882,29 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
         paths = PropertyUtils.tokenizePath(rcp);
         final List<File> resFileList = new ArrayList<File>(paths.length);
-        final List<String> propsList = new ArrayList<String>(paths.length);
         for (String p : paths) {
             final File f = PropertyUtils.resolveFile(prjDir, p);
             if (!bcDir.equals(f)) {
                 resFileList.add(f);
-                final String lazyJarProp = String.format(JNLP_LAZY_FORMAT, f.getName());
-                if (isTrue(eval.getProperty(lazyJarProp))) {
-                    propsList.add(lazyJarProp);
+                if (isTrue(eval.getProperty(String.format(JNLP_LAZY_FORMAT, f.getName())))) {
                     lazyFileList.add(f);
                 }
             }
         }
         lazyJars = lazyFileList;
         runtimeCP = resFileList;
-        lazyJarProps = propsList;
         lazyJarsChanged = false;
     }
     
     private void storeResources(final EditableProperties props) {
         if (lazyJarsChanged) {
             //Remove old way if exists
-            props.remove(JNLP_LAZY_JARS);            
-            for (String lazyJarProp : lazyJarProps) {
-                props.remove(lazyJarProp);
+            props.remove(JNLP_LAZY_JARS);
+            final Iterator<Map.Entry<String,String>> it = props.entrySet().iterator();
+            while (it.hasNext()) {
+                if (it.next().getKey().startsWith(JNLP_LAZY_JAR)) {
+                    it.remove();
+                }
             }
             for (File lazyJar : lazyJars) {
                 props.setProperty(String.format(JNLP_LAZY_FORMAT, lazyJar.getName()), "true");  //NOI18N
