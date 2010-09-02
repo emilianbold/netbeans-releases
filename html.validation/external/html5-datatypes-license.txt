@@ -1,3 +1,11 @@
+Name: HTML5 Datatypes
+Version: -
+License:
+OSR: -
+Files: html5-datatypes.jar
+Description: Relax NG datatypes for html5 schemas, used in the validator.nu
+Origin: validator.nu
+
 /*
  * Copyright (c) 2006 Henri Sivonen
  * Copyright (c) 2007-2009 Mozilla Foundation

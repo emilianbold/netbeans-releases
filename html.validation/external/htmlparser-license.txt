@@ -1,6 +1,6 @@
 Name: Html4/5 parser
 Version: -
-License: various
+License:
 OSR: -
 Files: htmlparser.jar
 Description: HTML4/5 parser
