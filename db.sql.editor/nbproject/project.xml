@@ -263,6 +263,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.odb</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <package>org.netbeans.modules.db.sql.editor.api.completion</package>
             </friend-packages>
