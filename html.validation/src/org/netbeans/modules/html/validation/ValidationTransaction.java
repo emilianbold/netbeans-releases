@@ -200,7 +200,6 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private Set<String> filteredNamespaces = new LinkedHashSet<String>(); // linked
     private LexicalHandler lexicalHandler;
     private String codeToValidate;
-    private String textDescriptionOfTheProblems; //XXX temp.
     private long validationTime;
     private ProblemsHandler problemsHandler = new ProblemsHandler();
     private LinesMapper linesMapper = new LinesMapper();
@@ -475,9 +474,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     }
 
     public void setup() {
-        schemaUrls = "http://s.validator.nu/html5/html5full.rnc "
-                + "http://s.validator.nu/html5/assertions.sch "
-                + "http://c.validator.nu/all/";
+        //no need for this, using the validatorByDoctype(int) instead        
+//        schemaUrls = "http://s.validator.nu/html5/html5full.rnc "
+//                + "http://s.validator.nu/html5/assertions.sch "
+//                + "http://c.validator.nu/all/";
 
         parser = ParserMode.HTML; //html5
 //        parser = ParserMode.HTML401_STRICT;
@@ -534,7 +534,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             RngProperty.CHECK_ID_IDREF.add(pmb);
             jingPropertyMap = pmb.toPropertyMap();
 
-            tryToSetupValidator();
+//            tryToSetupValidator();
 
             setAllowRnc(false);
 
