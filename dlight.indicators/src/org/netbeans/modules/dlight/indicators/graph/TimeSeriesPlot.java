@@ -75,20 +75,23 @@ public final class TimeSeriesPlot extends JComponent implements ViewportAware, C
 
     private static final long EXTENT = 20000000000L; // 20 seconds
     private final GraphPainter graph;
+    private final Axis timeAxis;
+    private final Axis valueAxis;
     private ViewportModel viewportModel;
-    private int upperLimit;
-    private Axis hAxis;
-    private Axis vAxis;
-    private AxisMarksProvider timeMarksProvider;
-    private AxisMarksProvider valueMarksProvider;
+    private final AxisMarksProvider timeMarksProvider;
+    private final AxisMarksProvider valueMarksProvider;
     private final Object timeFilterLock = new Object();
     private volatile TimeIntervalDataFilter timeFilter;
+    private final Updater updater = new Updater();
+    private int upperLimit;
 
-    public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series, TimeSeriesDataContainer data) {
-        upperLimit = scale;
+    public TimeSeriesPlot(int upperLimit, ValueFormatter formatter, List<TimeSeriesDescriptor> series, TimeSeriesDataContainer data) {
+        this.upperLimit = upperLimit;
         TimeSeriesDataContainer container = data;
         container.setTimeSeriesPlot(this);
         graph = new GraphPainter(series, container);
+        timeAxis = new Axis(AxisOrientation.HORIZONTAL);
+        valueAxis = new Axis(AxisOrientation.VERTICAL);
         timeMarksProvider = TimeMarksProvider.newInstance();
         valueMarksProvider = ValueMarksProvider.newInstance(formatter);
         DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, EXTENT));
@@ -106,26 +109,18 @@ public final class TimeSeriesPlot extends JComponent implements ViewportAware, C
     }
 
     public JComponent getVerticalAxis() {
-        if (vAxis == null) {
-            vAxis = new Axis(AxisOrientation.VERTICAL);
-        }
-        return vAxis;
+        return valueAxis;
     }
 
     public JComponent getHorizontalAxis() {
-        if (hAxis == null) {
-            hAxis = new Axis(AxisOrientation.HORIZONTAL);
-        }
-        return hAxis;
+        return timeAxis;
     }
 
-    public void setUpperLimit(int newScale) {
-        if (newScale != upperLimit) {
-            upperLimit = newScale;
+    public void setUpperLimit(int newLimit) {
+        if (newLimit != upperLimit) {
+            upperLimit = newLimit;
             repaint();
-            if (vAxis != null) {
-                vAxis.repaint();
-            }
+            valueAxis.repaint();
         }
     }
 
@@ -214,19 +209,23 @@ public final class TimeSeriesPlot extends JComponent implements ViewportAware, C
     }
 
     public void repaintAll() {
-        repaint();
-        if (hAxis != null) {
-            hAxis.repaint();
-        }
-        if (vAxis != null) {
-            vAxis.repaint();
-        }
+        UIThread.invoke(updater);
     }
 
     private static enum AxisOrientation {
 
         HORIZONTAL,
         VERTICAL
+    }
+
+    private class Updater implements Runnable {
+
+        @Override
+        public void run() {
+            repaint();
+            timeAxis.repaint();
+            valueAxis.repaint();
+        }
     }
 
     private class Axis extends JComponent {

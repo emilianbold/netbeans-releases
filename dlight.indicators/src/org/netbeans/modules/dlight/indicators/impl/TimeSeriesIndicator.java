@@ -115,14 +115,12 @@ public final class TimeSeriesIndicator
     private final int timeSeriesCount;
     private int tickCounter;
     private List<Action> popupActions;
-    private volatile boolean isInitialized = false;
     private final TimeSeriesIndicatorConfiguration configuration;
     private final List<TimeSeriesDescriptor> timeSeriesList;
     private final List<DetailDescriptor> detailsList;
     private final DataTableMetadata timeSeriesTable;
     private final DataTableMetadata detailsTable;
     private volatile Map<String, String> detailsValues;
-    private final UILock uiLock = new UILock();
 
     public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);
@@ -145,16 +143,13 @@ public final class TimeSeriesIndicator
     }
 
     private void initUI() {
-        synchronized (uiLock) {
-            this.graph = createGraph(configuration, data);
-            TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-            this.legend = new Legend(timeSeriesList, detailsList);
-            this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
-            this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
-                    legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
-            panel.setPopupActions(popupActions);
-            isInitialized = true;
-        }
+        this.graph = createGraph(configuration, data);
+        TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
+        this.legend = new Legend(timeSeriesList, detailsList);
+        this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
+        this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
+                legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
+        panel.setPopupActions(popupActions);
     }
 
     private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration, TimeSeriesDataContainer data) {
@@ -311,11 +306,9 @@ public final class TimeSeriesIndicator
     }
 
     @Override
-    public JComponent getComponent() {
-        synchronized (uiLock) {
-            if (!isInitialized) {
-                initUI();
-            }
+    public synchronized JComponent getComponent() {
+        if (panel == null) {
+            initUI();
         }
         return panel;
     }
@@ -457,8 +450,5 @@ public final class TimeSeriesIndicator
             out.printf("%s => %s\n", detail, detailsValues.get(detail)); // NOI18N
         }
         out.flush();
-    }
-
-    private final static class UILock {
     }
 }
