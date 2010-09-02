@@ -307,7 +307,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                             if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
                                 warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                             } else {
-                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "UnsupportedJpaVersion", Persistence.VERSION_2_0);
+                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_UnsupportedJpaVersion", Persistence.VERSION_2_0);
                             }
                         }
                     }
