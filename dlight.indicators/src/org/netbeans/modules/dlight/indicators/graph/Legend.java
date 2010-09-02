@@ -172,9 +172,19 @@ public class Legend extends JPanel {
         }
     }
 
-    public final void updateWithInfoProvided(Collection<Column> columns){
-        init(columns);
-        repaint();
+    public final void updateWithInfoProvided(final Collection<Column> columns){
+        if (SwingUtilities.isEventDispatchThread()) {
+            init(columns);
+            repaint();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    init(columns);
+                    repaint();
+                }
+            });
+        }
     }
 
     private void updateDetailImpl(String name, String value) {
