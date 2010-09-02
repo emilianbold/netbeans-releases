@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
             <fileset dir="build/java"/>
         </copy>
     </target>
-    <target name="compile" depends="-pre-compile,projectized-common.compile"/>
+    <!--<target name="compile" depends="-pre-compile,projectized-common.compile"/>-->
     <target name="clean" depends="projectized-common.clean">
         <delete dir="src/${glic.output.dir}"/>
     </target>
