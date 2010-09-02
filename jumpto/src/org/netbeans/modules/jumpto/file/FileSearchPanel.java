@@ -505,6 +505,22 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
         update();
     }
     
+    /** Sets the initial text to find in case the user did not start typing yet. */
+    public void setInitialText( final String text ) {
+        oldText = text;
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                String textInField = fileNameTextField.getText();
+                if ( textInField == null || textInField.trim().length() == 0 ) {
+                    fileNameTextField.setText(text);
+                    fileNameTextField.setCaretPosition(text.length());
+                    fileNameTextField.setSelectionStart(0);
+                    fileNameTextField.setSelectionEnd(text.length());
+                }
+            }
+        });
+    }
+
     private String getText() {
         try {
             String text = fileNameTextField.getDocument().getText(0, fileNameTextField.getDocument().getLength());
