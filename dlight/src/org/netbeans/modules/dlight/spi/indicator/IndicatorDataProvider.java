@@ -121,8 +121,8 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     }
 
     @Override
-    public final ValidationStatus getValidationStatus() {
-        return ValidationStatus.validStatus();
+    public final synchronized ValidationStatus getValidationStatus() {
+        return validationStatus;
     }
 
     @Override
@@ -270,12 +270,12 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     private static final class IndicatorDataProviderAccessorImpl extends IndicatorDataProviderAccessor {
 
         @Override
-        public void addIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l) {
+        public void addIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l) {
             provider.addIndicatorDataProviderListener(l);
         }
 
         @Override
-        public boolean removeIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l) {
+        public boolean removeIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l) {
             return provider.removeIndicatorDataProviderListener(l);
         }
     }
