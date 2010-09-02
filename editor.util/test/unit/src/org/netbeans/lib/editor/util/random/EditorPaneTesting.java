@@ -125,7 +125,7 @@ public class EditorPaneTesting {
                     validContainer.putProperty(JFrame.class, frame);
                     frame.getContentPane().add(new JScrollPane(validPane));
                     frame.pack();
-//                    frame.setSize(200, 100);
+                    frame.setSize(200, 100); // E.g. for word-wrapping bounds limiting
                     frame.setVisible(true); // Could it be rendered just to a memory buffer??
                     validContainer.putProperty(JFrame.class, frame);
                 }
