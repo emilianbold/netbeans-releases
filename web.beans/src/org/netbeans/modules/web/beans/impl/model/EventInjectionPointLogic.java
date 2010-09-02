@@ -216,7 +216,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             TypeMirror typeMirror = entry.getValue();
             
             Element typeElement = impl.getHelper().
-                getCompilationController().getTypes().asElement(type);
+                getCompilationController().getTypes().asElement( typeMirror );
         
             boolean isGeneric = (typeElement instanceof TypeElement) &&
                 ((TypeElement)typeElement).getTypeParameters().size() != 0;
@@ -224,9 +224,8 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             if ( !isGeneric && impl.getHelper().getCompilationController().
                     getTypes().isAssignable( type, typeMirror))
             {
-                assignable = true;
+                continue;
             }
-            
             
             if ( type instanceof ReferenceType && 
                     typeMirror instanceof ReferenceType)
