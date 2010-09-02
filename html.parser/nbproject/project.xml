@@ -98,7 +98,7 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/icu4j-4_0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/htmlparser-1.2.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/html5-parser.jar</runtime-relative-path>
                 <binary-origin>external/htmlparser-1.2.1.jar</binary-origin>
             </class-path-extension>
         </data>
