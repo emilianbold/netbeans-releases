@@ -66,7 +66,8 @@ public final class NativeExecutionDescriptor {
     Runnable postExecution;
     LineConvertorFactory errConvertorFactory;
     LineConvertorFactory outConvertorFactory;
-    boolean noReset;
+    boolean resetInputOutputOnFinish = true;
+    boolean closeInputOutputOnFinish = true;
     Charset charset;
     PostMessageDisplayer postMessageDisplayer;
 
@@ -124,7 +125,12 @@ public final class NativeExecutionDescriptor {
     }
 
     public NativeExecutionDescriptor noReset(boolean noReset) {
-        this.noReset = noReset;
+        this.resetInputOutputOnFinish = !noReset;
+        return this;
+    }
+
+    public NativeExecutionDescriptor keepInputOutputOnFinish() {
+        this.closeInputOutputOnFinish = false;
         return this;
     }
 
