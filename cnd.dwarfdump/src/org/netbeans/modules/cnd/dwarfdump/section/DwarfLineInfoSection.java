@@ -179,6 +179,7 @@ public class DwarfLineInfoSection extends ElfSection {
         int prev_lineno = 1;
         final int const_pc_add = 245 / section.line_range * section.minimum_instruction_length;
         int lineNumber = -1;
+        int fileNumber = -1;
         String sourceFile = null;
         Set<LineNumber> result = new HashSet<LineNumber>();
 
@@ -241,7 +242,8 @@ public class DwarfLineInfoSection extends ElfSection {
                     }
                     case DW_LNS_copy:
                         lineNumber = prev_lineno == 1 ? lineno : prev_lineno;
-                        sourceFile = ((prev_fileno >= 0 && prev_fileno < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                        fileNumber = prev_fileno == 0 ? fileno : prev_fileno;
+                        sourceFile = ((fileNumber >= 0 && fileNumber < section.getFileEntries().size()) ? section.getFilePath(fileNumber + 1) : define_file);
                         if (sourceFile != null) {
                             if (target > 0) {
                                 if (target >= prev_base_address && target < address) {
