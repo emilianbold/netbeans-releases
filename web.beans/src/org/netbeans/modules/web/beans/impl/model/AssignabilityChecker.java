@@ -98,10 +98,12 @@ class AssignabilityChecker  implements Checker {
         if ( !( variableElement instanceof TypeElement ) ){
             return false;
         }
-        if ( ((TypeElement)variableElement).getTypeParameters().size() == 0 ){
+        // if variableType is raw type
+        if ( ((DeclaredType)variableType).getTypeArguments().size() == 0 ){
             return getImplementation().getHelper().getCompilationController().
                 getTypes().isAssignable( refType, variableType);
         }
+
         
         if ( !( refType instanceof DeclaredType ) ){
             return false;
@@ -219,6 +221,19 @@ class AssignabilityChecker  implements Checker {
     
     private boolean checkParameter( TypeMirror argType, TypeMirror varTypeArg )
     {
+        if ( isEventAssignability ){
+            if ( varTypeArg.getKind()== TypeKind.TYPEVAR ){
+                TypeMirror upperBound = ((TypeVariable)varTypeArg).getUpperBound();
+                if ( upperBound == null || upperBound.getKind() == TypeKind.NULL ){
+                    return true;
+                }
+                else {
+                    return getImplementation().getHelper().getCompilationController().
+                        getTypes().isAssignable( argType, upperBound);
+                }
+            }
+        }
+        
         Types types = getImplementation().getHelper().getCompilationController().
             getTypes();
 
