@@ -455,7 +455,6 @@ public class ObserversTest extends CommonTestCase {
                         children.size());
                 for (Element element : children) {
                     if (element instanceof VariableElement) {
-                        System.out.println("^^^^^^^^^^ "+element.getSimpleName());
                         injectionPoints.add((VariableElement) element);
                     }
                 }
@@ -563,4 +562,159 @@ public class ObserversTest extends CommonTestCase {
                     executableElement.getSimpleName(), false );
         }
     }
+    
+    public void testRawParameterizedAssignability()throws MetadataModelException, 
+        IOException, InterruptedException 
+    {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding  {" +
+                "    String value(); "+
+                "} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/EventObject.java",
+                "package foo; " + 
+                "public class EventObject extends SuperObject { " + 
+                "} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SuperObject.java",
+                "package foo; " + 
+                "public class SuperObject { " + 
+                "} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/ChildObject.java",
+                "package foo; " + 
+                "public class ChildObject extends EventObject { " + 
+                "} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " + 
+                "import javax.inject.*; "
+                +"import javax.enterprise.inject.Any; "
+                + "import javax.enterprise.event.Event; "
+                + "import java.util.List; "
+                + "import java.util.Set; "
+                + "import java.util.Collection; "
+                + "public class TestClass {"
+                + " @Inject @Binding(value=\"a\") Event<EventObject> event; "
+                + " @Inject @Binding(value=\"b\") Event<List<String>> event1; "
+                + " @Inject @Binding(value=\"c\") Event<List<EventObject>> event2; "
+                + " @Inject @Binding(value=\"d\") Event<Collection<EventObject>> event3; "
+                + " @Inject @Binding(value=\"e\") Event<Collection<EventObject>> event4; "
+                + " @Inject @Binding(value=\"f\") Event<Set<EventObject>> event5; "
+                + "} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
+                "package foo; " + 
+                "import javax.enterprise.event.Observes; "+
+                "public class Generic<T extends SuperObject> { " + 
+                " public void eventObserver( @Observes @Binding(value=\"a\") T t){} "+
+                "} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " + 
+                "import javax.enterprise.event.Observes; "+
+                 "import java.util.List; "
+                + "import java.util.Collection; "
+                + "import java.util.Set; "
+                +"public class Clazz { " + 
+                " public void eventObserver( @Observes @Binding(value=\"b\") List list){} "+
+                " public <T extends SuperObject> void eventObserver1( @Observes @Binding(value=\"c\") List<T> list){} "+
+                " public void eventObserver2( @Observes @Binding(value=\"d\") Collection<? extends SuperObject> list){} "+
+                " public void eventObserver3( @Observes @Binding(value=\"e\") Collection<? super ChildObject> list){} "+
+                " public void eventObserver4( @Observes @Binding(value=\"f\") Set<T extends SuperObject> set){} "+
+                "} ");
+        
+        inform("start raw and parameterized assignability observer test");
+
+        MetadataModel<WebBeansModel> metaModel = createBeansModel();
+        metaModel.runReadAction(new MetadataModelAction<WebBeansModel, Void>() {
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType("foo.TestClass");
+                Element clazz = ((DeclaredType) mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = new ArrayList<VariableElement>(
+                        children.size());
+                for (Element element : children) {
+                    if (element instanceof VariableElement) {
+                        injectionPoints.add((VariableElement) element);
+                    }
+                }
+
+                assertEquals(6,  injectionPoints.size());
+                for (VariableElement variableElement : injectionPoints) {
+                    String name = variableElement.getSimpleName().toString();
+                    if ( "event".equals(name)){
+                        commonAssagnabilityCheck(variableElement, model, 
+                                (DeclaredType) mirror, "foo.Generic" ,
+                                "eventObserver");
+                    }
+                    else if ( "event1".equals(name)){
+                        commonAssagnabilityCheck(variableElement, model, 
+                                (DeclaredType) mirror, "foo.Clazz" ,
+                                "eventObserver");
+                    }
+                    else if ( "event2".equals(name)){
+                        commonAssagnabilityCheck(variableElement, model, 
+                                (DeclaredType) mirror, "foo.Clazz" ,
+                                "eventObserver1");
+                    }
+                    else if ( "event3".equals(name)){
+                        commonAssagnabilityCheck(variableElement, model, 
+                                (DeclaredType) mirror, "foo.Clazz" ,
+                                "eventObserver2");
+                    }
+                    else if ( "event4".equals(name)){
+                        commonAssagnabilityCheck(variableElement, model, 
+                                (DeclaredType) mirror, "foo.Clazz" ,
+                                "eventObserver3");
+                    }
+                    else if ( "event5".equals(name)){
+                        commonAssagnabilityCheck(variableElement, model, 
+                                (DeclaredType) mirror, "foo.Clazz" ,
+                                "eventObserver4");
+                    }
+                }
+                return null;
+            }
+
+        });
+    }
+    
+    private void commonAssagnabilityCheck( VariableElement variableElement,
+            WebBeansModel model, DeclaredType parent , String enclosingClassName ,
+            String methodName )
+    {
+        inform( "assignability test for " +variableElement.getSimpleName()+" field ");       
+        List<ExecutableElement> observers = model.getObservers(variableElement, parent);
+        assertEquals(1,  observers.size());
+        ExecutableElement executableElement = observers.get(0);
+        assertNotNull( executableElement );
+        
+        String foundMethod = executableElement.getSimpleName().toString();
+        assertEquals("Expected "+methodName+" observer but found :"+foundMethod,
+                methodName, foundMethod);
+        
+        TypeElement methodClass = model.getCompilationController().getElementUtilities().
+            enclosingTypeElement( executableElement);
+        
+        
+        String name = methodClass.getQualifiedName().toString();
+        assertEquals( "Enclosing type of observer method "+methodName+" should " +
+        		"be "+enclosingClassName+" but found : "+name ,enclosingClassName , name);
+    }
+    
+    
 }
