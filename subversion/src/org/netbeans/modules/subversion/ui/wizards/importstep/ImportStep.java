@@ -173,7 +173,8 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     }
 
     public void setup(RepositoryFile repositoryFile) {
-        if(importPanel.repositoryPathTextField.getText().trim().equals("")) { // NOI18N
+        if(importPanel.repositoryPathTextField.getText().trim().equals("") //NOI18N
+                || repositoryPaths != null && !repositoryPaths.getRepositoryUrl().equals(repositoryFile.getRepositoryUrl())) {
             // no value set yet ...
             if(repositoryPaths == null) {
                 repositoryPaths =
