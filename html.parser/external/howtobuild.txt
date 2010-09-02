@@ -1,0 +1,9 @@
+Temporary: How to build the module until the library binaries are in the repository
+
+1) checkout the html parser from https://whattf.svn.cvsdude.com/htmlparser
+2) apply the htmlparser-1.2.1.diff
+3) build the html parser library
+4) copy the generated jar file into the ${nbhome}/html.parser/external/htmlparser-1.2.1.jar
+5) build the html.parser module itself
+
+

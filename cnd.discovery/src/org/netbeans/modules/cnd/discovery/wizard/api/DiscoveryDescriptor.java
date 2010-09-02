@@ -91,6 +91,9 @@ public interface DiscoveryDescriptor {
     String getCompilerName();
     void setCompilerName(String compiler);
 
+    List<String> getDependencies();
+    void setDependencies(List<String> dependencies);
+
     void setMessage(String message);
 
     void clean();

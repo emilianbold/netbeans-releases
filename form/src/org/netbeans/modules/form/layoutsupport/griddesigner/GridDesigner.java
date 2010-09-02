@@ -51,6 +51,8 @@ import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -59,12 +61,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.OverlayLayout;
 import org.netbeans.modules.form.FormEditor;
@@ -130,6 +135,9 @@ public class GridDesigner extends JPanel implements Customizer {
         support.reset(glassPane);
         toolBar.add(support.getRedoAction());
         toolBar.add(support.getUndoAction());
+        JToggleButton padButton = initPaddingButton();
+        toolBar.add(Box.createRigidArea(new Dimension(10,10)));
+        toolBar.add(padButton);
         rightPanel.add(toolBar, BorderLayout.PAGE_START);
         // Estimate of the size of the header
         Dimension headerDim = new JLabel("99").getPreferredSize(); // NOI18N
@@ -199,7 +207,7 @@ public class GridDesigner extends JPanel implements Customizer {
     }
 
     /**
-     * Creates and initialized the components on the left side.
+     * Creates and initializes components on the left side.
      * 
      * @return component that represents the left side.
      */
@@ -216,6 +224,28 @@ public class GridDesigner extends JPanel implements Customizer {
             leftPanel.add(customizer.getComponent(), BorderLayout.PAGE_START);
         }
         return leftPanel;
+    }
+
+    /**
+     * Creates and initializes "pad empty rows/columns" button.
+     * 
+     * @return "pad empty rows/columns" button.
+     */
+    private JToggleButton initPaddingButton() {
+        JToggleButton button = new JToggleButton();
+        ImageIcon image = ImageUtilities.loadImageIcon("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/pad_empty.png", false); // NOI18N
+        button.setIcon(image);
+        button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.padEmptyCells")); // NOI18N
+        button.setSelected(FormLoaderSettings.getInstance().getPadEmptyCells());
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean padEmptyCells = ((JToggleButton)e.getSource()).isSelected();
+                FormLoaderSettings.getInstance().setPadEmptyCells(padEmptyCells);
+                glassPane.updateLayout();
+            }
+        });
+        return button;
     }
 
     /**

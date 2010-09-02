@@ -45,10 +45,12 @@ package org.netbeans.modules.web.beans.impl.model;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -58,10 +60,16 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
+import org.netbeans.api.java.source.ClassIndex.SearchKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 
 
@@ -93,8 +101,11 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             return null;
         }
         
-        TypeMirror type = impl.getHelper().getCompilationController().
-            getTypes().asMemberOf(parent, element );
+        /*TypeMirror type = impl.getHelper().getCompilationController().
+            getTypes().asMemberOf(parent, element );*/
+        
+        TypeMirror type = getParameterType(element, parent, 
+                impl.getHelper().getCompilationController(), EVENT_INTERFACE);
         
         List<AnnotationMirror> qualifierAnnotations = new LinkedList<AnnotationMirror>();
         boolean hasAny = false;
@@ -105,45 +116,38 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             return null;
         }
         if ( hasAny ){
-            hasAny = qualifierAnnotations.size()==1;
+            hasAny = qualifierAnnotations.size()==0;
         }
         
-        final List<Element> methodObservesParameters = new LinkedList<Element>();
-        final List<TypeElement> typesOfObservedMethods = new LinkedList<TypeElement>();
-        try {
-        impl.getHelper().getAnnotationScanner().findAnnotations( 
-                OBSERVES_ANNOTATION, 
-                EnumSet.of( ElementKind.PARAMETER), 
-                new AnnotationHandler() {
-                    public void handleAnnotation( TypeElement type, 
-                            Element element,AnnotationMirror annotation )
-                            {
-                                methodObservesParameters.add( element );
-                                typesOfObservedMethods.add( type );
-                            }
-                });
-        }
-        catch (InterruptedException e) {
-            LOGGER.warning("Finding annotation "+OBSERVES_ANNOTATION+
-                    " was interrupted"); // NOI18N
-        }
+        final List<ObserverTriple> methodObservesParameters = 
+            findObservesParameters(impl.getHelper());
         
-        Map<Element, TypeMirror> parameterTypesMap = new HashMap<Element, TypeMirror>();
-        for (int i=0; i<methodObservesParameters.size() ; i++) {
-            TypeElement typeElement = typesOfObservedMethods.get(i);
+        Map<Element, TypeMirror> parameterTypesMap = 
+                new HashMap<Element, TypeMirror>();
+        for (ObserverTriple triple : methodObservesParameters ) {
+            ExecutableElement method = triple.getFirst();
+            VariableElement parameter = triple.getSecond();
+            int index = triple.getThird();
+            TypeElement typeElement = impl.getHelper().getCompilationController().
+                getElementUtilities().enclosingTypeElement( method );
             TypeMirror typeMirror = typeElement.asType();
             if ( typeMirror instanceof DeclaredType ){
-                TypeMirror parameterType = impl.getHelper().getCompilationController().
-                    getTypes().asMemberOf((DeclaredType)typeMirror, 
-                            methodObservesParameters.get(i));
-                Element parameterElement = methodObservesParameters.get(i);
-                parameterTypesMap.put(parameterElement, parameterType);
+                ExecutableType methodType = (ExecutableType)impl.getHelper().
+                    getCompilationController().getTypes().asMemberOf(
+                            (DeclaredType)typeMirror, method );
+                List<? extends TypeMirror> parameterTypes = methodType.getParameterTypes();
+                
+                TypeMirror parameterType = parameterTypes.get( index );
+                parameterTypesMap.put(parameter, parameterType);
             }
             
         }
         if ( !hasAny ){
-            filterBindingsByMembers(qualifierAnnotations, parameterTypesMap.keySet(), 
-                    impl, Element.class);
+            Set<Element> elements = parameterTypesMap.keySet();
+            filterQualifiers( qualifierAnnotations , elements, 
+                    impl.getHelper().getCompilationController());
+            filterBindingsByMembers(qualifierAnnotations, elements, impl, 
+                    Element.class);
         }
         
         List<ExecutableElement> result = new ArrayList<ExecutableElement>( 
@@ -156,6 +160,34 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             }
         }
         return result;
+    }
+
+    private void filterQualifiers( List<? extends AnnotationMirror> qualifierAnnotations,
+            Set<Element> elements , CompilationController compilationController )
+    {
+        Set<String> requiredQalifiers = getAnnotationFqns(qualifierAnnotations);
+        
+        for (Iterator<Element>  iterator = elements.iterator(); iterator.hasNext(); ) {
+            Element  element = iterator.next();
+            List<? extends AnnotationMirror> annotationMirrors = 
+                compilationController.getElements().getAllAnnotationMirrors( element );
+            Set<String> availableAnnotations = getAnnotationFqns(annotationMirrors);
+            if ( !availableAnnotations.containsAll( requiredQalifiers )){
+                iterator.remove();
+            }
+        }
+    }
+
+    private Set<String> getAnnotationFqns( List<? extends AnnotationMirror> annotations )
+    {
+        Set<String> annotationFqns = new HashSet<String>();
+        for (AnnotationMirror annotationMirror : annotations) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            Element annotationElement = annotationType.asElement();
+            TypeElement annotation = (TypeElement) annotationElement;
+            annotationFqns.add( annotation.getQualifiedName().toString());
+        }
+        return annotationFqns;
     }
 
     /* (non-Javadoc)
@@ -184,22 +216,21 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             TypeMirror typeMirror = entry.getValue();
             
             Element typeElement = impl.getHelper().
-                getCompilationController().getTypes().asElement(type);
+                getCompilationController().getTypes().asElement( typeMirror );
         
             boolean isGeneric = (typeElement instanceof TypeElement) &&
                 ((TypeElement)typeElement).getTypeParameters().size() != 0;
             
             if ( !isGeneric && impl.getHelper().getCompilationController().
-                    getTypes().isAssignable( typeMirror, type))
+                    getTypes().isAssignable( type, typeMirror))
             {
-                assignable = true;
+                continue;
             }
-            
             
             if ( type instanceof ReferenceType && 
                     typeMirror instanceof ReferenceType)
             {
-                checker.init((ReferenceType)type,  (ReferenceType)typeMirror, impl);
+                checker.init((ReferenceType)typeMirror,  (ReferenceType)type, impl);
                 assignable = checker.check();
             }
             if ( !assignable ){
@@ -208,4 +239,81 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         }
     }
 
+    /*
+     * Unfortunately annotation scanner ( getHelper().getAnnotationScanner() )
+     * cannot be used for finding annotated method parameters. It doesn't
+     * work for them. So this method performs find usages of @Observes annotation
+     * and chooses appropriate elements.   
+     */
+    private List<ObserverTriple> findObservesParameters(AnnotationModelHelper helper )
+    {
+        List<ObserverTriple> result = new LinkedList<ObserverTriple>();
+        CompilationController compilationController = 
+            helper.getCompilationController();
+        TypeElement observesType = compilationController.getElements().getTypeElement(
+                OBSERVES_ANNOTATION);
+        ElementHandle<TypeElement> observesHandle = ElementHandle.create(observesType);
+        final Set<ElementHandle<TypeElement>> elementHandles = compilationController.
+            getClasspathInfo().getClassIndex().getElements(
+                    observesHandle,
+                EnumSet.of(SearchKind.TYPE_REFERENCES),
+                EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
+        for (ElementHandle<TypeElement> elementHandle : elementHandles) {
+            TypeElement resolvedType = elementHandle.resolve( compilationController);
+            
+            List<? extends Element> enclosedElements = resolvedType.
+                getEnclosedElements();
+            List<ExecutableElement> methods = ElementFilter.methodsIn( 
+                    enclosedElements);
+            for (ExecutableElement method : methods) {
+                List<? extends VariableElement> parameters = method.getParameters();
+                int index = 0;
+                for (VariableElement parameter : parameters) {
+                    List<? extends AnnotationMirror> annotationMirrors = 
+                        compilationController.getElements().
+                        getAllAnnotationMirrors( parameter);
+                    if ( helper.hasAnnotation( annotationMirrors, 
+                            OBSERVES_ANNOTATION) ){
+                        result.add( new ObserverTriple( method, parameter, index)  );
+                    }
+                    index++;
+                }
+            }
+        }
+        return result;
+    }
+    
+    private class ObserverTriple extends Triple<ExecutableElement, VariableElement, Integer>{
+        
+        ObserverTriple( ExecutableElement method, VariableElement parameter, 
+                Integer index )
+        {
+            super( method , parameter , index );
+        }
+    }
+    
+    private static class Triple<T,R,S> {
+        Triple( T t , R r , S s){
+            myFirst = t;
+            mySecond = r;
+            myThird = s;
+        }
+        
+        T getFirst(){
+            return myFirst;
+        }
+        
+        R getSecond(){
+            return mySecond;
+        }
+        
+        S getThird(){
+            return myThird;
+        }
+        
+        private T myFirst;
+        private R mySecond;
+        private S myThird;
+    }
+    
 }

@@ -43,6 +43,6 @@ public class MyEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "foobar.MyEntity[id=" + id + "]";
+        return "foobar.MyEntity[ id=" + id + " ]";
     }
 }

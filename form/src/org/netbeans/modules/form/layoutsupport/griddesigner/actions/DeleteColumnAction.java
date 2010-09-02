@@ -85,20 +85,16 @@ public class DeleteColumnAction extends AbstractGridAction {
 
         int[] newColumnBounds = gridInfo.getColumnBounds();
         int[] newRowBounds = gridInfo.getRowBounds();
-        if (newRowBounds.length < originalRowBounds.length) {
-            // rows with the highest indices disappeared
-            // when the last components were deleted from them
-            int[] rowBounds = new int[originalRowBounds.length];
-            System.arraycopy(newRowBounds, 0, rowBounds, 0, newRowBounds.length);
-            for (int i=newRowBounds.length; i<rowBounds.length; i++) {
-                rowBounds[i] = rowBounds[newRowBounds.length-1];
-            }
-            newRowBounds = rowBounds;
+        int[] columnBounds;
+        if (column == originalColumnBounds.length-2) {
+            // The last column deleted
+            columnBounds = newColumnBounds;
+        } else {
+            columnBounds = new int[newColumnBounds.length+1];
+            System.arraycopy(newColumnBounds, 0, columnBounds, 0, column+1);
+            columnBounds[column+1]=columnBounds[column];
+            System.arraycopy(newColumnBounds, column+1, columnBounds, column+2, newColumnBounds.length-column-1);
         }
-        int[] columnBounds = new int[newColumnBounds.length+1];
-        System.arraycopy(newColumnBounds, 0, columnBounds, 0, column+1);
-        columnBounds[column+1]=columnBounds[column];
-        System.arraycopy(newColumnBounds, column+1, columnBounds, column+2, newColumnBounds.length-column-1);
         return new GridBoundsChange(originalColumnBounds, originalRowBounds, columnBounds, newRowBounds);
     }
 

@@ -128,11 +128,11 @@ public class EntityMethodGenerator {
     public MethodTree createToStringMethod(String fqn, List<VariableTree> fields) {
         StringBuilder body = new StringBuilder(30 + fields.size() * 30);
         body.append("{"); // NOI18N
-        body.append("return \"" + fqn + "["); // NOI18N
+        body.append("return \"" + fqn + "[ "); // NOI18N
         for (Iterator<VariableTree> i = fields.iterator(); i.hasNext();) {
             String fieldName = i.next().getName().toString();
             body.append(fieldName + "=\" + " + fieldName + " + \""); //NOI18N
-            body.append(i.hasNext() ? ", " : "]\";"); //NOI18N
+            body.append(i.hasNext() ? ", " : " ]\";"); //NOI18N
         }
         body.append("}"); // NOI18N
         TreeMaker make = copy.getTreeMaker();

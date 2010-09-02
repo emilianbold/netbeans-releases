@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,21 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.source.util;
 
-import java.util.EventListener;
+package org.netbeans.modules.html.validation;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 
 /**
- * This file is originally from Retouche, the Java Support
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible. 
  *
- *
- * @author tom
+ * @author marekfukala
  */
-public interface LowMemoryListener extends EventListener {
+public class ProblemsHandler {
 
-    public void lowMemory (LowMemoryEvent event);
+    private List<ProblemDescription> problems;
+    private boolean finished;
+
+    public void startProblems() {
+        problems = new ArrayList<ProblemDescription>();
+        finished = false;
+    }
+
+    public void endProblems() {
+        finished = true;
+    }
+
+    public void addProblem(ProblemDescription pd) {
+        if(finished) {
+            throw new IllegalStateException("Already finished session"); //NOI18N
+        }
+        problems.add(pd);
+    }
+
+    public List<ProblemDescription> getProblems() {
+        if(!finished) {
+            throw new IllegalStateException("Session not finished yet, probably someone forgot to call endProblems()?!?!"); //NOI18N
+        }
+
+        return problems;
+    }
+
 }

@@ -49,9 +49,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.AbstractListModel;
 import javax.swing.Icon;
@@ -412,6 +414,7 @@ public final class SelectConfigurationPanel extends JPanel {
         List<String> includedFiles = new ArrayList<String>();
         wizardDescriptor.setIncludedFiles(includedFiles);
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
+        Set<String> dep = new HashSet<String>();
         for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
             Configuration conf = it.next();
             includedFiles.addAll(conf.getIncludedFiles());
@@ -432,8 +435,12 @@ public final class SelectConfigurationPanel extends JPanel {
                     count.incrementAndGet();
                 }
             }
+            if (conf.getDependencies() != null) {
+                dep.addAll(conf.getDependencies());
+            }
         }
         wizardDescriptor.setInvokeProvider(false);
+        wizardDescriptor.setDependencies(new ArrayList<String>(dep));
         wizardDescriptor.setConfigurations(projectConfigurations);
         int max = 0;
         String top = "";

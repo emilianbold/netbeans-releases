@@ -1,0 +1,3 @@
+3	-	HTML5 (experimental)	http://s.validator.nu/html5/html5full.rnc http://s.validator.nu/html5/assertions.sch http://c.validator.nu/all/
+-1	-	XHTML5 (experimental)	http://s.validator.nu/html5/xhtml5full-xhtml.rnc http://s.validator.nu/html5/assertions.sch http://c.validator.nu/all/
+7	http://www.w3.org/1999/xhtml	XHTML5+ARIA, SVG 1.1 plus MathML 2.0 (experimental)	http://s.validator.nu/xhtml5-aria-rdf-svg-mathml.rnc http://s.validator.nu/html5/assertions.sch http://c.validator.nu/all/

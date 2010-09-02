@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,25 +34,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.csl.source.util;
+package org.netbeans.html.api.validation;
+
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.openide.filesystems.FileObject;
 
 /**
- * This file is originally from Retouche, the Java Support
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible. 
  *
- *
- * @author tom
+ * @author marekfukala
  */
-public interface LowMemoryNotifierMBean {
+public final class ValidationContext {
 
-    public static final String OBJECT_NAME = "org.netbeans.modules.csl.source:type=LowMemoryNotifier";     //NOI18N
+    private String source;
+    private FileObject file;
+    private HtmlVersion version;
 
-    public float getMemoryTresholdLimit ();
+    public ValidationContext(String source, HtmlVersion version, FileObject file) {
+        this.source = source;
+        this.file = file;
+        this.version = version;
+    }
 
-    public void setMemoryTresholdLimit (float value);
+    public FileObject getFile() {
+        return file;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public HtmlVersion getVersion() {
+        return version;
+    }
 
 }

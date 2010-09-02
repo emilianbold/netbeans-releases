@@ -171,7 +171,6 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         codebaseTextField = new javax.swing.JTextField();
         offlineCheckBox = new javax.swing.JCheckBox();
         panelDescLabel = new javax.swing.JLabel();
-        extResButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         signingInfolabel = new javax.swing.JLabel();
         signingCustomizeButton = new javax.swing.JButton();
@@ -184,6 +183,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         appletParamsButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         warningArea = new javax.swing.JTextArea();
+        jPanel2 = new javax.swing.JPanel();
+        extResButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -304,20 +306,6 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         add(panelDescLabel, gridBagConstraints);
         panelDescLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "ACSN_WebStartTitle_Label")); // NOI18N
         panelDescLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "ACSD_WebStartTitle_Label")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(extResButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.text")); // NOI18N
-        extResButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                extResButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(extResButton, gridBagConstraints);
-        extResButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -459,6 +447,32 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(warningArea, gridBagConstraints);
 
+        jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
+
+        org.openide.awt.Mnemonics.setLocalizedText(extResButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.text")); // NOI18N
+        extResButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                extResButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(extResButton);
+        extResButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.AccessibleContext.accessibleDescription")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_ResourcesButton")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageResources(evt);
+            }
+        });
+        jPanel2.add(jButton1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        add(jPanel2, gridBagConstraints);
+
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -549,6 +563,24 @@ private void signingCustomizeButtonActionPerformed(java.awt.event.ActionEvent ev
         refreshSigningLabel();
     }
 }//GEN-LAST:event_signingCustomizeButtonActionPerformed
+
+private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageResources
+
+    final ResourcesCustomizer rc = new ResourcesCustomizer(
+            jwsProps.runtimeCP,
+            jwsProps.lazyJars);
+    final DialogDescriptor dd = new DialogDescriptor(rc,
+            NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_ManageResources"),
+            true,
+            DialogDescriptor.OK_CANCEL_OPTION,
+            DialogDescriptor.OK_OPTION,
+            null);
+    if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+        jwsProps.lazyJars = rc.getResources();
+        jwsProps.lazyJarsChanged = true;
+    }
+    
+}//GEN-LAST:event_manageResources
 
     private void setEnabledAppletControls(boolean b) {
         appletClassLabel.setEnabled(b);
@@ -654,8 +686,10 @@ private void signingCustomizeButtonActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JButton extResButton;
     private javax.swing.JLabel iconLabel;
     private javax.swing.JTextField iconTextField;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox offlineCheckBox;
     private javax.swing.JLabel panelDescLabel;

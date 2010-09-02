@@ -60,8 +60,8 @@ public class DwarfMacinfoTable {
     private long baseSourceTableOffset = -1;
     private long fileSourceTableOffset = -1;
     private final DwarfMacroInfoSection section;
-    private final ArrayList<DwarfMacinfoEntry> baseSourceTable = new ArrayList<DwarfMacinfoEntry>();
-    private final ArrayList<DwarfMacinfoEntry> fileSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    private final List<DwarfMacinfoEntry> baseSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    private final List<DwarfMacinfoEntry> fileSourceTable = new ArrayList<DwarfMacinfoEntry>();
     private List<Integer> commandIncludedFilesTable;
     private boolean baseSourceTableRead;
     private boolean fileSourceTableRead;
@@ -82,7 +82,7 @@ public class DwarfMacinfoTable {
         }
     }
     
-    private ArrayList<DwarfMacinfoEntry> getBaseSourceTable() {
+    private List<DwarfMacinfoEntry> getBaseSourceTable() {
         
         if (baseSourceTableRead) {
             return baseSourceTable;
@@ -97,7 +97,7 @@ public class DwarfMacinfoTable {
         return baseSourceTable;
     }
     
-    private ArrayList<DwarfMacinfoEntry> getFileSourceTable() {
+    private List<DwarfMacinfoEntry> getFileSourceTable() {
         if (fileSourceTableRead) {
             return fileSourceTable;
         }
@@ -130,8 +130,8 @@ public class DwarfMacinfoTable {
         return commandIncludedFilesTable;
     }
 
-    public ArrayList<DwarfMacinfoEntry> getCommandLineMarcos() {
-        ArrayList<DwarfMacinfoEntry> entries = getBaseSourceTable();
+    public List<DwarfMacinfoEntry> getCommandLineMarcos() {
+        List<DwarfMacinfoEntry> entries = getBaseSourceTable();
         int size = entries.size();
         
         if (size == 0) {
