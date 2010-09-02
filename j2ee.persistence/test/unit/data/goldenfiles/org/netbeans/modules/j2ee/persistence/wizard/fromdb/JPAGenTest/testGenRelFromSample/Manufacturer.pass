@@ -167,6 +167,6 @@ public class Manufacturer implements Serializable {
 
     @Override
     public String toString() {
-        return "generated.Manufacturer[manufacturerId=" + manufacturerId + "]";
+        return "generated.Manufacturer[ manufacturerId=" + manufacturerId + " ]";
     }
 }
