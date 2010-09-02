@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 
 /**
@@ -59,12 +62,25 @@ class EjbJarJPAModuleInfo implements JPAModuleInfo {
         this.project = project;
     }
     
+    @Override
     public ModuleType getType() {
         return JPAModuleInfo.ModuleType.EJB;
     }
 
+    @Override
     public String getVersion() {
         return project.getEjbModule().getModuleVersion();
+    }
+
+    @Override
+    public Boolean isJPAVersionSupported(String version) {
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+
+        if (platform == null){
+            return null;
+        }
+        return platform.isToolSupported(JPAModuleInfo.JPACHECKSUPPORTED) ? platform.isToolSupported(JPAModuleInfo.JPAVERSIONPREFIX+version) : null;//NOI18N
     }
 
 }

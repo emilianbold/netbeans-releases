@@ -394,7 +394,7 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(6190, bodyEnd.startOffset());
         assertEquals(6197, bodyEnd.endOffset());
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
     }
 
     public void test_A_TagProblem() throws ParseException {
@@ -420,7 +420,7 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(root);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
     }
 
     public void testParseTreeAfterOpenedTag() throws ParseException {
@@ -436,6 +436,28 @@ public class Html5ParserTest extends NbTestCase {
         AstNode root = result.root();
 
         assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testBodyTagHasNoParent() throws ParseException {
+        String code = "<!doctype html> "
+                + "<html> "
+                + "<body >"
+                + "      "
+                + "<       "
+                + "</body>"
+                + "</html>";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNode body = AstNodeUtils.query(result.root(), "html/body");
+        assertNotNull(body);
+
+        assertNotNull(body.parent());
 
         AstNodeUtils.dumpTree(root);
     }

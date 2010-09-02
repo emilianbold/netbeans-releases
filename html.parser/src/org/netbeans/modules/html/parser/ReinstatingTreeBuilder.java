@@ -146,7 +146,7 @@ public class ReinstatingTreeBuilder extends TreeBuilder<AstNode>{
 
     @Override
     protected void detachFromParent(AstNode t) throws SAXException {
-        t.detachFromParent();
+        //no-op
     }
 
     @Override
