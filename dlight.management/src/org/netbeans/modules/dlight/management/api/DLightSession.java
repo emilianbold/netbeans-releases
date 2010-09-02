@@ -121,7 +121,6 @@ public final class DLightSession implements
     private SessionState state;
     private final int sessionID;
     private String description = null;
-    private List<ExecutionContextListener> contextListeners;
     private boolean isActive;
     private final String name;
     private boolean closeOnExit = false;
@@ -945,30 +944,15 @@ public final class DLightSession implements
 
     // Proxy method to contexts
     public void addExecutionContextListener(ExecutionContextListener listener) {
-        if (contextListeners == null) {
-            contextListeners = new ArrayList<ExecutionContextListener>();
+        for (ExecutionContext c : contexts) {
+            c.addListener(listener);
         }
-
-        if (!contextListeners.contains(listener)) {
-            contextListeners.add(listener);
-        }
-
-        updateContextListeners();
     }
 
     // Proxy method to contexts
     public void removeExecutionContextListener(ExecutionContextListener listener) {
-        if (contextListeners == null) {
-            return;
-        }
-
-        contextListeners.remove(listener);
-        updateContextListeners();
-    }
-
-    private void updateContextListeners() {
         for (ExecutionContext c : contexts) {
-            c.setListeners(contextListeners);
+            c.removeListener(listener);
         }
     }
 
