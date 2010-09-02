@@ -84,7 +84,7 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         List<Provider> result = new ArrayList<Provider>();
         
         addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER, "toplinkPersistenceProviderIsDefault", platform, result);// NOI18N
+        addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER1_0, "toplinkPersistenceProviderIsDefault", platform, result);// NOI18N
         addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.DATANUCLEUS_PROVIDER, "dataNucleusPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault", platform, result); // NOI18N

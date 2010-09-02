@@ -114,7 +114,7 @@ public class ProviderUtilTest extends NbTestCase {
     }
     
     public void testChangeProvider1(){
-        Provider originalProvider = ProviderUtil.TOPLINK_PROVIDER;
+        Provider originalProvider = ProviderUtil.TOPLINK_PROVIDER1_0;
         ProviderUtil.setProvider(persistenceUnit1, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(originalProvider.getProviderClass(), persistenceUnit1.getProvider());
         
@@ -210,7 +210,7 @@ public class ProviderUtilTest extends NbTestCase {
     }
 
     public void testChangeProvider2(){
-        Provider originalProvider = ProviderUtil.TOPLINK_PROVIDER;
+        Provider originalProvider = ProviderUtil.TOPLINK_PROVIDER1_0;
         ProviderUtil.setProvider(persistenceUnit2, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(originalProvider.getProviderClass(), persistenceUnit2.getProvider());
 
