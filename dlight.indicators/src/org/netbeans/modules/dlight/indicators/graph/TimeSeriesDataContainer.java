@@ -58,38 +58,39 @@ public final class TimeSeriesDataContainer {
 
     private final long bucketSize;
     private final Aggregation aggr;
-    private final int arraySize;
-    private final ArrayList<Bucket> list;
+    private final int numberOfSeries;
+    private final ArrayList<Bucket> buckets;
     private final boolean lastNonNull;
     private TimeSeriesPlot plot;
 
     /**
      * Creates new instance.
      *
-     * @param bucketSize  size of aggregation bucket
+     * @param bucketSize size of aggregation bucket (in nanoseconds)
+     *        all events that occur within a same 'bucket' are aggregated
      * @param aggr  aggregation used in each bucket
-     * @param arraySize  size of float arrays stored in this container
+     * @param numberOfSeries  amount of data series stored in this container
      * @param lastNonNull  if <code>true</code> and current bucket is null,
      *      {@link #get(int)} will return data from previous non-null bucket;
      *      if if <code>false</code>, {@link #get(int)} will return zero data
      * @throws IllegalArgumentException  if any of the sizes is not positive
      * @throws NullPointerException  if aggr is null
      */
-    public TimeSeriesDataContainer(long bucketSize, Aggregation aggr, int arraySize, boolean lastNonNull) {
+    public TimeSeriesDataContainer(long bucketSize, Aggregation aggr, int numberOfSeries, boolean lastNonNull) {
         if (bucketSize <= 0) {
             throw new IllegalArgumentException("bucketSize must be positive"); // NOI18N
         }
         if (aggr == null) {
             throw new NullPointerException("aggregation can't be null"); // NOI18N
         }
-        if (arraySize <= 0) {
+        if (numberOfSeries <= 0) {
             throw new IllegalArgumentException("arraySize must be positive"); // NOI18N
         }
 
         this.bucketSize = bucketSize;
         this.aggr = aggr;
-        this.arraySize = arraySize;
-        this.list = new ArrayList<Bucket>();
+        this.numberOfSeries = numberOfSeries;
+        this.buckets = new ArrayList<Bucket>();
         this.lastNonNull = lastNonNull;
     }
 
@@ -106,14 +107,15 @@ public final class TimeSeriesDataContainer {
         if (timestamp < 0) {
             throw new IllegalArgumentException("timestamp can't be negative"); // NOI18N
         }
-        if (newData.length != arraySize) {
+        if (newData.length != numberOfSeries) {
             throw new IllegalArgumentException("Wrong data size"); // NOI18N
         }
         int bucketId = (int) Math.ceil((double) timestamp / (double) bucketSize);
         grow(bucketId + 1);
-        Bucket bucket = list.get(bucketId);
+        Bucket bucket = buckets.get(bucketId);
         if (bucket == null) {
-            list.set(bucketId, bucket = new Bucket(aggr, newData));
+            bucket = new Bucket(aggr, newData);
+            buckets.set(bucketId, bucket);
         } else {
             bucket.put(newData);
         }
@@ -135,18 +137,18 @@ public final class TimeSeriesDataContainer {
      * @throws IllegalArgumentException
      */
     public synchronized float[] get(int bucketId) {
-        if (0 <= bucketId && bucketId < list.size()) {
-            Bucket bucket = list.get(bucketId);
+        if (0 <= bucketId && bucketId < buckets.size()) {
+            Bucket bucket = buckets.get(bucketId);
             if (bucket == null) {
                 if (lastNonNull) {
                     for (int i = bucketId - 1; 0 <= i; --i) {
-                        Bucket prevBucket = list.get(i);
+                        Bucket prevBucket = buckets.get(i);
                         if (prevBucket != null) {
                             return prevBucket.get();
                         }
                     }
                 }
-                return new float[arraySize];
+                return new float[numberOfSeries];
             } else {
                 return bucket.get();
             }
@@ -161,9 +163,8 @@ public final class TimeSeriesDataContainer {
      * @param timestamp
      */
     public synchronized void grow(int size) {
-        if (list.size() < size) {
-            list.ensureCapacity(size);
-            list.addAll(Collections.<Bucket>nCopies(size - list.size(), null));
+        if (buckets.size() < size) {
+            buckets.addAll(Collections.<Bucket>nCopies(size - buckets.size(), null));
             if (plot != null) {
                 plot.getViewportModel().setLimits(new Range<Long>(0L, 1000000000L * size));
             }
@@ -176,7 +177,7 @@ public final class TimeSeriesDataContainer {
      * @return size of this container
      */
     public int size() {
-        return list.size();
+        return buckets.size();
     }
 
     public void setTimeSeriesPlot(TimeSeriesPlot plot) {
@@ -211,6 +212,16 @@ public final class TimeSeriesDataContainer {
                 case AVERAGE:
                     for (int i = 0; i < data.length; ++i) {
                         this.data[i] = (count * this.data[i] + data[i]) / ++count;
+                    }
+                    break;
+                case MAX:
+                    for (int i = 0; i < data.length; ++i) {
+                        this.data[i] = Math.max(this.data[i], data[i]);
+                    }
+                    break;
+                case MIN:
+                    for (int i = 0; i < data.length; ++i) {
+                        this.data[i] = Math.min(this.data[i], data[i]);
                     }
                     break;
             }

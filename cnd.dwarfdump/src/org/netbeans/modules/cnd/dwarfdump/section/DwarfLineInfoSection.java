@@ -98,12 +98,12 @@ public class DwarfLineInfoSection extends ElfSection {
         stmt_list.total_length = reader.readDWlen();
         stmt_list.version = reader.readShort();
         stmt_list.prologue_length = reader.read3264();
-        stmt_list.minimum_instruction_length = reader.readByte();
-        stmt_list.default_is_stmt = reader.readByte();
+        stmt_list.minimum_instruction_length = 0xFF & reader.readByte();
+        stmt_list.default_is_stmt = 0xFF & reader.readByte();
         stmt_list.line_base = reader.readByte();
-        stmt_list.line_range = reader.readByte();
-        stmt_list.opcode_base = reader.readByte();
-        
+        stmt_list.line_range = 0xFF & reader.readByte();
+        stmt_list.opcode_base = 0xFF & reader.readByte();
+
         stmt_list.standard_opcode_lengths = new long[stmt_list.opcode_base - 1];
         
         for (int i = 0; i < stmt_list.opcode_base - 1; i++) {

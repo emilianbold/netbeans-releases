@@ -82,6 +82,10 @@ public class FindNameTest extends NbTestCase {
         return 500000;
     }
 
+    public void testWelcomeGNU_Sparc() {
+        baseTest(0x10, "mutex_threadfunc", "welcome_3", true, 22);
+    }
+
     public void testFftImageTransformer() {
         baseTest(0x381, "FastFourierTransform::Transform", "fftimagetransformer", true, 84);
     }
@@ -235,7 +239,8 @@ public class FindNameTest extends NbTestCase {
             Dwarf2NameFinder source = getDwarfSource(executable);
             source.lookup(base + shift);
             System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
-            assertEquals(number.line, source.getLineNumber());
+            //Stop support Dwarf Finder
+            //assertEquals(number.line, source.getLineNumber());
         }
         assertNotNull(fileInfo);
         assertNotNull(number);
