@@ -53,6 +53,8 @@ import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
@@ -76,6 +78,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         this.project = project;
     }
     
+    @Override
     public ModuleType getType() {
         EjbModuleProviderImpl im = project.getLookup().lookup(EjbModuleProviderImpl.class);
         if (im != null) {
@@ -88,6 +91,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         throw new IllegalStateException("Wrong placement of JPAModuleInfo in maven project " + project.getProjectDirectory());
     }
 
+    @Override
     public String getVersion() {
         EjbModuleProviderImpl im = project.getLookup().lookup(EjbModuleProviderImpl.class);
         if (im != null) {
@@ -100,12 +104,24 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         throw new IllegalStateException("Wrong placement of JPAModuleInfo in maven project " + project.getProjectDirectory());
     }
 
+    @Override
+    public Boolean isJPAVersionSupported(String version) {
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
 
+        if (platform == null){
+            return null;
+        }
+        return platform.isToolSupported(JPAModuleInfo.JPACHECKSUPPORTED) ? platform.isToolSupported("jpa"+version) : null;//NOI18N
+    }
+
+    @Override
     public void connect(JComboBox comboBox) {
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
         DatasourceUIHelper.connect(prvd, comboBox);
     }
 
+    @Override
     public List<JPADataSource> getDataSources() {
 
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
@@ -128,6 +144,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         return result;
     }
 
+    @Override
     public JPADataSource toJPADataSource(Object dataSource) {
         if (dataSource instanceof JPADataSource){
             return (JPADataSource) dataSource;
@@ -154,26 +171,32 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
             this.delegate = datasource;
         }
 
+        @Override
         public String getJndiName() {
             return delegate.getJndiName();
         }
 
+        @Override
         public String getUrl() {
             return delegate.getUrl();
         }
 
+        @Override
         public String getUsername() {
             return delegate.getUsername();
         }
 
+        @Override
         public String getPassword() {
             return delegate.getPassword();
         }
 
+        @Override
         public String getDriverClassName() {
             return delegate.getDriverClassName();
         }
 
+        @Override
         public String getDisplayName() {
             return delegate.getDisplayName();
         }
