@@ -62,7 +62,7 @@ public class ValidationTransactionTest extends NbTestCase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new ValidationTransactionTest("testErrorneousSources"));
+        suite.addTest(new ValidationTransactionTest("testMathML"));
         return suite;
     }
 
@@ -101,14 +101,34 @@ public class ValidationTransactionTest extends NbTestCase {
                 + "</html>    ", false);
     }
 
+    public void testMathML() throws SAXException {
+        validate("<!doctype html> "
+                + "<html>    "
+                + "<title>dd</title>"
+                + "<body>"
+                + "  <math>"
+                + "     <mi>x</mi>"
+                + "     <mo>=</mo>"
+                + "  </math>"
+                + "</body>"
+                + "</html>    ", true);
+    }
+
     private void validate(String code, boolean expectedPass) throws SAXException {
         System.out.print("Validating code " + code.length() + " chars long...");
         ValidationTransaction vt = ValidationTransaction.getInstance();
         vt.validateCode(code);
-        assertEquals(expectedPass, vt.isSuccess());
 
         Collection<ProblemDescription> problems = vt.getFoundProblems();
 
+        if(expectedPass && !problems.isEmpty()) {
+            System.err.println("There are some unexpected problems:");
+            for(ProblemDescription pd : problems) {
+                System.err.println(pd);
+            }
+        }
+
+        assertEquals(expectedPass, vt.isSuccess());
         assertEquals(expectedPass, problems.isEmpty());
 
         System.out.println("done in " + vt.getValidationTime() + " ms with " + problems.size() + " problems.");

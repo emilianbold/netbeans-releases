@@ -55,55 +55,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesPopup;
 import org.netbeans.modules.web.beans.navigation.PopupUtil;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
-import com.sun.source.util.TreePath;
 
 
 /**
@@ -168,7 +148,9 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
          *  qualified name which contains variable element. 
          */
         final Object[] variableAtCaret = new Object[2];
-        if ( !getVariableElementAtDot( component, variableAtCaret)){
+        if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
+                variableAtCaret))
+        {
             return;
         }
         
@@ -197,26 +179,7 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
      */
     @Override
     public boolean isEnabled() {
-        if (EditorRegistry.lastFocusedComponent() == null
-                || !EditorRegistry.lastFocusedComponent().isShowing())
-        {
-            return false;
-        }
-        if ( OpenProjects.getDefault().getOpenProjects().length == 0 ){
-            return false;
-        }
-        final FileObject fileObject = NbEditorUtilities.getFileObject( 
-                EditorRegistry.lastFocusedComponent().getDocument());
-        if ( fileObject == null ){
-            return false;
-        }
-        WebModule webModule = WebModule.getWebModule(fileObject);
-        if ( webModule == null ){
-            return false;
-        }
-        Profile profile = webModule.getJ2eeProfile();
-        return profile.equals(Profile.JAVA_EE_6_FULL) || 
-            profile.equals(Profile.JAVA_EE_6_WEB);
+        return WebBeansActionHelper.isEnabled();
     }
     
     
@@ -238,7 +201,7 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
             final MetadataModel<WebBeansModel> metaModel,
             final Object[] variablePath )
     {
-        VariableElement var = findVariable(model, variablePath);
+        VariableElement var = WebBeansActionHelper.findVariable(model, variablePath);
         if (var == null) {
             return;
         }
@@ -302,111 +265,6 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
         }
     }
 
-
-    private VariableElement findVariable( final WebBeansModel model,
-            final Object[] variablePath )
-    {
-        if ( variablePath[0] == null ){
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    GoToInjectableAtCaretAction.class, 
-                    "LBL_VariableNotFound", variablePath[1]));
-            return null ;
-        }
-        Element element = ((ElementHandle<?>)variablePath[0]).resolve(
-                model.getCompilationController());
-        if ( element == null ){
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    GoToInjectableAtCaretAction.class, 
-                    "LBL_VariableNotFound", variablePath[1]));
-            return null ;
-        }
-        VariableElement var = null;
-        ExecutableElement method = null;
-        if ( element.getKind() == ElementKind.FIELD){
-            var = (VariableElement)element;
-        }
-        else {
-            method = (ExecutableElement)element;
-            List<? extends VariableElement> parameters = method.getParameters();
-            for (VariableElement variableElement : parameters) {
-                if (variableElement.getSimpleName().contentEquals(
-                        variablePath[1].toString())) 
-                {
-                    var = variableElement;
-                }
-            }
-        }
-        
-        if (var == null) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    GoToInjectableAtCaretAction.class, 
-                    "LBL_VariableNotFound", variablePath[1]));
-        }
-        return var;
-    }
-
-    /**
-     * Compilation controller from metamodel could not be used for getting 
-     * TreePath via dot because it is not based on one FileObject ( Document ).
-     * So this method is required for searching Element at dot.
-     * If appropriate element is found it's name is placed into list 
-     * along with name of containing type.
-     * Resulted element could not be used in metamodel for injectable
-     * access. I believe this is because element was gotten via other Compilation
-     * controller so it is from other model.
-     * As result this trick is used.  
-     */
-    private boolean getVariableElementAtDot( final JTextComponent component,
-            final Object[] variable ) 
-    {
-        JavaSource javaSource = JavaSource.forDocument(component.getDocument());
-        if ( javaSource == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return false;
-        }
-        try {
-            javaSource.runUserActionTask(  new Task<CompilationController>(){
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
-                    int dot = component.getCaret().getDot();
-                    TreePath tp = controller.getTreeUtilities()
-                        .pathFor(dot);
-                    Element element = controller.getTrees().getElement(tp );
-                    if ( element == null ){
-                        StatusDisplayer.getDefault().setStatusText(
-                                NbBundle.getMessage(
-                                GoToInjectableAtCaretAction.class, 
-                                "LBL_ElementNotFound"));
-                        return;
-                    }
-                    if ( !( element instanceof VariableElement) ){
-                        StatusDisplayer.getDefault().setStatusText(
-                                NbBundle.getMessage(
-                                GoToInjectableAtCaretAction.class, 
-                                "LBL_NotVariableElement"));
-                        return;
-                    }
-                    else {
-                        if ( element.getKind() == ElementKind.FIELD ){
-                            ElementHandle<VariableElement> handle = 
-                                ElementHandle.create((VariableElement)element);
-                            variable[0] = handle;
-                            variable[1] = element.getSimpleName().toString();
-                        }
-                        else {
-                            setVariablePath(variable, controller, element);
-                        }
-                    }
-                }
-            }, true );
-        }
-        catch(IOException e ){
-            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
-        }
-        return variable[1] !=null ;
-    }
-    
     private void showPopup( Result result , CompilationController controller, 
             MetadataModel<WebBeansModel> model ,JTextComponent target ) 
     {
@@ -450,18 +308,4 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
             Exceptions.printStackTrace(ex);
         }
     }
-
-
-    private void setVariablePath( Object[] variableAtCaret,
-            CompilationController controller, Element element )
-    {
-        Element parent = element.getEnclosingElement();
-        if ( parent instanceof ExecutableElement ){
-            ElementHandle<ExecutableElement> handle = ElementHandle.create( 
-                    (ExecutableElement)parent ) ;
-            variableAtCaret[0] = handle;
-            variableAtCaret[1] = element.getSimpleName().toString();
-        }
-    }
-
 }

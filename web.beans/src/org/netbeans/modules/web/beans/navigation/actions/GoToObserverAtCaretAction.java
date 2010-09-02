@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,68 +42,51 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.MetaModelSupport;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
-import org.netbeans.modules.web.beans.navigation.InjectablesPanel;
-import org.netbeans.modules.web.beans.navigation.ResizablePopup;
+import org.netbeans.modules.web.beans.navigation.InjectablesPopup;
+import org.netbeans.modules.web.beans.navigation.PopupUtil;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
 
 /**
  * @author ads
  *
  */
-public final class InspectInjectablesAtCaretAction extends BaseAction {
+public class GoToObserverAtCaretAction extends BaseAction {
 
-    private static final long serialVersionUID = 1857528107859448216L;
-    
-    private static final String INSPECT_INJACTABLES_AT_CARET =
-        "inspect-injactables-at-caret";                     // NOI18N
-    
-    private static final String INSPECT_INJACTABLES_AT_CARET_POPUP =
-        "inspect-injactables-at-caret-popup";               // NOI18N
-
-    public InspectInjectablesAtCaretAction() {
-        super(NbBundle.getMessage(InspectInjectablesAtCaretAction.class, 
-                INSPECT_INJACTABLES_AT_CARET), 0);
-        
-        putValue(ACTION_COMMAND_KEY, INSPECT_INJACTABLES_AT_CARET);
-        putValue(SHORT_DESCRIPTION, getValue(NAME));
-        putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
-        putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
-                InspectInjectablesAtCaretAction.class,
-                INSPECT_INJACTABLES_AT_CARET_POPUP));
-
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N*/
-    }
-
+    private static final long serialVersionUID = -4453813780446077681L;
 
     /* (non-Javadoc)
      * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
@@ -148,8 +130,8 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
             metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
 
                 public Void run( WebBeansModel model ) throws Exception {
-                    inspectInjectables(component, fileObject, 
-                            model , metaModel, variableAtCaret );
+                    goToObservers( model , metaModel , variableAtCaret ,
+                            component );
                     return null;
                 }
             });
@@ -164,6 +146,63 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         }
     }
     
+    private void goToObservers( WebBeansModel model, 
+            final MetadataModel<WebBeansModel> metaModel, Object[] variablePath, 
+            final JTextComponent component ) 
+    {
+        VariableElement var = WebBeansActionHelper.findVariable(model,
+                variablePath);
+        if (var == null) {
+            return;
+        }
+        if (!model.isEventInjectionPoint(var)) {
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
+                            "LBL_NotEventInjectionPoint"), // NOI18N
+                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+            return;
+        }
+        final List<ExecutableElement> observers = model.getObservers( var , null );
+        if ( observers.size() == 0 ){
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
+                            "LBL_ObserversNotFound"), // NOI18N
+                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+            return;
+        }
+        else if ( observers.size() == 1 ){
+            ExecutableElement method = observers.get( 0 );
+            if ( method == null ){
+                return;
+            }
+            final ElementHandle<ExecutableElement> handle = ElementHandle
+                .create(method);
+            final ClasspathInfo classpathInfo = model
+                .getCompilationController().getClasspathInfo();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    ElementOpen.open(classpathInfo, handle);
+                }
+            });
+        }
+        else {
+            final CompilationController controller = model
+                .getCompilationController();
+            if (SwingUtilities.isEventDispatchThread()) {
+                showPopup(observers, controller, metaModel, component);
+            }
+            else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        showPopup(observers, controller, metaModel, component);
+                    }
+                });
+            }
+        }
+    }
+
     /* (non-Javadoc)
      * @see javax.swing.AbstractAction#isEnabled()
      */
@@ -171,7 +210,6 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
     public boolean isEnabled() {
         return WebBeansActionHelper.isEnabled();
     }
-    
     
     /* (non-Javadoc)
      * @see org.netbeans.editor.BaseAction#asynchonous()
@@ -181,76 +219,30 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         return true;
     }
     
-    /**
-     * Variable element is resolved based on containing type element 
-     * qualified name and simple name of variable itself.
-     * Model methods are used further for injectable resolution.   
-     */
-    private void inspectInjectables( final JTextComponent component,
-            final FileObject fileObject, final WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel,
-            final Object[] variablePath )
+    private void showPopup( List<ExecutableElement> methods ,
+            CompilationController controller, 
+            MetadataModel<WebBeansModel> model ,JTextComponent target ) 
     {
-        VariableElement var = WebBeansActionHelper.findVariable(model, variablePath);
-        if (var == null) {
-            return;
+        List<ElementHandle<Element>> handles  = 
+            new ArrayList<ElementHandle<Element>>( methods.size()); 
+        for (ExecutableElement method : methods) {
+            handles.add( ElementHandle.<Element>create( method ));
         }
-        try {
-            if (!model.isInjectionPoint(var)) {
-                StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(GoToInjectableAtCaretAction.class,
-                                "LBL_NotInjectionPoint"), // NOI18N
-                        StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                return;
-            }
-        }
-        catch (InjectionPointDefinitionError e) {
-            StatusDisplayer.getDefault().setStatusText(e.getMessage(),
-                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-        }
-        final Result result = model.getInjectable(var, null);
-        if (result == null) {
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
-                            "LBL_InjectableNotFound"), // NOI18N
-                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-            return;
-        }
-        if (result instanceof Result.Error) {
-            StatusDisplayer.getDefault().setStatusText(
-                    ((Result.Error) result).getMessage(),
-                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-        }
-        if (result.getKind() == Result.ResultKind.DEFINITION_ERROR) {
-            return;
-        }
-        final CompilationController controller = model
-                .getCompilationController();
-        final List<AnnotationMirror> bindings = model.getQualifiers(var);
-        if (SwingUtilities.isEventDispatchThread()) {
-            showDialog(result, bindings, controller, metaModel);
-        }
-        else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    showDialog(result, bindings, controller, metaModel);
-                }
-            });
-        }
-    }
-
-    private void showDialog( Result result , List<AnnotationMirror> bindings , 
-            CompilationController controller, MetadataModel<WebBeansModel> model ) 
-    {
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, "LBL_WaitNode"));
-        JDialog dialog = ResizablePopup.getDialog();
-        String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
-                "TITLE_Injectables" , result.getVariable().getSimpleName().toString() );
-        dialog.setTitle( title );
-        dialog.setContentPane( new InjectablesPanel(result, bindings, 
-                controller , model));
-        dialog.setVisible( true );
-    }
+        try {
+            Rectangle rectangle = target.modelToView(target.getCaret().getDot());
+            Point point = new Point(rectangle.x, rectangle.y + rectangle.height);
+            SwingUtilities.convertPointToScreen(point, target);
 
+            String title = NbBundle.getMessage(
+                    GoToInjectableAtCaretAction.class, "LBL_ChooseObserver");
+            PopupUtil.showPopup(new InjectablesPopup(title, handles, controller), title,
+                    point.x, point.y);
+
+        }
+        catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }
