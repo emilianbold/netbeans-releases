@@ -48,6 +48,7 @@ import java.awt.Graphics;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -247,7 +248,7 @@ abstract public class CsmCompletionQuery {
             // find last separator position
             final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
-            final CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
+            final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
             if(etp instanceof CsmExpandedTokenProcessor) {
                 tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
             }
@@ -687,19 +688,22 @@ abstract public class CsmCompletionQuery {
         if (doc == null) {
             return false;
         }
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, false);
+        TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, false);
         if (cppTokenSequence == null) {
             return false;
         }
         boolean inIncludeDirective = false;
         if (cppTokenSequence.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
             @SuppressWarnings("unchecked")
-            TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) cppTokenSequence.embedded();
+            TokenSequence<TokenId> embedded = (TokenSequence<TokenId>)cppTokenSequence.embedded();
             if (CndTokenUtilities.moveToPreprocKeyword(embedded)) {
-                switch (embedded.token().id()) {
-                    case PREPROCESSOR_INCLUDE:
-                    case PREPROCESSOR_INCLUDE_NEXT:
-                        inIncludeDirective = true;
+                final TokenId id = embedded.token().id();
+                if(id instanceof CppTokenId) {
+                    switch ((CppTokenId)id) {
+                        case PREPROCESSOR_INCLUDE:
+                        case PREPROCESSOR_INCLUDE_NEXT:
+                            inIncludeDirective = true;
+                    }
                 }
             }
         }

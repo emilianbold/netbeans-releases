@@ -38,6 +38,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
@@ -260,36 +261,42 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             if (doc != null) {
                 doc.readLock();
                 try {
-                    TokenItem<CppTokenId> tok = CndTokenUtilities.getTokenCheckPrev(doc, caretOffset);
+                    TokenItem<TokenId> tok = CndTokenUtilities.getTokenCheckPrev(doc, caretOffset);
                     if (tok != null) {
-                        switch (tok.id()) {
-                            case PREPROCESSOR_SYS_INCLUDE:
-                                usrInclude = Boolean.FALSE;
-                                queryAnchorOffset = tok.offset();
-                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                                break;
-                            case PREPROCESSOR_USER_INCLUDE:
-                                usrInclude = Boolean.TRUE;
-                                queryAnchorOffset = tok.offset();
-                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                                break;
-                            case PREPROCESSOR_IDENTIFIER:
-                                usrInclude = Boolean.TRUE;
-                                queryAnchorOffset = tok.offset();
-                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                                break;
+                        TokenId id = tok.id();
+                        if(id instanceof CppTokenId) {
+                            switch ((CppTokenId)id) {
+                                case PREPROCESSOR_SYS_INCLUDE:
+                                    usrInclude = Boolean.FALSE;
+                                    queryAnchorOffset = tok.offset();
+                                    filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                    break;
+                                case PREPROCESSOR_USER_INCLUDE:
+                                    usrInclude = Boolean.TRUE;
+                                    queryAnchorOffset = tok.offset();
+                                    filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                    break;
+                                case PREPROCESSOR_IDENTIFIER:
+                                    usrInclude = Boolean.TRUE;
+                                    queryAnchorOffset = tok.offset();
+                                    filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                    break;
+                            }
                         }
                         if (queryAnchorOffset < 0 && CppTokenId.WHITESPACE_CATEGORY.equals(tok.id().primaryCategory())) { // not inside "" or <>
                             tok = CndTokenUtilities.getFirstNonWhiteBwd(doc, caretOffset);
                             if (tok != null) {
-                                switch (tok.id()) {
-                                    case PREPROCESSOR_INCLUDE:
-                                    case PREPROCESSOR_INCLUDE_NEXT:
-                                        // after #include or #include_next => init query offset
-                                        usrInclude = null;
-                                        queryAnchorOffset = caretOffset;
-                                        filterPrefix = null;
-                                        break;
+                                TokenId id2 = tok.id();
+                                if(id2 instanceof CppTokenId) {
+                                    switch ((CppTokenId)id2) {
+                                        case PREPROCESSOR_INCLUDE:
+                                        case PREPROCESSOR_INCLUDE_NEXT:
+                                            // after #include or #include_next => init query offset
+                                            usrInclude = null;
+                                            queryAnchorOffset = caretOffset;
+                                            filterPrefix = null;
+                                            break;
+                                    }
                                 }
                             }
                         }
