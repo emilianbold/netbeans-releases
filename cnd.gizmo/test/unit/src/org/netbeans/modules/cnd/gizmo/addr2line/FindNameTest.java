@@ -83,59 +83,59 @@ public class FindNameTest extends NbTestCase {
     }
 
     public void testFftImageTransformer() {
-        baseTest(0x381, "FastFourierTransform::Transform", "fftimagetransformer", true);
+        baseTest(0x381, "FastFourierTransform::Transform", "fftimagetransformer", true, 84);
     }
 
     public void testPkgConfig() {
-        baseTest(0x2a, "g_hash_table_new", "testglib", true);
+        baseTest(0x2a, "g_hash_table_new", "testglib", true, 80);
     }
 
     public void testPkgConfig1() {
-        baseTest(0x71, "g_tree_new", "testglib", true);
+        baseTest(0x71, "g_tree_new", "testglib", true, 153);
     }
 
     public void testPkgConfig2() {
-        baseTest(0x0, "g_free", "testglib", true);
+        baseTest(0x0, "g_free", "testglib", true, 384);
     }
 
     public void testBuddhabrot() {
-        baseTest(0xef, "main", "buddhabrot", true);
+        baseTest(0xef, "main", "buddhabrot", true, 50);
     }
 
     public void testFractal0() {
-        baseTest(0x10f, "main", "fractal", true);
+        baseTest(0x10f, "main", "fractal", true, 207);
     }
 
     public void testFractal1() {
-        baseTest(0x602, "Mandelbrot", "fractal", true);
+        baseTest(0x602, "Mandelbrot", "fractal", true, 160);
     }
 
     public void testFractal2() {
-        baseTest(0x463, "Mandelbrot", "fractal", true);
+        baseTest(0x463, "Mandelbrot", "fractal", true, 143);
     }
 
     public void testFractal3() {
-        baseTest(0x2b9, "Mandelbrot", "fractal", true);
+        baseTest(0x2b9, "Mandelbrot", "fractal", true, 131);
     }
 
     public void testFractal4() {
-        baseTest(0x16, "complex::operator+", "fractal", true);
+        baseTest(0x16, "complex::operator+", "fractal", true, 55);
     }
 
     public void testFractal5() {
-        baseTest(0xd, "complex::operator+", "fractal", true);
+        baseTest(0xd, "complex::operator+", "fractal", true, 55);
     }
 
     public void testProfilingdemo0() {
-        baseTest(0x100, "main", "profilingdemo", true);
+        baseTest(0x100, "main", "profilingdemo", true, 60);
     }
 
     public void testProfilingdemo1() {
-        baseTest(0x93, "work_run_getmem", "profilingdemo", true);
+        baseTest(0x93, "work_run_getmem", "profilingdemo", true, 107);
     }
 
     public void testProfilingdemo2() {
-        baseTest(0x36, "threadfunc", "profilingdemo", false);
+        baseTest(0x36, "threadfunc", "profilingdemo", false, 92);
     }
 
     private DwarfEntry findFunction(String function, List<DwarfEntry> decls) throws IOException {
@@ -158,7 +158,7 @@ public class FindNameTest extends NbTestCase {
         return null;
     }
 
-    private void baseTest(long shift, String function, String executable, boolean full) {
+    private void baseTest(long shift, String function, String executable, boolean full, int etalonLine) {
         System.err.println("\nSearch for "+function+"0x"+Long.toHexString(shift)+" in "+executable);
         executable = getResource("/org/netbeans/modules/cnd/gizmo/addr2line/"+executable);
         String script = getResource("/org/netbeans/modules/cnd/gizmo/addr2line/lineinfo.bash");
@@ -240,6 +240,7 @@ public class FindNameTest extends NbTestCase {
         assertNotNull(fileInfo);
         assertNotNull(number);
         assertNotNull(candidate);
+        assertEquals(etalonLine, number.line);
         assertEquals(number.line, candidate.line);
         String file1 = number.file.replace('\\', '/');
         if (file1.indexOf('/') >= 0) {
