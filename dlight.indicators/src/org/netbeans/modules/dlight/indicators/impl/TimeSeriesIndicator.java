@@ -144,9 +144,7 @@ public final class TimeSeriesIndicator
         legend.updateWithInfoProvided(getColumnsProvided());
     }
 
-
-
-    private final void initUI() {
+    private void initUI() {
         synchronized (uiLock) {
             this.graph = createGraph(configuration, data);
             TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
@@ -164,7 +162,7 @@ public final class TimeSeriesIndicator
                 TimeSeriesIndicatorConfigurationAccessor.getDefault();
         TimeSeriesPlot graph =
                 new TimeSeriesPlot(accessor.getGraphScale(configuration),
-                accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration), data);
+                accessor.getLabelFormatter(configuration), accessor.getTimeSeriesDescriptors(configuration), data);
         graph.setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
         Dimension graphSize = new Dimension(
                 DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_WIDTH),
@@ -207,10 +205,12 @@ public final class TimeSeriesIndicator
         return table;
     }
 
+    @Override
     public ViewportModel getViewportModel() {
         return graph.getViewportModel();
     }
 
+    @Override
     public void setViewportModel(ViewportModel viewportModel) {
         graph.setViewportModel(viewportModel);
     }
@@ -222,13 +222,16 @@ public final class TimeSeriesIndicator
             repairPanel.setPopupActions(popupActions);
             repairPanel.addActionListener(new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> repairResult = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
 
+                        @Override
                         public Boolean call() throws Exception {
                             UIThread.invoke(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     repairPanel.setEnabled(false);
                                 }
@@ -236,6 +239,7 @@ public final class TimeSeriesIndicator
                             Boolean retValue = repairResult.get();
                             UIThread.invoke(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     repairPanel.setEnabled(true);
                                 }
@@ -247,6 +251,7 @@ public final class TimeSeriesIndicator
             });
             UIThread.invoke(new Runnable() {
 
+                @Override
                 public void run() {
                     panel.setOverlay(repairPanel);
                 }
@@ -256,6 +261,7 @@ public final class TimeSeriesIndicator
                     false, DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             UIThread.invoke(new Runnable() {
 
+                @Override
                 public void run() {
                     panel.setOverlay(label);
                 }
@@ -314,6 +320,7 @@ public final class TimeSeriesIndicator
         return panel;
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         graph.dataFiltersChanged(newSet, isAdjusting);
     }

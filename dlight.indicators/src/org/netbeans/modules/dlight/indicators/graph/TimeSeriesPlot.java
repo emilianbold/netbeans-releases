@@ -71,7 +71,7 @@ import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
  * @author Vladimir Kvashin
  * @author Alexey Vladykin
  */
-public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener, DataFilterListener {
+public final class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener, DataFilterListener {
 
     private static final long EXTENT = 20000000000L; // 20 seconds
     private final GraphPainter graph;
@@ -148,12 +148,12 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         TimeIntervalDataFilter tmpTimeFilter = timeFilter;
         if (tmpTimeFilter != null) {
             Range<Long> filterInterval = tmpTimeFilter.getInterval();
-            filterStart = filterInterval.getStart() == null?
-                    Integer.MIN_VALUE :
-                    (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
-            filterEnd = filterInterval.getEnd() == null?
-                    Integer.MAX_VALUE :
-                    (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
+            filterStart = filterInterval.getStart() == null
+                    ? Integer.MIN_VALUE
+                    : (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
+            filterEnd = filterInterval.getEnd() == null
+                    ? Integer.MAX_VALUE
+                    : (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
         } else {
             filterStart = Integer.MIN_VALUE;
             filterEnd = Integer.MAX_VALUE;
@@ -163,10 +163,12 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
                 timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
+    @Override
     public ViewportModel getViewportModel() {
         return viewportModel;
     }
 
+    @Override
     public void setViewportModel(ViewportModel viewportModel) {
         if (this.viewportModel != null) {
             this.viewportModel.removeChangeListener(this);
@@ -176,6 +178,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         repaintAll();
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == viewportModel) {
             repaintAll();
@@ -192,6 +195,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         }
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         TimeIntervalDataFilter newTimeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, newSet);
         synchronized (timeFilterLock) {
@@ -199,11 +203,12 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
                 timeFilter = newTimeFilter;
                 UIThread.invoke(new Runnable() {
 
+                    @Override
                     public void run() {
                         repaintAll();
                     }
                 });
-                    
+
             }
         }
     }
