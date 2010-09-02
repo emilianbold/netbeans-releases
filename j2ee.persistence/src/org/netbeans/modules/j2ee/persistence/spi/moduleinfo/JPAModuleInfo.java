@@ -57,6 +57,8 @@ public interface JPAModuleInfo {
         EJB, 
         WEB
     }
+
+    String JPACHECKSUPPORTED = "jpaversionverification";
     
     /**
      * Gets the type of our module.
@@ -72,5 +74,10 @@ public interface JPAModuleInfo {
      * @return the version number of the module.
      */ 
     String getVersion();
-    
+
+    /**
+     * get if module support corresponding jpa version
+     * @return true if supported, false if unsupported, null if unknown (may be considered as all versions are supported for backward compartibility)
+     */
+    Boolean isJPAVersionSupported (String version);
 }
