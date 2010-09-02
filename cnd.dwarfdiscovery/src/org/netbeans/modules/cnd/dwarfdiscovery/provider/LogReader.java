@@ -547,7 +547,7 @@ public class LogReader {
            } else if (li.compilerType == CompilerType.C) {
                lang = ItemProperties.LanguageKind.C;
            } else if (li.compilerType == CompilerType.FORTRAN) {
-               lang = ItemProperties.LanguageKind.C;
+               lang = ItemProperties.LanguageKind.Fortran;
            }
            gatherLine(li.compileLine, line.startsWith("+"), lang, li.compiler); // NOI18N
            return true;

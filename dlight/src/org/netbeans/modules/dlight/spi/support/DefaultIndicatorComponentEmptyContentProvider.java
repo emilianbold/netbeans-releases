@@ -59,12 +59,12 @@ public final class DefaultIndicatorComponentEmptyContentProvider {
     private DefaultIndicatorComponentEmptyContentProvider() {
     }
 
-    public static final DefaultIndicatorComponentEmptyContentProvider getInstance() {
+    public static DefaultIndicatorComponentEmptyContentProvider getInstance() {
         return instance;
     }
 
     public List<Indicator<?>> getEmptyContent(String configurationName) {
-        DLightConfiguration dligthConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
+        DLightConfiguration dligthConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);
 
         if (dligthConfiguration == null) {
             return null;

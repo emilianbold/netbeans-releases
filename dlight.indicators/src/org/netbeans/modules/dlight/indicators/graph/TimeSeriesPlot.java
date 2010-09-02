@@ -71,24 +71,27 @@ import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
  * @author Vladimir Kvashin
  * @author Alexey Vladykin
  */
-public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener, DataFilterListener {
+public final class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener, DataFilterListener {
 
     private static final long EXTENT = 20000000000L; // 20 seconds
     private final GraphPainter graph;
+    private final Axis timeAxis;
+    private final Axis valueAxis;
     private ViewportModel viewportModel;
-    private int upperLimit;
-    private Axis hAxis;
-    private Axis vAxis;
-    private AxisMarksProvider timeMarksProvider;
-    private AxisMarksProvider valueMarksProvider;
+    private final AxisMarksProvider timeMarksProvider;
+    private final AxisMarksProvider valueMarksProvider;
     private final Object timeFilterLock = new Object();
     private volatile TimeIntervalDataFilter timeFilter;
+    private final Updater updater = new Updater();
+    private int upperLimit;
 
-    public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series, TimeSeriesDataContainer data) {
-        upperLimit = scale;
+    public TimeSeriesPlot(int upperLimit, ValueFormatter formatter, List<TimeSeriesDescriptor> series, TimeSeriesDataContainer data) {
+        this.upperLimit = upperLimit;
         TimeSeriesDataContainer container = data;
         container.setTimeSeriesPlot(this);
         graph = new GraphPainter(series, container);
+        timeAxis = new Axis(AxisOrientation.HORIZONTAL);
+        valueAxis = new Axis(AxisOrientation.VERTICAL);
         timeMarksProvider = TimeMarksProvider.newInstance();
         valueMarksProvider = ValueMarksProvider.newInstance(formatter);
         DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, EXTENT));
@@ -106,26 +109,18 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     }
 
     public JComponent getVerticalAxis() {
-        if (vAxis == null) {
-            vAxis = new Axis(AxisOrientation.VERTICAL);
-        }
-        return vAxis;
+        return valueAxis;
     }
 
     public JComponent getHorizontalAxis() {
-        if (hAxis == null) {
-            hAxis = new Axis(AxisOrientation.HORIZONTAL);
-        }
-        return hAxis;
+        return timeAxis;
     }
 
-    public void setUpperLimit(int newScale) {
-        if (newScale != upperLimit) {
-            upperLimit = newScale;
+    public void setUpperLimit(int newLimit) {
+        if (newLimit != upperLimit) {
+            upperLimit = newLimit;
             repaint();
-            if (vAxis != null) {
-                vAxis.repaint();
-            }
+            valueAxis.repaint();
         }
     }
 
@@ -148,12 +143,12 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         TimeIntervalDataFilter tmpTimeFilter = timeFilter;
         if (tmpTimeFilter != null) {
             Range<Long> filterInterval = tmpTimeFilter.getInterval();
-            filterStart = filterInterval.getStart() == null?
-                    Integer.MIN_VALUE :
-                    (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
-            filterEnd = filterInterval.getEnd() == null?
-                    Integer.MAX_VALUE :
-                    (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
+            filterStart = filterInterval.getStart() == null
+                    ? Integer.MIN_VALUE
+                    : (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
+            filterEnd = filterInterval.getEnd() == null
+                    ? Integer.MAX_VALUE
+                    : (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
         } else {
             filterStart = Integer.MIN_VALUE;
             filterEnd = Integer.MAX_VALUE;
@@ -163,10 +158,12 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
                 timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
+    @Override
     public ViewportModel getViewportModel() {
         return viewportModel;
     }
 
+    @Override
     public void setViewportModel(ViewportModel viewportModel) {
         if (this.viewportModel != null) {
             this.viewportModel.removeChangeListener(this);
@@ -176,6 +173,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         repaintAll();
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == viewportModel) {
             repaintAll();
@@ -192,6 +190,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         }
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         TimeIntervalDataFilter newTimeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, newSet);
         synchronized (timeFilterLock) {
@@ -199,29 +198,34 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
                 timeFilter = newTimeFilter;
                 UIThread.invoke(new Runnable() {
 
+                    @Override
                     public void run() {
                         repaintAll();
                     }
                 });
-                    
+
             }
         }
     }
 
     public void repaintAll() {
-        repaint();
-        if (hAxis != null) {
-            hAxis.repaint();
-        }
-        if (vAxis != null) {
-            vAxis.repaint();
-        }
+        UIThread.invoke(updater);
     }
 
     private static enum AxisOrientation {
 
         HORIZONTAL,
         VERTICAL
+    }
+
+    private class Updater implements Runnable {
+
+        @Override
+        public void run() {
+            repaint();
+            timeAxis.repaint();
+            valueAxis.repaint();
+        }
     }
 
     private class Axis extends JComponent {
