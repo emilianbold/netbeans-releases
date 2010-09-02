@@ -60,10 +60,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -83,6 +85,7 @@ import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -131,13 +134,15 @@ public class GridDesigner extends JPanel implements Customizer {
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout());
         JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
         UndoRedoSupport support = UndoRedoSupport.getSupport(formModel);
         support.reset(glassPane);
-        toolBar.add(support.getRedoAction());
-        toolBar.add(support.getUndoAction());
+        toolBar.add(initUndoRedoButton(toolBar.add(support.getRedoAction())));
+        toolBar.add(initUndoRedoButton(toolBar.add(support.getUndoAction())));
         JToggleButton padButton = initPaddingButton();
         toolBar.add(Box.createRigidArea(new Dimension(10,10)));
         toolBar.add(padButton);
+        toolBar.add(Box.createGlue());
         rightPanel.add(toolBar, BorderLayout.PAGE_START);
         // Estimate of the size of the header
         Dimension headerDim = new JLabel("99").getPreferredSize(); // NOI18N
@@ -235,7 +240,10 @@ public class GridDesigner extends JPanel implements Customizer {
         JToggleButton button = new JToggleButton();
         ImageIcon image = ImageUtilities.loadImageIcon("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/pad_empty.png", false); // NOI18N
         button.setIcon(image);
+        button.setFocusPainted(false);
         button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.padEmptyCells")); // NOI18N
+        Dimension dim = button.getPreferredSize();
+        button.setMaximumSize(new Dimension(dim.width, Short.MAX_VALUE));
         button.setSelected(FormLoaderSettings.getInstance().getPadEmptyCells());
         button.addActionListener(new ActionListener() {
             @Override
@@ -245,6 +253,22 @@ public class GridDesigner extends JPanel implements Customizer {
                 glassPane.updateLayout();
             }
         });
+        return button;
+    }
+
+    /**
+     * Initializes undo/redo toolbar button.
+     * 
+     * @param button button to initialize.
+     * @return initialized button.
+     */
+    private JButton initUndoRedoButton(JButton button) {
+        String text = (String)button.getAction().getValue(Action.NAME);
+        Mnemonics.setLocalizedText(button, text);
+        text = button.getText();
+        button.setText(null);
+        button.setToolTipText(text);
+        button.setFocusPainted(false);
         return button;
     }
 
