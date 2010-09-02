@@ -400,12 +400,15 @@ public class LogReader {
     private static final String INVOKE_GNU_Fortran3 = "g95.exe "; //NOI18N
     private static final String INVOKE_GNU_Fortran4 = "g90.exe "; //NOI18N
     private static final String INVOKE_GNU_Fortran5 = "g77.exe "; //NOI18N
-// common for gnu and sun
+// common for gnu and sun ? prefer gnu family 
     private static final String INVOKE_GNU_Fortran6 = "g95 "; //NOI18N
     private static final String INVOKE_GNU_Fortran7 = "g90 "; //NOI18N
     private static final String INVOKE_GNU_Fortran8 = "g77 "; //NOI18N
 // Sun: ffortran,f95,f90,f77
-    private static final String INVOKE_SUN_Fortran = "ffortran "; //NOI18N
+    private static final String INVOKE_SUN_Fortran  = "ffortran "; //NOI18N
+    private static final String INVOKE_SUN_Fortran1 = "f95 "; //NOI18N
+    private static final String INVOKE_SUN_Fortran2 = "f90 "; //NOI18N
+    private static final String INVOKE_SUN_Fortran3 = "f77 "; //NOI18N
     private static final String MAKE_DELIMITER  = ";"; //NOI18N
 
     private static int[] foundCompiler(String line, String ... patterns){
@@ -460,7 +463,7 @@ public class LogReader {
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_GNU_Fortran1,INVOKE_GNU_Fortran2,INVOKE_GNU_Fortran3,INVOKE_GNU_Fortran4,INVOKE_GNU_Fortran5);
+            int[] res = foundCompiler(line, INVOKE_GNU_Fortran1,INVOKE_GNU_Fortran2,INVOKE_GNU_Fortran3,INVOKE_GNU_Fortran4,INVOKE_GNU_Fortran5,INVOKE_GNU_Fortran6,INVOKE_GNU_Fortran7,INVOKE_GNU_Fortran8);
             if (res != null) {
                 start = res[0];
                 end = res[1];
@@ -469,7 +472,7 @@ public class LogReader {
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_SUN_Fortran,INVOKE_GNU_Fortran6,INVOKE_GNU_Fortran7,INVOKE_GNU_Fortran8);
+            int[] res = foundCompiler(line, INVOKE_SUN_Fortran,INVOKE_SUN_Fortran1,INVOKE_SUN_Fortran2,INVOKE_SUN_Fortran3);
             if (res != null) {
                 start = res[0];
                 end = res[1];
