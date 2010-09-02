@@ -515,11 +515,15 @@ public abstract class EditorView extends View {
                 CharSequence docText = DocumentUtilities.getText(doc);
                 if (endOffset <= docText.length()) {
                     int endTextOffset = Math.min(endOffset, startOffset + 7);
-                    CharSequence txt = docText.subSequence(startOffset, endTextOffset);
                     sb.append(" \"");
-                    CharSequenceUtilities.debugText(sb, txt);
+                    CharSequenceUtilities.debugText(sb, docText.subSequence(startOffset, endTextOffset));
                     if (endTextOffset < endOffset) {
-                        sb.append("...");
+                        // Display last three chars with possibly "..." inside
+                        int lastCharsOffset = Math.max(endTextOffset, endOffset - 3);
+                        if (lastCharsOffset != endTextOffset) {
+                            sb.append("...");
+                        }
+                        CharSequenceUtilities.debugText(sb, docText.subSequence(lastCharsOffset, endOffset));
                     }
                     sb.append('"');
                 }

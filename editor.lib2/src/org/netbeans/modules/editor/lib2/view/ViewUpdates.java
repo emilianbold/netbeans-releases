@@ -610,9 +610,8 @@ public final class ViewUpdates implements DocumentListener {
                     rebuildEndOffset = change.getEndOffset();
                 }
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("ViewUpdates.Change <" + change.getStartOffset() +
-                            "," + change.getEndOffset() + ">"
-                            );
+                    LOG.fine("ViewUpdates.viewFactoryChanged: <" + change.getStartOffset() +
+                            "," + change.getEndOffset() + ">\n");
                 }
                 checkRebuild();
             }
