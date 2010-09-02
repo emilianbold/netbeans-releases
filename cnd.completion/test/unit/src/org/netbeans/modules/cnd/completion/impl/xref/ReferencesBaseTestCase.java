@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -86,21 +87,23 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         compareReferenceFiles();
     }
 
-    protected static boolean supportReference(CppTokenId tokenID) {
+    protected static boolean supportReference(TokenId tokenID) {
         assert tokenID != null;
-        switch (tokenID) {
-            case IDENTIFIER:
-            case PREPROCESSOR_IDENTIFIER:
-            case PREPROCESSOR_USER_INCLUDE:
-            case PREPROCESSOR_SYS_INCLUDE:
-            case PREPROCESSOR_INCLUDE:
-            case PREPROCESSOR_INCLUDE_NEXT:
-                return true;
+        if(tokenID instanceof CppTokenId) {
+            switch ((CppTokenId)tokenID) {
+                case IDENTIFIER:
+                case PREPROCESSOR_IDENTIFIER:
+                case PREPROCESSOR_USER_INCLUDE:
+                case PREPROCESSOR_SYS_INCLUDE:
+                case PREPROCESSOR_INCLUDE:
+                case PREPROCESSOR_INCLUDE_NEXT:
+                    return true;
+            }
         }
         return false;
     }
 
-    private final class MyTP extends CndAbstractTokenProcessor<Token<CppTokenId>> {
+    private final class MyTP extends CndAbstractTokenProcessor<Token<TokenId>> {
         final List<ReferenceImpl> references = new ArrayList<ReferenceImpl>();
         private final CsmFile csmFile;
         private final BaseDocument doc;
@@ -111,7 +114,7 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         }
 
         @Override
-        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<TokenId> token, int tokenOffset) {
             if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
                 return true;
             }

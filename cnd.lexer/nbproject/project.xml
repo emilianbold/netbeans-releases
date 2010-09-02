@@ -19,7 +19,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.26</specification-version>
+                        <specification-version>1.36</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -78,8 +78,10 @@
                 <friend>org.netbeans.modules.cnd.model.services</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
+                <friend>org.netbeans.modules.cnd.odb</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.cnd.api.lexer</package>
+                <package>org.netbeans.cnd.spi.lexer</package>
             </friend-packages>
         </data>
     </configuration>
