@@ -305,7 +305,8 @@ public class JpaControllerGenerator {
                     List<String> parameterTypes = new ArrayList<String>();
                     List<String> parameterNames = new ArrayList<String>();
                     String body = "";   //NOI18N
-                    if (isInjection) {
+                    boolean isUserTransaction = workingCopy.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE).findResource("javax/transaction/UserTransaction.class")!=null;  //NOI18N
+                    if (isUserTransaction) {
                         modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "utx", "javax.transaction.UserTransaction", privateModifier, null, null);   //NOI18N
                         parameterTypes.add("javax.transaction.UserTransaction");   //NOI18N
                         parameterNames.add("utx");   //NOI18N
