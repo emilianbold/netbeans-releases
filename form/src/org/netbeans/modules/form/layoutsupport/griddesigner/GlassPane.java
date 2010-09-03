@@ -70,6 +70,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
+import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteComponentAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsChange;
@@ -948,6 +949,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         }
         this.selection = selection;
         designer.setSelection(selection);
+        requestFocusInWindow();
     }
 
     /**
@@ -958,7 +960,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     @Override
     protected void processKeyEvent(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        if ((keyCode == KeyEvent.VK_ESCAPE) && (moving || resizing)) {
+        if (keyCode == KeyEvent.VK_DELETE) {
+            if (!selection.isEmpty()) {
+                performAction(new DeleteComponentAction());
+            }
+        } else if ((keyCode == KeyEvent.VK_ESCAPE) && (moving || resizing)) {
             // Cancel moving and resizing when Esc is pressed.
             moving = false;
             resizing = false;
