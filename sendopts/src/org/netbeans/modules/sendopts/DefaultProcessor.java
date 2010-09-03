@@ -61,12 +61,14 @@ final class DefaultProcessor extends OptionProcessor {
     private final String clazz;
     private final String field;
     private final char shortName;
+    private final String type;
 
-    private DefaultProcessor(String f, String c, Character shortName, String longName) {
+    private DefaultProcessor(String type, String f, String c, Character shortName, String longName) {
         this.field = f;
         this.clazz = c;
         this.shortName = shortName.charValue();
         this.longName = longName;
+        this.type = type;
     }
     
     static DefaultProcessor create(Map<?,?> map) {
@@ -74,14 +76,19 @@ final class DefaultProcessor extends OptionProcessor {
         String c = (String) map.get("class");
         Character shortName = (Character) map.get("shortName");
         String longName = (String) map.get("longName");
-        return new DefaultProcessor(f, c, shortName, longName);
+        String type = (String) map.get("type");
+        return new DefaultProcessor(type, f, c, shortName, longName);
     }
     
 
     @Override
     protected Set<Option> getOptions() {
         Set<Option> set = new HashSet<Option>();
-        set.add(Option.withoutArgument(shortName, longName));
+        if (type.equals("withoutArgument")) {
+            set.add(Option.withoutArgument(shortName, longName));
+        } else {
+            set.add(Option.requiredArgument(shortName, longName));
+        }
         return set;
     }
 
@@ -91,9 +98,17 @@ final class DefaultProcessor extends OptionProcessor {
             Class<?> realClazz = Class.forName(clazz);
             Field realField = realClazz.getDeclaredField(field);
             realField.setAccessible(true);
-            if ((realField.getModifiers() & Modifier.STATIC) != 0) {
-                realField.setBoolean(null, true);
+            if (type.equals("withoutArgument")) {
+                if ((realField.getModifiers() & Modifier.STATIC) != 0) {
+                    realField.setBoolean(null, true);
+                }
             }
+            if (type.equals("requiredArgument")) {
+                if ((realField.getModifiers() & Modifier.STATIC) != 0) {
+                    realField.set(null, optionValues.values().iterator().next()[0]);
+                }
+            }
+            
         } catch (Exception exception) {
             throw (CommandException)new CommandException(10, exception.getLocalizedMessage()).initCause(exception);
         }

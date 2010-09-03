@@ -88,7 +88,7 @@ public class OptionTest extends NbTestCase {
     }
 
     public void testParseWithParam() throws CommandException {
-        cmd.process("-p", "Param");
+        cmd.process("-pParam");
         assertFalse("enabled not set", enabled);
         assertEquals("Param", withParam);
         assertTrue("Method called", methodCalled);
