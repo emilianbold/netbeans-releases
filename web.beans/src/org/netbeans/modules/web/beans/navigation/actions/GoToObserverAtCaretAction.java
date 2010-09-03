@@ -143,7 +143,8 @@ public class GoToObserverAtCaretAction extends BaseAction {
          */
         final Object[] variableAtCaret = new Object[2];
         if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
-                variableAtCaret ))
+                variableAtCaret , false ) && !WebBeansActionHelper.
+                    getContextEventInjectionAtDot( component, variableAtCaret  ))
         {
             return;
         }

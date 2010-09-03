@@ -139,7 +139,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
          */
         final Object[] variableAtCaret = new Object[2];
         if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
-                variableAtCaret ))
+                variableAtCaret , true  ))
         {
             return;
         }
