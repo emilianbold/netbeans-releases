@@ -128,6 +128,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private boolean moving;
     /** Determines if we are in the middle of resizing. */
     private boolean resizing;
+    /** Determines if we are in the middle of area selection. */
+    private boolean selecting;
     /** Determines the direction in which we are (or will start) resizing. */
     private int resizingMode;
     /** The initial point of the current resizing/moving. */
@@ -275,6 +277,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         } else if (moving) {
             paintResizing(g);
         } else {
+            if (selecting) {
+                g.setColor(GridDesigner.SELECTION_COLOR);
+                g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
+            }
             paintSelection(g);
         }
         if (animation && (animPhase == 1f)) {
@@ -1056,6 +1062,27 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             } else if (resizing) {
                 resizing = false;
                 changeLocation();
+            } else if (selecting) {
+                selecting = false;
+                boolean inverse = (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0;
+                Set<Component> newSelection = new HashSet<Component>();
+                if (inverse) {
+                    newSelection.addAll(selection);
+                }
+                for (Component comp : componentPane.getComponents()) {
+                    if (GridUtils.isPaddingComponent(comp)) {
+                        continue;
+                    }
+                    Rectangle rect = fromComponentPane(comp.getBounds());
+                    if (draggingRect.intersects(rect)) {
+                        if (inverse && newSelection.contains(comp)) {
+                            newSelection.remove(comp);
+                        } else {
+                            newSelection.add(comp);
+                        }
+                    }
+                }
+                setSelection(newSelection);
             } else {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     if ((focusedComponent != null) && (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
@@ -1154,7 +1181,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             if (resizing) {
                 draggingRect = calculateResizingRectangle(e.getPoint(), focusedComponent);
                 calculateResizingGridLocation();
-            } else if (!selection.isEmpty() && (focusedComponent != null)) {
+            } else if (focusedComponent == null) {
+                selecting = true;
+                draggingRect = new Rectangle(draggingStart);
+                draggingRect.add(e.getPoint());
+            } else if (!selection.isEmpty()) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     if (!moving) {
                         // Moving start
