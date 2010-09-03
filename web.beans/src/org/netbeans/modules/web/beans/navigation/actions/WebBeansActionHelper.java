@@ -45,31 +45,54 @@ package org.netbeans.modules.web.beans.navigation.actions;
 
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 
 /**
@@ -77,6 +100,14 @@ import com.sun.source.util.TreePath;
  *
  */
 class WebBeansActionHelper {
+    
+    static final String FIRE = "fire";                          // NOI18N
+    
+    static final String EVENT_INTERFACE = 
+        "javax.enterprise.event.Event";                         // NOI18N
+    
+    private static final Set<JavaTokenId> USABLE_TOKEN_IDS = 
+        EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
 
     private WebBeansActionHelper(){
     }
@@ -112,12 +143,11 @@ class WebBeansActionHelper {
      * If appropriate element is found it's name is placed into list 
      * along with name of containing type.
      * Resulted element could not be used in metamodel for injectable
-     * access. I believe this is because element was gotten via other Compilation
+     * access. This is because element was gotten via other Compilation
      * controller so it is from other model.
-     * As result this trick is used.  
      */
     static boolean getVariableElementAtDot( final JTextComponent component,
-            final Object[] variable ) 
+            final Object[] variable , final boolean showStatusOnError) 
     {
         
         JavaSource javaSource = JavaSource.forDocument(component.getDocument());
@@ -136,14 +166,14 @@ class WebBeansActionHelper {
                     if ( element == null ){
                         StatusDisplayer.getDefault().setStatusText(
                                 NbBundle.getMessage(
-                                GoToInjectableAtCaretAction.class, 
+                                        WebBeansActionHelper.class, 
                                 "LBL_ElementNotFound"));
                         return;
                     }
-                    if ( !( element instanceof VariableElement) ){
+                    if ( !( element instanceof VariableElement) && showStatusOnError){
                         StatusDisplayer.getDefault().setStatusText(
                                 NbBundle.getMessage(
-                                GoToInjectableAtCaretAction.class, 
+                                WebBeansActionHelper.class, 
                                 "LBL_NotVariableElement"));
                         return;
                     }
@@ -168,6 +198,92 @@ class WebBeansActionHelper {
         return variable[1] !=null ;
     }
     
+    public static boolean getContextEventInjectionAtDot(
+            final JTextComponent component, final Object[] variable )
+    {
+        try {
+            ParserManager.parse(Collections.singleton (Source.create(
+                    component.getDocument())), new UserTask() 
+            {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result resuslt = resultIterator.getParserResult (component.getCaret().
+                            getDot());
+                    CompilationController controller = CompilationController.get(
+                            resuslt);
+                    if (controller == null || controller.toPhase(Phase.RESOLVED).
+                            compareTo(Phase.RESOLVED) < 0)
+                    {
+                        return;
+                    }
+                    Token<JavaTokenId>[] token = new Token[1];
+                    int[] span = getIdentifierSpan( component.getDocument(), 
+                            component.getCaret().getDot(), token);
+
+                    if (span == null) {
+                        return ;
+                    }
+
+                    int exactOffset = controller.getSnapshot().
+                        getEmbeddedOffset(span[0] + 1);
+                    TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
+                    TreePath parent = path.getParentPath();
+                    if (parent != null) {
+                        Tree parentLeaf = parent.getLeaf();
+                        if ( parentLeaf.getKind() == Kind.METHOD_INVOCATION){
+                            ExpressionTree select = ((MethodInvocationTree)parentLeaf).
+                                getMethodSelect();
+                            /*
+                             *  Identifier case should be ignored because in this case
+                             *  method is called on 'this' instance . Which is never
+                             *  managed by J2EE container as Event injectable.
+                             */
+                            if ( select.getKind() == Kind.MEMBER_SELECT ){
+                                Scope scope = controller.getTrees().getScope(path);
+                                Element subjectClass = scope.getEnclosingClass();
+                                Element method = controller.getTrees().getElement(
+                                        new TreePath(path, select));
+                                Element caller = controller.getTrees().getElement(
+                                        new TreePath(path, ((MemberSelectTree)select).getExpression()));
+                                String methodName = method.getSimpleName().toString();
+                                if ( FIRE.equals( methodName) && 
+                                        method instanceof ExecutableElement  &&
+                                        caller instanceof VariableElement )
+                                {
+                                    String variableName = caller.getSimpleName().toString();
+                                    TypeElement enclosingTypeElement = 
+                                        controller.getElementUtilities().
+                                        enclosingTypeElement( method);
+                                    String fqnMethodClass = enclosingTypeElement.
+                                        getQualifiedName().toString();
+                                    if( EVENT_INTERFACE.equals(fqnMethodClass)){
+                                        List<VariableElement> fields = 
+                                            ElementFilter.fieldsIn
+                                            ( controller.getElements().getAllMembers(
+                                                (TypeElement)subjectClass));
+                                        for (VariableElement var :  fields) {
+                                            String varName = var.getSimpleName().toString();
+                                            if ( variableName.equals( varName )){
+                                                ElementHandle<VariableElement> handle = 
+                                                    ElementHandle.create(var);
+                                                variable[0]= handle;
+                                                variable[1]= varName;   
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        catch (ParseException e) {
+            throw new IllegalStateException(e);
+        }
+        return variable[1] !=null ;
+    }
+    
     private static void setVariablePath( Object[] variableAtCaret,
             CompilationController controller, Element element )
     {
@@ -185,7 +301,7 @@ class WebBeansActionHelper {
     {
         if ( variablePath[0] == null ){
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    InspectInjectablesAtCaretAction.class, 
+                    WebBeansActionHelper.class, 
                     "LBL_VariableNotFound", variablePath[1]));
             return null ;
         }
@@ -193,7 +309,7 @@ class WebBeansActionHelper {
                 model.getCompilationController());
         if ( element == null ){
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    InspectInjectablesAtCaretAction.class, 
+                    WebBeansActionHelper.class, 
                     "LBL_VariableNotFound", variablePath[1]));
             return null ;
         }
@@ -216,9 +332,45 @@ class WebBeansActionHelper {
         
         if (var == null) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    InspectInjectablesAtCaretAction.class, 
+                    WebBeansActionHelper.class, 
                     "LBL_VariableNotFound", variablePath[1]));
         }
         return var;
+    }
+
+    public static int[] getIdentifierSpan(Document doc, int offset, Token<JavaTokenId>[] token) {
+        FileObject fileObject = NbEditorUtilities.getFileObject( doc);
+        if (fileObject== null) {
+            //do nothing if FO is not attached to the document - the goto would not work anyway:
+            return null;
+        }
+        
+        TokenHierarchy<?> th = TokenHierarchy.get(doc);
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
+        
+        if (ts == null)
+            return null;
+        
+        ts.move(offset);
+        if (!ts.moveNext())
+            return null;
+        
+        Token<JavaTokenId> t = ts.token();
+        
+        if (JavaTokenId.JAVADOC_COMMENT == t.id()) {
+            return null;
+        } else if (!USABLE_TOKEN_IDS.contains(t.id())) {
+            ts.move(offset - 1);
+            if (!ts.moveNext())
+                return null;
+            t = ts.token();
+            if (!USABLE_TOKEN_IDS.contains(t.id()))
+                return null;
+        }
+        
+        if (token != null)
+            token[0] = t;
+        
+        return new int [] {ts.offset(), ts.offset() + t.length()};
     }
 }
