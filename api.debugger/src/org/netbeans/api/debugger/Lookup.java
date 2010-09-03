@@ -516,7 +516,12 @@ abstract class Lookup implements ContextProvider {
                 assert service != null;
                 this.service = service;
                 fillInstances(l, lr, s);
-                listenOnDisabledModules();
+                RP.post(new Runnable() {
+                    public void run() {
+                        // This may take a while...
+                        listenOnDisabledModules();
+                    }
+                });
             }
             
             private void fillInstances(List<String> l, Result<T> lr, Set<String> s) {
