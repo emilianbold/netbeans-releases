@@ -70,6 +70,8 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Positi
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
@@ -77,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
@@ -129,6 +132,7 @@ public class ImportExecutable {
                         if (extension.canApply(map, lastSelectedProject)) {
                             try {
                                 extension.apply(map, lastSelectedProject);
+                                discoverScripts(lastSelectedProject);
                                 saveMakeConfigurationDescriptor(lastSelectedProject);
                                 if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                     cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies());
@@ -162,6 +166,113 @@ public class ImportExecutable {
                 }
             }
         });
+    }
+
+    private static void discoverScripts(Project project) {
+        ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (provider == null) {
+            return;
+        }
+        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+        if (configurationDescriptor == null) {
+            return;
+        }
+        MakeConfiguration activeConfiguration = configurationDescriptor.getActiveConfiguration();
+        if (activeConfiguration == null) {
+            return;
+        }
+        String root = findFolderPath(getRoot(configurationDescriptor));
+        File rootFile = new File(root);
+        DiscoveredConfigure configure = scanFolder(rootFile);
+        if (configure.script == null || configure.makefile == null) {
+            File parentFile = rootFile.getParentFile();
+            DiscoveredConfigure parentConfigure = scanFolder(parentFile);
+            if (parentConfigure.script != null && parentConfigure.makefile != null) {
+                if (configure.scriptWeight < parentConfigure.scriptWeight) {
+                    configure = parentConfigure;
+                }
+            }
+        }
+        if (configure.script == null || configure.makefile == null) {
+            File[] listFiles = rootFile.listFiles();
+            if (listFiles != null) {
+                for(File file : listFiles) {
+                    if (file.isDirectory()) {
+                        DiscoveredConfigure childConfigure = scanFolder(file);
+                        if (childConfigure.script != null && childConfigure.makefile != null) {
+                            if (configure.scriptWeight < childConfigure.scriptWeight) {
+                                configure = childConfigure;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (configure.makefile != null) {
+            activeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(configure.makefile.getParentFile().getAbsolutePath());
+            activeConfiguration.getMakefileConfiguration().getBuildCommand().setValue("$(MAKE) -f "+configure.makefile.getName()); // NOI18N
+            activeConfiguration.getMakefileConfiguration().getCleanCommand().setValue("$(MAKE) -f "+configure.makefile.getName()+" clean"); // NOI18N
+            Folder externalItemFolder = configurationDescriptor.getExternalItemFolder();
+            for(Item item : externalItemFolder.getAllItemsAsArray()){
+                if (MIMENames.MAKEFILE_MIME_TYPE.equals(item.getMIMEType())) {
+                    externalItemFolder.removeItem(item);
+                    break;
+                }
+            }
+            externalItemFolder.addItem(new Item(configure.makefile.getAbsolutePath()));
+            if (configure.script != null) {
+                externalItemFolder.addItem(new Item(configure.script.getAbsolutePath()));
+            }
+        }
+    }
+
+
+    private static DiscoveredConfigure scanFolder(File rootFile) {
+        DiscoveredConfigure configure = new DiscoveredConfigure();
+        File[] listFiles = rootFile.listFiles();
+        if (listFiles != null) {
+            for(File file : listFiles) {
+                if (file.isFile()) {
+                    String name = file.getName();
+                    if ("CMakeLists.txt".equals(name)) { // NOI18N
+                        configure.setScript(file, 3);
+                    } else if (name.endsWith(".pro")) { // NOI18N
+                        configure.setScript(file, 4);
+                    } else if ("configure".equals(name) || "configure.exe".equals(name)) { // NOI18N
+                        configure.setScript(file, 5);
+                    } else if ("Makefile".equals(name)) { // NOI18N
+                        configure.setMakefile(file, 5);
+                    } else if ("makefile".equals(name)) { // NOI18N
+                        configure.setMakefile(file, 4);
+                    } else if ("GNUmakefile".equals(name)) { // NOI18N
+                        configure.setMakefile(file, 3);
+                    } else if (name.endsWith(".mk")) { // NOI18N
+                        configure.setMakefile(file, 2);
+                    }
+                }
+            }
+        }
+        return configure;
+    }
+
+
+    private static final class DiscoveredConfigure {
+        private File script;
+        private int scriptWeight;
+        private File makefile;
+        private int makefileWeight;
+        private void setScript(File script, int weight) {
+            if (this.script == null || scriptWeight < weight) {
+                this.script = script;
+                scriptWeight = weight;
+            }
+        }
+        private void setMakefile(File makefile, int weight) {
+            if (this.makefile == null || makefileWeight < weight) {
+                this.makefile = makefile;
+                makefileWeight = weight;
+            }
+        }
     }
 
     private String additionalDependencies(Applicable applicable, MakeConfiguration activeConfiguration) {
@@ -376,5 +487,81 @@ public class ImportExecutable {
                 }
             }
         }
+    }
+
+    static Folder getRoot(MakeConfigurationDescriptor configurationDescriptor) {
+        Folder folder = configurationDescriptor.getLogicalFolders();
+        List<Folder> sources = folder.getFolders();
+        for (Folder sub : sources){
+            if (sub.isProjectFiles()) {
+                if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
+                    return sub;
+                }
+            }
+        }
+        return folder;
+    }
+
+    static String findFolderPath(Folder root) {
+        List<String> candidates = new ArrayList<String>();
+        for (Object o : root.getElements()) {
+            if (o instanceof Folder) {
+                Folder f = (Folder) o;
+                String res = findFolderPath(f, "/"+f.getName()); // NOI18N
+                if (res != null) {
+                    candidates.add(res+"/"+f.getName()); // NOI18N
+                }
+            }
+        }
+        if (candidates.isEmpty()) {
+            return null;
+        } else if (candidates.size() == 1) {
+            return candidates.get(0);
+        }
+        String bestCandidate = null;
+        for(String candidate : candidates) {
+            if (bestCandidate == null) {
+                bestCandidate = candidate;
+            } else {
+                if (bestCandidate.startsWith(candidate)) {
+                    bestCandidate = candidate;
+                } else {
+                    if (bestCandidate.length() > candidate.length()) {
+                        bestCandidate = candidate;
+                    }
+                }
+            }
+        }
+        return bestCandidate;
+    }
+
+    static String findFolderPath(Folder root, String prefix) {
+        for (Object o : root.getElements()) {
+            if (o instanceof Item) {
+                Item i = (Item) o;
+                String path = i.getAbsPath();
+                if (!prefix.isEmpty()) {
+                    path = path.replace('\\', '/'); // NOI18N
+                    int j = path.indexOf(prefix+"/"); // NOI18N
+                    if (j >= 0) {
+                        return path.substring(0,j);
+                    }
+                }
+            }
+        }
+        for (Object o : root.getElements()) {
+            if (o instanceof Folder) {
+                Folder f = (Folder) o;
+                String res = findFolderPath(f, prefix+"/"+f.getName()); // NOI18N
+                if (res != null) {
+                    if (prefix.isEmpty()) {
+                        return res+"/"+f.getName(); // NOI18N
+                    } else {
+                        return res;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

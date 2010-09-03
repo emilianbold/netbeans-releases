@@ -60,8 +60,6 @@ import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -102,7 +100,7 @@ public class CreateDependencies implements PropertyChangeListener {
         Map<String,String> dllPaths = new HashMap<String, String>();
         if (pdp.gotDescriptor()) {
             mainConfigurationDescriptor = pdp.getConfigurationDescriptor();
-            root = findFolderPath(getRoot(mainConfigurationDescriptor), ""); // NOI18N
+            root = ImportExecutable.findFolderPath(ImportExecutable.getRoot(mainConfigurationDescriptor));
             if (root != null) {
                 MakeConfiguration activeConfiguration = mainConfigurationDescriptor.getActiveConfiguration();
                 String ldLibPath = ImportExecutable.getLdLibraryPath(activeConfiguration);
@@ -238,49 +236,6 @@ public class CreateDependencies implements PropertyChangeListener {
         });
     }
     
-    private Folder getRoot(MakeConfigurationDescriptor configurationDescriptor) {
-        Folder folder = configurationDescriptor.getLogicalFolders();
-        List<Folder> sources = folder.getFolders();
-        for (Folder sub : sources){
-            if (sub.isProjectFiles()) {
-                if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
-                    return sub;
-                }
-            }
-        }
-        return folder;
-    }
-
-    private String findFolderPath(Folder root, String prefix) {
-        for (Object o : root.getElements()) {
-            if (o instanceof Item) {
-                Item i = (Item) o;
-                String path = i.getAbsPath();
-                if (!prefix.isEmpty()) {
-                    path = path.replace('\\', '/'); // NOI18N
-                    int j = path.indexOf(prefix+"/"); // NOI18N
-                    if (j >= 0) {
-                        return path.substring(0,j);
-                    }
-                }
-            }
-        }
-        for (Object o : root.getElements()) {
-            if (o instanceof Folder) {
-                Folder f = (Folder) o;
-                String res = findFolderPath(f, prefix+"/"+f.getName()); // NOI18N
-                if (res != null) {
-                    if (prefix.isEmpty()) {
-                        return res+"/"+f.getName(); // NOI18N
-                    } else {
-                        return res;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private static Project createProject(String executablePath, String arguments, String dir, String envText) throws IOException {
         Project project;
         String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
