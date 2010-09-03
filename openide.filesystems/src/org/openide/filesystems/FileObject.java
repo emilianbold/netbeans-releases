@@ -53,7 +53,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,7 +62,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import org.openide.util.Enumerations;
-import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 
 /** This is the base for all implementations of file objects on a filesystem.
@@ -528,7 +526,7 @@ public abstract class FileObject extends Object implements Serializable {
 
     /** Puts the dispatch event into the filesystem.
     */
-    private final void dispatchEvent(FCLSupport.Op op, Enumeration<FileChangeListener> en, FileEvent fe) {
+    private void dispatchEvent(FCLSupport.Op op, Enumeration<FileChangeListener> en, FileEvent fe) {
         try {
             FileSystem fs = getFileSystem();
             fs.dispatchEvent(new ED(op, en, fe));
@@ -780,6 +778,7 @@ public abstract class FileObject extends Object implements Serializable {
     */
     public Enumeration<? extends FileObject> getChildren(final boolean rec) {
         class WithChildren implements Enumerations.Processor<FileObject, FileObject> {
+            @Override
             public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 if (rec && fo.isFolder()) {
                     toAdd.addAll(Arrays.asList(fo.getChildren()));
@@ -1058,6 +1057,7 @@ public abstract class FileObject extends Object implements Serializable {
         /** @param onlyPriority if true then invokes only priority listeners
          *  else all listeners are invoked.
          */
+        @Override
         protected void dispatch(boolean onlyPriority, Collection<Runnable> postNotify) {
             if (this.op == null) {
                 this.op = fe.getFile().isFolder() ? FCLSupport.Op.FOLDER_CREATED : FCLSupport.Op.DATA_CREATED;
@@ -1124,6 +1124,7 @@ public abstract class FileObject extends Object implements Serializable {
             }
         }
 
+        @Override
         protected void setAtomicActionLink(EventControl.AtomicActionLink propID) {
             fe.setAtomicActionLink(propID);
         }
@@ -1138,6 +1139,7 @@ public abstract class FileObject extends Object implements Serializable {
             this.folders = folders;
         }
 
+        @Override
         public FileObject process(FileObject obj, Collection<FileObject> coll) {
             FileObject fo = obj;
 

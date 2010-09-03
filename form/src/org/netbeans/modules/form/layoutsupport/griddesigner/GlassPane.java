@@ -70,6 +70,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
+import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteComponentAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsChange;
@@ -127,6 +128,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private boolean moving;
     /** Determines if we are in the middle of resizing. */
     private boolean resizing;
+    /** Determines if we are in the middle of area selection. */
+    private boolean selecting;
     /** Determines the direction in which we are (or will start) resizing. */
     private int resizingMode;
     /** The initial point of the current resizing/moving. */
@@ -274,6 +277,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         } else if (moving) {
             paintResizing(g);
         } else {
+            if (selecting) {
+                g.setColor(GridDesigner.SELECTION_COLOR);
+                g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
+            }
             paintSelection(g);
         }
         if (animation && (animPhase == 1f)) {
@@ -940,6 +947,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @param selection new selection.
      */
     void setSelection(Set<Component> selection) {
+        assert !selection.contains(null);
         if (selection == this.selection) {
             return;
         }
@@ -948,6 +956,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         }
         this.selection = selection;
         designer.setSelection(selection);
+        requestFocusInWindow();
     }
 
     /**
@@ -958,7 +967,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     @Override
     protected void processKeyEvent(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        if ((keyCode == KeyEvent.VK_ESCAPE) && (moving || resizing)) {
+        if (keyCode == KeyEvent.VK_DELETE) {
+            if (!selection.isEmpty()) {
+                performAction(new DeleteComponentAction());
+            }
+        } else if ((keyCode == KeyEvent.VK_ESCAPE) && (moving || resizing)) {
             // Cancel moving and resizing when Esc is pressed.
             moving = false;
             resizing = false;
@@ -1049,9 +1062,30 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             } else if (resizing) {
                 resizing = false;
                 changeLocation();
+            } else if (selecting) {
+                selecting = false;
+                boolean inverse = (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0;
+                Set<Component> newSelection = new HashSet<Component>();
+                if (inverse) {
+                    newSelection.addAll(selection);
+                }
+                for (Component comp : componentPane.getComponents()) {
+                    if (GridUtils.isPaddingComponent(comp)) {
+                        continue;
+                    }
+                    Rectangle rect = fromComponentPane(comp.getBounds());
+                    if (draggingRect.intersects(rect)) {
+                        if (inverse && newSelection.contains(comp)) {
+                            newSelection.remove(comp);
+                        } else {
+                            newSelection.add(comp);
+                        }
+                    }
+                }
+                setSelection(newSelection);
             } else {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    if ((mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
+                    if ((focusedComponent != null) && (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
                         Set<Component> newSelection = new HashSet<Component>();
                         newSelection.addAll(selection);
                         if (selection.contains(focusedComponent)) {
@@ -1066,7 +1100,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 }
                 if (SwingUtilities.isRightMouseButton(e)) {
                     focusedComponent = findComponent(point);
-                    if (!selection.contains(focusedComponent)) {
+                    // Normally, this happens when mouse is pressed.
+                    // Unfortunately, we don't receive mouse press event
+                    // when this mouse press event cancels previously shown
+                    // popup. Hence, we do this check again for mouse release.
+                    if (!selection.contains(focusedComponent) && (focusedComponent != null)) {
                         setSelection(focusedComponent);
                     }
                     List<GridAction> actions = null;
@@ -1143,6 +1181,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             if (resizing) {
                 draggingRect = calculateResizingRectangle(e.getPoint(), focusedComponent);
                 calculateResizingGridLocation();
+            } else if (focusedComponent == null) {
+                selecting = true;
+                draggingRect = new Rectangle(draggingStart);
+                draggingRect.add(e.getPoint());
             } else if (!selection.isEmpty()) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     if (!moving) {
