@@ -42,64 +42,55 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
-import org.netbeans.modules.web.beans.navigation.InjectablesPopup;
-import org.netbeans.modules.web.beans.navigation.PopupUtil;
+import org.netbeans.modules.web.beans.navigation.InjectablesPanel;
+import org.netbeans.modules.web.beans.navigation.ResizablePopup;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+
 
 /**
  * @author ads
  *
  */
-public class GoToObserverAtCaretAction extends AbstractObserversAction {
+public class InspectObserversAtCaretAction extends AbstractObserversAction {
+    
+    private static final long serialVersionUID = 3982229267831538567L;
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1774126451026326794L;
+    private static final String INSPECT_OBSERVERS_AT_CARET =
+        "inspect-observers-at-caret";                       // NOI18N
+    
+    private static final String INSPECT_OBSERVERS_AT_CARET_POPUP =
+        "inspect-observers-at-caret-popup";                 // NOI18N
 
-    private static final String GOTO_OBSERVER_AT_CARET =
-        "go-to-observer-at-caret";                     // NOI18N
-    
-    private static final String GOTO_OBSERVER_AT_CARET_POPUP =
-        "go-to-observer-at-caret-popup";               // NOI18N
-    
-    
-    public GoToObserverAtCaretAction() {
-        super(NbBundle.getMessage(GoToObserverAtCaretAction.class, 
-                GOTO_OBSERVER_AT_CARET));
+    public InspectObserversAtCaretAction() {
+        super(NbBundle.getMessage(InspectObserversAtCaretAction.class, 
+                INSPECT_OBSERVERS_AT_CARET));
+        
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
      */
     @Override
-    protected void modelAcessAction( WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, Object[] variable,
+    protected void modelAcessAction( final WebBeansModel model,
+            final MetadataModel<WebBeansModel> metaModel, final Object[] variable,
             final JTextComponent component, FileObject fileObject )
     {
-        VariableElement var = WebBeansActionHelper.findVariable(model,variable);
+        final VariableElement var = WebBeansActionHelper.findVariable(model,variable);
         if (var == null) {
             return;
         }
@@ -118,45 +109,27 @@ public class GoToObserverAtCaretAction extends AbstractObserversAction {
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return;
         }
-        else if ( observers.size() == 1 ){
-            ExecutableElement method = observers.get( 0 );
-            if ( method == null ){
-                return;
-            }
-            final ElementHandle<ExecutableElement> handle = ElementHandle
-                .create(method);
-            final ClasspathInfo classpathInfo = model
-                .getCompilationController().getClasspathInfo();
+        final List<AnnotationMirror> bindings = model.getQualifiers(var);
+        if (SwingUtilities.isEventDispatchThread()) {
+            showDialog(observers, bindings, model.getCompilationController(), 
+                    metaModel , var);
+        }
+        else {
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
-                    ElementOpen.open(classpathInfo, handle);
+                    showDialog(observers, bindings, model.getCompilationController(), 
+                            metaModel, var);
                 }
             });
         }
-        else {
-            final CompilationController controller = model
-                .getCompilationController();
-            if (SwingUtilities.isEventDispatchThread()) {
-                showPopup(observers, controller, metaModel, component);
-            }
-            else {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        showPopup(observers, controller, metaModel, component);
-                    }
-                });
-            }
-        }
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
      */
     @Override
     protected String getActionCommand() {
-        return GOTO_OBSERVER_AT_CARET;
+        return INSPECT_OBSERVERS_AT_CARET;
     }
 
     /* (non-Javadoc)
@@ -164,34 +137,21 @@ public class GoToObserverAtCaretAction extends AbstractObserversAction {
      */
     @Override
     protected String getPopupMenuKey() {
-        return GOTO_OBSERVER_AT_CARET_POPUP;
+        return INSPECT_OBSERVERS_AT_CARET_POPUP;
     }
-    
-    private void showPopup( List<ExecutableElement> methods ,
-            CompilationController controller, 
-            MetadataModel<WebBeansModel> model ,JTextComponent target ) 
+
+    private void showDialog( List<ExecutableElement> methods , 
+            List<AnnotationMirror> bindings , CompilationController controller, 
+            MetadataModel<WebBeansModel> model , VariableElement variable ) 
     {
-        List<ElementHandle<Element>> handles  = 
-            new ArrayList<ElementHandle<Element>>( methods.size()); 
-        for (ExecutableElement method : methods) {
-            handles.add( ElementHandle.<Element>create( method ));
-        }
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));
-        try {
-            Rectangle rectangle = target.modelToView(target.getCaret().getDot());
-            Point point = new Point(rectangle.x, rectangle.y + rectangle.height);
-            SwingUtilities.convertPointToScreen(point, target);
-
-            String title = NbBundle.getMessage(
-                    GoToInjectableAtCaretAction.class, "LBL_ChooseObserver");
-            PopupUtil.showPopup(new InjectablesPopup(title, handles, controller), title,
-                    point.x, point.y);
-
-        }
-        catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+                InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
+        JDialog dialog = ResizablePopup.getDialog();
+        String title = NbBundle.getMessage(InspectObserversAtCaretAction.class,
+                "TITLE_Observers" , variable.getSimpleName().toString() );//NOI18N
+        dialog.setTitle( title );
+        dialog.setContentPane( new InjectablesPanel(variable, bindings, 
+                controller , model, null ));
+        dialog.setVisible( true );
     }
-
 }
