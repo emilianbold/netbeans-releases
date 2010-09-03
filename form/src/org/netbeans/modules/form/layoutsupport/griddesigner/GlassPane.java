@@ -941,6 +941,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @param selection new selection.
      */
     void setSelection(Set<Component> selection) {
+        assert !selection.contains(null);
         if (selection == this.selection) {
             return;
         }
@@ -1057,7 +1058,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 changeLocation();
             } else {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    if ((mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
+                    if ((focusedComponent != null) && (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
                         Set<Component> newSelection = new HashSet<Component>();
                         newSelection.addAll(selection);
                         if (selection.contains(focusedComponent)) {
@@ -1072,7 +1073,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 }
                 if (SwingUtilities.isRightMouseButton(e)) {
                     focusedComponent = findComponent(point);
-                    if (!selection.contains(focusedComponent)) {
+                    // Normally, this happens when mouse is pressed.
+                    // Unfortunately, we don't receive mouse press event
+                    // when this mouse press event cancels previously shown
+                    // popup. Hence, we do this check again for mouse release.
+                    if (!selection.contains(focusedComponent) && (focusedComponent != null)) {
                         setSelection(focusedComponent);
                     }
                     List<GridAction> actions = null;
@@ -1149,7 +1154,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             if (resizing) {
                 draggingRect = calculateResizingRectangle(e.getPoint(), focusedComponent);
                 calculateResizingGridLocation();
-            } else if (!selection.isEmpty()) {
+            } else if (!selection.isEmpty() && (focusedComponent != null)) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     if (!moving) {
                         // Moving start
