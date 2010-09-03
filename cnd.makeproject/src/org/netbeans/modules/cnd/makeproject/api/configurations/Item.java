@@ -388,7 +388,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         PredefinedToolKind tool;
         String mimeType = getMIMEType();
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            tool = PredefinedToolKind.CCompiler;
+            DataObject dataObject = getDataObject();
+            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+            // Do not use C for .pc files
+            if (fo != null && "pc".equals(fo.getExt())) { //NOI18N
+                tool = PredefinedToolKind.CustomTool;
+            } else {
+                tool = PredefinedToolKind.CCompiler;
+            }
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.CustomTool;
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
