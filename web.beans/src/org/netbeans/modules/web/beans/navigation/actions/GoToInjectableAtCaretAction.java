@@ -45,14 +45,9 @@ package org.netbeans.modules.web.beans.navigation.actions;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -65,15 +60,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -90,10 +77,10 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public final class GoToInjectableAtCaretAction extends BaseAction {
+public final class GoToInjectableAtCaretAction extends AbstractInjectableAction {
 
-    private static final long serialVersionUID = 1857528107859448216L;
-    
+    private static final long serialVersionUID = -6998124281864635094L;
+
     private static final String GOTO_INJACTABLE_AT_CARET =
         "go-to-injactable-at-caret";                     // NOI18N
     
@@ -102,106 +89,41 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
 
     public GoToInjectableAtCaretAction() {
         super(NbBundle.getMessage(GoToInjectableAtCaretAction.class, 
-                GOTO_INJACTABLE_AT_CARET), 0);
-        
-        putValue(ACTION_COMMAND_KEY, GOTO_INJACTABLE_AT_CARET);
-        putValue(SHORT_DESCRIPTION, getValue(NAME));
-        putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
-        putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
-                GoToInjectableAtCaretAction.class,
-                GOTO_INJACTABLE_AT_CARET_POPUP));
+                GOTO_INJACTABLE_AT_CARET));
+    }
+    
 
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N*/
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
+     */
+    @Override
+    protected String getActionCommand() {
+        return GOTO_INJACTABLE_AT_CARET;
     }
 
 
     /* (non-Javadoc)
-     * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getPopupMenuKey()
      */
     @Override
-    public void actionPerformed( ActionEvent event, final JTextComponent component ) {
-        if ( component == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        final FileObject fileObject = NbEditorUtilities.getFileObject( 
-                component.getDocument());
-        if ( fileObject == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        Project project = FileOwnerQuery.getOwner( fileObject );
-        if ( project == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        
-        MetaModelSupport support = new MetaModelSupport(project);
-        final MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        if ( metaModel == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        
-        /*
-         *  this list will contain variable element name and TypeElement 
-         *  qualified name which contains variable element. 
-         */
-        final Object[] variableAtCaret = new Object[2];
-        if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
-                variableAtCaret , true ))
-        {
-            return;
-        }
-        
-        try {
-            metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
+    protected String getPopupMenuKey() {
+        return GOTO_INJACTABLE_AT_CARET_POPUP;
+    }
 
-                public Void run( WebBeansModel model ) throws Exception {
-                    inspectInjectables(component, fileObject, 
-                            model , metaModel, variableAtCaret );
-                    return null;
-                }
-            });
-        }
-        catch (MetadataModelException e) {
-            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
-        }
-        catch (IOException e) {
-            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
-        }
-    }
-    
     /* (non-Javadoc)
-     * @see javax.swing.AbstractAction#isEnabled()
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
      */
-    @Override
-    public boolean isEnabled() {
-        return WebBeansActionHelper.isEnabled();
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.editor.BaseAction#asynchonous()
-     */
-    @Override
-    protected boolean asynchonous() {
-        return true;
-    }
-    
     /**
      * Variable element is resolved based on containing type element 
      * qualified name and simple name of variable itself.
      * Model methods are used further for injectable resolution.   
      */
-    private void inspectInjectables( final JTextComponent component,
-            final FileObject fileObject, final WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel,
-            final Object[] variablePath )
+    @Override
+    protected void modelAcessAction( WebBeansModel model,
+            final MetadataModel<WebBeansModel> metaModel, Object[] variable,
+            final JTextComponent component, FileObject fileObject )
     {
-        VariableElement var = WebBeansActionHelper.findVariable(model, variablePath);
+        VariableElement var = WebBeansActionHelper.findVariable(model, variable);
         if (var == null) {
             return;
         }
@@ -308,4 +230,5 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
             Exceptions.printStackTrace(ex);
         }
     }
+
 }
