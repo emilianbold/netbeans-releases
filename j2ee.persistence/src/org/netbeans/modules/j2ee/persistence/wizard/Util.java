@@ -500,7 +500,7 @@ public class Util {
     public static boolean isJPAVersionSupported(Project project, String version){
         JPAModuleInfo info = project.getLookup().lookup(JPAModuleInfo.class);
         if(info!=null){
-            return Boolean.TRUE.equals(info.isJPAVersionSupported(version));
+            return !Boolean.FALSE.equals(info.isJPAVersionSupported(version));//null return considerd valid too and the same as true
         }
         return true;
 
