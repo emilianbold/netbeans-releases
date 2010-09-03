@@ -83,6 +83,9 @@ public class ProgressObjectUtil {
     public static boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) throws TimedOutException {
         assert po != null;
         assert ui != null;
+        // There may be a problem if server reports RELEASED as final state
+        // however there is no way how to handle it here, because some POs has
+        // RELEASED as initial state
         final AtomicBoolean completed = new AtomicBoolean();
         ui.setProgressObject(po);
         try {
@@ -91,11 +94,14 @@ public class ProgressObjectUtil {
                 @Override
                 public void handleProgressEvent(ProgressEvent progressEvent) {
                     DeploymentStatus status = progressEvent.getDeploymentStatus();
-                    LOGGER.log(Level.FINEST, "Received progress state {0}", status.getState());
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST, "Received progress state {0} from {1}",
+                                new Object[] {status.getState(), progressEvent});
+                    }
                     if (status.isCompleted()) {
                         completed.set(true);
                     }
-                    if (status.isCompleted() || status.isFailed() || StateType.RELEASED.equals(status.getState())) {
+                    if (status.isCompleted() || status.isFailed()) {
                         progressFinished.countDown();
                     }
                 }
@@ -106,7 +112,7 @@ public class ProgressObjectUtil {
                 // the completion event might have arrived before the progress listener 
                 // was registered, wait only if not yet finished
                 DeploymentStatus status = po.getDeploymentStatus();
-                if (!status.isCompleted() && !status.isFailed() && !StateType.RELEASED.equals(status.getState())) {
+                if (!status.isCompleted() && !status.isFailed()) {
                     try {
                         if (timeout == 0) {
                             progressFinished.await();
@@ -121,10 +127,6 @@ public class ProgressObjectUtil {
                     }
                 } else if (status.isCompleted()) {
                     completed.set(true);
-                }
-                // report suspicious behaviour
-                if (StateType.RELEASED.equals(status.getState())) {
-                    LOGGER.log(Level.WARNING, "Received RELEASED state from {0}", po);
                 }
             } finally {
                 po.removeProgressListener(listener);
