@@ -41,53 +41,30 @@
  */
 package org.netbeans.modules.websvc.wsstack.jaxrs.glassfish.v3;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
-import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
-import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
-import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 
 /**
  *
  * @author ayubkhan
  */
-public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
+public class GlassFishV31EE6JaxRsStack extends GlassFishV3EE6JaxRsStack {
 
-    private static final String[] JAXRS_LIBRARIES =
-        new String[] {"jackson", "jersey-gf-bundle", "jettison", "jsr311-api"}; //NOI18N
-    private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
+    private static final String[] GFV31_JAXRS_LIBRARIES =
+        new String[] {"jackson", "jersey-client", "jersey-core", "jersey-gf-server", "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
 
-    private String gfRootStr;
-    private JaxRs jaxRs;
-
-    public GlassFishV3EE6JaxRsStack(String gfRootStr) {
-        this.gfRootStr = gfRootStr;
-        jaxRs = new JaxRs();
-    }
-
-    @Override
-    public JaxRs get() {
-        return jaxRs;
-    }
-
-    @Override
-    public WSStackVersion getVersion() {
-        return WSStackVersion.valueOf(1, 1, 0, 0);
+    public GlassFishV31EE6JaxRsStack(String gfRootStr) {
+        super(gfRootStr);
     }
 
     @Override
     public WSTool getWSTool(Tool toolId) {
         if (toolId == JaxRs.Tool.JAXRS) {
-            return WSStackFactory.createWSTool(new JaxRsTool(JaxRs.Tool.JAXRS, JAXRS_LIBRARIES));
+            return WSStackFactory.createWSTool(new JaxRsTool(JaxRs.Tool.JAXRS, GFV31_JAXRS_LIBRARIES));
         }
         return null;
     }
@@ -99,7 +76,7 @@ public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
             WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
             if (wsTool != null) {
                 URL[] libs = wsTool.getLibraries();
-                if(libs != null && libs.length == JAXRS_LIBRARIES.length) {
+                if(libs != null && libs.length == GFV31_JAXRS_LIBRARIES.length) {
                     isFeatureSupported = true;
                 }
             }
@@ -107,62 +84,4 @@ public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
         return isFeatureSupported;
     }
 
-    private File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
-        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
-
-        if(candidates != null && candidates.length > 0) {
-            return candidates[0]; // the first one
-        } else {
-            return null;
-        }
-    }
-
-    private static class VersionFilter implements FileFilter {
-
-        private String nameprefix;
-
-        public VersionFilter(String nameprefix) {
-            this.nameprefix = nameprefix;
-        }
-
-        @Override
-        public boolean accept(File file) {
-            return file.getName().startsWith(nameprefix);
-        }
-
-    }
-
-    protected class JaxRsTool implements WSToolImplementation {
-
-        JaxRs.Tool tool;
-        String[] libraries;
-
-        JaxRsTool(JaxRs.Tool tool, String[] libraries) {
-            this.tool = tool;
-            this.libraries = libraries;
-        }
-        
-        @Override
-        public String getName() {
-            return tool.getName();
-        }
-
-        @Override
-        public URL[] getLibraries() {
-            List<URL> cPath = new ArrayList<URL>();
-            for (String entry : libraries) {
-                File f = getJarName(gfRootStr, entry);
-                if ((f != null) && (f.exists())) {
-                    try {
-                        cPath.add(f.toURI().toURL());
-                    } catch (MalformedURLException ex) {
-
-                    }
-                }
-            }
-            return cPath.toArray(new URL[cPath.size()]);
-        }
-    }
 }
