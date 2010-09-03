@@ -43,12 +43,7 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
@@ -57,15 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -81,10 +68,10 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public final class InspectInjectablesAtCaretAction extends BaseAction {
+public final class InspectInjectablesAtCaretAction extends AbstractInjectableAction {
 
-    private static final long serialVersionUID = 1857528107859448216L;
-    
+    private static final long serialVersionUID = -8870045479163815171L;
+
     private static final String INSPECT_INJACTABLES_AT_CARET =
         "inspect-injactables-at-caret";                     // NOI18N
     
@@ -93,105 +80,39 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
 
     public InspectInjectablesAtCaretAction() {
         super(NbBundle.getMessage(InspectInjectablesAtCaretAction.class, 
-                INSPECT_INJACTABLES_AT_CARET), 0);
-        
-        putValue(ACTION_COMMAND_KEY, INSPECT_INJACTABLES_AT_CARET);
-        putValue(SHORT_DESCRIPTION, getValue(NAME));
-        putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
-        putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
-                InspectInjectablesAtCaretAction.class,
-                INSPECT_INJACTABLES_AT_CARET_POPUP));
-
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N*/
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
-     */
-    @Override
-    public void actionPerformed( ActionEvent event, final JTextComponent component ) {
-        if ( component == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        final FileObject fileObject = NbEditorUtilities.getFileObject( 
-                component.getDocument());
-        if ( fileObject == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        Project project = FileOwnerQuery.getOwner( fileObject );
-        if ( project == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        MetaModelSupport support = new MetaModelSupport(project);
-        final MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        if ( metaModel == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        
-        /*
-         *  this list will contain variable element name and TypeElement 
-         *  qualified name which contains variable element. 
-         */
-        final Object[] variableAtCaret = new Object[2];
-        if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
-                variableAtCaret , true  ))
-        {
-            return;
-        }
-        
-        try {
-            metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
-
-                public Void run( WebBeansModel model ) throws Exception {
-                    inspectInjectables(component, fileObject, 
-                            model , metaModel, variableAtCaret );
-                    return null;
-                }
-            });
-        }
-        catch (MetadataModelException e) {
-            Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
-        }
-        catch (IOException e) {
-            Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
-        }
+                INSPECT_INJACTABLES_AT_CARET));
     }
     
     /* (non-Javadoc)
-     * @see javax.swing.AbstractAction#isEnabled()
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
      */
     @Override
-    public boolean isEnabled() {
-        return WebBeansActionHelper.isEnabled();
+    protected String getActionCommand() {
+        return INSPECT_INJACTABLES_AT_CARET;
     }
-    
-    
+
     /* (non-Javadoc)
-     * @see org.netbeans.editor.BaseAction#asynchonous()
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getPopupMenuKey()
      */
     @Override
-    protected boolean asynchonous() {
-        return true;
+    protected String getPopupMenuKey() {
+        return INSPECT_INJACTABLES_AT_CARET_POPUP;
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
+     */
     /**
      * Variable element is resolved based on containing type element 
      * qualified name and simple name of variable itself.
      * Model methods are used further for injectable resolution.   
      */
-    private void inspectInjectables( final JTextComponent component,
-            final FileObject fileObject, final WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel,
-            final Object[] variablePath )
+    @Override
+    protected void modelAcessAction( WebBeansModel model,
+            final MetadataModel<WebBeansModel> metaModel, Object[] variable,
+            final JTextComponent component, FileObject fileObject )
     {
-        VariableElement var = WebBeansActionHelper.findVariable(model, variablePath);
+        final VariableElement var = WebBeansActionHelper.findVariable(model, variable);
         if (var == null) {
             return;
         }
@@ -228,28 +149,30 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                 .getCompilationController();
         final List<AnnotationMirror> bindings = model.getQualifiers(var);
         if (SwingUtilities.isEventDispatchThread()) {
-            showDialog(result, bindings, controller, metaModel);
+            showDialog(result, bindings, controller, metaModel, var );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    showDialog(result, bindings, controller, metaModel);
+                    showDialog(result, bindings, controller, metaModel, var );
                 }
             });
         }
     }
 
     private void showDialog( Result result , List<AnnotationMirror> bindings , 
-            CompilationController controller, MetadataModel<WebBeansModel> model ) 
+            CompilationController controller, MetadataModel<WebBeansModel> model,
+            VariableElement variable) 
     {
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));
+                InjectablesModel.class, "LBL_WaitNode"));           // NOI18N
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
-                "TITLE_Injectables" , result.getVariable().getSimpleName().toString() );
+                "TITLE_Injectables" , result.getVariable().getSimpleName().toString() );//NOI18N
         dialog.setTitle( title );
-        dialog.setContentPane( new InjectablesPanel(result, bindings, 
-                controller , model));
+        dialog.setContentPane( new InjectablesPanel(variable, bindings, 
+                controller , model, new InjectablesModel(result, controller, 
+                        model)));
         dialog.setVisible( true );
     }
 
