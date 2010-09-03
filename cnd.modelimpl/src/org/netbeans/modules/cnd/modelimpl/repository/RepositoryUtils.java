@@ -82,7 +82,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 88;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 89;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
