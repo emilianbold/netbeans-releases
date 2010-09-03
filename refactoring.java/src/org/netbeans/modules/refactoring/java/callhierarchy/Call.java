@@ -194,7 +194,19 @@ final class Call implements CallDescriptor {
             c.identity = ElementHandle.create(selectionElm);
         }
         c.htmlDisplayName = createHtmlHeader(selectionElm, occurrences.size(), javac);
-        c.icon = ElementIcons.getElementIcon(selectionElm.getKind(), selectionElm.getModifiers());
+        
+        Icon i = ElementIcons.getElementIcon(selectionElm.getKind(), selectionElm.getModifiers());
+        
+        if (isCallerGraph) {
+            if (parent != null) {
+                c.icon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(ImageUtilities.icon2Image(i), ImageUtilities.loadImage("org/netbeans/modules/refactoring/java/resources/up.png"), 0, 0));
+            } else {
+                c.icon = i;
+            }
+        } else {
+            c.icon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(ImageUtilities.icon2Image(i), ImageUtilities.loadImage("org/netbeans/modules/refactoring/java/resources/down.png"), 0, 0));
+        }
+
         c.selection = TreePathHandle.create(selection, javac);
         c.parent = parent;
         if (parent != null) {
