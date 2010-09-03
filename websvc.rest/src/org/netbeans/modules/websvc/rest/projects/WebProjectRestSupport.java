@@ -160,6 +160,18 @@ public class WebProjectRestSupport extends WebRestSupport {
     @Override
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
+
+        boolean hasServerJerseeyLibrary = hasSwdpLibrary();
+        boolean serverLibraryAdded = false;
+        if (!RestUtils.isJSR_311OnClasspath(project)) {
+            if (hasServerJerseeyLibrary) {
+                addServerJerseyLibrary();
+                serverLibraryAdded = true;
+            } else {
+                addIdeJerseyLibrary(false,  WebRestSupport.CONFIG_TYPE_USER);
+            }
+        }
+
         WebRestSupport.RestConfig restConfig = null;
         if (!isRestSupportOn()) {
             needsRefresh = true;
@@ -190,8 +202,15 @@ public class WebProjectRestSupport extends WebRestSupport {
             }
         }
 
-        boolean addJerseyLib = (restConfig != null && restConfig.isJerseyLibSelected());
-        addSwdpLibrary(addJerseyLib, restConfigType);
+        if (restConfig != null && restConfig.isJerseyLibSelected()) {
+            if (hasServerJerseeyLibrary) {
+                if (!serverLibraryAdded) {
+                    addServerJerseyLibrary();
+                }
+            } else {
+                addIdeJerseyLibrary(true, restConfigType);
+            }
+        }
 
         if (hasSpringSupport()) {
             addJerseySpringJar();
@@ -261,30 +280,24 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
     }
 
-    private void addSwdpLibrary(boolean addJerseyLib, String configType) throws IOException {
+    private void addServerJerseyLibrary() throws IOException {
         // get or create REST library, from selected J2EE server, and add it to project's classpath
-        if (addJerseyLib && hasSwdpLibrary()) {
-            J2eePlatform platform = getPlatform();
-            if (platform != null) {
-                WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(platform);
-                if (wsStack != null) { //GF
-                    J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-                    if (j2eeModuleProvider != null) {
-                        String libName = getServerRestLibraryName(j2eeModuleProvider);
-                        Library swdpLibrary = LibraryManager.getDefault().getLibrary(libName);
-                        if (swdpLibrary != null) {
-                            addSwdpLibrary(classPathTypes, swdpLibrary);
-                        }
-                    }
-                }
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            String libName = getServerRestLibraryName(j2eeModuleProvider);
+            Library swdpLibrary = LibraryManager.getDefault().getLibrary(libName);
+            if (swdpLibrary != null) {
+                addSwdpLibrary(classPathTypes, swdpLibrary);
             }
+        }
+    }
+
+    private void addIdeJerseyLibrary(boolean addJerseyLib, String configType) throws IOException {
+        if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+            // javax.ws.rs.ApplicationPath needs to be on classpath
+            addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/ApplicationPath.class"); //NOI18N
         } else {
-            if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
-                // javax.ws.rs.ApplicationPath needs to be on classpath
-                addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/ApplicationPath.class"); //NOI18N
-            } else {
-                addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/Path.class"); //NOI18N
-            }
+            addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/Path.class"); //NOI18N
         }
     }
 
