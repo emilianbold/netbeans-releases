@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -87,7 +88,28 @@ import org.openide.util.NbBundle;
 public class GoToObserverAtCaretAction extends BaseAction {
 
     private static final long serialVersionUID = -4453813780446077681L;
+    
+    private static final String GOTO_OBSERVER_AT_CARET =
+        "go-to-observer-at-caret";                     // NOI18N
+    
+    private static final String GOTO_OBSERVER_AT_CARET_POPUP =
+        "go-to-observer-at-caret-popup";               // NOI18N
+    
+    
+    public GoToObserverAtCaretAction() {
+        super(NbBundle.getMessage(GoToObserverAtCaretAction.class, 
+                GOTO_OBSERVER_AT_CARET), 0);
+        
+        putValue(ACTION_COMMAND_KEY, GOTO_OBSERVER_AT_CARET);
+        putValue(SHORT_DESCRIPTION, getValue(NAME));
+        putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
+        putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
+                GoToInjectableAtCaretAction.class,
+                GOTO_OBSERVER_AT_CARET_POPUP));
 
+        putValue("noIconInMenu", Boolean.TRUE);             // NOI18N
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
      */
