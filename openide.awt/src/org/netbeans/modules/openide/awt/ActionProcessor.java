@@ -61,6 +61,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -376,5 +377,24 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         f.stringvalue("originalFile", "Actions/" + aid.category() + "/" + aid.id().replace('.', '-') + ".instance");
         f.position(ref.position());
         f.write();
+        
+        if (ref.separatorAfter() != -1) {
+            if (ref.position() == -1 || ref.position() >= ref.separatorAfter()) {
+                throw new LayerGenerationException("separatorAfter() must be greater than position()", e);
+            }
+            File after = layer(e).file(ref.path() + "/" + name + "-separatorAfter.instance");
+            after.newvalue("instanceCreate", JSeparator.class.getName());
+            after.position(ref.separatorAfter());
+            after.write();
+        }
+        if (ref.separatorBefore() != -1) {
+            if (ref.position() == -1 || ref.position() <= ref.separatorBefore()) {
+                throw new LayerGenerationException("separatorBefore() must be lower than position()", e);
+            }
+            File before = layer(e).file(ref.path() + "/" + name + "-separatorBefore.instance");
+            before.newvalue("instanceCreate", JSeparator.class.getName());
+            before.position(ref.separatorBefore());
+            before.write();
+        }
     }
 }
