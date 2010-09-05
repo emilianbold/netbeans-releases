@@ -60,7 +60,10 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-
+/**
+ *
+ * @author Jaroslav Bachorik, Tomas Hurka, Jaroslav Tulach
+ */
 abstract class Sampler implements Runnable, ActionListener {
     private static final int SAMPLER_RATE = 10;
     private static final double MAX_AVERAGE = SAMPLER_RATE * 3;
@@ -103,10 +106,6 @@ abstract class Sampler implements Runnable, ActionListener {
      */
     protected abstract void printStackTrace(Throwable ex);
     
-    /** Cancel the started timer.
-     */
-    protected abstract void cancelTimer();
-
     /** Methods for displaying progress.
      */
     protected abstract void openProgress(int steps);
@@ -135,7 +134,7 @@ abstract class Sampler implements Runnable, ActionListener {
         final ThreadMXBean threadBean = getThreadMXBean();
         out = new ByteArrayOutputStream(64 * 1024);
         try {
-            samplesStream = new SamplesOutputStream(out, this);
+            samplesStream = new SamplesOutputStream(out, this, MAX_SAMPLES);
         } catch (IOException ex) {
             printStackTrace(ex);
             return;
@@ -148,10 +147,6 @@ abstract class Sampler implements Runnable, ActionListener {
             public void run() {
                 synchronized (Sampler.this) {
                     if (stopped) {
-                        return;
-                    }
-                    if (samples >= MAX_SAMPLES) {
-                        doCancelTimer();
                         return;
                     }
                     try {
@@ -167,11 +162,6 @@ abstract class Sampler implements Runnable, ActionListener {
         }, SAMPLER_RATE, SAMPLER_RATE);
     }
 
-    private void doCancelTimer() {
-        timer.cancel();
-        cancelTimer();
-    }
-
     @Override
     public synchronized void actionPerformed(ActionEvent e) {
         try {
@@ -179,8 +169,7 @@ abstract class Sampler implements Runnable, ActionListener {
             assert !stopped;
             stopped = true;
             timer.cancel();
-            if ("cancel".equals(e.getActionCommand()) || samples < 1) {
-                // NOI18N
+            if ("cancel".equals(e.getActionCommand()) || samples < 1) {     // NOi18N
                 return;
             }
             double average = sum / samples;
@@ -281,11 +270,6 @@ abstract class Sampler implements Runnable, ActionListener {
             protected void printStackTrace(Throwable ex) {
                 ex.printStackTrace();
                 System.exit(2);
-            }
-
-            @Override
-            protected void cancelTimer() {
-                // nothing
             }
 
             @Override
