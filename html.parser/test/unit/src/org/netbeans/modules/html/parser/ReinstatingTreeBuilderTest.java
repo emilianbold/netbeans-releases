@@ -106,6 +106,29 @@ public class ReinstatingTreeBuilderTest extends NbTestCase {
         
     }
 
+    public void testCompleteAfterTitle() throws ParseException {
+        String code = "<!doctype html> "
+                + "<html> "
+                + "<head>"
+                + "<title><"
+                + "</head>"
+                + "</html>";
+        
+        HtmlParseResult result = parse(code);
+        assertNotNull(result);
+        assertNotNull(result.root());
+
+        AstNodeUtils.dumpTree(result.root());
+
+        AstNode title = AstNodeUtils.query(result.root(), "html/head/title");
+        assertNotNull(title);
+
+        StateSnapshot snapshot = Html5Parser.makeTreeBuilderSnapshot(title);
+        ReinstatingTreeBuilder tb = ReinstatingTreeBuilder.create(snapshot);
+
+        assertCanFollow(false, title, ElementName.DIV, tb);
+    }
+
     private List<StackNode> makeStack(AstNode n) {
         List<StackNode> stack = new ArrayList<StackNode>();
         AstNode node = n;
