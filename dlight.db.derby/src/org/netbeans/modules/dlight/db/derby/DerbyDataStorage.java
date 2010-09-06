@@ -255,6 +255,20 @@ public class DerbyDataStorage extends SQLDataStorage {
         return SQL_QUERY_DELIMETER;
     }
 
+    @Override
+    protected String getAutoIncrementExpresion() {
+        return null;
+    }
+
+    @Override
+    protected String getPrimaryKeyExpression() {
+        return null;
+    }
+    
+    
+    
+    
+
 //    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
 //        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
 //    }

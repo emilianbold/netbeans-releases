@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.dlight.core.stack.utils;
 
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+
 /**
  *
  * @author Alexander Simon
@@ -48,6 +50,73 @@ package org.netbeans.modules.dlight.core.stack.utils;
 public final class FunctionNameUtils {
 
     private FunctionNameUtils() {
+    }
+
+    public static SourceFileInfo getSourceFileInfo(String functionSignature) {
+        int indexOf = functionSignature.lastIndexOf("+");
+        //now we should get source file info (if presented)
+        while (indexOf > 0) {
+            if (functionSignature.length() > indexOf + 1
+                    && functionSignature.charAt(indexOf + 1) == '0') {
+                break;
+            }
+            indexOf = functionSignature.indexOf("+", indexOf + 1);
+        }
+        //here we are: after the function offset there could be : which starts file:line
+        int indexOfFile = functionSignature.indexOf(":", indexOf);
+        if (indexOfFile < 0) {
+            return null;
+        }
+        String _file = functionSignature.substring(indexOfFile + 1);
+        int index = _file.indexOf(":");
+        if (index < 0) {
+            return new SourceFileInfo(_file, -1);
+        }
+        String fileName = _file.substring(0, index);
+        String line = _file.substring(index + 1);
+        return new SourceFileInfo(fileName, Integer.valueOf(line), 0);
+    }
+
+    public static String getFunctionOffset(String functionSignature) {
+        int indexOf = functionSignature.indexOf("+");
+        while (indexOf > 0) {
+            if (functionSignature.length() > indexOf + 1
+                    && functionSignature.charAt(indexOf + 1) == '0') {
+                return functionSignature.substring(indexOf + 1);
+            }
+            indexOf = functionSignature.indexOf("+", indexOf + 1);
+        }
+        return null;
+    }
+
+    public static String getFunctionModule(final String functionSignature) {
+        final int indexOf = functionSignature.indexOf('`');
+        if (indexOf < 0) {
+            return functionSignature;
+        }
+
+        String moduleName = functionSignature.substring(0, indexOf);
+        //check if there is a + sign inside
+        int indexOfPl = moduleName.indexOf("+");
+        while (indexOfPl > 0) {
+            if (moduleName.length() > indexOfPl + 1
+                    && moduleName.charAt(indexOfPl + 1) == '0') {
+                return moduleName.substring(0, indexOfPl);
+            }
+            indexOfPl = moduleName.indexOf("+", indexOfPl + 1);
+        }
+        return moduleName;
+    }
+
+    public static String getFunctionModuleOffset(final String functionSignature) {
+        final int indexOf = functionSignature.indexOf('`');
+        if (indexOf < 0) {
+            return null;
+        }
+        //check if there is a + sign inside
+
+        String module = functionSignature.substring(0, indexOf);
+        return getFunctionOffset(module);
     }
 
     /**
@@ -60,10 +129,10 @@ public final class FunctionNameUtils {
         int templateLevel = 0;
         boolean isOperator = false;
         int ssOpenmp = functionSignature.indexOf("_$"); // NOI18N
-        if (ssOpenmp >=0 ) {
+        if (ssOpenmp >= 0) {
             int j = functionSignature.indexOf('.');
             if (j > ssOpenmp) {
-                functionSignature = functionSignature.substring(0, ssOpenmp)+functionSignature.substring(j+1);
+                functionSignature = functionSignature.substring(0, ssOpenmp) + functionSignature.substring(j + 1);
             }
         }
         for (int i = 0; i < functionSignature.length(); i++) {
@@ -77,22 +146,22 @@ public final class FunctionNameUtils {
                     break;
                 case 'o':
                     if (functionSignature.substring(i).startsWith("operator") && // NOI18N
-                            functionSignature.length() > i + 8 &&
-                            !Character.isLetter(functionSignature.charAt(i + 8))) {
+                            functionSignature.length() > i + 8
+                            && !Character.isLetter(functionSignature.charAt(i + 8))) {
                         isOperator = true;
                     }
                     break;
                 case '+':
-                    if (functionSignature.length() > i+1 &&
-                        functionSignature.charAt(i + 1) == '0') {
+                    if (functionSignature.length() > i + 1
+                            && functionSignature.charAt(i + 1) == '0') {
                         return functionSignature.substring(start, i);
-                   }
-                   break;
+                    }
+                    break;
                 case '.':
                     return functionSignature.substring(start, i);
                 case ' ':
-                    if (functionSignature.length() > i+1 &&
-                        functionSignature.charAt(i + 1) == '#') {
+                    if (functionSignature.length() > i + 1
+                            && functionSignature.charAt(i + 1) == '#') {
                         return functionSignature.substring(start, i);
                     }
                     if (templateLevel == 0) {
