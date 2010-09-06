@@ -393,7 +393,7 @@ public final class InjectablesModel extends DefaultTreeModel
         elementMap.put(element, node);
     }
     
-    private void insertTreeNode( Map<Element, 
+    static void insertTreeNode( Map<Element, 
             InjectableTreeNode<? extends Element>> elementMap,
             ExecutableElement element , MethodTreeNode node, 
             DefaultMutableTreeNode root , CompilationController controller)
