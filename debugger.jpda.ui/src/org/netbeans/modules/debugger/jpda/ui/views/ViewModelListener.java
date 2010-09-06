@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.ui.views;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JComponent;
 
@@ -55,9 +56,15 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
+import org.netbeans.spi.viewmodel.CheckNodeModel;
+import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.DnDNodeModel;
+import org.netbeans.spi.viewmodel.DnDNodeModelFilter;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
@@ -68,9 +75,10 @@ import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.ReorderableTreeModel;
+import org.netbeans.spi.viewmodel.ReorderableTreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -84,6 +92,12 @@ import org.openide.util.RequestProcessor;
  */
 public class ViewModelListener extends DebuggerManagerAdapter {
     
+    private static final Class[] TREE_MODELS = { TreeModel.class, ReorderableTreeModel.class };
+    private static final Class[] TREE_MODEL_FILTERS = { TreeModelFilter.class, ReorderableTreeModelFilter.class };
+
+    private static final Class[] NODE_MODELS = { NodeModel.class, CheckNodeModel.class, DnDNodeModel.class, ExtendedNodeModel.class };
+    private static final Class[] NODE_MODEL_FILTERS = { NodeModelFilter.class, CheckNodeModelFilter.class, DnDNodeModelFilter.class, ExtendedNodeModelFilter.class };
+
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.models") != null;
 
@@ -127,16 +141,24 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         updateModel ();
     }
     
+    private static void getMultiModels(ContextProvider cp, String viewPath,
+                                       List[] models, Class[] classTypes) {
+        for (int i = 0; i < classTypes.length; i++) {
+            models[i] = cp.lookup (viewPath, classTypes[i]);
+        }
+        //System.err.println("\ngetMultiModels("+viewPath+") = "+Arrays.asList(models)+"\n");
+    }
+
     private synchronized void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         
-        List treeModels;
-        List treeModelFilters;
+        List[] treeModels = new List[TREE_MODELS.length];
+        List[] treeModelFilters = new List[TREE_MODEL_FILTERS.length];
         List treeExpansionModels;
         List treeExpansionModelFilters;
-        List nodeModels;
-        List nodeModelFilters;
+        List[] nodeModels = new List[NODE_MODELS.length];
+        List[] nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
         List tableModels;
         List tableModelFilters;
         List nodeActionsProviders;
@@ -145,12 +167,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         List mm;
         List asynchModelFilters;
         ContextProvider cp = e != null ? DebuggerManager.join(e, dm) : dm;
-        treeModels =            cp.lookup (viewType, TreeModel.class);
-        treeModelFilters =      cp.lookup (viewType, TreeModelFilter.class);
+        getMultiModels(cp, viewType, treeModels, TREE_MODELS);
+        getMultiModels(cp, viewType, treeModelFilters, TREE_MODEL_FILTERS);
         treeExpansionModels =   cp.lookup (viewType, TreeExpansionModel.class);
         treeExpansionModelFilters = cp.lookup (viewType, TreeExpansionModelFilter.class);
-        nodeModels =            cp.lookup (viewType, NodeModel.class);
-        nodeModelFilters =      cp.lookup (viewType, NodeModelFilter.class);
+        getMultiModels(cp, viewType, nodeModels, NODE_MODELS);
+        getMultiModels(cp, viewType, nodeModelFilters, NODE_MODEL_FILTERS);
         tableModels =           cp.lookup (viewType, TableModel.class);
         tableModelFilters =     cp.lookup (viewType, TableModelFilter.class);
         nodeActionsProviders =  cp.lookup (viewType, NodeActionsProvider.class);
@@ -161,11 +183,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         //RequestProcessor rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
         
         List models = new ArrayList(11);
-        models.add(treeModels);
-        models.add(treeModelFilters);
+        models.add(joinLists(treeModels));
+        models.add(joinLists(treeModelFilters));
         models.add(treeExpansionModels);
-        models.add(nodeModels);
-        models.add(nodeModelFilters);
+        models.add(joinLists(nodeModels));
+        models.add(joinLists(nodeModelFilters));
         models.add(tableModels);
         models.add(tableModelFilters);
         models.add(nodeActionsProviders);
@@ -188,6 +210,20 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 Models.createCompoundModel (models)
             );
         }
+    }
+
+    private static List joinLists(List[] modelLists) {
+        List models = new ArrayList();
+        for (List l : modelLists) {
+            synchronized (l) {
+                for (Object o : l) {
+                    if (!models.contains(o)) {
+                        models.add(o);
+                    }
+                }
+            }
+        }
+        return models;
     }
 
     
