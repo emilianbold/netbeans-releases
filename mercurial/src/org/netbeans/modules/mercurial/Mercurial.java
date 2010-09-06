@@ -182,6 +182,9 @@ public class Mercurial {
     public void asyncInit() {
         gotVersion = false;
         RequestProcessor rp = getRequestProcessor();
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "Mercurial subsystem initialized", new Exception()); //NOI18N
+        }
         Runnable init = new Runnable() {
             @Override
             public void run() {
@@ -241,6 +244,9 @@ public class Mercurial {
                 // version has not been scanned yet, run the version command
                 LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
                 if(forceCheck) {
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(Level.FINEST, "isAvailable performed", new Exception()); //NOI18N
+                    }
                     checkVersionIntern();
                 } else {
                     return true;
