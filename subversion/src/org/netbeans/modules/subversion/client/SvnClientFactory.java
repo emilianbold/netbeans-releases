@@ -282,7 +282,7 @@ public class SvnClientFactory {
                 return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
             }
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
-                return new SvnClientCallback(repositoryUrl, handledExceptions);
+                return new JhlClientCallback(repositoryUrl, handledExceptions);
             }
             protected ConnectionType connectionType() {
                 return ConnectionType.javahl;
@@ -467,7 +467,7 @@ public class SvnClientFactory {
                 return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
             }
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
-                return new SvnClientCallback(repositoryUrl, handledExceptions);
+                return new SvnKitClientCallback(repositoryUrl, handledExceptions);
             }
             protected ConnectionType connectionType() {
                 return ConnectionType.svnkit;
