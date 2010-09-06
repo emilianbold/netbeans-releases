@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -148,7 +149,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
 
     @Override
     protected boolean isThis(CsmReference ref) {
-        TokenItem<CppTokenId> refToken = ReferencesSupport.getRefTokenIfPossible(ref);
+        TokenItem<TokenId> refToken = ReferencesSupport.getRefTokenIfPossible(ref);
         if (refToken != null) {
             return refToken.id() == CppTokenId.THIS;
         } else {
@@ -189,7 +190,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         return merp.getReferences();
     }
 
-    private static final class ExpandedReferencesProcessor extends CndAbstractTokenProcessor<Token<CppTokenId>> {
+    private static final class ExpandedReferencesProcessor extends CndAbstractTokenProcessor<Token<TokenId>> {
 
         private CsmExpandedTokenProcessor expandedTokenProcessor;
         private ReferencesProcessor originalReferencesProcessor;
@@ -224,7 +225,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         }
 
         @Override
-        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<TokenId> token, int tokenOffset) {
             if (expandedTokenProcessor == null) {
                 return originalReferencesProcessor.token(token, tokenOffset);
             }
@@ -256,7 +257,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         }
     }
 
-    private static final class ReferencesProcessor extends CndAbstractTokenProcessor<Token<CppTokenId>> {
+    private static final class ReferencesProcessor extends CndAbstractTokenProcessor<Token<TokenId>> {
         /*package*/ final List<CsmReferenceContext> references = new ArrayList<CsmReferenceContext>();
         private final Collection<CsmOffsetable> deadBlocks;
         private final boolean needAfterDereferenceUsages;
@@ -300,7 +301,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         }
 
         @Override
-        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<TokenId> token, int tokenOffset) {
             if (blockConsumer != null) {
                 if (blockConsumer.isLastToken(token)) {
                     blockConsumer = null;
@@ -309,99 +310,102 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             }
             boolean skip = false;
             boolean needEmbedding = false;
-            switch (token.id()) {
-                case PREPROCESSOR_DIRECTIVE:
-                    needEmbedding = !skipPreprocDirectives;
-                    break;
-                case IDENTIFIER:
-                case PREPROCESSOR_IDENTIFIER:
-                case THIS: {
-                    skip = !needAfterDereferenceUsages && derefToken != null;
-                    if (!skip && !deadBlocks.isEmpty()) {
-                        skip = isInDeadBlock(tokenOffset, deadBlocks);
+            TokenId id = token.id();
+            if(id instanceof CppTokenId) {
+                switch ((CppTokenId)id) {
+                    case PREPROCESSOR_DIRECTIVE:
+                        needEmbedding = !skipPreprocDirectives;
+                        break;
+                    case IDENTIFIER:
+                    case PREPROCESSOR_IDENTIFIER:
+                    case THIS: {
+                        skip = !needAfterDereferenceUsages && derefToken != null;
+                        if (!skip && !deadBlocks.isEmpty()) {
+                            skip = isInDeadBlock(tokenOffset, deadBlocks);
+                        }
+                        // do not use CsmReferenceKind.AFTER_DEREFERENCE_USAGE, because it could be fun definition like
+                        // void AAA::foo() {
+                        ReferenceImpl ref = ReferencesSupport.createReferenceImpl(
+                                csmFile, doc, tokenOffset, CndTokenUtilities.createTokenItem(token, tokenOffset), derefToken == null ? null : null /*CsmReferenceKind.AFTER_DEREFERENCE_USAGE*/);
+                        contextBuilder.reference(ref, derefToken);
+                        ref.setFileReferencesContext(fileReferncesContext);
+                        derefToken = null;
+                        if (!skip && !skipReferences) {
+                            references.add(contextBuilder.getContext());
+                        }
+                        break;
                     }
-                    // do not use CsmReferenceKind.AFTER_DEREFERENCE_USAGE, because it could be fun definition like
-                    // void AAA::foo() {
-                    ReferenceImpl ref = ReferencesSupport.createReferenceImpl(
-                            csmFile, doc, tokenOffset, CndTokenUtilities.createTokenItem(token, tokenOffset), derefToken == null ? null : null /*CsmReferenceKind.AFTER_DEREFERENCE_USAGE*/);
-                    contextBuilder.reference(ref, derefToken);
-                    ref.setFileReferencesContext(fileReferncesContext);
-                    derefToken = null;
-                    if (!skip && !skipReferences) {
-                        references.add(contextBuilder.getContext());
-                    }
-                    break;
-                }
-                case DOT:
-                case DOTMBR:
-                case ARROW:
-                case ARROWMBR:
-                case SCOPE:
-                    derefToken = token.id();
-                    break;
-                case LBRACE:
-                    if (afterParen) {
-                        // Compiler extension "({...})"
+                    case DOT:
+                    case DOTMBR:
+                    case ARROW:
+                    case ARROWMBR:
+                    case SCOPE:
+                        derefToken = (CppTokenId)id;
+                        break;
+                    case LBRACE:
+                        if (afterParen) {
+                            // Compiler extension "({...})"
+                            blockConsumer = new BlockConsumer(CppTokenId.LBRACE, CppTokenId.RBRACE);
+                        } else {
+                            contextBuilder.open((CppTokenId)id);
+                        }
+                        derefToken = null;
+                        break;
+                    case LBRACKET:
+                    case LPAREN:
+                    case LT:
+                        contextBuilder.open((CppTokenId)id);
+                        derefToken = null;
+                        break;
+                    case RBRACE:
+                    case RBRACKET:
+                    case RPAREN:
+                    case GT:
+                        contextBuilder.close((CppTokenId)id);
+                        derefToken = null;
+                        break;
+                    case __ATTRIBUTE__:
+                    case __ATTRIBUTE:
+                    case _DECLSPEC:
+                    case __DECLSPEC:
+                    case ASM:
+                    case __ASM:
+                    case __ASM__:
+                        blockConsumer = new BlockConsumer(CppTokenId.LPAREN, CppTokenId.RPAREN);
+                        derefToken = null;
+                        break;
+                    case _ASM:
                         blockConsumer = new BlockConsumer(CppTokenId.LBRACE, CppTokenId.RBRACE);
-                    } else {
-                        contextBuilder.open(token.id());
-                    }
-                    derefToken = null;
-                    break;
-                case LBRACKET:
-                case LPAREN:
-                case LT:
-                    contextBuilder.open(token.id());
-                    derefToken = null;
-                    break;
-                case RBRACE:
-                case RBRACKET:
-                case RPAREN:
-                case GT:
-                    contextBuilder.close(token.id());
-                    derefToken = null;
-                    break;
-                case __ATTRIBUTE__:
-                case __ATTRIBUTE:
-                case _DECLSPEC:
-                case __DECLSPEC:
-                case ASM:
-                case __ASM:
-                case __ASM__:
-                    blockConsumer = new BlockConsumer(CppTokenId.LPAREN, CppTokenId.RPAREN);
-                    derefToken = null;
-                    break;
-                case _ASM:
-                    blockConsumer = new BlockConsumer(CppTokenId.LBRACE, CppTokenId.RBRACE);
-                    derefToken = null;
-                    break;
-                case WHITESPACE:
-                case NEW_LINE:
-                case BLOCK_COMMENT:
-                case LINE_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                case TEMPLATE:
-                    // OK, do nothing
-                    break;
-                default:
-                    contextBuilder.other(token.id());
-                    derefToken = null;
-            }
+                        derefToken = null;
+                        break;
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case BLOCK_COMMENT:
+                    case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                    case TEMPLATE:
+                        // OK, do nothing
+                        break;
+                    default:
+                        contextBuilder.other((CppTokenId)id);
+                        derefToken = null;
+                }
 
-            // Initializing afterParen flag
-            // This flag is used for detection of compiler extensions "({...})"
-            switch (token.id()) {
-                case LPAREN:
-                    afterParen = true;
-                    break;
-                case WHITESPACE:
-                case NEW_LINE:
-                case BLOCK_COMMENT:
-                case LINE_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                    break;
-                default:
-                    afterParen = false;
+                // Initializing afterParen flag
+                // This flag is used for detection of compiler extensions "({...})"
+                switch ((CppTokenId)id) {
+                    case LPAREN:
+                        afterParen = true;
+                        break;
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case BLOCK_COMMENT:
+                    case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                        break;
+                    default:
+                        afterParen = false;
+                }
             }
 
             return needEmbedding;
@@ -545,7 +549,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             depth = 0;
         }
 
-        public boolean isLastToken(Token<CppTokenId> token) {
+        public boolean isLastToken(Token<TokenId> token) {
             boolean stop = false;
             if (token.id() == openBracket) {
                 ++depth;

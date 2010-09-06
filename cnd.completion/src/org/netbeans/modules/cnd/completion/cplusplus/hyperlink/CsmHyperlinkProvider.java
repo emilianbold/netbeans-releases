@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -104,11 +105,11 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
 
     @Override
-    protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
+    protected boolean isValidToken(TokenItem<TokenId> token, HyperlinkType type) {
         return isSupportedToken(token, type);
     }
 
-    public static boolean isSupportedToken(TokenItem<CppTokenId> token, HyperlinkType type) {
+    public static boolean isSupportedToken(TokenItem<TokenId> token, HyperlinkType type) {
         if (token != null) {
             if (type == HyperlinkType.ALT_HYPERLINK) {
                 if (CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) ||
@@ -116,16 +117,19 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     return false;
                 }
             }
-            switch (token.id()) {
-                case IDENTIFIER:
-                case PREPROCESSOR_IDENTIFIER:
-                case OPERATOR:
-                    return true;
-                case PREPROCESSOR_INCLUDE:
-                case PREPROCESSOR_INCLUDE_NEXT:
-                case PREPROCESSOR_SYS_INCLUDE:
-                case PREPROCESSOR_USER_INCLUDE:
-                    return false;
+            if(token.id() instanceof CppTokenId) {
+                switch ((CppTokenId)token.id()) {
+                    case IDENTIFIER:
+                    case PREPROCESSOR_IDENTIFIER:
+                    case OPERATOR:
+                    case PROC_DIRECTIVE:
+                        return true;
+                    case PREPROCESSOR_INCLUDE:
+                    case PREPROCESSOR_INCLUDE_NEXT:
+                    case PREPROCESSOR_SYS_INCLUDE:
+                    case PREPROCESSOR_USER_INCLUDE:
+                        return false;
+                }
             }
         }
         return false;
@@ -135,7 +139,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (!preJump(doc, target, offset, "opening-csm-element", type)) { //NOI18N
             return false;
         }
-        TokenItem<CppTokenId> jumpToken = getJumpToken();
+        TokenItem<TokenId> jumpToken = getJumpToken();
         CsmOffsetable primary = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, false);
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         CsmOffsetable item = toJumpObject(primary, csmFile, offset);
@@ -212,7 +216,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return false;
     }
 
-    /*package*/ CsmObject findTargetObject(final Document doc, final TokenItem<CppTokenId> jumpToken, final int offset, boolean toOffsetable) {
+    /*package*/ CsmObject findTargetObject(final Document doc, final TokenItem<TokenId> jumpToken, final int offset, boolean toOffsetable) {
         CsmObject item = null;
         assert jumpToken != null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
@@ -332,7 +336,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
 
     @Override
-    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
+    protected String getTooltipText(Document doc, TokenItem<TokenId> token, int offset, HyperlinkType type) {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
         if (msg != null) {

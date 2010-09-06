@@ -104,8 +104,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private int dirtyReqionStartOffset = Integer.MAX_VALUE;
     private int dirtyReqionEndOffset = Integer.MIN_VALUE;
 
-    private int usageCount = 0;
-    private Throwable usageStack;
+    private int usageCount = 0; // Avoid nested use of the factory
 
     private final RequestProcessor.Task dirtyRegionTask = RP.create(new Runnable() {
         private boolean insideRender = false;
@@ -148,10 +147,9 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     @Override
     public void restart(int startOffset, int matchOffset) {
         if (usageCount != 0) {
-            throw new IllegalStateException("Race condition: usageCount = " + usageCount, usageStack);
+            throw new IllegalStateException("Race condition: usageCount = " + usageCount); // NOI18N
         }
         usageCount++;
-        usageStack = new Exception("Thread " + Thread.currentThread().getName() + " uses HighlightsViewFactory"); // NOI18N
         Document doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
         lineElementRoot = doc.getDefaultRootElement();

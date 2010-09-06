@@ -41,6 +41,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.PartType;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
@@ -261,27 +262,30 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                         if (toAdd != null) {
                             text += toAdd;
                         }
-                        TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, offset, true);
+                        TokenItem<TokenId> token = CndTokenUtilities.getToken(doc, offset, true);
                         String pref = QUOTE;
                         String post = QUOTE;
                         if (token != null) {
                             boolean changeLength = false;
-                            switch (token.id()) {
-                                case WHITESPACE:
-                                case PREPROCESSOR_IDENTIFIER:
-                                    pref = isSysInclude ? SYS_OPEN : QUOTE;
-                                    post = isSysInclude ? SYS_CLOSE : QUOTE;
-                                    break;
-                                case PREPROCESSOR_USER_INCLUDE:
-                                    pref = QUOTE;
-                                    post = QUOTE;
-                                    changeLength = true;
-                                    break;
-                                case PREPROCESSOR_SYS_INCLUDE:
-                                    pref = SYS_OPEN;
-                                    post = SYS_CLOSE;
-                                    changeLength = true;
-                                    break;
+                            TokenId id = token.id();
+                            if(id instanceof CppTokenId) {
+                                switch ((CppTokenId)id) {
+                                    case WHITESPACE:
+                                    case PREPROCESSOR_IDENTIFIER:
+                                        pref = isSysInclude ? SYS_OPEN : QUOTE;
+                                        post = isSysInclude ? SYS_CLOSE : QUOTE;
+                                        break;
+                                    case PREPROCESSOR_USER_INCLUDE:
+                                        pref = QUOTE;
+                                        post = QUOTE;
+                                        changeLength = true;
+                                        break;
+                                    case PREPROCESSOR_SYS_INCLUDE:
+                                        pref = SYS_OPEN;
+                                        post = SYS_CLOSE;
+                                        changeLength = true;
+                                        break;
+                                }
                             }
                             if (changeLength) {
                                 len = (token.offset() + token.length()) - offset - (token.partType() == PartType.COMPLETE ? 0 : 1);
