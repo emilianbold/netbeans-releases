@@ -130,7 +130,7 @@ public class JpaControllerGenerator {
                 for (ExecutableElement method : JpaControllerUtil.getEntityMethods(jc)) {
                     String methodName = method.getSimpleName().toString();
                     if (methodName.startsWith("get")) {
-                        Element f = fieldAccess[0] ? JpaControllerUtil.guessField(controller, method) : method;
+                        Element f = fieldAccess[0] ? JpaControllerUtil.guessField(method) : method;
                         if (f != null) {
                             if (JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.Id") ||
                                     JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.EmbeddedId")) {
@@ -305,7 +305,8 @@ public class JpaControllerGenerator {
                     List<String> parameterTypes = new ArrayList<String>();
                     List<String> parameterNames = new ArrayList<String>();
                     String body = "";   //NOI18N
-                    if (isInjection) {
+                    boolean isUserTransaction = workingCopy.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE).findResource("javax/transaction/UserTransaction.class")!=null;  //NOI18N
+                    if (isUserTransaction) {
                         modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "utx", "javax.transaction.UserTransaction", privateModifier, null, null);   //NOI18N
                         parameterTypes.add("javax.transaction.UserTransaction");   //NOI18N
                         parameterNames.add("utx");   //NOI18N
@@ -356,13 +357,13 @@ public class JpaControllerGenerator {
                     for(Iterator<ElementHandle<ExecutableElement>> it = allRelMethods.iterator(); it.hasNext();) {
                         ElementHandle<ExecutableElement> handle = it.next();
                         ExecutableElement m = handle.resolve(workingCopy);
-                        int multiplicity = JpaControllerUtil.isRelationship(workingCopy, m, isFieldAccess);
+                        int multiplicity = JpaControllerUtil.isRelationship(m, isFieldAccess);
                         ExecutableElement otherSide = JpaControllerUtil.getOtherSideOfRelation(workingCopy, m, isFieldAccess);
 
                         if (otherSide != null) {
                             TypeElement relClass = (TypeElement)otherSide.getEnclosingElement();
                             boolean isRelFieldAccess = JpaControllerUtil.isFieldAccess(relClass);
-                            int otherSideMultiplicity = JpaControllerUtil.isRelationship(workingCopy, otherSide, isRelFieldAccess);
+                            int otherSideMultiplicity = JpaControllerUtil.isRelationship(otherSide, isRelFieldAccess);
                             TypeMirror t = m.getReturnType();
                             Types types = workingCopy.getTypes();
                             TypeMirror tstripped = JpaControllerUtil.stripCollection(t, types);
@@ -396,8 +397,8 @@ public class JpaControllerGenerator {
                             String relFieldName = JpaControllerUtil.getPropNameFromMethod(mName);
                             String otherFieldName = JpaControllerUtil.getPropNameFromMethod(otherName);
                             
-                            boolean columnNullable = JpaControllerUtil.isFieldOptionalAndNullable(workingCopy, m, isFieldAccess);
-                            boolean relColumnNullable = JpaControllerUtil.isFieldOptionalAndNullable(workingCopy, otherSide, isFieldAccess);
+                            boolean columnNullable = JpaControllerUtil.isFieldOptionalAndNullable(m, isFieldAccess);
+                            boolean relColumnNullable = JpaControllerUtil.isFieldOptionalAndNullable(otherSide, isFieldAccess);
                             
                             String relFieldToAttach = isCollection ? relFieldName + relTypeReference + "ToAttach" : relFieldName;
                             String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;
@@ -410,7 +411,7 @@ public class JpaControllerGenerator {
                                 modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, relType);
                             }
                             
-                            ExecutableElement relIdGetterElement = JpaControllerUtil.getIdGetter(workingCopy, isFieldAccess, relClass);
+                            ExecutableElement relIdGetterElement = JpaControllerUtil.getIdGetter(isFieldAccess, relClass);
                             String refOrMergeString = null;
                             
                             if (isCollection) {
@@ -655,15 +656,15 @@ public class JpaControllerGenerator {
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
                     if (embeddable[0]) {
-                        for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType)) {
-                            if (embeddedPkSupport.isRedundantWithRelationshipField(workingCopy, entityType, pkMethod)) {
+                        for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(entityType)) {
+                            if (embeddedPkSupport.isRedundantWithRelationshipField(entityType, pkMethod)) {
                                 codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
-                                    fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(workingCopy, entityType, pkMethod) + ");\n");
+                                    fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(entityType, pkMethod) + ");\n");
                             }
                         }
                     }
                     
-                    boolean isGenerated = JpaControllerUtil.isGenerated(workingCopy, idGetterElement, isFieldAccess);
+                    boolean isGenerated = JpaControllerUtil.isGenerated(idGetterElement, isFieldAccess);
                     bodyText = (embeddable[0] ? "if (" + fieldName + "." + idGetterName[0] + "() == null) {\n" +
                             fieldName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" + 
                             "}\n" : "") +

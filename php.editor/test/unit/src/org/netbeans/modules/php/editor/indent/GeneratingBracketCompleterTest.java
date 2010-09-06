@@ -51,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -220,11 +221,10 @@ public class GeneratingBracketCompleterTest extends TestBase {
     }
     
     private void insertBreak(ParserResult info, String original, String expected, int insertOffset, int finalCaretPos) throws BadLocationException, DataObjectNotFoundException, IOException {
-        PHPBracketCompleter bc = new PHPBracketCompleter();
         
         BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);//PHPBracketCompleterTest.getDocument(original);
         assertNotNull(doc);
-
+        
         doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
         doc.putProperty("mimeType", FileUtils.PHP_MIME_TYPE);
 //        doc.putProperty(Document.StreamDescriptionProperty, DataObject.find(info.getFileObject()));
@@ -232,44 +232,50 @@ public class GeneratingBracketCompleterTest extends TestBase {
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(insertOffset);
-        int newOffset = bc.beforeBreak(doc, insertOffset, ta);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
 
+        Reformat f = Reformat.get(doc);
+        assertNotNull(f);
+
+        f.lock();
         try {
-            doc.insertString(caret.getDot(), "\n", null);
-            // Indent the new line
-            PHPFormatter formatter = new PHPFormatter();
-            //ParserResult result = parse(fo);
-
-            int startPos = caret.getDot()+1;
-            int endPos = startPos+1;
-
-            //ParserResult result = parse(fo);
-            final org.netbeans.editor.Formatter f = doc.getFormatter();
+            doc.atomicLock();
             try {
-                f.reformatLock();
-                f.reformat(doc, startPos, endPos);
+                DocumentUtilities.setTypingModification(doc, true);
+                try {
+                    PHPBracketCompleter bc = new PHPBracketCompleter();
+                    int newOffset = bc.beforeBreak(doc, insertOffset, ta);
+                    doc.insertString(caret.getDot(), "\n", null);
+                    // Indent the new line
+                    PHPFormatter formatter = new PHPFormatter();
+                    //ParserResult result = parse(fo);
+
+                    int startPos = caret.getDot()+1;
+                    int endPos = startPos+1;
+
+                    //ParserResult result = parse(fo);
+                    f.reformat(startPos, endPos);
+
+                    int indent = GsfUtilities.getLineIndent(doc, insertOffset+1);
+
+                    //bc.afterBreak(doc, insertOffset, caret);
+                    String formatted = doc.getText(0, doc.getLength());
+                    assertEquals(expected, formatted);
+                    if (newOffset != -1) {
+                        caret.setDot(newOffset);
+                    } else {
+                        caret.setDot(insertOffset+1+indent);
+                    }
+                    if (finalCaretPos != -1) {
+                        assertEquals(finalCaretPos, caret.getDot());
+                    }
+                } finally {
+                    DocumentUtilities.setTypingModification(doc, false);
+                }
             } finally {
-                f.reformatUnlock();
-            }
-
-            int indent = GsfUtilities.getLineIndent(doc, insertOffset+1);
-
-            //bc.afterBreak(doc, insertOffset, caret);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (newOffset != -1) {
-                caret.setDot(newOffset);
-            } else {
-                caret.setDot(insertOffset+1+indent);
-            }
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
+                doc.atomicUnlock();
             }
         } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+            f.unlock();
         }
     }
 }

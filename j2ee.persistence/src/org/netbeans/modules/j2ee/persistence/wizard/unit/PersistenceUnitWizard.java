@@ -57,6 +57,7 @@ import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
@@ -167,6 +168,8 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         LOG.fine("Instantiating...");
         //first add libraries if necessary
         Library lib = null;
+        boolean useModelgen = false;
+        String modelGenLib = null;
         boolean libIsAdded = false;//used to check if lib was added to compile classpath
         if (descriptor.isContainerManaged()) {
             Provider selectedProvider=descriptor.getSelectedProvider();
@@ -175,6 +178,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
                 if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
                     handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                     Util.addLibraryToProject(project, lib);
+                    modelGenLib = lib.getName()+"modelgen";//NOI18N
                     selectedProvider = null;//to avoid one more library addition
                     libIsAdded = true;
                 }
@@ -183,6 +187,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
                 if(lib == null)lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
                 if (lib != null){
                     Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
+                    modelGenLib = lib.getName()+"modelgen";//NOI18N
                 }
             }
         } else {
@@ -190,6 +195,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
             if (lib != null){
                 handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                 Util.addLibraryToProject(project, lib);
+                modelGenLib = lib.getName()+"modelgen";//NOI18N
                 libIsAdded = true;
             }
             JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(descriptor.getPersistenceConnection().getDriverClass());
@@ -238,7 +244,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
                     descriptor.getSelectedProvider(), descriptor.getPersistenceConnection(), version);
             punit.setTransactionType("RESOURCE_LOCAL");
         }
-        
+        useModelgen = punit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit;
         // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
         // See issue 142575 - desc 10
         if (!Util.isJavaSE(project)) {
@@ -251,6 +257,11 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         LOG.fine("Saving PUDataObject");
         pud.save();
         LOG.fine("Saved");
+        //modelgen
+        if(useModelgen && modelGenLib!=null){
+            Library mLib = LibraryManager.getDefault().getLibrary(modelGenLib);
+            if(mLib!=null) Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);//no real need to add modelgen to compile classpath
+        }
         return Collections.singleton(pud.getPrimaryFile());
     }
     

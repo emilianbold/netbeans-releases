@@ -62,7 +62,7 @@ import org.openide.windows.OutputWriter;
  */
 public class RemoteIndexTransferListener implements TransferListener, Cancellable {
 
-    private final ProgressHandle handle;
+    private ProgressHandle handle;
     private RepositoryInfo info;
     private int lastunit;/*last work unit*/
     /*Debug*/
@@ -80,7 +80,6 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     @SuppressWarnings("LeakingThisInConstructor")
     public RemoteIndexTransferListener(RepositoryInfo info) {
         this.info = info;
-        this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
         Cancellation.register(this);
 
         if (debug) {
@@ -95,6 +94,11 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
 
     public void transferStarted(TransferEvent arg0) {
         long contentLength = arg0.getResource().getContentLength();
+        if (handle != null) {
+            // #189806: could be resumed due to FNFE in DefaultIndexUpdater (*.gz -> *.zip)
+            handle.finish();
+        }
+        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
         this.units = (int) contentLength / 1024;
         handle.start(units);
         if (debug) {
@@ -179,7 +183,9 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     }
 
     void close() {
-        handle.finish();
+        if (handle != null) {
+            handle.finish();
+        }
     }
 
 }

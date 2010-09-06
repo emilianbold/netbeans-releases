@@ -100,6 +100,7 @@ public abstract class RestSupport {
     public static final String SWDP_LIBRARY = "restlib"; //NOI18N
     public static final String RESTAPI_LIBRARY = "restapi"; //NOI18N
     protected static final String GFV3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
+    protected static final String GFV31_RESTLIB = "restlib_gfv31ee6"; // NOI18N
     public static final String PROP_SWDP_CLASSPATH = "libs.swdp.classpath"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_DIR = "restbeans.test.dir"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";//NOI18N

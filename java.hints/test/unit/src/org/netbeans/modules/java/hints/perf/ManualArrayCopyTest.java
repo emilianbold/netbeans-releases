@@ -198,6 +198,66 @@ public class ManualArrayCopyTest extends TestBase {
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
 
+    public void testNoBoxing188830() throws Exception {
+        performAnalysisTest("test/Test.java",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    public void test(String[] args) {\n" +
+                           "        int[] source = new int[3];\n" +
+                           "        Integer[] target = new Integer[6];\n" +
+                           "        int o = 3;\n" +
+                           "\n" +
+                           "        for (int i = 0; i < source.length; i++) {\n" +
+                           "            target[o + i] = source[i];\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n");
+    }
+
+    public void testArrayCopySubType1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(String[] args) {\n" +
+                       "        String[] source = new String[3];\n" +
+                       "        Object[] target = new Object[6];\n" +
+                       "        int o = 3;\n" +
+                       "\n" +
+                       "        for (int i = 0; i < source.length; i++) {\n" +
+                       "            target[o + i] = source[i];\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       "7:8-7:11:verifier:ERR_manual-array-copy",
+                       "FIX_manual-array-copy",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void test(String[] args) {\n" +
+                       "        String[] source = new String[3];\n" +
+                       "        Object[] target = new Object[6];\n" +
+                        "        int o = 3;\n" +
+                        "\n" +
+                        "        System.arraycopy(source, 0, target, o, source.length);\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testArrayCopySubType2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(String[] args) {\n" +
+                       "        Object[] source = new Object[6];\n" +
+                       "        String[] target = new String[3];\n" +
+                       "        int o = 3;\n" +
+                       "\n" +
+                       "        for (int i = 0; i < source.length; i++) {\n" +
+                       "            target[o + i] = source[i];\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

@@ -98,12 +98,12 @@ public class DwarfLineInfoSection extends ElfSection {
         stmt_list.total_length = reader.readDWlen();
         stmt_list.version = reader.readShort();
         stmt_list.prologue_length = reader.read3264();
-        stmt_list.minimum_instruction_length = reader.readByte();
-        stmt_list.default_is_stmt = reader.readByte();
+        stmt_list.minimum_instruction_length = 0xFF & reader.readByte();
+        stmt_list.default_is_stmt = 0xFF & reader.readByte();
         stmt_list.line_base = reader.readByte();
-        stmt_list.line_range = reader.readByte();
-        stmt_list.opcode_base = reader.readByte();
-        
+        stmt_list.line_range = 0xFF & reader.readByte();
+        stmt_list.opcode_base = 0xFF & reader.readByte();
+
         stmt_list.standard_opcode_lengths = new long[stmt_list.opcode_base - 1];
         
         for (int i = 0; i < stmt_list.opcode_base - 1; i++) {
@@ -147,7 +147,11 @@ public class DwarfLineInfoSection extends ElfSection {
         try {
             DwarfStatementList statementList = getStatementList(shift);
             reader.seek(header.getSectionOffset() + shift + statementList.prologue_length + (reader.is32Bit()?10:22));
-            return interpret(target, statementList, shift);
+            Set<LineNumber> res = interpret(statementList, shift, target);
+            if (!res.isEmpty()) {
+                return res.iterator().next();
+            }
+            return null;
         } finally {
             reader.seek(currPos);
         }
@@ -158,13 +162,13 @@ public class DwarfLineInfoSection extends ElfSection {
         try {
             DwarfStatementList statementList = getStatementList(shift);
             reader.seek(header.getSectionOffset() + shift + statementList.prologue_length + (reader.is32Bit()?10:22));
-            return interpret(statementList, shift);
+            return interpret(statementList, shift, 0);
         } finally {
             reader.seek(currPos);
         }
     }
 
-    private Set<LineNumber> interpret(DwarfStatementList section, long shift) throws IOException {
+    private Set<LineNumber> interpret(DwarfStatementList section, long shift, long target) throws IOException {
         long address = 0;
         long base_address = 0;
         long prev_base_address = 0;
@@ -175,6 +179,7 @@ public class DwarfLineInfoSection extends ElfSection {
         int prev_lineno = 1;
         final int const_pc_add = 245 / section.line_range * section.minimum_instruction_length;
         int lineNumber = -1;
+        int fileNumber = -1;
         String sourceFile = null;
         Set<LineNumber> result = new HashSet<LineNumber>();
 
@@ -191,9 +196,18 @@ public class DwarfLineInfoSection extends ElfSection {
                         switch (LNE.get(opcode)) {
                             case DW_LNE_end_sequence:
                                 lineNumber = prev_lineno;
-                                sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                                sourceFile = ((prev_fileno >= 0 && prev_fileno < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
                                 if (sourceFile != null) {
-                                    result.add(new LineNumber(sourceFile, lineNumber, prev_base_address, address));
+                                    if (target > 0) {
+                                        if (target >= prev_base_address && target < address) {
+                                            LineNumber res = new LineNumber(sourceFile, lineNumber, prev_base_address, address);
+                                            result.add(res);
+                                            return result;
+                                        }
+                                    } else {
+                                        LineNumber res = new LineNumber(sourceFile, lineNumber, prev_base_address, address);
+                                        result.add(res);
+                                    }
                                 }
                                 prev_lineno = lineno = 1;
                                 prev_fileno = fileno = 0;
@@ -203,9 +217,9 @@ public class DwarfLineInfoSection extends ElfSection {
                             case DW_LNE_set_address:
                                 prev_base_address = base_address;
                                 if (insn_len == 9) {
-                                    base_address = reader.readNumber(8);
+                                    base_address = reader.readLong();
                                 } else if (insn_len == 5) {
-                                    base_address = reader.readNumber(4);
+                                    base_address = reader.readInt();
                                 }
                                 address = base_address;
                                 if (prev_base_address == 0) {
@@ -228,143 +242,18 @@ public class DwarfLineInfoSection extends ElfSection {
                     }
                     case DW_LNS_copy:
                         lineNumber = prev_lineno == 1 ? lineno : prev_lineno;
-                        sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                        fileNumber = prev_fileno == 0 ? fileno : prev_fileno;
+                        sourceFile = ((fileNumber >= 0 && fileNumber < section.getFileEntries().size()) ? section.getFilePath(fileNumber + 1) : define_file);
                         if (sourceFile != null) {
-                            result.add(new LineNumber(sourceFile, lineNumber, prev_base_address, address));
-                        }
-                        prev_lineno = lineno;
-                        prev_fileno = fileno;
-                        break;
-
-                    case DW_LNS_advance_pc:
-                        {
-                            long amt = reader.readUnsignedLEB128();
-                            address += amt * section.minimum_instruction_length;
-                        }
-                        break;
-
-                    case DW_LNS_advance_line:
-                        {
-                            long amt = reader.readSignedLEB128();
-                            prev_lineno = lineno;
-                            lineno += (int) amt;
-                        }
-                        break;
-
-                    case DW_LNS_set_file:
-                        prev_fileno = fileno;
-                        fileno = (reader.readUnsignedLEB128() - 1);
-                        break;
-
-                    case DW_LNS_set_column:
-                        reader.readUnsignedLEB128();
-                        break;
-
-                    case DW_LNS_negate_stmt:
-                        break;
-
-                    case DW_LNS_set_basic_block:
-                        break;
-
-                    case DW_LNS_const_add_pc:
-                        address += const_pc_add;
-                        break;
-
-                    case DW_LNS_fixed_advance_pc:
-                        {
-                            int amt = reader.readShort() & 0xFFFF;
-                            address += amt;
-                        }
-                        break;
-                }
-            } else {
-                int adj = (opcode & 0xFF) - section.opcode_base;
-                int addr_adv = adj / section.line_range * section.minimum_instruction_length;
-                int line_adv = section.line_base + (adj % section.line_range);
-                long new_addr = address + addr_adv;
-                int new_line = lineno + line_adv;
-                sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                if (sourceFile != null) {
-                    result.add(new LineNumber(sourceFile, lineno, prev_base_address, new_addr));
-                }
-
-                prev_lineno = lineno;
-                prev_fileno = fileno;
-                lineno = new_line;
-                address = new_addr;
-            }
-        }
-        return result;
-    }
-
-    private LineNumber interpret(long target, DwarfStatementList section, long shift) throws IOException {
-        long address = 0;
-        long base_address = 0;
-        long prev_base_address = 0;
-        String define_file = null;
-        int fileno = 0;
-        int lineno = 1;
-        int prev_fileno = 0;
-        int prev_lineno = 1;
-        final int const_pc_add = 245 / section.line_range * section.minimum_instruction_length;
-        int lineNumber = -1;
-        String sourceFile = null;
-
-        while (reader.getFilePointer() < header.getSectionOffset() + shift + section.total_length) {
-
-            int opcode = reader.readByte() & 0xFF;
-            if (opcode < section.opcode_base) {
-                switch (LNS.get(opcode)) {
-                    case DW_LNS_extended_op: {
-                        int insn_len = reader.readUnsignedLEB128();
-                        opcode = reader.readByte();
-
-                        switch (LNE.get(opcode)) {
-                            case DW_LNE_end_sequence:
-                                if (prev_base_address <= target && address > target) {
-                                    lineNumber = prev_lineno;
-                                    sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                                    if (sourceFile != null) {
-                                        return new LineNumber(sourceFile, lineNumber, prev_base_address, address);
-                                    }
+                            if (target > 0) {
+                                if (target >= prev_base_address && target < address) {
+                                    LineNumber res = new LineNumber(sourceFile, lineNumber, prev_base_address, address);
+                                    result.add(res);
+                                    return result;
                                 }
-                                prev_lineno = lineno = 1;
-                                prev_fileno = fileno = 0;
-                                base_address = address = 0;
-                                break;
-
-                            case DW_LNE_set_address:
-                                prev_base_address = base_address;
-                                if (insn_len == 9) {
-                                    base_address = reader.readNumber(8);
-                                } else if (insn_len == 5) {
-                                    base_address = reader.readNumber(4);
-                                }
-                                address = base_address;
-                                if (prev_base_address == 0) {
-                                    prev_base_address = base_address;
-                                }
-                                break;
-
-                            case DW_LNE_define_file:
-                                define_file = reader.readString();
-                                reader.readUnsignedLEB128();
-                                reader.readUnsignedLEB128();
-                                reader.readUnsignedLEB128();
-                                break;
-
-                            default:
-                                reader.seek(reader.getFilePointer() + insn_len);
-                                break;
-                        }
-                        break;
-                    }
-                    case DW_LNS_copy:
-                        if (prev_base_address <= target && address > target) {
-                            lineNumber = prev_lineno == 1 ? lineno : prev_lineno;
-                            sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                            if (sourceFile != null) {
-                                return new LineNumber(sourceFile, lineNumber, prev_base_address, address);
+                            } else {
+                                LineNumber res = new LineNumber(sourceFile, lineNumber, prev_base_address, address);
+                                result.add(res);
                             }
                         }
                         prev_lineno = lineno;
@@ -418,21 +307,40 @@ public class DwarfLineInfoSection extends ElfSection {
                 int line_adv = section.line_base + (adj % section.line_range);
                 long new_addr = address + addr_adv;
                 int new_line = lineno + line_adv;
-                if (prev_base_address <= target && new_addr >= target) {
-                    lineNumber = new_addr == target ? new_line : lineno;
-                    sourceFile = ((prev_fileno >= 0 && prev_fileno + 1 < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
-                    if (sourceFile != null) {
-                        return new LineNumber(sourceFile, lineNumber, prev_base_address, new_addr);
+                sourceFile = ((prev_fileno >= 0 && prev_fileno < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
+                if (sourceFile != null) {
+                    if (target > 0) {
+                        if (target > 0 && target >= prev_base_address && target < new_addr) {
+                            LineNumber res = new LineNumber(sourceFile, lineno, prev_base_address, new_addr);
+                            result.add(res);
+                            return result;
+                        }
+                    } else {
+                        LineNumber res = new LineNumber(sourceFile, lineno, prev_base_address, new_addr);
+                        result.add(res);
                     }
                 }
 
+                prev_base_address = new_addr;
                 prev_lineno = lineno;
                 prev_fileno = fileno;
                 lineno = new_line;
                 address = new_addr;
             }
         }
-        return null;
+        if (prev_base_address != 0 && address != 0 && sourceFile != null) {
+            if (target > 0) {
+                if (target >= prev_base_address && target < address) {
+                    LineNumber res = new LineNumber(sourceFile, lineno, prev_base_address, address);
+                    result.add(res);
+                    return result;
+                }
+            } else {
+                LineNumber res = new LineNumber(sourceFile, lineno, prev_base_address, address);
+                result.add(res);
+            }
+        }
+        return result;
     }
 
     public static final class LineNumber implements Comparable<LineNumber> {
@@ -452,7 +360,7 @@ public class DwarfLineInfoSection extends ElfSection {
         public boolean equals(Object obj) {
             if (obj instanceof LineNumber) {
                 LineNumber other = (LineNumber) obj;
-                return file.equals(other.file) && line == other.line;
+                return file.equals(other.file) && line == other.line && startOffset == other.endOffset && endOffset == other.endOffset;
             }
             return false;
         }
@@ -462,6 +370,8 @@ public class DwarfLineInfoSection extends ElfSection {
             int hash = 7;
             hash = 67 * hash + (this.file != null ? this.file.hashCode() : 0);
             hash = 67 * hash + this.line;
+            hash = 67 * hash + (int)(this.startOffset & 0xFFFFFFFF);
+            hash = 67 * hash + (int)(this.endOffset & 0xFFFFFFFF);
             return hash;
         }
 
@@ -474,7 +384,10 @@ public class DwarfLineInfoSection extends ElfSection {
         public int compareTo(LineNumber o) {
             int res = file.compareTo(o.file);
             if (res == 0) {
-                res = line - o.line;
+                res = (int) ((startOffset - o.startOffset) & 0xFFFFFFFF);
+            }
+            if (res == 0) {
+                res = (int) ((endOffset - o.endOffset) & 0xFFFFFFFF);
             }
             return res;
         }

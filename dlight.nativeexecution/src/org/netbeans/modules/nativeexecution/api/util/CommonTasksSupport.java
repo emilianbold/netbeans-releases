@@ -44,7 +44,6 @@ package org.netbeans.modules.nativeexecution.api.util;
 import java.io.File;
 import java.io.Writer;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -59,9 +58,6 @@ import org.netbeans.modules.nativeexecution.support.SignalSupport;
  * for common tasks like files copying.
  */
 public final class CommonTasksSupport {
-
-    private final static HashMap<ExecutionEnvironment, SignalSupport> ssMap =
-            new HashMap<ExecutionEnvironment, SignalSupport>();
 
     private CommonTasksSupport() {
     }
@@ -373,18 +369,60 @@ public final class CommonTasksSupport {
         final String descr = "Sending signal " + signal + " to " + pid; // NOI18N
 
         return NativeTaskExecutorService.submit(new Callable<Integer>() {
-
             public Integer call() throws Exception {
-                SignalSupport support = null;
-                synchronized (ssMap) {
-                    support = ssMap.get(execEnv);
-                    if (support == null) {
-                        support = SignalSupport.getSignalSupportFor(execEnv);
-                        ssMap.put(execEnv, support);
-                    }
-                }
-
+                SignalSupport support = SignalSupport.getSignalSupportFor(execEnv);
                 return support.kill(signal, pid);
+            }
+        }, descr);
+    }
+
+    /**
+     * Sends the signal to the process group.
+     *
+     * @param execEnv  execution environment of the process
+     * @param pid  pid of the process
+     * @param signal  signal name, e.g. "SIGKILL", "SIGUSR1"
+     * @param error  if not <tt>null</tt> and some error occurs,
+     *        an error message will be written to this <tt>Writer</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the signal task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> sendSignalGrp(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
+        final String descr = "Sending signal " + signal + " to " + pid + " group"; // NOI18N
+
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
+            public Integer call() throws Exception {
+                SignalSupport support = SignalSupport.getSignalSupportFor(execEnv);
+                return support.killgrp(signal, pid);
+            }
+        }, descr);
+    }
+
+    /**
+     * Queue a signal to a process (sigqueue)
+     *
+     * @param execEnv  execution environment of the process
+     * @param pid  pid of the process
+     * @param signo  signal number
+     * @param value  signal value
+     * @param error  if not <tt>null</tt> and some error occurs,
+     *        an error message will be written to this <tt>Writer</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the signal task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> sigqueue(final ExecutionEnvironment execEnv,
+            final int pid,
+            final int signo,
+            final int value,
+            final Writer error) {
+        final String descr = "Sigqueue " + signo + " with value " + value + " to " + pid; // NOI18N
+
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
+            public Integer call() throws Exception {
+                SignalSupport support = SignalSupport.getSignalSupportFor(execEnv);
+                return support.sigqueue(pid, signo, value);
             }
         }, descr);
     }

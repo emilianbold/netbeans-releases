@@ -100,6 +100,7 @@ import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -128,7 +129,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     // should generated Entity Classes implement Serializable?
     private static boolean genSerializableEntities = true;
     private Set<FileObject> result;
-    /**
+    private static HashMap<String, VariableTree> variables;
+    private static HashMap<String, MethodTree> setters;
+    private static HashMap<String, MethodTree> getters;    /**
      * Specifies whether the generated enties should be added to the first
      * persistence unit found in the project. Note that this setting only
      * applies to non-Java EE 5 projects - for Java EE 5 projects the entities
@@ -737,6 +740,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     position++;
                 }
                 for (Property property : properties) {
+                    if(property.getOldField()!=null){
+                        newClassTree = make.removeClassMember(newClassTree, property.getOldField());//just replace
+                    }
                     newClassTree = make.insertClassMember(newClassTree, position, property.getField());
                     position++;
                 }
@@ -744,7 +750,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     newClassTree = make.addClassMember(newClassTree, constructor);
                 }
                 for (Property property : properties) {
+                    if(property.getOldGetter()!=null){
+                       newClassTree = make.removeClassMember(newClassTree, property.getOldGetter());//just replace for now, need either to replace declaration only or add comment with old body
+                    }
                     newClassTree = make.addClassMember(newClassTree, property.getGetter());
+                    if(property.getOldSetter()!=null){
+                       newClassTree = make.removeClassMember(newClassTree, property.getOldSetter());//just replace for now, need either to replace declaration only or add comment with old body
+                    }
                     newClassTree = make.addClassMember(newClassTree, property.getSetter());
                 }
                 for (MethodTree method : methods) {
@@ -787,6 +799,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 private final VariableTree field;
                 private final MethodTree getter;
                 private final MethodTree setter;
+                private VariableTree existingFieldTree;//used in update/refctoring to point to previosly generated field
+                private MethodTree existingGetterTree;//used in update/refctoring to point to previosly generated field
+                private MethodTree existingSetterTree;//used in update/refctoring to point to previosly generated field
 
                 public Property(Modifier modifier, List<AnnotationTree> annotations, String type, String name) throws IOException {
                     this(modifier, annotations, genUtils.createType(type, typeElement), name, false);
@@ -837,6 +852,28 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 public MethodTree getSetter() {
                     return setter;
                 }
+
+                public VariableTree getOldField() {
+                    return existingFieldTree;
+                }
+
+                public MethodTree getOldGetter() {
+                    return existingGetterTree;
+                }
+
+                public MethodTree getOldSetter() {
+                    return existingSetterTree;
+                }
+
+                private void setOldField(VariableTree existingTree) {
+                    this.existingFieldTree = existingTree;
+                }
+                private void setOldGetter(MethodTree existingTree) {
+                    this.existingGetterTree = existingTree;
+                }
+                private void setOldSetter(MethodTree existingTree) {
+                    this.existingSetterTree = existingTree;
+                }
             }
         }
 
@@ -861,7 +898,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private Property pkProperty;
             // the prefix or all named queries ("select ... ")
             private String namedQueryPrefix;
-            private Set<String> existingColumns = new HashSet<String>();
+            private HashMap<String, Tree> existingColumns = new HashMap<String, Tree>();
             private String existingEmbeddedId = null;
             private HashMap<String, Tree> existingJoinColumns = new HashMap<String, Tree>();
             private HashMap<TypeMirror, ArrayList<String>> existingJoinColumnss = new HashMap<TypeMirror, ArrayList<String>>();
@@ -940,6 +977,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
 
             private void collectExistingColumns() {
+                variables = new HashMap<String, VariableTree>();
+                setters = new HashMap<String, MethodTree>();
+                getters = new HashMap<String, MethodTree>();
                 for (Tree member : originalClassTree.getMembers()) {
                     List<? extends AnnotationTree> annotations = null;
                     Tree memberType = null;
@@ -947,10 +987,19 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         VariableTree variable = (VariableTree) member;
                         annotations = variable.getModifiers().getAnnotations();
                         memberType = variable.getType();
+                        variables.put(variable.getName().toString(), variable);
                     } else if (Kind.METHOD.equals(member.getKind())) {
                         MethodTree method = (MethodTree) member;
                         annotations = method.getModifiers().getAnnotations();
                         memberType = method.getReturnType();
+                        String tmp = method.getName().toString();
+                        if(tmp.startsWith("get")){//NOI18N
+                            getters.put((tmp.substring(3,4).toLowerCase()+tmp.substring(4)).toUpperCase(), method);
+                        } else if(tmp.startsWith("set")){//NOI18N
+                            setters.put((tmp.substring(3,4).toLowerCase()+tmp.substring(4)).toUpperCase(), method);
+                        } else if(tmp.startsWith("is")){
+                            getters.put((tmp.substring(2,3).toLowerCase()+tmp.substring(3)).toUpperCase(), method);
+                        }
                     }
                     if (annotations != null) {
                         for (AnnotationTree annTree : annotations) {
@@ -959,7 +1008,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                 for (ExpressionTree exTree : annTree.getArguments()) {
                                     AssignmentTree aTree = (AssignmentTree) exTree;
                                     if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                        existingColumns.add((String) ((LiteralTree) aTree.getExpression()).getValue());
+                                        existingColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), member);
                                         break;
                                     }
                                 }
@@ -1068,14 +1117,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             @Override
             protected void generateMember(EntityMember m) throws IOException {
                 //skip generating already exist members for UPDATE type
-                if (updateType.UPDATE.equals(updateType) && existingColumns.contains(m.getColumnName())) {
-                    return;
-                }
-
+                Tree existingTree = updateType.UPDATE.equals(updateType) ? existingColumns.get(m.getColumnName()) : null;//don't need to care if it's not update
                 String memberName = m.getMemberName();
                 boolean isPKMember = m.isPrimaryKey();
                 Property property = null;
                 if (isPKMember) {
+                    //do not support pk class/pk class member update yet
+                    if(existingTree!=null)return;
+                    //
                     if (needsPKClass) {
                         if (!updateType.UPDATE.equals(updateType)) {
                             pkClassVariables.add(createVariable(m));
@@ -1088,7 +1137,38 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     String pkColumnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
                     pkColumnNames.add(pkColumnName);
                 } else {
+                    //check type
                     property = createProperty(m);
+                    if(existingTree !=null){
+                        Tree exMemberType = null;
+                        if (Kind.VARIABLE.equals(existingTree.getKind())) {
+                            VariableTree variable = (VariableTree) existingTree;
+                            exMemberType = variable.getType();
+                            //need to find accessors
+                            property.setOldField(variable);
+                            property.setOldGetter(getters.get(m.getColumnName().toUpperCase()));
+                            property.setOldSetter(setters.get(m.getColumnName().toUpperCase()));
+                        } else if (Kind.METHOD.equals(existingTree.getKind())) {
+                            MethodTree method = (MethodTree) existingTree;
+                            exMemberType = method.getReturnType();
+                            //need to find setter and variable
+                            property.setOldGetter(method);
+                            property.setOldSetter(setters.get(m.getColumnName().toUpperCase()));
+                            property.setOldField(variables.get(m.getColumnName().toUpperCase()));
+                        }
+                        TypeMirror exTm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), exMemberType));
+                        String newType = m.getMemberType();
+                        TypeElement newTE = copy.getElements().getTypeElement(newType);
+                        TypeMirror newTm = newTE.asType();
+                        //first if type is the same, just return and keep all as is
+                        if(exTm.equals(newTm)){
+                            return;//nothing is changed
+                        } else {
+                            //found no refactoring for type change, need manually found variable/setter/getter/constructor, other parts user may need to update himself
+                            //do nothing here, shhould be done based on "existing" in properties
+                        }
+                    }
+                    //
                     if (!m.isNullable()) {
                         nonNullableProps.add(property);
                     }
@@ -1145,7 +1225,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             protected void generateRelationship(RelationshipRole role) throws IOException {
                 String memberName = role.getFieldName();
 
-                if (existingColumns.contains(memberName)) {
+                if (existingColumns.get(memberName)!=null) {
                     return;
                 }
 

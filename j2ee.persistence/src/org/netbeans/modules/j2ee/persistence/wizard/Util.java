@@ -57,9 +57,12 @@ import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JList;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
@@ -73,6 +76,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -233,9 +237,9 @@ public class Util {
 
     public static Provider getDefaultProvider(Project project) {
         PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-        if((providerSupplier != null && providerSupplier.supportsDefaultProvider())) {
+        if ((providerSupplier != null && providerSupplier.supportsDefaultProvider())) {
             List<Provider> providers = providerSupplier.getSupportedProviders();
-            if( providers.size()>0 ){
+            if (providers.size() > 0) {
                 return providers.get(0);
             }
             Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.WARNING, "Default provider support is reported without any supported providers. See: " + providerSupplier);
@@ -390,7 +394,7 @@ public class Util {
                 }
             } else {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
-                punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection(),version);
+                punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection(), version);
                 punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
             }
             punit.setName(panel.getPersistenceUnitName());
@@ -438,11 +442,13 @@ public class Util {
         }
 
         String version = (lib != null && libIsAdded) ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
-        if(provider != null && version != null){
+        if (provider != null && version != null) {
             String provVersion = ProviderUtil.getVersion(provider);
-            if(provVersion != null){
+            if (provVersion != null) {
                 //even if project support jpa 2.0 etc, but selected provider is reported as jpa1.0 use jpa1.0
-                if(Double.parseDouble(version)>Double.parseDouble(provVersion)) version = provVersion;
+                if (Double.parseDouble(version) > Double.parseDouble(provVersion)) {
+                    version = provVersion;
+                }
             }
         }
         PersistenceUnit punit = null;
@@ -453,10 +459,12 @@ public class Util {
             punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         }
         if (isContainerManaged) {
-            if(preselectedDB == null || preselectedDB.trim().equals("")){
+            if (preselectedDB == null || preselectedDB.trim().equals("")) {
                 //find first with default/sample part in name
                 JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
-                if(dsProvider.getDataSources().size()>0)preselectedDB = dsProvider.getDataSources().get(0).getDisplayName();
+                if (dsProvider.getDataSources().size() > 0) {
+                    preselectedDB = dsProvider.getDataSources().get(0).getDisplayName();
+                }
             }
             if (preselectedDB != null && !"".equals(preselectedDB.trim())) {
                 punit.setJtaDataSource(preselectedDB);
@@ -466,21 +474,36 @@ public class Util {
             }
         } else {
             DatabaseConnection connection = null;
-            if(preselectedDB != null && !preselectedDB.trim().equals("")){
+            if (preselectedDB != null && !preselectedDB.trim().equals("")) {
                 connection = ConnectionManager.getDefault().getConnection(preselectedDB);
             }
-            if(connection == null){
+            if (connection == null) {
                 ConnectionManager cm = ConnectionManager.getDefault();
                 DatabaseConnection[] connections = cm.getConnections();
-                connection = connections!=null && connections.length>0 ? connections[0] : null;
+                connection = connections != null && connections.length > 0 ? connections[0] : null;
             }
             punit = ProviderUtil.buildPersistenceUnit("tmp", provider, connection, version);
             punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
         }
-        if(puName == null) puName = getCandidateName(project);
+        if (puName == null) {
+            puName = getCandidateName(project);
+        }
         punit.setName(puName);
-        ProviderUtil.setTableGeneration(punit, tableGeneration !=null ? tableGeneration.name() : TableGeneration.NONE.name(), project);
+        ProviderUtil.setTableGeneration(punit, tableGeneration != null ? tableGeneration.name() : TableGeneration.NONE.name(), project);
         return punit;
+    }
+
+    /**
+     *
+     * @return true if jpa version is supported by platform (may need to be extended to classpath check and possible library addition check
+     */
+    public static boolean isJPAVersionSupported(Project project, String version){
+        JPAModuleInfo info = project.getLookup().lookup(JPAModuleInfo.class);
+        if(info!=null){
+            return !Boolean.FALSE.equals(info.isJPAVersionSupported(version));//null return considerd valid too and the same as true
+        }
+        return true;
+
     }
 
     /**
@@ -521,28 +544,32 @@ public class Util {
      * @param project
      * @param pu
      */
-    public static void addPersistenceUnitToProject(Project project, PersistenceUnit persistenceUnit){
+    public static void addPersistenceUnitToProject(Project project, PersistenceUnit persistenceUnit) {
         String providerClass = persistenceUnit.getProvider();
-        if(providerClass != null){
-            Provider selectedProvider=ProviderUtil.getProvider(providerClass, project);
-            Library lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
+        boolean libAdded = false;
+        Library lib = null;
+        if (providerClass != null) {
+            Provider selectedProvider = ProviderUtil.getProvider(providerClass, project);
+            lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
             if (lib != null) {
-                if(!Util.isDefaultProvider(project, selectedProvider)) {
+                if (!Util.isDefaultProvider(project, selectedProvider)) {
                     Util.addLibraryToProject(project, lib);
-                } else if (selectedProvider.getAnnotationProcessor() != null){
+                    libAdded = true;
+                } else if (selectedProvider.getAnnotationProcessor() != null) {
                     Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
+                    libAdded = true;
                 }
             }
-            if(!isContainerManaged(project)){
+            if (!isContainerManaged(project)) {
                 DatabaseConnection connection = ProviderUtil.getConnection(persistenceUnit);
-                if( connection!=null ){
+                if (connection != null) {
                     JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(connection.getDriverClass());
                     PersistenceLibrarySupport.addDriver(project, driver[0]);
                 } else {
                     Logger.getLogger("global").log(Level.INFO, "Can't find connection for persistence unit"); //NOI18N
                 }
             }
-       }
+        }
 
         try {
             ProviderUtil.addPersistenceUnit(persistenceUnit, project);
@@ -551,7 +578,15 @@ public class Util {
             // already been warned about an invalid persistence.xml
             Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
         }
-   }
+        //need to add ap registration lib if exist
+        if (libAdded && lib != null) {
+            double version = Math.max(Double.parseDouble(PersistenceUtils.getJPAVersion(lib)), Double.parseDouble(PersistenceUtils.getJPAVersion(project)));
+            if (version > 1.0) {
+                Library mLib = LibraryManager.getDefault().getLibrary(lib.getName()+"modelgen");
+                if(mLib!=null) Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);//no real need to add modelgen to compile classpath
+            }
+        }
+    }
 
     /**
      * Creates a persistence unit with the default table generation strategy using the PU wizard and adds the created
@@ -587,17 +622,17 @@ public class Util {
      * @param classpathType
      */
     public static void addLibraryToProject(Project project, Library library, String classpathType) {
-        Sources sources=ProjectUtils.getSources(project);
-        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        SourceGroup firstGroup=groups[0];
-        FileObject fo=firstGroup.getRootFolder();
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup groups[] = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup firstGroup = groups[0];
+        FileObject fo = firstGroup.getRootFolder();
         try {
-                ProjectClassPathModifier.addLibraries(new Library[]{library}, fo, classpathType);
-            } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.FINE, "Can't add library to the project", ex);
-            } catch (UnsupportedOperationException ex) {
-                Logger.getLogger("global").log(Level.FINE, "Can't add library to the project", ex);
-            }
+            ProjectClassPathModifier.addLibraries(new Library[]{library}, fo, classpathType);
+        } catch (IOException ex) {
+            Logger.getLogger("global").log(Level.FINE, "Can't add library to the project", ex);
+        } catch (UnsupportedOperationException ex) {
+            Logger.getLogger("global").log(Level.FINE, "Can't add library to the project", ex);
+        }
     }
 
     /**
@@ -618,11 +653,12 @@ public class Util {
             }
         }
     }
+
     /**
      *@return an initial name for a persistence unit, i.e. a name that
      * is unique.
      */
-    static private final String getCandidateName(Project project){
+    static private final String getCandidateName(Project project) {
         String candidateNameBase = ProjectUtils.getInformation(project).getName() + "PU"; //NOI18N
         try {
             if (!ProviderUtil.persistenceExists(project)) {
@@ -645,18 +681,20 @@ public class Util {
         }
         return candidateNameBase;
     }
+
     /**
      * @return true if the given <code>candidate</code> represents a unique
      * name within the names of the given <code>punits</code>, false otherwise.
      */
-    static private boolean isUnique(String candidate, PersistenceUnit[] punits){
-        for (PersistenceUnit punit : punits){
-            if (candidate.equals(punit.getName())){
+    static private boolean isUnique(String candidate, PersistenceUnit[] punits) {
+        for (PersistenceUnit punit : punits) {
+            if (candidate.equals(punit.getName())) {
                 return false;
             }
         }
         return true;
     }
+
     /**
      * An implementation of the PersistenceProviderSupplier that returns an empty list for supported
      * providers and doesn't support a default provider. Used when an implementation of
@@ -675,6 +713,7 @@ public class Util {
             return false;
         }
     }
+
     public static String getPersistenceUnitAsString(Project project, String entity) throws IOException {
         String persistenceUnit = null;
         PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
@@ -685,16 +724,18 @@ public class Util {
                 PersistenceUnit units[] = persistence.getPersistenceUnit();
                 if (units.length > 0) {
                     persistenceUnit = units[0].getName();
-                    if(units.length>1) {//find best
-                        String forAll=null;
-                        String forOne=null;
-                        for(int i=0;i<units.length && forOne==null;i++) {
-                            PersistenceUnit tmp=units[i];
-                            if(forAll ==null && !tmp.isExcludeUnlistedClasses()) forAll=tmp.getName();//first match sutable for all entities in the project
-                            if(tmp.isExcludeUnlistedClasses()) {
-                                String []classes = tmp.getClass2();
-                                for(String clas:classes){
-                                    if(entity.equals(clas)) {
+                    if (units.length > 1) {//find best
+                        String forAll = null;
+                        String forOne = null;
+                        for (int i = 0; i < units.length && forOne == null; i++) {
+                            PersistenceUnit tmp = units[i];
+                            if (forAll == null && !tmp.isExcludeUnlistedClasses()) {
+                                forAll = tmp.getName();//first match sutable for all entities in the project
+                            }
+                            if (tmp.isExcludeUnlistedClasses()) {
+                                String[] classes = tmp.getClass2();
+                                for (String clas : classes) {
+                                    if (entity.equals(clas)) {
                                         forOne = tmp.getName();
                                         break;
                                     }
@@ -702,13 +743,13 @@ public class Util {
                             }
                         }
                         //try again with less restrictions (i.e. for j2se even without exclude-unlisted-classes node, it's by default true)
-                        if(forOne==null && forAll!=null){//there is exist pu without exclude-unlisted-classes
-                            for(int i=0;i<units.length && forOne==null;i++) {
-                                PersistenceUnit tmp=units[i];
-                                if(!tmp.isExcludeUnlistedClasses()) {//verify only pu without exclude-unlisted-classes as all other was examined in previos try
-                                    String []classes = tmp.getClass2();
-                                    for(String clas:classes){
-                                        if(entity.equals(clas)) {
+                        if (forOne == null && forAll != null) {//there is exist pu without exclude-unlisted-classes
+                            for (int i = 0; i < units.length && forOne == null; i++) {
+                                PersistenceUnit tmp = units[i];
+                                if (!tmp.isExcludeUnlistedClasses()) {//verify only pu without exclude-unlisted-classes as all other was examined in previos try
+                                    String[] classes = tmp.getClass2();
+                                    for (String clas : classes) {
+                                        if (entity.equals(clas)) {
                                             forOne = tmp.getName();
                                             break;
                                         }
@@ -723,5 +764,36 @@ public class Util {
             }
         }
         return persistenceUnit;
+    }
+
+    //UI support
+    public static Set getSelectedItems(JList list, boolean enabledOnly) {
+        Set result = new HashSet();
+
+        int[] selected = list.getSelectedIndices();
+        for (int i = 0; i < selected.length; i++) {
+            Object item = list.getModel().getElementAt(selected[i]);
+            if (enabledOnly) {
+                if (!list.getCellRenderer().getListCellRendererComponent(list, item, selected[i], false, false).isEnabled()) {
+                    continue;
+                }
+            }
+            result.add(item);
+        }
+
+        return result;
+    }
+
+    public static Set getEnabledItems(JList list) {
+        Set result = new HashSet();
+        for (int i = 0; i < list.getModel().getSize(); i++) {
+            Object item = list.getModel().getElementAt(i);
+            if (!list.getCellRenderer().getListCellRendererComponent(list, item, i, false, false).isEnabled()) {
+                continue;
+            }
+            result.add(item);
+        }
+
+        return result;
     }
 }

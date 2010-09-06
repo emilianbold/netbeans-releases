@@ -48,16 +48,16 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
+import javax.swing.AbstractAction;
 import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -74,7 +74,6 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
@@ -108,6 +107,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
     private SelectedTables selectedTables;
     private final boolean puRequired;
+    private final JMenuItem allToUpdateItem;
+    private final JMenuItem allToRecreateItem;
 
 
     private EntityClassesPanel(boolean puRequired, boolean JAXBRequired) {
@@ -116,12 +117,11 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         initComponents();
 
         if (JAXBRequired) {
-            generateJAXBCheckBox.setSelected(true);
             generateJAXBCheckBox.setEnabled(false);
         }
 
-        tableActionsPopup.add(new AllToUpdateAction());
-        tableActionsPopup.add(new AllToRecreateAction());
+        allToUpdateItem = tableActionsPopup.add(new AllToUpdateAction());
+        allToRecreateItem = tableActionsPopup.add(new AllToRecreateAction());
 
         classNamesTable.getParent().setBackground(classNamesTable.getBackground());
         classNamesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
@@ -196,6 +196,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         updatePersistenceUnitButton(true);
+
+
     }
 
     public void update(TableClosure tableClosure, String tableSourceName) {
@@ -218,7 +220,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         TableUISupport.connectClassNames(classNamesTable, selectedTables);
         this.tableSourceName = tableSourceName;
-    }
+        updateSetAllButtons();
+     }
 
     public SelectedTables getSelectedTables() {
         return selectedTables;
@@ -297,11 +300,15 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         if(warning.trim().length() == 0){//may need to show warning about sourc level
             if(getCreatePersistenceUnit()){
                 String sourceLevel = SourceLevelChecker.getSourceLevel(project);
-                if(sourceLevel !=null ){//by default except some minor cases jpa 2.0 is used in this wizard
+                if(sourceLevel !=null ){
                     if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6)){
                         ArrayList<Provider> providers = Util.getProviders(project);
                         if(providers!=null && providers.size()>0 && Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(providers.get(0)))){
-                            warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
+                            if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
+                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
+                            } else {
+                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_UnsupportedJpaVersion", Persistence.VERSION_2_0);
+                            }
                         }
                     }
                 }
@@ -319,6 +326,24 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             createPUWarningLabel.setToolTipText(null);
             
         }
+    }
+
+    private void updateSetAllButtons(){
+        boolean update = false;
+        boolean recreate = false;
+        if(selectedTables!=null)
+        {
+            for (Table table : selectedTables.getTables()) {
+                if(!selectedTables.getUpdateType(table).equals(UpdateType.NEW)){
+                    if(selectedTables.getUpdateType(table).equals(UpdateType.UPDATE))recreate=true;
+                    else update=true;
+                    if(update && recreate)break;
+                }
+            }
+        }
+        tableActionsButton.setEnabled(update || recreate);
+        allToUpdateItem.setEnabled(update);
+        allToRecreateItem.setEnabled(recreate);
     }
 
     private void updateSelectedTables() {
@@ -432,6 +457,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
         });
 
+        generateJAXBCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(generateJAXBCheckBox, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_GenerateJAXBAnnotations")); // NOI18N
         generateJAXBCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_ToolTipJAXB")); // NOI18N
         generateJAXBCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -458,7 +484,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(createPUCheckbox)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(cmpFieldsInInterfaceCheckBox)
@@ -752,35 +778,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
     }
 
-    private class AllToUpdateAction implements Action {
+    private class AllToUpdateAction extends AbstractAction {
 
-        @Override
-        public Object getValue(String key) {
-            if(Action.NAME.equals(key)){
-                return NbBundle.getMessage(EntityClassesPanel.class, "LBL_UpdateAction");//NOI18N
-            }
-            return null;
-        }
-
-        @Override
-        public void putValue(String key, Object value) {
-        }
-
-        @Override
-        public void setEnabled(boolean b) {
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return true;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        public AllToUpdateAction() {
+            super(NbBundle.getMessage(EntityClassesPanel.class, "LBL_UpdateAction"));
         }
 
         @Override
@@ -791,38 +792,13 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 }
             }
             TableUISupport.connectClassNames(classNamesTable, selectedTables);
+            updateSetAllButtons();
         }
 
     }
-    private class AllToRecreateAction implements Action{
-
-        @Override
-        public Object getValue(String key) {
-            if(Action.NAME.equals(key)){
-                return NbBundle.getMessage(EntityClassesPanel.class, "LBL_RecreateAction");//NOI18N
-            }
-            return null;
-        }
-
-        @Override
-        public void putValue(String key, Object value) {
-        }
-
-        @Override
-        public void setEnabled(boolean b) {
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return true;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+    private class AllToRecreateAction extends AbstractAction{
+        public AllToRecreateAction() {
+            super(NbBundle.getMessage(EntityClassesPanel.class, "LBL_RecreateAction"));
         }
 
         @Override
@@ -833,6 +809,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 }
             }
             TableUISupport.connectClassNames(classNamesTable, selectedTables);
+            updateSetAllButtons();
         }
 
     }

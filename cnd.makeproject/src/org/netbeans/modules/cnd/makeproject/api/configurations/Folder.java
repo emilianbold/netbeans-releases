@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,6 +72,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
@@ -193,6 +195,18 @@ public class Folder implements FileChangeListener, ChangeListener {
         MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
         for (File file : fileList) {
             if (file.isDirectory()) {
+                try {
+                    String canPath = file.getCanonicalPath();
+                    String absPath = file.getAbsolutePath();
+                    if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                        // It seems we have recursive link
+                        log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{absPath, folderFile.getAbsolutePath()});
+                        continue;
+                    }
+                } catch (IOException ex) {
+                    log.log(Level.INFO, ex.getMessage(), ex);
+                    continue;
+                }
                 if (findFolderByName(file.getName()) == null) {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N

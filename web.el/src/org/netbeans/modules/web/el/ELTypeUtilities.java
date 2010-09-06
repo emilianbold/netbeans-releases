@@ -84,6 +84,8 @@ import org.openide.util.Exceptions;
  * @author Erno Mononen
  */
 public final class ELTypeUtilities {
+    private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext"; //NOI18N
+    private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";//NOI18N
 
     private final CompilationInfo info;
 
@@ -111,7 +113,11 @@ public final class ELTypeUtilities {
     }
 
     public static ELTypeUtilities create(FileObject context) {
-        ClasspathInfo cp = ClasspathInfo.create(context);
+        return create(getCompilationInfo(context));
+    }
+
+    public static CompilationInfo getCompilationInfo(FileObject file) {
+        ClasspathInfo cp = ClasspathInfo.create(file);
         final CompilationInfo[] info = new CompilationInfo[1];
         JavaSource source = JavaSource.create(cp);
         try {
@@ -125,9 +131,9 @@ public final class ELTypeUtilities {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return create(info[0]);
-    }
+        return info[0];
 
+    }
     public Element resolveElement(final ELElement elem, final Node target) {
         TypeResolverVisitor typeResolver = new TypeResolverVisitor(elem, target);
         elem.getNode().accept(typeResolver);
@@ -166,7 +172,12 @@ public final class ELTypeUtilities {
 
         if (methodNode instanceof AstPropertySuffix
                 && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
-        
+
+            // for validators params are passed automatically (they are not present in EL)
+            if (isValidatorMethod(method)) {
+                return true;
+            }
+
             return method.isVarArgs() 
                     ? method.getParameters().size() == 1
                     : method.getParameters().isEmpty();
@@ -174,6 +185,17 @@ public final class ELTypeUtilities {
         return false;
     }
 
+    private boolean isValidatorMethod(ExecutableElement method) {
+        if (method.getParameters().size() != 3) {
+            return false;
+        }
+        VariableElement param1 = method.getParameters().get(0);
+        VariableElement param2 = method.getParameters().get(1);
+        CharSequence param1Type = info.getTypeUtilities().getTypeName(param1.asType(), TypeNameOptions.PRINT_FQN);        
+        CharSequence param2Type = info.getTypeUtilities().getTypeName(param2.asType(), TypeNameOptions.PRINT_FQN);
+        return FACES_CONTEXT_CLASS.equals(param1Type) && UI_COMPONENT_CLASS.equals(param2Type);
+    }
+    
     private boolean haveSameParameters(AstMethodSuffix methodNode, ExecutableElement method) {
         for (int i = 0; i < methodNode.jjtGetNumChildren(); i++) {
             Node paramNode = methodNode.jjtGetChild(i);

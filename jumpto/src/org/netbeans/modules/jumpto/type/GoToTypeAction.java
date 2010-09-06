@@ -174,6 +174,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(recentPane);
                         if (initSearchText != null && org.openide.util.Utilities.isJavaIdentifier(initSearchText)) {
                             panel.setInitialText(initSearchText);
+                        } else {
+                            panel.setInitialText(arr[0].getName());
                         }
                     }
                 }

@@ -149,8 +149,8 @@ final class WrapInfo extends GapList<WrapLine> {
         if (LOG.isLoggable(Level.FINER)) {
             String err = findIntegrityError(paragraphView);
             if (err != null) {
-                String msg = "WrapInfo INTEGRITY ERROR! - " + err;
-                LOG.finer(msg + "\n");
+                String msg = "WrapInfo INTEGRITY ERROR! - " + err; // NOI18N
+                LOG.finer(msg + "\n"); // NOI18N
                 LOG.finer(toString(paragraphView)); // toString() impl should append newline
                 // For finest level stop throw real ISE otherwise just log the stack
                 if (LOG.isLoggable(Level.FINEST)) {
@@ -172,8 +172,8 @@ final class WrapInfo extends GapList<WrapLine> {
             if (startViewPart != null) {
                 nonEmptyLine = true;
                 if (startViewPart.getStartOffset() != lastOffset) {
-                    err = "startViewPart.getStartOffset()=" + startViewPart.getStartOffset() +
-                            " != lastOffset=" + lastOffset;
+                    err = "startViewPart.getStartOffset()=" + startViewPart.getStartOffset() + // NOI18N
+                            " != lastOffset=" + lastOffset; // NOI18N
                 }
                 lastOffset = startViewPart.getEndOffset();
             }
@@ -185,26 +185,26 @@ final class WrapInfo extends GapList<WrapLine> {
                 if (startViewIndex < 0) {
                     validIndices = false;
                     if (err == null) {
-                        err = "startViewIndex=" + startViewIndex + " < 0";
+                        err = "startViewIndex=" + startViewIndex + " < 0; endViewIndex=" + endViewIndex; // NOI18N
                     }
                 }
                 if (endViewIndex < startViewIndex) {
                     validIndices = false;
                     if (err == null) {
-                        err = "endViewIndex=" + endViewIndex + " < startViewIndex=" + startViewIndex;
+                        err = "endViewIndex=" + endViewIndex + " < startViewIndex=" + startViewIndex; // NOI18N
                     }
                 }
                 if (endViewIndex > paragraphView.getViewCount()) {
                     validIndices = false;
                     if (err == null) {
-                        err = "endViewIndex=" + endViewIndex + " > getViewCount()=" + paragraphView.getViewCount();
+                        err = "endViewIndex=" + endViewIndex + " > getViewCount()=" + paragraphView.getViewCount(); // NOI18N
                     }
                 }
                 if (validIndices) {
                     EditorView childView = paragraphView.getEditorView(startViewIndex);
                     if (err == null && childView.getStartOffset() != lastOffset) {
-                        err = "startChildView.getStartOffset()=" + childView.getStartOffset()
-                                + " != lastOffset=" + lastOffset;
+                        err = "startChildView.getStartOffset()=" + childView.getStartOffset() // NOI18N
+                                + " != lastOffset=" + lastOffset; // NOI18N
                     }
                     childView = paragraphView.getEditorView(endViewIndex - 1);
                     lastOffset = childView.getEndOffset();
@@ -214,87 +214,91 @@ final class WrapInfo extends GapList<WrapLine> {
             if (endViewPart != null) {
                 nonEmptyLine = true;
                 if (err == null && lastOffset != endViewPart.getStartOffset()) {
-                    err = "endViewPart.getStartOffset()=" + endViewPart.getStartOffset() +
-                            " != lastOffset=" + lastOffset;
+                    err = "endViewPart.getStartOffset()=" + endViewPart.getStartOffset() + // NOI18N
+                            " != lastOffset=" + lastOffset; // NOI18N
                 }
                 lastOffset = endViewPart.getEndOffset();
             }
             if (!nonEmptyLine && err == null) {
-                err = "Empty";
+                err = "Empty"; // NOI18N
             }
             if (err != null) {
-                err = "WrapLine[" + i + "]: " + err;
+                err = "WrapLine[" + i + "]: " + err; // NOI18N
                 break;
             }
+        }
+        if (err == null && lastOffset != paragraphView.getEndOffset()) {
+            err = "Not all offsets covered: lastOffset=" + lastOffset + " != parEndOffset=" + // NOI18N
+                    paragraphView.getEndOffset();
         }
         return err;
     }
 
     String dumpWrapLine(EditorBoxView boxView, int wrapLineIndex) {
-        return "Invalid wrapLine["  + wrapLineIndex + "]:\n" + toString((ParagraphView)boxView);
+        return "Invalid wrapLine["  + wrapLineIndex + "]:\n" + toString((ParagraphView)boxView); // NOI18N
     }
 
     public String appendInfo(StringBuilder sb, ParagraphView paragraphView, int indent) { // Expected to append newline at end
-        sb.append("\n");
+        sb.append("\n"); // NOI18N
         ArrayUtilities.appendSpaces(sb, indent);
-        sb.append("childrenSpan:[").append(childrenWidth);
-        sb.append(",").append(childrenHeight);
-        sb.append("], realSpan:[");
+        sb.append("childrenSpan:[").append(childrenWidth); // NOI18N
+        sb.append(",").append(childrenHeight); // NOI18N
+        sb.append("], realSpan:["); // NOI18N
         if (paragraphView != null) {
-            sb.append(paragraphView.getMajorAxisSpan()).append(",");
+            sb.append(paragraphView.getMajorAxisSpan()).append(","); // NOI18N
             sb.append(paragraphView.getMinorAxisSpan());
         } else {
-            sb.append("<NULL>");
+            sb.append("<NULL>"); // NOI18N
         }
         sb.append("]");
         DocumentView docView;
         if (paragraphView != null && ((docView = paragraphView.getDocumentView()) != null)) {
             float visibleWidth = docView.getVisibleWidth();
-            sb.append(" visibleWidth=").append(visibleWidth);
+            sb.append(" visibleWidth=").append(visibleWidth); // NOI18N
         }
         int wrapLineCount = size();
         int digitCount = ArrayUtilities.digitCount(wrapLineCount);
         for (int i = 0; i < wrapLineCount; i++) {
-            sb.append("\n");
+            sb.append('\n');
             ArrayUtilities.appendSpaces(sb, indent + 2);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             WrapLine wrapLine = get(i);
-            sb.append("SV:");
+            sb.append("SV:"); // NOI18N
             EditorView startViewPart = wrapLine.startViewPart;
             if (startViewPart != null) {
-                sb.append("<").append(startViewPart.getStartOffset()).append(",");
-                sb.append(startViewPart.getEndOffset()).append(">");
+                sb.append("<").append(startViewPart.getStartOffset()).append(","); // NOI18N
+                sb.append(startViewPart.getEndOffset()).append(">"); // NOI18N
             } else {
-                sb.append("NULL");
+                sb.append("NULL"); // NOI18N
             }
-            sb.append("; x=").append(wrapLine.startViewX);
+            sb.append("; x=").append(wrapLine.startViewX); // NOI18N
             int startViewIndex = wrapLine.startViewIndex;
             int endViewIndex = wrapLine.endViewIndex;
-            sb.append(" [").append(startViewIndex).append(",");
-            sb.append(endViewIndex).append("] ");
+            sb.append(" [").append(startViewIndex).append(","); // NOI18N
+            sb.append(endViewIndex).append("] "); // NOI18N
             if (paragraphView != null && startViewIndex != endViewIndex) {
                 if (startViewIndex > endViewIndex) {
-                    sb.append("ERROR!!! startViewIndex=").append(startViewIndex);
-                    sb.append(" > endViewIndex=").append(endViewIndex);
+                    sb.append("ERROR!!! startViewIndex=").append(startViewIndex); // NOI18N
+                    sb.append(" > endViewIndex=").append(endViewIndex); // NOI18N
                 } else {
                     int childCount = paragraphView.getViewCount();
                     if (startViewIndex == childCount) {
-                        sb.append("<").append(paragraphView.getEndOffset()).append(">");
+                        sb.append("<").append(paragraphView.getEndOffset()).append(">"); // NOI18N
                     } else {
                         EditorView startChild = paragraphView.getEditorView(startViewIndex);
                         EditorView lastChild = paragraphView.getEditorView(endViewIndex - 1);
-                        sb.append("<").append(startChild.getStartOffset());
-                        sb.append(",").append(lastChild.getEndOffset()).append("> ");
+                        sb.append("<").append(startChild.getStartOffset()); // NOI18N
+                        sb.append(",").append(lastChild.getEndOffset()).append("> "); // NOI18N
                     }
                 }
             }
-            sb.append("EV:");
+            sb.append("EV:"); // NOI18N
             EditorView endViewPart = wrapLine.endViewPart;
             if (endViewPart != null) {
-                sb.append("<").append(endViewPart.getStartOffset()).append(",");
-                sb.append(endViewPart.getEndOffset()).append(">");
+                sb.append("<").append(endViewPart.getStartOffset()).append(","); // NOI18N
+                sb.append(endViewPart.getEndOffset()).append(">"); // NOI18N
             } else {
-                sb.append("NULL");
+                sb.append("NULL"); // NOI18N
             }
         }
         return sb.toString();

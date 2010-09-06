@@ -82,6 +82,7 @@ public class CopyResourcesIndexer extends CustomIndexer {
     public static class Factory extends CustomIndexerFactory {
 
         private volatile String cachedPath;
+        private FileObject activeRoot;
         private Date timestamp;
         private long length;
 
@@ -100,10 +101,11 @@ public class CopyResourcesIndexer extends CustomIndexer {
                             final Date cts = persistenceXML.lastModified();
                             final long cl = persistenceXML.getSize();
                             synchronized (Factory.this) {
-                                if (cts.equals(timestamp) && length == cl) {
+                                if (root == activeRoot && cts.equals(timestamp) && length == cl) {
                                     //Nothing changed.
                                     return super.scanStarted(context);
                                 }
+                                activeRoot = root;
                                 timestamp = cts;
                                 length = cl;
                             }

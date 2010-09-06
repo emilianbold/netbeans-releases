@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenSettings;
-import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.awt.Color;
 import java.net.URL;
 import java.util.Collection;
@@ -302,6 +302,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         if (react) {
             toRet.add("--projects");
+            // XXX might be better to supply relative path from executionDirectory, e.g. 'war'
             toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
         }
 
@@ -404,7 +405,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
         }
 
-        File mavenHome = MavenSettings.getDefault().getCommandLinePath();
+        File mavenHome = MavenSettings.getDefault().getMavenHome();
         Constructor constructeur = new ShellConstructor(mavenHome);
 
         List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);

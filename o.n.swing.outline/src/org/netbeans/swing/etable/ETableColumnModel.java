@@ -223,6 +223,23 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         }
     }
     
+    @Override
+    public void removeColumn(TableColumn column) {
+        if (sortedColumns.remove(column)) {
+            int i = 1;
+            for (TableColumn sc : sortedColumns) {
+                if (sc instanceof ETableColumn) {
+                    ETableColumn etc = (ETableColumn) sc;
+                    etc.setSorted(i, etc.isAscending());
+                }
+                i++;
+            }
+        }
+        if (!hiddenColumns.remove(column)) {
+            super.removeColumn(column);
+        }
+    }
+
     /** 
      * Makes the given column hidden or visible according to the parameter
      * hidden.

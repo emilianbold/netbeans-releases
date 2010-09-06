@@ -127,7 +127,7 @@ public class MergeAction extends ContextAction {
                     }
                 }
             };
-            support.start(createRequestProcessor(nodes));
+            support.start(createRequestProcessor(ctx));
         }        
     }
 

@@ -1,8 +1,4 @@
-<?php
-if (true) {
-?>
+<?php if (true) { ?>
     <div>
     </div>
-<?
-}
-?>
+<? } ?>

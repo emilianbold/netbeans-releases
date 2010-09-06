@@ -546,7 +546,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         if (patterns.length == 0) return false;
         try {
             int n = ThreadReferenceWrapper.frameCount(tr);
-            if (n <= depth) return false;
+            if (n <= (depth + 1)) {
+                // There can not be anything in between up to (depth + 1)
+                return false;
+            }
             List<StackFrame> frames = ThreadReferenceWrapper.frames(tr, 0, n - depth);
             for (StackFrame f : frames) {
                 /* TODO: use

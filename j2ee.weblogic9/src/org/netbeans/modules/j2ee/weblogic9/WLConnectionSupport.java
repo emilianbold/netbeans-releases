@@ -47,14 +47,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -73,7 +71,7 @@ public final class WLConnectionSupport {
             ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 
             Thread.currentThread().setContextClassLoader(
-                    WLDeploymentManagerAccessor.getDefault().getWLClassLoader(deploymentManager));
+                    WLDeploymentFactory.getInstance().getClassLoader(deploymentManager));
             try {
                 return action.call();
             } finally {
@@ -169,34 +167,5 @@ public final class WLConnectionSupport {
         public final String getPath() {
             return "/jndi/weblogic.management.mbeanservers.edit"; // NOI18N
         }
-    }
-
-    public static abstract class WLDeploymentManagerAccessor {
-
-        private static volatile WLDeploymentManagerAccessor accessor;
-
-        public static void setDefault(WLDeploymentManagerAccessor accessor) {
-            if (WLDeploymentManagerAccessor.accessor != null) {
-                throw new IllegalStateException("Already initialized accessor"); // NOI18N
-            }
-            WLDeploymentManagerAccessor.accessor = accessor;
-        }
-
-        public static WLDeploymentManagerAccessor getDefault() {
-            if (accessor != null) {
-                return accessor;
-            }
-
-            Class c = WLConnectionSupport.class;
-            try {
-                Class.forName(c.getName(), true, WLDeploymentManagerAccessor.class.getClassLoader());
-            } catch (ClassNotFoundException cnf) {
-                Exceptions.printStackTrace(cnf);
-            }
-
-            return accessor;
-        }
-
-        public abstract ClassLoader getWLClassLoader(WLDeploymentManager manager);
     }
 }

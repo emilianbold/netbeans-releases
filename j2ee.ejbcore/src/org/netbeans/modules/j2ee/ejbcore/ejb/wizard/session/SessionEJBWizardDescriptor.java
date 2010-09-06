@@ -109,7 +109,8 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
 
         if (isRemote && wizardPanel.getRemoteInterfaceProject() == null){
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-                    NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_NoRemoteInterfaceProject")); //NOI18N
+                    SessionEJBWizardPanel.isMaven(project) ? NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_NoRemoteInterfaceProjectMaven") :
+                        NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_NoRemoteInterfaceProject")); //NOI18N
             return false;
         }
 

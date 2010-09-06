@@ -94,10 +94,15 @@ public final class ELElement {
     }
 
     /**
+     * Gets the node at the given offset.
+     * @param offset an offset in the original document.
      * @return the node at the given {@code offset} or {@code null}.
      */
     public Node findNodeAt(final int offset) {
         assert getOriginalOffset().containsInclusive(offset);
+        if (getNode() == null) {
+            return null;
+        }
         final Node[] result = new Node[1];
         getNode().accept(new NodeVisitor() {
             @Override

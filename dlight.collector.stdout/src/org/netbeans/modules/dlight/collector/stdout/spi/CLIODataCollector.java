@@ -43,14 +43,12 @@ package org.netbeans.modules.dlight.collector.stdout.spi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -63,9 +61,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
-import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
@@ -79,6 +75,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListenersSupport;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -100,21 +97,17 @@ public final class CLIODataCollector
         extends IndicatorDataProvider<CLIODCConfiguration>
         implements DataCollector<CLIODCConfiguration>, DLightTarget.ExecutionEnvVariablesProvider {
 
-    private static final Logger log =
-            DLightLogger.getLogger(CLIODataCollector.class);
+    private static final Logger log = DLightLogger.getLogger(CLIODataCollector.class);
     private String command;
     private final Map<String, String> envs;
     private String argsTemplate;
     private DataStorage storage;
-    private String displayedName;
     private Future<Integer> collectorTask;
     private CLIOParser parser;
-    private List<DataTableMetadata> dataTablesMetadata;
-    private ValidationStatus validationStatus = ValidationStatus.initialStatus();
-    private List<ValidationListener> validationListeners =
-            Collections.synchronizedList(new ArrayList<ValidationListener>());
     private final DataStorageType dataStorageType;
-    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
+    private final String firstTableName;
+    private final List<DataTableMetadata> metadata;
+    private final DataCollectorListenersSupport dclsupport = new DataCollectorListenersSupport(this);
 
     /**
      *
@@ -125,91 +118,44 @@ public final class CLIODataCollector
      * @param dataTablesMetadata describes the tables to store parsed data in
      */
     CLIODataCollector(CLIODCConfiguration configuration) {
+        super(constructName(configuration));
+
         CLIODCConfigurationAccessor accessor =
                 CLIODCConfigurationAccessor.getDefault();
 
         this.command = accessor.getCommand(configuration);
         this.argsTemplate = accessor.getArguments(configuration);
         this.parser = accessor.getParser(configuration);
-        this.dataTablesMetadata = accessor.getDataTablesMetadata(configuration);
         this.envs = accessor.getDLightTargetExecutionEnv(configuration);
-        this.displayedName = accessor.getName(configuration);
-        if (displayedName == null) {
-            //lets create own name on the base of command
-            int separatorIndex = this.command.lastIndexOf(File.separator);
-            displayedName = separatorIndex == -1 || separatorIndex == command.length() - 1 ? command : this.command.substring(separatorIndex + 1);
-        }
         this.dataStorageType = accessor.getDataStorageType(configuration);
-    }
 
- /**
-     * Adds collector state listener, all listeners will be notified about
-     * collector state change.
-     * @param listener add listener
-     */
+        metadata = Collections.unmodifiableList(accessor.getDataTablesMetadata(configuration));
+
+        if (metadata != null && !metadata.isEmpty()) {
+            firstTableName = metadata.get(0).getName();
+        } else {
+            firstTableName = null;
+        }
+    }
+    
     @Override
     public final void addDataCollectorListener(DataCollectorListener listener) {
-        if (listener == null) {
-            return;
-        }
-
-        synchronized (this) {
-            if (!listeners.contains(listener)) {
-                listeners.add(listener);
-            }
-        }
+        dclsupport.addListener(listener);
     }
 
-    /**
-     * Remove collector listener
-     * @param listener listener to remove from the list
-     */
     @Override
     public final void removeDataCollectorListener(DataCollectorListener listener) {
-        synchronized (this) {
-            listeners.remove(listener);
-        }
+        dclsupport.removeListener(listener);
     }
 
-    /**
-     * Notifies listeners target state changed in separate thread
-     * @param oldState state target was
-     * @param newState state  target is
-     */
     protected final void notifyListeners(final CollectorState state) {
-        DataCollectorListener[] ll;
-
-        synchronized (this) {
-            ll = listeners.toArray(new DataCollectorListener[0]);
-        }
-
-        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
-
-        // Will do notification in parallel, but wait until all listeners
-        // finish processing of event.
-        for (final DataCollectorListener l : ll) {
-            DLightExecutorService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        l.collectorStateChanged(CLIODataCollector.this, state);
-                    } finally {
-                        doneFlag.countDown();
-                    }
-                }
-            }, "Notifying " + l); // NOI18N
-        }
-
-        try {
-            doneFlag.await();
-        } catch (InterruptedException ex) {
-        }
-
+        dclsupport.notifyListeners(state);
     }
 
-    public String getName() {
-        return displayedName;
+    private static String constructName(CLIODCConfiguration configuration) {
+        String cmd = CLIODCConfigurationAccessor.getDefault().getCommand(configuration);
+        int separatorIndex = cmd.lastIndexOf(File.separator);
+        return separatorIndex == -1 || separatorIndex == cmd.length() - 1 ? cmd : cmd.substring(separatorIndex + 1);
     }
 
     /**
@@ -217,34 +163,32 @@ public final class CLIODataCollector
      * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
      * data collector can put data into
      */
+    @Override
     public Collection<DataStorageType> getRequiredDataStorageTypes() {
         return Arrays.asList(dataStorageType);
     }
 
+    @Override
     public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
         this.storage = storages.get(dataStorageType);
-        log.fine("Do INIT for " + storage.toString()); // NOI18N
+        log.log(Level.FINE, "Do INIT for {0}", storage.toString()); // NOI18N
     }
 
     protected void processLine(String line) {
         DataRow dataRow = parser.process(line);
         if (dataRow != null) {
-            if (dataTablesMetadata != null &&
-                    !dataTablesMetadata.isEmpty() &&
-                    storage != null) {
-
-                storage.addData(
-                        dataTablesMetadata.iterator().next().getName(),
-                        Arrays.asList(dataRow));
+            if (firstTableName != null && storage != null) {
+                storage.addData(firstTableName, Arrays.asList(dataRow));
             }
 
             notifyIndicators(Arrays.asList(dataRow));
         }
     }
 
-    private void targetStarted(DLightTarget target) {
-        log.fine("Starting CLIODataCollector: " + command); // NOI18N
+    @Override
+    protected void targetStarted(DLightTarget target) {
+        log.log(Level.FINE, "Starting CLIODataCollector: {0}", command); // NOI18N
         resetIndicators();
 
         String cmd = command + " "; // NOI18N
@@ -282,7 +226,7 @@ public final class CLIODataCollector
                 } catch (ExecutionException ex) {
                     notifyListeners(CollectorState.TERMINATED);
                     return;
-                }catch (CancellationException ex){
+                } catch (CancellationException ex) {
                     notifyListeners(CollectorState.TERMINATED);
                     return;
                 }
@@ -292,7 +236,8 @@ public final class CLIODataCollector
         }, "Listen for the CLIO task");//NOI18N
     }
 
-    private void targetFinished(DLightTarget target) {
+    @Override
+    protected void targetFinished(DLightTarget target) {
         if (collectorTask != null && !collectorTask.isDone()) {
             // It could be already done here, because tracked process is
             // finished and, depending on command-line utility, it may exit as
@@ -302,10 +247,9 @@ public final class CLIODataCollector
         }
     }
 
-    /** {@inheritDoc */
     @Override
     public List<DataTableMetadata> getDataTablesMetadata() {
-        return dataTablesMetadata;
+        return metadata;
     }
 
     /** {@inheritDoc */
@@ -326,64 +270,12 @@ public final class CLIODataCollector
         return null;
     }
 
-    /**
-     * Registers a validation listener
-     * @param listener a validation listener to add
-     */
-    @Override
-    public void addValidationListener(ValidationListener listener) {
-        if (!validationListeners.contains(listener)) {
-            validationListeners.add(listener);
-        }
-    }
-
-    /**
-     * Removes a validation listener
-     * @param listener a listener to remove
-     */
-    @Override
-    public void removeValidationListener(ValidationListener listener) {
-        validationListeners.remove(listener);
-    }
-
-    protected void notifyStatusChanged(
-            final ValidationStatus oldStatus,
-            final ValidationStatus newStatus) {
-
-        if (oldStatus.equals(newStatus)) {
-            return;
-        }
-
-        for (ValidationListener validationListener : validationListeners) {
-            validationListener.validationStateChanged(this, oldStatus, newStatus);
-        }
-    }
-
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(CLIODataCollector.class, key, params);
     }
 
     @Override
-    public ValidationStatus validate(final DLightTarget target) {
-        if (validationStatus.isValid()) {
-            return validationStatus;
-        }
-
-        ValidationStatus oldStatus = validationStatus;
-        ValidationStatus newStatus = doValidation(target);
-
-        notifyStatusChanged(oldStatus, newStatus);
-
-        validationStatus = newStatus;
-        return newStatus;
-    }
-
-    @Override
-    public void invalidate() {
-        validationStatus = ValidationStatus.initialStatus();
-    }
-
-    private ValidationStatus doValidation(final DLightTarget target) {
+    protected ValidationStatus doValidation(final DLightTarget target) {
         DLightLogger.assertNonUiThread();
 
         ValidationStatus result = null;
@@ -429,32 +321,6 @@ public final class CLIODataCollector
         }
 
         return result;
-    }
-
-    @Override
-    public ValidationStatus getValidationStatus() {
-        return validationStatus;
-    }
-
-    @Override
-    public void targetStateChanged(DLightTargetChangeEvent event) {
-        switch (event.state) {
-            case RUNNING:
-                targetStarted(event.target);
-                break;
-            case FAILED:
-                targetFinished(event.target);
-                break;
-            case TERMINATED:
-                targetFinished(event.target);
-                break;
-            case DONE:
-                targetFinished(event.target);
-                break;
-            case STOPPED:
-                targetFinished(event.target);
-                return;
-        }
     }
 
     @Override

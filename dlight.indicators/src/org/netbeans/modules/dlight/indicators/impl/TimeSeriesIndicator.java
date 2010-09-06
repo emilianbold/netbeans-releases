@@ -115,14 +115,12 @@ public final class TimeSeriesIndicator
     private final int timeSeriesCount;
     private int tickCounter;
     private List<Action> popupActions;
-    private volatile boolean isInitialized = false;
     private final TimeSeriesIndicatorConfiguration configuration;
     private final List<TimeSeriesDescriptor> timeSeriesList;
     private final List<DetailDescriptor> detailsList;
     private final DataTableMetadata timeSeriesTable;
     private final DataTableMetadata detailsTable;
     private volatile Map<String, String> detailsValues;
-    private final UILock uiLock = new UILock();
 
     public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);
@@ -144,19 +142,14 @@ public final class TimeSeriesIndicator
         legend.updateWithInfoProvided(getColumnsProvided());
     }
 
-
-
-    private final void initUI() {
-        synchronized (uiLock) {
-            this.graph = createGraph(configuration, data);
-            TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-            this.legend = new Legend(timeSeriesList, detailsList);
-            this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
-            this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
-                    legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
-            panel.setPopupActions(popupActions);
-            isInitialized = true;
-        }
+    private void initUI() {
+        this.graph = createGraph(configuration, data);
+        TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
+        this.legend = new Legend(timeSeriesList, detailsList);
+        this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
+        this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
+                legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
+        panel.setPopupActions(popupActions);
     }
 
     private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration, TimeSeriesDataContainer data) {
@@ -164,7 +157,7 @@ public final class TimeSeriesIndicator
                 TimeSeriesIndicatorConfigurationAccessor.getDefault();
         TimeSeriesPlot graph =
                 new TimeSeriesPlot(accessor.getGraphScale(configuration),
-                accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration), data);
+                accessor.getLabelFormatter(configuration), accessor.getTimeSeriesDescriptors(configuration), data);
         graph.setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
         Dimension graphSize = new Dimension(
                 DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_WIDTH),
@@ -207,10 +200,12 @@ public final class TimeSeriesIndicator
         return table;
     }
 
+    @Override
     public ViewportModel getViewportModel() {
         return graph.getViewportModel();
     }
 
+    @Override
     public void setViewportModel(ViewportModel viewportModel) {
         graph.setViewportModel(viewportModel);
     }
@@ -222,13 +217,16 @@ public final class TimeSeriesIndicator
             repairPanel.setPopupActions(popupActions);
             repairPanel.addActionListener(new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> repairResult = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
 
+                        @Override
                         public Boolean call() throws Exception {
                             UIThread.invoke(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     repairPanel.setEnabled(false);
                                 }
@@ -236,6 +234,7 @@ public final class TimeSeriesIndicator
                             Boolean retValue = repairResult.get();
                             UIThread.invoke(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     repairPanel.setEnabled(true);
                                 }
@@ -247,6 +246,7 @@ public final class TimeSeriesIndicator
             });
             UIThread.invoke(new Runnable() {
 
+                @Override
                 public void run() {
                     panel.setOverlay(repairPanel);
                 }
@@ -256,6 +256,7 @@ public final class TimeSeriesIndicator
                     false, DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             UIThread.invoke(new Runnable() {
 
+                @Override
                 public void run() {
                     panel.setOverlay(label);
                 }
@@ -305,15 +306,14 @@ public final class TimeSeriesIndicator
     }
 
     @Override
-    public JComponent getComponent() {
-        synchronized (uiLock) {
-            if (!isInitialized) {
-                initUI();
-            }
+    public synchronized JComponent getComponent() {
+        if (panel == null) {
+            initUI();
         }
         return panel;
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         graph.dataFiltersChanged(newSet, isAdjusting);
     }
@@ -450,8 +450,5 @@ public final class TimeSeriesIndicator
             out.printf("%s => %s\n", detail, detailsValues.get(detail)); // NOI18N
         }
         out.flush();
-    }
-
-    private final static class UILock {
     }
 }

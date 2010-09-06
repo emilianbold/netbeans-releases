@@ -54,14 +54,21 @@ public abstract class JAXWSLightSupportAccessor {
 
     public static JAXWSLightSupportAccessor DEFAULT;
 
-    // force loading JAXWSSupport class. That will set DEFAULT variable.
-    static {
+    public static JAXWSLightSupportAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        // invokes static initializer of JAXWSLightSupport.class
+        // that will assign value to the DEFAULT field above
         Class c = JAXWSLightSupport.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
         }
+        assert DEFAULT != null : "The DEFAULT field must be initialized";
+        return DEFAULT;
     }
 
     public abstract JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiJAXWSSupport);

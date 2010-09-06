@@ -167,7 +167,7 @@ final class NodeLookup extends AbstractLookup {
     public void updateLookupAsCookiesAreChanged(Class toAdd) {
         java.util.Collection<AbstractLookup.Pair> instances;
         java.util.Map<AbstractLookup.Pair, Class> fromPairToQueryClass;
-
+        java.util.Iterator<Class> it;
         // if it is cookie change, do the rescan, try to keep order
         synchronized (this) {
             if (toAdd != null) {
@@ -182,15 +182,14 @@ final class NodeLookup extends AbstractLookup {
             instances = new java.util.LinkedHashSet<AbstractLookup.Pair>(queriedCookieClasses.size());
             fromPairToQueryClass = new java.util.LinkedHashMap<AbstractLookup.Pair, Class>();
 
-            java.util.Iterator<Class> it = /* #74334 */new ArrayList<Class>(queriedCookieClasses).iterator();
+            it = /* #74334 */new ArrayList<Class>(queriedCookieClasses).iterator();
             CookieSetLkp.SimpleItem<Node> nodePair = new CookieSetLkp.SimpleItem<Node>(node);
             instances.add(nodePair);
             fromPairToQueryClass.put(nodePair, Node.class);
-
-            while (it.hasNext()) {
-                Class c = it.next();
-                addCookie(node, c, instances, fromPairToQueryClass);
-            }
+        }
+        while (it.hasNext()) {
+            Class c = it.next();
+            addCookie(node, c, instances, fromPairToQueryClass);
         }
 
         final java.util.Map<AbstractLookup.Pair, Class> m = fromPairToQueryClass;

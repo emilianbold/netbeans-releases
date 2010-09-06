@@ -216,7 +216,7 @@ public abstract class FromEntityBase {
                 FieldDesc fd = new FieldDesc(controller, method, bean, initValueGetters);
                 if (fd.isValid()) {
                     int relationship = fd.getRelationship();
-                    if (EntityClass.isId(controller, method, fd.isFieldAccess())) {
+                    if (EntityClass.isId(method, fd.isFieldAccess())) {
                         fd.setPrimaryKey();
                         TypeMirror rType = method.getReturnType();
                         if (TypeKind.DECLARED == rType.getKind()) {
@@ -227,8 +227,8 @@ public abstract class FromEntityBase {
                                     embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
                                 }
                                 String propName = fd.getPropertyName();
-                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, bean)) {
-                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, bean, pkMethod)) {
+                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(bean)) {
+                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(bean, pkMethod)) {
                                         String pkMethodName = pkMethod.getSimpleName().toString();
                                         fd = new FieldDesc(controller, pkMethod, bean);
                                         fd.setLabel(pkMethodName.substring(3));
@@ -262,7 +262,7 @@ public abstract class FromEntityBase {
         for (ExecutableElement method : methods) {
             FieldDesc fd = new FieldDesc(controller, method, bean, false);
             if (fd.isValid()) {
-                if (EntityClass.isId(controller, method, fd.isFieldAccess())) {
+                if (EntityClass.isId(method, fd.isFieldAccess())) {
                     return method;
                 }
             }
@@ -409,6 +409,8 @@ public abstract class FromEntityBase {
                 return "Long.valueOf("+param+")";
             } else if ("Short".equals(idType.toString()) || "java.lang.Short".equals(idType.toString())) {
                 return "Short.valueOf("+param+")";
+            } else if ("BigDecimal".equals(idType.toString()) || "java.math.BigDecimal".equals(idType.toString())) {
+                return "new BigDecimal("+param+")";
             }
         }
         return param;
@@ -509,7 +511,7 @@ public abstract class FromEntityBase {
 
         public int getRelationship() {
             if (relationship == null) {
-                relationship = Integer.valueOf(JpaControllerUtil.isRelationship(controller, method, isFieldAccess()));
+                relationship = Integer.valueOf(JpaControllerUtil.isRelationship(method, isFieldAccess()));
             }
             return relationship.intValue();
         }
@@ -519,7 +521,7 @@ public abstract class FromEntityBase {
                 dateTimeFormat = "";
                 TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType(); // NOI18N
                 if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
-                    String temporal = EntityClass.getTemporal(controller, method, isFieldAccess());
+                    String temporal = EntityClass.getTemporal(method, isFieldAccess());
                     if (temporal != null) {
                         dateTimeFormat = EntityClass.getDateTimeFormat(temporal);
                     }
@@ -529,7 +531,7 @@ public abstract class FromEntityBase {
         }
 
         private boolean isBlob() {
-            Element fieldElement = isFieldAccess() ? JpaControllerUtil.guessField(controller, method) : method;
+            Element fieldElement = isFieldAccess() ? JpaControllerUtil.guessField(method) : method;
             if (fieldElement == null) {
                 fieldElement = method;
             }
@@ -582,7 +584,7 @@ public abstract class FromEntityBase {
         }
 
         private boolean isRequired() {
-            return !JpaControllerUtil.isFieldOptionalAndNullable(controller, method, isFieldAccess());
+            return !JpaControllerUtil.isFieldOptionalAndNullable(method, isFieldAccess());
         }
 
     }

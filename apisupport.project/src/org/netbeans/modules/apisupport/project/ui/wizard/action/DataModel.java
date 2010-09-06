@@ -46,18 +46,26 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -163,7 +171,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             SpecificationVersion current = getModuleInfo().getDependencyVersion("org.openide.awt");
             actionProxy = current == null || current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
             actionContext = current == null || current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
-            annotations = current == null || current.compareTo(new SpecificationVersion("7.26")) >= 0; // NOI18N
+            annotations = current == null || current.compareTo(new SpecificationVersion("7.28")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, ex);
             actionProxy = false;
@@ -189,7 +197,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         ); // NOI18N
         assert template != null;
         String actionNameKey = "CTL_" + className; // NOI18N
-        Map<String,String> replaceTokens = new HashMap<String,String>();
+        Map<String,Object> replaceTokens = new HashMap<String,Object>();
         replaceTokens.put("CLASS_NAME", className); // NOI18N
         replaceTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         replaceTokens.put("DISPLAY_NAME_KEY", actionNameKey); // NOI18N
@@ -200,14 +208,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             replaceTokens.put("ANNOTATIONS", "true"); // NOI18N
         }
         Set<String> imports = new TreeSet<String>();
-        String cName = parseClassName(cookieClasses[0]);
-        String cNameVar = Character.toLowerCase(cName.charAt(0)) + cName.substring(1);
         if (!actionContext) {
             imports.addAll(Arrays.asList(HARDCODED_IMPORTS));
         }
         Set<String> addedFQNCs = new TreeSet<String>();
         StringBuffer cookieSB = new StringBuffer();
         if (!alwaysEnabled) {
+            String cName = parseClassName(cookieClasses[0]);
+            String cNameVar = Character.toLowerCase(cName.charAt(0)) + cName.substring(1);
             for (String cookieClass : cookieClasses) {
                 // imports for predefined chosen cookie classes
                 if (CLASS_TO_CNB.containsKey(cookieClass)) {
@@ -260,6 +268,68 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             replaceTokens.put("ICON_RESOURCE_METHOD", ""); // NOI18N
             replaceTokens.put("INITIALIZE_METHOD", DataModel.generateNoIconInitializeMethod()); // NOI18N
         }
+        
+        if (annotations) {
+            List<ActionReference> refs = new ArrayList<ActionReference>();
+            // create layer entry for global menu item
+            if (globalMenuItemEnabled) {
+                refs.add(createActionReference(
+                    gmiParentMenuPath,
+                    gmiSeparatorBefore ? Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, Boolean.TRUE) : -1,
+                    gmiSeparatorAfter ? Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, Boolean.FALSE) : -1,
+                    Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath),
+                    null
+                ));
+            }
+
+            // create layer entry for toolbar button
+            if (toolbarEnabled) {
+                refs.add(createActionReference(
+                    toolbar,
+                    -1,
+                    -1,
+                    Position.toInteger(toolbarPosition, getProject(), toolbar),
+                    null
+                ));
+            }
+            
+            // create layer entry for keyboard shortcut
+            if (kbShortcutEnabled) {
+                String parentPath = "Shortcuts"; // NOI18N
+                for (String keyStroke : keyStrokes) {
+                    refs.add(
+                        createActionReference(
+                            parentPath,
+                            -1,
+                            -1,
+                            -1,
+                            keyStroke
+                        )
+                    );
+                }
+            }
+
+            // create file type context menu item
+            if (ftContextEnabled) {
+                refs.add(createActionReference(
+                    ftContextType,
+                    ftContextSeparatorBefore ? Position.toInteger(ftContextPosition, getProject(), toolbar, Boolean.TRUE) : -1,
+                    ftContextSeparatorAfter ? Position.toInteger(ftContextPosition, getProject(), toolbar, Boolean.FALSE) : -1,
+                    Position.toInteger(ftContextPosition, getProject(), toolbar),
+                    null
+                ));
+            }
+            /*
+            // create editor context menu item
+            if (edContextEnabled) {
+                generateShadowWithOrderAndSeparator(edContextType, shadow,
+                        dashedFqClassName, instanceFullPath, edContextSeparatorBefore,
+                        edContextSeparatorAfter, edContextPosition);
+            }
+            */
+            replaceTokens.put("REFERENCES", refs);
+        }
+        
         
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
         
@@ -333,34 +403,35 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             }
         }
         
-        // create layer entry for global menu item
-        if (globalMenuItemEnabled) {
-            generateShadowWithOrderAndSeparator(gmiParentMenuPath, shadow,
-                    dashedFqClassName, instanceFullPath, gmiSeparatorBefore,
-                    gmiSeparatorAfter, gmiPosition);
-        }
-        
-        // create layer entry for toolbar button
-        if (toolbarEnabled) {
-            generateShadow(toolbar + "/" + shadow, instanceFullPath); // NOI18N
-            generateOrder(toolbar, toolbarPosition.getBefore(), shadow, toolbarPosition.getAfter());
-        }
-        
-        // create layer entry for keyboard shortcut
-        if (kbShortcutEnabled) {
-            String parentPath = "Shortcuts"; // NOI18N
-            for (String keyStroke : keyStrokes) {
-                generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N                
+        if (!annotations) {
+            // create layer entry for global menu item
+            if (globalMenuItemEnabled) {
+                generateShadowWithOrderAndSeparator(gmiParentMenuPath, shadow,
+                        dashedFqClassName, instanceFullPath, gmiSeparatorBefore,
+                        gmiSeparatorAfter, gmiPosition);
+            }
+
+            // create layer entry for toolbar button
+            if (toolbarEnabled) {
+                generateShadow(toolbar + "/" + shadow, instanceFullPath); // NOI18N
+                generateOrder(toolbar, toolbarPosition.getBefore(), shadow, toolbarPosition.getAfter());
+            }
+
+            // create layer entry for keyboard shortcut
+            if (kbShortcutEnabled) {
+                String parentPath = "Shortcuts"; // NOI18N
+                for (String keyStroke : keyStrokes) {
+                    generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N                
+                }
+            }
+
+            // create file type context menu item
+            if (ftContextEnabled) {
+                generateShadowWithOrderAndSeparator(ftContextType, shadow,
+                        dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
+                        ftContextSeparatorAfter, ftContextPosition);
             }
         }
-        
-        // create file type context menu item
-        if (ftContextEnabled) {
-            generateShadowWithOrderAndSeparator(ftContextType, shadow,
-                    dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
-                    ftContextSeparatorAfter, ftContextPosition);
-        }
-        
         // create editor context menu item
         if (edContextEnabled) {
             generateShadowWithOrderAndSeparator(edContextType, shadow,
@@ -381,12 +452,12 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         generateOrder(parentPath, position.getBefore(), shadow, position.getAfter());
         if (separatorBefore) {
             String sepName = dashedPkgName + "-separatorBefore.instance"; // NOI18N
-            generateSeparator(parentPath, sepName);
+            generateSeparator(parentPath, sepName, -1);
             generateOrder(parentPath, position.getBefore(), sepName, shadow);
         }
         if (separatorAfter) {
             String sepName = dashedPkgName + "-separatorAfter.instance"; // NOI18N
-            generateSeparator(parentPath, sepName);
+            generateSeparator(parentPath, sepName, -1);
             generateOrder(parentPath, shadow, sepName, position.getAfter());
         }
     }
@@ -560,11 +631,53 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     void setEdContextSeparatorBefore(boolean separator) {
         this.edContextSeparatorBefore = separator;
     }
+
+    static ActionReference createActionReference(
+        final String parentPath, 
+        final int beforeSep, 
+        final int afterSep, 
+        final int position, 
+        final String name
+    ) {
+        class H implements InvocationHandler {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if (method.getName().equals("path")) {
+                    return parentPath;
+                }
+                if (method.getName().equals("position")) {
+                    return position;
+                }
+                if (method.getName().equals("separatorBefore")) {
+                    return beforeSep;
+                }
+                if (method.getName().equals("separatorAfter")) {
+                    return afterSep;
+                }
+                if (method.getName().equals("name")) {
+                    return name == null ? "" : name;
+                }
+                if (method.getName().equals("equals")) {
+                    return this == Proxy.getInvocationHandler(proxy);
+                }
+                if (method.getName().equals("hashCode")) {
+                    return hashCode();
+                }
+                return null;
+            }
+        }
+                
+        return (ActionReference) Proxy.newProxyInstance(
+            ActionReference.class.getClassLoader(), 
+            new Class[] { ActionReference.class }, 
+            new H()
+        );
+    }
     
     static final class Position {
 
         public static final Position PROTOTYPE = new Position(null, null, "One Thing", "Another Thing"); // NOI18N
-        
+
         private String before;
         private String after;
         private String beforeName;
@@ -604,14 +717,72 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             String afterText = afterName == null ? "" : POSITION_SEPARATOR + afterName;
             return beforeText + POSITION_HERE + afterText;
         }
+
+        static int toInteger(Position p, Project project, String layerPath) {
+            return toInteger(p, project, layerPath, null);
+        }
+        static int toInteger(Position p, Project project, String layerPath, Boolean middleBelowAbove) {
+            if (p == null) {
+                return -1;
+            }
+            try {
+                FileObject merged = LayerUtils.getEffectiveSystemFilesystem(project).findResource(layerPath);
+                assert merged != null : layerPath;
+                Integer beforePos = getPosition(merged, p.getBefore());
+                Integer afterPos = getPosition(merged, p.getAfter());
+                return toIntFromBounds(beforePos, afterPos, middleBelowAbove);
+            } catch (IOException ex) {
+                return 3334;
+            }
+        }
+        private static Integer getPosition(FileObject folder, String name) {
+            if (name == null) {
+                return null;
+            }
+            FileObject f = folder.getFileObject(name);
+            if (f == null) {
+                return null;
+            }
+            Object pos = f.getAttribute("position"); // NOI18N
+            // ignore floats for now...
+            return pos instanceof Integer ? (Integer) pos : null;
+        }
+        private static int toIntFromBounds(Integer beforePos, Integer afterPos, Boolean middleBelowAbove) {
+            int middle = 0;
+            if (beforePos != null && afterPos != null) {
+                // won't work well if afterPos == beforePos + 1, but oh well
+                middle = (beforePos + afterPos) / 2;
+            } else if (beforePos != null) {
+                middle = beforePos + 100;
+            } else if (afterPos != null) {
+                middle = afterPos - 100; // NOI18N
+            } else {
+                middle = 3333;
+            }
+            
+            if (middleBelowAbove == null) {
+                return middle;
+            }
+            if (middleBelowAbove) {
+                return beforePos == null ? middle - 50 : (beforePos + middle) / 2;
+            } else {
+                return afterPos == null ? middle + 50 : (afterPos + middle) / 2;
+            }
+        }
+        
     }
     
-    private void generateSeparator(final String parentPath, final String sepName) {
+    private void generateSeparator(final String parentPath, final String sepName, int position) {
         String sepPath = parentPath + "/" + sepName; // NOI18N
         cmf.add(cmf.createLayerEntry(sepPath,
                 null, null, null, null));
         cmf.add(cmf.createLayerAttribute(sepPath, "instanceClass", // NOI18N
                 "javax.swing.JSeparator")); // NOI18N
+        if (position != -1) {
+            cmf.add(cmf.createLayerAttribute(
+                sepPath, "position", position// NOI18N
+            ));
+        }
     }
 
     private static String fullClassName(String type) {

@@ -286,7 +286,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 postMessageDisplayer(new PostMessageDisplayer.Default(pae.getActionName())).
                 postExecution(processChangeListener).
                 errConvertorFactory(processChangeListener).
-                outConvertorFactory(processChangeListener);
+                outConvertorFactory(processChangeListener).
+                keepInputOutputOnFinish();
 
         if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
             descr.noReset(true);

@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
                     <target name="wsgen-init" depends="init, -do-compile">
                         <mkdir dir="${{build.generated.sources.dir}}/jax-ws/resources/"/>
                         <mkdir dir="${{build.classes.dir}}"/>
+                        <mkdir dir="${{build.classes.dir}}/META-INF"/>
                         <property name="j2ee.platform.wsgen.classpath" value="${{libs.jaxws21.classpath}}"/>
                         <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
                             <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
@@ -85,6 +86,9 @@ made subject to such option by the copyright holder.
                         <xsl:variable name="wsname" select="@name"/>
                         <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
                         <target name="wsgen-{$wsname}" depends="wsgen-init">
+                            <copy todir="${{build.classes.dir}}/META-INF">
+                                <fileset dir="${{webinf.dir}}" includes="wsit-{$seiclass}.xml"/>
+                            </copy>
                             <xsl:choose>
                                 <xsl:when test="$jaxwsversion='jaxws21lib'">
                                     <wsgen

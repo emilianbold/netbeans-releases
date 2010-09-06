@@ -72,5 +72,11 @@ public interface IteratorExtension {
      * @param project
      * @param functionToOpen
      */
-    void discoverProject(Map<String,Object> map, Project project, String functionToOpen);
+    public abstract void discoverProject(Map<String,Object> map, Project project, ProjectKind projectKind);
+
+    public enum ProjectKind {
+        Minimal,
+        IncludeDependencies,
+        CreateDependencies
+    }
 }

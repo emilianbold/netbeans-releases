@@ -51,7 +51,9 @@ import com.sun.source.util.Trees;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,9 +62,11 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
@@ -79,9 +83,12 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -219,8 +226,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new AttributeItem(info, elem, type, substitutionOffset, isDeprecated);
     }
     
-    public static final JavaCompletionItem createAttributeValueItem(CompilationInfo info, String value, TypeElement element, int substitutionOffset) {
-        return new AttributeValueItem(info, value, element, substitutionOffset);
+    public static final JavaCompletionItem createAttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset) {
+        return new AttributeValueItem(info, value, documentation, element, substitutionOffset);
     }
 
     public static final JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
@@ -280,6 +287,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 int caretOffset = component.getSelectionEnd();
                 substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
                 evt.consume();
+            }
+        } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.CTRL_MASK) > 0) {
+            JTextComponent component = (JTextComponent)evt.getSource();
+            int caretOffset = component.getSelectionEnd();
+            Document doc = component.getDocument();
+            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), caretOffset);
+            if (ts != null && (ts.moveNext() || ts.movePrevious())) {
+                if (ts.token().id() == JavaTokenId.IDENTIFIER
+                        || ts.token().id().primaryCategory().startsWith("keyword") //NOI18N
+                        || ts.token().id().primaryCategory().startsWith("string")) { //NOI18N
+                    try {
+                        doc.remove(caretOffset, ts.offset() + ts.token().length() - caretOffset);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         }
     }
@@ -2625,11 +2648,20 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private JavaCompletionItem delegate;
         private String value;
+        private boolean quoteAdded;
+        private String documentation;
         private String leftText;
 
-        private AttributeValueItem(CompilationInfo info, String value, TypeElement element, int substitutionOffset) {
+        private AttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset) {
             super(substitutionOffset);
+            if (value.charAt(0) == '\"' && value.charAt(value.length() - 1) != '\"') { //NOI18N
+                value = value + '\"'; //NOI18N
+                quoteAdded = true;
+            } else {
+                quoteAdded = false;
+            }
             this.value = value;
+            this.documentation = documentation;
             if (element != null)
                 delegate = createTypeItem(info, element, (DeclaredType)element.asType(), substitutionOffset, true, false, false, false, false, false);
         }
@@ -2643,11 +2675,51 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
-            return delegate != null ? delegate.getInsertPrefix() : value;
+            return delegate != null ? delegate.getInsertPrefix() : value; //NOI18N
         }
 
-        public CompletionTask createDocumentationTask() {
-            return null;
+        public CompletionTask createDocumentationTask() {            
+            return documentation == null ? null : new CompletionTask() {
+
+                private CompletionDocumentation cd = new CompletionDocumentation() {
+
+                    @Override
+                    public String getText() {
+                        return documentation;
+                    }
+
+                    @Override
+                    public URL getURL() {
+                        return null;
+                    }
+
+                    @Override
+                    public CompletionDocumentation resolveLink(String link) {
+                        return null;
+                    }
+
+                    @Override
+                    public Action getGotoSourceAction() {
+                        return null;
+                    }
+                };
+                
+                @Override
+                public void query(CompletionResultSet resultSet) {
+                    resultSet.setDocumentation(cd);
+                    resultSet.finish();
+                }
+
+                @Override
+                public void refresh(CompletionResultSet resultSet) {
+                    resultSet.setDocumentation(cd);
+                    resultSet.finish();
+                }
+
+                @Override
+                public void cancel() {
+                }
+            };
         }
 
         protected ImageIcon getIcon() {
@@ -2673,7 +2745,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
-        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
             if (delegate != null) {
                 if (toAdd == null || ".".equals(toAdd)) { //NOI18N
                     toAdd = ".class"; //NOI18N
@@ -2682,7 +2754,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
                 delegate.substituteText(c, offset, len, toAdd);
             } else {
+                if (toAdd == null && value.charAt(value.length() - 1) == '\"') {
+                    TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(c.getDocument()), offset + len);
+                    if (sequence != null && sequence.moveNext() && sequence.token().id() == JavaTokenId.STRING_LITERAL
+                            && sequence.token().length() == len + 1) {
+                        len++;
+                    }
+                }
                 super.substituteText(c, offset, len, toAdd);
+                if (toAdd == null && quoteAdded)
+                    c.setCaretPosition(c.getCaretPosition() - 1);
             }
         }
 

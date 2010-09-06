@@ -51,6 +51,7 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -262,19 +263,45 @@ public class ProxyFileManager implements JavaFileManager {
     }
 
     public boolean handleOption (String current, Iterator<String> remains) {
-        final Iterable<String> defensiveCopy = copy(remains);
+        boolean isSourceElement;
+        final Collection<String> defensiveCopy = copy(remains);
         if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
             final Iterator<String> it = defensiveCopy.iterator();
             if (!it.hasNext()) {
                 throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
             }
             final String sib = it.next();
-            if(sib.length() != 0) {
+            if(sib.length() != 0) {                
+                siblings.push(asURL(sib));                
+            } else {
                 try {
-                    siblings.push(new URL(sib));
-                } catch (MalformedURLException ex) {
-                    throw new IllegalArgumentException("Invalid path argument: " + sib);    //NOI18N
+                    markerFinished();
+                } finally {
+                    siblings.pop();
                 }
+            }
+        } else if ((isSourceElement=AptSourceFileManager.ORIGIN_SOURCE_ELEMENT_URL.equals(current)) || 
+                   AptSourceFileManager.ORIGIN_RESOURCE_ELEMENT_URL.equals(current)) {
+            if (!defensiveCopy.isEmpty()) {
+                URL bestSoFar = siblings.getProvider().getSibling();
+                for  (String surl : defensiveCopy) {
+                    if (FileObjects.JAVA.equals(FileObjects.getExtension(surl))) {
+                        bestSoFar = asURL(surl);
+                        break;
+                    }
+                }
+                if (LOG.isLoggable(Level.INFO) && isSourceElement && defensiveCopy.size() > 1) {
+                    final StringBuilder sb = new StringBuilder();
+                    for (String surl : defensiveCopy) {
+                        if (sb.length() > 0) {
+                            sb.append(", ");    //NOI18N
+                        }
+                        sb.append(surl);
+                    }
+                    LOG.log(Level.INFO, "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL{0} using: {1}",  //NOI18N
+                            new Object[]{sb.toString(), bestSoFar});
+                }
+                siblings.push(bestSoFar);
             } else {
                 try {
                     markerFinished();
@@ -290,8 +317,16 @@ public class ProxyFileManager implements JavaFileManager {
         }
         return false;
     }
+    
+    private static URL asURL(final String url) throws IllegalArgumentException {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException("Invalid path argument: " + url);    //NOI18N
+        }
+    }
 
-    private static Iterable<String> copy(final Iterator<String> from) {
+    private static Collection<String> copy(final Iterator<String> from) {
         if (!from.hasNext()) {
             return Collections.<String>emptyList();
         } else {

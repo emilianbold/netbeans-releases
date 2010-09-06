@@ -87,7 +87,7 @@ public class Issue144824 extends brackets {
         // Locate comment
         eoPHP.setCaretPosition("// put your code here", false);
         // Add new line
-        eoPHP.insert("\n");
+        TypeCode(eoPHP, "\n");
         Sleep(1000);
 
         // Empty block
@@ -105,7 +105,7 @@ public class Issue144824 extends brackets {
 
         eoPHP.setCaretPosition("// put your code here", false);
         Sleep(1000);
-        eoPHP.insert("\n");
+        TypeCode(eoPHP, "\n");
         Sleep(1000);
 
         TypeCode(eoPHP, "{ \n");

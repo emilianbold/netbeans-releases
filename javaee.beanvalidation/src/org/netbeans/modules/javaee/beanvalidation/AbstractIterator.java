@@ -41,15 +41,12 @@ package org.netbeans.modules.javaee.beanvalidation;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
-import javax.xml.soap.Node;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -70,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alex
+ * @author alexeybutenko
  */
 public abstract class AbstractIterator implements TemplateWizard.Iterator{
 

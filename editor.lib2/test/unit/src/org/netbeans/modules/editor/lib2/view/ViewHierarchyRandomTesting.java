@@ -48,6 +48,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.EditorPaneTesting;
@@ -74,6 +75,8 @@ public class ViewHierarchyRandomTesting {
         EditorPaneTesting.initContainer(container, kit);
         DocumentTesting.initContainer(container);
         DocumentTesting.initUndoManager(container);
+        JEditorPane pane = EditorPaneTesting.getEditorPane(container);
+        pane.putClientProperty("text-line-wrap", "words"); // SimpleValueNames.TEXT_LINE_WRAP
         return container;
     }
 

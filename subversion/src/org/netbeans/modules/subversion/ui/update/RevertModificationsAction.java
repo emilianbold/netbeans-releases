@@ -135,7 +135,7 @@ public class RevertModificationsAction extends ContextAction {
                 performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
         };
-        support.start(createRequestProcessor(nodes));
+        support.start(createRequestProcessor(ctx));
     }
     
     /** Recursive revert */

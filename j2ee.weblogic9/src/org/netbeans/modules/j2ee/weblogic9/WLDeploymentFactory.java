@@ -43,6 +43,17 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
@@ -51,8 +62,9 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLMutableState;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLSharedState;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,6 +80,10 @@ public class WLDeploymentFactory implements DeploymentFactory {
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
 
     public static final int DEFAULT_PORT = 7001;
+
+    public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
+
+    public static final Version VERSION_11 = Version.fromJsr277NotationWithFallback("11"); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentFactory.class.getName());
 
@@ -92,8 +108,16 @@ public class WLDeploymentFactory implements DeploymentFactory {
      * <p>
      * <i>GuardedBy(WLDeploymentFactory.class)</i>
      */
-    private static Map<InstanceProperties, WLMutableState> stateCache =
-            new WeakHashMap<InstanceProperties, WLMutableState>();
+    private static Map<InstanceProperties, WLSharedState> stateCache =
+            new WeakHashMap<InstanceProperties, WLSharedState>();
+
+    /*
+     * We share and cache ClassLoaders to spare resources.
+     * <p>
+     * <i>GuardedBy(WLDeploymentFactory.class)</i>
+     */
+    private static Map<InstanceProperties, WLClassLoader> classLoaderCache =
+            new WeakHashMap<InstanceProperties, WLClassLoader>();
 
     /**
      * The singleton factory method
@@ -137,13 +161,13 @@ public class WLDeploymentFactory implements DeploymentFactory {
                 return dm;
             }
 
-            WLMutableState mutableState = getMutableState(props);
+            WLSharedState mutableState = getMutableState(props);
 
             String[] parts = uri.split(":"); // NOI18N
             String host = parts[3].substring(2);
             String port = parts[4] != null ? parts[4].trim() : parts[4];
 
-            dm = new WLDeploymentManager(this, uri, host, port, false, mutableState);
+            dm = new WLDeploymentManager(uri, host, port, false, mutableState);
             managerCache.put(props, dm);
             return dm;
         }
@@ -162,13 +186,13 @@ public class WLDeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException("Could not create deployment manager for " + uri);
         }
 
-        WLMutableState mutableState = getMutableState(props);
+        WLSharedState mutableState = getMutableState(props);
 
         // FIXME optimize (can we use singleton disconnected manager ?)
         String[] parts = uri.split(":"); // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4] != null ? parts[4].trim() : parts[4];
-        WLDeploymentManager dm = new WLDeploymentManager(this, uri, host, port, true, mutableState);
+        WLDeploymentManager dm = new WLDeploymentManager(uri, host, port, true, mutableState);
         return dm;
     }
 
@@ -182,13 +206,112 @@ public class WLDeploymentFactory implements DeploymentFactory {
         return NbBundle.getMessage(WLDeploymentFactory.class, "TXT_displayName");
     }
 
-    private static synchronized WLMutableState getMutableState(InstanceProperties props) {
-        WLMutableState mutableState = stateCache.get(props);
+    WLClassLoader getClassLoader(WLDeploymentManager manager) {
+        synchronized (WLDeploymentFactory.class) {
+            InstanceProperties props = manager.getInstanceProperties();
+            WLClassLoader classLoader = classLoaderCache.get(props);
+            if (classLoader != null) {
+                return classLoader;
+            }
+
+            // two instances may have the same classpath because of the same
+            // server root directory
+            for (Map.Entry<InstanceProperties, WLClassLoader> entry : classLoaderCache.entrySet()) {
+                // FIXME base the check on classpath - it would be more safe
+                // more expensive as well
+                String serverRootCached = entry.getKey().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+                String serverRootFresh = props.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+
+                if ((serverRootCached == null) ? (serverRootFresh == null) : serverRootCached.equals(serverRootFresh)) {
+                    classLoader = entry.getValue();
+                    break;
+                }
+            }
+
+            if (classLoader == null) {
+                classLoader = createClassLoader(manager);
+            }
+
+            classLoaderCache.put(props, classLoader);
+            return classLoader;
+        }
+    }
+
+    private static synchronized WLSharedState getMutableState(InstanceProperties props) {
+        WLSharedState mutableState = stateCache.get(props);
         if (mutableState == null) {
-            mutableState = new WLMutableState(props);
+            mutableState = new WLSharedState(props);
             stateCache.put(props, mutableState);
         }
         mutableState.configure();
         return mutableState;
     }
+
+    private WLClassLoader createClassLoader(WLDeploymentManager manager) {
+        LOGGER.log(Level.FINE, "Creating classloader for {0}", manager.getUri());
+        try {
+            File[] classpath = WLPluginProperties.getClassPath(manager);
+            URL[] urls = new URL[classpath.length];
+            for (int i = 0; i < classpath.length; i++) {
+                urls[i] = classpath[i].toURI().toURL();
+            }
+            WLClassLoader classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
+            LOGGER.log(Level.FINE, "Classloader for {0} created successfully", manager.getUri());
+            return classLoader;
+        } catch (MalformedURLException e) {
+            LOGGER.log(Level.WARNING, null, e);
+        }
+        return new WLClassLoader(new URL[] {}, WLDeploymentManager.class.getClassLoader());
+    }
+
+    private static class WLClassLoader extends URLClassLoader {
+
+        public WLClassLoader(URL[] urls, ClassLoader parent) {
+            super(urls, parent);
+        }
+
+        public void addURL(File f) throws MalformedURLException {
+            if (f.isFile()) {
+                addURL(f.toURL());
+            }
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            Class<?> clazz = super.findClass(name);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                String filename = name.replace('.', '/'); // NOI18N
+                int index = filename.indexOf('$'); // NOI18N
+                if (index > 0) {
+                    filename = filename.substring(0, index);
+                }
+                filename = filename + ".class"; // NOI18N
+
+                URL url = this.getResource(filename);
+                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
+                if (url != null) {
+                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
+                }
+            }
+            return clazz;
+        }
+
+        @Override
+        protected PermissionCollection getPermissions(CodeSource codeSource) {
+            Permissions p = new Permissions();
+            p.add(new AllPermission());
+            return p;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            // get rid of annoying warnings
+            if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
+
+            return super.getResources(name);
+        }
+    }
+
 }

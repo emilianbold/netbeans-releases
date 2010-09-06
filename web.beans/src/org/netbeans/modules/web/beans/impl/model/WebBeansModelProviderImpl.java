@@ -63,7 +63,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Persisten
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 import org.openide.util.NbBundle;
@@ -74,9 +73,7 @@ import org.openide.util.NbBundle;
  *
  */
 @org.openide.util.lookup.ServiceProvider(service=WebBeansModelProvider.class)
-public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic 
-    implements WebBeansModelProvider 
-{
+public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
 
     public Result getInjectable(VariableElement element, DeclaredType parentType, 
             AbstractModelImplementation impl) 
@@ -109,31 +106,11 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
-     */
-    public Result lookupInjectables( VariableElement element,
-            DeclaredType parentType, AbstractModelImplementation modelImpl )
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isDynamicInjectionPoint(javax.lang.model.element.VariableElement)
-     */
-    public boolean isDynamicInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl) 
-    {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isInjectionPoint(javax.lang.model.element.VariableElement)
      */
     public boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation modelImpl)  throws InjectionPointDefinitionError
+            AbstractModelImplementation modelImpl)  
+        throws org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError
     {
         WebBeansModelImplementation impl = getImplementation( modelImpl);
         if ( impl == null ){
@@ -157,7 +134,7 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
 
     private boolean isMethodParameterInjection( VariableElement element,
             WebBeansModelImplementation impl, ExecutableElement parent )
-            throws InjectionPointDefinitionError
+            throws org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError
     {
         List<? extends AnnotationMirror> annotations = 
             impl.getHelper().getCompilationController().getElements().
@@ -184,16 +161,20 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         List<? extends AnnotationMirror> annotations = impl.getHelper().
             getCompilationController().getElements().getAllAnnotationMirrors( 
                     element);
+        
+        boolean event = getParameterType(element, null, impl.getHelper().
+                getCompilationController(), EVENT_INTERFACE) != null;
+        
         for (AnnotationMirror annotationMirror : annotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
-            if ( isQualifier( annotationElement , impl.getHelper()) ){
+            if ( isQualifier( annotationElement , impl.getHelper(), event) ){
                 result.add( annotationMirror );
             }
         }
         return result;
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getName(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
      */
@@ -408,7 +389,7 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
     }
 
-    private static WebBeansModelImplementation getImplementation(
+    static WebBeansModelImplementation getImplementation(
             AbstractModelImplementation impl )
     {
         WebBeansModelImplementation modelImpl = null;
@@ -428,7 +409,8 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
      */
     private boolean isObservesParameter( VariableElement element,
             ExecutableElement method , List<? extends AnnotationMirror> annotations, 
-            AbstractModelImplementation modelImpl ) throws InjectionPointDefinitionError
+            AbstractModelImplementation modelImpl ) 
+        throws org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError
     {
         List<? extends VariableElement> parameters = method.getParameters();
         boolean observesFound = false;
@@ -437,7 +419,8 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
                     OBSERVES_ANNOTATION, getImplementation(modelImpl).getHelper()))
             {
                 if ( observesFound ){
-                    throw new InjectionPointDefinitionError(method, 
+                    throw new org.netbeans.modules.web.beans.api.model.
+                        InjectionPointDefinitionError(method, 
                             NbBundle.getMessage(WebBeansModelImplementation.class, 
                                     "ERR_MultipleObserves" , method.getSimpleName()));
                 }
@@ -450,7 +433,8 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         
         String badAnnotation = checkInjectProducers(annotations, modelImpl);
         if ( badAnnotation != null ){
-            throw new InjectionPointDefinitionError( method, 
+            throw new org.netbeans.modules.web.beans.api.model.
+                InjectionPointDefinitionError( method, 
                     NbBundle.getMessage(WebBeansModelImplementation.class, 
                             "ERR_ObserverHasInjectOrProduces" , method.getSimpleName(),
                             badAnnotation ));
@@ -463,7 +447,8 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
      */
     private boolean isDisposeParameter( VariableElement element,
             ExecutableElement method , List<? extends AnnotationMirror> annotations, 
-            AbstractModelImplementation modelImpl ) throws InjectionPointDefinitionError
+            AbstractModelImplementation modelImpl ) 
+            throws org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError
     {
         List<? extends VariableElement> parameters = method.getParameters();
         boolean disposeFound = false;
@@ -473,7 +458,8 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
                     DISPOSES_ANNOTATION, getImplementation(modelImpl).getHelper()))
             {
                 if ( disposeFound ){
-                    throw new InjectionPointDefinitionError(method, 
+                    throw new org.netbeans.modules.web.beans.api.model. 
+                    InjectionPointDefinitionError(method, 
                             NbBundle.getMessage(WebBeansModelImplementation.class, 
                                     "ERR_MultipleDisposes" , method.getSimpleName()));
                 }
@@ -489,13 +475,15 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
             return false;
         }
         if ( observesFound ){
-            throw new InjectionPointDefinitionError(method, 
+            throw new org.netbeans.modules.web.beans.api.model.
+                InjectionPointDefinitionError(method, 
                     NbBundle.getMessage(WebBeansModelImplementation.class, 
                             "ERR_DisposesHasObserves" , method.getSimpleName()));
         }
         String badAnnotation = checkInjectProducers(annotations, modelImpl);
         if ( badAnnotation != null ){
-            throw new InjectionPointDefinitionError( method, 
+            throw new org.netbeans.modules.web.beans.api.model.
+                InjectionPointDefinitionError( method, 
                     NbBundle.getMessage(WebBeansModelImplementation.class, 
                             "ERR_DisposesHasInjectOrProduces" , method.getSimpleName(),
                             badAnnotation ));
