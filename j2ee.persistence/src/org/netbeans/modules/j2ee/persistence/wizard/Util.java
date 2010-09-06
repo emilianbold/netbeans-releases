@@ -495,7 +495,8 @@ public class Util {
 
     /**
      *
-     * @return true if jpa version is supported by platform (may need to be extended to classpath check and possible library addition check
+     * @return true if jpa version is supported by platform (may need to be extended to classpath check and possible library addition check but not in this method
+     * it's used to check server support in current realization)
      */
     public static boolean isJPAVersionSupported(Project project, String version){
         JPAModuleInfo info = project.getLookup().lookup(JPAModuleInfo.class);
