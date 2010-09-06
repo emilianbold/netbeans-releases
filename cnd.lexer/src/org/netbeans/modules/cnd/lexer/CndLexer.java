@@ -485,6 +485,13 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                     backup(1);
                                 }
                             }
+                            if (c == 'E') {
+                                if(isExecSQL(c)) {
+                                    Token<CppTokenId> out = finishExecSQL();
+                                    assert out != null : "not handled exec sql";
+                                    return out;
+                                }
+                            }
                             return keywordOrIdentifier(c);
                         }
                         if (Character.isWhitespace(c)) {
@@ -778,6 +785,48 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
         backup(1);
         return token(CppTokenId.LT);
+    }
+
+    protected boolean isExecSQL(int c) {
+        if (c == 'E') {
+            if (read(true) == 'X') {
+                if (read(true) == 'E') {
+                    if (read(true) == 'C') {
+                        if (read(true) == ' ') {
+                            if (read(true) == 'S') {
+                                if (read(true) == 'Q') {
+                                    if (read(true) == 'L') {
+                                        return true;
+                                    }
+                                    backup(1);
+                                }
+                                backup(1);
+                            }
+                            backup(1);
+                        }
+                        backup(1);
+                    }
+                    backup(1);
+                }
+                backup(1);
+            }
+            backup(1);
+        }
+        return false;
+    }
+
+    @SuppressWarnings("fallthrough")
+    protected Token<CppTokenId> finishExecSQL() {
+        while (true) {
+            switch (read(true)) {
+                case ';': // NOI18N
+                    backup(1);
+                    return token(CppTokenId.PROC_DIRECTIVE);
+                case EOF:
+                    backup(1);
+                    return token(CppTokenId.PROC_DIRECTIVE);
+            }
+        }
     }
 
     protected void postTokenCreate(CppTokenId id) {

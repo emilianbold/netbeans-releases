@@ -43,8 +43,10 @@
 package org.netbeans.modules.cnd.completion.cplusplus;
 
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
@@ -62,7 +64,7 @@ public class CsmCodeTemplateFilter implements CodeTemplateFilter {
     
     private int startOffset;
     private int endOffset;
-    private CppTokenId id;
+    private TokenId id;
     
     private CsmCodeTemplateFilter(JTextComponent component, int offset) {
         this.startOffset = offset;
@@ -74,8 +76,8 @@ public class CsmCodeTemplateFilter implements CodeTemplateFilter {
         return enabled && (startOffset == endOffset) && isTemplateContext(template);
     }
 
-    private CppTokenId getID(JTextComponent component, int offset) {
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(component, offset, true, false);
+    private TokenId getID(JTextComponent component, int offset) {
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(component, offset, true, false);
         if (ts != null) {
             if (ts.offset() <= offset) {
                 if (!ts.movePrevious()) {
@@ -90,13 +92,15 @@ public class CsmCodeTemplateFilter implements CodeTemplateFilter {
 
     private boolean isTemplateContext(CodeTemplate template) {
         boolean res = true;
-        switch (this.id) {
-            case DOT:
-            case DOTMBR:
-            case SCOPE:
-            case ARROW:
-            case ARROWMBR:
-                res = false;
+        if(this.id instanceof CppTokenId) {
+            switch ((CppTokenId)this.id) {
+                case DOT:
+                case DOTMBR:
+                case SCOPE:
+                case ARROW:
+                case ARROWMBR:
+                    res = false;
+            }
         }
         return res;
     }

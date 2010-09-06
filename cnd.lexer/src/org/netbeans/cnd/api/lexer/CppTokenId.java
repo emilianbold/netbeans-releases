@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
 import org.netbeans.modules.cnd.lexer.CppLexer;
 import org.netbeans.modules.cnd.lexer.PreprocLexer;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -61,6 +62,7 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.openide.util.Lookup;
 
 /**
  * Token ids of C/C++ languages defined as enum.
@@ -333,6 +335,10 @@ public enum CppTokenId implements TokenId {
     PRAGMA_OMP_AUTO("auto", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_NUM_THREADS("num_threads", "pragma-omp-keyword-directive"), // NOI18N
 
+    // Pro*C
+    PROC_DIRECTIVE(null, "proc"), // NOI18N
+    PROC_SQL("sql", "proc-keyword-directive"), // NOI18N
+    
     // Errors
     INVALID_COMMENT_END("*/", "error"), // NOI18N
     FLOAT_LITERAL_INVALID(null, "number"); // NOI18N
@@ -488,6 +494,15 @@ public enum CppTokenId implements TokenId {
                 case PREPROCESSOR_DIRECTIVE:
                     return LanguageEmbedding.create(languagePreproc, 0, 0);
             }
+
+            Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
+            for (CndLexerLanguageEmbeddingProvider provider : providers) {
+                Map<CppTokenId, LanguageEmbedding<?>> embeddings = provider.getEmbeddings();
+                if(embeddings.containsKey(token.id())) {
+                    return embeddings.get(token.id());
+                }
+            }
+
             return null; // No embedding
         }
     }

@@ -50,6 +50,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
@@ -438,7 +439,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         }
     }
     
-    private final static class FunParamsTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
+    private final static class FunParamsTokenProcessor implements CndTokenProcessor<Token<TokenId>> {
 
         enum State {
             START,IN_PARAMS,END
@@ -462,7 +463,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             return funInfo;
         }
 
-        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<TokenId> token, int tokenOffset) {
             if (blockConsumer != null) {
                 if (blockConsumer.isLastToken(token)) {
                     blockConsumer = null;
@@ -506,45 +507,51 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             }
         }
 
-        private void inParams(Token<CppTokenId> token, int offset) {
-            switch (token.id()) {
-                case LPAREN:
-                    blockConsumer = new BlockConsumer(CppTokenId.LPAREN, CppTokenId.RPAREN);
-                    break;
-                case LBRACE:
-                    blockConsumer = new BlockConsumer(CppTokenId.LBRACE, CppTokenId.RBRACE);
-                    break;
-                case LBRACKET:
-                    blockConsumer = new BlockConsumer(CppTokenId.LBRACKET, CppTokenId.RBRACKET);
-                    break;
-                case COMMA:
-                    finishParam(offset);
-                    startParam(offset);
-                    break;
-                case RPAREN:
-                    finishParam(offset);
-                    state = State.END;
-                    break;
-                case SEMICOLON:
-                    // something broken
-                    finishParam(offset);
-                    state = State.END;
+        private void inParams(Token<TokenId> token, int offset) {
+            TokenId tokenID = token.id();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case LPAREN:
+                        blockConsumer = new BlockConsumer(CppTokenId.LPAREN, CppTokenId.RPAREN);
+                        break;
+                    case LBRACE:
+                        blockConsumer = new BlockConsumer(CppTokenId.LBRACE, CppTokenId.RBRACE);
+                        break;
+                    case LBRACKET:
+                        blockConsumer = new BlockConsumer(CppTokenId.LBRACKET, CppTokenId.RBRACKET);
+                        break;
+                    case COMMA:
+                        finishParam(offset);
+                        startParam(offset);
+                        break;
+                    case RPAREN:
+                        finishParam(offset);
+                        state = State.END;
+                        break;
+                    case SEMICOLON:
+                        // something broken
+                        finishParam(offset);
+                        state = State.END;
+                }
             }
         }
 
-        private void skipName(Token<CppTokenId> token, int offset) {
-            switch (token.id()) {
-                case LPAREN:
-                    state = State.IN_PARAMS;
-                    startParam(offset);
-                    break;
-                case LT:
-                    blockConsumer = new BlockConsumer(CppTokenId.LT, CppTokenId.GT);
-                    break;
-                case SEMICOLON:
-                case RPAREN:
-                    state = State.END;
-                    break;
+        private void skipName(Token<TokenId> token, int offset) {
+            TokenId tokenID = token.id();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case LPAREN:
+                        state = State.IN_PARAMS;
+                        startParam(offset);
+                        break;
+                    case LT:
+                        blockConsumer = new BlockConsumer(CppTokenId.LT, CppTokenId.GT);
+                        break;
+                    case SEMICOLON:
+                    case RPAREN:
+                        state = State.END;
+                        break;
+                }
             }
         }
 
@@ -578,7 +585,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                 depth = 0;
             }
 
-            public boolean isLastToken(Token<CppTokenId> token) {
+            public boolean isLastToken(Token<TokenId> token) {
                 boolean stop = false;
                 if (token.id() == openBracket) {
                     ++depth;
