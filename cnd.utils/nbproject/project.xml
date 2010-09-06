@@ -75,6 +75,7 @@
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
+                <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
