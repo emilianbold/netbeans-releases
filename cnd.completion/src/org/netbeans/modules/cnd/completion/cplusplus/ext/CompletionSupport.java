@@ -52,6 +52,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
@@ -126,13 +127,13 @@ public final class CompletionSupport implements DocumentListener {
     }
 
     public static boolean isPreprocessorDirectiveCompletionEnabled(Document doc, int offset) {
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
             return false;
         }
         if (ts.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
             @SuppressWarnings("unchecked")
-            TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) ts.embedded();
+            TokenSequence<TokenId> embedded = (TokenSequence<TokenId>) ts.embedded();
             embedded.moveStart();
             embedded.moveNext();
             // skip starting #
@@ -146,19 +147,22 @@ public final class CompletionSupport implements DocumentListener {
     }
 
     public static boolean isIncludeCompletionEnabled(Document doc, int offset) {
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
             return false;
         }
         if (ts.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
             @SuppressWarnings("unchecked")
-            TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) ts.embedded();
+            TokenSequence<TokenId> embedded = (TokenSequence<TokenId>) ts.embedded();
             if (CndTokenUtilities.moveToPreprocKeyword(embedded)) {
-                switch (embedded.token().id()) {
-                    case PREPROCESSOR_INCLUDE:
-                    case PREPROCESSOR_INCLUDE_NEXT:
-                        // completion enabled after #include(_next) keywords
-                        return (embedded.offset() + embedded.token().length()) <= offset;
+                TokenId id = embedded.token().id();
+                if(id instanceof CppTokenId) {
+                    switch ((CppTokenId)id) {
+                        case PREPROCESSOR_INCLUDE:
+                        case PREPROCESSOR_INCLUDE_NEXT:
+                            // completion enabled after #include(_next) keywords
+                            return (embedded.offset() + embedded.token().length()) <= offset;
+                    }
                 }
             }
         }
@@ -413,32 +417,35 @@ public final class CompletionSupport implements DocumentListener {
             // it's fine to show completion in empty doc
             return true;
         }
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, true, offset > 0);
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, true, offset > 0);
         if (ts == null) {
             return false;
         }
         if (ts.offset() < offset && offset <= ts.offset() + ts.token().length()) {
-            // completion is disabled in some tokens
-            switch (ts.token().id()) {
-                case LINE_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                case CHAR_LITERAL:
-                case STRING_LITERAL:
-                case PREPROCESSOR_USER_INCLUDE:
-                case PREPROCESSOR_SYS_INCLUDE:
-                case PREPROCESSOR_DEFINED:
+            TokenId id = ts.token().id();
+            if(id instanceof CppTokenId) {
+                // completion is disabled in some tokens
+                switch ((CppTokenId)id) {
+                    case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                    case CHAR_LITERAL:
+                    case STRING_LITERAL:
+                    case PREPROCESSOR_USER_INCLUDE:
+                    case PREPROCESSOR_SYS_INCLUDE:
+                    case PREPROCESSOR_DEFINED:
+                        return false;
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                        // ok after end of token
+                        return offset == ts.offset() + ts.token().length();
+                }
+                // main completion is not responsible
+                if (CppTokenId.PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY.equals(ts.token().id().primaryCategory())) {
                     return false;
-                case BLOCK_COMMENT:
-                case DOXYGEN_COMMENT:
-                    // ok after end of token
-                    return offset == ts.offset() + ts.token().length();
-            }
-            // main completion is not responsible 
-            if (CppTokenId.PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY.equals(ts.token().id().primaryCategory())) {
-                return false;
-            }
-            if (CppTokenId.NUMBER_CATEGORY.equals(ts.token().id().primaryCategory())) {
-                return false;
+                }
+                if (CppTokenId.NUMBER_CATEGORY.equals(ts.token().id().primaryCategory())) {
+                    return false;
+                }
             }
         }
         return true;
@@ -449,26 +456,29 @@ public final class CompletionSupport implements DocumentListener {
         if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
             int dotPos = target.getCaret().getDot();
             Document doc = target.getDocument();
-            TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, true);
+            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, true);
             if (ts == null) {
                 return false;
             }
-            Token<CppTokenId> token = ts.token();
+            Token token = ts.token();
             if (!ts.movePrevious()) {
                 return false;
             }
-            switch (token.id()) {
-                case WHITESPACE:
-                    return token.length() == 1 && (ts.token().id() == CppTokenId.NEW);
-                case ARROW:
-                    return true;
-                case DOT:
-                    return true;
-                case ARROWMBR:
-                case DOTMBR:
-                    return true;
-                case SCOPE:
-                    return true;
+            TokenId id = token.id();
+            if(id instanceof CppTokenId) {
+                switch ((CppTokenId)id) {
+                    case WHITESPACE:
+                        return token.length() == 1 && id == CppTokenId.NEW;
+                    case ARROW:
+                        return true;
+                    case DOT:
+                        return true;
+                    case ARROWMBR:
+                    case DOTMBR:
+                        return true;
+                    case SCOPE:
+                        return true;
+                }
             }
         }
         return false;

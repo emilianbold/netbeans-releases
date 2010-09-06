@@ -50,6 +50,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.TokenId;
 
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
@@ -128,7 +129,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         doc.render(new Runnable() {
             @Override
             public void run() {
-                TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, offset, true);
+                TokenItem<TokenId> token = CndTokenUtilities.getToken(doc, offset, true);
                 String category = token.id().primaryCategory();
                 if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
                         CppTokenId.COMMENT_CATEGORY.equals(category) ||

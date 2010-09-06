@@ -74,6 +74,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -343,7 +344,7 @@ public abstract class CsmResultItem implements CompletionItem {
     // Checks that include directive have not been already included
     // It needs in case if some files have not been parsed yet
     private boolean isAlreadyIncluded(JTextComponent component, String include) {
-        TokenSequence<CppTokenId> ts;
+        TokenSequence<TokenId> ts;
         ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
         ts.moveStart();
         while (ts.moveNext()) {
@@ -375,36 +376,41 @@ public abstract class CsmResultItem implements CompletionItem {
 
     // Says is it forward declarartion or not
     private boolean isForwardDeclaration(JTextComponent component) {
-        TokenSequence<CppTokenId> ts;
+        TokenSequence<TokenId> ts;
         ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
         ts.moveStart();
         if (!ts.moveNext()) {
             return false;
         }
-        CppTokenId lastID = ts.token().id();
+        TokenId lastID = ts.token().id();
         while (ts.offset() < substituteOffset) {
-            switch (ts.token().id()) {
-                case BLOCK_COMMENT:
-                case DOXYGEN_COMMENT:
-                case NEW_LINE:
-                case LINE_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                case WHITESPACE:
-                    // skip
-                    break;
-                default:
-                    lastID = ts.token().id();
-                    break;
+            TokenId id = ts.token().id();
+            if (id instanceof CppTokenId) {
+                switch ((CppTokenId) id) {
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                    case WHITESPACE:
+                        // skip
+                        break;
+                    default:
+                        lastID = ts.token().id();
+                        break;
+                }
+                if (!ts.moveNext()) {
+                    return false;
+                }
             }
-            if (!ts.moveNext()) {
-                return false;
+            if (lastID instanceof CppTokenId) {
+                switch ((CppTokenId) lastID) {
+                    case CLASS:
+                    case STRUCT:
+                    case UNION:
+                        return true;
+                }
             }
-        }
-        switch (lastID) {
-            case CLASS:
-            case STRUCT:
-            case UNION:
-                return true;
         }
         return false;
     }
@@ -441,7 +447,7 @@ public abstract class CsmResultItem implements CompletionItem {
                     } else {
                         CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
                         CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
-                        TokenSequence<CppTokenId> ts;
+                        TokenSequence<TokenId> ts;
                         if (guardOffset != null) {
                             ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset(), false, false);
                         } else {
@@ -464,7 +470,7 @@ public abstract class CsmResultItem implements CompletionItem {
     }
 
     // Finds place for include insertion in case if there is no other includes in document
-    private int getIncludeOffsetFromTokenSequence(TokenSequence<CppTokenId> ts) {
+    private int getIncludeOffsetFromTokenSequence(TokenSequence<TokenId> ts) {
         if (!ts.moveNext()) {
             return 0;
         }
@@ -775,7 +781,7 @@ public abstract class CsmResultItem implements CompletionItem {
         }
 
         private boolean isAfterShiftOperator(JTextComponent c) {
-            TokenSequence<CppTokenId> ts;
+            TokenSequence ts;
             ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
             ts.moveStart();
             if (!ts.moveNext()) {
@@ -783,26 +789,28 @@ public abstract class CsmResultItem implements CompletionItem {
             }
             boolean result = false;
             while (ts.offset() < substituteOffset) {
-                CppTokenId id = ts.token().id();
-                switch (id) {
-                    case LTLT:
-                    case GTGT:
-                        result = true;
-                        break;
-                    default:
-                        switch (id) {
-                            case IDENTIFIER:
-                            case SCOPE:
-                            case BLOCK_COMMENT:
-                            case DOXYGEN_COMMENT:
-                            case NEW_LINE:
-                            case LINE_COMMENT:
-                            case DOXYGEN_LINE_COMMENT:
-                            case WHITESPACE:
-                                break;
-                            default:
-                                result = false;
-                        }
+                TokenId id = ts.token().id();
+                if(id instanceof CppTokenId) {
+                    switch ((CppTokenId)id) {
+                        case LTLT:
+                        case GTGT:
+                            result = true;
+                            break;
+                        default:
+                            switch ((CppTokenId)id) {
+                                case IDENTIFIER:
+                                case SCOPE:
+                                case BLOCK_COMMENT:
+                                case DOXYGEN_COMMENT:
+                                case NEW_LINE:
+                                case LINE_COMMENT:
+                                case DOXYGEN_LINE_COMMENT:
+                                case WHITESPACE:
+                                    break;
+                                default:
+                                    result = false;
+                            }
+                    }
                 }
                 if (!ts.moveNext()) {
                     return false;
@@ -916,7 +924,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 }
                 i++;
             }
-        // TODO
+            // TODO
 //            CsmClass excepts[] = ctr.getExceptions();
 //            for (int i=0; i<excepts.length; i++) {
 //                CsmClass ex = (CsmClass) excepts[i];
