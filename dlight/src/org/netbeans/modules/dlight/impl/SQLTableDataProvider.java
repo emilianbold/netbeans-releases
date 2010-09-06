@@ -42,7 +42,7 @@
 package org.netbeans.modules.dlight.impl;
 
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
+import org.netbeans.modules.dlight.spi.support.TableDataProvider;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
