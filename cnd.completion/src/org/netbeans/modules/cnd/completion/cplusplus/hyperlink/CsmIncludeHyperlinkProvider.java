@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -92,21 +93,20 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
 
     @Override
-    protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
+    protected boolean isValidToken(TokenItem<TokenId> token, HyperlinkType type) {
         return isSupportedToken(token, type);
     }
 
-    public static boolean isSupportedToken(TokenItem<CppTokenId> token, HyperlinkType type) {
+    public static boolean isSupportedToken(TokenItem<TokenId> token, HyperlinkType type) {
         if (token != null) {
             if (type == HyperlinkType.ALT_HYPERLINK) {
                 return !CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) &&
                         !CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory());
             }
-            switch (token.id()) {
-                case PREPROCESSOR_INCLUDE:
-                case PREPROCESSOR_INCLUDE_NEXT:
-                case PREPROCESSOR_SYS_INCLUDE:
-                case PREPROCESSOR_USER_INCLUDE:
+            if (token.id() == CppTokenId.PREPROCESSOR_INCLUDE ||
+                    token.id() == CppTokenId.PREPROCESSOR_INCLUDE_NEXT ||
+                    token.id() == CppTokenId.PREPROCESSOR_SYS_INCLUDE ||
+                    token.id() == CppTokenId.PREPROCESSOR_USER_INCLUDE) {
                     return true;
             }
         }
@@ -229,7 +229,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     };
 
     @Override
-    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
+    protected String getTooltipText(Document doc, TokenItem<TokenId> token, int offset, HyperlinkType type) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         CsmInclude target = null;
         if (csmFile != null) {

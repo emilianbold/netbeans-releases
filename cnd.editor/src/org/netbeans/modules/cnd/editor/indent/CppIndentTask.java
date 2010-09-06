@@ -45,10 +45,10 @@ import java.util.MissingResourceException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
 import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
 import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Function;
 import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Parameter;
@@ -125,18 +125,21 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             if (t == null) {
                 return token;
             }
-            switch (t.getTokenID()) {
-                case NEW_LINE:
-                case PREPROCESSOR_DIRECTIVE:
-                    if (t.isSkipPP()) {
-                        return token;
-                    } else {
+            TokenId tokenID = t.getTokenID();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case NEW_LINE:
+                    case PREPROCESSOR_DIRECTIVE:
+                        if (t.isSkipPP()) {
+                            return token;
+                        } else {
+                            return t;
+                        }
+                    case WHITESPACE:
+                        break;
+                    default:
                         return t;
-                    }
-                case WHITESPACE:
-                    break;
-                default:
-                    return t;
+                }
             }
             token = t;
             t = token.getNext();
@@ -148,7 +151,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         //    || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos-2) == '\\')) {
         if (token.getTokenID() == CppTokenId.STRING_LITERAL || token.getTokenID() == CppTokenId.CHAR_LITERAL) {
             int start = token.getTokenSequence().offset();
-            Token<CppTokenId> tok = token.getTokenSequence().token();
+            Token<TokenId> tok = token.getTokenSequence().token();
             if (start < caretOffset && caretOffset < start + tok.length()) {
                 // if insede literal
                 if (caretOffset >= start + 2 && tok.text().charAt(caretOffset - start - 2) == '\\') {
@@ -367,141 +370,152 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
 
         // First check the given token
         if (token != null) {
-            switch (token.getTokenID()) {
-                case ELSE:
-                    TokenItem ifss = findIf(token);
-                    if (ifss != null) {
-                        indent = getTokenIndent(ifss);
-                    }
-                    break;
-
-                case LBRACE:
-                    TokenItem stmt = findStatement(token);
-                    if (stmt == null) {
-                        indent = 0;
-                    } else {
-                        switch (stmt.getTokenID()) {
-                            case DO:
-                            case FOR:
-                            case IF:
-                            case WHILE:
-                            case ELSE:
-                            case TRY:
-                            case ASM:
-                            case CATCH:
-                                indent = getTokenIndent(stmt);
-                                if (isHalfIndentNewlineBeforeBrace()) {
-                                    indent += getShiftWidth() / 2;
-                                }
-                                break;
-                            case SWITCH:
-                                indent = getTokenIndent(stmt);
-                                if (isHalfIndentNewlineBeforeBraceSwitch()) {
-                                    indent += getShiftWidth() / 2;
-                                }
-                                break;
-
-                            case LBRACE:
-                                indent = getTokenIndent(stmt) + getShiftWidth();
-                                break;
-
-                            default:
-                                stmt = findStatementStart(token);
-                                if (stmt == null) {
-                                    indent = 0;
-                                } else if (stmt == token) {
-                                    stmt = findStatement(token); // search for delimiter
-                                    indent = (stmt != null) ? indent = getTokenIndent(stmt) : 0;
-                                } else { // valid statement
-                                    indent = getTokenIndent(stmt);
-                                    switch (stmt.getTokenID()) {
-                                        case LBRACE:
-                                            indent += getShiftWidth();
-                                            break;
-                                    }
-                                }
+            TokenId tokenID = token.getTokenID();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case ELSE:
+                        TokenItem ifss = findIf(token);
+                        if (ifss != null) {
+                            indent = getTokenIndent(ifss);
                         }
-                    }
-                    break;
+                        break;
 
-                case RBRACE:
-                    TokenItem rbmt = findMatchingToken(token, null, CppTokenId.LBRACE, true);
-                    if (rbmt != null) { // valid matching left-brace
-                        TokenItem t = findStatement(rbmt);
-                        boolean forceFirstNonWhitespace = false;
-                        if (t == null) {
-                            t = rbmt; // will get indent of the matching brace
+                    case LBRACE:
+                        TokenItem stmt = findStatement(token);
+                        if (stmt == null) {
+                            indent = 0;
                         } else {
-                            switch (t.getTokenID()) {
-                                case SEMICOLON:
-                                case LBRACE:
-                                case RBRACE: {
-                                    t = rbmt;
-                                    forceFirstNonWhitespace = true;
+                            TokenId stmtTokenID = stmt.getTokenID();
+                            if(stmtTokenID instanceof CppTokenId) {
+                                switch ((CppTokenId)stmtTokenID) {
+                                    case DO:
+                                    case FOR:
+                                    case IF:
+                                    case WHILE:
+                                    case ELSE:
+                                    case TRY:
+                                    case ASM:
+                                    case CATCH:
+                                        indent = getTokenIndent(stmt);
+                                        if (isHalfIndentNewlineBeforeBrace()) {
+                                            indent += getShiftWidth() / 2;
+                                        }
+                                        break;
+                                    case SWITCH:
+                                        indent = getTokenIndent(stmt);
+                                        if (isHalfIndentNewlineBeforeBraceSwitch()) {
+                                            indent += getShiftWidth() / 2;
+                                        }
+                                        break;
+
+                                    case LBRACE:
+                                        indent = getTokenIndent(stmt) + getShiftWidth();
+                                        break;
+
+                                    default:
+                                        stmt = findStatementStart(token);
+                                        if (stmt == null) {
+                                            indent = 0;
+                                        } else if (stmt == token) {
+                                            stmt = findStatement(token); // search for delimiter
+                                            indent = (stmt != null) ? indent = getTokenIndent(stmt) : 0;
+                                        } else { // valid statement
+                                            indent = getTokenIndent(stmt);
+                                            if (stmt.getTokenID() == CppTokenId.LBRACE ) {
+                                                indent += getShiftWidth();
+                                                break;
+                                            }
+                                        }
                                 }
                             }
                         }
-                        // the right brace must be indented to the first
-                        // non-whitespace char - forceFirstNonWhitespace=true
-                        if (forceFirstNonWhitespace) {
-                            indent = getTokenColumnAfterBrace(t);
-                        } else {
-                            indent = getTokenIndent(t);
-                        }
-                        switch (t.getTokenID()) {
-                            case FOR:
-                            case IF:
-                            case WHILE:
-                            case DO:
-                            case ELSE:
-                            case TRY:
-                            case ASM:
-                            case CATCH:
-                                if (isHalfIndentNewlineBeforeBrace()) {
-                                    indent += getShiftWidth() / 2;
-                                }
-                                break;
-                            case SWITCH:
-                                if (isHalfIndentNewlineBeforeBraceSwitch()) {
-                                    indent += getShiftWidth() / 2;
-                                }
-                                break;
-                        }
-                    } else { // no matching left brace
-                        indent = getTokenIndent(token); // leave as is
-                    }
-                    break;
+                        break;
 
-                case CASE:
-                case DEFAULT:
-                    TokenItem swss = findSwitch(token);
-                    if (swss != null) {
-                        indent = getTokenIndent(swss);
-                        if (indentCasesFromSwitch()) {
-                            indent += getShiftWidth();
-                        } else if (isHalfIndentNewlineBeforeBraceSwitch()) {
-                            indent += getShiftWidth() / 2;
+                    case RBRACE:
+                        TokenItem rbmt = findMatchingToken(token, null, CppTokenId.LBRACE, true);
+                        if (rbmt != null) { // valid matching left-brace
+                            TokenItem t = findStatement(rbmt);
+                            boolean forceFirstNonWhitespace = false;
+                            if (t == null) {
+                                t = rbmt; // will get indent of the matching brace
+                            } else {
+                                TokenId tTokenID = t.getTokenID();
+                                if(tTokenID instanceof CppTokenId) {
+                                    switch ((CppTokenId)tTokenID) {
+                                        case SEMICOLON:
+                                        case LBRACE:
+                                        case RBRACE: {
+                                            t = rbmt;
+                                            forceFirstNonWhitespace = true;
+                                        }
+                                    }
+                                }
+                            }
+                            // the right brace must be indented to the first
+                            // non-whitespace char - forceFirstNonWhitespace=true
+                            if (forceFirstNonWhitespace) {
+                                indent = getTokenColumnAfterBrace(t);
+                            } else {
+                                indent = getTokenIndent(t);
+                            }
+                            TokenId tTokenID = t.getTokenID();
+                            if(tTokenID instanceof CppTokenId) {
+                                switch ((CppTokenId)tTokenID) {
+                                    case FOR:
+                                    case IF:
+                                    case WHILE:
+                                    case DO:
+                                    case ELSE:
+                                    case TRY:
+                                    case ASM:
+                                    case CATCH:
+                                        if (isHalfIndentNewlineBeforeBrace()) {
+                                            indent += getShiftWidth() / 2;
+                                        }
+                                        break;
+                                    case SWITCH:
+                                        if (isHalfIndentNewlineBeforeBraceSwitch()) {
+                                            indent += getShiftWidth() / 2;
+                                        }
+                                        break;
+                                }
+                            }
+                        } else { // no matching left brace
+                            indent = getTokenIndent(token); // leave as is
                         }
-                    }
-                    break;
-                case PUBLIC:
-                case PRIVATE:
-                case PROTECTED:
-                    TokenItem cls = findClassifier(token);
-                    if (cls != null) {
-                        indent = getTokenIndent(cls);
-                        if (isHalfIndentVisibility()) {
-                            indent += getShiftWidth() / 2;
+                        break;
+
+                    case CASE:
+                    case DEFAULT:
+                        TokenItem swss = findSwitch(token);
+                        if (swss != null) {
+                            indent = getTokenIndent(swss);
+                            if (indentCasesFromSwitch()) {
+                                indent += getShiftWidth();
+                            } else if (isHalfIndentNewlineBeforeBraceSwitch()) {
+                                indent += getShiftWidth() / 2;
+                            }
                         }
-                    }
-                    break;
-                case CLASS:
-                case STRUCT:
-                    TokenItem clsTemplate = findClassifierStart(token);
-                    if (clsTemplate != null) {
-                        indent = getTokenIndent(clsTemplate);
-                    }
-                    break;
+                        break;
+                    case PUBLIC:
+                    case PRIVATE:
+                    case PROTECTED:
+                        TokenItem cls = findClassifier(token);
+                        if (cls != null) {
+                            indent = getTokenIndent(cls);
+                            if (isHalfIndentVisibility()) {
+                                indent += getShiftWidth() / 2;
+                            }
+                        }
+                        break;
+                    case CLASS:
+                    case STRUCT:
+                        TokenItem clsTemplate = findClassifierStart(token);
+                        if (clsTemplate != null) {
+                            indent = getTokenIndent(clsTemplate);
+                        }
+                        break;
+                }
             }
         }
 
@@ -509,166 +523,181 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         if (indent < 0) { // if not yet resolved
             TokenItem t = findImportantToken(token, null, true);
             if (t != null) { // valid important token
-                switch (t.getTokenID()) {
-                    case SEMICOLON: // semicolon found
-                        TokenItem tt = findStatementStart(token);
-                        // preprocessor tokens are not important (bug#22570)
-                        if (tt != null) {
-                            switch (tt.getTokenID()) {
-                                case PUBLIC:
-                                case PRIVATE:
-                                case PROTECTED:
-                                    indent = getTokenIndent(tt) + getShiftWidth();
-                                    if (isHalfIndentVisibility()) {
-                                        indent -= getShiftWidth() / 2;
-                                    }
-                                    break;
-                                case FOR:
-                                    if (isForLoopSemicolon(t)) {
-                                        if (alignMultilineFor()) {
-                                            TokenItem lparen = getLeftParen(t, tt);
-                                            if (lparen != null) {
-                                                indent = getTokenColumn(lparen) + 1;
-                                                break;
+                TokenId tokenID = t.getTokenID();
+                if(tokenID instanceof CppTokenId) {
+                    switch ((CppTokenId)tokenID) {
+                        case SEMICOLON: // semicolon found
+                            TokenItem tt = findStatementStart(token);
+                            // preprocessor tokens are not important (bug#22570)
+                            if (tt != null) {
+                                TokenId ttTokenID = tt.getTokenID();
+                                if(ttTokenID instanceof CppTokenId) {
+                                    switch ((CppTokenId)ttTokenID) {
+                                        case PUBLIC:
+                                        case PRIVATE:
+                                        case PROTECTED:
+                                            indent = getTokenIndent(tt) + getShiftWidth();
+                                            if (isHalfIndentVisibility()) {
+                                                indent -= getShiftWidth() / 2;
                                             }
-                                        }
-                                        indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
-                                    } else {
-                                        indent = getTokenIndent(tt);
+                                            break;
+                                        case FOR:
+                                            if (isForLoopSemicolon(t)) {
+                                                if (alignMultilineFor()) {
+                                                    TokenItem lparen = getLeftParen(t, tt);
+                                                    if (lparen != null) {
+                                                        indent = getTokenColumn(lparen) + 1;
+                                                        break;
+                                                    }
+                                                }
+                                                indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
+                                            } else {
+                                                indent = getTokenIndent(tt);
+                                            }
+                                            break;
+                                        default:
+                                            indent = getTokenIndent(tt);
+                                            break;
                                     }
-                                    break;
-                                default:
-                                    indent = getTokenIndent(tt);
-                                    break;
-                            }
-                        }
-                        break;
-
-                    case LBRACE:
-                        TokenItem lbss = findStatementStart(t, false);
-                        if (lbss == null) {
-                            lbss = t;
-                        }
-                        switch (lbss.getTokenID()) {
-                            case FOR:
-                            case IF:
-                            case WHILE:
-                            case DO:
-                            case ELSE:
-                            case TRY:
-                            case ASM:
-                            case CATCH:
-                            case SWITCH:
-                                indent = getTokenIndent(lbss) + getShiftWidth();
-                                break;
-                            case NAMESPACE:
-                                if (indentNamespace()) {
-                                    indent = getTokenIndent(lbss) + getRightIndentDeclaration();
-                                } else {
-                                    indent = getTokenIndent(lbss);
-                                }
-                                break;
-                            default:
-                                indent = getTokenIndent(lbss) + getRightIndentDeclaration();
-                                break;
-                        }
-                        break;
-
-                    case RBRACE:
-                        TokenItem t3 = findStatementStart(token, true);
-                        if (t3 != null) {
-                            indent = getTokenIndent(t3);
-                        }
-                        break;
-
-                    case COLON:
-                        TokenItem ttt = getVisibility(t);
-                        if (ttt != null) {
-                            indent = getTokenIndent(ttt) + getRightIndentDeclaration();
-                            if (isHalfIndentVisibility()) {
-                                indent -= getShiftWidth() / 2;
-                            }
-                        } else {
-                            ttt = findAnyToken(t, null,
-                                    new CppTokenId[]{CppTokenId.CASE,
-                                        CppTokenId.DEFAULT,
-                                        CppTokenId.QUESTION,
-                                        CppTokenId.PRIVATE,
-                                        CppTokenId.PROTECTED,
-                                        CppTokenId.PUBLIC}, true);
-                            if (ttt != null) {
-                                switch (ttt.getTokenID()) {
-                                    case QUESTION:
-                                        indent = getTokenIndent(ttt) + getShiftWidth();
-                                        break;
-                                    case CASE:
-                                    case DEFAULT:
-                                        indent = getTokenIndent(ttt) + getRightIndentSwitch();
-                                        break;
-                                    default:
-                                        // Indent of line with ':' plus one indent level
-                                        indent = getTokenIndent(t);// + getShiftWidth();
                                 }
                             }
-                        }
-                        break;
+                            break;
 
-                    case QUESTION:
-                        indent = getTokenIndent(t) + getShiftWidth();
-                        break;
-                    case DO:
-                    case ELSE:
-                        indent = getTokenIndent(t) + getRightIndent();
-                        break;
-
-                    case RPAREN:
-                        // Try to find the matching left paren
-                        TokenItem rpmt = findMatchingToken(t, null, CppTokenId.LPAREN, true);
-                        if (rpmt != null) {
-                            rpmt = findImportantToken(rpmt, null, true);
-                            // Check whether there are the indent changing kwds
-                            if (rpmt != null) {
-                                switch (rpmt.getTokenID()) {
+                        case LBRACE:
+                            TokenItem lbss = findStatementStart(t, false);
+                            if (lbss == null) {
+                                lbss = t;
+                            }
+                            TokenId lbssTokenID = lbss.getTokenID();
+                            if(lbssTokenID instanceof CppTokenId) {
+                                switch ((CppTokenId)lbssTokenID) {
                                     case FOR:
                                     case IF:
                                     case WHILE:
-                                        // Indent one level
-                                        indent = getTokenIndent(rpmt) + getRightIndent();
+                                    case DO:
+                                    case ELSE:
+                                    case TRY:
+                                    case ASM:
+                                    case CATCH:
+                                    case SWITCH:
+                                        indent = getTokenIndent(lbss) + getShiftWidth();
                                         break;
-                                    case IDENTIFIER:
-                                        if (token != null && token.getTokenID() == CppTokenId.IDENTIFIER) {
-                                            indent = getTokenIndent(t);
+                                    case NAMESPACE:
+                                        if (indentNamespace()) {
+                                            indent = getTokenIndent(lbss) + getRightIndentDeclaration();
+                                        } else {
+                                            indent = getTokenIndent(lbss);
                                         }
+                                        break;
+                                    default:
+                                        indent = getTokenIndent(lbss) + getRightIndentDeclaration();
                                         break;
                                 }
                             }
-                        }
-                        if (indent < 0) {
+                            break;
+
+                        case RBRACE:
+                            TokenItem t3 = findStatementStart(token, true);
+                            if (t3 != null) {
+                                indent = getTokenIndent(t3);
+                            }
+                            break;
+
+                        case COLON:
+                            TokenItem ttt = getVisibility(t);
+                            if (ttt != null) {
+                                indent = getTokenIndent(ttt) + getRightIndentDeclaration();
+                                if (isHalfIndentVisibility()) {
+                                    indent -= getShiftWidth() / 2;
+                                }
+                            } else {
+                                ttt = findAnyToken(t, null,
+                                        new CppTokenId[]{CppTokenId.CASE,
+                                            CppTokenId.DEFAULT,
+                                            CppTokenId.QUESTION,
+                                            CppTokenId.PRIVATE,
+                                            CppTokenId.PROTECTED,
+                                            CppTokenId.PUBLIC}, true);
+                                if (ttt != null) {
+                                    TokenId tttTokenID = ttt.getTokenID();
+                                    if(tttTokenID instanceof CppTokenId) {
+                                        switch ((CppTokenId)tttTokenID) {
+                                            case QUESTION:
+                                                indent = getTokenIndent(ttt) + getShiftWidth();
+                                                break;
+                                            case CASE:
+                                            case DEFAULT:
+                                                indent = getTokenIndent(ttt) + getRightIndentSwitch();
+                                                break;
+                                            default:
+                                                // Indent of line with ':' plus one indent level
+                                                indent = getTokenIndent(t);// + getShiftWidth();
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+
+                        case QUESTION:
+                            indent = getTokenIndent(t) + getShiftWidth();
+                            break;
+                        case DO:
+                        case ELSE:
+                            indent = getTokenIndent(t) + getRightIndent();
+                            break;
+
+                        case RPAREN:
+                            // Try to find the matching left paren
+                            TokenItem rpmt = findMatchingToken(t, null, CppTokenId.LPAREN, true);
+                            if (rpmt != null) {
+                                rpmt = findImportantToken(rpmt, null, true);
+                                // Check whether there are the indent changing kwds
+                                if (rpmt != null) {
+                                    TokenId rpmtTokenID = rpmt.getTokenID();
+                                    if(rpmtTokenID instanceof CppTokenId) {
+                                        switch ((CppTokenId)rpmtTokenID) {
+                                            case FOR:
+                                            case IF:
+                                            case WHILE:
+                                                // Indent one level
+                                                indent = getTokenIndent(rpmt) + getRightIndent();
+                                                break;
+                                            case IDENTIFIER:
+                                                if (token != null && token.getTokenID() == CppTokenId.IDENTIFIER) {
+                                                    indent = getTokenIndent(t);
+                                                }
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (indent < 0) {
+                                indent = computeStatementIndent(t);
+                            }
+                            break;
+
+                        case IDENTIFIER:
+                            if (token != null && token.getTokenID() == CppTokenId.IDENTIFIER) {
+                                indent = getTokenIndent(t);
+                                break;
+                            }
                             indent = computeStatementIndent(t);
-                        }
-                        break;
+                            break;
 
-                    case IDENTIFIER:
-                        if (token != null && token.getTokenID() == CppTokenId.IDENTIFIER) {
-                            indent = getTokenIndent(t);
+                        case COMMA:
+                            if (isEnumComma(t)) {
+                                indent = getTokenIndent(t);
+                                break;
+                            } else if (isFieldComma(t)) {
+                                indent = getTokenIndent(t);
+                                break;
+                            }
+                            indent = computeStatementIndent(t);
                             break;
-                        }
-                        indent = computeStatementIndent(t);
-                        break;
-
-                    case COMMA:
-                        if (isEnumComma(t)) {
-                            indent = getTokenIndent(t);
+                        default:
+                            indent = computeStatementIndent(t);
                             break;
-                        } else if (isFieldComma(t)) {
-                            indent = getTokenIndent(t);
-                            break;
-                        }
-                        indent = computeStatementIndent(t);
-                        break;
-                    default:
-                        indent = computeStatementIndent(t);
-                        break;
+                    }
                 }
 
                 if (indent < 0) { // no indent found yet

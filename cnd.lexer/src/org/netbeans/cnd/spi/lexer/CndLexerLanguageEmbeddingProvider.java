@@ -37,29 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.completion.impl.xref;
 
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.cnd.api.lexer.TokenItem;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+package org.netbeans.cnd.spi.lexer;
+
+import java.util.Map;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
- * A special class for "this" reference
- * @author Vladimir Kvashin
+ * Provider for language embedding for CndLexer.
+ *
+ * @author @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class ThisReferenceImpl extends ReferenceImpl {
+public interface CndLexerLanguageEmbeddingProvider {
 
-    public ThisReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<TokenId> token, CsmReferenceKind kind) {
-        super(file, doc, offset, token, kind);
-    }
+    /**
+     * Returns embedding for tokens.
+     *
+     * @return embedding map
+     */
+    public Map<CppTokenId, LanguageEmbedding<?>> getEmbeddings();
 
-    @Override
-    public CsmObject getReferencedObject() {
-        return null;
-    }
 }
