@@ -123,11 +123,11 @@ abstract class AbstractInjectableAction extends AbstractWebBeansAction {
             });
         }
         catch (MetadataModelException e) {
-            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
+            Logger.getLogger( AbstractInjectableAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
         catch (IOException e) {
-            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
+            Logger.getLogger( AbstractInjectableAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
     }
