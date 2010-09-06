@@ -67,6 +67,24 @@ import org.openide.filesystems.FileObject;
  * @author Radek Matous
  */
 public class ProvidedExtensions implements InterceptionListener {
+
+    /**
+     * Return instance of {@link ProvidedExtensions.IOHandler}
+     * that is responsible for copying the file or null.
+     *
+     * Just the first non null instance of <code>IOHandler</code> is used by
+     *  <code>MasterFileSystem</code>
+     *
+     * @param from file to be copied
+     * @param to target to copy this file to
+     * @return instance of {@link ProvidedExtensions.IOHandler}
+     * that is responsible for copying the file or null
+     */
+    public ProvidedExtensions.IOHandler getCopyHandler(
+            File from, File to) {
+        return null;
+    }
+
     /**
      * Return instance of {@link ProvidedExtensions.IOHandler}
      * that is responsible for moving the file or null.
@@ -167,6 +185,33 @@ public class ProvidedExtensions implements InterceptionListener {
      * @since 2.27 
      */
     public void fileChanged(FileObject fo) {}
+
+    /**
+     * Called by <code>MasterFileSystem</code> before <code>FileObject</code>
+     * is copied
+     * @param from FileObject to be moved
+     * @param to File target to move this file to
+     * @since 2.28
+     */
+    public void beforeCopy(FileObject from, File to) {}
+
+    /**
+     * Called by <code>MasterFileSystem</code> after <code>FileObject</code>
+     * was successfully copied
+     * @param from FileObject to be moved
+     * @param to File target to move this file to
+     * @since 2.28
+     */
+    public void copySuccess(FileObject from, File to) {}
+
+    /**
+     * Called by <code>MasterFileSystem</code> after a <code>FileObject</code>
+     * copy failed
+     * @param from FileObject to be moved
+     * @param to File target to move this file to
+     * @since 2.28
+     */
+    public void copyFailure(FileObject from, File to) {}
 
     /**
      * Called by <code>MasterFileSystem</code> before <code>FileObject</code>
