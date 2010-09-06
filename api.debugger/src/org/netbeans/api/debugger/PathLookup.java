@@ -48,6 +48,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Result;
@@ -131,6 +133,18 @@ class PathLookup extends org.openide.util.Lookup {
                 assert filePath.startsWith(path) : "File path '"+filePath+"' does not start with searched path '"+path+"'";
                 if (filePath.indexOf('/', l) < l) {
                     // This item is from current folder
+                    if (clazz.isInterface()) {
+                        // Check whether the lookup item is really declared as an instance of the class we search for:
+                        FileObject fo = FileUtil.getConfigFile(filePath+".instance");
+                        if (fo != null) {
+                            Object io = fo.getAttribute("instanceOf"); // NOI18N
+                            if (io != null) {
+                                if (((String) io).indexOf(clazz.getName()) < 0) {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
                     pathItems.add(it);
                 }
             }
