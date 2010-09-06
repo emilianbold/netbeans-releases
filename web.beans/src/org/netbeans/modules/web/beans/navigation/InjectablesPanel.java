@@ -74,6 +74,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -94,7 +95,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -128,8 +128,8 @@ public class InjectablesPanel extends javax.swing.JPanel {
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
     
-    public InjectablesPanel(VariableElement var,  List<AnnotationMirror> bindings , 
-            CompilationController controller, MetadataModel<WebBeansModel> model,
+    public InjectablesPanel(final ElementHandle<VariableElement> var, 
+            MetadataModel<WebBeansModel> metaModel, final WebBeansModel model,
             JavaHierarchyModel treeModel ) 
     {
         myJavaHierarchyModel = treeModel;
@@ -141,7 +141,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myFilterTextField.setVisible(false);
         myCaseSensitiveFilterCheckBox.setVisible(false);
         
-        myModel = model;
+        myModel = metaModel;
         myDocPane = new DocumentationScrollPane( true );
         mySplitPane.setRightComponent( myDocPane );
         mySplitPane.setDividerLocation(
@@ -155,7 +155,29 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myShowFQNToggleButton.setSelected(
                 WebBeansNavigationOptions.isShowFQN());
 
-        initInjectionPoint( var, bindings , controller );
+        if ( model == null ){
+            try {
+                metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
+                    @Override
+                    public Void run( WebBeansModel model ) throws Exception {
+                        initInjectionPoint( var, model  );
+                        return null;
+                    }
+                });
+            }
+            catch (MetadataModelException e) {
+                Logger.getLogger( InjectablesPanel.class.getName()).
+                    log( Level.WARNING, e.getMessage(), e);
+            }
+            catch (IOException e) {
+                Logger.getLogger( InjectablesPanel.class.getName()).
+                    log( Level.WARNING, e.getMessage(), e);
+            }
+        }
+        else {
+            initInjectionPoint( var, model );
+        }
+        
 
         myJavaHierarchyTree.getSelectionModel().setSelectionMode(
                 TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -207,9 +229,43 @@ public class InjectablesPanel extends javax.swing.JPanel {
         }
         return super.processKeyBinding(ks, e, condition, pressed);
     }
-
-    private Component lastFocusedComponent;
     
+    protected JLabel getTypeLabel(){
+        return myTypeLbl;
+    }
+    
+    protected JLabel getInjectionQualifiersLabel(){
+        return myBindingLbl;
+    }
+    
+    protected void setInjectableType( TypeMirror typeMirror,
+            CompilationController controller )
+    {
+        if ( typeMirror.getKind().isPrimitive()){
+            myShortTypeName.append( typeMirror.getKind().toString().toLowerCase());
+            myFqnTypeName.append(  myShortTypeName);
+            return;
+        }
+        if ( typeMirror.getKind() == TypeKind.ARRAY ){
+            setInjectableArrayType( typeMirror , controller );
+            myShortTypeName = myShortTypeName.append("[]");     // NOI18N
+            myFqnTypeName = myFqnTypeName.append("[]");         // NOI18N
+        }
+        Element element = controller.getTypes().asElement( typeMirror );
+        if ( element != null ){
+            myFqnTypeName.append( (element instanceof TypeElement )?
+                    ((TypeElement)element).getQualifiedName().toString() :
+                        element.getSimpleName().toString());
+            myShortTypeName.append(element.getSimpleName().toString());
+        }
+    }
+    
+    protected Element getQualifiedElement( Element context , 
+            CompilationController controller )
+    {
+        return context;
+    }
+
     private void enterBusy() {
         myJavaHierarchyTree.setModel(pleaseWaitTreeModel);
         JRootPane rootPane = SwingUtilities.getRootPane(InjectablesPanel.this);
@@ -218,7 +274,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         }
         Window window = SwingUtilities.getWindowAncestor(this);
         if (window != null) {
-            lastFocusedComponent = window.getFocusOwner();
+            myLastFocusedComponent = window.getFocusOwner();
         }
         myFilterTextField.setEnabled(false);
         myCaseSensitiveFilterCheckBox.setEnabled(false);
@@ -236,11 +292,11 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myCaseSensitiveFilterCheckBox.setEnabled(true);
         myShowFQNToggleButton.setEnabled(true);
         myExpandAllButton.setEnabled(true);
-        if (lastFocusedComponent != null) {
-            if (lastFocusedComponent.isDisplayable()) {
-                lastFocusedComponent.requestFocusInWindow();
+        if (myLastFocusedComponent != null) {
+            if (myLastFocusedComponent.isDisplayable()) {
+                myLastFocusedComponent.requestFocusInWindow();
             }
-            lastFocusedComponent = null;
+            myLastFocusedComponent = null;
         }
     }
     
@@ -349,6 +405,8 @@ public class InjectablesPanel extends javax.swing.JPanel {
                                 myInjectableBindings.setText("");
                             }
                             else {
+                                element = getQualifiedElement( element, 
+                                        model.getCompilationController());
                                 List<AnnotationMirror> bindings = 
                                     model.getQualifiers(element);
                                 StringBuilder builder = new StringBuilder();
@@ -403,17 +461,25 @@ public class InjectablesPanel extends javax.swing.JPanel {
     }
     
 
-    private void initInjectionPoint( VariableElement var,
-            List<AnnotationMirror> bindings , CompilationController controller )
+    private void initInjectionPoint( ElementHandle<VariableElement> var,
+            WebBeansModel model )
     {
-        TypeMirror typeMirror  = var.asType();
+        VariableElement variable = var.resolve( model.getCompilationController() );
+        if ( variable == null ){
+            return;
+        }
+        
+        
+        TypeMirror typeMirror  = variable.asType();
         myShortTypeName = new StringBuilder();
         myFqnTypeName = new StringBuilder();
-        setInjectableType(typeMirror, controller);
+        setInjectableType(typeMirror, model.getCompilationController());
+        
+        List<AnnotationMirror> qualifiers = model.getQualifiers( variable );
         
         StringBuilder fqnBuilder = new StringBuilder();
         StringBuilder builder = new StringBuilder();
-        for (AnnotationMirror annotationMirror : bindings) {
+        for (AnnotationMirror annotationMirror : qualifiers) {
             appendBinding(annotationMirror, fqnBuilder,  true );
             appendBinding(annotationMirror, builder,  false );
         }
@@ -436,28 +502,6 @@ public class InjectablesPanel extends javax.swing.JPanel {
         reloadInjectionPoint();
     }
 
-    private void setInjectableType( TypeMirror typeMirror,
-            CompilationController controller )
-    {
-        if ( typeMirror.getKind().isPrimitive()){
-            myShortTypeName.append( typeMirror.getKind().toString().toLowerCase());
-            myFqnTypeName.append(  myShortTypeName);
-            return;
-        }
-        if ( typeMirror.getKind() == TypeKind.ARRAY ){
-            setInjectableArrayType( typeMirror , controller );
-            myShortTypeName = myShortTypeName.append("[]");     // NOI18N
-            myFqnTypeName = myFqnTypeName.append("[]");         // NOI18N
-        }
-        Element element = controller.getTypes().asElement( typeMirror );
-        if ( element != null ){
-            myFqnTypeName.append( (element instanceof TypeElement )?
-                    ((TypeElement)element).getQualifiedName().toString() :
-                        element.getSimpleName().toString());
-            myShortTypeName.append(element.getSimpleName().toString());
-        }
-    }
-    
     private void setInjectableArrayType( TypeMirror typeMirror,
             CompilationController controller )
     {
@@ -765,7 +809,6 @@ public class InjectablesPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        javaHierarchyModeButtonGroup = new javax.swing.ButtonGroup();
         mySplitPane = new javax.swing.JSplitPane();
         myJavaHierarchyTreeScrollPane = new javax.swing.JScrollPane();
         myJavaHierarchyTree = new javax.swing.JTree();
@@ -931,25 +974,24 @@ public class InjectablesPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.ButtonGroup javaHierarchyModeButtonGroup;
-    public javax.swing.JLabel myBindingLbl;
-    public javax.swing.JEditorPane myBindings;
-    public javax.swing.JCheckBox myCaseSensitiveFilterCheckBox;
-    public javax.swing.JButton myCloseButton;
-    public javax.swing.JButton myExpandAllButton;
-    public javax.swing.JLabel myFilterLabel;
-    public javax.swing.JTextField myFilterTextField;
-    public javax.swing.JLabel myFiltersLabel;
-    public javax.swing.JToolBar myFiltersToolbar;
-    public javax.swing.JLabel myInjectableBindingLbl;
-    public javax.swing.JEditorPane myInjectableBindings;
-    public javax.swing.JTree myJavaHierarchyTree;
-    public javax.swing.JScrollPane myJavaHierarchyTreeScrollPane;
-    public javax.swing.JSeparator mySeparator;
-    public javax.swing.JToggleButton myShowFQNToggleButton;
-    public javax.swing.JSplitPane mySplitPane;
-    public javax.swing.JEditorPane myType;
-    public javax.swing.JLabel myTypeLbl;
+    private javax.swing.JLabel myBindingLbl;
+    private javax.swing.JEditorPane myBindings;
+    private javax.swing.JCheckBox myCaseSensitiveFilterCheckBox;
+    private javax.swing.JButton myCloseButton;
+    private javax.swing.JButton myExpandAllButton;
+    private javax.swing.JLabel myFilterLabel;
+    private javax.swing.JTextField myFilterTextField;
+    private javax.swing.JLabel myFiltersLabel;
+    private javax.swing.JToolBar myFiltersToolbar;
+    private javax.swing.JLabel myInjectableBindingLbl;
+    private javax.swing.JEditorPane myInjectableBindings;
+    private javax.swing.JTree myJavaHierarchyTree;
+    private javax.swing.JScrollPane myJavaHierarchyTreeScrollPane;
+    private javax.swing.JSeparator mySeparator;
+    private javax.swing.JToggleButton myShowFQNToggleButton;
+    private javax.swing.JSplitPane mySplitPane;
+    private javax.swing.JEditorPane myType;
+    private javax.swing.JLabel myTypeLbl;
     // End of variables declaration//GEN-END:variables
     
     private StringBuilder myFqnTypeName;
@@ -962,4 +1004,6 @@ public class InjectablesPanel extends javax.swing.JPanel {
     
     private DocumentationScrollPane myDocPane;
     private MetadataModel<WebBeansModel> myModel;
+    
+    private Component myLastFocusedComponent;
 }

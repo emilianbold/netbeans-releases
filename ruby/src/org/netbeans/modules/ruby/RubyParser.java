@@ -101,6 +101,11 @@ import org.openide.util.NbBundle;
  */
 public final class RubyParser extends Parser {
 
+    /**
+     * System property for defaulting to 1.9 parser.
+     */
+    private static boolean DEFAULT_TO_RUBY19 = Boolean.getBoolean("ruby.parser.default19"); //NOI18N
+
     private RubyParseResult lastResult;
 
     /**
@@ -610,15 +615,15 @@ public final class RubyParser extends Parser {
         // specified compat level
         FileObject fo = context.snapshot.getSource().getFileObject();
         if (fo == null) {
-            return new Ruby18Parser();
+            return getDefaultParser();
         }
         Project owner = FileOwnerQuery.getOwner(fo);
         if (owner == null) {
-            return new Ruby18Parser();
+            return getDefaultParser();
         }
         RubyPlatform platform = RubyPlatform.platformFor(owner);
         if (platform == null) {
-            return new Ruby18Parser();
+            return getDefaultParser();
         }
         if (platform.isJRuby()) {
             return getParserForJRuby(owner);
@@ -627,6 +632,10 @@ public final class RubyParser extends Parser {
             return new Ruby19Parser();
         }
         return new Ruby18Parser();
+    }
+
+    private static org.jrubyparser.parser.RubyParser getDefaultParser() {
+        return DEFAULT_TO_RUBY19 ? new Ruby19Parser() : new Ruby18Parser();
     }
 
     private static org.jrubyparser.parser.RubyParser getParserForJRuby(Project project) {

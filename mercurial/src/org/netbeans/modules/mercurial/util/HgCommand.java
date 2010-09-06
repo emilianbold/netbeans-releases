@@ -204,6 +204,8 @@ public class HgCommand {
 
     private static final String HG_RENAME_CMD = "rename"; // NOI18N
     private static final String HG_RENAME_AFTER_CMD = "-A"; // NOI18N
+    private static final String HG_COPY_CMD = "copy"; // NOI18N
+    private static final String HG_COPY_AFTER_CMD = "-A"; // NOI18N
     private static final String HG_NEWEST_FIRST = "--newest-first"; // NOI18N
 
     private static final String HG_RESOLVE_CMD = "resolve";             //NOI18N
@@ -1968,6 +1970,47 @@ public class HgCommand {
     }
 
     /**
+     * Copy a source file to a destination file.
+     * mercurial hg copy
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param File of sourceFile which was copied
+     * @param File of destFile to which sourceFile has been copied
+     * @param boolean whether to do a copy --after
+     * @return void
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static void doCopy (File repository, File sourceFile, File destFile, OutputLogger logger)  throws HgException {
+        doCopy(repository, sourceFile, destFile, false, logger);
+    }
+
+    private static void doCopy (File repository, File sourceFile, File destFile, boolean bAfter, OutputLogger logger)  throws HgException {
+        if (repository == null) return;
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_COPY_CMD);
+        if (bAfter) command.add(HG_COPY_AFTER_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+
+        command.add(sourceFile.getAbsolutePath().substring(repository.getAbsolutePath().length() + 1));
+        command.add(destFile.getAbsolutePath().substring(repository.getAbsolutePath().length() + 1));
+
+        List<String> list = exec(command);
+        if (!list.isEmpty() &&
+             isErrorAbort(list.get(list.size() -1))) {
+            if (!bAfter || !isErrorAbortNoFilesToCopy(list.get(list.size() -1))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COPY_FAILED"), logger);
+            }
+        }
+    }
+
+
+    /**
      * Adds the cmdOutput of Locally New files to the mercurial Repository
      * Their status will change to added and they will be added on the next
      * mercurial hg add.
@@ -2618,11 +2661,11 @@ public class HgCommand {
             if (statusLine.length() > 0) {
                 if (statusLine.charAt(0) == ' ') {
                     // Locally Added but Copied
-                    if (file != null) {
+                    if (file != null && (prev_info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0) {
                         prev_info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
                                 new FileStatus(file, true), false);
                         Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): prev_info {0}  filePath {1}", new Object[]{prev_info, file}); // NOI18N
-                    } else {
+                    } else if (file == null) {
                         Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
                     }
                     continue;
