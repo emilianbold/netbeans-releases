@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.editor.indent;
 
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
@@ -52,7 +53,7 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
  */
 public class IndentSupport {
     protected CodeStyle codeStyle;
-    protected TokenSequence<CppTokenId> ts;
+    protected TokenSequence<TokenId> ts;
 
     /** Find the token either by token-id or token-text or both.
     * @param startToken token from which to start searching. For backward
@@ -112,7 +113,7 @@ public class IndentSupport {
     protected TokenItem findMatchingToken(TokenItem startToken, TokenItem limitToken, CppTokenId matchTokenID, boolean backward) {
 
         int depth = 0;
-        CppTokenId startTokenID = startToken.getTokenID();
+        TokenId startTokenID = startToken.getTokenID();
 
         // Start to search from the adjacent item
         TokenItem token = backward ? startToken.getPrevious() : startToken.getNext();
@@ -173,13 +174,15 @@ public class IndentSupport {
     }
 
     private boolean isComment(TokenItem token) {
-        CppTokenId tokenID = token.getTokenID();
-        switch (tokenID) {
-            case LINE_COMMENT:
-            case BLOCK_COMMENT:
-            case DOXYGEN_COMMENT:
-            case DOXYGEN_LINE_COMMENT:
-                return true;
+        TokenId tokenID = token.getTokenID();
+        if(tokenID instanceof CppTokenId) {
+            switch ((CppTokenId)tokenID) {
+                case LINE_COMMENT:
+                case BLOCK_COMMENT:
+                case DOXYGEN_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
+                    return true;
+            }
         }
         return false;
     }
@@ -258,146 +261,157 @@ public class IndentSupport {
     protected TokenItem findStatementStart(TokenItem token, boolean outermost) {
         TokenItem t = findStatement(token);
         if (t != null) {
-            switch (t.getTokenID()) {
-                case SEMICOLON: // ';' found
-                    TokenItem scss = findStatement(t);
-                    if (scss == null) {
-                        return token;
-                    }
-                    switch (scss.getTokenID()) {
-                        case LBRACE: // '{' then ';'
-                        case RBRACE: // '}' then ';'
-                        case COLON: // ':' then ';'
-                        case CASE: // 'case' then ';'
-                        case DEFAULT:
-                        case SEMICOLON: // ';' then ';'
-                            return t; // return ';'
+            TokenId tokenID = t.getTokenID();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case SEMICOLON: // ';' found
+                        TokenItem scss = findStatement(t);
+                        if (scss == null) {
+                            return token;
+                        }
+                        TokenId scssTokenID = scss.getTokenID();
+                        if(scssTokenID instanceof CppTokenId) {
+                            switch ((CppTokenId)scssTokenID) {
+                                case LBRACE: // '{' then ';'
+                                case RBRACE: // '}' then ';'
+                                case COLON: // ':' then ';'
+                                case CASE: // 'case' then ';'
+                                case DEFAULT:
+                                case SEMICOLON: // ';' then ';'
+                                    return t; // return ';'
 
-                        case PRIVATE:
-                        case PROTECTED:
-                        case PUBLIC:
-
-                        case DO:
-                        case FOR:
-                        case IF:
-                        case WHILE:
-                            return findStatementStart(t, outermost);
-
-                        case ELSE: // 'else' then ';'
-                            // Find the corresponding 'if'
-                            TokenItem ifss = findIf(scss);
-                            if (ifss != null) { // 'if' ... 'else' then ';'
-                                return findStatementStart(ifss, outermost);
-                            } else { // no valid starting 'if'
-                                return scss; // return 'else'
-                            }
-
-                        default: // something usual then ';'
-                            TokenItem bscss = findStatement(scss);
-                            if (bscss != null) {
-                                switch (bscss.getTokenID()) {
-                                case SEMICOLON: // ';' then stmt ending with ';'
-                                case LBRACE:
-                                case RBRACE:
-                                case COLON:
-                                    return scss; //
+                                case PRIVATE:
+                                case PROTECTED:
+                                case PUBLIC:
 
                                 case DO:
                                 case FOR:
                                 case IF:
                                 case WHILE:
-                                    return findStatementStart(bscss, outermost);
+                                    return findStatementStart(t, outermost);
 
-                                case ELSE:
+                                case ELSE: // 'else' then ';'
                                     // Find the corresponding 'if'
-                                    ifss = findIf(bscss);
-                                    if (ifss != null) { // 'if' ... 'else' ... ';'
+                                    TokenItem ifss = findIf(scss);
+                                    if (ifss != null) { // 'if' ... 'else' then ';'
                                         return findStatementStart(ifss, outermost);
                                     } else { // no valid starting 'if'
-                                        return bscss; // return 'else'
+                                        return scss; // return 'else'
+                                    }
+
+                                default: // something usual then ';'
+                                    TokenItem bscss = findStatement(scss);
+                                    if (bscss != null) {
+                                        TokenId bscssTokenID = bscss.getTokenID();
+                                        if(bscssTokenID instanceof CppTokenId) {
+                                            switch ((CppTokenId)bscssTokenID) {
+                                                case SEMICOLON: // ';' then stmt ending with ';'
+                                                case LBRACE:
+                                                case RBRACE:
+                                                case COLON:
+                                                    return scss; //
+
+                                                case DO:
+                                                case FOR:
+                                                case IF:
+                                                case WHILE:
+                                                    return findStatementStart(bscss, outermost);
+
+                                                case ELSE:
+                                                    // Find the corresponding 'if'
+                                                    ifss = findIf(bscss);
+                                                    if (ifss != null) { // 'if' ... 'else' ... ';'
+                                                        return findStatementStart(ifss, outermost);
+                                                    } else { // no valid starting 'if'
+                                                        return bscss; // return 'else'
+                                                    }
+                                            }
+                                        }
+                                    }
+                            }
+                        } // semicolon servicing end
+                        return scss;
+
+                    case LBRACE: // '{' found
+                        return token; // return original token
+
+                    case RBRACE: // '}' found
+                        TokenItem lb = findMatchingToken(t, null, CppTokenId.LBRACE, true);
+                        if (lb != null) { // valid matching left-brace
+                            // Find a stmt-start of the '{'
+                            TokenItem lbss = findStatement(lb);
+                            if (lbss != null) {
+                                TokenId lbssTokenID = lbss.getTokenID();
+                                if(lbssTokenID instanceof CppTokenId) {
+                                    switch ((CppTokenId)lbssTokenID) {
+                                        case ELSE: // 'else {'
+                                            // Find the corresponding 'if'
+                                            TokenItem ifss = findIf(lbss);
+                                            if (ifss != null) { // valid 'if'
+                                                return findStatementStart(ifss, outermost);
+                                            } else {
+                                                return lbss; // return 'else'
+                                            }
+
+                                        case CATCH: // 'catch (...) {'
+                                            // I'm not sure what to do if this isn't C++...
+                                            // Find the corresponding 'try'
+                                            TokenItem tryss = findTry(lbss);
+                                            if (tryss != null) { // valid 'try'
+                                                return findStatementStart(tryss, outermost);
+                                            } else {
+                                                return lbss; // return 'catch'
+                                            }
+
+                                        case DO:
+                                        case FOR:
+                                        case IF:
+                                        case WHILE:
+                                            return findStatementStart(lbss, outermost);
                                     }
                                 }
+                                // I copied the next if from JavaFormatSupport. But I'm not 100% certain it
+                                // applies...
+                                if (lbss.getTokenID() == CppTokenId.LBRACE) {
+                                    return t; // return right brace
+                                }
+                                return lbss;
                             }
-
-                            return scss;
-                    } // semicolon servicing end
-
-                case LBRACE: // '{' found
-                    return token; // return original token
-
-                case RBRACE: // '}' found
-                    TokenItem lb = findMatchingToken(t, null, CppTokenId.LBRACE, true);
-                    if (lb != null) { // valid matching left-brace
-                        // Find a stmt-start of the '{'
-                        TokenItem lbss = findStatement(lb);
-                        if (lbss != null) {
-                            switch (lbss.getTokenID()) {
-                                case ELSE: // 'else {'
-                                    // Find the corresponding 'if'
-                                    TokenItem ifss = findIf(lbss);
-                                    if (ifss != null) { // valid 'if'
-                                        return findStatementStart(ifss, outermost);
-                                    } else {
-                                        return lbss; // return 'else'
-                                    }
-
-                                case CATCH: // 'catch (...) {'
-                                    // I'm not sure what to do if this isn't C++...
-                                    // Find the corresponding 'try'
-                                    TokenItem tryss = findTry(lbss);
-                                    if (tryss != null) { // valid 'try'
-                                        return findStatementStart(tryss, outermost);
-                                    } else {
-                                        return lbss; // return 'catch'
-                                    }
-
-                                case DO:
-                                case FOR:
-                                case IF:
-                                case WHILE:
-                                    return findStatementStart(lbss, outermost);
-                            }
-                            // I copied the next if from JavaFormatSupport. But I'm not 100% certain it
-                            // applies...
-                            if (lbss.getTokenID() == CppTokenId.LBRACE) {
-                                return t; // return right brace
-                            }
-                            return lbss;
                         }
-                    }
-                    return t; // return right brace
+                        return t; // return right brace
 
-                case COLON:
-                case CASE:
-                case DEFAULT:
-                    return token;
+                    case COLON:
+                    case CASE:
+                    case DEFAULT:
+                        return token;
 
-                case ELSE:
-                    // Find the corresponding 'if'
-                    TokenItem ifss = findIf(t);
-                    if (ifss != null) {
-                        if (!outermost) {
-                            return ifss;
-                        } else {
-                            return findStatementStart(ifss, outermost);
+                    case ELSE:
+                        // Find the corresponding 'if'
+                        TokenItem ifss = findIf(t);
+                        if (ifss != null) {
+                            if (!outermost) {
+                                return ifss;
+                            } else {
+                                return findStatementStart(ifss, outermost);
+                            }
                         }
-                    }
-                    return t;
-
-                case DO:
-                case FOR:
-                case IF:
-                case WHILE:
-                    if (!outermost) {
                         return t;
-                    } else {
-                        return findStatementStart(t, outermost);
-                    }
 
-                case IDENTIFIER:
-                    return t;
-                default:
-                    return t;
+                    case DO:
+                    case FOR:
+                    case IF:
+                    case WHILE:
+                        if (!outermost) {
+                            return t;
+                        } else {
+                            return findStatementStart(t, outermost);
+                        }
+
+                    case IDENTIFIER:
+                        return t;
+                    default:
+                        return t;
+                }
             }
         }
         return token; // return original token
@@ -422,82 +436,88 @@ public class IndentSupport {
         TokenItem t = getPreviousToken(token);
 
         while (t != null) {
-            switch (t.getTokenID()) {
-                case SEMICOLON:
-                    if (!isForLoopSemicolon(t)) {
-                        return (lit != null) ? lit : t;
-                    }
-                    break;
-
-                case LBRACE:
-                case ELSE:
-                    return (lit != null) ? lit : t;
-
-                case RBRACE:
-                    // Check whether this is an array initialization block
-                    if (!isArrayInitializationBraceBlock(t, null)) {
-                        return (lit != null) ? lit : t;
-                    } else { // skip the array initialization block
-                        t = findMatchingToken(t, null, CppTokenId.LBRACE, true);
-                    }
-                    break;
-
-                case COLON:
-                    TokenItem tt = findAnyToken(t, null, new CppTokenId[] {CppTokenId.CASE, CppTokenId.DEFAULT,
-                    CppTokenId.PUBLIC, CppTokenId.PRIVATE, CppTokenId.PROTECTED,
-                    CppTokenId.LBRACE, CppTokenId.RBRACE, CppTokenId.SEMICOLON,
-                    CppTokenId.QUESTION}, true);
-                    if (tt != null) {
-                        switch (tt.getTokenID()) {
-                            case PUBLIC:
-                            case PRIVATE:
-                            case PROTECTED:
-                            case CASE:
-                            case DEFAULT:
-                                return (lit != null) ? lit : t;
+            TokenId tTokenID = t.getTokenID();
+            if(tTokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tTokenID) {
+                    case SEMICOLON:
+                        if (!isForLoopSemicolon(t)) {
+                            return (lit != null) ? lit : t;
                         }
-                    }
-                    TokenItem prev = findImportantToken(t, null, true);
-                    if (prev != null && prev.getTokenID() == CppTokenId.RPAREN) {
-                        t = prev;
                         break;
-                    }
-                    if (lit != null && firstColon && tt == null){
-                        return lit;
-                    }
-                    firstColon = false;
-                    break;
 
-                case DO:
-                case SWITCH:
-                case CASE:
-                case DEFAULT:
-                    return t;
+                    case LBRACE:
+                    case ELSE:
+                        return (lit != null) ? lit : t;
 
-                case FOR:
-                case IF:
-                case WHILE:
-                    /* Try to find the statement after ( ... )
-                     * If it exists, then the first important
-                     * token after it is the stmt start. Otherwise
-                     * it's this token.
-                     */
-                    if (lit != null && lit.getTokenID() == CppTokenId.LPAREN) {
-                        // Find matching right paren in fwd dir
-                        TokenItem mt = findMatchingToken(lit, token,
-                                CppTokenId.RPAREN, false);
-                        if (mt != null){
-                            mt = mt.getNext();
-                            if (mt != null) {
-                                mt = findImportantToken(mt, token, false);
-                                if (mt != null) {
-                                    return mt;
+                    case RBRACE:
+                        // Check whether this is an array initialization block
+                        if (!isArrayInitializationBraceBlock(t, null)) {
+                            return (lit != null) ? lit : t;
+                        } else { // skip the array initialization block
+                            t = findMatchingToken(t, null, CppTokenId.LBRACE, true);
+                        }
+                        break;
+
+                    case COLON:
+                        TokenItem tt = findAnyToken(t, null, new CppTokenId[] {CppTokenId.CASE, CppTokenId.DEFAULT,
+                        CppTokenId.PUBLIC, CppTokenId.PRIVATE, CppTokenId.PROTECTED,
+                        CppTokenId.LBRACE, CppTokenId.RBRACE, CppTokenId.SEMICOLON,
+                        CppTokenId.QUESTION}, true);
+                        if (tt != null) {
+                            TokenId ttTokenID = tt.getTokenID();
+                            if(ttTokenID instanceof CppTokenId) {
+                                switch ((CppTokenId)ttTokenID) {
+                                    case PUBLIC:
+                                    case PRIVATE:
+                                    case PROTECTED:
+                                    case CASE:
+                                    case DEFAULT:
+                                        return (lit != null) ? lit : t;
                                 }
                             }
                         }
-                    }
-                    // No further stmt found, return this one
-                    return t;
+                        TokenItem prev = findImportantToken(t, null, true);
+                        if (prev != null && prev.getTokenID() == CppTokenId.RPAREN) {
+                            t = prev;
+                            break;
+                        }
+                        if (lit != null && firstColon && tt == null){
+                            return lit;
+                        }
+                        firstColon = false;
+                        break;
+
+                    case DO:
+                    case SWITCH:
+                    case CASE:
+                    case DEFAULT:
+                        return t;
+
+                    case FOR:
+                    case IF:
+                    case WHILE:
+                        /* Try to find the statement after ( ... )
+                         * If it exists, then the first important
+                         * token after it is the stmt start. Otherwise
+                         * it's this token.
+                         */
+                        if (lit != null && lit.getTokenID() == CppTokenId.LPAREN) {
+                            // Find matching right paren in fwd dir
+                            TokenItem mt = findMatchingToken(lit, token,
+                                    CppTokenId.RPAREN, false);
+                            if (mt != null){
+                                mt = mt.getNext();
+                                if (mt != null) {
+                                    mt = findImportantToken(mt, token, false);
+                                    if (mt != null) {
+                                        return mt;
+                                    }
+                                }
+                            }
+                        }
+                        // No further stmt found, return this one
+                        return t;
+                }
             }
             // Remember last important token (preprocessor token are not important (?) (4922370))
             if (isImportant(t)) {
@@ -527,39 +547,42 @@ public class IndentSupport {
                 return null;
             }
 
-            switch (elseToken.getTokenID()) {
-                case LBRACE:
-                    if (--braceDepth < 0) {
-                        return null; // no corresponding right brace
-                    }
-                    break;
-
-                case RBRACE:
-                    braceDepth++;
-                    break;
-
-                case ELSE:
-                    if (braceDepth == 0) {
-                        elseDepth++;
-                    }
-                    break;
-
-                case SEMICOLON:
-                case COLON:
-                case DO:
-                case CASE:
-                case DEFAULT:
-                case FOR:
-                case WHILE:
-                    break;
-
-                case IF:
-                    if (braceDepth == 0) {
-                        if (elseDepth-- == 0) {
-                            return elseToken; // successful search
+            TokenId elseTokenID = elseToken.getTokenID();
+            if(elseTokenID instanceof CppTokenId) {
+                switch ((CppTokenId)elseTokenID) {
+                    case LBRACE:
+                        if (--braceDepth < 0) {
+                            return null; // no corresponding right brace
                         }
-                    }
-                    break;
+                        break;
+
+                    case RBRACE:
+                        braceDepth++;
+                        break;
+
+                    case ELSE:
+                        if (braceDepth == 0) {
+                            elseDepth++;
+                        }
+                        break;
+
+                    case SEMICOLON:
+                    case COLON:
+                    case DO:
+                    case CASE:
+                    case DEFAULT:
+                    case FOR:
+                    case WHILE:
+                        break;
+
+                    case IF:
+                        if (braceDepth == 0) {
+                            if (elseDepth-- == 0) {
+                                return elseToken; // successful search
+                            }
+                        }
+                        break;
+                }
             }
         }
     }
@@ -581,23 +604,26 @@ public class IndentSupport {
                 return null;
             }
 
-            switch (caseToken.getTokenID()) {
-                case LBRACE:
-                    if (--braceDepth < 0) {
-                        return null; // no corresponding right brace
-                    }
-                    break;
+            TokenId caseTokenID = caseToken.getTokenID();
+            if(caseTokenID instanceof CppTokenId) {
+                switch ((CppTokenId)caseTokenID) {
+                    case LBRACE:
+                        if (--braceDepth < 0) {
+                            return null; // no corresponding right brace
+                        }
+                        break;
 
-                case RBRACE:
-                    braceDepth++;
-                    break;
+                    case RBRACE:
+                        braceDepth++;
+                        break;
 
-                case SWITCH:
-                case DEFAULT:
-                    if (braceDepth == 0) {
-                        return caseToken;
-                    }
-                    break;
+                    case SWITCH:
+                    case DEFAULT:
+                        if (braceDepth == 0) {
+                            return caseToken;
+                        }
+                        break;
+                }
             }
         }
     }
@@ -614,29 +640,34 @@ public class IndentSupport {
                 return null;
             }
 
-            switch (classifierToken.getTokenID()) {
-                case LBRACE:
-                    if (--braceDepth < 0) {
-                        return null; // no corresponding right brace
-                    }
-                    if (braceDepth == 0){
-                        while ((classifierToken = classifierToken.getPrevious()) != null) {
-                            switch (classifierToken.getTokenID()) {
-                                case CLASS:
-                                case STRUCT:
-                                case ENUM:
-                                case UNION:
-                                    return classifierToken;
-                            }
+            TokenId classifierTokenID = classifierToken.getTokenID();
+            if(classifierTokenID instanceof CppTokenId) {
+                switch ((CppTokenId)classifierTokenID) {
+                    case LBRACE:
+                        if (--braceDepth < 0) {
+                            return null; // no corresponding right brace
                         }
-                        return null;
-                    }
-                    break;
+                        if (braceDepth == 0){
+                            while ((classifierToken = classifierToken.getPrevious()) != null) {
+                                classifierTokenID = classifierToken.getTokenID();
+                                if(classifierTokenID instanceof CppTokenId) {
+                                    switch ((CppTokenId)classifierTokenID) {
+                                        case CLASS:
+                                        case STRUCT:
+                                        case ENUM:
+                                        case UNION:
+                                            return classifierToken;
+                                    }
+                                }
+                            }
+                            return null;
+                        }
+                        break;
 
-                case RBRACE:
-                    braceDepth++;
-                    break;
-
+                    case RBRACE:
+                        braceDepth++;
+                        break;
+                }
             }
         }
     }
@@ -658,22 +689,25 @@ public class IndentSupport {
                 return null;
             }
 
-            switch (catchToken.getTokenID()) {
-                case LBRACE:
-                    if (--braceDepth < 0) {
-                        return null; // no corresponding right brace
-                    }
-                    break;
+            TokenId catchTokenID = catchToken.getTokenID();
+            if(catchTokenID instanceof CppTokenId) {
+                switch ((CppTokenId)catchTokenID) {
+                    case LBRACE:
+                        if (--braceDepth < 0) {
+                            return null; // no corresponding right brace
+                        }
+                        break;
 
-                case RBRACE:
-                    braceDepth++;
-                    break;
+                    case RBRACE:
+                        braceDepth++;
+                        break;
 
-                case TRY:
-                    if (braceDepth == 0) {
-                        return catchToken;
-                    }
-                    break;
+                    case TRY:
+                        if (braceDepth == 0) {
+                            return catchToken;
+                        }
+                        break;
+                }
             }
         }
     }
@@ -745,36 +779,39 @@ public class IndentSupport {
         boolean semicolonFound = false; // next semicolon
         token = token.getPrevious(); // ignore this semicolon
         while (token != null) {
-            switch(token.getTokenID()) {
-                case LPAREN:
-                    if (parDepth == 0) { // could be a 'for ('
-                        TokenItem tp = findImportantToken(token, null, true);
-                        if (tp != null && tp.getTokenID() == CppTokenId.FOR) {
-                            return true;
+            TokenId tokenID = token.getTokenID();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case LPAREN:
+                        if (parDepth == 0) { // could be a 'for ('
+                            TokenItem tp = findImportantToken(token, null, true);
+                            if (tp != null && tp.getTokenID() == CppTokenId.FOR) {
+                                return true;
+                            }
+                            return false;
+                        } else { // non-zero depth
+                            parDepth--;
                         }
-                        return false;
-                    } else { // non-zero depth
-                        parDepth--;
-                    }
-                    break;
-                case RPAREN:
-                    parDepth++;
-                    break;
-                case LBRACE:
-                    if (braceDepth == 0) { // unclosed left brace
-                        return false;
-                    }
-                    braceDepth--;
-                    break;
-                case RBRACE:
-                    braceDepth++;
-                    break;
-                case SEMICOLON:
-                    if (semicolonFound) { // one semicolon already found
-                        return false;
-                    }
-                    semicolonFound = true;
-                    break;
+                        break;
+                    case RPAREN:
+                        parDepth++;
+                        break;
+                    case LBRACE:
+                        if (braceDepth == 0) { // unclosed left brace
+                            return false;
+                        }
+                        braceDepth--;
+                        break;
+                    case RBRACE:
+                        braceDepth++;
+                        break;
+                    case SEMICOLON:
+                        if (semicolonFound) { // one semicolon already found
+                            return false;
+                        }
+                        semicolonFound = true;
+                        break;
+                }
             }
             token = token.getPrevious();
         }
@@ -788,111 +825,114 @@ public class IndentSupport {
         boolean findQuestion = false;
         int identifiers = 0;
         while (t != null) {
-            switch (t.getTokenID()) {
-                case EQ:
-                case LTLT:
-                case GTGT:
-                case PLUSEQ:
-                case MINUSEQ:
-                case LTLTEQ:
-                case GTGTEQ:
-                case AMPEQ:
-                case BAREQ:
-                case STAREQ:
-                case SLASHEQ:
-                case CARETEQ:
-                case PERCENTEQ:
-                case DELETE:
-                case RETURN:
-                case BREAK:
-                case CASE:
-                case CATCH:
-                case CONTINUE:
-                case DEFAULT:
-                case DO:
-                case ELSE:
-                case FOR:
-                case GOTO:
-                case IF:
-                case SIZEOF:
-                case SWITCH:
-                case THIS:
-                case THROW:
-                case TRY:
-                case USING:
-                case WHILE:
-                    return true;
-                case SEMICOLON:
-                    if (likeDeclaration) {
+            TokenId tTokenID = t.getTokenID();
+            if(tTokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tTokenID) {
+                    case EQ:
+                    case LTLT:
+                    case GTGT:
+                    case PLUSEQ:
+                    case MINUSEQ:
+                    case LTLTEQ:
+                    case GTGTEQ:
+                    case AMPEQ:
+                    case BAREQ:
+                    case STAREQ:
+                    case SLASHEQ:
+                    case CARETEQ:
+                    case PERCENTEQ:
+                    case DELETE:
+                    case RETURN:
+                    case BREAK:
+                    case CASE:
+                    case CATCH:
+                    case CONTINUE:
+                    case DEFAULT:
+                    case DO:
+                    case ELSE:
+                    case FOR:
+                    case GOTO:
+                    case IF:
+                    case SIZEOF:
+                    case SWITCH:
+                    case THIS:
+                    case THROW:
+                    case TRY:
+                    case USING:
+                    case WHILE:
+                        return true;
+                    case SEMICOLON:
+                        if (likeDeclaration) {
+                            return false;
+                        }
+                        return true;
+                    case FRIEND:
+                    case EXPLICIT:
+                    case EXTERN:
+                    case CLASS:
+                    case STATIC:
+                    case OPERATOR:
+                    case PRIVATE:
+                    case PROTECTED:
+                    case PUBLIC:
+                    case NAMESPACE:
+                    case TEMPLATE:
+                    case UNION:
+                    case ENUM:
+                    case VIRTUAL:
+                    case INLINE:
+                    case LBRACE:
                         return false;
-                    }
-                    return true;
-                case FRIEND:
-                case EXPLICIT:
-                case EXTERN:
-                case CLASS:
-                case STATIC:
-                case OPERATOR:
-                case PRIVATE:
-                case PROTECTED:
-                case PUBLIC:
-                case NAMESPACE:
-                case TEMPLATE:
-                case UNION:
-                case ENUM:
-                case VIRTUAL:
-                case INLINE:
-                case LBRACE:
-                    return false;
-                case COLON:
-                    if (!findQuestion) {
-                        return false;
-                    }
-                    break;
-                case QUESTION:
-                    findQuestion = true;
-                    break;
-                case SCOPE:
-                    if (!findLParen && identifiers == 1){
-                        likeDeclaration = true;
-                    }
-                    break;
-                case RPAREN:
-                    break;
-                case LPAREN:
-                    if (!findLParen && identifiers > 1){
-                        likeDeclaration = true;
-                    }
-                    findLParen = true;
-                    break;
-                case ASM:
-                case AUTO:
-                case BOOL:
-                case CHAR:
-                case DOUBLE:
-                case EXPORT:
-                case FLOAT:
-                case INT:
-                case LONG:
-                case MUTABLE:
-                case REGISTER:
-                case SHORT:
-                case SIGNED:
-                case STRUCT:
-                case TYPEDEF:
-                case TYPENAME:
-                case UNSIGNED:
-                case VOID:
-                case WCHAR_T:
-                case VOLATILE:
-                case CONST:
-                    if (!findLParen) {
-                        return false;
-                    }
-                    break;
-                case IDENTIFIER:
-                    identifiers++;
-                    break;
+                    case COLON:
+                        if (!findQuestion) {
+                            return false;
+                        }
+                        break;
+                    case QUESTION:
+                        findQuestion = true;
+                        break;
+                    case SCOPE:
+                        if (!findLParen && identifiers == 1){
+                            likeDeclaration = true;
+                        }
+                        break;
+                    case RPAREN:
+                        break;
+                    case LPAREN:
+                        if (!findLParen && identifiers > 1){
+                            likeDeclaration = true;
+                        }
+                        findLParen = true;
+                        break;
+                    case ASM:
+                    case AUTO:
+                    case BOOL:
+                    case CHAR:
+                    case DOUBLE:
+                    case EXPORT:
+                    case FLOAT:
+                    case INT:
+                    case LONG:
+                    case MUTABLE:
+                    case REGISTER:
+                    case SHORT:
+                    case SIGNED:
+                    case STRUCT:
+                    case TYPEDEF:
+                    case TYPENAME:
+                    case UNSIGNED:
+                    case VOID:
+                    case WCHAR_T:
+                    case VOLATILE:
+                    case CONST:
+                        if (!findLParen) {
+                            return false;
+                        }
+                        break;
+                    case IDENTIFIER:
+                        identifiers++;
+                        break;
+                }
             }
             t = t.getNext();
         }
@@ -905,13 +945,16 @@ public class IndentSupport {
             if (token == null) {
                 return null;
             }
-            switch (token.getTokenID()) {
-                case LBRACE:
-                case RBRACE:
-                case SEMICOLON:
-                    return null;
-                case TEMPLATE:
-                    return findStatementStart(token);
+            TokenId tokenID = token.getTokenID();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case LBRACE:
+                    case RBRACE:
+                    case SEMICOLON:
+                        return null;
+                    case TEMPLATE:
+                        return findStatementStart(token);
+                }
             }
         }
     }
@@ -922,15 +965,18 @@ public class IndentSupport {
             t = token.getPrevious();
         }
         while (t != null) {
-            switch (t.getTokenID()) {
-                case SEMICOLON:
-                case LBRACE:
-                case RBRACE:
-                    return null;
-                case PRIVATE:
-                case PROTECTED:
-                case PUBLIC:
-                    return t;
+            TokenId tTokenID = t.getTokenID();
+            if(tTokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tTokenID) {
+                    case SEMICOLON:
+                    case LBRACE:
+                    case RBRACE:
+                        return null;
+                    case PRIVATE:
+                    case PROTECTED:
+                    case PUBLIC:
+                        return t;
+                }
             }
             t = t.getPrevious();
         }
@@ -952,15 +998,18 @@ public class IndentSupport {
         token = token.getPrevious();
 
         while (token != null && !token.equals(limitToken)) {
-            switch (token.getTokenID()) {
-                case LPAREN:
-                    if (--depth < 0) {
-                        return token;
-                    }
-                    break;
-                case RPAREN:
-                    depth++;
-                    break;
+            TokenId tokenID = token.getTokenID();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case LPAREN:
+                        if (--depth < 0) {
+                            return token;
+                        }
+                        break;
+                    case RPAREN:
+                        depth++;
+                        break;
+                }
             }
             token = token.getPrevious();
         }
@@ -981,32 +1030,35 @@ public class IndentSupport {
         token = token.getPrevious();
 
         while (token != null && !token.equals(limitToken)) {
-            switch (token.getTokenID()) {
-                case RBRACE:
-                    depth++;
-                    break;
+            TokenId tokenID = token.getTokenID();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case RBRACE:
+                        depth++;
+                        break;
 
-                case LBRACE:
-                    depth--;
-                    if (depth < 0) {
-                        TokenItem prev = findImportantToken(token, limitToken, true);
-                        // Array initialization left brace should be preceded
-                        // by either '=' or ']' i.e.
-                        // either "String array = { "a", "b", ... }"
-                        // or     "String array = new String[] { "a", "b", ... }"
-                        return (prev != null && (CppTokenId.RBRACKET.equals(prev.getTokenID()) || CppTokenId.EQ.equals(prev.getTokenID())));
-                    }
-                    break;
+                    case LBRACE:
+                        depth--;
+                        if (depth < 0) {
+                            TokenItem prev = findImportantToken(token, limitToken, true);
+                            // Array initialization left brace should be preceded
+                            // by either '=' or ']' i.e.
+                            // either "String array = { "a", "b", ... }"
+                            // or     "String array = new String[] { "a", "b", ... }"
+                            return (prev != null && (CppTokenId.RBRACKET.equals(prev.getTokenID()) || CppTokenId.EQ.equals(prev.getTokenID())));
+                        }
+                        break;
 
-                // Array initialization block should not contain statements or ';'
-                case DO:
-                case FOR:
-                case IF:
-                case WHILE:
-                case SEMICOLON:
-                    if (depth == 0) {
-                        return false;
-                    }
+                    // Array initialization block should not contain statements or ';'
+                    case DO:
+                    case FOR:
+                    case IF:
+                    case WHILE:
+                    case SEMICOLON:
+                        if (depth == 0) {
+                            return false;
+                        }
+                }
             }
             token = token.getPrevious();
         }
@@ -1120,7 +1172,7 @@ public class IndentSupport {
     }
 
     protected int go(TokenItem t) {
-        TokenSequence<CppTokenId> tokenSeq = t.getTokenSequence();
+        TokenSequence<TokenId> tokenSeq = t.getTokenSequence();
         int aIndex = tokenSeq.index();
         tokenSeq.moveIndex(t.index());
         tokenSeq.moveNext();
@@ -1129,43 +1181,46 @@ public class IndentSupport {
     
     protected int getTokenColumnAfterBrace(TokenItem t){
         int column = getTokenColumn(t);
-        TokenSequence<CppTokenId> tokenSeq = t.getTokenSequence();
+        TokenSequence<TokenId> tokenSeq = t.getTokenSequence();
         int aIndex = go(t);
         try {
             while(tokenSeq.moveNext()){
-                switch (tokenSeq.token().id()) {
-                    case NEW_LINE:
-                    case PREPROCESSOR_DIRECTIVE:
-                         return column;
-                    case DOXYGEN_COMMENT:
-                    case BLOCK_COMMENT:
-                    {
-                        String text = tokenSeq.token().text().toString();
-                        int i = text.lastIndexOf('\n');
-                        if (i < 0){
-                            column += text.length();
-                        }
-                        column += text.length()-i+1;
-                        return column;
-                    }
-                    case WHITESPACE:
-                    {
-                        String text = tokenSeq.token().text().toString();
-                        for(int i = 0; i < text.length(); i++){
-                            char c = text.charAt(i);
-                            if (c == '\t'){
-                                column = (column/getTabSize()+1)* getTabSize();
-                            } else {
-                                column += 1;
+                TokenId tokenID = tokenSeq.token().id();
+                if(tokenID instanceof CppTokenId) {
+                    switch ((CppTokenId)tokenID) {
+                        case NEW_LINE:
+                        case PREPROCESSOR_DIRECTIVE:
+                             return column;
+                        case DOXYGEN_COMMENT:
+                        case BLOCK_COMMENT:
+                        {
+                            String text = tokenSeq.token().text().toString();
+                            int i = text.lastIndexOf('\n');
+                            if (i < 0){
+                                column += text.length();
                             }
+                            column += text.length()-i+1;
+                            return column;
                         }
-                        break;
+                        case WHITESPACE:
+                        {
+                            String text = tokenSeq.token().text().toString();
+                            for(int i = 0; i < text.length(); i++){
+                                char c = text.charAt(i);
+                                if (c == '\t'){
+                                    column = (column/getTabSize()+1)* getTabSize();
+                                } else {
+                                    column += 1;
+                                }
+                            }
+                            break;
+                        }
+                        case LBRACE:
+                            column += tokenSeq.token().length();
+                            break;
+                        default:
+                            return column;
                     }
-                    case LBRACE:
-                        column += tokenSeq.token().length();
-                        break;
-                    default:
-                        return column;
                 }
             }
             return column;
@@ -1176,43 +1231,46 @@ public class IndentSupport {
     }
 
     protected int getTokenIndent(TokenItem t){
-        TokenSequence<CppTokenId> tokenSeq = t.getTokenSequence();
+        TokenSequence<TokenId> tokenSeq = t.getTokenSequence();
         int aIndex = go(t);
         try {
             int column = 0;
             while(tokenSeq.movePrevious()){
-                switch (tokenSeq.token().id()) {
-                    case NEW_LINE:
-                    case PREPROCESSOR_DIRECTIVE:
-                         return column;
-                    case DOXYGEN_COMMENT:
-                    case BLOCK_COMMENT:
-                    {
-                        String text = tokenSeq.token().text().toString();
-                        int i = text.lastIndexOf('\n');
-                        if (i < 0){
-                            column += text.length();
+                TokenId tokenID = tokenSeq.token().id();
+                if(tokenID instanceof CppTokenId) {
+                    switch ((CppTokenId)tokenID) {
+                        case NEW_LINE:
+                        case PREPROCESSOR_DIRECTIVE:
+                             return column;
+                        case DOXYGEN_COMMENT:
+                        case BLOCK_COMMENT:
+                        {
+                            String text = tokenSeq.token().text().toString();
+                            int i = text.lastIndexOf('\n');
+                            if (i < 0){
+                                column += text.length();
+                                break;
+                            }
+                            column += text.length()-i+1;
+                            return column;
+                        }
+                        case WHITESPACE:
+                        {
+                            String text = tokenSeq.token().text().toString();
+                            for(int i = 0; i < text.length(); i++){
+                                char c = text.charAt(i);
+                                if (c == '\t'){
+                                    column = (column/getTabSize()+1)* getTabSize();
+                                } else {
+                                    column += 1;
+                                }
+                            }
                             break;
                         }
-                        column += text.length()-i+1;
-                        return column;
+                        default:
+                            column = 0;
+                            break;
                     }
-                    case WHITESPACE:
-                    {
-                        String text = tokenSeq.token().text().toString();
-                        for(int i = 0; i < text.length(); i++){
-                            char c = text.charAt(i);
-                            if (c == '\t'){
-                                column = (column/getTabSize()+1)* getTabSize();
-                            } else {
-                                column += 1;
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        column = 0;
-                        break;
                 }
             }
             return column;
@@ -1223,43 +1281,46 @@ public class IndentSupport {
     }
 
     protected int getTokenColumn(TokenItem t){
-        TokenSequence<CppTokenId> tokenSeq = t.getTokenSequence();
+        TokenSequence<TokenId> tokenSeq = t.getTokenSequence();
         int aIndex = go(t);
         try {
             int column = 0;
             while(tokenSeq.movePrevious()){
-                switch (tokenSeq.token().id()) {
-                    case NEW_LINE:
-                    case PREPROCESSOR_DIRECTIVE:
-                         return column;
-                    case DOXYGEN_COMMENT:
-                    case BLOCK_COMMENT:
-                    {
-                        String text = tokenSeq.token().text().toString();
-                        int i = text.lastIndexOf('\n');
-                        if (i < 0){
-                            column += text.length();
+                TokenId tokenID = tokenSeq.token().id();
+                if(tokenID instanceof CppTokenId) {
+                    switch ((CppTokenId)tokenID) {
+                        case NEW_LINE:
+                        case PREPROCESSOR_DIRECTIVE:
+                             return column;
+                        case DOXYGEN_COMMENT:
+                        case BLOCK_COMMENT:
+                        {
+                            String text = tokenSeq.token().text().toString();
+                            int i = text.lastIndexOf('\n');
+                            if (i < 0){
+                                column += text.length();
+                                break;
+                            }
+                            column += text.length()-i+1;
+                            return column;
+                        }
+                        case WHITESPACE:
+                        {
+                            String text = tokenSeq.token().text().toString();
+                            for(int i = 0; i < text.length(); i++){
+                                char c = text.charAt(i);
+                                if (c == '\t'){
+                                    column = (column/getTabSize()+1)* getTabSize();
+                                } else {
+                                    column += 1;
+                                }
+                            }
                             break;
                         }
-                        column += text.length()-i+1;
-                        return column;
+                        default:
+                            column += tokenSeq.token().length();
+                            break;
                     }
-                    case WHITESPACE:
-                    {
-                        String text = tokenSeq.token().text().toString();
-                        for(int i = 0; i < text.length(); i++){
-                            char c = text.charAt(i);
-                            if (c == '\t'){
-                                column = (column/getTabSize()+1)* getTabSize();
-                            } else {
-                                column += 1;
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        column += tokenSeq.token().length();
-                        break;
                 }
             }
             return column;
