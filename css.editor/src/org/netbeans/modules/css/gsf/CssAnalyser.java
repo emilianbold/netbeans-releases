@@ -67,7 +67,9 @@ import org.openide.util.NbBundle;
  */
 public class CssAnalyser {
 
-    private static final String UNKNOWN_PROPERTY = "unknown_property";
+    private static final String UNKNOWN_PROPERTY_BUNDLE_KEY = "unknown_property";
+    private static final String UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER = "/";
+    private static final String UNKNOWN_PROPERTY_ERROR_KEY = "unknown_property" + UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER;
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";
     private static final String INVALID_CONTENT = "invalid_content";
 
@@ -97,11 +99,11 @@ public class CssAnalyser {
                         Property property = model.getProperty(propertyName);
                         if (!CssGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
-                            String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName);
+                            String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);
                             Error error = makeError(propertyNode.startOffset(),
                                     propertyNode.endOffset(),
                                     snapshot,
-                                    UNKNOWN_PROPERTY,
+                                    UNKNOWN_PROPERTY_ERROR_KEY + propertyName,
                                     msg,
                                     msg,
                                     false /* not line error */,
@@ -198,6 +200,21 @@ public class CssAnalyser {
                             lineError,
                             severity);
 
+    }
+
+    public static boolean isConfigurableError(String errorKey) {
+        //unknown property errors can be suppressed, so far
+        return isUnknownPropertyError(errorKey);
+    }
+    
+    public static boolean isUnknownPropertyError(String errorKey) {
+        return errorKey.startsWith(UNKNOWN_PROPERTY_ERROR_KEY);
+    }
+
+    public static String getUnknownPropertyName(String unknownPropertyErrorKey) {
+        assert unknownPropertyErrorKey.startsWith(UNKNOWN_PROPERTY_ERROR_KEY);
+        int index = unknownPropertyErrorKey.indexOf(UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER);//NOI18N
+        return unknownPropertyErrorKey.substring(index + 1);
     }
 
     public static boolean isVendorSpecificProperty(String propertyName) {
