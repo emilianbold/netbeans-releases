@@ -90,7 +90,7 @@ public abstract class TimeSeriesIndicatorConfigurationAccessor {
 
     public abstract DataRowToTimeSeries getDataRowHandler(TimeSeriesIndicatorConfiguration conf);
 
-    public abstract ValueFormatter getLabelRenderer(TimeSeriesIndicatorConfiguration conf);
+    public abstract ValueFormatter getLabelFormatter(TimeSeriesIndicatorConfiguration conf);
 
     public abstract long getGranularity(TimeSeriesIndicatorConfiguration conf);
 
@@ -99,4 +99,6 @@ public abstract class TimeSeriesIndicatorConfigurationAccessor {
     public abstract boolean getLastNonNull(TimeSeriesIndicatorConfiguration conf);
 
     public abstract String getPersistencePrefix(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract long getExtent(TimeSeriesIndicatorConfiguration conf);
 }

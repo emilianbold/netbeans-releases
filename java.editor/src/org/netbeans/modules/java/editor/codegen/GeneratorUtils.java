@@ -578,7 +578,7 @@ public class GeneratorUtils {
      * @return true if it does
      */ 
     private static boolean overridesPackagePrivateOutsidePackage(ExecutableElement ee, TypeElement impl) {
-        String elemPackageName = ee.getEnclosingElement().getEnclosingElement().getSimpleName().toString();
+        String elemPackageName = getPackageName(ee);
         String currentPackageName = getPackageName(impl);
         if(!ee.getModifiers().contains(Modifier.PRIVATE) && !ee.getModifiers().contains(Modifier.PUBLIC) && !ee.getModifiers().contains(Modifier.PROTECTED) && !currentPackageName.equals(elemPackageName))
             return true;

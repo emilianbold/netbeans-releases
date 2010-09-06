@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileAttributeEvent;
@@ -65,6 +66,7 @@ implements Callable<Boolean>, FileChangeListener {
     private FileObject root;
     private List<FileEvent> events = new ArrayList<FileEvent>();
     private int cnt;
+    private Logger LOG;
 
     public FileUtilAddRecursiveListenerStopTest(String n) {
         super(n);
@@ -78,6 +80,8 @@ implements Callable<Boolean>, FileChangeListener {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        
+        LOG = Logger.getLogger("test." + getName());
         
         root = FileUtil.toFileObject(getWorkDir());
         assertNotNull("Root found", root);
@@ -105,7 +109,9 @@ implements Callable<Boolean>, FileChangeListener {
     public void testAddListenerCanStop() throws IOException {
         cnt = 2;
         CharSequence log = Log.enable("org.netbeans.modules.masterfs", Level.INFO);
+        LOG.info("about to addRecursiveListener");
         FileUtil.addRecursiveListener(this, getWorkDir(), this);
+        LOG.info("recursive listener added");
         assertEquals("Counter is zero", 0, cnt);
         if (!log.toString().contains("addRecursiveListener")) {
             fail("There shall be info about interruption:\n" + log);
@@ -113,13 +119,17 @@ implements Callable<Boolean>, FileChangeListener {
 
         FileObject fourth = root.getFileObject("5");
         assertNotNull("Folder found", fourth);
-        fourth.createData("Ahoj");
+        LOG.info("About to create a file");
+        FileObject res = fourth.createData("Ahoj");
+        LOG.log(Level.INFO, "File created: {0}", res);
         assertTrue("No events delivered: " + events, events.isEmpty());
     }
 
     @Override
     public Boolean call() throws Exception {
+        LOG.info("callback " + cnt);
         if (--cnt == 0) {
+            LOG.info("Returning true to stop invocations");
             return Boolean.TRUE;
         }
         return null;
@@ -127,31 +137,43 @@ implements Callable<Boolean>, FileChangeListener {
 
     @Override
     public void fileFolderCreated(FileEvent fe) {
+        LOG.log(Level.INFO, "fileFolderCreated: {0}", fe.getFile());
+        LOG.log(Level.INFO, "Thread dump", new Exception());
         events.add(fe);
     }
 
     @Override
     public void fileDataCreated(FileEvent fe) {
+        LOG.log(Level.INFO, "fileDataCreated: {0}", fe.getFile());
+        LOG.log(Level.INFO, "Thread dump", new Exception());
         events.add(fe);
     }
 
     @Override
     public void fileChanged(FileEvent fe) {
+        LOG.log(Level.INFO, "fileChanged: {0}", fe.getFile());
+        LOG.log(Level.INFO, "Thread dump", new Exception());
         events.add(fe);
     }
 
     @Override
     public void fileDeleted(FileEvent fe) {
+        LOG.log(Level.INFO, "fileDeleted: {0}", fe.getFile());
+        LOG.log(Level.INFO, "Thread dump", new Exception());
         events.add(fe);
     }
 
     @Override
     public void fileRenamed(FileRenameEvent fe) {
+        LOG.log(Level.INFO, "fileRenamed: {0}", fe.getFile());
+        LOG.log(Level.INFO, "Thread dump", new Exception());
         events.add(fe);
     }
 
     @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
+        LOG.log(Level.INFO, "fileAttributeChanged: {0}", fe.getFile());
+        LOG.log(Level.INFO, "Thread dump", new Exception());
         events.add(fe);
     }
 

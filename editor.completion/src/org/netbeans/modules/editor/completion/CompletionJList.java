@@ -158,7 +158,7 @@ public class CompletionJList extends JList {
                 Object value = data.get(index);
                 Dimension cellSize;
                 if (value instanceof LazyCompletionItem)
-                    maxWidth = (int)(ScreenBoundsProvider.getScreenBounds(editorComponent).width * ScreenBoundsProvider.MAX_COMPL_COVERAGE);
+                    maxWidth = (int)(ScreenBoundsProvider.getScreenBounds(editorComponent).width * ScreenBoundsProvider.COMPL_COVERAGE);
                 Component c = renderer.getListCellRendererComponent(this, value, index, false, false);
                 cellSize = c.getPreferredSize();
                 if (cellSize.width > width) {

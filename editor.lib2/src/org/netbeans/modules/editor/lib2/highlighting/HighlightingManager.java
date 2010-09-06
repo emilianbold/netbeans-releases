@@ -90,7 +90,7 @@ public final class HighlightingManager {
         String value = System.getProperty("org.netbeans.editor.linewrap"); //NOI18N
         LINEWRAP_ENABLED = (value != null)
                 ? !value.equalsIgnoreCase("false") //NOI18N
-                : false;
+                : true; // For 6.10 turned on by default
     }
 
     public static synchronized HighlightingManager getInstance() {

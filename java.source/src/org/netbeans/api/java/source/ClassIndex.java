@@ -225,9 +225,17 @@ public final class ClassIndex {
     
     static {
 	ClassIndexImpl.FACTORY = new ClassIndexFactoryImpl();
-    }    
+    }
     
     ClassIndex(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {
+        this(bootPath,classPath,sourcePath,true);
+    }
+    
+    ClassIndex( final @NonNull ClassPath bootPath,
+            final @NonNull ClassPath classPath,
+            final @NonNull ClassPath sourcePath,
+            final boolean supportsChanges
+            ) {
         assert bootPath != null;
         assert classPath != null;
         assert sourcePath != null;
@@ -239,9 +247,11 @@ public final class ClassIndex {
         this.oldSources = new HashSet<URL>();
         this.depsIndeces = new HashSet<ClassIndexImpl>();
         this.sourceIndeces = new HashSet<ClassIndexImpl>();
-        this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
-        this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
-        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
+        if (supportsChanges) {
+            this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
+            this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
+            this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
+        }
         reset (true, true);
     }
     

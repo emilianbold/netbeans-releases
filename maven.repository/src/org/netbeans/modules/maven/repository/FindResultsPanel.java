@@ -80,7 +80,6 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
     private ActionListener close;
     private DialogDescriptor dd;
 
-    /** Creates new form FindResultsPanel */
     private FindResultsPanel() {
         initComponents();
         btv = new BeanTreeView();
@@ -97,10 +96,8 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
     }
 
     void find(final List<QueryField> fields) {
-        Node loadingNode = GroupListChildren.createLoadingNode();
-        Children.Array array = new Children.Array();
-        array.add(new Node[]{loadingNode});
-        manager.setRootContext(new AbstractNode(array));
+        // XXX replace with a static node plus ChildFactory
+        manager.setRootContext(new AbstractNode(Children.LEAF));
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {

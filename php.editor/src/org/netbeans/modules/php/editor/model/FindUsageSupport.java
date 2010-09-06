@@ -54,6 +54,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
@@ -61,6 +62,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -134,10 +136,12 @@ public final class FindUsageSupport {
             ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-                    Model model = ModelFactory.getModel(parameter);
-                    ModelVisitor modelVisitor = model.getModelVisitor();
-                    retval.addAll(modelVisitor.getOccurence(element));
+                    Result parameter = resultIterator.getParserResult();
+                    if (parameter instanceof PHPParseResult) {
+                        Model model = ModelFactory.getModel((PHPParseResult)parameter);
+                        ModelVisitor modelVisitor = model.getModelVisitor();
+                        retval.addAll(modelVisitor.getOccurence(element));
+                    }
                 }
             });
         } catch (org.netbeans.modules.parsing.spi.ParseException ex) {

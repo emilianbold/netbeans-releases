@@ -47,7 +47,6 @@ import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.text.Caret;
-import javax.swing.text.Position;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
@@ -228,52 +227,52 @@ public class CCKit extends NbEditorKit {
                     return;
                 }
 
-                final BaseDocument doc = (BaseDocument) target.getDocument();
+		final BaseDocument doc = (BaseDocument)target.getDocument();
+                final Reformat formatter = Reformat.get(doc);
+
                 // Set hourglass cursor
                 Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                
+                formatter.lock();
+                try {
+                    doc.runAtomic(new Runnable() {
 
-                doc.runAtomicAsUser(new Runnable() {
-
-                    public void run() {
-                        try {
-                            Caret caret = target.getCaret();
-
-                            int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-                            int startPos;
-                            Position endPosition;
-                            //if (caret.isSelectionVisible()) {
-                            if (Utilities.isSelectionShowing(caret)) {
-                                startPos = target.getSelectionStart();
-                                endPosition = doc.createPosition(target.getSelectionEnd());
-                            } else {
-                                startPos = 0;
-                                endPosition = doc.createPosition(doc.getLength());
-                            }
-
-                            int pos = startPos;
-                            Reformat reformat = Reformat.get(doc);
-                            reformat.lock();
+                        public void run() {
                             try {
-                                reformat.reformat(pos, endPosition.getOffset());
-                            } finally {
-                                reformat.unlock();
-                            }
+                                Caret caret = target.getCaret();
 
-                            // Restore the line
-                            pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
-                            if (pos >= 0) {
-                                caret.setDot(pos);
+                                int caretLine = Utilities.getLineOffset(doc, caret.getDot());
+                                int start;
+                                int end;
+                                //if (caret.isSelectionVisible()) {
+                                if (Utilities.isSelectionShowing(caret)) {
+                                    start = target.getSelectionStart();
+                                    end = target.getSelectionEnd();
+                                } else {
+                                    start = 0;
+                                    end = doc.getLength();
+                                }
+
+                                formatter.reformat(start, end);
+
+                                // Restore the line
+                                int pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
+                                if (pos >= 0) {
+                                    caret.setDot(pos);
+                                }
+                            } catch (BadLocationException e) {
+                                //failed to format
                             }
-                        } catch (BadLocationException e) {
-                            //failed to format
                         }
-                    }
-                });
-                target.setCursor(origCursor);
+                    });
+                } finally {
+                    formatter.unlock();
+                }
 
-            }
-        }
+                target.setCursor(origCursor);
+	    }
+	}
     }
 
     public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
@@ -372,8 +371,7 @@ public class CCKit extends NbEditorKit {
                         }
                         doc.insertString(end, "\n" + insString, null); // NOI18N
                         // Lock does not need because method is invoked from BaseKit that already lock indent.
-                        Indent indent = Indent.get(doc);
-                        indent.reindent(end + 1);
+                        Indent.get(doc).indentNewLine(end);
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }

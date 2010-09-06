@@ -569,7 +569,7 @@ public final class EarProject implements Project, AntProjectListener {
                         "Cannot resolve " + EarProjectProperties.META_INF + // NOI18N
                         " property for " + this); // NOI18N
             }
-            return null;
+            metaInfProp = "src/conf"; // NOI18N
         }
         FileObject metaInfFO = null;
         try {

@@ -52,7 +52,7 @@ import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
  *
  * @author marekfukala
  */
-public final class DefaultHtmlParseResult extends DefaultParseResult implements HtmlParseResult {
+public abstract class DefaultHtmlParseResult extends DefaultParseResult implements HtmlParseResult {
 
     private HtmlVersion version;
 

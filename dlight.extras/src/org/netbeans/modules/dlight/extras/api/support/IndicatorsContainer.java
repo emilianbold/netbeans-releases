@@ -98,6 +98,7 @@ public final class IndicatorsContainer extends JPanel
         vScrollBar.setVisible(false);
         indicatorsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         indicatorsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        indicatorsScrollPane.getVerticalScrollBar().setUnitIncrement(10);
         indicatorsScrollPane.getViewport().addChangeListener(this);
 
         timeLabel = new JLabel(TIME_FORMATTER.format(0), JLabel.CENTER);

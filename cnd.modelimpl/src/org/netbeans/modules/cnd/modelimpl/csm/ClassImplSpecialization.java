@@ -78,7 +78,7 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
 
-        initScope(scope, ast);
+        initScope(scope);
         if (register) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         } else {

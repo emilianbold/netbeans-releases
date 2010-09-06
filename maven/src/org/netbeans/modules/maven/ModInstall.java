@@ -203,7 +203,7 @@ public class ModInstall extends ModuleInstall implements ErrorHandler, EntityRes
                                     getRepositoryInfoById(rep.getId()) == null) {
                                 RepositoryInfo ri = new RepositoryInfo(rep.getId(),
                                         RepositoryPreferences.TYPE_NEXUS,
-                                        rep.getId() + " " + NbBundle.getMessage(ModInstall.class, "LBL_REPOSITORY"),//NOI18N
+                                        rep.getId(),
                                         null, rep.getUrl(), null);
                                 RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(ri);
                             }

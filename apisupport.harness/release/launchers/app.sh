@@ -17,7 +17,7 @@ while [ -h "$PRG" ]; do
 done
 
 progdir=`dirname "$PRG"`
-APPNAME=`basename "$0"`
+APPNAME=`basename "$PRG"`
 
 if [ -f "$progdir/../etc/$APPNAME".conf ] ; then
     . "$progdir/../etc/$APPNAME".conf

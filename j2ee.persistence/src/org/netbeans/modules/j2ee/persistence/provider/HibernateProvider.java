@@ -66,7 +66,7 @@ class HibernateProvider extends Provider{
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(HibernateProvider.class, "LBL_Hibernate") + (getVersion()!=null ? "(JPA "+getVersion()+")" : ""); //NOI18N
+        return NbBundle.getMessage(HibernateProvider.class, "LBL_Hibernate") + (getVersion()!=null ? " (JPA "+getVersion()+")" : ""); //NOI18N
     }
     
     @Override

@@ -175,11 +175,7 @@ public class WLServerLibrarySupport {
     }
 
     public Set<WLServerLibrary> getDeployedLibraries() {
-        FileObject domain = FileUtil.toFileObject(domainPath);
-        FileObject domainConfig = null;
-        if (domain != null) {
-            domainConfig = domain.getFileObject("config/config.xml"); // NOI18N
-        }
+        FileObject domainConfig = WLPluginProperties.getDomainConfigFileObject(domainPath);
         if (domainConfig == null) {
             return Collections.emptySet();
         }
@@ -188,38 +184,42 @@ public class WLServerLibrarySupport {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
             LibraryHandler handler = new LibraryHandler(domainPath);
-            parser.parse(new BufferedInputStream(domainConfig.getInputStream()), handler);
+            InputStream is = new BufferedInputStream(domainConfig.getInputStream());
+            try {
+                parser.parse(is, handler);
 
-            Set<WLServerLibrary> libs = new HashSet<WLServerLibrary>();
-            for (Library library : handler.getLibraries()) {
-                File file = library.resolveFile();
-                WLServerLibrary parsed = readFromFile(file);
-                if (parsed != null) {
-                    // checking the version - maybe we can avoid it
-                    if (parsed.getSpecificationVersion() != library.getSpecificationVersion()
-                        && (parsed.getSpecificationVersion() == null
-                                || !parsed.getSpecificationVersion().equals(library.getSpecificationVersion()))) {
-                        LOGGER.log(Level.INFO, "Inconsistent specification version for {0}", library.getName());
-                    } else if (parsed.getImplementationVersion() != library.getImplementationVersion()
-                        && (parsed.getImplementationVersion() == null
-                                || !parsed.getImplementationVersion().equals(library.getImplementationVersion()))) {
-                        LOGGER.log(Level.INFO, "Inconsistent implementation version for {0}", library.getName());
+                Set<WLServerLibrary> libs = new HashSet<WLServerLibrary>();
+                for (Library library : handler.getLibraries()) {
+                    File file = library.resolveFile();
+                    WLServerLibrary parsed = readFromFile(file);
+                    if (parsed != null) {
+                        // checking the version - maybe we can avoid it
+                        if (parsed.getSpecificationVersion() != library.getSpecificationVersion()
+                            && (parsed.getSpecificationVersion() == null
+                                    || !parsed.getSpecificationVersion().equals(library.getSpecificationVersion()))) {
+                            LOGGER.log(Level.INFO, "Inconsistent specification version for {0}", library.getName());
+                        } else if (parsed.getImplementationVersion() != library.getImplementationVersion()
+                            && (parsed.getImplementationVersion() == null
+                                    || !parsed.getImplementationVersion().equals(library.getImplementationVersion()))) {
+                            LOGGER.log(Level.INFO, "Inconsistent implementation version for {0}", library.getName());
+                        } else {
+                            libs.add(new WLServerLibrary(
+                                    parsed.getSpecificationTitle(), parsed.getSpecificationVersion(),
+                                    parsed.getImplementationTitle(), parsed.getImplementationVersion(),
+                                    library.getTarget(), library.getName()));
+                        }
                     } else {
+                        LOGGER.log(Level.INFO, "Source path does not exists for {0}", library.getName());
+                        // XXX we use name as spec title
                         libs.add(new WLServerLibrary(
-                                parsed.getSpecificationTitle(), parsed.getSpecificationVersion(),
-                                parsed.getImplementationTitle(), parsed.getImplementationVersion(),
-                                library.getTarget(), library.getName()));
+                                null, library.getSpecificationVersion(),
+                                null, library.getImplementationVersion(), library.getTarget(), library.getName()));
                     }
-                } else {
-                    LOGGER.log(Level.INFO, "Source path does not exists for {0}", library.getName());
-                    // XXX we use name as spec title
-                    libs.add(new WLServerLibrary(
-                            null, library.getSpecificationVersion(),
-                            null, library.getImplementationVersion(), library.getTarget(), library.getName()));
                 }
+                return libs;
+            } finally {
+                is.close();
             }
-
-            return libs;
         } catch (IOException ex) {
             return Collections.emptySet();
         } catch (ParserConfigurationException ex) {

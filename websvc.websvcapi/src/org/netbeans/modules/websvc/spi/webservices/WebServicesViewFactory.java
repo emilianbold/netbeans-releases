@@ -60,7 +60,7 @@ public final class WebServicesViewFactory {
     }
 
     public static WebServicesView createWebServicesView(WebServicesViewImpl spiWebServicesView) {
-        return WebServicesViewAccessor.DEFAULT.createWebServicesView(spiWebServicesView);
+        return WebServicesViewAccessor.getDefault().createWebServicesView(spiWebServicesView);
     }
 	
 }

@@ -49,12 +49,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileSystemView;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.UserCancelException;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -64,6 +63,13 @@ import org.openide.windows.WindowManager;
  * @author Jesse Glick
  * @author Marian Petras
  */
+@ActionRegistration(
+    displayName="#LBL_openFile", 
+    iconBase="org/netbeans/modules/openfile/openFile.png",
+    iconInMenu=false
+)
+@ActionID(category="System", id="org.netbeans.modules.openfile.OpenFileAction")
+@ActionReference(path="Menu/File", position=800)
 public class OpenFileAction implements ActionListener {
 
     /** stores the last current directory of the file chooser */

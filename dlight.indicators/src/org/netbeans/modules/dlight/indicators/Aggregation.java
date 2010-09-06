@@ -48,23 +48,29 @@ package org.netbeans.modules.dlight.indicators;
  * @author Alexey Vladykin
  */
 public enum Aggregation {
+
     /**
      * First item of a series.
      */
     FIRST,
-
     /**
      * Last item of a series.
      */
     LAST,
-
     /**
      * Sum of all items in a series.
      */
     SUM,
-
     /**
      * Average value of items in a series.
      */
-    AVERAGE
+    AVERAGE,
+    /**
+     * Max value of items in a series.
+     */
+    MAX,
+    /**
+     * Min value of items in a series.
+     */
+    MIN
 }

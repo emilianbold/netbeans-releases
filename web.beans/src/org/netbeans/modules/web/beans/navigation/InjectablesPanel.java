@@ -128,9 +128,11 @@ public class InjectablesPanel extends javax.swing.JPanel {
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
     
-    public InjectablesPanel(Result result,  List<AnnotationMirror> bindings , 
-            CompilationController controller, MetadataModel<WebBeansModel> model ) 
+    public InjectablesPanel(VariableElement var,  List<AnnotationMirror> bindings , 
+            CompilationController controller, MetadataModel<WebBeansModel> model,
+            JavaHierarchyModel treeModel ) 
     {
+        myJavaHierarchyModel = treeModel;
         initComponents();
 
         // disable filtering for now: list of injectables will be always short
@@ -153,7 +155,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myShowFQNToggleButton.setSelected(
                 WebBeansNavigationOptions.isShowFQN());
 
-        initInjectionPoint( result.getVariable(), bindings , controller );
+        initInjectionPoint( var, bindings , controller );
 
         myJavaHierarchyTree.getSelectionModel().setSelectionMode(
                 TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -161,9 +163,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myJavaHierarchyTree.setShowsRootHandles(true);
         myJavaHierarchyTree.setCellRenderer(new JavaTreeCellRenderer());
 
-        javaHierarchyModel = new InjectablesModel(result, 
-                controller, model );
-        myJavaHierarchyTree.setModel(javaHierarchyModel);
+        myJavaHierarchyTree.setModel(myJavaHierarchyModel);
 
         registerKeyboardAction(
                 new ActionListener() {
@@ -227,7 +227,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
     }
     
     private void leaveBusy() {
-        myJavaHierarchyTree.setModel(javaHierarchyModel);
+        myJavaHierarchyTree.setModel(myJavaHierarchyModel);
         JRootPane rootPane = SwingUtilities.getRootPane(InjectablesPanel.this);
         if (rootPane != null) {
             rootPane.setCursor(Cursor.getDefaultCursor());
@@ -254,7 +254,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
             new Runnable() {
                 public void run() {
                     try {
-                        javaHierarchyModel.update();
+                        myJavaHierarchyModel.update();
                     } finally {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -603,7 +603,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myShowFQNToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
-                javaHierarchyModel.fireTreeNodesChanged();
+                myJavaHierarchyModel.fireTreeNodesChanged();
                 reloadInjectionPoint();
                 showBindings();
             }
@@ -958,7 +958,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
     private String myFqnBindings;
     private String myShortBindings;
     
-    private InjectablesModel javaHierarchyModel;
+    private JavaHierarchyModel myJavaHierarchyModel;
     
     private DocumentationScrollPane myDocPane;
     private MetadataModel<WebBeansModel> myModel;

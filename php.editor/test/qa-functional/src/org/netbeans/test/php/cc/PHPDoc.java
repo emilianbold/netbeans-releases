@@ -66,8 +66,8 @@ public class PHPDoc extends cc {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(PHPDoc.class).addTest(
                 "automaticCommentGenerationOnFunction",
-                "automaticCommentGenerationOnClassVariable", 
-                "automaticCommentGenerationOnGlobalVariable")
+                "automaticCommentGenerationOnClassVariable") 
+//                "automaticCommentGenerationOnGlobalVariable")
                 .enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
@@ -275,10 +275,10 @@ public class PHPDoc extends cc {
                 + "/**\n"
                 + " *\n"
                 + " * @global <type> $_myvar\n"
-                + " * @staticvar <type> $staticvar\n"
+                + " * @staticvar int $staticvar\n"
                 + " * @param <type> $param1\n"
                 + " * @param <type> $param2\n"
-                + " * @return <type> \n"
+                + " * @return int \n"
                 + " */\n"
                 + "function firstFunc($param1, $param2 = 'optional') {\n"
                 + "static $staticvar = 7;\n"

@@ -333,7 +333,19 @@ public class Actions {
     //
 
     
-    /** Creates new action which is always enabled. 
+    /** Creates new action which is always enabled. Rather than using this method
+     * directly, use {@link ActionRegistration} annotation:
+     * <pre>
+     * {@link ActionRegistration @ActionRegistration}(displayName="#key")
+     * {@link ActionID @ActionID}(id="your.pkg.action.id", category="Tools")
+     * public final class Always implements {@link ActionListener} {
+     *   public Always() {
+     *   }
+     *   public void actionPerformed({@link ActionEvent} e) {
+     *    // your code
+     *   }
+     * }
+     * </pre>
      * This method can also be used from 
      * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">XML Layer</a> 
      * directly by following XML definition:
@@ -427,7 +439,24 @@ public class Actions {
 
     /** Creates new "callback" action. Such action has an assigned key
      * which is used to find proper delegate in {@link ActionMap} of currently
-     * active component.
+     * active component. You can use {@link ActionRegistration} annotation to 
+     * register your action:
+     * <pre>
+     * {@link ActionRegistration @ActionRegistration}(displayName="#Key", <b>key="KeyInActionMap"</b>)
+     * {@link ActionID @ActionID}(category="Tools", id = "action.pkg.ClassName")
+     * public final class Fallback implements {@link ActionListener} {
+     *   public void actionPerformed({@link ActionEvent} e) {
+     *    // your code
+     *   }
+     * }
+     * </pre>
+     * If you want to create callback action without any fallback implementation,
+     * you can annotate any string constant:
+     * <pre>
+     * {@link ActionRegistration @ActionRegistration}(displayName = "#Key")
+     * {@link ActionID @ActionID}(category = "Edit", id = "my.field.action")
+     * public static final String ACTION_MAP_KEY = <b>"KeyInActionMap"</b>;
+     * </pre>
      * <p>
      * This action can be lazily declared in a
      * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
@@ -478,7 +507,40 @@ public class Actions {
      * selection for a given type and enables if instances of given type are
      * present. Common interfaces to watch for include {@link Openable},
      * {@link Editable}, {@link Closable}, {@link Viewable}, and any interfaces
-     * defined and exposed by various other APIs.
+     * defined and exposed by various other APIs. Use {@link ActionRegistration} 
+     * annotation to register your action::
+     * <pre>
+     * {@link ActionRegistration @ActionRegistration}(displayName="#Key")
+     * {@link ActionID @ActionID}(category="Tools", id = "action.pkg.YourClass")
+     * public final class YourClass implements {@link ActionListener} {
+     *    Openable context;
+     *
+     *    public YourClass(Openable context) {
+     *      this.context = context;
+     *    }
+     *
+     *    public void actionPerformed({@link ActionEvent} ev) {
+     *       // do something with context
+     *    }
+     * }
+     * </pre>
+     * In case you are interested in creating multi selection action, just
+     * change parameters of your constructor:
+     * <pre>
+     * {@link ActionRegistration @ActionRegistration}(displayName="#Key")
+     * {@link ActionID @ActionID}(category="Tools", id = "action.pkg.YourClass")
+     * public final class YourClass implements {@link ActionListener} {
+     *    List&lt;Openable&gt; context;
+     *
+     *    public YourClass(List&lt;Openable&gt; context) {
+     *      this.context = context;
+     *    }
+     *
+     *    public void actionPerformed({@link ActionEvent} ev) {
+     *       // do something with context
+     *    }
+     * }
+     * </pre>
      * <p>
      * Actions of this kind can be declared in
      * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">

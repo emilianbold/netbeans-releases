@@ -55,13 +55,21 @@ public abstract class WebServicesViewAccessor {
     public static WebServicesViewAccessor DEFAULT;
 
     // force loading of WebServicesView class. That will set DEFAULT variable.
-    static {
+    public static WebServicesViewAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        // invokes static initializer of WebServicesView.class
+        // that will assign value to the DEFAULT field above
         Class c = WebServicesView.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
         }
+        assert DEFAULT != null : "The DEFAULT field must be initialized";
+        return DEFAULT;
     }
     
     public abstract WebServicesView createWebServicesView(WebServicesViewImpl spiWebServicesView);

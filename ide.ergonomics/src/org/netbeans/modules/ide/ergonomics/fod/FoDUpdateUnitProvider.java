@@ -145,7 +145,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
             if (prefCnb != null && prefCnb.equals(mi.getCodeNameBase())) {
                 preferred = mi;
             }
-            if (justKits.contains(mi.getCodeNameBase())) {
+            if (codeNames.contains(mi.getCodeNameBase())) {
                 processed.remove(mi);
                 if (FeatureManager.showInAU(mi)) {
                     StringBuilder sb = new StringBuilder();

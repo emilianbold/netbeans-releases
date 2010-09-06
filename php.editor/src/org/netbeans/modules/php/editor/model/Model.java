@@ -44,10 +44,10 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 
 /**
@@ -55,10 +55,10 @@ import org.netbeans.modules.php.editor.parser.api.Utils;
  */
 public final class Model {
     private ModelVisitor modelVisitor;
-    private final ParserResult info;
+    private final PHPParseResult info;
     private OccurencesSupport occurencesSupport;
 
-    Model(ParserResult info) {
+    Model(PHPParseResult info) {
         this.info = info;
     }
 
@@ -76,7 +76,8 @@ public final class Model {
     }
 
     public IndexScope getIndexScope() {
-        return ModelVisitor.getIndexScope(info);
+        final ModelVisitor visitor = getModelVisitor();
+        return visitor.getIndexScope();
     }
 
     public OccurencesSupport getOccurencesSupport(final OffsetRange range) {

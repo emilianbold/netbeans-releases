@@ -85,7 +85,7 @@ public class RelatedCMPHelper {
     private boolean cmpFieldsInInterface;
     private boolean generateFinderMethods;
     private boolean generateJAXBAnnotations;
-    private boolean useColumnNamesInRelationships;
+    private boolean useColumnNamesInRelationships = true;
 
 
     private DbSchemaEjbGenerator generator;

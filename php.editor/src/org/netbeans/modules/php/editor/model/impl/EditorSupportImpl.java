@@ -86,6 +86,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = EditorSupport.class)
 public class EditorSupportImpl implements EditorSupport {
 
+    @Override
     public Collection<PhpClass> getClasses(FileObject fo) {
         final List<PhpClass> retval = new ArrayList<PhpClass>();
         Source source = Source.create(fo);
@@ -112,12 +113,13 @@ public class EditorSupportImpl implements EditorSupport {
         return retval;
     }
 
+    @Override
     public Collection<Pair<FileObject, Integer>> filesForClass(FileObject sourceRoot, PhpClass phpClass) {
         if (sourceRoot.isData()) {
             throw new IllegalArgumentException("sourceRoot must be a folder");
         }
         final List<Pair<FileObject, Integer>> retval = new ArrayList<Pair<FileObject, Integer>>();
-        Index indexQuery = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(sourceRoot));
+        Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(sourceRoot));
         Set<ClassElement> classes = indexQuery.getClasses(NameKind.exact(phpClass.getFullyQualifiedName()));
         for (ClassElement indexedClass : classes) {
             FileObject fo = indexedClass.getFileObject();

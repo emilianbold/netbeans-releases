@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
@@ -82,13 +83,21 @@ public class ProgressObjectUtil {
     public static boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) throws TimedOutException {
         assert po != null;
         assert ui != null;
+        // There may be a problem if server reports RELEASED as final state
+        // however there is no way how to handle it here, because some POs has
+        // RELEASED as initial state
         final AtomicBoolean completed = new AtomicBoolean();
         ui.setProgressObject(po);
         try {
             final CountDownLatch progressFinished = new CountDownLatch(1);
             ProgressListener listener = new ProgressListener() {
+                @Override
                 public void handleProgressEvent(ProgressEvent progressEvent) {
                     DeploymentStatus status = progressEvent.getDeploymentStatus();
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST, "Received progress state {0} from {1}",
+                                new Object[] {status.getState(), progressEvent});
+                    }
                     if (status.isCompleted()) {
                         completed.set(true);
                     }
@@ -97,6 +106,7 @@ public class ProgressObjectUtil {
                     }
                 }
             };
+            LOGGER.log(Level.FINEST, "Adding progress listener {0}", listener);
             po.addProgressListener(listener);
             try {
                 // the completion event might have arrived before the progress listener 

@@ -66,7 +66,9 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.util.OpenBitSet;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.modules.java.source.usages.ResultConvertor.Stop;
 import org.openide.util.Parameters;
 
 /**
@@ -183,7 +185,15 @@ class QueryUtil {
         }
     }
     
+    static Pair<ResultConvertor<Term,String>,Term> createPackageFilter(
+            final @NullAllowed String prefix,
+            final boolean directOnly) {
+        final Term startTerm = DocumentUtil.packageNameTerm(prefix);
+        final ResultConvertor<Term,String> filter = new PackageFilter(startTerm, directOnly);
+        return Pair.of(filter,startTerm);
+    }
     
+    // <editor-fold defaultstate="collapsed" desc="Private implementation">
     private static abstract class DocumentVisitor {
 
         public void generate(IndexReader reader, TermEnum enumerator) throws IOException {
@@ -366,5 +376,42 @@ class QueryUtil {
         }
         
     }
+    
+    private static class PackageFilter implements ResultConvertor<Term, String> {
+        
+        private static final Stop STOP = new Stop();
+        
+        private final boolean directOnly;
+        private final boolean all;
+        private final String fieldName;
+        private final String value;
+        
+        PackageFilter(final @NonNull Term startTerm, final boolean directOnly) {
+            this.fieldName = startTerm.field();
+            this.value = startTerm.text();
+            this.directOnly = directOnly;
+            this.all = value.length() == 0;
+        }
+        
+        @Override
+        public String convert(Term currentTerm) throws Stop {
+            if (fieldName != currentTerm.field()) {
+                throw STOP;
+            }
+            String currentText = currentTerm.text();
+            if (all || currentText.startsWith(value)) {
+                if (directOnly) {
+                    int index = currentText.indexOf('.', value.length());    //NOI18N
+                    if (index>0) {
+                        currentText = currentText.substring(0,index);
+                    }
+                }
+                return currentText;
+            }
+            return null;
+        }
+        
+    }
+    //</editor-fold>
             
 }

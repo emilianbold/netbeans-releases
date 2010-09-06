@@ -83,9 +83,9 @@ public class BuildTestSuite extends CndBaseTestSuite {
              RfsGnuRemoteBuildTestCase.class,
              RfsSunStudioRemoteBuildTestCase.class,
              RemoteBuildSamplesTestCase.class,
-             RemoteBuildMakefileTestCase.class);
+             RemoteBuildMakefileTestCase.class,
+             RemoteBuildLinksTestCase.class);
     }
-
 
     private BuildTestSuite(String name, Class... testClasses) {
         super(name, PLATFORMS_SECTION, testClasses);

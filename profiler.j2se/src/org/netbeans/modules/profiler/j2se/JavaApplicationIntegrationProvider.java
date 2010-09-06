@@ -229,7 +229,7 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
 
         // Note about export vs. setenv on UNIXes
         hints.addHint(MessageFormat.format(MANUAL_REMOTE_HINT_MESSAGE,
-                                           new Object[] { IntegrationUtils.getRemoteProfileCommandString(targetOS) }));
+                                           new Object[] { IntegrationUtils.getRemoteProfileCommandString(targetOS, getTargetJava()) }));
 
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);

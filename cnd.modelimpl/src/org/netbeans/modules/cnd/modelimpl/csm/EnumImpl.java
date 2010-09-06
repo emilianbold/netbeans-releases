@@ -68,9 +68,14 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         super(findName(ast), file, ast);
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
+
+    private EnumImpl(String name, String qName, CsmFile file, int startOffset, int endOffset) {
+        super(name, qName, file, startOffset, endOffset);
+        enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
+    }
     
     private void init(CsmScope scope, AST ast, boolean register) {
-	initScope(scope, ast);
+	initScope(scope);
         initQualifiedName(scope, ast);
         if (register) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
@@ -87,6 +92,31 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
 	EnumImpl impl = new EnumImpl(ast, file);
 	impl.init(scope, ast, register);
 	return impl;
+    }
+
+    public static EnumImpl create(String name, String qName,CsmFile file, CsmScope scope, int startOffset, int endOffset, boolean register) {
+	EnumImpl impl = new EnumImpl(name, qName, file, startOffset, endOffset);
+	impl.initScope(scope);
+        if (register) {
+            RepositoryUtils.hang(impl); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(impl);
+        }
+        if (register) {
+            impl.register(scope, true);
+        }
+	return impl;
+    }
+
+    void addEnumerator(String name, int startOffset, int endOffset, boolean register) {
+        EnumeratorImpl ei = new EnumeratorImpl(this, name, startOffset, endOffset);
+        if (register) {
+            RepositoryUtils.put(ei);
+        } else {
+            Utils.setSelfUID(ei);
+        }
+        CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
+        enumerators.add(uid);
     }
     
     private static String findName(AST ast){

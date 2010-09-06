@@ -60,7 +60,7 @@ public final class JAXWSClientViewFactory {
     }
 
     public static JAXWSClientView createJAXWSClientView(JAXWSClientViewImpl spiWebServicesClientView) {
-        return JAXWSClientViewAccessor.DEFAULT.createJAXWSClientView(spiWebServicesClientView);
+        return JAXWSClientViewAccessor.getDefault().createJAXWSClientView(spiWebServicesClientView);
     }
 	
 }

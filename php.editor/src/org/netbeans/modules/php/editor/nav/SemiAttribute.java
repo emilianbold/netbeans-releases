@@ -741,7 +741,7 @@ public class SemiAttribute extends DefaultVisitor {
                     if (el != null) {
                         retval.add(el);
                     } else {
-                        Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+                        Index index = ElementQueryFactory.getIndexQuery(info);
                         for (ClassElement m : index.getClasses(NameKind.prefix(fName))) {
                             String idxName = m.getName();
                             el = global.enterWrite(idxName, Kind.CLASS, m);
@@ -763,7 +763,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     public void enterAllIndexedClasses() {
         if (name2ElementCache == null) {
-            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            Index index = ElementQueryFactory.getIndexQuery(info);
             name2ElementCache = new LinkedList<PhpElement>();
             name2ElementCache.addAll(index.getClasses(NameKind.empty()));
         }
@@ -1173,7 +1173,7 @@ public class SemiAttribute extends DefaultVisitor {
             if (el != null) {
                 return el;
             }
-            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            Index index = ElementQueryFactory.getIndexQuery(info);
             int attrs = PhpModifiers.ALL_FLAGS;
             switch(k) {
                 case CONST:
@@ -1415,7 +1415,7 @@ public class SemiAttribute extends DefaultVisitor {
                 el = name2El.get(name);
             }
             if (el == null) {
-                Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+                Index index = ElementQueryFactory.getIndexQuery(info);
                 switch(k) {
                     case CONST:
                     for (ConstantElement m : index.getConstants(NameKind.prefix(name))) {

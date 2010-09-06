@@ -46,6 +46,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,9 +54,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.apache.maven.model.Model;
-import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.build.model.ModelLineage;
-import org.apache.maven.project.build.model.ModelLineageIterator;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.actions.EditAction;
 import org.openide.cookies.EditCookie;
@@ -123,7 +122,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             // can be null for stuff in jars?
             if (file != null) {
                 try {
-                    ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder(), false);
+                    List<Model> lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder());
                     final Children ch = new PomChildren(lin);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -131,7 +130,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                            explorerManager.setRootContext(new AbstractNode(ch));
                         } 
                     });
-                } catch (ProjectBuildingException ex) {
+                } catch (ModelBuildingException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -226,41 +225,42 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         return an;
     }
     
-    private static class PomChildren extends Children.Keys<ModelLineage> {
+    private static class PomChildren extends Children.Keys<List<Model>> {
 
-        public PomChildren(ModelLineage lineage) {
-            setKeys(new ModelLineage[] {lineage});
+        public PomChildren(List<Model> lineage) {
+            setKeys(new List[] {lineage});
         }
         
         @Override
-        protected Node[] createNodes(ModelLineage key) {
-            ModelLineageIterator it = key.reversedLineageIterator();
+        protected Node[] createNodes(List<Model> key) {
+            Iterator<Model> it = key.listIterator();
             List<POMNode> nds = new ArrayList<POMNode>();
             String parentVersion = null;
             while (it.hasNext()) {
-                it.next();
-                Model mdl = it.getModel();
-                File fl = FileUtil.normalizeFile(it.getPOMFile());
-                FileObject fo = FileUtil.toFileObject(fl);
-                InstanceContent ic = new InstanceContent();
-                if (fo != null) {
-                    try {
-                        DataObject dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
-                        if (dobj != null) {
-                            ic.add(dobj);
-                            EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
-                            if (ec != null) {
-                                ic.add(ec);
+                Model mdl = it.next();
+                File fl = mdl.getPomFile();
+                if (fl != null) {
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
+                    InstanceContent ic = new InstanceContent();
+                    if (fo != null) {
+                        try {
+                            DataObject dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
+                            if (dobj != null) {
+                                ic.add(dobj);
+                                EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
+                                if (ec != null) {
+                                    ic.add(ec);
+                                }
                             }
+                        } catch (DataObjectNotFoundException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
-                }
-                
-                nds.add(0, new POMNode(fl, mdl, new AbstractLookup(ic), parentVersion));
-                if (mdl.getVersion() != null) {
-                    parentVersion = mdl.getVersion();
+
+                    nds.add(0, new POMNode(fl, mdl, new AbstractLookup(ic), parentVersion));
+                    if (mdl.getVersion() != null) {
+                        parentVersion = mdl.getVersion();
+                    }
                 }
             }
             return nds.toArray(new Node[0]);

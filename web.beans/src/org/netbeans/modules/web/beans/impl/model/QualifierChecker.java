@@ -68,9 +68,22 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
     private static final String QUALIFIER_TYPE_ANNOTATION=
         "javax.inject.Qualifier";                               // NOI18N
     
+    QualifierChecker(){
+        this( false );
+    }
+    
+    QualifierChecker( boolean event ){
+        isEvent = event;
+    }
+    
     static QualifierChecker get() {
         // could be changed to cached ThreadLocal access
         return new QualifierChecker();
+    }
+    
+    static QualifierChecker get(boolean event) {
+        // could be changed to cached ThreadLocal access
+        return new QualifierChecker(event);
     }
     
     /* (non-Javadoc)
@@ -126,19 +139,40 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
                 } , null);
         
         parser.parse( types.get(Target.class.getCanonicalName() ));
-        if ( elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()) &&
-                        elementTypes.contains(ElementType.PARAMETER.toString())&&
-                        elementTypes.contains( ElementType.TYPE.toString()))
-        {
-            hasRequiredTarget = true;
+        if ( isEvent ){
+            boolean hasFieldParameterTarget = elementTypes.contains(
+                    ElementType.FIELD.toString()) &&
+                        elementTypes.contains(ElementType.PARAMETER.toString());
+            if ( !hasFieldParameterTarget){
+                hasRequiredTarget = false;
+            }
+            else {
+                hasRequiredTarget = elementTypes.contains( 
+                        ElementType.METHOD.toString()) &&
+                                elementTypes.contains( ElementType.TYPE.toString());
+            }
+            if (!hasRequiredTarget) {
+                getLogger().log(Level.WARNING,
+                        "Annotation "+getElement().getQualifiedName()+
+                        "declared as Qualifier but has wrong target values." +
+                        " Correct target values are {METHOD, FIELD, PARAMETER, TYPE}" +
+                        " or {FIELD, PARAMETER}");// NOI18N
+            }
         }
         else {
-            getLogger().log(Level.WARNING,
-                    "Annotation "+getElement().getQualifiedName()+
-                    "declared as Qualifier but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, PARAMETER, TYPE})");// NOI18N
+            hasRequiredTarget = elementTypes.contains( 
+                    ElementType.METHOD.toString()) &&
+                        elementTypes.contains(ElementType.FIELD.toString()) &&
+                            elementTypes.contains(ElementType.PARAMETER.toString())&&
+                                elementTypes.contains( ElementType.TYPE.toString());
+            if (!hasRequiredTarget) {
+                getLogger().log(Level.WARNING,
+                        "Annotation "+getElement().getQualifiedName()+
+                        "declared as Qualifier but has wrong target values." +
+                        " Correct target values are {METHOD, FIELD, PARAMETER, TYPE}");// NOI18N
+            }
         }
+        
         return hasRequiredTarget;
     }
     private static final Set<String> BUILT_IN_QUALIFIERS = new HashSet<String>();
@@ -150,4 +184,5 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
         BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.NAMED_QUALIFIER_ANNOTATION);
     }
 
+    private boolean isEvent;
 }

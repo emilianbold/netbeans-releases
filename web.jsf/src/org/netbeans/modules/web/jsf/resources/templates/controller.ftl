@@ -28,12 +28,24 @@ package ${controllerPackageName};
 import ${entityFullClassName};
 import ${controllerPackageName}.util.JsfUtil;
 import ${controllerPackageName}.util.PaginationHelper;
+<#if ejbClassName??>
 import ${ejbFullClassName};
+<#elseif jpaControllerClassName??>
+import ${jpaControllerFullClassName};
+</#if>
 
+import java.io.Serializable;
 import java.util.ResourceBundle;
+<#if isInjected?? && isInjected==true>
+import javax.annotation.Resource;
+</#if>
+<#if ejbClassName??>
 import javax.ejb.EJB;
+</#if>
+<#if managedBeanName??>
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+</#if>
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -41,14 +53,36 @@ import javax.faces.convert.FacesConverter;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+<#if jpaControllerClassName??>
+<#if isInjected?? && isInjected==true>
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
+import javax.transaction.UserTransaction;
+<#else>
+import javax.persistence.Persistence;
+</#if>
+</#if>
 
+<#if managedBeanName??>
 @ManagedBean (name="${managedBeanName}")
 @SessionScoped
-public class ${controllerClassName} {
+</#if>
+public class ${controllerClassName} implements Serializable {
+
+<#if isInjected?? && isInjected==true>
+    @Resource
+    private UserTransaction utx = null;
+    @PersistenceUnit<#if persistenceUnitName??>(unitName = "${persistenceUnitName}")</#if>
+    private EntityManagerFactory emf = null;
+</#if>
 
     private ${entityClassName} current;
     private DataModel items = null;
+<#if ejbClassName??>
     @EJB private ${ejbFullClassName} ejbFacade;
+<#elseif jpaControllerClassName??>
+    private ${jpaControllerClassName} jpaController = null;
+</#if>
     private PaginationHelper pagination;
     private int selectedItemIndex;
 
@@ -63,22 +97,42 @@ public class ${controllerClassName} {
         return current;
     }
 
+<#if ejbClassName??>
     private ${ejbClassName} getFacade() {
         return ejbFacade;
     }
-
+<#elseif jpaControllerClassName??>
+    private ${jpaControllerClassName} getJpaController() {
+        if (jpaController == null) {
+<#if isInjected?? && isInjected==true>
+            jpaController = new ${jpaControllerClassName}(utx, emf);
+<#else>
+            jpaController = new ${jpaControllerClassName}(Persistence.createEntityManagerFactory(<#if persistenceUnitName??>"${persistenceUnitName}"</#if>));
+</#if>
+        }
+        return jpaController;
+    }
+</#if>
     public PaginationHelper getPagination() {
         if (pagination == null) {
             pagination = new PaginationHelper(10) {
 
                 @Override
                 public int getItemsCount() {
+<#if ejbClassName??>
                     return getFacade().count();
+<#elseif jpaControllerClassName??>
+                    return getJpaController().get${entityClassName}Count();
+</#if>
                 }
 
                 @Override
                 public DataModel createPageDataModel() {
+<#if ejbClassName??>
                     return new ListDataModel(getFacade().findRange(new int[]{getPageFirstItem(), getPageFirstItem()+getPageSize()}));
+<#elseif jpaControllerClassName??>
+                     return new ListDataModel(getJpaController().find${entityClassName}Entities(getPageSize(), getPageFirstItem() ));
+</#if>
                 }
             };
         }
@@ -104,7 +158,11 @@ public class ${controllerClassName} {
 
     public String create() {
         try {
+<#if ejbClassName??>
             getFacade().create(current);
+<#elseif jpaControllerClassName??>
+            getJpaController().create(current);
+</#if>
             JsfUtil.addSuccessMessage(ResourceBundle.getBundle("${bundle}").getString("${entityClassName}Created"));
             return prepareCreate();
         } catch (Exception e) {
@@ -121,7 +179,11 @@ public class ${controllerClassName} {
 
     public String update() {
         try {
+<#if ejbClassName??>
             getFacade().edit(current);
+<#elseif jpaControllerClassName??>
+            getJpaController().edit(current);
+</#if>
             JsfUtil.addSuccessMessage(ResourceBundle.getBundle("${bundle}").getString("${entityClassName}Updated"));
             return "View";
         } catch (Exception e) {
@@ -153,7 +215,11 @@ public class ${controllerClassName} {
 
     private void performDestroy() {
         try {
+<#if ejbClassName??>
             getFacade().remove(current);
+<#elseif jpaControllerClassName??>
+            getJpaController().destroy(current.${keyGetter}());
+</#if>
             JsfUtil.addSuccessMessage(ResourceBundle.getBundle("${bundle}").getString("${entityClassName}Deleted"));
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, ResourceBundle.getBundle("${bundle}").getString("PersistenceErrorOccured"));
@@ -161,7 +227,11 @@ public class ${controllerClassName} {
     }
 
     private void updateCurrentItem() {
+<#if ejbClassName??>
         int count = getFacade().count();
+<#elseif jpaControllerClassName??>
+        int count = getJpaController().get${entityClassName}Count();
+</#if>
         if (selectedItemIndex >= count) {
             // selected index cannot be bigger than number of items:
             selectedItemIndex = count-1;
@@ -171,7 +241,11 @@ public class ${controllerClassName} {
             }
         }
         if (selectedItemIndex >= 0) {
+<#if ejbClassName??>
             current = getFacade().findRange(new int[]{selectedItemIndex, selectedItemIndex+1}).get(0);
+<#elseif jpaControllerClassName??>
+            current = getJpaController().find${entityClassName}Entities(1, selectedItemIndex).get(0);
+</#if>
         }
     }
 
@@ -199,11 +273,19 @@ public class ${controllerClassName} {
     }
 
     public SelectItem[] getItemsAvailableSelectMany() {
+<#if ejbClassName??>
         return JsfUtil.getSelectItems(ejbFacade.findAll(), false);
+<#elseif jpaControllerClassName??>
+        return JsfUtil.getSelectItems(getJpaController().find${entityClassName}Entities(), false);
+</#if>
     }
 
     public SelectItem[] getItemsAvailableSelectOne() {
+<#if ejbClassName??>
         return JsfUtil.getSelectItems(ejbFacade.findAll(), true);
+<#elseif jpaControllerClassName??>
+        return JsfUtil.getSelectItems(getJpaController().find${entityClassName}Entities(), true);
+</#if>
     }
 
     @FacesConverter(forClass=${entityClassName}.class)
@@ -220,7 +302,11 @@ public class ${controllerClassName} {
             }
             ${controllerClassName} controller = (${controllerClassName})facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "${managedBeanName}");
+<#if ejbClassName??>
             return controller.ejbFacade.find(getKey(value));
+<#elseif jpaControllerClassName??>
+            return controller.getJpaController().find${entityClassName}(getKey(value));
+</#if>
         }
 
         ${keyType} getKey(String value) {

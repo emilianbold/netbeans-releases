@@ -687,6 +687,16 @@ public class CsmUtilities {
         return openAtElement(getDataObject(file), new PointOrOffsetable(new Point(line, column)));
     }
 
+    public static boolean openSource(FileObject fo, int line, int column) {
+        DataObject dob;
+        try {
+            dob = DataObject.find(fo);
+            return openAtElement(dob, new PointOrOffsetable(new Point(line, column)));
+        } catch (DataObjectNotFoundException ex) {
+            return false;
+        }
+    }
+
     public static boolean openSource(FileObject fo, int offset) {
         DataObject dob;
         try {

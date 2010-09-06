@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.ElementKind;
@@ -87,7 +88,20 @@ public class BinaryAnalyserTest extends NbTestCase {
                 File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
                 final Index index = LuceneIndex.create(FileUtil.toFile(indexDir));
-                BinaryAnalyser a = new BinaryAnalyser(index, getWorkDir());
+                BinaryAnalyser a = new BinaryAnalyser(new ClassIndexImpl.Writer() {
+                    @Override
+                    public void clear() throws IOException {
+                        index.clear();
+                    }
+                    @Override
+                    public void store(Map<Pair<String, String>, Object[]> refs, List<Pair<String, String>> topLevels) throws IOException {
+                        index.store(refs, topLevels);
+                    }
+                    @Override
+                    public void store(Map<Pair<String, String>, Object[]> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                        index.store(refs, toDelete);
+                    }
+                }, getWorkDir());
 
                 assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
 

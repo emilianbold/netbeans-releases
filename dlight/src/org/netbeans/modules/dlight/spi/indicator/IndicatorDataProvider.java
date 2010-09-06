@@ -41,19 +41,22 @@
  */
 package org.netbeans.modules.dlight.spi.indicator;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.Validateable;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  * Provided information for {@link org.netbeans.modules.dlight.spi.indicator.Indicator}.
@@ -69,17 +72,104 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     static {
         IndicatorDataProviderAccessor.setDefault(new IndicatorDataProviderAccessorImpl());
     }
-    private final Collection<IndicatorNotificationsListener> notificationListeners = new ArrayList<IndicatorNotificationsListener>();
+    private final CopyOnWriteArrayList<IndicatorNotificationsListener> notificationListeners =
+            new CopyOnWriteArrayList<IndicatorNotificationsListener>();
+    private final CopyOnWriteArrayList<ValidationListener> validationListeners =
+            new CopyOnWriteArrayList<ValidationListener>();
     private ServiceInfoDataStorage serviceInfoDataStorage;
+    private DLightTarget validatedTarget = null;
+    private ValidationStatus validationStatus;
+    private final String NAME;
 
-    private final void addIndicatorDataProviderListener(IndicatorNotificationsListener l) {
-        if (!notificationListeners.contains(l)) {
-            notificationListeners.add(l);
+    public IndicatorDataProvider(String name) {
+        this.NAME = name;
+        validationStatus = ValidationStatus.initialStatus();
+    }
+
+    private void addIndicatorDataProviderListener(IndicatorNotificationsListener l) {
+        notificationListeners.addIfAbsent(l);
+    }
+
+    private boolean removeIndicatorDataProviderListener(IndicatorNotificationsListener l) {
+        return notificationListeners.remove(l);
+    }
+
+    @Override
+    public final synchronized ValidationStatus validate(DLightTarget target) {
+        if (validationStatus.isValid()) {
+            return validationStatus;
+        }
+
+        ValidationStatus oldStatus = validationStatus;
+        ValidationStatus newStatus = doValidation(target);
+
+        notifyStatusChanged(oldStatus, newStatus);
+
+        validatedTarget = target;
+        validationStatus = newStatus;
+        return newStatus;
+    }
+
+    protected abstract ValidationStatus doValidation(DLightTarget target);
+
+    @Override
+    public final synchronized void invalidate() {
+        ValidationStatus oldStatus = validationStatus;
+        validationStatus = ValidationStatus.initialStatus();
+        validatedTarget = null;
+        notifyStatusChanged(oldStatus, validationStatus);
+    }
+
+    @Override
+    public final synchronized ValidationStatus getValidationStatus() {
+        return validationStatus;
+    }
+
+    @Override
+    public final void addValidationListener(ValidationListener listener) {
+        validationListeners.addIfAbsent(listener);
+    }
+
+    @Override
+    public final void removeValidationListener(ValidationListener listener) {
+        validationListeners.remove(listener);
+    }
+
+    private void notifyStatusChanged(
+            final ValidationStatus oldStatus,
+            final ValidationStatus newStatus) {
+
+        if (oldStatus.equals(newStatus)) {
+            return;
+        }
+
+        for (ValidationListener validationListener : validationListeners) {
+            validationListener.validationStateChanged(this, oldStatus, newStatus);
         }
     }
 
-    private final boolean removeIndicatorDataProviderListener(IndicatorNotificationsListener l) {
-        return notificationListeners.remove(l);
+    @Override
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        DLightLogger.assertTrue(validatedTarget == event.target,
+                "Validation was performed against another target"); // NOI18N
+
+        switch (event.state) {
+            case RUNNING:
+                targetStarted(event.target);
+                break;
+            case DONE:
+            case FAILED:
+            case STOPPED:
+            case TERMINATED:
+                targetFinished(event.target);
+                break;
+        }
+    }
+
+    protected void targetStarted(DLightTarget target) {
+    }
+
+    protected void targetFinished(DLightTarget target) {
     }
 
     /**
@@ -118,8 +208,6 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         return false;
     }
 
-  
-
     /**
      * Use this method to unsubscribe from this data provider
      * @param indicator indicator to unsubscribe
@@ -132,7 +220,6 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         for (IndicatorNotificationsListener l : notificationListeners) {
             l.reset();
         }
-
     }
 
     protected final void notifyIndicators(List<DataRow> data) {
@@ -153,14 +240,16 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
      * @return list of {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata}
      * this data provider can return information about
      */
-    public abstract Collection<DataTableMetadata> getDataTablesMetadata();
+    public abstract List<DataTableMetadata> getDataTablesMetadata();
 
     /**
      * Returns name which will be used to filter indicator data
      * provider which will be currently used
      * @return data provider name
      */
-    public abstract String getName();
+    public final String getName() {
+        return NAME;
+    }
 
     /**
      *  Initialize with service info data storage
@@ -178,17 +267,16 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         return serviceInfoDataStorage;
     }
 
-    private static final class IndicatorDataProviderAccessorImpl extends IndicatorDataProviderAccessor{
+    private static final class IndicatorDataProviderAccessorImpl extends IndicatorDataProviderAccessor {
 
         @Override
-        public void addIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l) {
+        public void addIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l) {
             provider.addIndicatorDataProviderListener(l);
         }
 
         @Override
-        public boolean removeIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l) {
+        public boolean removeIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l) {
             return provider.removeIndicatorDataProviderListener(l);
         }
-
     }
 }

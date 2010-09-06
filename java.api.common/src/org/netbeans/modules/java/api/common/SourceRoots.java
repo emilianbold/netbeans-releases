@@ -174,6 +174,7 @@ public final class SourceRoots extends Roots {
      */
     public String[] getRootNames() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            @Override
             public String[] run() {
                 synchronized (SourceRoots.this) {
                     if (sourceRootNames == null) {
@@ -188,6 +189,7 @@ public final class SourceRoots extends Roots {
     @Override
     public String[] getRootDisplayNames() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            @Override
             public String[] run() {
                 final String[] props = getRootProperties();
                 final String[] names = getRootNames();
@@ -203,6 +205,7 @@ public final class SourceRoots extends Roots {
     @Override
     public String[] getRootProperties() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            @Override
             public String[] run() {
                 synchronized (SourceRoots.this) {
                     if (sourceRootProperties == null) {
@@ -220,6 +223,7 @@ public final class SourceRoots extends Roots {
      */
     public FileObject[] getRoots() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
+            @Override
                 public FileObject[] run() {
                     synchronized (SourceRoots.this) {
                         // local caching
@@ -249,7 +253,13 @@ public final class SourceRoots extends Roots {
      * @return an array of {@link URL}.
      */
     public URL[] getRootURLs() {
+        synchronized (this) {
+            if (sourceRootURLs != null) {
+                return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
+            }
+        }
         return ProjectManager.mutex().readAccess(new Mutex.Action<URL[]>() {
+            @Override
             public URL[] run() {
                 synchronized (SourceRoots.this) {
                     // local caching
@@ -287,6 +297,7 @@ public final class SourceRoots extends Roots {
 
     private Map<URL, String> getRootsToProps() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Map<URL, String>>() {
+            @Override
             public Map<URL, String> run() {
                 Map<URL, String> result = new HashMap<URL, String>();
                 for (String srcProp : getRootProperties()) {
@@ -323,6 +334,7 @@ public final class SourceRoots extends Roots {
     public void putRoots(final URL[] roots, final String[] labels) {
         ProjectManager.mutex().writeAccess(
                 new Runnable() {
+                    @Override
                     public void run() {
                         Map<URL, String> oldRoots2props = getRootsToProps();
                         Map<URL, String> newRoots2lab = new HashMap<URL, String>();
@@ -524,18 +536,22 @@ public final class SourceRoots extends Roots {
             files.clear();
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             resetCache(false, evt.getPropertyName());
         }
 
+        @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
             resetCache(true, null);
         }
 
+        @Override
         public void propertiesChanged(AntProjectEvent ev) {
             // handled by propertyChange
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             FileObject parent = fe.getFile().getParent();
             if (parent != null) {
@@ -552,26 +568,31 @@ public final class SourceRoots extends Roots {
             resetCache(false, null);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             if (fe.getFile().isFolder()) {
                 fileFolderCreated(fe);
             }
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             // ignore, we are only interested in folders
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             // ignore, we are only interested in folders
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             if (fe.getFile().isFolder()) {
                 fileFolderCreated(fe);
             }
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // ignore
         }

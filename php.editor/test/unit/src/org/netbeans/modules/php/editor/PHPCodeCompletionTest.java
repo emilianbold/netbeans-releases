@@ -88,7 +88,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
 
     public void testVarScope2() throws Exception {
-        checkCompletion("testfiles/completion/lib/var_scope.php", "print $^", false);
+        checkCompletion("testfiles/completion/lib/var_scope.php", "print $glo^", false);
     }
 
     public void testCCOnMethods0() throws Exception {

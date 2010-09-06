@@ -400,6 +400,31 @@ public final class ConnectionManager {
     }
 
     /**
+     * Refresh the node corresponding to the specified connection in the
+     * Runtime tab.
+     *
+     * @param dbconn the connection to select
+     *
+     * @throws NullPointerException if the dbconn parameter is null
+     * @throws IllegalStateException if this connection is not added to the
+     *         ConnectionManager.
+     * @since 1.40
+     */
+    public void refreshConnectionInExplorer(DatabaseConnection dbconn) {
+        if (dbconn == null) {
+            throw new NullPointerException();
+        }
+        if (!ConnectionList.getDefault().contains(dbconn.getDelegate())) {
+            throw new IllegalStateException("This connection is not added to the ConnectionManager."); // NOI18N
+        }
+        try {
+            dbconn.getDelegate().refreshInExplorer();
+        } catch (DatabaseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
      * Registers a ConnectionListener.
      */
     public void addConnectionListener(ConnectionListener listener) {

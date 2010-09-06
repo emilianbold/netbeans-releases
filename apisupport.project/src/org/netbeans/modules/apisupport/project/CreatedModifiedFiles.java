@@ -393,7 +393,7 @@ public final class CreatedModifiedFiles {
      *               (in addition to: name, nameAndExt, user, date, time, and project.license)
      */
     public Operation createFileWithSubstitutions(String path,
-            FileObject content, Map<String,String> tokens) {
+            FileObject content, Map<String,? extends Object> tokens) {
         if (tokens == null) {
             throw new NullPointerException();
         }
@@ -403,13 +403,13 @@ public final class CreatedModifiedFiles {
         
         private String path;
         private FileObject content;
-        private Map<String,String> tokens;
+        private Map<String,? extends Object> tokens;
         
         public CreateFile(Project project, String path, FileObject content) {
             this(project, path, content, null);
         }
         
-        public CreateFile(Project project, String path, FileObject content, Map<String,String> tokens) {
+        public CreateFile(Project project, String path, FileObject content, Map<String,? extends Object> tokens) {
             super(project);
             this.path = path;
             if (content == null) {
@@ -951,7 +951,7 @@ public final class CreatedModifiedFiles {
     public Operation createLayerEntry(
             String layerPath,
             FileObject content,
-            Map<String,String> substitutionTokens,
+            Map<String,? extends Object> substitutionTokens,
             String localizedDisplayName,
             Map<String,Object> fileAttributes) {
         return new CreateLayerEntry(this, project, layerPath, content,
@@ -964,7 +964,7 @@ public final class CreatedModifiedFiles {
         
         public CreateLayerEntry(final CreatedModifiedFiles cmf, final Project project, final String layerPath,
                 final FileObject content,
-                final Map<String,String> tokens, final String localizedDisplayName, final Map<String,Object> attrs) {
+                final Map<String,? extends Object> tokens, final String localizedDisplayName, final Map<String,Object> attrs) {
             
             super(project);
             final String locBundleKey = (localizedDisplayName != null ? LayerUtils.generateBundleKeyForFile(layerPath) : null);
@@ -1220,7 +1220,7 @@ public final class CreatedModifiedFiles {
         }
     }
     
-    private static void copyAndSubstituteTokens(FileObject content, FileObject target, Map<String,String> tokens) throws IOException {
+    private static void copyAndSubstituteTokens(FileObject content, FileObject target, Map<String,? extends Object> tokens) throws IOException {
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
         ScriptEngine engine = scriptEngineManager.getEngineByName("freemarker");
         assert engine != null : "#163878: " + scriptEngineManager.getEngineFactories() + " lacks freemarker using " +

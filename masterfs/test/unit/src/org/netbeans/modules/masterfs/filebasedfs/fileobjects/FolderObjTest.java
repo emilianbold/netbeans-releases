@@ -101,8 +101,7 @@ public class FolderObjTest extends NbTestCase {
     protected Level logLevel() {
         String[] testsWithEnabledLogger = new String[] {
             "testCreateFolder72617",
-            "testCreateData72617",
-            "testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache"
+            "testCreateData72617"
         };
         return (Arrays.asList(testsWithEnabledLogger).contains(getName())) ? 
             Level.FINEST : Level.OFF;
@@ -294,71 +293,6 @@ public class FolderObjTest extends NbTestCase {
     }
     
 
-   public void testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache() throws IOException  {
-        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
-        assertNotNull(workDirFo);        
-        assertNotNull(workDirFo.getFileSystem().findResource(workDirFo.getPath()));                
-        File fold = new File(getWorkDir(),"fold");//NOI18N
-        assertNull(FileUtil.toFileObject(fold));
-        FileObject foldFo = workDirFo.createFolder(fold.getName());
-        assertNotNull(foldFo);
-        
-        foldFo.delete();
-        assertNull(FileBasedFileSystem.getFileObject(fold));        
-        assertNull(FileBasedFileSystem.getFileObject(fold));
-        assertNull(workDirFo.getFileObject(fold.getName()));                
-        assertFalse(existsChild(workDirFo, fold.getName()));
-        fold.mkdir();
-        assertNotNull((workDirFo.getFileSystem()).findResource(workDirFo.getPath()+"/"+fold.getName()));                
-        assertNotNull(workDirFo.getFileObject(fold.getName()));                        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        workDirFo.refresh();
-        assertNotNull(workDirFo.getFileObject(fold.getName()));        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        fold.delete();
-        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        workDirFo.refresh();
-        assertNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertFalse(existsChild(workDirFo, fold.getName()));
-        LOG.info("Before mkdir: " + fold);
-        fold.mkdir();
-        LOG.info("After mkdir: " + fold);
-        assertNotNull("Just created folder shall be visible", workDirFo.getFileObject(fold.getName()));
-        LOG.info("OK, passed thru");
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        workDirFo.getFileSystem().refresh(false);
-        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        foldFo.delete();
-        assertNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertFalse(existsChild(workDirFo, fold.getName()));        
-        fold.mkdir();
-        //assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));                
-        //assertNull(MasterFileSystem.getFileObject(fold));                                
-        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        workDirFo.getFileSystem().refresh(false);
-        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        fold.delete();
-        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertTrue(existsChild(workDirFo, fold.getName()));        
-        workDirFo.getFileSystem().refresh(false);
-        assertNull(workDirFo.getFileObject(fold.getName()));                                
-        assertFalse(existsChild(workDirFo, fold.getName()));                
-    }
-   
-   private static boolean existsChild(final FileObject folder, final String childName) {
-       FileObject[] childs = folder.getChildren();
-       for (int i = 0; i < childs.length; i++) {
-           if (childs[i].getNameExt().equals(childName)) {
-               return true;
-           } 
-       }
-       return false;
-   }
-        
     public void testChildren() throws Exception {
         final FolderObj testRoot = (FolderObj)FileBasedFileSystem.getFileObject(getWorkDir());
         assertNotNull(testRoot);

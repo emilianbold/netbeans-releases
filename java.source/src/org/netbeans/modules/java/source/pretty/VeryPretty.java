@@ -384,7 +384,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 }
             } else {
                 if (out.isWhitespaceLine()) {
-                    text = "                   ".substring(0, originalColumn) + text;
+                    text = getIndent(originalColumn)+ text;
                     relativeIndent = getIndent() - originalColumn;
 
                     out.toLineStart();

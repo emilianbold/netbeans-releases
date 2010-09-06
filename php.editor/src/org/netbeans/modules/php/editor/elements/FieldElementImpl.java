@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.api.editor.PhpClass.Field;
 import org.netbeans.modules.php.editor.api.FileElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -66,7 +67,7 @@ import org.openide.util.Parameters;
 /**
  * @author Radek Matous
  */
-public final class FieldElementImpl extends PhpElementImpl implements FieldElement {
+public class FieldElementImpl extends PhpElementImpl implements FieldElement {
 
     public static final String IDX_FIELD = PHPIndexer.FIELD_FIELD;
 
@@ -146,6 +147,16 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
         final ASTNodeInfo<FieldAccess> info = ASTNodeInfo.create(node);
         return new FieldElementImpl(type, info.getName(), info.getRange().getStart(),
                     PhpModifiers.PUBLIC, fileQuery.getURL().toString(), fileQuery,resolvers);
+    }
+
+    static FieldElement fromFrameworks(final TypeElement type, final Field field, final ElementQuery elementQuery) {
+        Parameters.notNull("field", field);
+        Parameters.notNull("elementQuery", elementQuery);
+        FieldElementImpl retval = new FieldElementImpl(type, field.getName(), field.getOffset(), 
+                PhpModifiers.NO_FLAGS, null, elementQuery,
+                Collections.<TypeResolver>singleton(new TypeResolverImpl(field.getType().getFullyQualifiedName())));
+        retval.fileObject = field.getFile();
+        return retval;
     }
 
     private static boolean matchesQuery(final NameKind query, FieldSignatureParser signParser) {

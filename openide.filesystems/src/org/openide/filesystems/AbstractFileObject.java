@@ -443,8 +443,8 @@ final class AbstractFileObject extends AbstractFolder {
     */
     public FileObject createData(String name, String ext)
     throws IOException {
-        if (name.indexOf(PATH_SEP) != -1) {
-            throw new IllegalArgumentException("Use FileUtil.createData() instead!"); // NOI18N
+        if (name.contains("/") || name.contains("\\")) {
+            throw new IOException("Use FileUtil.createData() instead!"); // NOI18N
         }
 
         String fName = null;

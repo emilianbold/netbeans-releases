@@ -60,7 +60,7 @@ public final class JAXWSClientSupportFactory {
     }
 
     public static JAXWSClientSupport createJAXWSClientSupport(JAXWSClientSupportImpl spiJAXWSClientSupport) {
-        return JAXWSClientSupportAccessor.DEFAULT.createJAXWSClientSupport(spiJAXWSClientSupport);
+        return JAXWSClientSupportAccessor.getDefault().createJAXWSClientSupport(spiJAXWSClientSupport);
     }
 
 }

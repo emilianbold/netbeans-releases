@@ -270,7 +270,13 @@ public final class Main extends Object {
 	    // -----------------------------------------------------------------------------------------------------
 	    // License check
             if (!handleLicenseCheck()) {
-                deleteRec(new File(CLIOptions.getUserDir())); // #145936
+                File userdir = new File(CLIOptions.getUserDir()); // #145936
+                // #189656: be conservative about what we delete.
+                deleteRec(new File(userdir, "var/cache")); // NOI18N
+                deleteRec(new File(userdir, "var/log")); // NOI18N
+                rm(new File(userdir, "var")); // NOI18N
+                rm(new File(userdir, "config")); // NOI18N
+                rm(userdir); // NOI18N
                 TopLogging.exit(0);
             }
 	    // -----------------------------------------------------------------------------------------------------
@@ -327,14 +333,18 @@ public final class Main extends Object {
         if (f.isDirectory()) {
             File[] kids = f.listFiles();
             if (kids == null) {
-                throw new IOException("Could not list: " + f);
-            }
-            for (File kid : kids) {
-                deleteRec(kid);
+                Logger.getLogger(Main.class.getName()).log(Level.WARNING, "Could not list: {0}", f);
+            } else {
+                for (File kid : kids) {
+                    deleteRec(kid);
+                }
             }
         }
-        if (!f.delete()) {
-            Logger.getLogger(Main.class.getName()).log(Level.WARNING, "Failed to delete " + f);
+        rm(f);
+    }
+    private static void rm(File f) {
+        if (f.exists() && !f.delete()) {
+            Logger.getLogger(Main.class.getName()).log(Level.WARNING, "Failed to delete {0}", f);
         }
     }
   

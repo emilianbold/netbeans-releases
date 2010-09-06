@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.api.components.JsfComponentDescriptor;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.HelpCtx;
@@ -77,7 +78,8 @@ public class JSFConfigurationPanel extends WebModuleExtender {
 
     private Preferences preferences;
 
-    private Library jsfComponentsLibrary;
+//    private Library jsfComponentsLibrary;
+    private JsfComponentDescriptor jsfComponentDescriptor;
 
     public enum LibraryType {USED, NEW, SERVER};
     private LibraryType libraryType;
@@ -341,12 +343,12 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         this.serverLibrary = library;
         fireChangeEvent();
     }
-    void setJsfComponentsLibrary(Library library) {
-        this.jsfComponentsLibrary = library;
+    void setJsfComponentDescriptor(JsfComponentDescriptor jsfComponentDescriptor) {
+        this.jsfComponentDescriptor = jsfComponentDescriptor;
     }
 
-    public Library getJsfComponentsLibrary() {
-        return jsfComponentsLibrary;
+    public JsfComponentDescriptor getJsfComponentDescriptor() {
+        return jsfComponentDescriptor;
     }
 
     protected static class PreferredLanguage {

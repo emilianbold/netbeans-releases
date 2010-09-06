@@ -63,7 +63,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -131,7 +130,8 @@ public final class BrokenServerLibrarySupport {
                             try {
                                 manager.deployLibraries(getDeployableServerLibraries(project));
                             } catch (ConfigurationException ex) {
-                                Exceptions.printStackTrace(ex);
+                                // just log it for now server log will report something
+                                LOGGER.log(Level.INFO, null, ex);
                             }
                         }
                     } catch(InstanceRemovedException ex) {
