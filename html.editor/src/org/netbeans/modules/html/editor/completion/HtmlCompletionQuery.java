@@ -59,6 +59,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.AstNode.NodeFilter;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
@@ -283,12 +284,26 @@ public class HtmlCompletionQuery extends UserTask {
             return null;
         }
 
+        AstNode root = node.getRootNode();
+        if(node == root) {
+            //no node found - likely a broken parse tree. See for example issue 190183
+            //
+            //try to find last open tag node before the searched offset not using
+            //logical ranges but the physical offsets of existing nodes
+            node = AstNodeUtils.getClosestNodeBackward(root, offset, new NodeFilter() {
+                @Override
+                public boolean accepts(AstNode node) {
+                    return !node.isVirtual() && node.type() == AstNode.NodeType.OPEN_TAG;
+                }                
+            });
+
+        }
+
         //find a leaf node for undeclared tags
         AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();
         assert undeclaredTagsParseTreeRoot != null;
         AstNode undeclaredTagsLeafNode = AstNodeUtils.findDescendant(undeclaredTagsParseTreeRoot, searchAstOffset, backward);
 
-        AstNode root = node.getRootNode();
 
         //namespace is null for html content
         String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);

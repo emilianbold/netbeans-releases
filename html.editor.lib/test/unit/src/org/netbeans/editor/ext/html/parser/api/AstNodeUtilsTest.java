@@ -51,6 +51,7 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.parser.api.AstNode.NodeFilter;
 import org.netbeans.editor.ext.html.parser.api.AstNode.NodeType;
 import org.netbeans.editor.ext.html.test.TestBase;
 
@@ -69,10 +70,49 @@ public class AstNodeUtilsTest extends TestBase {
         super(testName);
     }
 
-    public static Test xsuite() {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new AstNodeUtilsTest("testGetPossibleOpenTagElements"));
+        suite.addTest(new AstNodeUtilsTest("testFindClosestNodeBackward"));
         return suite;
+    }
+
+    public void testFindClosestNodeBackward() throws Exception {
+        String code = "<p><a>text</a><b>xxx</b></p>";
+        //             0123456789012345678901234567
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+        AstNode a = AstNodeUtils.query(root, "p/a");
+        assertNotNull(a);
+        AstNode b = AstNodeUtils.query(root, "p/b");
+        assertNotNull(b);
+        AstNode p = AstNodeUtils.query(root, "p");
+        assertNotNull(p);
+
+        NodeFilter filter = new NodeFilter() {
+            @Override
+            public boolean accepts(AstNode node) {
+                return node.type() == NodeType.OPEN_TAG;
+            }
+        };
+
+        assertEquals(a, AstNodeUtils.getClosestNodeBackward(root, 7, filter));
+        assertEquals(a, AstNodeUtils.getClosestNodeBackward(root, 5, filter));
+        assertEquals(a, AstNodeUtils.getClosestNodeBackward(root, 4, filter));
+        assertEquals(a, AstNodeUtils.getClosestNodeBackward(root, 14, filter));
+
+        assertEquals(b, AstNodeUtils.getClosestNodeBackward(root, 15, filter));
+        assertEquals(b, AstNodeUtils.getClosestNodeBackward(root, 17, filter));
+        assertEquals(b, AstNodeUtils.getClosestNodeBackward(root, 19, filter));
+        assertEquals(b, AstNodeUtils.getClosestNodeBackward(root, 20, filter));
+        assertEquals(b, AstNodeUtils.getClosestNodeBackward(root, 26, filter));
+
+        assertEquals(p, AstNodeUtils.getClosestNodeBackward(root, 3, filter));
+        assertEquals(p, AstNodeUtils.getClosestNodeBackward(root, 1, filter));
+        assertEquals(root, AstNodeUtils.getClosestNodeBackward(root, 0, filter));
+
+
     }
 
     public void testFindDescendant() throws Exception {

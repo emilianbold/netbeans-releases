@@ -75,7 +75,7 @@ public class Html5ParserTest extends NbTestCase {
         AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
         TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testLogicalRangesOfUnclosedOpenTags"));
+        suite.addTest(new Html5ParserTest("testUnclosedTitleTag"));
         return suite;
     }
 
@@ -460,6 +460,33 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(body.parent());
 
         AstNodeUtils.dumpTree(root);
+    }
+
+    public void testUnclosedTitleTag() throws ParseException {
+        //this is causing all the nodes missing their logical ranges
+        //the body tag is parsed as virtual only regardless the open and end
+        //tag is present in the code.
+
+        //looks like caused by the CDATA content of the unclosed title tag
+        //which causes the parser consume everything after as unparseable code :-(
+        String code = "<!doctype html><html><head><title></head><body></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234567890123456789
+        //             0         1         2         3         4         5         6
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNode title = AstNodeUtils.query(result.root(), "html/head/title");
+        assertNotNull(title);
+
+        AstNodeUtils.dumpTree(root);
+
+        //FAILING - http://netbeans.org/bugzilla/show_bug.cgi?id=190183
+        
+//        assertTrue(title.logicalEndOffset() != -1);
+
     }
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
