@@ -219,8 +219,8 @@ public class ModelUnit {
         FileObject[] objects = ConfigurationUtils.getFacesConfigFiles( module );
         //add all the configs from WEB-INF/faces-config.xml and all configs declared in faces config DD entry
         //we need to ensure the original ordering
-        configs = new LinkedList<FileObject>(Arrays.asList(objects));
-        configRoots = new LinkedList<FileObject>();
+        configs = Collections.synchronizedList(new LinkedList<FileObject>(Arrays.asList(objects)));
+        configRoots = Collections.synchronizedList(new LinkedList<FileObject>());
         if (module.getDocumentBase() != null) {
             configRoots.add(module.getDocumentBase());
         }
