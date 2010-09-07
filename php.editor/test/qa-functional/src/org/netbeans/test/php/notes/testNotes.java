@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.notes;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -53,11 +53,11 @@ import junit.framework.Test;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue142011 extends cc
+public class testNotes extends notes
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue142011";
+  static final String TEST_PHP_NAME = "PhpProject_notes_0001";
 
-  public Issue142011( String arg0 )
+  public testNotes( String arg0 )
   {
     super( arg0 );
   }
@@ -65,9 +65,9 @@ public class Issue142011 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue142011.class ).addTest(
+      NbModuleSuite.createConfiguration( testNotes.class ).addTest(
           "CreateApplication",
-          "Issue142011"
+          "Notes"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -84,15 +84,36 @@ public class Issue142011 extends cc
     endTest( );
   }
 
-  public void Issue142011( ) throws Exception
+  public void Notes( ) throws Exception
   {
     startTest( );
 
+    try
+    {
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
+    // Add new line
+    eoPHP.insert( "\n" );
+    System.out.println( "===X" );
+    TypeCode( eoPHP, "class a extends 1" );
+    System.out.println( "===A" );
+    Sleep( 30000 );
+    System.out.println( "===B" );
+    Object[] oo = eoPHP.getAnnotations( );
+    System.out.println( "===C" );
+    System.out.println( "+++" + oo.length );
+    for( Object o : oo )
+    {
+      System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
+    }
+    Sleep( 10000 );
+    }
+    catch( Exception ex )
+    {
+      System.out.println( "!!!" );
+    }
 
     endTest( );
   }

@@ -41,95 +41,78 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.test.php.brackets;
 
-package org.netbeans.test.php.insert;
-
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-//import org.netbeans.jemmy.util.Dumper;
-
 
 /**
  *
- * @author michaelnazarov@netbeans.org
+ * http://netbeans.org/bugzilla/show_bug.cgi?id=144824
+ * 
+ * @author  michaelnazarov@netbeans.org
+ * @desc    it's about brackets completion if you are out of scope <??> tags in mixed HTML
  */
+public class testAddingBracketOutOfScope extends brackets {
 
-public class insert_0001 extends insert
-{
-  static final String TEST_PHP_NAME = "PhpProject_insert_0001";
+    static final String TEST_PHP_NAME = "PhpProject_brackets_Issue144824";
 
-  public insert_0001( String arg0 )
-  {
-    super( arg0 );
-  }
+    public testAddingBracketOutOfScope(String arg0) {
+        super(arg0);
+    }
 
-  public static Test suite( )
-  {
-    return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( insert_0001.class ).addTest(
-          "CreateApplication",
-          "InsertConstructor"
-        )
-        .enableModules( ".*" )
-        .clusters( ".*" )
-        //.gui( true )
-      );
-  }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(testAddingBracketOutOfScope.class).addTest(
+                "CreateApplication",
+                "Issue144824",
+                "Issue144824_caseWithOneBracketAlradyWritten"
+                ).enableModules(".*").clusters(".*") //.gui( true )
+                );
+    }
 
-  public void CreateApplication( )
-  {
-    startTest( );
+    public void CreateApplication() {
+        startTest();
 
-    CreatePHPApplicationInternal( TEST_PHP_NAME );
+        CreatePHPApplicationInternal(TEST_PHP_NAME);
 
-    endTest( );
-  }
+        endTest();
+    }
 
-  public void InsertConstructor( ) throws Exception
-  {
-    startTest( );
+    public void Issue144824() {
+        startTest();
 
-    // Invoke Alt+Insert without any code
-    // List should contain two database related items
+        // Get editor
+        EditorOperator eoPHP = new EditorOperator("index.php");
+        Sleep(1000);
+        // Locate comment
+        eoPHP.setCaretPosition("// put your code here", false);
+        // Add new line
+        TypeCode(eoPHP, "\n");
+        Sleep(1000);
 
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here\n", false );
-    eoPHP.insert( "\nclass a\n{\n\n}" );
-    eoPHP.setCaretPosition( "{\n", false );
-    Sleep( 1000 );
-    InvokeInsert( eoPHP );
-    Sleep( 1000 );
+        // Empty block
+        TypeCode(eoPHP, "{ \n");
+        Sleep(1000);
+        CheckResult(eoPHP, "}", 1);
 
-    JDialogOperator jdInsetter = new JDialogOperator( );
-    JListOperator jlList = new JListOperator( jdInsetter );
+        endTest();
+    }
 
-    ClickListItemNoBlock( jlList, 0, 1 );
+    public void Issue144824_caseWithOneBracketAlradyWritten() {
+        startTest();
+        EditorOperator eoPHP = new EditorOperator("index.php");
+        Sleep(1000);
 
-    JDialogOperator jdGenerator = new JDialogOperator( "Generate Constructor" );
-    JButtonOperator jbOk = new JButtonOperator( jdGenerator, "OK" );
-    jbOk.pushNoBlock( );
-    jdGenerator.waitClosed( );
+        eoPHP.setCaretPosition("// put your code here", false);
+        Sleep(1000);
+        TypeCode(eoPHP, "\n");
+        Sleep(1000);
 
-    // Check result
-    /*
-    String[] asResult =
-    {
-      "class a",
-      "{",
-      "function __construct()",
-      "{",
-      "}"
-    };
-    CheckResult( eoPHP, asResult, -3 );
-    */
-    CheckFlex( eoPHP, "class a{function __construct(){}", false );
+        TypeCode(eoPHP, "{ \n");
+        Sleep(1000);
+        CheckResult(eoPHP, "}", 1);
 
-    endTest( );
-  }
+    }
 }

@@ -54,17 +54,17 @@ import junit.framework.Test;
  *
  * @author fzamboj@netbeans.org
  */
-public class PHPDoc extends cc {
+public class testCCPhpDoc extends cc {
 
     static final String TEST_PHP_NAME = "PhpProject_cc_PHPDoc";
 
-    public PHPDoc(String arg0) {
+    public testCCPhpDoc(String arg0) {
         super(arg0);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(PHPDoc.class).addTest(
+                NbModuleSuite.createConfiguration(testCCPhpDoc.class).addTest(
                 "automaticCommentGenerationOnFunction",
                 "automaticCommentGenerationOnClassVariable") 
 //                "automaticCommentGenerationOnGlobalVariable")
@@ -129,7 +129,7 @@ public class PHPDoc extends cc {
     }
 
     /**
-     * Automatic generation of var <type> PHPDoc tag on PHP class variable
+     * Automatic generation of var <type> testCCPhpDoc tag on PHP class variable
      * @throws Exception
      */
     public void automaticCommentGenerationOnClassVariable() throws Exception {
@@ -234,7 +234,7 @@ public class PHPDoc extends cc {
     }
 
     /**
-     * Automatic generation of PHPDoc tags on Function outside class definition
+     * Automatic generation of testCCPhpDoc tags on Function outside class definition
      * @throws Exception
      */
     public void automaticCommentGenerationOnFunction() throws Exception {

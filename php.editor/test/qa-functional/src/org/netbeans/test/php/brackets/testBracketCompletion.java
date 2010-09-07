@@ -54,11 +54,11 @@ import junit.framework.Test;
  * @author michaelnazarov@netbeans.org
  */
 
-public class brackets_0001 extends brackets
+public class testBracketCompletion extends brackets
 {
   static final String TEST_PHP_NAME = "PhpProject_brackets_0001";
 
-  public brackets_0001( String arg0 )
+  public testBracketCompletion( String arg0 )
   {
     super( arg0 );
   }
@@ -66,7 +66,7 @@ public class brackets_0001 extends brackets
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( brackets_0001.class ).addTest(
+      NbModuleSuite.createConfiguration( testBracketCompletion.class ).addTest(
           "CreateApplication",
           "SimplePairs",
           "CurlyBrackets"

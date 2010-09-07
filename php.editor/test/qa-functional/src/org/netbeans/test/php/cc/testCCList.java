@@ -41,7 +41,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.test.php.brackets;
+
+package org.netbeans.test.php.cc;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -49,68 +50,50 @@ import junit.framework.Test;
 
 /**
  *
- * @author  michaelnazarov@netbeans.org
- * @desc    it's about brackets completion if you are out of scope <??> tags in mixed HTML
+ * @author michaelnazarov@netbeans.org
  */
-public class Issue144824 extends brackets {
 
-    static final String TEST_PHP_NAME = "PhpProject_brackets_Issue144824";
+public class testCCList extends cc
+{
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue143454";
 
-    public Issue144824(String arg0) {
-        super(arg0);
-    }
+  public testCCList( String arg0 )
+  {
+    super( arg0 );
+  }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(Issue144824.class).addTest(
-                "CreateApplication",
-                "Issue144824",
-                "Issue144824_caseWithOneBracketAlradyWritten"
-                ).enableModules(".*").clusters(".*") //.gui( true )
-                );
-    }
+  public static Test suite( )
+  {
+    return NbModuleSuite.create(
+      NbModuleSuite.createConfiguration( testCCList.class ).addTest(
+          "CreateApplication",
+          "Issue143454"
+        )
+        .enableModules( ".*" )
+        .clusters( ".*" )
+        //.gui( true )
+      );
+  }
 
-    public void CreateApplication() {
-        startTest();
+  public void CreateApplication( )
+  {
+    startTest( );
 
-        CreatePHPApplicationInternal(TEST_PHP_NAME);
+    CreatePHPApplicationInternal( TEST_PHP_NAME );
 
-        endTest();
-    }
+    endTest( );
+  }
 
-    public void Issue144824() {
-        startTest();
+  public void Issue143454( ) throws Exception
+  {
+    startTest( );
 
-        // Get editor
-        EditorOperator eoPHP = new EditorOperator("index.php");
-        Sleep(1000);
-        // Locate comment
-        eoPHP.setCaretPosition("// put your code here", false);
-        // Add new line
-        TypeCode(eoPHP, "\n");
-        Sleep(1000);
+    // Get editor
+    EditorOperator eoPHP = new EditorOperator( "index.php" );
+    Sleep( 1000 );
+    // Locate comment
+    eoPHP.setCaretPosition( "// put your code here", false );
 
-        // Empty block
-        TypeCode(eoPHP, "{ \n");
-        Sleep(1000);
-        CheckResult(eoPHP, "}", 1);
-
-        endTest();
-    }
-
-    public void Issue144824_caseWithOneBracketAlradyWritten() {
-        startTest();
-        EditorOperator eoPHP = new EditorOperator("index.php");
-        Sleep(1000);
-
-        eoPHP.setCaretPosition("// put your code here", false);
-        Sleep(1000);
-        TypeCode(eoPHP, "\n");
-        Sleep(1000);
-
-        TypeCode(eoPHP, "{ \n");
-        Sleep(1000);
-        CheckResult(eoPHP, "}", 1);
-
-    }
+    endTest( );
+  }
 }
