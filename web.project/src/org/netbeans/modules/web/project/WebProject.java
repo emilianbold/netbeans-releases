@@ -55,7 +55,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -810,6 +809,11 @@ public final class WebProject implements Project {
         ProjectOpenedHookImpl() {}
 
         protected void projectOpened() {
+            WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
+            if (logicalViewProvider != null) {
+                logicalViewProvider.initialize();
+            }
+
             try {
                 getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
                     public void run() throws IOException {
@@ -823,7 +827,7 @@ public final class WebProject implements Project {
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
-            
+
             try {
                 //DDDataObject initialization to be ready to listen on changes (#45771)
 
@@ -982,8 +986,7 @@ public final class WebProject implements Project {
                 // TODO: dongmei Anything for EJBs??????
             }
             artifactSupport.enableArtifactSynchronization(true);
-            
-            WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
+
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }

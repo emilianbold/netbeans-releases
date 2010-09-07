@@ -47,8 +47,8 @@ package org.netbeans.modules.j2ee.clientproject.ui;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider;
 import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider.LogicalViewRootNode;
+import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -61,16 +61,16 @@ import org.openide.util.NbBundle;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class AppClientLogicalViewProvider extends AbstractLogicalViewProvider {
+public class AppClientLogicalViewProvider extends AbstractLogicalViewProvider2 {
     
     private final AppClientProject project;
-    
+
     public AppClientLogicalViewProvider(AppClientProject project, UpdateHelper helper, 
             PropertyEvaluator evaluator, ReferenceHelper resolver, J2eeModuleProvider provider) {
         super(project, helper, evaluator, resolver, provider);
         this.project = project;
     }
-    
+
     public Node createLogicalView() {
         return new LogicalViewRootNode("Projects/org-netbeans-modules-j2ee-clientproject/Nodes",
                     "org-netbeans-modules-j2ee-clientproject",
