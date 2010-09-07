@@ -54,8 +54,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -257,7 +259,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         if (isPreprocessorConditionalBlock(doc, position)) {
             return getPreprocReferences(doc, file, position, interrupter);
         } else {
-            Token<CppTokenId> stringToken = getTokenIfStringLiteral(doc, position);
+            Token<TokenId> stringToken = getTokenIfStringLiteral(doc, position);
             if (stringToken != null) {
                 return getStringReferences(doc, stringToken, interrupter);
             }
@@ -290,8 +292,8 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
         doc.readLock();
         try {
-            TokenSequence<CppTokenId> ts = cppTokenSequence(doc, offset, false);
-            if (ts != null && ts.language() == CppTokenId.languagePreproc()) {
+            TokenSequence<TokenId> ts = cppTokenSequence(doc, offset, false);
+            if (ts != null) {
                 int[] span = getPreprocConditionalOffsets(ts);
                 if (isIn(span, offset)) {
                     return true;
@@ -303,13 +305,13 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         return false;
     }
 
-    private static Token<CppTokenId> getTokenIfStringLiteral(AbstractDocument doc, int offset) {
+    private static Token<TokenId> getTokenIfStringLiteral(AbstractDocument doc, int offset) {
         if (doc == null) {
             return null;
         }
         doc.readLock();
         try {
-            TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
             if (ts != null) {
                 int move = ts.move(offset);
                 // check previous token as well if on the boundary of two tokens
@@ -325,10 +327,9 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                         // at the end of tokens
                         continue;
                     }
-                    Token<CppTokenId> token = ts.token();
-                    switch (token.id()) {
-                        case STRING_LITERAL:
-                        case CHAR_LITERAL:
+                    Token<TokenId> token = ts.token();
+                    if(token.id() == CppTokenId.STRING_LITERAL ||
+                       token.id() == CppTokenId.CHAR_LITERAL) {
                             return token;
                     }
                 }
@@ -344,37 +345,40 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
      * @param ts
      * @return
      */
-    private static int[] getPreprocConditionalOffsets(TokenSequence<CppTokenId> ts) {
+    private static int[] getPreprocConditionalOffsets(TokenSequence<TokenId> ts) {
         ts.moveStart();
         ts.moveNext(); // move to starting #
         int start = ts.offset();
         while (ts.moveNext()) {
-            switch (ts.token().id()) {
-                case PREPROCESSOR_START:
-                case WHITESPACE:
-                case BLOCK_COMMENT:
-                case ESCAPED_LINE:
-                case ESCAPED_WHITESPACE:
-                    // skip them
-                    break;
-                case PREPROCESSOR_IF:
-                case PREPROCESSOR_IFDEF:
-                case PREPROCESSOR_IFNDEF:
-                case PREPROCESSOR_ELIF:
-                case PREPROCESSOR_ELSE:
-                case PREPROCESSOR_ENDIF:
-                    // found
-                    int end = ts.offset() + ts.token().length();
-                    return new int[]{start, end};
-                default:
-                    // not found interested directive
-                    return null;
+            TokenId tokenID = ts.token().id();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case PREPROCESSOR_START:
+                    case WHITESPACE:
+                    case BLOCK_COMMENT:
+                    case ESCAPED_LINE:
+                    case ESCAPED_WHITESPACE:
+                        // skip them
+                        break;
+                    case PREPROCESSOR_IF:
+                    case PREPROCESSOR_IFDEF:
+                    case PREPROCESSOR_IFNDEF:
+                    case PREPROCESSOR_ELIF:
+                    case PREPROCESSOR_ELSE:
+                    case PREPROCESSOR_ENDIF:
+                        // found
+                        int end = ts.offset() + ts.token().length();
+                        return new int[]{start, end};
+                    default:
+                        // not found interested directive
+                        return null;
+                }
             }
         }
         return null;
     }
 
-    private static TokenSequence<CppTokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
+    private static TokenSequence<TokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
         return CndLexerUtilities.getCppTokenSequence(doc, offset, true, backwardBias);
     }
 
@@ -409,7 +413,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     private static Collection<CsmReference> getPreprocReferences(AbstractDocument doc, CsmFile file, int searchOffset, Interrupter interrupter) {
-        TokenSequence<CppTokenId> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
+        TokenSequence origPreprocTS = cppTokenSequence(doc, searchOffset, false);
         if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {
             return Collections.<CsmReference>emptyList();
         }
@@ -425,22 +429,25 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                     return Collections.<CsmReference>emptyList();
                 }
                 @SuppressWarnings("unchecked")
-                TokenSequence<CppTokenId> ppTS = (TokenSequence<CppTokenId>) ts;
+                TokenSequence<TokenId> ppTS = (TokenSequence<TokenId>) ts;
                 int[] span = getPreprocConditionalOffsets(ppTS);
                 if (span != null) {
-                    switch (ppTS.token().id()) {
-                        case PREPROCESSOR_IF:
-                        case PREPROCESSOR_IFDEF:
-                        case PREPROCESSOR_IFNDEF:
-                            current = current.startNestedBlock(span);
-                            break;
-                        case PREPROCESSOR_ELIF:
-                        case PREPROCESSOR_ELSE:
-                        case PREPROCESSOR_ENDIF:
-                            current.addDirective(span);
-                            break;
-                        default:
-                            assert false : "unexpected token " + ts.token();
+                    TokenId tokenID = ppTS.token().id();
+                    if(tokenID instanceof CppTokenId) {
+                        switch ((CppTokenId)tokenID) {
+                            case PREPROCESSOR_IF:
+                            case PREPROCESSOR_IFDEF:
+                            case PREPROCESSOR_IFNDEF:
+                                current = current.startNestedBlock(span);
+                                break;
+                            case PREPROCESSOR_ELIF:
+                            case PREPROCESSOR_ELSE:
+                            case PREPROCESSOR_ENDIF:
+                                current.addDirective(span);
+                                break;
+                            default:
+                                assert false : "unexpected token " + ts.token();
+                        }
                     }
                     if (offsetContainer == null && isIn(span, searchOffset)) {
                         offsetContainer = current;
@@ -477,7 +484,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         return out;
     }
 
-    private static Collection<CsmReference> getStringReferences(AbstractDocument doc, Token<CppTokenId> stringToken, Interrupter interrupter) {
+    private static Collection<CsmReference> getStringReferences(AbstractDocument doc, Token<TokenId> stringToken, Interrupter interrupter) {
         if (stringToken == null) {
             return Collections.<CsmReference>emptyList();
         }

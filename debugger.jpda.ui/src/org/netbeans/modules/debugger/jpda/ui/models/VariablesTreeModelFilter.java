@@ -116,7 +116,6 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         evalListener = new EvaluatorListener();
         CodeEvaluator.addResultListener(evalListener);
         prefListener = new VariablesPreferenceChangeListener();
-        preferences.addPreferenceChangeListener(prefListener);
         preferences.addPreferenceChangeListener(WeakListeners.create(
                 PreferenceChangeListener.class, prefListener, preferences));
         Properties properties = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N

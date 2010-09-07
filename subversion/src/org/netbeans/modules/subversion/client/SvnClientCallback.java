@@ -60,7 +60,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka 
  */
-public class SvnClientCallback implements ISVNPromptUserPassword {
+public abstract class SvnClientCallback implements ISVNPromptUserPassword {
     
     private final SVNUrl url;
     private final int handledExceptions;
@@ -68,11 +68,6 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     private String username = null;
     private char[] password = null;
 
-    private final boolean prompt;
-    private boolean prompted;
-    private boolean promptedUser;
-    private boolean promptedSSH;
-    private boolean promptedSSL;
     private String certFilePath;
     private char[] certPassword;
     private int sshPort = 22;
@@ -81,13 +76,6 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     public SvnClientCallback(SVNUrl url, int handledExceptions) {
         this.url = url;
         this.handledExceptions = handledExceptions;
-        this.prompt = (SvnClientExceptionHandler.EX_AUTHENTICATION & handledExceptions) == SvnClientExceptionHandler.EX_AUTHENTICATION;
-    }
-
-    @Override
-    public boolean askYesNo(String realm, String question, boolean yesIsDefault) {
-        // TODO implement me
-        return false;
     }
 
     @Override
@@ -138,25 +126,8 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }
 
     @Override
-    public boolean prompt(String realm, String username, boolean maySave) {        
-        return prompted = !prompted;
-    }
-
-    @Override
-    public String askQuestion(String realm, String question, boolean showAnswer, boolean maySave) {
-        // TODO implement me
-        return null;
-    }
-
-    @Override
     public boolean userAllowedSave() {
         return false;
-    }
-
-    @Override
-    public boolean promptSSH(String realm, String username, int sshPort, boolean maySave) {
-        this.sshPort = sshPort;
-        return promptedSSH = !promptedSSH;
     }
 
     @Override
@@ -175,9 +146,8 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         return sshPort;
     }
 
-    @Override
-    public boolean promptSSL(String realm, boolean maySave) {
-        return promptedSSL = !promptedSSL;
+    protected void setSSHPort (int sshPort) {
+        this.sshPort = sshPort;
     }
 
     @Override
@@ -226,11 +196,6 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
                 certPassword = rc.getCertPassword();
             }
         }
-    }
-
-    @Override
-    public boolean promptUser(String realm, String username, boolean maySave) {
-        return promptedUser = !promptedUser;
     }
 
     private String getCertPassword() {

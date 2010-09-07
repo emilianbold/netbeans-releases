@@ -559,5 +559,17 @@ public class AstNodeUtils {
             visitAncestors(parent, visitor);
         }
     }
+
+    /** finds closest physical preceeding node to the offset */
+    public static AstNode getClosestNodeBackward(AstNode context, int offset, AstNode.NodeFilter filter) {
+        for (AstNode child : context.children(filter)) {
+            if (child.startOffset >= offset) {
+                return context;
+            }
+            context = getClosestNodeBackward(child, offset, filter);
+        }
+        return context;
+    }
+
 }
     

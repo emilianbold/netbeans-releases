@@ -52,6 +52,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -93,20 +94,23 @@ public class BracketCompletion {
         if (!completionSettingEnabled(doc)) {
             return;
         }
-        TokenItem<CppTokenId> tokenAtDot = CndTokenUtilities.getToken(doc, dotPos, true);
+        TokenItem<TokenId> tokenAtDot = CndTokenUtilities.getToken(doc, dotPos, true);
         if (tokenAtDot == null) {
             return;
         }
         if (ch == ')' || ch == ']' || ch == '(' || ch == '[') {
-            switch (tokenAtDot.id()) {
-                case RBRACKET:
-                case RPAREN:
-                    skipClosingBracket(doc, caret, ch);
-                    break;
-                case LBRACKET:
-                case LPAREN:
-                    completeOpeningBracket(doc, dotPos, caret, ch);
-                    break;
+            TokenId id = tokenAtDot.id();
+            if(id instanceof CppTokenId) {
+                switch ((CppTokenId)id) {
+                    case RBRACKET:
+                    case RPAREN:
+                        skipClosingBracket(doc, caret, ch);
+                        break;
+                    case LBRACKET:
+                    case LPAREN:
+                        completeOpeningBracket(doc, dotPos, caret, ch);
+                        break;
+                }
             }
         } else if (ch == '\"' || ch == '\'') {
             completeQuote(doc, dotPos, caret, ch);
@@ -144,13 +148,13 @@ public class BracketCompletion {
 
     private static void moveSemicolon(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
         int eolPos = Utilities.getRowEnd(doc, dotPos);
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, false);
+        TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, false);
         if (cppTokenSequence == null) {
             return;
         }
         int lastParenPos = dotPos;
         while (cppTokenSequence.moveNext() && cppTokenSequence.offset() < eolPos) {
-            Token<CppTokenId> token = cppTokenSequence.token();
+            Token<TokenId> token = cppTokenSequence.token();
             if (token.id() == CppTokenId.RPAREN) {
                 lastParenPos = cppTokenSequence.offset();
             } else if (!CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory())) {
@@ -169,7 +173,7 @@ public class BracketCompletion {
     }
 
     private static boolean isForLoopSemicolon(BaseDocument doc, int dotPos) {
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, false);
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, false);
         if (ts == null || ts.token().id() != CppTokenId.SEMICOLON) {
             return false;
         }
@@ -177,7 +181,7 @@ public class BracketCompletion {
         int braceDepth = 0; // brace depth
         boolean semicolonFound = false; // next semicolon
         while (ts.movePrevious()) {
-            Token<CppTokenId> token = ts.token();
+            Token<TokenId> token = ts.token();
             if (token.id() == CppTokenId.LPAREN) {
                 if (parDepth == 0) { // could be a 'for ('
                     while (ts.movePrevious()) {
@@ -231,7 +235,7 @@ public class BracketCompletion {
                 return;
             }
             if (ch == '(' || ch == '[') {
-                TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, dotPos, true);
+                TokenItem<TokenId> token = CndTokenUtilities.getToken(doc, dotPos, true);
                 if (token == null) {
                     return;
                 }
@@ -252,18 +256,21 @@ public class BracketCompletion {
             } else if (ch == '<') {
                 char match[] = doc.getChars(dotPos, 1);
                 if (match != null && match[0] == '>' && dotPos > 0) {
-                    TokenItem<CppTokenId> token = CndTokenUtilities.getFirstNonWhiteBwd(doc, dotPos - 1);
-                    switch (token.id()) {
-                        case PREPROCESSOR_INCLUDE:
-                        case PREPROCESSOR_INCLUDE_NEXT:
-                            doc.remove(dotPos, 1);
+                    TokenItem<TokenId> token = CndTokenUtilities.getFirstNonWhiteBwd(doc, dotPos - 1);
+                    TokenId id = token.id();
+                    if(id instanceof CppTokenId) {
+                        switch ((CppTokenId)id) {
+                            case PREPROCESSOR_INCLUDE:
+                            case PREPROCESSOR_INCLUDE_NEXT:
+                                doc.remove(dotPos, 1);
+                        }
                     }
                 }
             }
         }
     }
 
-    private static TokenSequence<CppTokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
+    private static TokenSequence<TokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
         return CndLexerUtilities.getCppTokenSequence(doc, offset, true, backwardBias);
     }
 
@@ -291,7 +298,7 @@ public class BracketCompletion {
             return false;
         }
         int caretRowStartOffset = Utilities.getRowStart(doc, caretOffset);
-        TokenSequence<CppTokenId> ts = cppTokenSequence(doc, caretOffset, true);
+        TokenSequence<TokenId> ts = cppTokenSequence(doc, caretOffset, true);
         if (ts == null) {
             return false;
         }
@@ -300,20 +307,23 @@ public class BracketCompletion {
             if (ts.offset() < caretRowStartOffset) {
                 return false;
             }
-            switch (ts.token().id()) {
-                case WHITESPACE:
-                case LINE_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                    break;
-                case BLOCK_COMMENT:
-                case DOXYGEN_COMMENT:
-                    if (first && caretOffset > ts.offset() && caretOffset < ts.offset() + ts.token().length()) {
-                        // Caret contained within block comment -> do not add anything
-                        return false;
-                    }
-                    break; // Skip
-                case LBRACE:
-                    return true;
+            TokenId id = ts.token().id();
+            if(id instanceof CppTokenId) {
+                switch ((CppTokenId)id) {
+                    case WHITESPACE:
+                    case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                        break;
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                        if (first && caretOffset > ts.offset() && caretOffset < ts.offset() + ts.token().length()) {
+                            // Caret contained within block comment -> do not add anything
+                            return false;
+                        }
+                        break; // Skip
+                    case LBRACE:
+                        return true;
+                }
             }
             first = false;
         } while (ts.movePrevious());
@@ -336,36 +346,39 @@ public class BracketCompletion {
         int braceBalance = 0;
         int bracketBalance = 0;
 
-        TokenSequence<CppTokenId> cppTokenSequence = cppTokenSequence(doc, caretOffset, false);
+        TokenSequence<TokenId> cppTokenSequence = cppTokenSequence(doc, caretOffset, false);
         if (cppTokenSequence == null) {
             return caretOffset;
         }
         while (cppTokenSequence.moveNext() && cppTokenSequence.offset() < rowEnd) {
-            switch (cppTokenSequence.token().id()) {
-                case LPAREN:
-                    parenBalance++;
-                    break;
-                case RPAREN:
-                    if (parenBalance-- == 0) {
-                        return cppTokenSequence.offset();
-                    }
-                    break;
-                case LBRACE:
-                    braceBalance++;
-                    break;
-                case RBRACE:
-                    if (braceBalance-- == 0) {
-                        return cppTokenSequence.offset();
-                    }
-                    break;
-                case LBRACKET:
-                    bracketBalance++;
-                    break;
-                case RBRACKET:
-                    if (bracketBalance-- == 0) {
-                        return cppTokenSequence.offset();
-                    }
-                    break;
+            TokenId id = cppTokenSequence.token().id();
+            if(id instanceof CppTokenId) {
+                switch ((CppTokenId)id) {
+                    case LPAREN:
+                        parenBalance++;
+                        break;
+                    case RPAREN:
+                        if (parenBalance-- == 0) {
+                            return cppTokenSequence.offset();
+                        }
+                        break;
+                    case LBRACE:
+                        braceBalance++;
+                        break;
+                    case RBRACE:
+                        if (braceBalance-- == 0) {
+                            return cppTokenSequence.offset();
+                        }
+                        break;
+                    case LBRACKET:
+                        bracketBalance++;
+                        break;
+                    case RBRACKET:
+                        if (bracketBalance-- == 0) {
+                            return cppTokenSequence.offset();
+                        }
+                        break;
+                }
             }
         }
         return rowEnd;
@@ -431,7 +444,7 @@ public class BracketCompletion {
 
         boolean skipClosingBracket = false; // by default do not remove
         // Examine token at the caret offset
-        TokenSequence<CppTokenId> ts = cppTokenSequence(doc, caretOffset, false);
+        TokenSequence<TokenId> ts = cppTokenSequence(doc, caretOffset, false);
         if (ts == null) {
             return false;
         }
@@ -451,46 +464,48 @@ public class BracketCompletion {
             int bracketBalance = -1; // balance of the brackets or parenthesis
             boolean finished = false;
             while (!finished && ts.movePrevious()) {
-                CppTokenId id = ts.token().id();
-                switch (id) {
-                    case LPAREN:
-                    case LBRACKET:
-                        if (id == bracketId) {
-                            bracketBalance++;
-                            if (bracketBalance == 0) {
-                                if (braceBalance != 0) {
-                                    // Here the bracket is matched but it is located
-                                    // inside an unclosed brace block
-                                    // e.g. ... ->( } a()|)
-                                    // which is in fact illegal but it's a question
-                                    // of what's best to do in this case.
-                                    // We chose to leave the typed bracket
-                                    // by setting bracketBalance to 1.
-                                    // It can be revised in the future.
-                                    bracketBalance = 1;
+                TokenId id = ts.token().id();
+                if(id instanceof CppTokenId) {
+                    switch ((CppTokenId)id) {
+                        case LPAREN:
+                        case LBRACKET:
+                            if (id == bracketId) {
+                                bracketBalance++;
+                                if (bracketBalance == 0) {
+                                    if (braceBalance != 0) {
+                                        // Here the bracket is matched but it is located
+                                        // inside an unclosed brace block
+                                        // e.g. ... ->( } a()|)
+                                        // which is in fact illegal but it's a question
+                                        // of what's best to do in this case.
+                                        // We chose to leave the typed bracket
+                                        // by setting bracketBalance to 1.
+                                        // It can be revised in the future.
+                                        bracketBalance = 1;
+                                    }
+                                    finished = true;
                                 }
+                            }
+                            break;
+
+                        case RPAREN:
+                        case RBRACKET:
+                            if (id == bracketId) {
+                                bracketBalance--;
+                            }
+                            break;
+                        case LBRACE:
+                            braceBalance++;
+                            if (braceBalance > 0) { // stop on extra left brace
                                 finished = true;
                             }
-                        }
-                        break;
+                            break;
 
-                    case RPAREN:
-                    case RBRACKET:
-                        if (id == bracketId) {
-                            bracketBalance--;
-                        }
-                        break;
-                    case LBRACE:
-                        braceBalance++;
-                        if (braceBalance > 0) { // stop on extra left brace
-                            finished = true;
-                        }
-                        break;
+                        case RBRACE:
+                            braceBalance--;
+                            break;
 
-                    case RBRACE:
-                        braceBalance--;
-                        break;
-
+                    }
                 }
             // done regardless of finished flag state
             }
@@ -513,46 +528,48 @@ public class BracketCompletion {
                 ts.moveNext(); // ???
                 finished = false;
                 while (!finished && ts.movePrevious()) {
-                    CppTokenId id = ts.token().id();
-                    switch (id) {
-                        case LPAREN:
-                        case LBRACKET:
-                            if (id == leftBracketId) {
-                                bracketBalance++;
-                            }
-                            break;
+                    TokenId id = ts.token().id();
+                    if(id instanceof CppTokenId) {
+                        switch ((CppTokenId)id) {
+                            case LPAREN:
+                            case LBRACKET:
+                                if (id == leftBracketId) {
+                                    bracketBalance++;
+                                }
+                                break;
 
-                        case RPAREN:
-                        case RBRACKET:
-                            if (id == bracketId) {
-                                bracketBalance--;
-                                if (bracketBalance == 0) {
-                                    if (braceBalance != 0) {
-                                        // Here the bracket is matched but it is located
-                                        // inside an unclosed brace block
-                                        // which is in fact illegal but it's a question
-                                        // of what's best to do in this case.
-                                        // We chose to leave the typed bracket
-                                        // by setting bracketBalance to -1.
-                                        // It can be revised in the future.
-                                        bracketBalance = -1;
+                            case RPAREN:
+                            case RBRACKET:
+                                if (id == bracketId) {
+                                    bracketBalance--;
+                                    if (bracketBalance == 0) {
+                                        if (braceBalance != 0) {
+                                            // Here the bracket is matched but it is located
+                                            // inside an unclosed brace block
+                                            // which is in fact illegal but it's a question
+                                            // of what's best to do in this case.
+                                            // We chose to leave the typed bracket
+                                            // by setting bracketBalance to -1.
+                                            // It can be revised in the future.
+                                            bracketBalance = -1;
+                                        }
+                                        finished = true;
                                     }
+                                }
+                                break;
+
+                            case LBRACE:
+                                braceBalance++;
+                                break;
+
+                            case RBRACE:
+                                braceBalance--;
+                                if (braceBalance < 0) { // stop on extra right brace
                                     finished = true;
                                 }
-                            }
-                            break;
-
-                        case LBRACE:
-                            braceBalance++;
-                            break;
-
-                        case RBRACE:
-                            braceBalance--;
-                            if (braceBalance < 0) { // stop on extra right brace
-                                finished = true;
-                            }
-                            break;
-
+                                break;
+                        }
+                        
                     }
                 // done regardless of finished flag state
                 }
@@ -703,7 +720,7 @@ public class BracketCompletion {
      * @param dotPos position to be tested
      */
     static boolean posWithinQuotes(BaseDocument doc, int dotPos, char quote, CppTokenId[] tokenIDs) {
-        TokenSequence<CppTokenId> cppTS = cppTokenSequence(doc, dotPos, true);
+        TokenSequence<TokenId> cppTS = cppTokenSequence(doc, dotPos, true);
         if (cppTS != null && matchIDs(cppTS.token().id(), tokenIDs)) {
             return (dotPos - cppTS.offset() == 1 || DocumentUtilities.getText(doc).charAt(dotPos - 1) != quote);
         }
@@ -711,16 +728,19 @@ public class BracketCompletion {
     }
 
     static boolean posWithinAnyQuote(BaseDocument doc, int dotPos) {
-        TokenSequence<CppTokenId> cppTS = cppTokenSequence(doc, dotPos - 1, false);
+        TokenSequence<TokenId> cppTS = cppTokenSequence(doc, dotPos - 1, false);
         if (cppTS != null) {
-            switch (cppTS.token().id()) {
-                case STRING_LITERAL:
-                case CHAR_LITERAL:
-                case PREPROCESSOR_USER_INCLUDE:
-                case PREPROCESSOR_SYS_INCLUDE:
-                {
-                    char ch = DocumentUtilities.getText(doc).charAt(dotPos - 1);
-                    return (dotPos - cppTS.offset() == 1 || (ch != '"' && ch != '\''));
+            TokenId id = cppTS.token().id();
+            if(id instanceof CppTokenId) {
+                switch ((CppTokenId)id) {
+                    case STRING_LITERAL:
+                    case CHAR_LITERAL:
+                    case PREPROCESSOR_USER_INCLUDE:
+                    case PREPROCESSOR_SYS_INCLUDE:
+                    {
+                        char ch = DocumentUtilities.getText(doc).charAt(dotPos - 1);
+                        return (dotPos - cppTS.offset() == 1 || (ch != '"' && ch != '\''));
+                    }
                 }
             }
         }
@@ -734,7 +754,7 @@ public class BracketCompletion {
         } catch (BadLocationException e) {
             return false;
         }
-        TokenSequence<CppTokenId> cppTS = cppTokenSequence(doc, lastNonWhiteOffset, false);
+        TokenSequence<TokenId> cppTS = cppTokenSequence(doc, lastNonWhiteOffset, false);
         if (cppTS != null) {
             return matchIDs(cppTS.token().id(), tokenIDs);
         }
@@ -750,7 +770,7 @@ public class BracketCompletion {
         return false;
     }
 
-    static boolean matchIDs(CppTokenId toCheck, CppTokenId[] checkWith) {
+    static boolean matchIDs(TokenId toCheck, CppTokenId[] checkWith) {
         for (int i = checkWith.length - 1; i >= 0; i--) {
             if (toCheck == checkWith[i]) {
                 return true;
@@ -800,7 +820,7 @@ public class BracketCompletion {
     /**
      * Token processor for finding of balance of brackets and braces.
      */
-    private static class BalanceTokenProcessor extends CndAbstractTokenProcessor<Token<CppTokenId>> {
+    private static class BalanceTokenProcessor extends CndAbstractTokenProcessor<Token<TokenId>> {
 
         private CppTokenId leftTokenID;
         private CppTokenId rightTokenID;
@@ -814,41 +834,44 @@ public class BracketCompletion {
         }
 
         @Override
-        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<TokenId> token, int tokenOffset) {
             if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
                 return true;
             }
-            switch (token.id()) {
-                case NEW_LINE:
-                    isDefine = false;
-                    break;
-                case PREPROCESSOR_DEFINE:
-                    isDefine = true;
-                    break;
-                case PREPROCESSOR_IF:
-                case PREPROCESSOR_IFDEF:
-                case PREPROCESSOR_IFNDEF:
-                    stack.push(balance);
-                    break;
-                case PREPROCESSOR_ELSE:
-                case PREPROCESSOR_ELIF:
-                    if (!stack.empty()) {
-                        balance = stack.peek();
-                    }
-                    break;
-                case PREPROCESSOR_ENDIF:
-                    if (!stack.empty()) {
-                        stack.pop();
-                    }
-                    break;
-                default:
-                    if (!isDefine) {
-                        if (token.id() == leftTokenID) {
-                            balance++;
-                        } else if (token.id() == rightTokenID) {
-                            balance--;
+            TokenId id = token.id();
+            if(id instanceof CppTokenId) {
+                switch ((CppTokenId)id) {
+                    case NEW_LINE:
+                        isDefine = false;
+                        break;
+                    case PREPROCESSOR_DEFINE:
+                        isDefine = true;
+                        break;
+                    case PREPROCESSOR_IF:
+                    case PREPROCESSOR_IFDEF:
+                    case PREPROCESSOR_IFNDEF:
+                        stack.push(balance);
+                        break;
+                    case PREPROCESSOR_ELSE:
+                    case PREPROCESSOR_ELIF:
+                        if (!stack.empty()) {
+                            balance = stack.peek();
                         }
-                    }
+                        break;
+                    case PREPROCESSOR_ENDIF:
+                        if (!stack.empty()) {
+                            stack.pop();
+                        }
+                        break;
+                    default:
+                        if (!isDefine) {
+                            if (token.id() == leftTokenID) {
+                                balance++;
+                            } else if (token.id() == rightTokenID) {
+                                balance--;
+                            }
+                        }
+                }
             }
             return false;
         }

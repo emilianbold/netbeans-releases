@@ -217,8 +217,12 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
             if (slqResult == null) {
                 return true;
             }
+            String sl = slqResult.getSourceLevel();
+            if (sl == null) {
+                return true;
+            }
             try {
-                final SpecificationVersion sourceLevel = new SpecificationVersion(slqResult.getSourceLevel());
+                final SpecificationVersion sourceLevel = new SpecificationVersion(sl);
                 if (JDK_5.compareTo(sourceLevel)<0) {
                     return true;
                 }

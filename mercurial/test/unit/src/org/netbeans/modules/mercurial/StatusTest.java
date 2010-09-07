@@ -47,11 +47,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 
 /**
  *
@@ -101,6 +98,36 @@ public class StatusTest extends AbstractHgTest {
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);    
         }                
+    }
+
+    public void testStatusCopied () throws HgException, IOException {
+        File folder = createFolder("folder");
+        File file1 = createFile(folder, "file1");
+        File file2 = new File(folder, "file2");
+
+        commit(folder);
+        write(file1, "change");
+        getCache().refresh(folder); // force refresh
+        HgCommand.doCopy(getWorkDir(), file1, file2, NULL_LOGGER);
+        
+        // assert status given from cli
+        assertStatus(file1, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
+        Map<File, FileInformation> m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(folder));
+        assertEquals(2, m.keySet().size());
+        assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, m.get(file1).getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, m.get(file2).getStatus());
+        assertTrue(m.get(file2).getStatus(null).isCopied());
+
+        // assert status given from cli
+        m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(file1));
+        assertEquals(1, m.keySet().size());
+        assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, m.get(file1).getStatus());
+
+        // assert status given from cli
+        m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(file2));
+        assertEquals(1, m.keySet().size());
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, m.get(file2).getStatus());
+        assertTrue(m.get(file2).getStatus(null).isCopied());
     }
     
 }

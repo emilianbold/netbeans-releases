@@ -1161,6 +1161,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                                 menu.add(menuItem);
                             }
                         }
+                        draggingStart = null;
                         menu.show(GlassPane.this, point.x, point.y);
                     }
 
@@ -1178,6 +1179,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if (draggingStart == null) {
+                draggingStart = e.getPoint();
+            }
             if (resizing) {
                 draggingRect = calculateResizingRectangle(e.getPoint(), focusedComponent);
                 calculateResizingGridLocation();
