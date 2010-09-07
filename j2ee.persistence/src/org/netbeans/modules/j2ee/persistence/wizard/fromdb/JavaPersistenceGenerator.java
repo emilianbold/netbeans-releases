@@ -71,6 +71,7 @@ import javax.lang.model.type.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
@@ -601,6 +602,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 return sb.toString();
             }
 
+            private int beanValidationSupported = -1;
+            
+            boolean isBeanValidationSupported() {
+                if (beanValidationSupported == -1) {
+                    final String notNullAnnotation = "javax.validation.constraints.NotNull";    //NOI18N
+                    beanValidationSupported = (copy.getClasspathInfo().getClassPath(PathKind.COMPILE).findResource(notNullAnnotation.replace('.', '/')+".class")!=null)?1:0;
+                }
+                return beanValidationSupported==1 ? true : false;
+            }
+            
             /**
              * Creates a property for an entity member, that is, is creates
              * a field, a getter and a setter method.
@@ -626,6 +637,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     List<ExpressionTree> basicAnnArguments = new ArrayList();
                     basicAnnArguments.add(genUtils.createAnnotationArgument("optional", false)); //NOI18N
                     annotations.add(genUtils.createAnnotation("javax.persistence.Basic", basicAnnArguments)); //NOI18N
+                    //Add @NotNull constraint
+                    if (isBeanValidationSupported()) {   //NOI18N
+                        annotations.add(genUtils.createAnnotation("javax.validation.constraints.NotNull")); //NOI18N
+                    }
                 }
 
                 boolean isLobType = m.isLobType();
@@ -646,6 +661,34 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 Integer length = m.getLength();
                 Integer precision = m.getPrecision();
                 Integer scale = m.getScale();
+
+                if (length != null && isCharacterType(memberType)) {
+                    if (isBeanValidationSupported()) {
+                        if (memberName.equalsIgnoreCase("email")) { //NOI18N
+                            List <ExpressionTree> patternAnnArguments = new ArrayList<ExpressionTree>();
+                            patternAnnArguments.add(genUtils.createAnnotationArgument("regexp", "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\."    //NOI18N
+                                                                                                +"[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@"  //NOI18N
+                                                                                                +"(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"));    //NOI18N
+                            patternAnnArguments.add(genUtils.createAnnotationArgument("message", NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_INVALID_EMAIL")));   //NOI18N
+                            annotations.add(genUtils.createAnnotation("javax.validation.constraints.Pattern", patternAnnArguments)); //NOI18N
+
+                        } else if (memberName.equalsIgnoreCase("phone") || memberName.equalsIgnoreCase("fax")) { //NOI18N
+                            List <ExpressionTree> patternAnnArguments = new ArrayList<ExpressionTree>();
+                            //Pattern for phone in the form (xxx) xxx–xxxx.
+                            patternAnnArguments.add(genUtils.createAnnotationArgument("regexp", "^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$"));   //NOI18N
+                            patternAnnArguments.add(genUtils.createAnnotationArgument("message", NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_INVALID_PHONE")));   //NOI18N
+                            annotations.add(genUtils.createAnnotation("javax.validation.constraints.Pattern", patternAnnArguments)); //NOI18N
+
+                        }
+                        List <ExpressionTree> sizeAnnArguments = new ArrayList<ExpressionTree>();
+                        if (!m.isNullable()) {
+                            sizeAnnArguments.add(genUtils.createAnnotationArgument("min", 1));  //NOI18N
+                        }
+                        sizeAnnArguments.add(genUtils.createAnnotationArgument("max", length)); //NOI18N
+                        annotations.add(genUtils.createAnnotation("javax.validation.constraints.Size", sizeAnnArguments));   //NOI18N
+                    }
+                }
+                
                 if (regenTablesAttrs) {
                     if (length != null && isCharacterType(memberType)) {
                         columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
