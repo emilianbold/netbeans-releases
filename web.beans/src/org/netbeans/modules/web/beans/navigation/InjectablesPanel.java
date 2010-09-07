@@ -260,9 +260,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         }
     }
     
-    protected Element getQualifiedElement( Element context , 
-            CompilationController controller )
-    {
+    protected Element getQualifiedElement( Element context , WebBeansModel model ){
         return context;
     }
 
@@ -405,8 +403,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                                 myInjectableBindings.setText("");
                             }
                             else {
-                                element = getQualifiedElement( element, 
-                                        model.getCompilationController());
+                                element = getQualifiedElement( element, model);
                                 List<AnnotationMirror> bindings = 
                                     model.getQualifiers(element);
                                 StringBuilder builder = new StringBuilder();

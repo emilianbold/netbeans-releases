@@ -42,13 +42,9 @@
  */
 package org.netbeans.modules.web.beans.navigation;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -95,26 +91,12 @@ public class ObserversPanel extends InjectablesPanel {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.InjectablesPanel#getQualifiedElement(javax.lang.model.element.Element)
+     * @see org.netbeans.modules.web.beans.navigation.InjectablesPanel#getQualifiedElement(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel)
      */
     @Override
-    protected Element getQualifiedElement( Element context , 
-            CompilationController controller) 
-    {
+    protected Element getQualifiedElement( Element context , WebBeansModel model) {
         if ( context.getKind() == ElementKind.METHOD){
-            List<? extends VariableElement> parameters = 
-                ((ExecutableElement)context).getParameters();
-            for (VariableElement parameter : parameters) {
-                List<? extends AnnotationMirror> allAnnotationMirrors = 
-                    controller.getElements().getAllAnnotationMirrors( parameter );
-                for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
-                    DeclaredType annotationType = annotationMirror.getAnnotationType();
-                    TypeElement annotation = (TypeElement)annotationType.asElement();
-                    if ( OBSERVES_ANNOTATION.contentEquals( annotation.getQualifiedName())){
-                        return parameter;
-                    }
-                }
-            }
+            model.getObserverParameter((ExecutableElement)context );
         }
         return context;
     }
