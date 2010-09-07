@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -241,12 +242,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         InputStream is = SQLStackDataStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); //NOI18N
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
+            Pattern autoIncrementPattern = Pattern.compile("\\{AUTO_INCREMENT\\}"); //NOI18N
             String line;
             StringBuilder buf = new StringBuilder();
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("-- ")) { //NOI18N
                     continue;
                 }
+                line = autoIncrementPattern.matcher(line).replaceAll(sqlStorage.getAutoIncrementExpresion());
                 buf.append(line);
                 if (line.endsWith(";")) { //NOI18N
                     String sql = buf.toString();
@@ -350,12 +353,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
             TimeIntervalDataFilter timeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, filters);
             PreparedStatement select = getPreparedStatement(
-                    "SELECT Func.func_id, Func.func_name, Func.func_full_name, SUM(FuncMetricAggr.time_incl) AS time_incl, "
+                    "SELECT Func.func_id, Func.func_name, Func.func_full_name, SUM(FuncMetricAggr.time_incl) AS time_incl, " //NOI18N
                     + "SUM(FuncMetricAggr.time_excl) AS time_excl, SourceFiles.source_file " + //NOI18N
                     " FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
                     " LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N                    
                     (timeFilter != null ? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
-                    "GROUP BY Func.func_id, Func.func_name, Func.func_full_name " + // NOI18N
+                    "GROUP BY Func.func_id, Func.func_name, Func.func_full_name, SourceFiles.source_file " + // NOI18N
                     "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             if (timeFilter != null) {
                 select.setLong(1, timeToBucketId(timeFilter.getInterval().getStart()));//.getStartMilliSeconds()));
@@ -490,7 +493,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 ResultSet rs = ps.executeQuery();
                 if (rs != null && rs.next()){
                     //get the id
-                    source_file_index = rs.getInt("id");
+                    source_file_index = rs.getInt("id"); //NOI18N
                 }else{
                     PreparedStatement stmt = getPreparedStatement(
                             "INSERT INTO SourceFiles (source_file) VALUES (?)"); // NOI18N
@@ -549,10 +552,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         StringBuilder buf = new StringBuilder();
         int size = path.size();
 
-        buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl), "
-                + "SourceFiles.source_file  FROM Node AS N "); //NOI18N
+        buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl), " //NOI18N
+                + " S.source_file  FROM Node AS N "); //NOI18N
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
-        buf.append(" LEFT JOIN SourceFiles F.func_source_file_id = SourceFiles.id  "); //NOI18N        
+        buf.append(" LEFT JOIN SourceFiles AS S ON F.func_source_file_id = S.id  "); //NOI18N        
         buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id "); //NOI18N
 
         for (int i = 1; i < size; ++i) {
@@ -567,7 +570,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             buf.append("N").append(i + 1).append(".func_id = "); //NOI18N
             buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
         }
-        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name, S.source_file"); //NOI18N
         return buf.toString();
     }
 
@@ -575,13 +578,16 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         StringBuilder buf = new StringBuilder();
         int size = path.size();
 
-        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 "); //NOI18N
+        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl), " //NOI18N
+                + " S.source_file  FROM Node AS N1 "); //NOI18N
         for (int i = 1; i < size; ++i) {
             buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
         }
         buf.append(" INNER JOIN Node N ON N").append(size).append(".node_id = N.caller_id "); //NOI18N
-        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id WHERE "); //NOI18N
+        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
+        buf.append(" LEFT JOIN SourceFiles  AS S ON F.func_source_file_id = S.id  "); //NOI18N                                
+        buf.append(" WHERE "); //NOI18N
         for (int i = 0; i < size; ++i) {
             if (0 < i) {
                 buf.append(" AND "); //NOI18N
@@ -589,7 +595,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             buf.append(" N").append(i + 1).append(".func_id = "); //NOI18N
             buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
         }
-        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name, S.source_file"); //NOI18N
         return buf.toString();
     }
 
@@ -1038,7 +1044,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         @Override
         public String getDisplayedName() {
             if (hasLineNumber()){
-                return getFunction().getName() + "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI1*N
+                return getFunction().getName() + "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
             }
             return getFunction().getName() + (hasOffset() ? ("+0x" + Long.toHexString(getOffset())) : ""); //NOI18N
         }
@@ -1080,7 +1086,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         @Override
         public int getLineNumber() {
             
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
     }
     
@@ -1196,7 +1202,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                 if (cmd instanceof AddSourceFileInfo) {
                                     AddSourceFileInfo addSourceFileInfo = (AddSourceFileInfo) cmd;
                                     //demagle here
-                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO SourceFiles (source_file) "
+                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO SourceFiles (source_file) " //NOI18N
                                             + "VALUES ( ?)"); //NOI18N
                                     stmt.setString(1, truncateString(addSourceFileInfo.sourceFile.toString()));
                                     stmt.executeUpdate();
@@ -1204,8 +1210,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                 } else if(cmd instanceof AddFunction) {
                                     AddFunction addFunctionCmd = (AddFunction) cmd;
                                     //demagle here
-                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name, "
-                                            + "func_source_file_id) "
+                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name, " //NOI18N
+                                            + "func_source_file_id) " //NOI18N
                                             + "VALUES (?, ?, ?, ?)"); //NOI18N
                                     stmt.setLong(1, addFunctionCmd.id);
                                     stmt.setString(2, truncateString(addFunctionCmd.name.toString()));
@@ -1214,8 +1220,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                     stmt.executeUpdate();
                                 } else if (cmd instanceof AddNode) {
                                     AddNode addNodeCmd = (AddNode) cmd;
-                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, "
-                                            + "time_incl, time_excl, line_number) "
+                                    PreparedStatement stmt = getPreparedStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, " //NOI18N
+                                            + "time_incl, time_excl, line_number) " //NOI18N
                                             + "VALUES (?, ?, ?, ?, ?, ?, ?)"); //NOI18N
                                     stmt.setLong(1, addNodeCmd.id);
                                     stmt.setLong(2, addNodeCmd.callerId);

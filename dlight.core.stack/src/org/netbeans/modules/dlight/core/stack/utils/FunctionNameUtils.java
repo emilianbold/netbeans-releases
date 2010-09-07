@@ -53,22 +53,22 @@ public final class FunctionNameUtils {
     }
 
     public static SourceFileInfo getSourceFileInfo(String functionSignature) {
-        int indexOf = functionSignature.lastIndexOf("+");
+        int indexOf = functionSignature.lastIndexOf("+"); //NOI18N
         //now we should get source file info (if presented)
         while (indexOf > 0) {
             if (functionSignature.length() > indexOf + 1
-                    && functionSignature.charAt(indexOf + 1) == '0') {
+                    && functionSignature.charAt(indexOf + 1) == '0') { //NOI18N
                 break;
             }
-            indexOf = functionSignature.indexOf("+", indexOf + 1);
+            indexOf = functionSignature.indexOf("+", indexOf + 1); //NOI18N
         }
         //here we are: after the function offset there could be : which starts file:line
-        int indexOfFile = functionSignature.indexOf(":", indexOf);
+        int indexOfFile = functionSignature.indexOf(":", indexOf); //NOI18N
         if (indexOfFile < 0) {
             return null;
         }
         String _file = functionSignature.substring(indexOfFile + 1);
-        int index = _file.indexOf(":");
+        int index = _file.indexOf(":"); //NOI18N
         if (index < 0) {
             return new SourceFileInfo(_file, -1);
         }
@@ -78,13 +78,13 @@ public final class FunctionNameUtils {
     }
 
     public static String getFunctionOffset(String functionSignature) {
-        int indexOf = functionSignature.indexOf("+");
+        int indexOf = functionSignature.indexOf("+"); //NOI18N
         while (indexOf > 0) {
             if (functionSignature.length() > indexOf + 1
-                    && functionSignature.charAt(indexOf + 1) == '0') {
+                    && functionSignature.charAt(indexOf + 1) == '0') { //NOI18N
                 return functionSignature.substring(indexOf + 1);
             }
-            indexOf = functionSignature.indexOf("+", indexOf + 1);
+            indexOf = functionSignature.indexOf("+", indexOf + 1); //NOI18N
         }
         return null;
     }
@@ -97,13 +97,13 @@ public final class FunctionNameUtils {
 
         String moduleName = functionSignature.substring(0, indexOf);
         //check if there is a + sign inside
-        int indexOfPl = moduleName.indexOf("+");
+        int indexOfPl = moduleName.indexOf("+"); //NOI18N
         while (indexOfPl > 0) {
             if (moduleName.length() > indexOfPl + 1
-                    && moduleName.charAt(indexOfPl + 1) == '0') {
+                    && moduleName.charAt(indexOfPl + 1) == '0') { //NOI18N
                 return moduleName.substring(0, indexOfPl);
             }
-            indexOfPl = moduleName.indexOf("+", indexOfPl + 1);
+            indexOfPl = moduleName.indexOf("+", indexOfPl + 1); //NOI18N
         }
         return moduleName;
     }
@@ -120,9 +120,9 @@ public final class FunctionNameUtils {
     }
 
     /**
-     * returns function quilified name
-     * @param functionSignature is [type][*|&][space][q-name-namspace::][q-name-class::]name[(prameter-list)]+offset
-     * @return [q-name-namspace::][q-name-class::]name
+     * returns function qualified name
+     * @param functionSignature is [type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
+     * @return [q-name-namespace::][q-name-class::]name
      */
     public static String getFunctionQName(String functionSignature) {
         int start = 0;

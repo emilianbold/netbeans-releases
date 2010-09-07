@@ -275,6 +275,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
+    @Override
     public final boolean isStatic() {
         return hasFlags(FLAGS_STATIC);
     }

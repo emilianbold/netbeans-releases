@@ -89,7 +89,7 @@ public final class H2DataStorage extends SQLDataStorage {
 
     static {
         try {
-            Class driver = Class.forName("org.h2.Driver"); // NOI18N
+            Class<?> driver = Class.forName("org.h2.Driver"); // NOI18N
             logger.log(Level.FINE, "Driver for H2DB ({0}) Loaded ", driver.getName()); // NOI18N
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -271,18 +271,18 @@ public final class H2DataStorage extends SQLDataStorage {
 //        return stackStorage.getHotSpotFunctions(metric, limit);
 //    }
     @Override
-    protected String getSQLQueriesDelimeter() {
+    public String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
     }
     
     @Override
-    protected String getAutoIncrementExpresion() {
-        return "AUTO_INCREMENT";
+    public String getAutoIncrementExpresion() {
+        return "AUTO_INCREMENT"; // NOI18N
     }
 
     @Override
-    protected String getPrimaryKeyExpression() {
-        return "PRIMARY KEY";
+    public String getPrimaryKeyExpression() {
+        return "PRIMARY KEY"; // NOI18N
     }    
 
 //    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
@@ -305,7 +305,7 @@ public final class H2DataStorage extends SQLDataStorage {
     @Override
     public void loadSchema(){
         try {
-            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null, 
+            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null,  // NOI18N
                     "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'");// NOI18N
             if (rs == null) {
                 return;

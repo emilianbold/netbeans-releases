@@ -2772,13 +2772,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return cc != null ? cc : ClassifierContainer.empty();
     }
 
-    private static final class WeakContainer<T> {
+    public static final class WeakContainer<T> {
 
         private WeakReference<T> weakContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;
         private int preventMultiplyDiagnosticExceptionsSorage = 0;
         private final ProjectBase project;
         private final Key sorageKey;
-        private WeakContainer(ProjectBase project, Key sorageKey) {
+        public WeakContainer(ProjectBase project, Key sorageKey) {
             this.project = project;
             this.sorageKey = sorageKey;
         }

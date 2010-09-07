@@ -136,6 +136,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = GRAPH_CONTAINER;
         } else if (object instanceof FileImpl) {
             aHandler = FILE_IMPL;
+        } else if (object instanceof FileComponentDeclarations) {
+            aHandler = FILE_DECLARATIONS;
 //        } else if (object instanceof Unresolved.UnresolvedFile) {
 //            aHandler = UNRESOLVED_FILE;
 //        } else if (object instanceof Unresolved.UnresolvedClass) {
@@ -297,6 +299,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
             case FILE_IMPL:
                 obj = new FileImpl(stream);
+                break;
+
+            case FILE_DECLARATIONS:
+                obj = new FileComponentDeclarations(stream);
                 break;
 
 //            case UNRESOLVED_FILE:
@@ -529,7 +535,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int DECLARATION_CONTAINER	        = GRAPH_CONTAINER + 1;
     private static final int CLASSIFIER_CONTAINER           = DECLARATION_CONTAINER + 1;
     private static final int FILE_IMPL                      = CLASSIFIER_CONTAINER + 1;
-    private static final int ENUM_IMPL                      = FILE_IMPL + 1;
+    private static final int FILE_DECLARATIONS              = FILE_IMPL + 1;
+    private static final int ENUM_IMPL                      = FILE_DECLARATIONS + 1;
     private static final int CLASS_IMPL_SPECIALIZATION      = ENUM_IMPL + 1;
     private static final int FORWARD_CLASS                  = CLASS_IMPL_SPECIALIZATION + 1;
     private static final int CLASS_IMPL                     = FORWARD_CLASS + 1;
