@@ -84,7 +84,7 @@ public class PositionManager {
         Key key = KeyUtilities.createFileKey((FileImpl) uid.getObject());
         if (IMPL == Impl.optimistic || IMPL == Impl.full) {
             @SuppressWarnings("unchecked")
-            SortedMap<FilePositionKey, Position> storage = (SortedMap<FilePositionKey, Position>)RepositoryAccessor.getRepository().getStorage(key, "position");
+            SortedMap<FilePositionKey, Position> storage = (SortedMap<FilePositionKey, Position>)RepositoryAccessor.getRepository().getStorage(key, "position"); //NOI18N
             FilePositionKey positionKey = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), posID);
             Position position = storage.get(positionKey);
             return position.getOffset();
@@ -103,7 +103,7 @@ public class PositionManager {
         int maxPositionId = 0;
         if (IMPL == Impl.optimistic || IMPL == Impl.full) {
             @SuppressWarnings("unchecked")
-            SortedMap<FilePositionKey, Position> storage = (SortedMap<FilePositionKey, Position>)RepositoryAccessor.getRepository().getStorage(key, "position");
+            SortedMap<FilePositionKey, Position> storage = (SortedMap<FilePositionKey, Position>)RepositoryAccessor.getRepository().getStorage(key, "position"); //NOI18N
             if (IMPL == Impl.full) {
                 FilePositionKey positionStart = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), 0);
                 FilePositionKey positionEnd = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), Integer.MAX_VALUE);
