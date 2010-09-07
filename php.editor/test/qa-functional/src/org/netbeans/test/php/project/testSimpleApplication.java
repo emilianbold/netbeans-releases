@@ -42,28 +42,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.insert;
+package org.netbeans.test.php.project;
 
-import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-//import org.netbeans.jemmy.util.Dumper;
-
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class insert_0003 extends insert
+public class testSimpleApplication extends project
 {
-  static final String TEST_PHP_NAME = "PhpProject_insert_0003";
+  static final String TEST_PHP_NAME = "PhpProject_project_0001";
 
-  public insert_0003( String arg0 )
+  public testSimpleApplication( String arg0 )
   {
     super( arg0 );
   }
@@ -71,9 +67,9 @@ public class insert_0003 extends insert
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( insert_0003.class ).addTest(
-          "CreateApplication",
-          "InsertSetter"
+      NbModuleSuite.createConfiguration( testSimpleApplication.class ).addTest(
+          "CreateSimpleApplicationDefault",
+          "CreateSimpleApplicationCustom"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -81,72 +77,47 @@ public class insert_0003 extends insert
       );
   }
 
-  public void CreateApplication( )
+  // Default name
+  public void CreateSimpleApplicationDefault( )
+  {
+    startTest( );
+
+    //for( int i = 0; i < 2; i++ )
+    {
+      String sProjectName = CreatePHPApplicationInternal( );
+
+      // Check created in tree
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode(
+          sProjectName + "|Source Files|" + "index.php"
+        );
+      prn.select( );
+
+      // Check index.php in editor
+      new EditorOperator( "index.php" );
+    }
+
+    endTest( );
+  }
+
+  // Custom name
+  public void CreateSimpleApplicationCustom( )
   {
     startTest( );
 
     CreatePHPApplicationInternal( TEST_PHP_NAME );
 
-    endTest( );
-  }
+    // Check created in tree
+    ProjectsTabOperator pto = new ProjectsTabOperator( );
+    ProjectRootNode prn = pto.getProjectRootNode(
+        TEST_PHP_NAME + "|Source Files|" + "index.php"
+      );
+    prn.select( );
 
-  public void InsertSetter( ) throws Exception
-  {
-    startTest( );
-
-    // Invoke Alt+Insert without any code
-    // List should contain two database related items
-
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here\n", false );
-    eoPHP.insert( "\nclass name\n{\npublic $a;\nprotected $b;\nprivate $c, $d;\n}" );
-    eoPHP.setCaretPosition( "$d;\n", false );
-    Sleep( 1000 );
-    InvokeInsert( eoPHP );
-    Sleep( 1000 );
-
-    JDialogOperator jdInsetter = new JDialogOperator( );
-    JListOperator jlList = new JListOperator( jdInsetter );
-
-    ClickListItemNoBlock( jlList, 2, 1 );
-
-    JDialogOperator jdGenerator = new JDialogOperator( "Generate Setters" );
-
-    // Sleect all but $c
-    JTreeOperator jtTree = new JTreeOperator( jdGenerator, 0 );
-    jtTree.clickOnPath( jtTree.findPath( "a" ) );
-    jtTree.clickOnPath( jtTree.findPath( "b" ) );
-    jtTree.clickOnPath( jtTree.findPath( "d" ) );
-
-    JButtonOperator jbOk = new JButtonOperator( jdGenerator, "OK" );
-    jbOk.pushNoBlock( );
-    jdGenerator.waitClosed( );
-
-    // Check result
-    /*
-    String[] asResult =
-    {
-      "public function setA($a)",
-      "{",
-      "$this->a = $a;",
-      "}",
-      "",
-      "public function setB($b)",
-      "{",
-      "$this->b = $b;",
-      "}",
-      "",
-      "public function setD($d)",
-      "{",
-      "$this->d = $d;",
-      "}"
-    };
-    CheckResult( eoPHP, asResult, -15 );
-    */
-    CheckFlex( eoPHP, "public function setA($a){$this->a=$a;}public function setB($b){$this->b=$b;}public function setD($d){$this->d=$d;}", false );
+    // Check index.php in editor
+    new EditorOperator( "index.php" );
 
     endTest( );
   }
+
 }

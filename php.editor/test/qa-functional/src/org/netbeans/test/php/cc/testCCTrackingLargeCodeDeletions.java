@@ -44,7 +44,7 @@
 
 package org.netbeans.test.php.cc;
 
-import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
@@ -54,11 +54,13 @@ import junit.framework.Test;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141880 extends cc
+public class testCCTrackingLargeCodeDeletions extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141880";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141992";
 
-  public Issue141880( String arg0 )
+  static final int AAA_LIST_SIZE = 999;
+
+  public testCCTrackingLargeCodeDeletions( String arg0 )
   {
     super( arg0 );
   }
@@ -66,9 +68,9 @@ public class Issue141880 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141880.class ).addTest(
+      NbModuleSuite.createConfiguration( testCCTrackingLargeCodeDeletions.class ).addTest(
           "CreateApplication",
-          "Issue141880"
+          "Issue141992"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -85,7 +87,7 @@ public class Issue141880 extends cc
     endTest( );
   }
 
-  public void Issue141880( ) throws Exception
+  public void Issue141992( ) throws Exception
   {
     startTest( );
 
@@ -94,34 +96,37 @@ public class Issue141880 extends cc
     Sleep( 1000 );
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    eoPHP.insert( "\n$aaa = \"Hello\";\n" );
-    Sleep( 1000 );
 
     // Check constructor
-    String sCode = "$bbb = \"$a";
-    for( int i = 0; i < sCode.length( ); i++ )
+    String sCode = "";
+    for( int i = 1; i < 1000; i++ )
     {
-      // Press Ctrl+Space
-      eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 1000 );
+      sCode = sCode + "\nclass a" + i + ( ( 1 == i ) ? "" : ( " extends a" + ( i - 1 ) ) ) + "\n{\npublic $a" + i + ";\n}";
     }
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
+    eoPHP.insert( sCode );
+    Sleep( 2000 );
+    TypeCode( eoPHP, "\n\n$z = new a999();\n$z->" );
 
     // Check code completion list
-
-    String[] asIdeals = { "$aaa", "$argc", "$argv" };
-
     CompletionInfo jCompl = GetCompletion( );
+    if( null == jCompl )
+      fail( "Unable to find completion list in any form." );
     //List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
-    if( asIdeals.length != jCompl.size( ) )
-      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + asIdeals.length );
-    // Check each
-    CheckCompletionItems( jCompl, asIdeals );
+    if( AAA_LIST_SIZE != jCompl.size( ) )
+      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + AAA_LIST_SIZE );
 
     jCompl.hideAll( );
+
+    // Remove added code
+    eoPHP.select( 10, eoPHP.getLineNumber( ) );
+    eoPHP.pressKey( KeyEvent.VK_DELETE );
+
+    // Strat new declaration
+    eoPHP.setCaretPosition( "// put your code here", false );
+    TypeCode( eoPHP, "\nclass a\n{\n" );
+    Sleep( 1000 );
+    TypeCode( eoPHP, "$" );
 
     endTest( );
   }

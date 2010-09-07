@@ -42,22 +42,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.insert;
 
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+//import org.netbeans.jemmy.util.Dumper;
+
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue143454 extends cc
+public class testInsertGetterAndSetter extends insert
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue143454";
+  static final String TEST_PHP_NAME = "PhpProject_insert_0004";
 
-  public Issue143454( String arg0 )
+  public testInsertGetterAndSetter( String arg0 )
   {
     super( arg0 );
   }
@@ -65,9 +71,9 @@ public class Issue143454 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue143454.class ).addTest(
+      NbModuleSuite.createConfiguration( testInsertGetterAndSetter.class ).addTest(
           "CreateApplication",
-          "Issue143454"
+          "InsertGetterAndSetter"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -84,15 +90,75 @@ public class Issue143454 extends cc
     endTest( );
   }
 
-  public void Issue143454( ) throws Exception
+  public void InsertGetterAndSetter( ) throws Exception
   {
     startTest( );
 
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
     // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
+    eoPHP.setCaretPosition( "// put your code here\n", false );
+    eoPHP.insert( "\nclass name\n{\npublic $a;\nprotected $b;\nprivate $c, $d;\n}" );
+    eoPHP.setCaretPosition( "$d;\n", false );
+    Sleep( 1000 );
+    InvokeInsert( eoPHP );
+    Sleep( 1000 );
+
+    JDialogOperator jdInsetter = new JDialogOperator( );
+    JListOperator jlList = new JListOperator( jdInsetter );
+
+    ClickListItemNoBlock( jlList, 3, 1 );
+
+    JDialogOperator jdGenerator = new JDialogOperator( "Generate Getters and Setters" );
+
+    // Sleect all but $c
+    JTreeOperator jtTree = new JTreeOperator( jdGenerator, 0 );
+    jtTree.clickOnPath( jtTree.findPath( "a" ) );
+    jtTree.clickOnPath( jtTree.findPath( "b" ) );
+    jtTree.clickOnPath( jtTree.findPath( "d" ) );
+
+    JButtonOperator jbOk = new JButtonOperator( jdGenerator, "OK" );
+    jbOk.pushNoBlock( );
+    jdGenerator.waitClosed( );
+
+    // Check result
+    /*
+    String[] asResult =
+    {
+      "public function getA()",
+      "{",
+      "return $this->a;",
+      "}",
+      "",
+      "public function setA($a)",
+      "{",
+      "$this->a = $a;",
+      "}",
+      "",
+      "public function getB()",
+      "{",
+      "return $this->b;",
+      "}",
+      "",
+      "public function setB($b)",
+      "{",
+      "$this->b = $b;",
+      "}",
+      "",
+      "public function getD()",
+      "{",
+      "return $this->d;",
+      "}",
+      "",
+      "public function setD($d)",
+      "{",
+      "$this->d = $d;",
+      "}",
+      "",
+    };
+    CheckResult( eoPHP, asResult, -30 );
+    */
+    CheckFlex( eoPHP, "public function getA(){return $this->a;}public function setA($a){$this->a=$a;}public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getD(){return $this->d;}public function setD($d){$this->d=$d;}", false );
 
     endTest( );
   }

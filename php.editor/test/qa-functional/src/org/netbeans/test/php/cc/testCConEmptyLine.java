@@ -42,22 +42,26 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.notes;
+package org.netbeans.test.php.cc;
 
+import java.awt.event.InputEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 
 /**
  *
+ * http://netbeans.org/bugzilla/show_bug.cgi?id=141854
+ * 
  * @author michaelnazarov@netbeans.org
+ * 
  */
 
-public class notes_0001 extends notes
+public class testCConEmptyLine extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject_notes_0001";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141854";
 
-  public notes_0001( String arg0 )
+  public testCConEmptyLine( String arg0 )
   {
     super( arg0 );
   }
@@ -65,9 +69,9 @@ public class notes_0001 extends notes
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( notes_0001.class ).addTest(
+      NbModuleSuite.createConfiguration( testCConEmptyLine.class ).addTest(
           "CreateApplication",
-          "Notes"
+          "Issue141854"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -84,36 +88,29 @@ public class notes_0001 extends notes
     endTest( );
   }
 
-  public void Notes( ) throws Exception
+  public void Issue141854( ) throws Exception
   {
     startTest( );
 
-    try
-    {
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
+    Sleep( 1000 );
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
     // Add new line
     eoPHP.insert( "\n" );
-    System.out.println( "===X" );
-    TypeCode( eoPHP, "class a extends 1" );
-    System.out.println( "===A" );
-    Sleep( 30000 );
-    System.out.println( "===B" );
-    Object[] oo = eoPHP.getAnnotations( );
-    System.out.println( "===C" );
-    System.out.println( "+++" + oo.length );
-    for( Object o : oo )
-    {
-      System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
-    }
-    Sleep( 10000 );
-    }
-    catch( Exception ex )
-    {
-      System.out.println( "!!!" );
-    }
+    Sleep( 1000 );
+    // Press Ctrl+Space
+    eoPHP.typeKey( ' '/*KeyEvent.VK_SPACE*/, InputEvent.CTRL_MASK );
+    Sleep( 1000 );
+    // Check code completion list
+    CompletionInfo jCompl = GetCompletion( );
+    //List list = jCompl.getCompletionItems( );
+    // Magic CC number for complete list
+    if( COMPLETION_LIST_THRESHOLD > jCompl.listItems.size( ) )
+      fail( "Invalid CC list size: " + jCompl.listItems.size( ) + ", expected: " + COMPLETION_LIST_THRESHOLD );
+
+    jCompl.listItself.hideAll( );
 
     endTest( );
   }

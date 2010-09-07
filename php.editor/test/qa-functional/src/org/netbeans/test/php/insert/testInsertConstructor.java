@@ -42,23 +42,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.folds;
+package org.netbeans.test.php.insert;
 
-import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+//import org.netbeans.jemmy.util.Dumper;
+
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class folds_0001 extends folds
+public class testInsertConstructor extends insert
 {
-  static final String TEST_PHP_NAME = "PhpProject_folds_0001";
+  static final String TEST_PHP_NAME = "PhpProject_insert_0001";
 
-  public folds_0001( String arg0 )
+  public testInsertConstructor( String arg0 )
   {
     super( arg0 );
   }
@@ -66,9 +70,9 @@ public class folds_0001 extends folds
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( folds_0001.class ).addTest(
+      NbModuleSuite.createConfiguration( testInsertConstructor.class ).addTest(
           "CreateApplication",
-          "FoldIt"
+          "InsertConstructor"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -85,27 +89,46 @@ public class folds_0001 extends folds
     endTest( );
   }
 
-  public void FoldIt( ) throws Exception
+  public void InsertConstructor( ) throws Exception
   {
     startTest( );
 
-    // Get editor
+    // Invoke Alt+Insert without any code
+    // List should contain two database related items
+
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 30000 );
-    for( int i = 1; i <= 12; i++ )
+    // Locate comment
+    eoPHP.setCaretPosition( "// put your code here\n", false );
+    eoPHP.insert( "\nclass a\n{\n\n}" );
+    eoPHP.setCaretPosition( "{\n", false );
+    Sleep( 1000 );
+    InvokeInsert( eoPHP );
+    Sleep( 1000 );
+
+    JDialogOperator jdInsetter = new JDialogOperator( );
+    JListOperator jlList = new JListOperator( jdInsetter );
+
+    ClickListItemNoBlock( jlList, 0, 1 );
+
+    JDialogOperator jdGenerator = new JDialogOperator( "Generate Constructor" );
+    JButtonOperator jbOk = new JButtonOperator( jdGenerator, "OK" );
+    jbOk.pushNoBlock( );
+    jdGenerator.waitClosed( );
+
+    // Check result
+    /*
+    String[] asResult =
     {
-      try
-      {
-        eoPHP.collapseFold( i );
-        eoPHP.expandFold( i );
-        System.out.println( "+++" + i );
-      }
-      catch( JemmyException ex )
-      {
-        System.out.println( "---" + i );
-      }
-    }
+      "class a",
+      "{",
+      "function __construct()",
+      "{",
+      "}"
+    };
+    CheckResult( eoPHP, asResult, -3 );
+    */
+    CheckFlex( eoPHP, "class a{function __construct(){}", false );
 
     endTest( );
   }
