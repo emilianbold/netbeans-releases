@@ -49,31 +49,57 @@ public abstract class FunctionCallWithMetric implements FunctionCall {
 
     private final Function function;
     private final long offset;
+    private  int lineNumber;
 
     protected FunctionCallWithMetric(Function function) {
         this(function, -1);
     }
 
     protected FunctionCallWithMetric(Function function, long offset) {
+        this(function, offset, -1);
+    }
+    
+    protected FunctionCallWithMetric(Function function, long offset, int lineNumber) {
         this.function = function;
         this.offset = offset;
+        this.lineNumber = lineNumber;
+    }    
+    
+    protected final void setLineNumber(int lineNumber){
+        this.lineNumber = lineNumber;
     }
 
+    @Override
     public String getDisplayedName() {
         return getFunction().getName();
     }
 
+    @Override
     public final Function getFunction() {
         return function;
     }
 
+    @Override
     public final long getOffset() {
         return offset;
     }
 
+    @Override
     public final boolean hasOffset() {
         return offset >= 0;
     }
+    
+    @Override
+    public final boolean hasLineNumber() {
+        return lineNumber >= 0;
+    }
+
+    @Override
+    public int getLineNumber() {
+        return lineNumber;
+    }
+    
+    
 
     public abstract Object getMetricValue(FunctionMetric metric);
 

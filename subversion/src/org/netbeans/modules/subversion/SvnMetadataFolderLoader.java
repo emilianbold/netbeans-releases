@@ -37,39 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api;
+
+package org.netbeans.modules.subversion;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
 
 /**
- * Function represents an offset in the function.
- * Representation format is:
- * [library`][type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
+ * Prevents refactoring from creating DataObjects for .svn folders and
+ * therefore touching (copying/moving) them.
+ *
+ * @author Tomas Stupka
  */
-public interface Function {
+public class SvnMetadataFolderLoader extends DataLoader {
 
-    /**
-     * @return [type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
-     */
-    public String getName();
+    public SvnMetadataFolderLoader() {
+        super(DataFolder.class.getName());
+    }
 
-    /**
-     *
-     * @return [q-name-namespace::][q-name-class::]name
-     */
-    public String getQuilifiedName();
+    @Override
+    protected DataObject handleFindDataObject(FileObject fo, RecognizedFiles recognized) throws IOException {
+        if(!fo.isFolder() || !fo.getName().endsWith("svn")) {                   // NOI18N
+            return null;
+        }
 
-    /**
-     *
-     * @return [library`][type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
-     */
-    public String getSignature();
-    
-    
-    public String getModuleName();
-    
-    public String getModuleOffset();
-    
-    public  String getSourceFile();
-    
+        File f = FileUtil.toFile(fo);
+        if(f == null) {
+            return null;
+        }
+        
+        if(SvnUtils.isPartOfSubversionMetadata(f)) {
+            throw new SvnMetadataIOEXception(f);
+        }
+        return null;
+    }
+
+    private class SvnMetadataIOEXception extends IOException implements Callable<LogRecord[]> {
+        private final File f;
+        public SvnMetadataIOEXception(File f) {
+            this.f = f;
+        }
+        @Override
+        public LogRecord[] call() throws Exception {
+            return  new LogRecord[] {
+                new LogRecord(Level.FINE, "do not create DO for .svn metadata: " + f)   // NOI18N
+            };
+        }
+    }
 }

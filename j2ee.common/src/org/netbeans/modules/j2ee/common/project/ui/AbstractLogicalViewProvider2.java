@@ -37,39 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api;
+
+package org.netbeans.modules.j2ee.common.project.ui;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
- * Function represents an offset in the function.
- * Representation format is:
- * [library`][type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
+ * AbstractLogicalViewProvider enhanced with initialization state.
+ *
+ * @since 1.54
+ * @author Petr Hejl
  */
-public interface Function {
+public abstract class AbstractLogicalViewProvider2 extends AbstractLogicalViewProvider {
 
-    /**
-     * @return [type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
-     */
-    public String getName();
+    private volatile boolean initialized;
 
-    /**
-     *
-     * @return [q-name-namespace::][q-name-class::]name
-     */
-    public String getQuilifiedName();
+    protected AbstractLogicalViewProvider2(Project project, UpdateHelper helper,
+            PropertyEvaluator evaluator, ReferenceHelper resolver, J2eeModuleProvider j2eeModuleProvider) {
+        super(project, helper, evaluator, resolver, j2eeModuleProvider);
+    }
 
-    /**
-     *
-     * @return [library`][type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
-     */
-    public String getSignature();
-    
-    
-    public String getModuleName();
-    
-    public String getModuleOffset();
-    
-    public  String getSourceFile();
-    
+    public void initialize() {
+        initialized = true;
+    }
+
+    @Override
+    protected boolean isInitialized() {
+        return super.isInitialized() && initialized;
+    }
 }

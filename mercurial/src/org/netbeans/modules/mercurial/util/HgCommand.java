@@ -1980,11 +1980,7 @@ public class HgCommand {
      * @return void
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static void doCopy (File repository, File sourceFile, File destFile, OutputLogger logger)  throws HgException {
-        doCopy(repository, sourceFile, destFile, false, logger);
-    }
-
-    private static void doCopy (File repository, File sourceFile, File destFile, boolean bAfter, OutputLogger logger)  throws HgException {
+    public static void doCopy (File repository, File sourceFile, File destFile, boolean bAfter, OutputLogger logger)  throws HgException {
         if (repository == null) return;
 
         List<String> command = new ArrayList<String>();

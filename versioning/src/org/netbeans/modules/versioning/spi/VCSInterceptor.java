@@ -162,6 +162,45 @@ public abstract class VCSInterceptor {
     }
     
     // ==================================================================================================
+    // COPY
+    // ==================================================================================================
+
+    /**
+     * Notifies the interceptor that the file or folder is about to be copied. The interceptor MUST NOT copy
+     * the file here.
+     *
+     * @param from the file or folder to be copied
+     * @param to destination of the file being copied
+     * @return true if this interceptor wants to handle this operation (doCopy will be called), false otherwise
+     * @since 1.18
+     */
+    public boolean beforeCopy(File from, File to) {
+        return false;
+    }
+
+    /**
+     * Called if beforeCopy() returns true and delegates the copy operation to this interceptor.
+     *
+     * @param from the file or folder to be copied
+     * @param to destination of the file being copied
+     * @throws IOException if the copy operation failed
+     * @since 1.18
+     */
+    public void doCopy(File from, File to) throws IOException {
+    }
+
+    /**
+     * Called after a file or folder has been copied. In case the file was copied outside IDE, this method is not called
+     * and only afterCreate() is called instead.
+     *
+     * @param from original location of the file
+     * @param to current location of the file
+     * @since 1.18
+     */
+    public void afterCopy(File from, File to) {
+    }
+    
+    // ==================================================================================================
     // CREATE
     // ==================================================================================================
 

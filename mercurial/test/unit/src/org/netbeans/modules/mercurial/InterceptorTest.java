@@ -50,9 +50,14 @@ import java.util.Set;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -257,4 +262,403 @@ public class InterceptorTest extends AbstractHgTest {
         Utils.deleteRecursively(repo);
     }
 
+    public void testCopyFile_SingleRepo_FO () throws Exception {
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file");
+        File copy = new File(folder, "copy");
+
+        commit(folder);
+        copyFO(file, copy);
+        assertTrue(file.exists());
+        assertTrue(copy.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file).getStatus());
+        FileInformation st = getCachedStatus(copy, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+
+        File target = createFolder("target");
+        copy = new File(target, file.getName());
+        copyFO(file, copy);
+        assertTrue(file.exists());
+        assertTrue(copy.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file).getStatus());
+        st = getCachedStatus(copy, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+    }
+
+    public void testCopyFile_SingleRepo_DO () throws Exception {
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file");
+        File targetFolder = createFolder("target");
+        File copy = new File(targetFolder, file.getName());
+
+        commit(folder);
+        copyDO(file, copy);
+        assertTrue(file.exists());
+        assertTrue(copy.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file).getStatus());
+        FileInformation st = getCachedStatus(copy, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+    }
+
+    public void testCopyUnversionedFile_SingleRepo_FO () throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File file = createFile(folder, "file");
+        File copy = new File(folder, "copy");
+
+        copyFO(file, copy);
+        assertTrue(file.exists());
+        assertTrue(copy.exists());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCache().refresh(file).getStatus());
+        FileInformation st = getCachedStatus(copy, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        assertNull(st.getStatus(null));
+
+        File target = createFolder("target");
+        copy = new File(target, file.getName());
+        copyFO(file, copy);
+        assertTrue(file.exists());
+        assertTrue(copy.exists());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCache().refresh(file).getStatus());
+        st = getCachedStatus(copy, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        assertNull(st.getStatus(null));
+    }
+
+    public void testCopyUnversionedFile_SingleRepo_DO () throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File file = createFile(folder, "file");
+        File targetFolder = createFolder("target");
+        File copy = new File(targetFolder, file.getName());
+
+        copyDO(file, copy);
+        assertTrue(file.exists());
+        assertTrue(copy.exists());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCache().refresh(file).getStatus());
+        FileInformation st = getCachedStatus(copy, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        assertNull(st.getStatus(null));
+    }
+
+    public void testCopyFolder_SingleRepo_FO () throws Exception {
+        File folder = createFolder("folder");
+        File file1 = createFile(folder, "file1");
+        File file2 = createFile(folder, "file2");
+        File copy = new File(folder.getParentFile(), "copy");
+        File copiedFile1 = new File(copy, file1.getName());
+        File copiedFile2 = new File(copy, file2.getName());
+
+        commit(folder);
+        copyFO(folder,copy);
+        assertTrue(file1.exists());
+        assertTrue(file2.exists());
+        assertTrue(copiedFile1.exists());
+        assertTrue(copiedFile2.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file1).getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file2).getStatus());
+        FileInformation st = getCachedStatus(copiedFile1, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+        st = getCachedStatus(copiedFile2, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+
+
+        File target = createFolder("target");
+        copy = new File(target, folder.getName());
+        copiedFile1 = new File(copy, file1.getName());
+        copiedFile2 = new File(copy, file2.getName());
+        copyFO(folder, copy);
+        assertTrue(file1.exists());
+        assertTrue(file2.exists());
+        assertTrue(copiedFile1.exists());
+        assertTrue(copiedFile2.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file1).getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file2).getStatus());
+        st = getCachedStatus(copiedFile1, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+        st = getCachedStatus(copiedFile2, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+    }
+
+    public void testCopyFolder_SingleRepo_DO () throws Exception {
+        File folder = createFolder("folder");
+        File file1 = createFile(folder, "file1");
+        File file2 = createFile(folder, "file2");
+        File target = createFolder("target");
+        File copy = new File(target, folder.getName());
+        File copiedFile1 = new File(copy, file1.getName());
+        File copiedFile2 = new File(copy, file2.getName());
+
+        commit(folder);
+        copyDO(folder,copy);
+        assertTrue(file1.exists());
+        assertTrue(file2.exists());
+        assertTrue(copiedFile1.exists());
+        assertTrue(copiedFile2.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file1).getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(file2).getStatus());
+        FileInformation st = getCachedStatus(copiedFile1, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+        st = getCachedStatus(copiedFile2, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+        assertTrue(st.getStatus(null).isCopied());
+    }
+
+    public void testCopyUnversionedFolder_SingleRepo_FO () throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File file1 = createFile(folder, "file1");
+        File file2 = createFile(folder, "file2");
+        File target = createFolder("target");
+        File copy = new File(target, folder.getName());
+        File copiedFile1 = new File(copy, file1.getName());
+        File copiedFile2 = new File(copy, file2.getName());
+
+        copyFO(folder,copy);
+        assertTrue(file1.exists());
+        assertTrue(file2.exists());
+        assertTrue(copiedFile1.exists());
+        assertTrue(copiedFile2.exists());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCache().refresh(file1).getStatus());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCache().refresh(file2).getStatus());
+        FileInformation st = getCachedStatus(copiedFile1, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        assertNull(st.getStatus(null));
+        st = getCachedStatus(copiedFile2, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        assertNull(st.getStatus(null));
+    }
+
+    public void testCopyUnversionedFolder_SingleRepo_DO() throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File file1 = createFile(folder, "file1");
+        File file2 = createFile(folder, "file2");
+        File target = createFolder("target");
+        File copy = new File(target, folder.getName());
+        File copiedFile1 = new File(copy, file1.getName());
+        File copiedFile2 = new File(copy, file2.getName());
+
+        copyDO(folder,copy);
+        assertTrue(file1.exists());
+        assertTrue(file2.exists());
+        assertTrue(copiedFile1.exists());
+        assertTrue(copiedFile2.exists());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCache().refresh(file1).getStatus());
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCache().refresh(file2).getStatus());
+        FileInformation st = getCachedStatus(copiedFile1, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        assertNull(st.getStatus(null));
+        st = getCachedStatus(copiedFile2, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        assertNull(st.getStatus(null));
+    }
+
+    public void testCopyTree_SingleRepo_FO () throws Exception {
+        File folder = createFolder("folder");
+        File target = createFolder("target");
+        File copy = new File(target, "copy");
+        File[] copies = prepareTree(folder, copy);
+
+        commit(folder);
+
+        copyFO(folder, copy);
+        for (File f : copies) {
+            assertTrue(f.exists());
+            FileInformation st = getCachedStatus(f, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+            assertTrue(st.getStatus(null).isCopied());
+        }
+    }
+
+    public void testCopyTree_SingleRepo_DO () throws Exception {
+        File folder = createFolder("folder");
+        File target = createFolder("target");
+        File copy = new File(target, folder.getName());
+        File[] copies = prepareTree(folder, copy);
+
+        commit(folder);
+
+        copyDO(folder, copy);
+        for (File f : copies) {
+            assertTrue(f.exists());
+            FileInformation st = getCachedStatus(f, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+            assertTrue(st.getStatus(null).isCopied());
+        }
+    }
+
+    public void testCopyUnversionedTree_SingleRepo_FO () throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File target = createFolder("target");
+        File copy = new File(target, folder.getName());
+        File[] copies = prepareTree(folder, copy);
+
+        copyFO(folder, copy);
+        for (File f : copies) {
+            assertTrue(f.exists());
+            FileInformation st = getCachedStatus(f, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+            assertNull(st.getStatus(null));
+        }
+    }
+
+    public void testCopyUnversionedTree_SingleRepo_DO() throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File target = createFolder("target");
+        File copy = new File(target, folder.getName());
+        File[] copies = prepareTree(folder, copy);
+
+        copyDO(folder, copy);
+        for (File f : copies) {
+            assertTrue(f.exists());
+            FileInformation st = getCachedStatus(f, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+            assertNull(st.getStatus(null));
+        }
+    }
+
+    public void testCopyTree_TwoRepos_FO () throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File target = createFolder("target");
+        HgCommand.doCreate(target, NULL_LOGGER);
+        Mercurial.getInstance().versionedFilesChanged();
+        File copy = new File(target, folder.getName());
+        File[] copies = prepareTree(folder, copy);
+
+        copyFO(folder, copy);
+        for (File f : copies) {
+            assertTrue(f.exists());
+            FileInformation st = getCachedStatus(f, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+            assertNull(st.getStatus(null));
+        }
+    }
+
+    public void testCopyTree_TwoRepos_DO() throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File target = createFolder("target");
+        HgCommand.doCreate(target, NULL_LOGGER);
+        Mercurial.getInstance().versionedFilesChanged();
+        File copy = new File(target, folder.getName());
+        File[] copies = prepareTree(folder, copy);
+
+        copyDO(folder, copy);
+        for (File f : copies) {
+            assertTrue(f.exists());
+            FileInformation st = getCachedStatus(f, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+            assertNull(st.getStatus(null));
+        }
+    }
+
+    public void testCopyTree_UnversionedTarget_FO () throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File target = new File("/tmp/mercurialtest_target_" + getName() + "_" + System.currentTimeMillis());
+        target.mkdirs();
+        try {
+            File copy = new File(target, folder.getName());
+            File[] copies = prepareTree(folder, copy);
+
+            copyFO(folder, copy);
+            Mercurial.getInstance().versionedFilesChanged();
+            for (File f : copies) {
+                assertTrue(f.exists());
+                FileInformation st = getCachedStatus(f, FileInformation.STATUS_NOTVERSIONED_NOTMANAGED);
+                assertNull(st.getStatus(null));
+                assertNull(Mercurial.getInstance().getRepositoryRoot(f));
+            }
+        } finally {
+            // cleanup, temp folder is outside workdir
+            FileUtils.deleteRecursively(target);
+        }
+    }
+
+    public void testCopyTree_UnversionedTarget_DO() throws Exception {
+        File folder = createFolder("folder");
+        commit(folder);
+        File target = new File("/tmp/mercurialtest_target_" + getName() + "_" + System.currentTimeMillis());
+        target.mkdirs();
+        try {
+            File copy = new File(target, folder.getName());
+            File[] copies = prepareTree(folder, copy);
+
+            copyDO(folder, copy);
+            Mercurial.getInstance().versionedFilesChanged();
+            for (File f : copies) {
+                assertTrue(f.exists());
+                FileInformation st = getCachedStatus(f, FileInformation.STATUS_NOTVERSIONED_NOTMANAGED);
+                assertNull(st.getStatus(null));
+                assertNull(Mercurial.getInstance().getRepositoryRoot(f));
+            }
+        } finally {
+            // cleanup, temp folder is outside workdir
+            FileUtils.deleteRecursively(target);
+        }
+    }
+
+    private void copyDO (File from, File to) throws DataObjectNotFoundException, IOException {
+        DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));
+        DataObject daoTarget = DataObject.find(FileUtil.toFileObject(to.getParentFile()));
+        daoFrom.copy((DataFolder) daoTarget);
+    }
+
+    private void copyFO (File from, File to) throws DataObjectNotFoundException, IOException {
+        FileObject foFrom = FileUtil.toFileObject(from);
+        assertNotNull(foFrom);
+        FileObject foTarget = FileUtil.toFileObject(to.getParentFile());
+        assertNotNull(foTarget);
+        FileLock lock = foFrom.lock();
+        try {
+            foFrom.copy(foTarget, getName(to), getExt(to));
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    private String getName(File f) {
+        String ret = f.getName();
+        int idx = ret.lastIndexOf(".");
+        return idx > -1 ? ret.substring(0, idx) : ret;
+    }
+
+    private String getExt(File f) {
+        String ret = f.getName();
+        int idx = ret.lastIndexOf(".");
+        return idx > -1 ? ret.substring(idx) : null;
+    }
+
+    private FileInformation getCachedStatus (File file, int expectedStatus) throws InterruptedException {
+        for (int i = 0; i < 20; ++i) {
+            FileInformation info = getCache().getCachedStatus(file);
+            if ((info.getStatus() & expectedStatus) != 0) {
+                return info;
+            }
+            Thread.sleep(1000);
+        }
+        fail("Status " + expectedStatus + " expected for " + file);
+        return null;
+    }
+
+    private File[] prepareTree (File folder, File copy) throws IOException {
+        createFile(folder, "file1");
+        createFile(folder, "file2");
+        File subfolder1 = createFolder(folder, "subfolder1");
+        createFile(subfolder1, "file1");
+        createFile(subfolder1, "file2");
+        File subfolder1_1 = createFolder(subfolder1, "subfolder1_1");
+        createFile(subfolder1_1, "file1");
+        createFile(subfolder1_1, "file2");
+        File subfolder1_2 = createFolder(subfolder1, "subfolder1_2");
+        createFile(subfolder1_2, "file1");
+        createFile(subfolder1_2, "file2");
+        File subfolder2 = createFolder(folder, "subfolder2");
+        createFile(subfolder2, "file1");
+        createFile(subfolder2, "file2");
+        File subfolder2_1 = createFolder(subfolder2, "subfolder2_1");
+        createFile(subfolder2_1, "file1");
+        createFile(subfolder2_1, "file2");
+        File subfolder2_2 = createFolder(subfolder2, "subfolder2_2");
+        createFile(subfolder2_2, "file1");
+        createFile(subfolder2_2, "file2");
+
+        return new File[] { new File(copy, "file1"), new File(copy, "file2"), new File(new File(copy, "subfolder1"), "file1"), new File(new File(copy, "subfolder1"), "file2"),
+            new File(new File(copy, "subfolder2"), "file1"), new File(new File(copy, "subfolder2"), "file2"),
+            new File(new File(new File(copy, "subfolder1"), "subfolder1_1"), "file1"), new File(new File(new File(copy, "subfolder1"), "subfolder1_1"), "file2"),
+            new File(new File(new File(copy, "subfolder1"), "subfolder1_2"), "file1"), new File(new File(new File(copy, "subfolder1"), "subfolder1_2"), "file2"),
+            new File(new File(new File(copy, "subfolder2"), "subfolder2_1"), "file1"), new File(new File(new File(copy, "subfolder2"), "subfolder2_1"), "file2"),
+            new File(new File(new File(copy, "subfolder2"), "subfolder2_2"), "file1"), new File(new File(new File(copy, "subfolder2"), "subfolder2_2"), "file2")};
+
+    }
 }
