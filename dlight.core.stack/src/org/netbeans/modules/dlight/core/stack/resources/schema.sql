@@ -32,6 +32,7 @@ CREATE TABLE Node (
 );
 
 CREATE TABLE SourceFiles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    source_file VARCHAR (16384)    
+    id INT {AUTO_INCREMENT} ,
+    source_file VARCHAR (16384)    ,
+    PRIMARY KEY(id)
 );

@@ -251,18 +251,18 @@ public class DerbyDataStorage extends SQLDataStorage {
 //        return stackStorage.getHotSpotFunctions(metric, limit);
 //    }
     @Override
-    protected String getSQLQueriesDelimeter() {
+    public String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
     }
 
     @Override
-    protected String getAutoIncrementExpresion() {
-        return null;
+    public String getAutoIncrementExpresion() {
+        return "GENERATED ALWAYS AS IDENTITY";
     }
 
     @Override
-    protected String getPrimaryKeyExpression() {
-        return null;
+    public String getPrimaryKeyExpression() {
+        return "PRIMARY KEY";
     }
     
     

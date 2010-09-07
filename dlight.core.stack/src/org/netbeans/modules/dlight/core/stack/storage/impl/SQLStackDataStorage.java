@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -241,12 +242,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         InputStream is = SQLStackDataStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); //NOI18N
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
+            Pattern autoIncrementPattern = Pattern.compile("\\{AUTO_INCREMENT\\}");
             String line;
             StringBuilder buf = new StringBuilder();
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("-- ")) { //NOI18N
                     continue;
                 }
+                line = autoIncrementPattern.matcher(line).replaceAll(sqlStorage.getAutoIncrementExpresion());
                 buf.append(line);
                 if (line.endsWith(";")) { //NOI18N
                     String sql = buf.toString();
@@ -355,7 +358,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     " FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
                     " LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N                    
                     (timeFilter != null ? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
-                    "GROUP BY Func.func_id, Func.func_name, Func.func_full_name " + // NOI18N
+                    "GROUP BY Func.func_id, Func.func_name, Func.func_full_name, SourceFiles.source_file " + // NOI18N
                     "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             if (timeFilter != null) {
                 select.setLong(1, timeToBucketId(timeFilter.getInterval().getStart()));//.getStartMilliSeconds()));
@@ -550,9 +553,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         int size = path.size();
 
         buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl), "
-                + "SourceFiles.source_file  FROM Node AS N "); //NOI18N
+                + " S.source_file  FROM Node AS N "); //NOI18N
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
-        buf.append(" LEFT JOIN SourceFiles F.func_source_file_id = SourceFiles.id  "); //NOI18N        
+        buf.append(" LEFT JOIN SourceFiles AS S ON F.func_source_file_id = S.id  "); //NOI18N        
         buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id "); //NOI18N
 
         for (int i = 1; i < size; ++i) {
@@ -567,7 +570,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             buf.append("N").append(i + 1).append(".func_id = "); //NOI18N
             buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
         }
-        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name, S.source_file"); //NOI18N
         return buf.toString();
     }
 
@@ -575,13 +578,16 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         StringBuilder buf = new StringBuilder();
         int size = path.size();
 
-        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 "); //NOI18N
+        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl), "
+                + " S.source_file  FROM Node AS N1 "); //NOI18N
         for (int i = 1; i < size; ++i) {
             buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
         }
         buf.append(" INNER JOIN Node N ON N").append(size).append(".node_id = N.caller_id "); //NOI18N
-        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id WHERE "); //NOI18N
+        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id ");
+        buf.append(" LEFT JOIN SourceFiles  AS S ON F.func_source_file_id = S.id  "); //NOI18N                                
+        buf.append(" WHERE "); //NOI18N
         for (int i = 0; i < size; ++i) {
             if (0 < i) {
                 buf.append(" AND "); //NOI18N
@@ -589,7 +595,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             buf.append(" N").append(i + 1).append(".func_id = "); //NOI18N
             buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
         }
-        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name, S.source_file"); //NOI18N
         return buf.toString();
     }
 

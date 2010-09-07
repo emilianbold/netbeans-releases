@@ -271,17 +271,17 @@ public final class H2DataStorage extends SQLDataStorage {
 //        return stackStorage.getHotSpotFunctions(metric, limit);
 //    }
     @Override
-    protected String getSQLQueriesDelimeter() {
+    public String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
     }
     
     @Override
-    protected String getAutoIncrementExpresion() {
+    public String getAutoIncrementExpresion() {
         return "AUTO_INCREMENT";
     }
 
     @Override
-    protected String getPrimaryKeyExpression() {
+    public String getPrimaryKeyExpression() {
         return "PRIMARY KEY";
     }    
 

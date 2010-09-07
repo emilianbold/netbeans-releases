@@ -218,19 +218,19 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
      * in Derby you should not use any.
      * @return delimiter which will be added to all statements execution.
      */
-    abstract protected String getSQLQueriesDelimeter();
+    abstract public String getSQLQueriesDelimeter();
 
     /**
      * Different SQL Storages can have different expression for primary key definition
      * @return String which defines primary Key
      */
-    abstract protected String getPrimaryKeyExpression();
+    abstract public String getPrimaryKeyExpression();
 
     /**
      * Different SQL storages can have different expression to define Auto Increment
      * @return auto increment expression, in not supported return <code>null</code>
      */
-    abstract protected String getAutoIncrementExpresion();
+    abstract public String getAutoIncrementExpresion();
 
     @Override
     protected void finalize() throws Throwable {
