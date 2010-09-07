@@ -131,6 +131,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_NAMESPACE_KEY;
         } else if (object instanceof FileKey ) {
             aHandle = KEY_FILE_KEY;
+        } else if (object instanceof FileDeclarationsKey ) {
+            aHandle = KEY_FILE_DECLARATIONS_KEY;
         } else if (object instanceof MacroKey) {
             aHandle = KEY_MACRO_KEY;
         } else if (object instanceof IncludeKey) {
@@ -171,6 +173,9 @@ public class KeyObjectFactory extends KeyFactory {
                 break;
             case KEY_FILE_KEY:
                 aKey = new FileKey(aStream);
+                break;
+            case KEY_FILE_DECLARATIONS_KEY:
+                aKey = new FileDeclarationsKey(aStream);
                 break;
             case KEY_MACRO_KEY:
                 aKey = new MacroKey(aStream);
@@ -227,7 +232,8 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_PROJECT_KEY    = FIRST_INDEX;
     public static final int KEY_NAMESPACE_KEY  = KEY_PROJECT_KEY + 1;
     public static final int KEY_FILE_KEY       = KEY_NAMESPACE_KEY + 1;
-    public static final int KEY_MACRO_KEY      = KEY_FILE_KEY + 1;
+    public static final int KEY_FILE_DECLARATIONS_KEY = KEY_FILE_KEY + 1;
+    public static final int KEY_MACRO_KEY      = KEY_FILE_DECLARATIONS_KEY + 1;
     public static final int KEY_INCLUDE_KEY    = KEY_MACRO_KEY + 1;
     public static final int KEY_INHERITANCE_KEY = KEY_INCLUDE_KEY + 1;
     public static final int KEY_PARAM_LIST_KEY  = KEY_INHERITANCE_KEY + 1;
