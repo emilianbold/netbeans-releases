@@ -274,6 +274,16 @@ public final class H2DataStorage extends SQLDataStorage {
     protected String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
     }
+    
+    @Override
+    protected String getAutoIncrementExpresion() {
+        return "AUTO_INCREMENT";
+    }
+
+    @Override
+    protected String getPrimaryKeyExpression() {
+        return "PRIMARY KEY";
+    }    
 
 //    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
 //        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
@@ -295,7 +305,8 @@ public final class H2DataStorage extends SQLDataStorage {
     @Override
     public void loadSchema(){
         try {
-            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null, "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'");// NOI18N
+            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null, 
+                    "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'");// NOI18N
             if (rs == null) {
                 return;
             }
