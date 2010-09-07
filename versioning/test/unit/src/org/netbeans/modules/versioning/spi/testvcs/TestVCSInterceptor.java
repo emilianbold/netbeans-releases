@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.versioning.util.FileUtils;
 
 /**
  * @author Maros Sandor
@@ -62,6 +63,9 @@ public class TestVCSInterceptor extends VCSInterceptor {
     private final List<File>    deletedFiles = new ArrayList<File>();
     private final List<File>    beforeMoveFiles = new ArrayList<File>();
     private final List<File>    afterMoveFiles = new ArrayList<File>();
+    private final List<File>    beforeCopyFiles = new ArrayList<File>();
+    private final List<File>    afterCopyFiles = new ArrayList<File>();
+    private final List<File>    doCopyFiles = new ArrayList<File>();
     private final List<File>    beforeEditFiles = new ArrayList<File>();
     private final List<File>    beforeChangeFiles = new ArrayList<File>();
     private final List<File>    afterChangeFiles = new ArrayList<File>();
@@ -143,6 +147,23 @@ public class TestVCSInterceptor extends VCSInterceptor {
         afterMoveFiles.add(from);
     }
 
+    public boolean beforeCopy(File from, File to) {
+        beforeCopyFiles.add(from);
+        beforeCopyFiles.add(to);
+        return true;
+    }
+
+    public void doCopy(File from, File to) throws IOException {
+        doCopyFiles.add(from);
+        doCopyFiles.add(to);
+        FileUtils.copyFile(from, to);
+    }
+
+    public void afterCopy(File from, File to) {
+        afterCopyFiles.add(from);
+        afterCopyFiles.add(to);
+    }
+
     public void beforeEdit(File file) {
         beforeEditFiles.add(file);
     }
@@ -181,6 +202,18 @@ public class TestVCSInterceptor extends VCSInterceptor {
 
     public List<File> getAfterMoveFiles() {
         return afterMoveFiles;
+    }
+
+    public List<File> getBeforeCopyFiles() {
+        return beforeCopyFiles;
+    }
+
+    public List<File> getDoCopyFiles() {
+        return doCopyFiles;
+    }
+
+    public List<File> getAfterCopyFiles() {
+        return afterCopyFiles;
     }
 
     public List<File> getBeforeEditFiles() {

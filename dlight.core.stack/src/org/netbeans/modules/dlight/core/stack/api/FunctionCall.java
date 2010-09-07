@@ -50,4 +50,8 @@ public interface FunctionCall {
     boolean hasOffset();
 
     long getOffset();
+            
+    boolean hasLineNumber();
+    
+    int getLineNumber();
 }

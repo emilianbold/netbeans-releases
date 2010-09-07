@@ -93,6 +93,8 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
     public synchronized void setSourceFileInfo(SourceFileInfo sourceInfo) {
         this.sourceInfo = sourceInfo;
         updateDisplayedName();
+        this.setLineNumber(sourceInfo == null ? -1 : sourceInfo.getLine());        
+        ((FunctionImpl)this.getFunction()).setSourcefileName(sourceInfo == null ? "<unknown>" : sourceInfo.getFileName());//NOI18N
     }
 
     public long getFunctionRefID() {
@@ -223,6 +225,7 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
         
         if (m.group(4) != null) {
             call.setSourceFileInfo(new SourceFileInfo(m.group(4), lineNumber, 0));
+            func.setSourcefileName(m.group(4));
         }
 
         return call;

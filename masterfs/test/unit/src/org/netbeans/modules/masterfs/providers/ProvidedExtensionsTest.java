@@ -336,6 +336,42 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }
     }
 
+    public void testCopy_BeforeSuccessFailure() throws IOException {
+        FileObject fromFolder = FileUtil.toFileObject(getWorkDir()).createFolder("copyFrom");
+        FileObject toFolder = FileUtil.toFileObject(getWorkDir()).createFolder("copyTo");
+        assertNotNull(fromFolder);
+        assertNotNull(toFolder);
+        FileObject fromCopy = fromFolder.createData("aa");
+        assertNotNull(fromCopy);
+        iListener.clear();
+
+        assertNotNull(iListener);
+        assertEquals(0,iListener.beforeCopyCalls);
+        assertEquals(0,iListener.copySuccessCalls);
+        assertEquals(0,iListener.copyFailureCalls);
+
+        // copy
+        fromCopy.copy(toFolder, fromCopy.getName(), fromCopy.getExt());
+        assertTrue(fromCopy.isValid());
+        assertEquals(1,iListener.beforeCopyCalls);
+        assertEquals(1,iListener.copySuccessCalls);
+
+        iListener.clear();
+        try {
+            // success
+            assertEquals(0,iListener.copySuccessCalls);
+            assertEquals(0,iListener.copyFailureCalls);
+
+            // move to itself => failure
+            fromCopy.copy(toFolder, fromCopy.getName(), fromCopy.getExt());
+            fail();
+        } catch (IOException ex) {
+            // failure
+            assertEquals(0,iListener.copySuccessCalls);
+            assertEquals(1,iListener.copyFailureCalls);
+        }
+    }
+
     public void testImplsRename2() throws IOException {
         final List events = new ArrayList();
         FileObject fo = FileUtil.toFileObject(getWorkDir());
@@ -559,6 +595,9 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private int beforeMoveCalls;
         private int moveSuccessCalls;
         private int moveFailureCalls;
+        private int beforeCopyCalls;
+        private int copySuccessCalls;
+        private int copyFailureCalls;
         
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
@@ -600,6 +639,9 @@ public class ProvidedExtensionsTest extends NbTestCase {
             beforeMoveCalls = 0;
             moveSuccessCalls = 0;
             moveFailureCalls = 0;
+            beforeCopyCalls = 0;
+            copySuccessCalls = 0;
+            copyFailureCalls = 0;
             implsFileLockCalls = 0;
             implsCanWriteCalls = 0;
         }
@@ -657,6 +699,18 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
         public void moveFailure(FileObject fo, File to) {
             moveFailureCalls++;
+        }
+
+        public void beforeCopy(FileObject fo, File to) {
+            beforeCopyCalls++;
+        }
+
+        public void copySuccess(FileObject fo, File to) {
+            copySuccessCalls++;
+        }
+
+        public void copyFailure(FileObject fo, File to) {
+            copyFailureCalls++;
         }
 
         public static void nextRefreshCall(File forDir, long retValue, File... toAdd) {

@@ -52,7 +52,7 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescr
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
-import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
+import org.netbeans.modules.dlight.spi.support.TableDataProvider;
 
 /**
  *
