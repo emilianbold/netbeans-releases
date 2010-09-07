@@ -42,27 +42,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.insert;
+package org.netbeans.test.php.cc;
 
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-//import org.netbeans.jemmy.util.Dumper;
-
 
 /**
  *
+ * http://netbeans.org/bugzilla/show_bug.cgi?id=142011
+ * 
  * @author michaelnazarov@netbeans.org
  */
 
-public class insert_0005 extends insert
+public class testCCIdeUnresponsiveness extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject_insert_0005";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue142011";
 
-  public insert_0005( String arg0 )
+  public testCCIdeUnresponsiveness( String arg0 )
   {
     super( arg0 );
   }
@@ -70,10 +67,9 @@ public class insert_0005 extends insert
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( insert_0005.class ).addTest(
+      NbModuleSuite.createConfiguration( testCCIdeUnresponsiveness.class ).addTest(
           "CreateApplication",
-          "InsertConnectionToDatabase",
-          "InsertDatabaseTable"
+          "Issue142011"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -90,55 +86,15 @@ public class insert_0005 extends insert
     endTest( );
   }
 
-  public void InsertConnectionToDatabase( ) throws Exception
+  public void Issue142011( ) throws Exception
   {
     startTest( );
 
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
+    Sleep( 1000 );
     // Locate comment
-    eoPHP.setCaretPosition( "// put your code here\n", false );
-    eoPHP.insert( "\nclass name\n{\n\n}" );
-    eoPHP.setCaretPosition( "{\n", false );
-    Sleep( 1000 );
-    InvokeInsert( eoPHP );
-    Sleep( 1000 );
-
-    JDialogOperator jdInsetter = new JDialogOperator( );
-    JListOperator jlList = new JListOperator( jdInsetter );
-
-    ClickListItemNoBlock( jlList, 1, 1 );
-
-    JDialogOperator jdGenerator = new JDialogOperator( "Select Database Connection" );
-
-    JButtonOperator jbCancel = new JButtonOperator( jdGenerator, "Cancel" );
-    jbCancel.pushNoBlock( );
-    jdGenerator.waitClosed( );
-
-    endTest( );
-  }
-
-  public void InsertDatabaseTable( ) throws Exception
-  {
-    startTest( );
-
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
-    eoPHP.setCaretPosition( "{\n", false );
-    Sleep( 1000 );
-    InvokeInsert( eoPHP );
-    Sleep( 1000 );
-
-    JDialogOperator jdInsetter = new JDialogOperator( );
-    JListOperator jlList = new JListOperator( jdInsetter );
-
-    ClickListItemNoBlock( jlList, 2, 1 );
-
-    JDialogOperator jdGenerator = new JDialogOperator( "Select Table and Columns" );
-
-    JButtonOperator jbCancel = new JButtonOperator( jdGenerator, "Cancel" );
-    jbCancel.pushNoBlock( );
-    jdGenerator.waitClosed( );
+    eoPHP.setCaretPosition( "// put your code here", false );
 
     endTest( );
   }

@@ -66,22 +66,20 @@ import org.netbeans.jemmy.util.Dumper;
  *
  * @author michaelnazarov@netbeans.org
  */
-public class project_0002 extends project {
+public class testBrowserAndIDE extends project {
 
     static final String TEST_PHP_NAME = "PhpProject_project_0002";
 
-    public project_0002(String arg0) {
+    public testBrowserAndIDE(String arg0) {
         super(arg0);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(project_0002.class).addTest(
+                NbModuleSuite.createConfiguration(testBrowserAndIDE.class).addTest(
                 "CreateJobeetSampleApplication",
-                "CreateAirAllianceSampleApplication",
-                "CreateSimpleApplication",
-                //"SetCustomBrowserPath",
-//                "ExecuteInBrowser",
+                "SetCustomBrowserPath",
+                "ExecuteInBrowser",
                 "ExecuteInConsole" // Execute different ways
                 ).enableModules(".*").clusters(".*") //.gui( true )
                 );
@@ -104,19 +102,7 @@ public class project_0002 extends project {
 
         endTest();
     }
-
-    public void CreateJobeetSampleApplication() {
-        startTest();
-        String sProjectName = CreateSamplePHPApplication("Jobeet"); 
-        endTest();
-    }
-
-    public void CreateAirAllianceSampleApplication() {
-        startTest();
-        String sProjectName = CreateSamplePHPApplication("AirAlliance");
-        endTest();
-    }
-
+    
     private ServerSocket sBackServer = null;
 
     public void SetCustomBrowserPath() {

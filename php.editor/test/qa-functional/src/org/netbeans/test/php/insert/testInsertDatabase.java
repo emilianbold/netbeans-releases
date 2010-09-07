@@ -42,23 +42,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.insert;
 
-import java.awt.event.InputEvent;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+//import org.netbeans.jemmy.util.Dumper;
+
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141855 extends cc
+public class testInsertDatabase extends insert
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141855";
+  static final String TEST_PHP_NAME = "PhpProject_insert_0005";
 
-  public Issue141855( String arg0 )
+  public testInsertDatabase( String arg0 )
   {
     super( arg0 );
   }
@@ -66,9 +70,10 @@ public class Issue141855 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141855.class ).addTest(
+      NbModuleSuite.createConfiguration( testInsertDatabase.class ).addTest(
           "CreateApplication",
-          "Issue141855"
+          "InsertConnectionToDatabase",
+          "InsertDatabaseTable"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -85,33 +90,55 @@ public class Issue141855 extends cc
     endTest( );
   }
 
-  public void Issue141855( ) throws Exception
+  public void InsertConnectionToDatabase( ) throws Exception
   {
     startTest( );
 
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
     // Locate comment
-    eoPHP.setCaretPosition( "?>", false );
-    // Add new line
-    eoPHP.insert( "\n" );
+    eoPHP.setCaretPosition( "// put your code here\n", false );
+    eoPHP.insert( "\nclass name\n{\n\n}" );
+    eoPHP.setCaretPosition( "{\n", false );
     Sleep( 1000 );
-    // Press Ctrl+Space
-    eoPHP.typeKey( '<' );
+    InvokeInsert( eoPHP );
     Sleep( 1000 );
-    eoPHP.typeKey( '?' );
-    Sleep( 1000 );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
-    // Check code completion list
-    CompletionInfo jCompl = GetCompletion( );
-    //List list = jCompl.getCompletionItems( );
-    // Magic CC number for complete list
-    if( COMPLETION_LIST_THRESHOLD > jCompl.listItems.size( ) )
-      fail( "Invalid CC list size: " + jCompl.listItems.size( ) + ", expected: " + COMPLETION_LIST_THRESHOLD );
 
-    jCompl.listItself.hideAll( );
+    JDialogOperator jdInsetter = new JDialogOperator( );
+    JListOperator jlList = new JListOperator( jdInsetter );
+
+    ClickListItemNoBlock( jlList, 1, 1 );
+
+    JDialogOperator jdGenerator = new JDialogOperator( "Select Database Connection" );
+
+    JButtonOperator jbCancel = new JButtonOperator( jdGenerator, "Cancel" );
+    jbCancel.pushNoBlock( );
+    jdGenerator.waitClosed( );
+
+    endTest( );
+  }
+
+  public void InsertDatabaseTable( ) throws Exception
+  {
+    startTest( );
+
+    // Get editor
+    EditorOperator eoPHP = new EditorOperator( "index.php" );
+    eoPHP.setCaretPosition( "{\n", false );
+    Sleep( 1000 );
+    InvokeInsert( eoPHP );
+    Sleep( 1000 );
+
+    JDialogOperator jdInsetter = new JDialogOperator( );
+    JListOperator jlList = new JListOperator( jdInsetter );
+
+    ClickListItemNoBlock( jlList, 2, 1 );
+
+    JDialogOperator jdGenerator = new JDialogOperator( "Select Table and Columns" );
+
+    JButtonOperator jbCancel = new JButtonOperator( jdGenerator, "Cancel" );
+    jbCancel.pushNoBlock( );
+    jdGenerator.waitClosed( );
 
     endTest( );
   }

@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.folds;
 
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
@@ -53,11 +54,11 @@ import junit.framework.Test;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141881 extends cc
+public class testFolding extends folds
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141881";
+  static final String TEST_PHP_NAME = "PhpProject_folds_0001";
 
-  public Issue141881( String arg0 )
+  public testFolding( String arg0 )
   {
     super( arg0 );
   }
@@ -65,9 +66,9 @@ public class Issue141881 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141881.class ).addTest(
+      NbModuleSuite.createConfiguration( testFolding.class ).addTest(
           "CreateApplication",
-          "Issue141881"
+          "FoldIt"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -84,40 +85,27 @@ public class Issue141881 extends cc
     endTest( );
   }
 
-  public void Issue141881( ) throws Exception
+  public void FoldIt( ) throws Exception
   {
     startTest( );
 
     // Get editor
+    // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    //eoPHP.insert( "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n" );
-    //Sleep( 1000 );
-
-    // Check constructor
-    String sCode = "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n$aa -";
-    TypeCode( eoPHP, sCode );
-    Sleep( 10000 );
-    eoPHP.typeKey( '>' );
-
-    // Check code completion list
-
-    String[] asIdeals = { "xx" };
-
-    CompletionInfo jCompl = GetCompletion( );
-    if( null == jCompl )
-      fail( "Unale to find completion list in any form." );
-    //List list = jCompl.getCompletionItems( );
-    // Magic CC number for complete list
-    if( asIdeals.length != jCompl.size( ) )
-      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + asIdeals.length );
-    // Check each
-    CheckCompletionItems( jCompl, asIdeals );
-
-    jCompl.hideAll( );
+    Sleep( 30000 );
+    for( int i = 1; i <= 12; i++ )
+    {
+      try
+      {
+        eoPHP.collapseFold( i );
+        eoPHP.expandFold( i );
+        System.out.println( "+++" + i );
+      }
+      catch( JemmyException ex )
+      {
+        System.out.println( "---" + i );
+      }
+    }
 
     endTest( );
   }

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.test.php.operatortests;
+package org.netbeans.test.php.operators;
 
 import java.io.File;
 import junit.framework.Test;
@@ -56,13 +56,13 @@ import org.netbeans.test.php.operators.NewPHPProjectNameLocationStepOperator;
  * Test of org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator
  * @author mrkam@netbeans.org
  */
-public class NewPHPProjectNameLocationStepOperatorTest extends JellyTestCase {
+public class testNewPHPProjectNameLocationStepOperator extends JellyTestCase {
     
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        return createModuleTest(NewPHPProjectNameLocationStepOperatorTest.class);
+        return createModuleTest(testNewPHPProjectNameLocationStepOperator.class);
     }
     
     @Override
@@ -73,7 +73,7 @@ public class NewPHPProjectNameLocationStepOperatorTest extends JellyTestCase {
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
-    public NewPHPProjectNameLocationStepOperatorTest(String testName) {
+    public testNewPHPProjectNameLocationStepOperator(String testName) {
         super(testName);
     }
     

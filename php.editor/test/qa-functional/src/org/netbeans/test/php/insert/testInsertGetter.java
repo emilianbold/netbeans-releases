@@ -42,25 +42,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.insert;
 
-import java.awt.event.KeyEvent;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+//import org.netbeans.jemmy.util.Dumper;
+
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141992 extends cc
+public class testInsertGetter extends insert
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141992";
+  static final String TEST_PHP_NAME = "PhpProject_insert_0002";
 
-  static final int AAA_LIST_SIZE = 999;
-
-  public Issue141992( String arg0 )
+  public testInsertGetter( String arg0 )
   {
     super( arg0 );
   }
@@ -68,9 +71,9 @@ public class Issue141992 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141992.class ).addTest(
+      NbModuleSuite.createConfiguration( testInsertGetter.class ).addTest(
           "CreateApplication",
-          "Issue141992"
+          "InsertGetter"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -87,46 +90,62 @@ public class Issue141992 extends cc
     endTest( );
   }
 
-  public void Issue141992( ) throws Exception
+  public void InsertGetter( ) throws Exception
   {
     startTest( );
 
+    // Invoke Alt+Insert without any code
+    // List should contain two database related items
+
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
     // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-
-    // Check constructor
-    String sCode = "";
-    for( int i = 1; i < 1000; i++ )
-    {
-      sCode = sCode + "\nclass a" + i + ( ( 1 == i ) ? "" : ( " extends a" + ( i - 1 ) ) ) + "\n{\npublic $a" + i + ";\n}";
-    }
-    eoPHP.insert( sCode );
-    Sleep( 2000 );
-    TypeCode( eoPHP, "\n\n$z = new a999();\n$z->" );
-
-    // Check code completion list
-    CompletionInfo jCompl = GetCompletion( );
-    if( null == jCompl )
-      fail( "Unable to find completion list in any form." );
-    //List list = jCompl.getCompletionItems( );
-    // Magic CC number for complete list
-    if( AAA_LIST_SIZE != jCompl.size( ) )
-      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + AAA_LIST_SIZE );
-
-    jCompl.hideAll( );
-
-    // Remove added code
-    eoPHP.select( 10, eoPHP.getLineNumber( ) );
-    eoPHP.pressKey( KeyEvent.VK_DELETE );
-
-    // Strat new declaration
-    eoPHP.setCaretPosition( "// put your code here", false );
-    TypeCode( eoPHP, "\nclass a\n{\n" );
+    eoPHP.setCaretPosition( "// put your code here\n", false );
+    eoPHP.insert( "\nclass name\n{\npublic $a;\nprotected $b;\nprivate $c, $d;\n}" );
+    eoPHP.setCaretPosition( "$d;\n", false );
     Sleep( 1000 );
-    TypeCode( eoPHP, "$" );
+    InvokeInsert( eoPHP );
+    Sleep( 1000 );
+
+    JDialogOperator jdInsetter = new JDialogOperator( );
+    JListOperator jlList = new JListOperator( jdInsetter );
+
+    ClickListItemNoBlock( jlList, 1, 1 );
+
+    JDialogOperator jdGenerator = new JDialogOperator( "Generate Getters" );
+
+    // Select all but $c
+    JTreeOperator jtTree = new JTreeOperator( jdGenerator, 0 );
+    jtTree.clickOnPath( jtTree.findPath( "a" ) );
+    jtTree.clickOnPath( jtTree.findPath( "b" ) );
+    jtTree.clickOnPath( jtTree.findPath( "d" ) );
+
+    JButtonOperator jbOk = new JButtonOperator( jdGenerator, "OK" );
+    jbOk.pushNoBlock( );
+    jdGenerator.waitClosed( );
+
+    // Check result
+    /*
+    String[] asResult =
+    {
+      "public function getA()",
+      "{",
+      "return $this->a;",
+      "}",
+      "",
+      "public function getB()",
+      "{",
+      "return $this->b;",
+      "}",
+      "",
+      "public function getD()",
+      "{",
+      "return $this->d;",
+      "}"
+    };
+    CheckResult( eoPHP, asResult, -15 );
+    */
+    CheckFlex( eoPHP, "public function getA(){return $this->a;}public function getB(){return $this->b;}public function getD(){return $this->d;}", false );
 
     endTest( );
   }

@@ -51,14 +51,16 @@ import junit.framework.Test;
 
 /**
  *
+ * http://netbeans.org/bugzilla/show_bug.cgi?id=141866
+ * 
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141866 extends cc
+public class testCCSorting extends cc
 {
   static final String TEST_PHP_NAME = "PhpProject_cc_Issue141866";
 
-  public Issue141866( String arg0 )
+  public testCCSorting( String arg0 )
   {
     super( arg0 );
   }
@@ -66,7 +68,7 @@ public class Issue141866 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141866.class ).addTest(
+      NbModuleSuite.createConfiguration( testCCSorting.class ).addTest(
           "CreateApplication",
           "Issue141866"
         )

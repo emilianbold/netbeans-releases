@@ -67,11 +67,11 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
  * @author michaelnazarov@netbeans.org
  */
 
-public class palette_0001 extends palette
+public class testPalette extends palette
 {
   static final String TEST_PHP_NAME = "PhpProject_palette_0001";
 
-  public palette_0001( String arg0 )
+  public testPalette( String arg0 )
   {
     super( arg0 );
   }
@@ -79,7 +79,7 @@ public class palette_0001 extends palette
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( palette_0001.class ).addTest(
+      NbModuleSuite.createConfiguration( testPalette.class ).addTest(
           "CreateApplication",
           "Create_a_PHP_web_page",
           "DnD_Table_HTML_component_to_HTML_code",
