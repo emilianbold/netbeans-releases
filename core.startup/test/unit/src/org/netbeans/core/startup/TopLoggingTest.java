@@ -361,6 +361,42 @@ public class TopLoggingTest extends NbTestCase {
         }
     }
     
+    public void testSystemErrIsSentToLogWithoutFlush() throws Exception {
+        System.err.println("Ahoj");
+        System.err.println("Jardo");
+        new IllegalStateException("Hi").printStackTrace();
+        
+        String disk = "";
+        for (int i = 0; i < 100; i++) {
+            new IOException("More output").printStackTrace();
+            System.err.println("Line " + i);
+
+            Thread.sleep(100);
+            
+            disk = readLog(false);
+
+            Matcher m = Pattern.compile("^Ahoj(.*)Jardo", Pattern.MULTILINE | Pattern.DOTALL).matcher(disk);
+            
+            if (m.find()) {
+                break;
+            }
+        }
+        Matcher m = Pattern.compile("^Ahoj(.*)Jardo", Pattern.MULTILINE | Pattern.DOTALL).matcher(disk);
+        assertTrue(disk, m.find());
+        assertEquals("One group found", 1, m.groupCount());
+        assertTrue("Non empty group: " + m.group(1) + "\n" + disk, m.group(1).length() > 0);
+        char next = m.group(1).charAt(0);
+        if (next != 10 && next != 13) {
+            fail("Expecting 'Ahoj': index: " + 0 + " next char: " + (int)next + "text:\n" + disk);
+        }
+        
+        Pattern p = Pattern.compile("IllegalStateException.*Hi");
+        Matcher d = p.matcher(disk);
+        if (!d.find()) {
+            fail("Expecting exception: " + disk);
+        }
+    }
+    
     public void testSystemErrPrintLnIsSentToLog() throws Exception {
         System.err.println("BEGIN");
         System.err.println("");
