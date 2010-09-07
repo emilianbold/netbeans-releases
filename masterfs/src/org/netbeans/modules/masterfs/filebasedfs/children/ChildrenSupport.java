@@ -290,7 +290,7 @@ public class ChildrenSupport {
 
             @Override
             public boolean equals(Object obj) {
-                if (hashCode() == obj.hashCode()) {
+                if (hashCode() == obj.hashCode() && getName().equals(((FileNaming)obj).getName())) {
                     assert lastEqual == null : "Just one can be there"; // NOI18N
                     if (obj instanceof FileNaming) {
                         lastEqual = (FileNaming)obj;
@@ -318,6 +318,7 @@ public class ChildrenSupport {
         final Set<FileNaming> cache = (lookupExisting) ? getExisting(false) : getNotExisting(false);
         if (cache.contains(fake)) {
             assert fake.lastEqual != null : "If cache contains the object, we set lastEqual"; // NOI18N
+            assert fake.lastEqual.getName().equals(childName) : "childName: " + childName + " equals: " + fake.lastEqual;
             return fake.lastEqual;
         } else {
             return null;
