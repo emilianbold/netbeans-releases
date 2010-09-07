@@ -250,6 +250,50 @@ public final class RepositoryQueries {
         return toRet;
     }
 
+    /**
+     * Search in Maven repositories which reads search parameters from
+     * the <code>QueryRequest</code> object and adds the results to this
+     * observable object incrementally as it searches one by one through
+     * the registered repositories.
+     * 
+     * The query allows the observer of the QueryRequest object
+     * to process the results incrementally.
+     * 
+     * If the requester loses the interest in additional results of this running
+     * query, it should remove itself from the list of observers by calling
+     * <code>queryRequest.deleteObserver(requester)</code>.
+     * 
+     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given class name is too
+     * general and such search can't be executed as it would probably end with
+     * OutOfMemoryException. Callers should either assure that no such dangerous
+     * queries are constructed or catch BooleanQuery.TooManyClauses and act
+     * accordingly, for example by telling user that entered text for
+     * search is too general.
+     */
+    public static void findVersionsByClass(QueryRequest query) {
+        Collection<List<RepositoryInfo>> all = splitReposByType(query.getRepositories());
+        for (Iterator<List<RepositoryInfo>> it = all.iterator(); it.hasNext();) {
+            List<RepositoryInfo> rps = it.next();
+            for (Iterator<RepositoryInfo> it1 = rps.iterator(); it1.hasNext();) {
+                RepositoryInfo repositoryInfo = it1.next();
+                RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(repositoryInfo);
+                if (impl != null) {
+                    ClassesQuery chq = impl.getCapabilityLookup().lookup(ClassesQuery.class);
+                    if (chq != null) {
+                        query.addResults(chq.findVersionsByClass(query.getClassName(), rps), !it1.hasNext() && !it.hasNext());
+                    } else {
+                        query.addResults(null, !it1.hasNext() && !it.hasNext());
+                    }
+                }
+                // still someone waiting for results?
+                if (query.countObservers() == 0)
+                    return;
+            }
+        }
+        if (!query.isFinished())
+            query.addResults(null, true);
+    }
+
     public static List<NBVersionInfo> findArchetypes(RepositoryInfo... repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
