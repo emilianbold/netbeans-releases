@@ -95,7 +95,6 @@ public class ToolbarPoolTest extends NbTestCase {
         }
         
         ToolbarPool tp = ToolbarPool.getDefault ();
-        tp.waitFinished ();
     }
 
     public void testGetConf () throws Exception {
@@ -113,8 +112,6 @@ public class ToolbarPoolTest extends NbTestCase {
         conf = (JLabel)writeInstance (toolbars, "conf1.ser", conf);
         
         ToolbarPool tp = ToolbarPool.getDefault ();
-        
-        tp.waitFinished ();
         String[] myConfs = tp.getConfigurations ();
         assertEquals ("One", 1, myConfs.length);
         assertEquals ("By default there is the one", "testCreateConf", myConfs[0]);
@@ -125,8 +122,6 @@ public class ToolbarPoolTest extends NbTestCase {
         FileUtil.createFolder (toolbars, "tlb2");
         
         ToolbarPool tp = ToolbarPool.getDefault ();
-        
-        tp.waitFinished ();
         Toolbar[] myTlbs = tp.getToolbars ();
         assertEquals ("One", 1, myTlbs.length);
         assertEquals ("By default there is the one", "tlb2", myTlbs[0].getName ());
@@ -140,8 +135,6 @@ public class ToolbarPoolTest extends NbTestCase {
         InstanceDataObject.create (f, "test1", JLabel.class);
         
         ToolbarPool tp = ToolbarPool.getDefault ();
-        
-        tp.waitFinished ();
         Toolbar[] myTlbs = tp.getToolbars ();
         assertEquals ("One", 1, myTlbs.length);
         assertEquals ("By default there is the one", "tlbx", myTlbs[0].getName ());
@@ -175,7 +168,6 @@ public class ToolbarPoolTest extends NbTestCase {
         }
         Atom atom = new Atom();
         df.getPrimaryFile().getFileSystem().runAtomicAction(atom);
-        pool.waitFinished();
 
         assertEquals("One toolbar is there", 1, pool.getToolbars().length);
         Toolbar tb = pool.getToolbars()[0];

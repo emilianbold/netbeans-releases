@@ -196,6 +196,22 @@ public class VCSInterceptorTest extends TestCase {
         assertTrue(inteceptor.getDeletedFiles().contains(file2));
     }
 
+    public void testFileCopied() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned");
+        FileObject fo = FileUtil.toFileObject(f);
+        fo = fo.createData("copyme.txt");
+        File from = FileUtil.toFile(fo);
+
+        FileObject fto = fo.copy(fo.getParent(), "copymeto", "txt");
+
+        assertTrue(inteceptor.getBeforeCopyFiles().contains(from));
+        assertTrue(inteceptor.getBeforeCopyFiles().contains(FileUtil.toFile(fo)));
+        assertTrue(inteceptor.getDoCopyFiles().contains(from));
+        assertTrue(inteceptor.getDoCopyFiles().contains(FileUtil.toFile(fo)));
+        assertTrue(inteceptor.getAfterCopyFiles().contains(from));
+        assertTrue(inteceptor.getAfterCopyFiles().contains(FileUtil.toFile(fo)));
+    }
+
     private void deleteRecursively(File f) {
         if(f.isFile()) {
             f.delete();

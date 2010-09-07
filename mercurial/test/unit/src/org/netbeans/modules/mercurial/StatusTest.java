@@ -108,7 +108,7 @@ public class StatusTest extends AbstractHgTest {
         commit(folder);
         write(file1, "change");
         getCache().refresh(folder); // force refresh
-        HgCommand.doCopy(getWorkDir(), file1, file2, NULL_LOGGER);
+        HgCommand.doCopy(getWorkDir(), file1, file2, false, NULL_LOGGER);
         
         // assert status given from cli
         assertStatus(file1, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);

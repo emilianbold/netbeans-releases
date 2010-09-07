@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -83,6 +84,7 @@ import org.netbeans.modules.form.RADComponentNode;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
+import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.openide.awt.Mnemonics;
@@ -91,6 +93,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Grid designer.
@@ -142,6 +145,9 @@ public class GridDesigner extends JPanel implements Customizer {
         JToggleButton padButton = initPaddingButton();
         toolBar.add(Box.createRigidArea(new Dimension(10,10)));
         toolBar.add(padButton);
+        toolBar.add(Box.createRigidArea(new Dimension(10,10)));
+        initPreviewButton(toolBar, metaContainer);
+        toolBar.add(Box.createRigidArea(new Dimension(10,10)));
         toolBar.add(Box.createGlue());
         rightPanel.add(toolBar, BorderLayout.PAGE_START);
         // Estimate of the size of the header
@@ -254,6 +260,28 @@ public class GridDesigner extends JPanel implements Customizer {
             }
         });
         return button;
+    }
+    
+    /**
+     * Creates and initializes preview/test layout button.
+     * 
+     * @param toolBar toolbar where the button should be added.
+     * @param metaComp meta-component to preview.
+     */
+    private void initPreviewButton(JToolBar toolBar, final RADVisualComponent metaComp) {
+        AbstractAction action = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TestAction testAction = SystemAction.get(TestAction.class);
+                testAction.createPreview(metaComp, null);
+            }
+        };
+        TestAction testAction = SystemAction.get(TestAction.class);
+        action.putValue(Action.NAME, testAction.getName());
+        action.putValue(Action.SMALL_ICON, testAction.getValue(Action.SMALL_ICON));
+        JButton button = toolBar.add(action);
+        button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.previewLayout")); // NOI18N
+        button.setFocusPainted(false);
     }
 
     /**

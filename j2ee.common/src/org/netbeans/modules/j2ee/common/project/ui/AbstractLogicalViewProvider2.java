@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,59 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.earproject.ui;
+package org.netbeans.modules.j2ee.common.project.ui;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider.LogicalViewRootNode;
-import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
- * Support for creating logical views.
+ * AbstractLogicalViewProvider enhanced with initialization state.
+ *
+ * @since 1.54
+ * @author Petr Hejl
  */
-public class J2eeArchiveLogicalViewProvider extends AbstractLogicalViewProvider2 {
-    
-    private final EarProject project;
+public abstract class AbstractLogicalViewProvider2 extends AbstractLogicalViewProvider {
 
-    public J2eeArchiveLogicalViewProvider(EarProject project, UpdateHelper helper,
-            PropertyEvaluator evaluator, ReferenceHelper resolver, J2eeModuleProvider provider) {
-        super(project, helper, evaluator, resolver, provider);
-        this.project = project;
+    private volatile boolean initialized;
+
+    protected AbstractLogicalViewProvider2(Project project, UpdateHelper helper,
+            PropertyEvaluator evaluator, ReferenceHelper resolver, J2eeModuleProvider j2eeModuleProvider) {
+        super(project, helper, evaluator, resolver, j2eeModuleProvider);
     }
 
-    @Override
-    public Node createLogicalView() {
-        return new LogicalViewRootNode("Projects/org-netbeans-modules-j2ee-earproject/Nodes",
-                    "org-netbeans-modules-j2ee-earproject",
-                    "org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif",
-                    NbBundle.getMessage(J2eeArchiveLogicalViewProvider.class, "HINT_project_root_node"),
-                    J2eeArchiveLogicalViewProvider.class);
-    }
-    
-    private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        EarProjectProperties.DEBUG_CLASSPATH,
-        ProjectProperties.ENDORSED_CLASSPATH,
-        EarProjectProperties.JAR_CONTENT_ADDITIONAL,
-    };
-    
-    @Override
-    protected String[] getBreakableProperties() {
-        return BREAKABLE_PROPERTIES;
+    public void initialize() {
+        initialized = true;
     }
 
     @Override
-    protected void setServerInstance(Project project, UpdateHelper helper, String serverInstanceID) {
-        EarProjectProperties.setServerInstance((EarProject)project, helper, serverInstanceID);
+    protected boolean isInitialized() {
+        return super.isInitialized() && initialized;
     }
-    
 }
