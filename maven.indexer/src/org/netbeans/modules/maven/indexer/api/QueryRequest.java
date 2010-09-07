@@ -56,6 +56,7 @@ import java.util.Observer;
 public final class QueryRequest extends Observable {
     
     private List<QueryField> queryFields;
+    private String className;
     private RepositoryInfo[] repositories;
     private boolean queryFinished;
     private final List<NBVersionInfo> results = new ArrayList<NBVersionInfo>();
@@ -73,6 +74,24 @@ public final class QueryRequest extends Observable {
      */
     public QueryRequest(List<QueryField> fields, RepositoryInfo[] repos, Observer observer) {
         queryFields = fields;
+        repositories = repos;
+        addObserver(observer);
+        queryFinished = false;
+    }
+    
+    /**
+     * Constructor of a new query request. The request is created by a requester
+     * who gets attached here as the observer. The observer gets notified when
+     * the running query adds more results to this object. The requester should
+     * remove itself from the list of observers of this object when it loses
+     * interest in additional results of the query.
+     * 
+     * @param classname
+     * @param repos
+     * @param observer
+     */
+    public QueryRequest(String classname, RepositoryInfo[] repos, Observer observer) {
+        className = classname;
         repositories = repos;
         addObserver(observer);
         queryFinished = false;
@@ -131,7 +150,13 @@ public final class QueryRequest extends Observable {
     }
 
     public List<QueryField> getQueryFields() {
+        assert queryFields != null;
         return queryFields;
+    }
+    
+    public String getClassName() {
+        assert className != null;
+        return className;
     }
     
     public RepositoryInfo[] getRepositories() {
