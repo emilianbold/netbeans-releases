@@ -65,7 +65,7 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
+import org.netbeans.modules.dlight.spi.support.TableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;

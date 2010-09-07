@@ -43,7 +43,9 @@ package org.netbeans.modules.dlight.api.storage;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This is virtual table description. This table description is
@@ -64,6 +66,8 @@ public final class DataTableMetadata {
     private final List<String> columnNames;
     private final List<DataTableMetadata> sourceTables;
     private final String statement;
+    private final List<Column> primaryKeyColumns = new ArrayList<Column>();
+    private final List<Column> autoIncrementList = new ArrayList<Column>();
 
     /**
      * Creates new table description with the name <code>name</code> and using <code>columns</code> as table column descriptions
@@ -98,6 +102,26 @@ public final class DataTableMetadata {
         for (Column c : columns) {
             columnNames.add(c.getColumnName());
         }
+    }
+    
+    public void setPrimaryKey(List<Column> primaryKeys){
+        this.primaryKeyColumns.clear();
+        this.primaryKeyColumns.addAll(primaryKeys);
+    }
+    
+    public void setAutoIncrement(Column c){
+        if (autoIncrementList.contains(c)){
+            return;
+        }
+        autoIncrementList.add(c);
+    }
+    
+    public boolean isPrimaryKey(Column c){
+        return primaryKeyColumns.contains(c);
+    }
+    
+    public boolean isAutoIncrement(Column c){
+        return autoIncrementList.contains(c);
     }
 
     /**
