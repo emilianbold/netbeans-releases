@@ -46,13 +46,13 @@ package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.nodes.*;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class EjbJarLogicalViewProvider extends AbstractLogicalViewProvider {
+public class EjbJarLogicalViewProvider extends AbstractLogicalViewProvider2 {
 
     private final EjbJarProject project;
 
