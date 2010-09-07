@@ -97,7 +97,7 @@ public class DerbyDataStorage extends SQLDataStorage {
 
         try {
             System.setProperty("derby.system.home", tmpDir.getAbsolutePath()); // NOI18N
-            Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
+            Class<?> driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
             logger.log(Level.INFO, "Driver for Derby(JavaDB) ({0}) Loaded ", driver.getName()); // NOI18N
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -171,7 +171,7 @@ public class DerbyDataStorage extends SQLDataStorage {
     }
 
     @Override
-    protected String classToType(Class clazz) {
+    protected String classToType(Class<?> clazz) {
         if (clazz == Integer.class) {
             return "integer"; // NOI18N
         }
@@ -257,12 +257,12 @@ public class DerbyDataStorage extends SQLDataStorage {
 
     @Override
     public String getAutoIncrementExpresion() {
-        return "GENERATED ALWAYS AS IDENTITY";
+        return "GENERATED ALWAYS AS IDENTITY"; // NOI18N
     }
 
     @Override
     public String getPrimaryKeyExpression() {
-        return "PRIMARY KEY";
+        return "PRIMARY KEY"; // NOI18N
     }
     
     
