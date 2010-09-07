@@ -94,4 +94,7 @@ public interface WebBeansModelProvider {
             DeclaredType parentType,
             AbstractModelImplementation modelImplementation );
 
+    VariableElement getObserverParameter( ExecutableElement element,
+            AbstractModelImplementation modelImplementation );
+
 }
