@@ -1034,17 +1034,28 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
             if (keyList.size() > 0) { // some results available
                 
-                List<Node> nodes = new ArrayList<Node>(keyList.size());
+                Map<String, Node> currentNodes = new HashMap<String, Node>();
+                for (Node nd : resultsRootNode.getChildren().getNodes()) {
+                    currentNodes.put(nd.getName(), nd);
+                }
+                List<Node> newNodes = new ArrayList<Node>(keyList.size());
 
                 // still searching?
                 if (null!=queryRequest && !queryRequest.isFinished())
-                    nodes.add(getSearchingNode());
+                    newNodes.add(getSearchingNode());
                 
                 for (String key : keyList) {
-                    nodes.add(createFilterWithDefaultAction(MavenNodeFactory.createArtifactNode(key, map.get(key)), false));
+                    Node nd;
+                    nd = currentNodes.get(key);
+                    if (null != nd) {
+                        ((MavenNodeFactory.ArtifactNode)((FilterNodeWithDefAction)nd).getOriginal()).setVersionInfos(map.get(key));
+                    } else {
+                        nd = createFilterWithDefaultAction(MavenNodeFactory.createArtifactNode(key, map.get(key)), false);
+                    }
+                    newNodes.add(nd);
                 }
                 
-                resultsRootNode.setNewChildren(nodes);
+                resultsRootNode.setNewChildren(newNodes);
             } else if (null!=queryRequest && !queryRequest.isFinished()) { // still searching, no results yet
                 resultsRootNode.setOneChild(getSearchingNode());
             } else { // finished searching with no results
@@ -1344,23 +1355,33 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     }
 
     private Node createFilterWithDefaultAction(final Node nd, boolean leaf) {
-        Children child = leaf ? Children.LEAF : new FilterNode.Children(nd) {
-            @Override
-            protected Node[] createNodes(Node key) {
-                return new Node[] { createFilterWithDefaultAction(key, true)};
-            }
+        return new FilterNodeWithDefAction (nd, leaf);
+    }
 
-        };
+    class FilterNodeWithDefAction extends FilterNode {
 
-        return new FilterNode(nd, child) {
-            @Override
-            public Action getPreferredAction() {
-                return new DefAction(true, nd.getLookup());
-            }
-            @Override
-            public Action[] getActions(boolean context) {
-                return new Action[0];
-            }
-        };
+        public FilterNodeWithDefAction(Node nd, boolean leaf) {
+            super(nd, leaf ? Children.LEAF : new FilterNode.Children(nd) {
+                @Override
+                protected Node[] createNodes(Node key) {
+                    return new Node[]{createFilterWithDefaultAction(key, true)};
+                }
+            });
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new DefAction(true, getOriginal().getLookup());
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+        
+        @Override
+        public Node getOriginal() {
+            return super.getOriginal();
+        }
     }
 }

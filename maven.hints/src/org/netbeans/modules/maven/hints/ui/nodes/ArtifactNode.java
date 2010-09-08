@@ -51,32 +51,19 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Anuradha G
  */
 public class ArtifactNode extends AbstractNode {
+
     private List<NBVersionInfo> versionInfos;
-    public ArtifactNode(String name, final List<NBVersionInfo> list) {
-        super(new Children.Keys<NBVersionInfo>() {
-
-            @Override
-            protected Node[] createNodes(NBVersionInfo arg0) {
-
-
-                return new Node[]{new VersionNode(arg0, arg0.isJavadocExists(),
-                            arg0.isSourcesExists())
-                        };
-            }
-
-            @Override
-            protected void addNotify() {
-
-                setKeys(list);
-            }
-        });
+    private ArtifactNodeChildren myChildren;
+    
+    public ArtifactNode(String name, List<NBVersionInfo> list) {
+        super(new ArtifactNodeChildren(list));
+        myChildren = (ArtifactNodeChildren)getChildren();
         this.versionInfos=list;
         setName(name);
         setDisplayName(name);
@@ -98,5 +85,34 @@ public class ArtifactNode extends AbstractNode {
         return new ArrayList<NBVersionInfo>(versionInfos);
     }
     
-    
+    public void setVersionInfos(List<NBVersionInfo> infos) {
+        versionInfos = infos;
+        myChildren.setNewKeys(infos);
+    }
+
+    static class ArtifactNodeChildren extends Children.Keys<NBVersionInfo> {
+
+        private List<NBVersionInfo> keys;
+
+        public ArtifactNodeChildren(List<NBVersionInfo> keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        protected Node[] createNodes(NBVersionInfo arg0) {
+            return new Node[]{new VersionNode(arg0, arg0.isJavadocExists(),
+                        arg0.isSourcesExists())
+                    };
+        }
+
+        @Override
+        protected void addNotify() {
+            setKeys(keys);
+        }
+
+        protected void setNewKeys(List<NBVersionInfo> keys) {
+            this.keys = keys;
+            setKeys(keys);
+        }
+    }
 }
