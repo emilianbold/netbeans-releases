@@ -1092,6 +1092,7 @@ public class CasualDiff {
                 copyTo(localPointer, pos);
                 boolean parens = oldT.resources.isEmpty() || newT.resources.isEmpty();
                 int oldPrec = printer.setPrec(TreeInfo.noPrec);
+                if (newT.resources.nonEmpty()) printer.oldTrees.remove(newT.resources.last());  //Remove the last stm (should not have ;) from oldTrees to force it to be reprinted by VeryPretty
                 localPointer = diffParameterList(oldT.resources,
                         newT.resources,
                         parens ? new JavaTokenId[] { JavaTokenId.LPAREN, JavaTokenId.RPAREN } : null,
