@@ -90,7 +90,7 @@ public class KeyManager {
      * @exception NullPointerException If the <code>uid</code> parameter
      *                                 is <code>null</code>.
      */
-    public final Key getSharedUID(Key key) {
+    public final Key getSharedKey(Key key) {
         if (key == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
         }

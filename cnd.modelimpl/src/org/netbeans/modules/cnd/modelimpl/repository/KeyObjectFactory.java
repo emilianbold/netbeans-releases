@@ -80,7 +80,7 @@ public class KeyObjectFactory extends KeyFactory {
         // no reasone to cache declaration keys.
         boolean share = !(out instanceof OffsetableDeclarationKey);
         if (share) {
-            Key shared = KeyManager.instance().getSharedUID((Key)out);
+            Key shared = KeyManager.instance().getSharedKey((Key)out);
             assert shared != null;
             assert shared instanceof SelfPersistent;
             out = (SelfPersistent) shared;
@@ -215,7 +215,7 @@ public class KeyObjectFactory extends KeyFactory {
                 throw new IllegalArgumentException("Unknown hander was provided: " + handler);  // NOI18N
         }
         if (share) {
-            Key shared = KeyManager.instance().getSharedUID((Key)aKey);
+            Key shared = KeyManager.instance().getSharedKey((Key)aKey);
             assert shared != null;
             assert shared instanceof SelfPersistent;
             aKey = (SelfPersistent) shared;
