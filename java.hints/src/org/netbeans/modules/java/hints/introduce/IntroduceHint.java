@@ -904,23 +904,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return result;
     }
 
-    private static ExpressionTree expressionCopy(TreePath expression, WorkingCopy copy) throws IOException, BadLocationException {
-        //hack: creating a copy of the expression:
-        String text = getExpressionText(copy, expression);
-        if (expression.getLeaf().getKind() == Kind.NEW_ARRAY) {
-            return copy.getTreeUtilities().parseVariableInitializer(text, new SourcePositions[1]);
-        }
-        return copy.getTreeUtilities().parseExpression(text, new SourcePositions[1]);
-    }
-
-    private static String getExpressionText(WorkingCopy copy, TreePath expression) throws BadLocationException, IOException {
-        Document doc = copy.getDocument();
-        int start = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), expression.getLeaf());
-        int end = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), expression.getLeaf());
-        String text = doc.getText(start, end - start);
-        return text;
-    }
-
     private static List<ExpressionTree> realArguments(final TreeMaker make, List<VariableElement> parameters) {
         List<ExpressionTree> realArguments = new LinkedList<ExpressionTree>();
 
@@ -1399,8 +1382,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
 
-                    //hack: creating a copy of the expression:
-                    ExpressionTree expressionCopy = expressionCopy(resolved, parameter);
+                    ExpressionTree expression = (ExpressionTree) resolved.getLeaf();
                     ModifiersTree mods;
                     final TreeMaker make = parameter.getTreeMaker();
                     
@@ -1425,7 +1407,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             mods = make.Modifiers(localAccess);
 
-                            VariableTree constant = make.Variable(mods, name, make.Type(tm), expressionCopy);
+                            VariableTree constant = make.Variable(mods, name, make.Type(tm), expression);
                             ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, constant);
 
                             parameter.rewrite(pathToClass.getLeaf(), nueClass);
@@ -1476,7 +1458,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             List<StatementTree> nueStatements = new LinkedList<StatementTree>(statements.getStatements());
                             mods = make.Modifiers(declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class));
 
-                            nueStatements.add(index, make.Variable(mods, name, make.Type(tm), expressionCopy/*(ExpressionTree) resolved.getLeaf()*//*(ExpressionTree) resolved.getLeaf()*/));
+                            nueStatements.add(index, make.Variable(mods, name, make.Type(tm), expression));
 
                             if (expressionStatement)
                                 nueStatements.remove(resolved.getParentPath().getLeaf());
@@ -1487,8 +1469,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             break;
                     }
 
-                    if (!expressionStatement)
-                        parameter.rewrite(resolved.getLeaf(), make.Identifier(name));
+                    if (!expressionStatement) {
+                        Tree origParent = resolved.getParentPath().getLeaf();
+                        Tree newParent = parameter.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), make.Identifier(name)));
+                        parameter.rewrite(origParent, newParent);
+
+                    }
                 }
             }).commit();
             return null;
@@ -1563,8 +1549,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
 
-                    //hack: creating a copy of the expression:
-                    ExpressionTree expressionCopy = expressionCopy(resolved, parameter);
+                    ExpressionTree expression = (ExpressionTree) resolved.getLeaf();
 
                     Set<Modifier> mods = declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class);
 
@@ -1593,10 +1578,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     ModifiersTree modsTree = make.Modifiers(mods);
 
-                    VariableTree field = make.Variable(modsTree, name, make.Type(tm), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expressionCopy : null);
+                    VariableTree field = make.Variable(modsTree, name, make.Type(tm), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
                     ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
 
-                    parameter.rewrite(resolved.getLeaf(), make.Identifier(name));
+                    Tree parentTree = resolved.getParentPath().getLeaf();
+                    Tree nueParent = parameter.getTreeUtilities().translate(parentTree, Collections.singletonMap(resolved.getLeaf(), make.Identifier(name)));
+                    parameter.rewrite(parentTree, nueParent);
 
                     TreePath method        = findMethod(resolved);
 
@@ -1626,12 +1613,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         List<StatementTree> nueStatements = new LinkedList<StatementTree>(statements.getStatements());
 
-                        if (expressionCopy.getKind() == Kind.NEW_ARRAY) {
-                            List<? extends ExpressionTree> initializers = ((NewArrayTree) expressionCopy).getInitializers();
-                            expressionCopy = make.NewArray(make.Type(((ArrayType)tm).getComponentType()), Collections.<ExpressionTree>emptyList(), initializers);
+                        if (expression.getKind() == Kind.NEW_ARRAY) {
+                            List<? extends ExpressionTree> initializers = ((NewArrayTree) expression).getInitializers();
+                            expression = make.NewArray(make.Type(((ArrayType)tm).getComponentType()), Collections.<ExpressionTree>emptyList(), initializers);
                         }
 
-                        nueStatements.add(index, make.ExpressionStatement(make.Assignment(make.Identifier(name), expressionCopy)));
+                        nueStatements.add(index, make.ExpressionStatement(make.Assignment(make.Identifier(name), expression)));
 
                         BlockTree nueBlock = make.Block(nueStatements, false);
 
@@ -1647,7 +1634,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 Element clazz = parameter.getTrees().getElement(pathToClass);
                                 ModifiersTree constrMods = clazz.getKind() != ElementKind.ENUM?make.Modifiers(EnumSet.of(Modifier.PUBLIC)):make.Modifiers(Collections.EMPTY_SET);
 
-                                nueStatements.add(make.ExpressionStatement(make.Assignment(reference, expressionCopy)));
+                                nueStatements.add(make.ExpressionStatement(make.Assignment(reference, expression)));
 
                                 BlockTree nueBlock = make.Block(nueStatements, false);
                                 MethodTree nueConstr = make.Method(constrMods, "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), nueBlock, null); //NOI18N
@@ -1677,7 +1664,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             if (!parameter.getTreeUtilities().isSynthetic(TreePath.getPath(constructor, canBeSuper))) {
                                 nueStatements.add(canBeSuper);
                             }
-                            nueStatements.add(make.ExpressionStatement(make.Assignment(reference, expressionCopy)));
+                            nueStatements.add(make.ExpressionStatement(make.Assignment(reference, expression)));
                             nueStatements.addAll(origStatements.subList(1, origStatements.size()));
 
                             BlockTree nueBlock = make.Block(nueStatements, false);
@@ -2079,8 +2066,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
 
                     returnType = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(copy, returnType));
-                    ExpressionTree expressionCopy = expressionCopy(expression,copy);
-
 
                     final TreeMaker make = copy.getTreeMaker();
                     Tree returnTypeTree = make.Type(returnType);
@@ -2115,7 +2100,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     List<StatementTree> methodStatements = new LinkedList<StatementTree>();
 
-                    methodStatements.add(make.Return(expressionCopy));
+                    methodStatements.add(make.Return((ExpressionTree) expression.getLeaf()));
 
                     MethodTree method = make.Method(mods, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), formalArguments, thrown, make.Block(methodStatements, false), null);
                     TreePath pathToClass = findClass(expression);
@@ -2131,7 +2116,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
                     
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
-                    copy.rewrite(expression.getLeaf(), invocation);
+
+                    Tree parentTree = expression.getParentPath().getLeaf();
+                    Tree nueParent = copy.getTreeUtilities().translate(parentTree, Collections.singletonMap(expression.getLeaf(), invocation));
+                    copy.rewrite(parentTree, nueParent);
 
                     if (replaceOther) {
                         //handle duplicates

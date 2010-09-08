@@ -90,28 +90,21 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     protected TreeFactory make;
     protected CommentHandler comments;
     protected ASTService model;
-    private CompilationUnitTree topLevel;
     private ImportAnalysis2 importAnalysis;
     private Map<Tree, Object> tree2Tag;
 
-    public void attach(Context context, ImportAnalysis2 importAnalysis, CompilationUnitTree topLevel, Map<Tree, Object> tree2Tag) {
+    public void attach(Context context, ImportAnalysis2 importAnalysis, Map<Tree, Object> tree2Tag) {
         make = TreeFactory.instance(context);
         comments = CommentHandlerService.instance(context);
         model = ASTService.instance(context);
         this.importAnalysis = importAnalysis;
-        this.topLevel = topLevel;
         this.tree2Tag = tree2Tag;
-    }
-    
-    public void attach(Context context) {
-        attach(context, new ImportAnalysis2(context), null, null);
     }
     
     public void release() {
         make = null;
         comments = null;
         model = null;
-        topLevel = null;
         importAnalysis = null;
     }
 
@@ -319,9 +312,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
  ****************************************************************************/
 
     public Tree visitCompilationUnit(CompilationUnitTree tree, Object p) {
-	topLevel = tree;
-	CompilationUnitTree result = rewriteChildren(topLevel);
-	topLevel = null;
+	CompilationUnitTree result = rewriteChildren(tree);
         return result;
     }
     public Tree visitImport(ImportTree tree, Object p) {
@@ -611,13 +602,8 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 		/* Don't set the block's pos, because if it is a method body
 		 * with a synthetic first statement (ie. "super()"), then
 		 * pretty printers will print it since its pos is different
-		 * from its parent's.  Instead, just mark the topLevel so
-		 * Commit knows to save it.
+		 * from its parent's.
 		 */
-                assert topLevel != null;
-//                if (topLevel == null)
-//                    topLevel = model.getTopLevel(tree);
-                model.setPos(topLevel, NOPOS);
             } else
                 copyPosTo(tree,n);
 	    tree = n;

@@ -70,10 +70,11 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 
@@ -96,6 +97,10 @@ public class ImportAnalysis2 {
     private Map<String, Element> usedImplicitlyImportedClassesCache;
     private Set<String> implicitlyImportedClassNames;
     private PackageElement javaLang;
+
+    public ImportAnalysis2(CompilationInfo info) {
+        this(JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext());
+    }
 
     public ImportAnalysis2(Context env) {
         elements = JavacElements.instance(env);
