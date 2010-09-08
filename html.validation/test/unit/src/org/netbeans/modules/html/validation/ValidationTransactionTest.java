@@ -62,7 +62,7 @@ public class ValidationTransactionTest extends NbTestCase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new ValidationTransactionTest("testMathML"));
+        suite.addTest(new ValidationTransactionTest("testX"));
         return suite;
     }
 

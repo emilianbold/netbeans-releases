@@ -80,7 +80,7 @@ public class KeyObjectFactory extends KeyFactory {
         // no reasone to cache declaration keys.
         boolean share = !(out instanceof OffsetableDeclarationKey);
         if (share) {
-            Key shared = KeyManager.instance().getSharedUID((Key)out);
+            Key shared = KeyManager.instance().getSharedKey((Key)out);
             assert shared != null;
             assert shared instanceof SelfPersistent;
             out = (SelfPersistent) shared;
@@ -133,6 +133,10 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_FILE_KEY;
         } else if (object instanceof FileDeclarationsKey ) {
             aHandle = KEY_FILE_DECLARATIONS_KEY;
+        } else if (object instanceof FileMacrosKey ) {
+            aHandle = KEY_FILE_MACROS_KEY;
+        } else if (object instanceof FileIncludesKey ) {
+            aHandle = KEY_FILE_INCLUDES_KEY;
         } else if (object instanceof MacroKey) {
             aHandle = KEY_MACRO_KEY;
         } else if (object instanceof IncludeKey) {
@@ -177,6 +181,12 @@ public class KeyObjectFactory extends KeyFactory {
             case KEY_FILE_DECLARATIONS_KEY:
                 aKey = new FileDeclarationsKey(aStream);
                 break;
+            case KEY_FILE_MACROS_KEY:
+                aKey = new FileMacrosKey(aStream);
+                break;
+            case KEY_FILE_INCLUDES_KEY:
+                aKey = new FileIncludesKey(aStream);
+                break;
             case KEY_MACRO_KEY:
                 aKey = new MacroKey(aStream);
                 break;
@@ -215,7 +225,7 @@ public class KeyObjectFactory extends KeyFactory {
                 throw new IllegalArgumentException("Unknown hander was provided: " + handler);  // NOI18N
         }
         if (share) {
-            Key shared = KeyManager.instance().getSharedUID((Key)aKey);
+            Key shared = KeyManager.instance().getSharedKey((Key)aKey);
             assert shared != null;
             assert shared instanceof SelfPersistent;
             aKey = (SelfPersistent) shared;
@@ -233,7 +243,9 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_NAMESPACE_KEY  = KEY_PROJECT_KEY + 1;
     public static final int KEY_FILE_KEY       = KEY_NAMESPACE_KEY + 1;
     public static final int KEY_FILE_DECLARATIONS_KEY = KEY_FILE_KEY + 1;
-    public static final int KEY_MACRO_KEY      = KEY_FILE_DECLARATIONS_KEY + 1;
+    public static final int KEY_FILE_MACROS_KEY = KEY_FILE_DECLARATIONS_KEY + 1;
+    public static final int KEY_FILE_INCLUDES_KEY = KEY_FILE_MACROS_KEY + 1;
+    public static final int KEY_MACRO_KEY      = KEY_FILE_INCLUDES_KEY + 1;
     public static final int KEY_INCLUDE_KEY    = KEY_MACRO_KEY + 1;
     public static final int KEY_INHERITANCE_KEY = KEY_INCLUDE_KEY + 1;
     public static final int KEY_PARAM_LIST_KEY  = KEY_INHERITANCE_KEY + 1;

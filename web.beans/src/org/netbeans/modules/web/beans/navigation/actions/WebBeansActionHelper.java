@@ -52,11 +52,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -105,6 +108,9 @@ class WebBeansActionHelper {
     
     static final String EVENT_INTERFACE = 
         "javax.enterprise.event.Event";                         // NOI18N
+    
+    static final String OBSERVES_ANNOTATION = 
+        "javax.enterprise.event.Observes";                      // NOI18N
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = 
         EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
@@ -196,6 +202,62 @@ class WebBeansActionHelper {
                 log( Level.WARNING, e.getMessage(), e);
         }
         return variable[1] !=null ;
+    }
+    
+    static boolean getMethodAtDot(
+            final JTextComponent component , final Object[] subject )
+    {
+        JavaSource javaSource = JavaSource.forDocument(component.getDocument());
+        if ( javaSource == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return false;
+        }
+        try {
+            javaSource.runUserActionTask( new Task<CompilationController>(){
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
+                    int dot = component.getCaret().getDot();
+                    TreePath tp = controller.getTreeUtilities()
+                        .pathFor(dot);
+                    Element element = controller.getTrees().getElement(tp );
+                    if ( element == null ){
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(
+                                        WebBeansActionHelper.class, 
+                                "LBL_ElementNotFound"));
+                        return;
+                    }
+                    if ( element instanceof ExecutableElement ){
+                        subject[0] = element;
+                    }
+                    else if ( element instanceof VariableElement ){
+                        Element enclosingElement = element.getEnclosingElement();
+                        if ( enclosingElement instanceof ExecutableElement){
+                            List<? extends AnnotationMirror> annotations = 
+                                controller.getElements().getAllAnnotationMirrors( 
+                                    element);
+                            for (AnnotationMirror annotationMirror : annotations) {
+                                DeclaredType annotationType = 
+                                    annotationMirror.getAnnotationType();
+                                Element annotationElement = annotationType.asElement();
+                                Name annotationName = ((TypeElement)annotationElement).
+                                    getQualifiedName();
+                                if ( OBSERVES_ANNOTATION.contentEquals( annotationName)){
+                                    subject[0] = enclosingElement;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }, true );
+        }
+        catch(IOException e ){
+            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
+                log( Level.WARNING, e.getMessage(), e);
+        }
+                    
+        return subject[0]!=null;
     }
     
     public static boolean getContextEventInjectionAtDot(

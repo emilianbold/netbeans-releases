@@ -94,9 +94,11 @@ public class ObserversPanel extends InjectablesPanel {
      * @see org.netbeans.modules.web.beans.navigation.InjectablesPanel#getQualifiedElement(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel)
      */
     @Override
-    protected Element getQualifiedElement( Element context , WebBeansModel model) {
+    protected Element getSelectedQualifiedElement( Element context , 
+            WebBeansModel model) 
+    {
         if ( context.getKind() == ElementKind.METHOD){
-            model.getObserverParameter((ExecutableElement)context );
+            return model.getObserverParameter((ExecutableElement)context );
         }
         return context;
     }

@@ -71,7 +71,7 @@ public class KeyUtilities {
     ////////////////////////////////////////////////////////////////////////////
     // key generators
     public static Key createFileKey(FileImpl file) {
-        return KeyManager.instance().getSharedUID(new FileKey(file));
+        return KeyManager.instance().getSharedKey(new FileKey(file));
     }
 
     public static Key createNamespaceKey(CsmNamespace ns) {
@@ -107,12 +107,12 @@ public class KeyUtilities {
 
     public static Key createIncludeKey(CsmInclude incl) {
         assert incl != null;
-        return KeyManager.instance().getSharedUID(new IncludeKey(incl));
+        return KeyManager.instance().getSharedKey(new IncludeKey(incl));
     }
 
     public static Key createInheritanceKey(CsmInheritance inh) {
         assert inh != null;
-        return KeyManager.instance().getSharedUID(new InheritanceKey(inh));
+        return KeyManager.instance().getSharedKey(new InheritanceKey(inh));
     }
 
     public static <T extends CsmNamedElement> Key createParamListKey(CsmParameterList<T> paramList) {
