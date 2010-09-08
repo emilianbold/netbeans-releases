@@ -243,6 +243,7 @@ public class SCFTHandlerTest extends NbTestCase {
             "<h2>${date}</h2>" +
             "<h3>${time}</h3>" +
             "<h4>${user}</h4>" +
+            "<h4>${dateTime?string(\"yy\")}</h4>" +
             "</html>";
         os.write(txt.getBytes());
         os.close();
@@ -265,6 +266,7 @@ public class SCFTHandlerTest extends NbTestCase {
         if (res.indexOf("time") >= 0) fail(res);
         if (res.indexOf("user") >= 0) fail(res);
         if (res.indexOf("name") >= 0) fail(res);
+        if (res.indexOf("dateTime") >= 0) fail(res);
     }
     
     private static String readFile(FileObject fo) throws IOException {

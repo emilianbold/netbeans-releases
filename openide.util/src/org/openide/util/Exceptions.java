@@ -115,6 +115,23 @@ public final class Exceptions extends Object {
         ae.addRecord(rec);
         return e;
     }
+    
+    /**
+     * Attaches a given severity to the exception. When the exception is
+     * later passed to {@link #printStackTrace} method, the level is
+     * then used as a level for reported {@link LogRecord}. This allows
+     * those who report exceptions to annotate them as unimportant,
+     * expected.
+     * 
+     * @param e exception to assign severity to
+     * @param severity the severity
+     * @since 8.8
+     */
+    public static <E extends Throwable> E attachSeverity(E e, Level severity) {
+        AnnException ae = AnnException.findOrCreate(e, true);
+        ae.addRecord(new LogRecord(severity, null));
+        return e;
+    }
 
     /** Extracts previously attached localized message for a given throwable.
      * Complements {@link #attachLocalizedMessage}.
@@ -171,12 +188,25 @@ public final class Exceptions extends Object {
      * @param t the exception to notify
      */
     public static void printStackTrace(Throwable t) {
+        AnnException ae = AnnException.findOrCreate(t, false);
+        Level level = null;
+        if (ae != null) {
+            for (LogRecord r : ae.records) {
+                if (r.getLevel() != Level.ALL) {
+                    level = r.getLevel();
+                    break;
+                }
+            }
+        }
+        if (level == null) {
+            level = OwnLevel.UNKNOWN;
+        }
         AnnException extra = AnnException.extras.get(t);
         if (extra != null) {
             assert t == extra.getCause();
             t = extra;
         }
-        LOG.log(OwnLevel.UNKNOWN, null, t);
+        LOG.log(level, null, t);
     }
 
     /** An exception that has a log record associated with itself, so
@@ -213,6 +243,9 @@ public final class Exceptions extends Object {
         private static Map<Throwable, AnnException> extras = new WeakHashMap<Throwable, AnnException>();
 
         static AnnException findOrCreate(Throwable t, boolean create) {
+            if (t == null) {
+                return null;
+            }
             if (t instanceof AnnException) {
                 return (AnnException)t;
             }
