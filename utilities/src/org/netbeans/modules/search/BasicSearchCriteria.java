@@ -159,7 +159,7 @@ final class BasicSearchCriteria {
 
     BasicSearchCriteria() {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("#" + instanceId + ": <init>()");                 //NOI18N
+            LOG.log(FINER, "#{0}: <init>()", instanceId);              //NOI18N
         }
     }
     
@@ -170,7 +170,7 @@ final class BasicSearchCriteria {
      */
     BasicSearchCriteria(BasicSearchCriteria template) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("#" + instanceId + ": <init>(template)");         //NOI18N
+            LOG.log(FINER, "#{0}: <init>(template)", instanceId);      //NOI18N
         }
 
         /* check-boxes: */
@@ -224,7 +224,9 @@ final class BasicSearchCriteria {
      */
     void setTextPattern(String pattern) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("setTextPattern(" + pattern + ')');               //NOI18N
+            LOG.log(FINER,
+                    "setTextPattern({0}{1}",
+                    new Object[]{pattern, ')'});               //NOI18N
         }
         if ((pattern != null) && (pattern.length() == 0)) {
             pattern = null;
@@ -277,15 +279,14 @@ final class BasicSearchCriteria {
      */
     private boolean compileRegexpPattern() {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("#" + instanceId + ": compileRegexpPattern()");   //NOI18N
+            LOG.log(FINER, "#{0}: compileRegexpPattern()", instanceId);//NOI18N
         }
         assert regexp;
         assert textPatternExpr != null;
         try {
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - textPatternExpr = \"" + 
-                           textPatternExpr +
-                           '"');  //NOI18N
+                LOG.log(FINEST, " - textPatternExpr = \"{0}{1}",
+                        new Object[]{textPatternExpr, '"'});  //NOI18N
             }
             int flags = 0;
             if (!caseSensitive) {
@@ -327,7 +328,7 @@ final class BasicSearchCriteria {
      */
     private void compileSimpleTextPattern() {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("#" + instanceId + ": compileRegexpPattern()");   //NOI18N
+            LOG.log(FINER, "#{0}: compileRegexpPattern()", instanceId);//NOI18N
         }
         assert textPatternExpr != null;
         try {
@@ -337,18 +338,18 @@ final class BasicSearchCriteria {
                 flags |= Pattern.UNICODE_CASE;
             }
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - textPatternExpr = \"" + 
-                           textPatternExpr +
-                           '"');  //NOI18N
+                LOG.log(FINEST, " - textPatternExpr = \"{0}{1}",
+                        new Object[]{textPatternExpr, '"'});  //NOI18N
             }
 	    String searchRegexp = RegexpMaker.makeRegexp(textPatternExpr,
                                                          wholeWords);
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - regexp = \"" + searchRegexp + '"');      //NOI18N
+                LOG.log(FINEST, " - regexp = \"{0}{1}",
+                        new Object[]{searchRegexp, '"'});      //NOI18N
             }
             textPattern = Pattern.compile(searchRegexp, flags);
         } catch (PatternSyntaxException ex) {
-            LOG.finest(" - invalid regexp");                            //NOI18N
+            LOG.finest(" - invalid regexp");                           //NOI18N
             assert false;
             textPattern = null;
         }
@@ -360,10 +361,11 @@ final class BasicSearchCriteria {
     
     void setRegexp(boolean regexp) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("setRegexp(" + regexp + ')');                     //NOI18N
+            LOG.log(FINER, "setRegexp({0}{1}",
+                    new Object[]{regexp, ')'});                         //NOI18N
         }
         if (regexp == this.regexp) {
-            LOG.finest(" - no change");                                 //NOI18N
+            LOG.finest(" - no change");                                //NOI18N
             return;
         }
         
@@ -387,10 +389,11 @@ final class BasicSearchCriteria {
     
     void setWholeWords(boolean wholeWords) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("setWholeWords(" + wholeWords + ')');             //NOI18N
+            LOG.log(FINER, "setWholeWords({0}{1}",
+                    new Object[]{wholeWords, ')'});                     //NOI18N
         }
         if (wholeWords == this.wholeWords) {
-            LOG.finest(" - no change");                                 //NOI18N
+            LOG.finest(" - no change");                                //NOI18N
             return;
         }
         
@@ -407,7 +410,8 @@ final class BasicSearchCriteria {
     
     void setCaseSensitive(boolean caseSensitive) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("setCaseSensitive(" + caseSensitive + ')');       //NOI18N
+            LOG.log(FINER, "setCaseSensitive({0}{1}",
+                    new Object[]{caseSensitive, ')'});       //NOI18N
         }
         if (caseSensitive == this.caseSensitive) {
             LOG.finest(" - no change");                                 //NOI18N
@@ -756,23 +760,27 @@ final class BasicSearchCriteria {
             return true;
         }
         catch(DataObjectNotFoundException e){
-            LOG.severe("Unable to get data object for the " + fo); // NOI18N
+            LOG.log(Level.SEVERE,
+                    "Unable to get data object for the {0}", fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
         catch (FileNotFoundException e) {
-            LOG.severe("Unable to get input stream for the " + fo); // NOI18N
+            LOG.log(Level.SEVERE,
+                    "Unable to get input stream for the {0}", fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
         catch(BufferedCharSequence.SourceIOException e){
-            LOG.severe("IOException during process for the " + fo); // NOI18N
+            LOG.log(Level.SEVERE,
+                    "IOException during process for the {0}", fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
         catch(Exception e){
-            LOG.severe("Unexpected Exception during process for the " +
-                       fo); // NOI18N
+            LOG.log(Level.SEVERE,
+                    "Unexpected Exception during process for the {0}",
+                    fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
@@ -889,13 +897,13 @@ final class BasicSearchCriteria {
      *          the specified object
      */
     public Node[] getDetails(Node node) {
-        DataObject dataObject = node.getCookie(DataObject.class);
+        DataObject data = node.getCookie(DataObject.class);
         
-        if (dataObject == null) {
+        if (data == null) {
             return null;
         }
         
-        return getDetails(dataObject);
+        return getDetails(data);
     }
     
     /**

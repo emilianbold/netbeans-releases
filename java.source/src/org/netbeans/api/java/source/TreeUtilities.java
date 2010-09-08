@@ -60,7 +60,7 @@ import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import java.io.IOException;
+import com.sun.tools.javac.util.Context;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,12 +72,11 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
-import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
+import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 
 /**
  *
@@ -837,6 +836,94 @@ public final class TreeUtilities {
         ESCAPE_ENCODE = Collections.unmodifiableMap(encode);
     }
 
+    /**Returns new tree based on {@code original}, such that each visited subtree
+     * that occurs as a key in {@code original2Translated} is replaced by the corresponding
+     * value from {@code original2Translated}. The value is then translated using the same
+     * algorithm. Each key from {@code original2Translated} is used at most once.
+     * Unless the provided {@code original} tree is a key in {@code original2Translated},
+     * the resulting tree has the same type as {@code original}.
+     *
+     * Principally, the method inner workings are:
+     * <pre>
+     * translate(original, original2Translated) {
+     *      if (original2Translated.containsKey(original))
+     *          return translate(original2Translated.remove(original));
+     *      newTree = copyOf(original);
+     *      for (Tree child : allChildrenOf(original)) {
+     *          newTree.replace(child, translate(child, original2Translated));
+     *      }
+     *      return newTree;
+     * }
+     * </pre>
+     * 
+     * @param original the tree that should be translated
+     * @param original2Translated map containing trees that should be translated
+     * @return translated tree.
+     * @since 0.64
+     */
+    public @NonNull Tree translate(final @NonNull Tree original, final @NonNull Map<? extends Tree, ? extends Tree> original2Translated) {
+        return translate(original, original2Translated, new NoImports(info), null);
+    }
+
+    @NonNull Tree translate(final @NonNull Tree original, final @NonNull Map<? extends Tree, ? extends Tree> original2Translated, ImportAnalysis2 ia, Map<Tree, Object> tree2Tag) {
+        ImmutableTreeTranslator itt = new ImmutableTreeTranslator() {
+            private @NonNull Map<Tree, Tree> map = new HashMap<Tree, Tree>(original2Translated);
+            @Override
+            public Tree translate(Tree tree) {
+                Tree translated = map.remove(tree);
+
+                if (translated != null) {
+                    return translate(translated);
+                } else {
+                    return super.translate(tree);
+                }
+            }
+        };
+
+        Context c = info.impl.getJavacTask().getContext();
+
+        itt.attach(c, ia, tree2Tag);
+
+        return itt.translate(original);
+    }
+
+    private static final class NoImports extends ImportAnalysis2 {
+
+        public NoImports(CompilationInfo info) {
+            super(info);
+        }
+
+        @Override
+        public void classEntered(ClassTree clazz) {}
+
+        @Override
+        public void classLeft() {}
+
+        @Override
+        public ExpressionTree resolveImport(MemberSelectTree orig, Element element) {
+            return orig;
+        }
+
+        @Override
+        public void setCompilationUnit(CompilationUnitTree cut) {}
+
+        private List<? extends ImportTree> imports;
+
+        @Override
+        public void setImports(List<? extends ImportTree> importsToAdd) {
+            this.imports = importsToAdd;
+        }
+
+        @Override
+        public List<? extends ImportTree> getImports() {
+            return this.imports;
+        }
+
+        @Override
+        public void setPackage(ExpressionTree packageNameTree) {}
+
+    }
+    
     private void copyInnerClassIndexes(Tree from, Tree to) {
         final int[] fromIdx = {-2};
         TreeScanner<Void, Void> scanner = new TreeScanner<Void, Void>() {
