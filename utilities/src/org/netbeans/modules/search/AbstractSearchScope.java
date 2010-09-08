@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.search.SearchScope;
 import org.openide.filesystems.FileObject;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
@@ -65,6 +64,7 @@ public abstract class AbstractSearchScope extends SearchScope {
 
     protected AbstractSearchScope() { }
 
+    @Override
     protected final boolean isApplicable() {
 
         /* thread: <any> */
@@ -126,6 +126,7 @@ public abstract class AbstractSearchScope extends SearchScope {
         }
     }
 
+    @Override
     protected void addChangeListener(ChangeListener l) {
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
@@ -147,6 +148,7 @@ public abstract class AbstractSearchScope extends SearchScope {
         }
     }
 
+    @Override
     protected void removeChangeListener(ChangeListener l) {
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
