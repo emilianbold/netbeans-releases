@@ -44,10 +44,12 @@ package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +57,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -83,7 +86,9 @@ public class ConvertToARM {
     @TriggerPatterns(
         {
             @TriggerPattern(value="$CV $var = $init; $stms$; $var.close();"),   //NOI18N
+            @TriggerPattern(value="final $CV $var = $init; $stms$; $var.close();"),   //NOI18N
             @TriggerPattern(value="$CV $var = $init; try { $stms$; } catch $catches$ finally {$var.close(); $finstms$;}"),  //NOI18N
+            @TriggerPattern(value="final $CV $var = $init; try { $stms$; } catch $catches$ finally {$var.close(); $finstms$;}"),  //NOI18N
             @TriggerPattern(value="$CV $var = null; try { $var = $init; $stms$; } catch $catches$ finally {if ($var != null) $var.close(); $finstms$;}") //NOI18N
         }
     )
@@ -151,8 +156,14 @@ public class ConvertToARM {
                 final UpgradeUICallback callback) {
             final TreeMaker tm = wc.getTreeMaker();
             final BlockTree block = tm.Block(ConvertToARMFix.<StatementTree>asList(statementsPaths), false);
+            final VariableTree varTree = (VariableTree) var.getLeaf();
+            final ModifiersTree oldMods = varTree.getModifiers();
+            if (oldMods != null && oldMods.getFlags().contains(Modifier.FINAL)) {
+                final ModifiersTree newMods = tm.removeModifiersModifier(oldMods, Modifier.FINAL);
+                wc.rewrite(oldMods, newMods);
+            }
             final TryTree tryTree = tm.Try(
-                    Collections.singletonList(var.getLeaf()),
+                    Collections.singletonList(varTree),
                     block,
                     ConvertToARMFix.<CatchTree>asList(catchesPaths),
                     rewriteFinallyBlock(tm,finStatementsPath));
@@ -175,7 +186,7 @@ public class ConvertToARM {
             return result;
         }
         
-        private BlockTree rewriteTryBlock(
+        private static BlockTree rewriteTryBlock(
                 final TreeMaker tm,
                 final List<? extends StatementTree> originalStatements,
                 final StatementTree var,
@@ -198,7 +209,7 @@ public class ConvertToARM {
             return tm.Block(statements, false);
         }
         
-        private BlockTree rewriteFinallyBlock(
+        private static BlockTree rewriteFinallyBlock(
                 final TreeMaker tm,
                 final Collection<? extends TreePath> paths) {
             if (paths == null || paths.isEmpty()) {
