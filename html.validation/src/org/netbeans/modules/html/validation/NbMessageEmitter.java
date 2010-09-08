@@ -30,12 +30,12 @@ import nu.validator.messages.MessageEmitter;
 import nu.validator.messages.MessageTextHandler;
 import nu.validator.messages.ResultHandler;
 import nu.validator.messages.TextMessageTextHandler;
-import nu.validator.messages.TextResultHandler;
-
 import nu.validator.messages.types.MessageType;
 import nu.validator.source.SourceHandler;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
 
 import org.xml.sax.SAXException;
 
@@ -82,7 +82,9 @@ public class NbMessageEmitter extends MessageEmitter {
     private Writer writer;
 
     private boolean asciiQuotes;
-    
+
+    private ContentHandler elaborationContentHandler;
+
 //    private static Writer newOutputStreamWriter(OutputStream out) {
 //        CharsetEncoder enc = Charset.forName("UTF-8").newEncoder();
 //        enc.onMalformedInput(CodingErrorAction.REPLACE);
@@ -167,6 +169,7 @@ public class NbMessageEmitter extends MessageEmitter {
             throws SAXException {
 
         this.writer = new StringWriter();
+        this.elaborationContentHandler = new SimplifiedMessagesContentHandler(writer);
         this.messageTextHandler = new TextMessageTextHandler(writer, asciiQuotes);
         this.contentHandler = new HtmlSerializer(writer);
 
@@ -298,7 +301,7 @@ public class NbMessageEmitter extends MessageEmitter {
 
     @Override
     public ContentHandler startElaboration() throws SAXException {
-        return contentHandler;
+        return elaborationContentHandler;
     }
 
     @Override
@@ -311,6 +314,95 @@ public class NbMessageEmitter extends MessageEmitter {
         return super.startSource();
     }
 
+    private static class SimplifiedMessagesContentHandler implements ContentHandler {
+
+        private static boolean inDD, inDL, inDT, inCODE;
+        private Writer out;
+
+        private static final String DL = "dl";
+        private static final String DT = "dt";
+        private static final String DD = "dd";
+        private static final String CODE = "code";
+
+        public SimplifiedMessagesContentHandler(Writer out) {
+            this.out = out;
+        }
+
+        private void write(String s) throws SAXException {
+            try {
+                out.write(s);
+            } catch (IOException ex) {
+                throw new SAXException(ex);
+            }
+        }
+
+        public void setDocumentLocator(Locator locator) {
+        }
+
+        public void startDocument() throws SAXException {
+            inDD = false;
+            inDT = false;
+            inDL = false;
+            inCODE = false;
+
+            write("\n");
+        }
+
+        public void endDocument() throws SAXException {
+        }
+
+        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+        }
+
+        public void endPrefixMapping(String prefix) throws SAXException {
+        }
+
+        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+            if(DL.equals(localName)) {
+                inDL = true;
+            } else if (DT.equals(localName)) {
+                inDT = true;
+            } else if(DD.equals(localName)) {
+                inDD = true;
+            } else if(CODE.equals(localName)) {
+                inCODE = true;
+                write("'");
+            }
+        }
+
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if(DL.equals(localName)) {
+                inDL = false;
+            } else if (DT.equals(localName)) {
+                inDT = false;
+                write("\n");
+            } else if(DD.equals(localName)) {
+                inDD = false;
+                write("\n");
+            } else if(CODE.equals(localName)) {
+                inCODE = false;
+                write("'");
+            }
+        }
+
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            if(inDL) {
+                if(inDD || inDT || inCODE) {
+                    write(new String(ch, start, length));
+                }
+            }
+        }
+
+        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+        }
+
+        public void processingInstruction(String target, String data) throws SAXException {
+        }
+
+        public void skippedEntity(String name) throws SAXException {
+        }
+
+    }
 
 
 }
