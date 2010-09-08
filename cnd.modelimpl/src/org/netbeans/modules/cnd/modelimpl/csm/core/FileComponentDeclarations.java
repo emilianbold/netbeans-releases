@@ -57,10 +57,16 @@ import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.FileDeclarationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -79,6 +85,14 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     private final TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations;
     private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
+    /**
+     * Stores the UIDs of the static functions declarations (not definitions)
+     * This is necessary for finding definitions/declarations
+     * since file-level static functions (i.e. c-style static functions) aren't registered in project
+     */
+    private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs;
+    private final Collection<CsmUID<CsmVariable>> staticVariableUIDs;
+    private final ReadWriteLock staticLock = new ReentrantReadWriteLock();
 
     // empty stub
     private static final FileComponentDeclarations EMPTY = new FileComponentDeclarations() {
@@ -92,10 +106,11 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return EMPTY;
     }
 
-    /** Creates a new instance of ClassifierContainer */
     public FileComponentDeclarations(FileImpl file) {
         super(new FileDeclarationsKey(file));
         declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
         put();
     }
 
@@ -103,12 +118,28 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.declarations = factory.readOffsetSortedToUIDMap(input, null);
+        int collSize = input.readInt();
+        if (collSize <= 0) {
+            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+        } else {
+            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(collSize);
+        }
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input, collSize);
+        collSize = input.readInt();
+        if (collSize <= 0) {
+            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
+        } else {
+            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(collSize);
+        }
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input, collSize);
     }
 
     // only for EMPTY static field
     private FileComponentDeclarations() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null);
         declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
     }
 
     Collection<CsmUID<CsmOffsetableDeclaration>> clean() {
@@ -120,6 +151,13 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             declarations.clear();
         } finally {
             declarationsLock.writeLock().unlock();
+        }
+        try {
+            staticLock.writeLock().lock();
+            staticFunctionDeclarationUIDs.clear();
+            staticVariableUIDs.clear();
+        } finally {
+            staticLock.writeLock().unlock();
         }
         put();
         return uids;
@@ -275,6 +313,56 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return res;
     }
 
+    /**
+     * Gets the list of the static functions declarations (not definitions)
+     * This is necessary for finding definitions/declarations
+     * since file-level static functions (i.e. c-style static functions) aren't registered in project
+     */
+    Collection<CsmFunction> getStaticFunctionDeclarations() {
+        Collection<CsmFunction> out;
+        try {
+            staticLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarations(staticFunctionDeclarationUIDs);
+        } finally {
+            staticLock.readLock().unlock();
+        }
+        return out;
+    }
+
+    Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
+        Iterator<CsmFunction> out;
+        try {
+            staticLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarationsFiltered(staticFunctionDeclarationUIDs, filter);
+        } finally {
+            staticLock.readLock().unlock();
+        }
+        return out;
+    }
+
+    Collection<CsmVariable> getStaticVariableDeclarations() {
+        Collection<CsmVariable> out;
+        try {
+            staticLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarations(staticVariableUIDs);
+        } finally {
+            staticLock.readLock().unlock();
+        }
+        return out;
+    }
+
+    Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
+        Iterator<CsmVariable> out;
+        try {
+            staticLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarationsFiltered(staticVariableUIDs, filter);
+        } finally {
+            staticLock.readLock().unlock();
+        }
+        return out;
+    }
+
+
     private OffsetSortedKey getOffsetSortKey(CsmOffsetableDeclaration declaration) {
         return new OffsetSortedKey(declaration);
     }
@@ -288,8 +376,45 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         } finally {
             declarationsLock.writeLock().unlock();
         }
+        // TODO: remove this dirty hack!
+        if (decl instanceof VariableImpl<?>) {
+            VariableImpl<?> v = (VariableImpl<?>) decl;
+            if (!NamespaceImpl.isNamespaceScope(v, true)) {
+                v.setScope(decl.getContainingFile(), true);
+                addStaticVariableDeclaration(uidDecl);
+            }
+        }
+        if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+            if (decl instanceof FunctionImpl<?>) {
+                FunctionImpl<?> fi = (FunctionImpl<?>) decl;
+                if (!NamespaceImpl.isNamespaceScope(fi)) {
+                    fi.setScope(decl.getContainingFile());
+                    addStaticFunctionDeclaration(uidDecl);
+                }
+            }
+        }
         put();
         return uidDecl;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addStaticFunctionDeclaration(CsmUID<?> uidDecl) {
+        try {
+            staticLock.writeLock().lock();
+            staticFunctionDeclarationUIDs.add((CsmUID<CsmFunction>) uidDecl);
+        } finally {
+            staticLock.writeLock().unlock();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addStaticVariableDeclaration(CsmUID<?> uidDecl) {
+        try {
+            staticLock.writeLock().lock();
+            staticVariableUIDs.add((CsmUID<CsmVariable>) uidDecl);
+        } finally {
+            staticLock.writeLock().unlock();
+        }
     }
 
     void removeDeclaration(CsmOffsetableDeclaration declaration) {
@@ -315,6 +440,13 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             factory.writeOffsetSortedToUIDMap(this.declarations, output, false);
         } finally {
             declarationsLock.readLock().unlock();
+        }
+        try {
+            staticLock.readLock().lock();
+            UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
+            UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticVariableUIDs, output, false);
+        } finally {
+            staticLock.readLock().unlock();
         }
     }
 
