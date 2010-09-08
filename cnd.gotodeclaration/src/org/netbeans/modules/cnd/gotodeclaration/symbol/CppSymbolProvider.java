@@ -287,6 +287,9 @@ public class CppSymbolProvider implements SymbolProvider {
         
         Iterator<? extends CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(namespace, simpleNameAndKindFilter);
         while (declarations.hasNext()) {
+            if (cancelled) {
+                break;
+            }
             CsmOffsetableDeclaration decl = declarations.next();
             if (CsmKindUtilities.isFunction(decl)) {
                 // do not add declarations if their definitions exist
@@ -309,11 +312,17 @@ public class CppSymbolProvider implements SymbolProvider {
 
         declarations = CsmSelect.getDeclarations(namespace, compoundKindFilter);
         while (declarations.hasNext()) {
+            if (cancelled) {
+                break;
+            }
             addDeclarationIfNeed(declarations.next(), nameAcceptor, symbols);
         }
 
         // process nested namespaces
         for (CsmNamespace child : namespace.getNestedNamespaces()) {
+            if (cancelled) {
+                break;
+            }
             collectSymbols(child, nameAcceptor, symbols);
         }
     }

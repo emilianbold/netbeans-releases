@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PositionStorageImpl.PositionDataImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PositionStorageImpl.FilePositionKey;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -81,7 +82,7 @@ public class PositionManager {
         if (IMPL == Impl.trivial) {
             return posID;
         }
-        Key key = KeyUtilities.createFileKey((FileImpl) uid.getObject());
+        Key key = RepositoryUtils.UIDtoKey(uid);
         if (IMPL == Impl.optimistic || IMPL == Impl.full) {
             @SuppressWarnings("unchecked")
             SortedMap<FilePositionKey, Position> storage = (SortedMap<FilePositionKey, Position>)RepositoryAccessor.getRepository().getStorage(key, "position"); //NOI18N
@@ -95,11 +96,11 @@ public class PositionManager {
         }
     }
 
-    public static int getPositionID(CsmUID<CsmFile> uid, int offset, Position.Bias bias) {
+    public static int createPositionID(CsmUID<CsmFile> uid, int offset, Position.Bias bias) {
         if (IMPL == Impl.trivial) {
             return offset;
         }
-        Key key = KeyUtilities.createFileKey((FileImpl) uid.getObject());
+        Key key = RepositoryUtils.UIDtoKey(uid);
         int maxPositionId = 0;
         if (IMPL == Impl.optimistic || IMPL == Impl.full) {
             @SuppressWarnings("unchecked")

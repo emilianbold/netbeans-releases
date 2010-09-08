@@ -128,7 +128,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
     
-    public InjectablesPanel(final ElementHandle<VariableElement> var, 
+    public InjectablesPanel(final ElementHandle<? extends Element> var, 
             MetadataModel<WebBeansModel> metaModel, final WebBeansModel model,
             JavaHierarchyModel treeModel ) 
     {
@@ -160,7 +160,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
                     @Override
                     public Void run( WebBeansModel model ) throws Exception {
-                        initInjectionPoint( var, model  );
+                        initCDIContext( var, model  );
                         return null;
                     }
                 });
@@ -175,7 +175,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
             }
         }
         else {
-            initInjectionPoint( var, model );
+            initCDIContext( var, model );
         }
         
 
@@ -260,10 +260,34 @@ public class InjectablesPanel extends javax.swing.JPanel {
         }
     }
     
-    protected Element getQualifiedElement( Element context , WebBeansModel model ){
+    /*
+     * Dialog shows element tree. Qualifiers and type is shown for selected 
+     * node in this tree. This method is used to access an element which
+     * contains qualifiers and type.
+     * This method is required for derived classes which wants to reuse
+     * functionality of this class. Such classes <code>context</code> element
+     * could be without required annotations and type (F.e. observer method.
+     * It is used as start point for finding its observer parameter ).    
+     */
+    protected Element getSelectedQualifiedElement( Element context , 
+            WebBeansModel model )
+    {
         return context;
     }
-
+    
+    /*
+     * Normally the subject element is injection point.
+     * In this case this method returns exactly injection point element
+     * from its handle as context.
+     * Subclasses could override this behavior to return some other 
+     * element . This element will be used for showing type and qualifiers. 
+     */
+    protected Element getSubjectElement ( ElementHandle<? extends Element> context , 
+            WebBeansModel model)
+    {
+        return context.resolve( model.getCompilationController() );
+    }
+    
     private void enterBusy() {
         myJavaHierarchyTree.setModel(pleaseWaitTreeModel);
         JRootPane rootPane = SwingUtilities.getRootPane(InjectablesPanel.this);
@@ -403,7 +427,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                                 myInjectableBindings.setText("");
                             }
                             else {
-                                element = getQualifiedElement( element, model);
+                                element = getSelectedQualifiedElement( element, model);
                                 List<AnnotationMirror> bindings = 
                                     model.getQualifiers(element);
                                 StringBuilder builder = new StringBuilder();
@@ -458,21 +482,20 @@ public class InjectablesPanel extends javax.swing.JPanel {
     }
     
 
-    private void initInjectionPoint( ElementHandle<VariableElement> var,
+    private void initCDIContext( ElementHandle<? extends Element> handle,
             WebBeansModel model )
     {
-        VariableElement variable = var.resolve( model.getCompilationController() );
-        if ( variable == null ){
+        Element context = getSubjectElement(handle, model);
+        if ( context == null ){
             return;
         }
         
-        
-        TypeMirror typeMirror  = variable.asType();
+        TypeMirror typeMirror  = context.asType();
         myShortTypeName = new StringBuilder();
         myFqnTypeName = new StringBuilder();
         setInjectableType(typeMirror, model.getCompilationController());
         
-        List<AnnotationMirror> qualifiers = model.getQualifiers( variable );
+        List<AnnotationMirror> qualifiers = model.getQualifiers( context );
         
         StringBuilder fqnBuilder = new StringBuilder();
         StringBuilder builder = new StringBuilder();

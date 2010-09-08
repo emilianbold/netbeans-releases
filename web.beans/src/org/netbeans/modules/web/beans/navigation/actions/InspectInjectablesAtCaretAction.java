@@ -143,33 +143,34 @@ public final class InspectInjectablesAtCaretAction extends AbstractInjectableAct
         if (result.getKind() == Result.ResultKind.DEFINITION_ERROR) {
             return;
         }
-        final CompilationController controller = model
+        CompilationController controller = model
                 .getCompilationController();
         final InjectablesModel uiModel = new InjectablesModel(result, controller, 
                 metaModel );
         final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
+        final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
-            showDialog(result,  metaModel, model, handleVar , uiModel );
+            showDialog(metaModel, model, handleVar , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    showDialog(result,  metaModel, null , handleVar ,
-                            uiModel );
+                    showDialog(metaModel, null , handleVar ,
+                            uiModel , name );
                 }
             });
         }
     }
 
-    private void showDialog( Result result , MetadataModel<WebBeansModel> metamodel,
+    private void showDialog( MetadataModel<WebBeansModel> metamodel,
             WebBeansModel model, ElementHandle<VariableElement> variable, 
-            InjectablesModel uiModel ) 
+            InjectablesModel uiModel , String name ) 
     {
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, "LBL_WaitNode"));           // NOI18N
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
-                "TITLE_Injectables" , result.getVariable().getSimpleName().toString() );//NOI18N
+                "TITLE_Injectables" , name );//NOI18N
         dialog.setTitle( title );
         dialog.setContentPane( new InjectablesPanel(variable, metamodel, model,
                 uiModel ));

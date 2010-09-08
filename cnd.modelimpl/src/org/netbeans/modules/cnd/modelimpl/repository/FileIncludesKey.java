@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,64 +34,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.beans.navigation.actions;
 
-import javax.swing.text.JTextComponent;
+package org.netbeans.modules.cnd.modelimpl.repository;
 
-import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-
+import java.io.DataInput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
- * @author ads
  *
+ * @author Alexander Simon
  */
-abstract class AbstractWebBeansAction extends BaseAction {
-    
-    private static final long serialVersionUID = -6226167569468730445L;
+public class FileIncludesKey extends ProjectFileNameBasedKey {
 
-    AbstractWebBeansAction(String name ){
-        super( name , 0 );
-        
-        putValue(ACTION_COMMAND_KEY, getActionCommand());
-        putValue(SHORT_DESCRIPTION, getValue(NAME));
-        putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
-        putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
-                InspectInjectablesAtCaretAction.class,
-                getPopupMenuKey()));
-
-        putValue("noIconInMenu", Boolean.TRUE);             // NOI18N
+    public FileIncludesKey(FileImpl file) {
+	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
     }
 
-    
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractAction#isEnabled()
-     */
-    @Override
-    public boolean isEnabled() {
-        return WebBeansActionHelper.isEnabled();
+    public FileIncludesKey(DataInput aStream) throws IOException {
+	super(aStream);
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.editor.BaseAction#asynchonous()
-     */
+
+    /*package-local*/ CharSequence getName() {
+        return getFileName();
+    }
+
     @Override
-    protected boolean asynchonous() {
+    public String toString() {
+	return "FileIncludesKey (" + getProjectName() + ", " + getFileNameSafe() + ")"; // NOI18N
+    }
+
+    @Override
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_FILE_INCLUDES_KEY + super.hashCode();
+    }
+
+    @Override
+    public PersistentFactory getPersistentFactory() {
+	return CsmObjectFactory.instance();
+    }
+
+    @Override
+    public int getSecondaryDepth() {
+	return 1;
+    }
+
+    @Override
+    public int getSecondaryAt(int level) {
+	assert level == 0;
+	return KeyObjectFactory.KEY_FILE_INCLUDES_KEY;
+    }
+
+    @Override
+    public boolean hasCache() {
         return true;
     }
-    
-    protected abstract void modelAcessAction( WebBeansModel model,
-            MetadataModel<WebBeansModel> metaModel,
-            Object[] subject, JTextComponent component , 
-            FileObject fileObject);
-    
-    protected abstract String getActionCommand();
-    
-    protected abstract String getPopupMenuKey();
-
 }
