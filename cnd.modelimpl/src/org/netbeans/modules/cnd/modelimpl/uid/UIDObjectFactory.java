@@ -70,8 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.Instantiation.InstantiationUID;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl.FileNameSortedKey;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentDeclarations.OffsetSortedKey;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl.NameSortedKey;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentMacros.NameSortedKey;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
@@ -223,14 +222,14 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public <T> void writeNameSortedToUIDMap(Map<FileImpl.NameSortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
+    public <T> void writeNameSortedToUIDMap(Map<NameSortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
         assert aStream != null;
         aMap = sync ? copySyncMap(aMap) : aMap;
         int collSize = aMap.size();
         aStream.writeInt(collSize);
 
-        for (Map.Entry<FileImpl.NameSortedKey, CsmUID<T>> anEntry : aMap.entrySet()) {
+        for (Map.Entry<NameSortedKey, CsmUID<T>> anEntry : aMap.entrySet()) {
             anEntry.getKey().write(aStream);
             CsmUID<T> anUID = anEntry.getValue();
             assert anUID != null;
