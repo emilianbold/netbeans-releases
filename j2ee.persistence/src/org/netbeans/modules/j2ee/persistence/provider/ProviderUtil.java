@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Properties;
 import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.netbeans.modules.j2ee.persistence.unit.*;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.FileObject;
@@ -823,7 +824,13 @@ public class ProviderUtil {
         }
         return serverStatusProvider.validServerInstancePresent();
     }
-   
+
+    public static boolean canServerBeSelected(Project project){
+        Parameters.notNull("project", project);
+        ServerStatusProvider2 serverStatusProvider = project.getLookup().lookup(ServerStatusProvider2.class);
+        return serverStatusProvider != null;
+    }
+
     /**
      * Help to migrate the Toplink properties to the corresponding Eclipselink ones and vice versa
      * 

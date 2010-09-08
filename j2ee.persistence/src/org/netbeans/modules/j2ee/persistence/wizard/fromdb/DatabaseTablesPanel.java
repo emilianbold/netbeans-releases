@@ -144,10 +144,11 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         this.project = project;
 
         boolean enabled = ProviderUtil.isValidServerInstanceOrNone(project);
+        boolean canServerBeSelected = ProviderUtil.canServerBeSelected(project);
 
         {
             boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
-            if (withDatasources && enabled) {
+            if ((withDatasources && enabled) || canServerBeSelected) {
                 initializeWithDatasources();
             } else {
                 initializeWithDbConnections();
