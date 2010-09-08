@@ -46,8 +46,10 @@ package org.netbeans.test.subversion.operators;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.test.subversion.operators.actions.CommitAction;
@@ -209,9 +211,9 @@ public class CommitOperator extends NbDialogOperator {
      * @param action name of action to be selected
      */
     public void selectCommitAction(int rowIndex, String action) {
-        tabFiles().clickOnCell(rowIndex, 2);
-        JComboBoxOperator combo = new JComboBoxOperator(tabFiles());
-        combo.selectItem(action);
+        tabFiles().clickForPopup(rowIndex, 0);
+        JPopupMenuOperator pmo = new JPopupMenuOperator();
+        pmo.pushMenu(action);
     }
 
     /** Selects specified commit action for given row.
