@@ -334,7 +334,6 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @return the toolbars contained in this pool
      */
     public final synchronized Toolbar[] getToolbars() {
-        waitFinished();
         Toolbar[] arr = new Toolbar[toolbarNames.size ()];
         int index = 0;
         for( String tn : toolbarNames ) {
@@ -347,7 +346,6 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @return the names of toolbar configurations contained in this pool
      */
     public final synchronized String[] getConfigurations () {
-        waitFinished();
         ArrayList<String> list = new ArrayList<String>( toolbarConfigs.keySet() );
         Collections.sort( list );
         String[] arr = new String[ list.size() ];
