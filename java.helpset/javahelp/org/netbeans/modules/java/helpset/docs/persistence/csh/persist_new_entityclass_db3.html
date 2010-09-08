@@ -36,6 +36,14 @@
             to the <tt>@Column</tt> annotation. 
             Unique constraints are also added to the <tt>@Table</tt> annotation when selected. 
             This option is deselected by default.</li>
+            <li><b>Use Column Names in Relationships.</b> When selected, when a table references a foreign key,
+                the field name is generated according to the name of the column in the table.
+                For example, if the table <tt>customer</tt> has a column named <tt>zip</tt> that is mapped to a column named <tt>zip_code</tt>
+                in table <tt>micromarket</tt>, the generated field name will be <tt>zip</tt>.
+                This option is selected by default.
+
+                <p>When this option is deselected, the field name is generated according to the name of the table that contains the foreign key.
+                In the example above, the generated field name will be <tt>microMarket</tt>. </p></li>
         </ul>            
             
         
