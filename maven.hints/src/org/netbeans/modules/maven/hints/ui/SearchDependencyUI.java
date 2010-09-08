@@ -90,7 +90,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
     private BeanTreeView beanTreeView;
     private NBVersionInfo nbvi;
     private static RequestProcessor.Task task = null;
-    private static final RequestProcessor RP = new RequestProcessor(SearchDependencyUI.class.getName(),1);
+    private static final RequestProcessor RP = new RequestProcessor(SearchDependencyUI.class.getName(),10);
     private boolean retrigger = false;
     private Project project;
     
@@ -111,7 +111,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
         txtClassName.setText(clazz);
         txtClassName.selectAll();
         explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
-
+            @Override
             public void propertyChange(PropertyChangeEvent arg0) {
                 if (arg0.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {//NOI18N
 
@@ -456,18 +456,29 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
         if (keyList.size() > 0) { // some results available
 
-            List<Node> nodes = new ArrayList<Node>(keyList.size());
+            Map<String, Node> currentNodes = new HashMap<String, Node>();
+            for (Node nd : resultsRootNode.getChildren().getNodes()) {
+                currentNodes.put(nd.getName(), nd);
+            }
+            List<Node> newNodes = new ArrayList<Node>(keyList.size());
 
             // still searching?
             if (null != queryRequest && !queryRequest.isFinished()) {
-                nodes.add(getSearchingNode());
+                newNodes.add(getSearchingNode());
             }
 
             for (String key : keyList) {
-                nodes.add(new ArtifactNode(key, map.get(key)));
+                Node nd;
+                nd = currentNodes.get(key);
+                if (null != nd) {
+                    ((ArtifactNode)nd).setVersionInfos(map.get(key));
+                } else {
+                    nd = new ArtifactNode(key, map.get(key));
+                }
+                newNodes.add(nd);
             }
 
-            resultsRootNode.setNewChildren(nodes);
+            resultsRootNode.setNewChildren(newNodes);
         } else if (null != queryRequest && !queryRequest.isFinished()) { // still searching, no results yet
             resultsRootNode.setOneChild(getSearchingNode());
         } else { // finished searching with no results
