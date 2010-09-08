@@ -103,7 +103,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
-import org.netbeans.modules.cnd.modelimpl.repository.DeclarationContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.ProjectDeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
@@ -142,8 +142,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
-        declarationsSorageKey = new DeclarationContainerKey(getUniqueName());
-        weakDeclarationContainer = new WeakContainer<DeclarationContainer>(this, declarationsSorageKey);
+        declarationsSorageKey = new ProjectDeclarationContainerKey(getUniqueName());
+        weakDeclarationContainer = new WeakContainer<DeclarationContainerProject>(this, declarationsSorageKey);
         classifierStorageKey = new ClassifierContainerKey(getUniqueName());
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
         fileContainerKey = new FileContainerKey(getUniqueName());
@@ -157,7 +157,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         NamespaceImpl ns = new NamespaceImpl(this, false);
         assert ns != null;
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
-        DeclarationContainer declarationContainer = new DeclarationContainer(this);
+        DeclarationContainerProject declarationContainer = new DeclarationContainerProject(this);
         CndUtils.assertTrue(declarationsSorageKey.equals(declarationContainer.getKey()));
         weakDeclarationContainer.clear();
         ClassifierContainer classifierContainer = new ClassifierContainer(this);
@@ -189,7 +189,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (getFileContainer() == FileContainer.empty()) {
             return false;
         }
-        if (getDeclarationsSorage() == DeclarationContainer.empty()) {
+        if (getDeclarationsSorage() == DeclarationContainerProject.empty()) {
             return false;
         }
         if (getGraph() == GraphContainer.empty()) {
@@ -2704,7 +2704,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         declarationsSorageKey = ProjectComponent.readKey(aStream);
         assert declarationsSorageKey != null : "declarationsSorageKey can not be null";
-        weakDeclarationContainer = new WeakContainer<DeclarationContainer>(this, declarationsSorageKey);
+        weakDeclarationContainer = new WeakContainer<DeclarationContainerProject>(this, declarationsSorageKey);
 
         graphStorageKey = ProjectComponent.readKey(aStream);
         assert graphStorageKey != null : "graphStorageKey can not be null";
@@ -2722,10 +2722,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
     }
 
-    private final WeakContainer<DeclarationContainer> weakDeclarationContainer;
-    DeclarationContainer getDeclarationsSorage() {
-        DeclarationContainer dc = weakDeclarationContainer.getContainer();
-        return dc != null ? dc : DeclarationContainer.empty();
+    private final WeakContainer<DeclarationContainerProject> weakDeclarationContainer;
+    DeclarationContainerProject getDeclarationsSorage() {
+        DeclarationContainerProject dc = weakDeclarationContainer.getContainer();
+        return dc != null ? dc : DeclarationContainerProject.empty();
     }
 
     private final WeakContainer<FileContainer> weakFileContainer;

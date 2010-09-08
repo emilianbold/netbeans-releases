@@ -53,13 +53,13 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * Key for DeclarationContainer data
  * @author Vladimir Kvashin
  */
-public class DeclarationContainerKey extends ProjectNameBasedKey {
+public class ProjectDeclarationContainerKey extends ProjectNameBasedKey {
 
-    public DeclarationContainerKey(CharSequence project) {
+    public ProjectDeclarationContainerKey(CharSequence project) {
         super(project);
     }
 
-    public DeclarationContainerKey(DataInput in) throws IOException {
+    public ProjectDeclarationContainerKey(DataInput in) throws IOException {
         super(in);
     }
 
@@ -70,18 +70,18 @@ public class DeclarationContainerKey extends ProjectNameBasedKey {
 
     @Override
     public String toString() {
-        return "DeclarationContainerKey " + getProjectName(); // NOI18N
+        return "ProjectDeclarationContainerKey " + getProjectName(); // NOI18N
     }
 
     @Override
     public int hashCode() {
-        return 37*KeyObjectFactory.KEY_DECLARATION_CONTAINER_KEY + super.hashCode();
+        return 37*KeyObjectFactory.KEY_PROJECT_DECLARATION_CONTAINER_KEY + super.hashCode();
     }
 
     @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
-        return KeyObjectFactory.KEY_DECLARATION_CONTAINER_KEY;
+        return KeyObjectFactory.KEY_PROJECT_DECLARATION_CONTAINER_KEY;
     }
 
     @Override
