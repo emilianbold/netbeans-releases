@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
-import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 
 /**
@@ -69,8 +69,8 @@ import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
  * 
  * @author Milos Kleint
  */
-class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator, 
-        JPADataSourceProvider, ServerStatusProvider {
+class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
+        JPADataSourceProvider, ServerStatusProvider2 {
     
     private final Project project;
     
@@ -118,7 +118,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
     @Override
     public void connect(JComboBox comboBox) {
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
-        DatasourceUIHelper.connect(prvd, comboBox);
+        DatasourceUIHelper.connect(project, prvd, comboBox);
     }
 
     @Override
@@ -160,6 +160,11 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         return Util.isValidServerInstance(prvd);
     }
 
+    @Override
+    public boolean selectServer() {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        return ExecutionChecker.showServerSelectionDialog(project, provider, null);
+    }
 
     /**
      * Provides <code>JPADataSource</code> interface for <code>Datasource</code>s.
