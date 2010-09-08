@@ -56,17 +56,17 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  *
  * @author michaelnazarov@netbeans.org
  */
-public class formatting_0001 extends formatting {
+public class testFormatting extends formatting {
 
     static final String TEST_PHP_NAME = "PhpProject_formatting_0001";
 
-    public formatting_0001(String arg0) {
+    public testFormatting(String arg0) {
         super(arg0);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(formatting_0001.class).addTest(
+                NbModuleSuite.createConfiguration(testFormatting.class).addTest(
                 "CreateApplication",
                 "Create_a_PHP_web_page",
                 "Format_default_code_of_PHP_web_page",
@@ -127,7 +127,7 @@ public class formatting_0001 extends formatting {
 
     public void bug181787() {
         startTest();
-        if (getPlatform().equals("mac os x")) {
+        if (getPlatform() == 4096) {
             fail("Not implemented for MAC OS X yet!"); 
         }
         setMethodParametersWrappingOptions(1);
@@ -190,7 +190,7 @@ public class formatting_0001 extends formatting {
     public void Check_formatting_options_count() throws InterruptedException {
         
         startTest();
-        if (getPlatform().equals("mac os x")) 
+        if (getPlatform() == 4096) 
             fail("Not implemented for MAC OS X yet!");
         JDialogOperator window = selectPHPFromEditorOptions(0);
 

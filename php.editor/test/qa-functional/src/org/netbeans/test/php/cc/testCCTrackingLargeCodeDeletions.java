@@ -41,60 +41,93 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
 
-import java.util.List;
+package org.netbeans.test.php.cc;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.Result;
-
+import java.awt.event.KeyEvent;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
 
 /**
- * @author ads
  *
+ * @author michaelnazarov@netbeans.org
  */
-public interface WebBeansModelProvider {
 
-    Result getInjectable( VariableElement element , DeclaredType parentType,
-            AbstractModelImplementation modelImpl );
-    
-    Result lookupInjectables( VariableElement element , DeclaredType parentType,
-            AbstractModelImplementation modelImpl  );
-    
-    boolean isDynamicInjectionPoint( VariableElement element ,
-            AbstractModelImplementation impl );
-    
-    boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl ) throws InjectionPointDefinitionError;
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
+public class testCCTrackingLargeCodeDeletions extends cc
+{
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141992";
 
-    List<AnnotationMirror> getQualifiers( Element element , 
-            AbstractModelImplementation impl );
+  static final int AAA_LIST_SIZE = 999;
 
-    List<Element> getNamedElements( AbstractModelImplementation impl );
+  public testCCTrackingLargeCodeDeletions( String arg0 )
+  {
+    super( arg0 );
+  }
 
-    String getName( Element element,
-            AbstractModelImplementation modelImplementation );
+  public static Test suite( )
+  {
+    return NbModuleSuite.create(
+      NbModuleSuite.createConfiguration( testCCTrackingLargeCodeDeletions.class ).addTest(
+          "CreateApplication",
+          "Issue141992"
+        )
+        .enableModules( ".*" )
+        .clusters( ".*" )
+        //.gui( true )
+      );
+  }
 
-    List<ExecutableElement> getObservers( VariableElement element,
-            DeclaredType parentType,
-            AbstractModelImplementation modelImplementation );
+  public void CreateApplication( )
+  {
+    startTest( );
 
-    List<VariableElement> getEventInjectionPoints( ExecutableElement element,
-            DeclaredType parentType,
-            AbstractModelImplementation modelImplementation );
+    CreatePHPApplicationInternal( TEST_PHP_NAME );
 
-    VariableElement getObserverParameter( ExecutableElement element,
-            AbstractModelImplementation modelImplementation );
+    endTest( );
+  }
 
+  public void Issue141992( ) throws Exception
+  {
+    startTest( );
+
+    // Get editor
+    EditorOperator eoPHP = new EditorOperator( "index.php" );
+    Sleep( 1000 );
+    // Locate comment
+    eoPHP.setCaretPosition( "// put your code here", false );
+
+    // Check constructor
+    String sCode = "";
+    for( int i = 1; i < 1000; i++ )
+    {
+      sCode = sCode + "\nclass a" + i + ( ( 1 == i ) ? "" : ( " extends a" + ( i - 1 ) ) ) + "\n{\npublic $a" + i + ";\n}";
+    }
+    eoPHP.insert( sCode );
+    Sleep( 2000 );
+    TypeCode( eoPHP, "\n\n$z = new a999();\n$z->" );
+
+    // Check code completion list
+    CompletionInfo jCompl = GetCompletion( );
+    if( null == jCompl )
+      fail( "Unable to find completion list in any form." );
+    //List list = jCompl.getCompletionItems( );
+    // Magic CC number for complete list
+    if( AAA_LIST_SIZE != jCompl.size( ) )
+      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + AAA_LIST_SIZE );
+
+    jCompl.hideAll( );
+
+    // Remove added code
+    eoPHP.select( 10, eoPHP.getLineNumber( ) );
+    eoPHP.pressKey( KeyEvent.VK_DELETE );
+
+    // Strat new declaration
+    eoPHP.setCaretPosition( "// put your code here", false );
+    TypeCode( eoPHP, "\nclass a\n{\n" );
+    Sleep( 1000 );
+    TypeCode( eoPHP, "$" );
+
+    endTest( );
+  }
 }

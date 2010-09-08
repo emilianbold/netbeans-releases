@@ -44,21 +44,22 @@
 
 package org.netbeans.test.php.cc;
 
-import java.awt.event.InputEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 
 /**
  *
+ * http://netbeans.org/bugzilla/show_bug.cgi?id=141881
+ * 
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141873 extends cc
+public class testCCIfSpacesInExpression extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141873";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141881";
 
-  public Issue141873( String arg0 )
+  public testCCIfSpacesInExpression( String arg0 )
   {
     super( arg0 );
   }
@@ -66,9 +67,9 @@ public class Issue141873 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141873.class ).addTest(
+      NbModuleSuite.createConfiguration( testCCIfSpacesInExpression.class ).addTest(
           "CreateApplication",
-          "Issue141873"
+          "Issue141881"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -85,7 +86,7 @@ public class Issue141873 extends cc
     endTest( );
   }
 
-  public void Issue141873( ) throws Exception
+  public void Issue141881( ) throws Exception
   {
     startTest( );
 
@@ -95,39 +96,30 @@ public class Issue141873 extends cc
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
     // Add new line
-    TypeCode(eoPHP, "\nclass a\n{\n" );
-    Sleep( 1000 );
+    //eoPHP.insert( "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n" );
+    //Sleep( 1000 );
 
     // Check constructor
-    String sCode = "function __con";
-    String sIdeal = "function  __construct() {";
+    String sCode = "\nclass a\n{\nfunction xx( )\n{\n}\n}\n$aa = new a;\n$aa -";
     TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
-
-    // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) - 1 );
+    Sleep( 10000 );
+    eoPHP.typeKey( '>' );
 
     // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
 
-    eoPHP.setCaretPositionToEndOfLine(14);
-    // Check destructor
-    TypeCode(eoPHP, "\n" );
-    Sleep( 1000 );
-    sCode = "function __des";
-    sIdeal = "function  __destruct()";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
+    String[] asIdeals = { "xx" };
 
-    // Get code
-    sText = eoPHP.getText( eoPHP.getLineNumber( ) -1 );
+    CompletionInfo jCompl = GetCompletion( );
+    if( null == jCompl )
+      fail( "Unale to find completion list in any form." );
+    //List list = jCompl.getCompletionItems( );
+    // Magic CC number for complete list
+    if( asIdeals.length != jCompl.size( ) )
+      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + asIdeals.length );
+    // Check each
+    CheckCompletionItems( jCompl, asIdeals );
 
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
+    jCompl.hideAll( );
 
     endTest( );
   }

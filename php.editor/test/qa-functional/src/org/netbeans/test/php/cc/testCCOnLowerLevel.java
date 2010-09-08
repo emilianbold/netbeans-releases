@@ -42,27 +42,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.navigation;
+package org.netbeans.test.php.cc;
 
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
+ * http://netbeans.org/bugzilla/show_bug.cgi?id=142023
+ * 
  * @author michaelnazarov@netbeans.org
  */
 
-public class navigation_0001 extends navigation
+public class testCCOnLowerLevel extends cc
 {
-  static final String TEST_PHP_NAME = "PhpProject_navigation_0001";
+  static final String TEST_PHP_NAME = "PhpProject_cc_Issue142023";
 
-  public navigation_0001( String arg0 )
+  public testCCOnLowerLevel( String arg0 )
   {
     super( arg0 );
   }
@@ -70,11 +67,9 @@ public class navigation_0001 extends navigation
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( navigation_0001.class ).addTest(
+      NbModuleSuite.createConfiguration( testCCOnLowerLevel.class ).addTest(
           "CreateApplication",
-          "Create_a_PHP_web_page",
-          "Navigate_to_a_specified_line",
-          "Navigate_to_an_invalid_line"
+          "Issue142023"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -91,51 +86,16 @@ public class navigation_0001 extends navigation
     endTest( );
   }
 
-  public void Create_a_PHP_web_page( )
+  public void Issue142023( ) throws Exception
   {
     startTest( );
 
-    CreatePHPFile( TEST_PHP_NAME, "PHP Web Page", null );
+    // Get editor
+    EditorOperator eoPHP = new EditorOperator( "index.php" );
+    Sleep( 1000 );
+    // Locate comment
+    eoPHP.setCaretPosition( "// put your code here", false );
 
     endTest( );
   }
-
-  protected void GoToLine( int iLineToGo, int iLineToCome )
-  {
-    EditorOperator eoPHP = new EditorOperator( "EmptyPHPWebPage.php" );
-    eoPHP.clickForPopup( );
-    JPopupMenuOperator menu = new JPopupMenuOperator( );
-    menu.pushMenuNoBlock( "Navigate|Line..." );
-    JDialogOperator jdGoto = new JDialogOperator( "Go To Line" );
-    JComboBoxOperator jcLine = new JComboBoxOperator( jdGoto, 0 );
-    JTextFieldOperator jtTemp = jcLine.getTextField( );
-    jtTemp.setText( "" + iLineToGo );
-    JButtonOperator jbGoto = new JButtonOperator( jdGoto, "Go To" );
-    jbGoto.push( );
-    jdGoto.waitClosed( );
-    int iLine = eoPHP.getLineNumber( );
-    if( iLineToCome != iLine )
-    {
-      fail( "Navigate go to line came to incorrect one. Found: " + iLine + ", expected: " + iLineToCome );
-    }
-  }
-
-  public void Navigate_to_a_specified_line( )
-  {
-    startTest( );
-
-    GoToLine( 8, 8 );
-
-    endTest( );
-  }
-
-  public void Navigate_to_an_invalid_line( )
-  {
-    startTest( );
-
-    GoToLine( 100, 17 );
-
-    endTest( );
-  }
-
 }

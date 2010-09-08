@@ -54,11 +54,11 @@ import junit.framework.Test;
  * @author michaelnazarov@netbeans.org
  */
 
-public class cc_0002 extends cc
+public class testCCInDetail extends cc
 {
   static final String TEST_PHP_NAME = "PhpProject_cc_0002";
 
-  public cc_0002( String arg0 )
+  public testCCInDetail( String arg0 )
   {
     super( arg0 );
   }
@@ -66,7 +66,7 @@ public class cc_0002 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( cc_0002.class ).addTest(
+      NbModuleSuite.createConfiguration( testCCInDetail.class ).addTest(
           "CreateApplication",
           "CreatePHPFile",
           "DetailedCodeCompletionTesting"

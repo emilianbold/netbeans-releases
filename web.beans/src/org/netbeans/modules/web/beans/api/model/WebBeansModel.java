@@ -276,6 +276,20 @@ public final class WebBeansModel {
                 getModelImplementation());
     }
     
+    /**
+     * Returns parameter of method <code>element</code> annotated by @Observes.
+     * Null will be returned if method is not observer method.
+     * 
+     * @param element observer method
+     * @param parentType parent type of <code>element</code>
+     * @return observer parameter 
+     */
+    public VariableElement getObserverParameter(ExecutableElement element )
+    {
+        return getProvider().getObserverParameter( element , 
+                getModelImplementation());
+    }
+    
     public AbstractModelImplementation getModelImplementation(){
         return myImpl;
     }

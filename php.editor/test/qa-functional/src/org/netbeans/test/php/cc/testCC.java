@@ -58,17 +58,17 @@ import org.netbeans.jemmy.Timeouts;
  *
  * @author michaelnazarov@netbeans.org
  */
-public class cc_0001 extends cc {
+public class testCC extends cc {
 
     static final String TEST_PHP_NAME = "PhpProject_cc_0001";
 
-    public cc_0001(String arg0) {
+    public testCC(String arg0) {
         super(arg0);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(cc_0001.class).addTest(
+                NbModuleSuite.createConfiguration(testCC.class).addTest(
                 "CreateApplication",
                 "Create_a_PHP_source_file",
                 "Verify_automatic_code_completion_invocation",

@@ -960,8 +960,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
      */
     public void updateLengthyAtomicEdit(int delta) {
         lengthyAtomicEdit += delta;
-        LOG.log(Level.FINE, "updateLengthyAtomicEdit: delta={0} lengthyAtomicEdit={1}\n",
+        LOG.log(Level.FINE, "updateLengthyAtomicEdit: delta={0} lengthyAtomicEdit={1}\n", // NOI18N
                 new Object[] { delta, lengthyAtomicEdit} );
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.INFO, "updateLengthyAtomicEdit() stack", new Exception("updateLengthyAtomicEdit()")); // NOI18N
+        }
         if (lengthyAtomicEdit == 0) {
             // Release the existing children
             PriorityMutex mutex = getMutex();
@@ -1170,7 +1173,22 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         } else { // an event from JTextComponent
             String propName = evt.getPropertyName();
             if ("ancestor".equals(propName)) { // NOI18N
-                checkViewsInited();
+                getDocument().render(new Runnable() {
+                    @Override
+                    public void run() {
+                        PriorityMutex mutex = getMutex();
+                        if (mutex != null) {
+                            mutex.lock();
+                            // checkDocumentLocked() - unnecessary - doc.render() called
+                            try {
+                                checkViewsInited();
+                            } finally {
+                                mutex.unlock();
+                            }
+                        }
+                    }
+                });
+
             } else if ("font".equals(propName)) {
                 if (!customFont && defaultFont != null) {
                     customFont = !defaultFont.equals(textComponent.getFont());
