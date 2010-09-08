@@ -103,7 +103,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
-import org.netbeans.modules.cnd.modelimpl.repository.DeclarationContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.ProjectDeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
@@ -142,7 +142,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
-        declarationsSorageKey = new DeclarationContainerKey(getUniqueName());
+        declarationsSorageKey = new ProjectDeclarationContainerKey(getUniqueName());
         weakDeclarationContainer = new WeakContainer<DeclarationContainerProject>(this, declarationsSorageKey);
         classifierStorageKey = new ClassifierContainerKey(getUniqueName());
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);

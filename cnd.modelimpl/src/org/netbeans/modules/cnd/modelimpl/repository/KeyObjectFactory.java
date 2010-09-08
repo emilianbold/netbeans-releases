@@ -149,8 +149,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_DECLARATION_KEY;
         } else if (object instanceof ProjectSettingsValidatorKey) {
             aHandle = KEY_PRJ_VALIDATOR_KEY;
-        } else if (object instanceof DeclarationContainerKey) {
-            aHandle = KEY_DECLARATION_CONTAINER_KEY;
+        } else if (object instanceof ProjectDeclarationContainerKey) {
+            aHandle = KEY_PROJECT_DECLARATION_CONTAINER_KEY;
         } else if (object instanceof FileContainerKey) {
             aHandle = KEY_FILE_CONTAINER_KEY;
         } else if (object instanceof GraphContainerKey) {
@@ -206,8 +206,8 @@ public class KeyObjectFactory extends KeyFactory {
             case KEY_PRJ_VALIDATOR_KEY:
                 aKey = new ProjectSettingsValidatorKey(aStream);
                 break;
-            case KEY_DECLARATION_CONTAINER_KEY:
-                aKey = new DeclarationContainerKey(aStream);
+            case KEY_PROJECT_DECLARATION_CONTAINER_KEY:
+                aKey = new ProjectDeclarationContainerKey(aStream);
                 break;
             case KEY_FILE_CONTAINER_KEY:
                 aKey = new FileContainerKey(aStream);
@@ -252,8 +252,8 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_DECLARATION_KEY = KEY_PARAM_LIST_KEY + 1;
     public static final int KEY_PRJ_VALIDATOR_KEY = KEY_DECLARATION_KEY + 1;
     
-    public static final int KEY_DECLARATION_CONTAINER_KEY = KEY_PRJ_VALIDATOR_KEY + 1;
-    public static final int KEY_FILE_CONTAINER_KEY = KEY_DECLARATION_CONTAINER_KEY + 1;
+    public static final int KEY_PROJECT_DECLARATION_CONTAINER_KEY = KEY_PRJ_VALIDATOR_KEY + 1;
+    public static final int KEY_FILE_CONTAINER_KEY = KEY_PROJECT_DECLARATION_CONTAINER_KEY + 1;
     public static final int KEY_GRAPH_CONTAINER_KEY = KEY_FILE_CONTAINER_KEY    + 1;
     public static final int KEY_NS_DECLARATION_CONTAINER_KEY = KEY_GRAPH_CONTAINER_KEY + 1;
     public static final int KEY_CLASSIFIER_CONTAINER_KEY = KEY_NS_DECLARATION_CONTAINER_KEY + 1;

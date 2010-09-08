@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.modelimpl.repository.DeclarationContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.ProjectDeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -89,7 +89,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
     };
 
     public DeclarationContainerProject(ProjectBase project) {
-        super(new DeclarationContainerKey(project.getUniqueName()), false);
+        super(new ProjectDeclarationContainerKey(project.getUniqueName()), false);
         friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
         put();
     }
