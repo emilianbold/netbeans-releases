@@ -103,7 +103,7 @@ public class CommitUiTest extends JellyTestCase {
             Thread.sleep(1000);
 
             FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
-            ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            ftiso.setRepositoryFolder("trunk/Import_" + PROJECT_NAME);
             
             ftiso.setImportMessage("initial import");
             ftiso.next();
@@ -131,7 +131,7 @@ public class CommitUiTest extends JellyTestCase {
             String[] expected = {"xx", "NewClass.java", "NewClass2.java", "NewClass3.java"};
             String[] actual = new String[model.getRowCount()];
             for (int i = 0; i < model.getRowCount(); i++) {
-                actual[i] = model.getValueAt(i, 0).toString();
+                actual[i] = model.getValueAt(i, 1).toString();
             }
             int result = TestKit.compareThem(expected, actual, false);
             assertEquals("Commit table doesn't contain all files!!!", expected.length, result);
