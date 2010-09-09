@@ -1075,6 +1075,8 @@ public class FilterNode extends Node {
                     }
                 );
             }
+        } else {
+            super.updateChildren();
         }
     }
 
