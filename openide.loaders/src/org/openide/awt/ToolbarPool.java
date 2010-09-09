@@ -114,6 +114,9 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
     /** Name of default toolbar configuration. */
     public static final String DEFAULT_CONFIGURATION = "Standard"; // NOI18N
+    /** when it is not wise to wait for full initialization */
+    private static final ThreadLocal<Boolean> DONT_WAIT = new ThreadLocal<Boolean>();
+    
     
     private TPTaskListener taskListener;
     
@@ -214,7 +217,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
     /** Updates the default configuration. */
     private synchronized void updateDefault () {
-        Toolbar[] bars = getToolbars ();
+        Toolbar[] bars = getToolbarsNow ();
         name = ""; // NOI18N
         
         if (bars.length == 1) {
@@ -285,6 +288,16 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @param n toolbar configuration name
      */
     public final void setConfiguration (String n) {
+        Boolean prev = DONT_WAIT.get();
+        try {
+            DONT_WAIT.set(true);
+            setConfigurationNow(n);
+        } finally {
+            DONT_WAIT.set(prev);
+        }
+    }
+    
+    private void setConfigurationNow (String n) {
         String old = name;
         
         // should be 'instance.waitFinished();' but some bug in isFinished ...
@@ -333,8 +346,13 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * Returns the toolbars contained in this pool.
      * @return the toolbars contained in this pool
      */
-    public final synchronized Toolbar[] getToolbars() {
-        waitFinished();
+    public final Toolbar[] getToolbars() {
+        if (!Boolean.TRUE.equals(DONT_WAIT.get())) {
+            waitFinished();
+        }
+        return getToolbarsNow();
+    }
+    final synchronized Toolbar[] getToolbarsNow() {
         Toolbar[] arr = new Toolbar[toolbarNames.size ()];
         int index = 0;
         for( String tn : toolbarNames ) {
@@ -346,8 +364,13 @@ public final class ToolbarPool extends JComponent implements Accessible {
     /**
      * @return the names of toolbar configurations contained in this pool
      */
-    public final synchronized String[] getConfigurations () {
-        waitFinished();
+    public final String[] getConfigurations () {
+        if (!Boolean.TRUE.equals(DONT_WAIT.get())) {
+            waitFinished();
+        }
+        return getConfigurationsNow();
+    }
+    final synchronized String[] getConfigurationsNow () {
         ArrayList<String> list = new ArrayList<String>( toolbarConfigs.keySet() );
         Collections.sort( list );
         String[] arr = new String[ list.size() ];
@@ -608,7 +631,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
             // generate list of available toolbar panels
             ButtonGroup bg = new ButtonGroup ();
             String current = ToolbarPool.getDefault ().getConfiguration ();
-            for( String name : ToolbarPool.getDefault().getConfigurations() ) {
+            for( String name : ToolbarPool.getDefault().getConfigurationsNow() ) {
                 JRadioButtonMenuItem mi = new JRadioButtonMenuItem (name, (name.compareTo (current) == 0));
                 mi.addActionListener (this);
                 bg.add (mi);
