@@ -1303,7 +1303,30 @@ public class ConfigurationMakefileWriter {
             bw.write("\n"); // NOI18N
             bw.write("CND_PACKAGE_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
             bw.write("\n"); // NOI18N
+
+            // Sys includes
+            CompilerSet compilerSet = makeConf.getCompilerSet().getCompilerSet();
+            AbstractCompiler cComp = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
+            bw.write("CND_SYSINCLUDES_C_" + makeConf.getName() + "=" +
+                    dumpList(cComp.getSystemIncludeDirectories()) + "\n"); // NOI18N
+            AbstractCompiler cppComp = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            bw.write("CND_SYSINCLUDES_CPP_" + makeConf.getName() + "=" +
+                    dumpList(cppComp.getSystemIncludeDirectories()) + "\n"); // NOI18N
         }
+    }
+
+    private String dumpList(List<String> list) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (String item : list) {
+            if (!first) {
+                sb.append(',');
+            } else {
+                first = false;
+            }
+            sb.append(item);
+        }
+        return sb.toString();
     }
 
     private void writePackagingScript(MakeConfiguration conf) {
