@@ -1307,10 +1307,10 @@ public class ConfigurationMakefileWriter {
             // Sys includes
             CompilerSet compilerSet = makeConf.getCompilerSet().getCompilerSet();
             AbstractCompiler cComp = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
-            bw.write("CND_SYSINCLUDES_C_" + makeConf.getName() + "=" +
+            bw.write("CND_SYSINCLUDES_C_" + makeConf.getName() + "=" + // NOI18N
                     dumpList(cComp.getSystemIncludeDirectories()) + "\n"); // NOI18N
             AbstractCompiler cppComp = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            bw.write("CND_SYSINCLUDES_CPP_" + makeConf.getName() + "=" +
+            bw.write("CND_SYSINCLUDES_CPP_" + makeConf.getName() + "=" + // NOI18N
                     dumpList(cppComp.getSystemIncludeDirectories()) + "\n"); // NOI18N
         }
     }
