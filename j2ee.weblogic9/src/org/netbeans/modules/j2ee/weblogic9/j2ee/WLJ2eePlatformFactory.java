@@ -134,13 +134,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         private static final String J2EE_API_DOC    = "docs/javaee6-doc-api.zip";    // NOI18N
 
-        private static final Set<Type> MODULE_TYPES = new HashSet<Type>();
-
-        static {
-            MODULE_TYPES.add(J2eeModule.Type.EAR);
-            MODULE_TYPES.add(J2eeModule.Type.WAR);
-            MODULE_TYPES.add(J2eeModule.Type.EJB);
-        }
+        private final Set<Type> moduleTypes = new HashSet<Type>();
 
         private final Set<Profile> profiles = new HashSet<Profile>();
 
@@ -157,7 +151,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         
         public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
-            
+
+            moduleTypes.add(Type.WAR);
+
+            if (!dm.isWebProfile()) {
+                moduleTypes.add(Type.EJB);
+                moduleTypes.add(Type.EAR);
+            }
+
             // Allow J2EE 1.4 Projects
             profiles.add(Profile.J2EE_14);
             
@@ -236,7 +237,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Set<Type> getSupportedTypes() {
-            return MODULE_TYPES;
+            return moduleTypes;
         }
 
         public Set/*<String>*/ getSupportedJavaPlatformVersions() {
