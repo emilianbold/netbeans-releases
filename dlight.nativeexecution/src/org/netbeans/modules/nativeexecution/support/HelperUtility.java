@@ -129,7 +129,7 @@ public class HelperUtility {
         File file = fl.locate(path, null, false);
 
         if (file == null || !file.exists()) {
-            throw new MissingResourceException(path, null, null);
+            throw new MissingResourceException(path, "org.netbeans.modules.dlight.nativeexecution", null); //NOI18N
         }
 
         return file.getAbsolutePath();

@@ -176,7 +176,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     private String getDorunScript() {
-        File file = InstalledFileLocator.getDefault().locate("bin/dorun.sh", null, false); // NOI18N
+        File file = InstalledFileLocator.getDefault().locate("bin/dorun.sh", "org.netbeans.modules.cnd", false); // NOI18N
         if (file != null && file.exists()) {
             return file.getAbsolutePath();
         } else {
