@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * Key for ProjectSettingsValidator data
  * @author Vladimir Kvashin
  */
-public class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
+public final class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
 
     public ProjectSettingsValidatorKey(CharSequence project) {
         super(project);

@@ -77,6 +77,11 @@ abstract class ProjectNameBasedKey extends AbstractKey {
     }
 
     @Override
+    public final short getUnitPresentation() {
+        return unitIndex;
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (!super.equals(obj)) {
             return false;
