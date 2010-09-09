@@ -119,6 +119,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     // always prefer JPA 1.0 see #189205
     private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile("^javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
 
+    private static final FilenameFilter DWP_LIBRARY_FILTER = new PrefixesFilter(
+            "javax.", "glassfish.jsf", "glassfish.jstl", "org.eclipse.persistence"); // NOI18N
+
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
@@ -261,10 +264,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             
             return new File[] {server, domain};
         }
-        
+
+        @Override
         public LibraryImplementation[] getLibraries() {
             if (libraries == null) {
-                initLibraries();
+                // FIXME DWP
+                if (dm.isWebProfile()) {
+                    initLibrariesForDWP();
+                } else {
+                    initLibrariesForWLS();
+                }
             }
             return libraries;
         }
@@ -326,20 +335,18 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return serverImpl.toArray(new LibraryImplementation[serverImpl.size()]);
         }
         
-        private void initLibraries() {
-            
-            // create a new library
+        private void initLibrariesForWLS() {
             LibraryImplementation library = new J2eeLibraryTypeProvider().
                     createLibrary();
             
             // set its name
             library.setName(NbBundle.getMessage(WLJ2eePlatformFactory.class, 
-                    "LIBRARY_NAME"));                                  // NOI18N
+                    "LIBRARY_NAME"));
             
             // add the required jars to the library
             try {
                 List<URL> list = new ArrayList<URL>();
-                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar")));    // NOI18N
+                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar"))); // NOI18N
                 File apiFile = new File(getPlatformRoot(), "server/lib/api.jar"); // NOI18N
                 if (apiFile.exists()) {
                     list.add(fileToUrl(apiFile));
@@ -349,7 +356,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 addPersistenceLibrary(list);
 
                 // file needed for jsp parsing WL9 and WL10
-                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/wls-api.jar")));         // NOI18N
+                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/wls-api.jar"))); // NOI18N
 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
@@ -360,9 +367,52 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
                 }
             } catch (MalformedURLException e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
+                LOGGER.log(Level.WARNING, null, e);
             }
             
+            libraries = new LibraryImplementation[1];
+            libraries[0] = library;
+        }
+
+        // TODO if this will became same or quite similar to
+        // initLibrariesForWLS merge it
+        private void initLibrariesForDWP() {
+            LibraryImplementation library = new J2eeLibraryTypeProvider().
+                    createLibrary();
+
+            // set its name
+            library.setName(NbBundle.getMessage(WLJ2eePlatformFactory.class,
+                    "LIBRARY_NAME"));
+
+            // add the required jars to the library
+            try {
+                List<URL> list = new ArrayList<URL>();
+                File middleware = getMiddlewareHome();
+
+                if (middleware != null) {
+                    File modules = new File(middleware, "modules"); // NOI18N
+                    if (modules.exists() && modules.isDirectory()) {
+                        File[] apis = modules.listFiles(DWP_LIBRARY_FILTER);
+                        if (apis != null) {
+                            for (File file : apis) {
+                                list.add(fileToUrl(file));
+                            }
+                        }
+                    }
+                }
+
+                library.setContent(J2eeLibraryTypeProvider.
+                        VOLUME_TYPE_CLASSPATH, list);
+                File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
+                if (j2eeDoc != null) {
+                    list = new ArrayList();
+                    list.add(fileToUrl(j2eeDoc));
+                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
+                }
+            } catch (MalformedURLException e) {
+                LOGGER.log(Level.WARNING, null, e);
+            }
+
             libraries = new LibraryImplementation[1];
             libraries[0] = library;
         }
@@ -429,18 +479,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
         private void addPersistenceLibrary(List<URL> list) throws MalformedURLException {
-            File platformRootFile = new File(getPlatformRoot());
-            File middleware = null;
-            String mwHome = dm.getProductProperties().getMiddlewareHome();
-            if (mwHome != null) {
-                middleware = new File(mwHome);
-            }
-            if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
-                middleware = platformRootFile.getParentFile();
-            }
+            File middleware = getMiddlewareHome();
 
             // make guess :(
-            if (middleware != null && middleware.exists() && middleware.isDirectory()) {
+            if (middleware != null) {
                 File modules = new File(middleware, "modules"); // NOI18N
                 if (modules.exists() && modules.isDirectory()) {
                     File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
@@ -459,6 +501,24 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     }
                 }
             }
+        }
+
+        private File getMiddlewareHome() {
+            File platformRootFile = new File(getPlatformRoot());
+            File middleware = null;
+            String mwHome = dm.getProductProperties().getMiddlewareHome();
+            if (mwHome != null) {
+                middleware = new File(mwHome);
+            }
+            if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
+                middleware = platformRootFile.getParentFile();
+            }
+
+            // make guess :(
+            if (middleware != null && middleware.exists() && middleware.isDirectory()) {
+                return middleware;
+            }
+            return null;
         }
 
         /**
@@ -624,6 +684,25 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         public String getDefaultJPAProvider() {
             return defaultJPAProvider;
+        }
+    }
+
+    private static class PrefixesFilter implements FilenameFilter {
+
+        private final String[] prefixes;
+
+        public PrefixesFilter(String... prefixes) {
+            this.prefixes = prefixes;
+        }
+
+        @Override
+        public boolean accept(File dir, String name) {
+            for (String prefix : prefixes) {
+                if (name.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
