@@ -1532,7 +1532,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                 //TODO: Windows supported only locally for now
-                f = InstalledFileLocator.getDefault().locate("bin/GdbKillProc.exe", null, false); // NOI18N
+                f = InstalledFileLocator.getDefault().locate("bin/GdbKillProc.exe", "org.netbeans.modules.cnd.debugger.gdb", false); // NOI18N
                 if (f.exists()) {
                     killcmd.add(f.getAbsolutePath());
                 }

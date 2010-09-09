@@ -86,7 +86,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
-        File dorunScriptFile = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
+        File dorunScriptFile = fl.locate("bin/nativeexecution/dorun.sh", "org.netbeans.modules.dlight.nativeexecution", false); // NOI18N
 
         if (dorunScriptFile == null) {
             log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
