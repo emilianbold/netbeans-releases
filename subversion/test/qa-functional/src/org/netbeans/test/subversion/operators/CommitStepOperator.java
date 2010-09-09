@@ -5,6 +5,7 @@
  */
 package org.netbeans.test.subversion.operators;
 
+import java.awt.Rectangle;
 import org.netbeans.jemmy.operators.*;
 
 /**
@@ -238,9 +239,10 @@ public class CommitStepOperator extends ImportWizardOperator {
      * @param action name of action to be selected
      */
     public void selectCommitAction(int rowIndex, String action) {
-        tabFiles().clickOnCell(rowIndex, 1);
-        JComboBoxOperator combo = new JComboBoxOperator(tabFiles());
-        combo.selectItem(action);
+        Rectangle rec = tabFiles().getCellRect(rowIndex, 0, true);
+        tabFiles().clickForPopup(rec.x + rec.width / 2, rec.y + rec.height / 2);
+        JPopupMenuOperator pmo = new JPopupMenuOperator();
+        pmo.pushMenu(action);
     }
 
     /** Selects specified commit action for given row.
