@@ -228,7 +228,7 @@ class WebBeansActionHelper {
                         return;
                     }
                     if ( element instanceof ExecutableElement ){
-                        subject[0] = element;
+                        subject[0] = ElementHandle.create(element);
                     }
                     else if ( element instanceof VariableElement ){
                         Element enclosingElement = element.getEnclosingElement();
@@ -243,7 +243,7 @@ class WebBeansActionHelper {
                                 Name annotationName = ((TypeElement)annotationElement).
                                     getQualifiedName();
                                 if ( OBSERVES_ANNOTATION.contentEquals( annotationName)){
-                                    subject[0] = enclosingElement;
+                                    subject[0] = ElementHandle.create(enclosingElement);
                                     return;
                                 }
                             }
