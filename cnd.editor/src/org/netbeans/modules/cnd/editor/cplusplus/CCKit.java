@@ -375,7 +375,7 @@ public class CCKit extends NbEditorKit {
                         }
                         doc.insertString(end, "\n" + insString, null); // NOI18N
                         // Lock does not need because method is invoked from BaseKit that already lock indent.
-                        Indent.get(doc).indentNewLine(end);
+                        Indent.get(doc).reindent(end + 1);
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }
