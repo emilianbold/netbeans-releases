@@ -168,15 +168,6 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
             map.put("TIME", DateFormat.getTimeInstance // NOI18N
                     (DateFormat.SHORT).format(new Date()));
             //	    map.put("USER", System.getProperty("user.name"));	// NOI18N
-            String nbHome = null; //System.getProperty("netbeans.home");
-            File file = InstalledFileLocator.getDefault().locate("lib", null, false); // NOI18N
-            if (file != null) {
-                nbHome = file.getParent();
-            }
-            if (nbHome == null) {
-                nbHome = "";
-            }
-            map.put("NBDIR", nbHome); // NOI18N
             map.put("QUOTES", "\""); // NOI18N
 
             for (CreateFromTemplateAttributesProvider provider :
