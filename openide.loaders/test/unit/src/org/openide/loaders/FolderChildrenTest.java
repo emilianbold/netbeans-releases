@@ -737,6 +737,7 @@ public class FolderChildrenTest extends NbTestCase {
 
         List<Node> nodes = new ArrayList<Node>();
         int cnt = fn.getChildren().getNodesCount(true);
+        assertEquals("We expect all files", FILES / 2, cnt);
         List<Node> snapshot = fn.getChildren().snapshot();
         assertEquals("Count as expected", cnt, snapshot.size());
         for (int i = 0; i < cnt; i++) {
