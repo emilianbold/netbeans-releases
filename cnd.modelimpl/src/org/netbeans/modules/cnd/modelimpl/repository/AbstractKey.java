@@ -45,12 +45,14 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.openide.util.CharSequences;
 
 
 /*package*/
 // have to be public or UID factory does not work
-public abstract class AbstractKey implements Key, SelfPersistent {
+public abstract class AbstractKey implements Key, SelfPersistent, KeyDataPresentation {
 
     /**
      * must be implemented in child
@@ -75,23 +77,61 @@ public abstract class AbstractKey implements Key, SelfPersistent {
         return true;
     }
 
+    @Override
     public Key.Behavior getBehavior() {
         return Behavior.Default;
     }
 
+    @Override
     public boolean hasCache() {
         return false;
     }
-
+    
+    @Override
     public abstract int getSecondaryAt(int level);
 
+    @Override
     public abstract CharSequence getAt(int level);
 
+    @Override
     public abstract CharSequence getUnit();
 
+    @Override
     public abstract int getUnitId();
 
+    @Override
     public abstract int getSecondaryDepth();
 
+    @Override
     public abstract int getDepth();
+
+    @Override
+    public KeyDataPresentation getDataPresentation() {
+        return this;
+    }
+
+    @Override
+    public int getFilePresentation() {
+        return -1;
+    }
+    
+    @Override
+    public short getKindPresentation() {
+        return -1;
+    }
+
+    @Override
+    public CharSequence getNamePresentation() {
+        return CharSequences.empty();
+    }
+
+    @Override
+    public int getStartPresentation() {
+        return -1;
+    }
+
+    @Override
+    public int getEndPresentation() {
+        return -1;
+    }
 }

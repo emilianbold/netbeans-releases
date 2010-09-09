@@ -43,6 +43,7 @@
  */
 package org.netbeans.test.subversion.operators;
 
+import java.awt.Rectangle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -211,7 +212,8 @@ public class CommitOperator extends NbDialogOperator {
      * @param action name of action to be selected
      */
     public void selectCommitAction(int rowIndex, String action) {
-        tabFiles().clickForPopup(rowIndex, 0);
+        Rectangle rec = tabFiles().getCellRect(rowIndex, 0, true);
+        tabFiles().clickForPopup(rec.x + rec.width / 2, rec.y + rec.height / 2);
         JPopupMenuOperator pmo = new JPopupMenuOperator();
         pmo.pushMenu(action);
     }

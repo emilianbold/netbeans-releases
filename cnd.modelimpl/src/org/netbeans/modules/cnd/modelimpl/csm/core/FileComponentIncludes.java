@@ -169,15 +169,6 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         return out;
     }
 
-    public boolean hasBrokenIncludes() {
-        try {
-            includesLock.readLock().lock();
-            return !brokenIncludes.isEmpty();
-        } finally {
-            includesLock.readLock().unlock();
-        }
-    }
-
     private Set<CsmUID<CsmInclude>> createIncludes() {
         return new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
     }

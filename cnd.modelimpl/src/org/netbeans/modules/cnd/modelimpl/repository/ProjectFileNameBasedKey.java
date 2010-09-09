@@ -110,6 +110,11 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
         return fileNameIndex;
     }
 
+    @Override
+    public final int getFilePresentation() {
+        return fileNameIndex;
+    }
+   
     protected CharSequence getFileName() {
         return KeyUtilities.getFileNameById(getUnitId(), this.fileNameIndex);
     }

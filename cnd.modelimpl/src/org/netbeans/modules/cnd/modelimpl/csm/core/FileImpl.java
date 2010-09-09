@@ -66,6 +66,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
@@ -250,6 +251,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         weakFileIncludes = new WeakContainer<FileComponentIncludes>(project, fileIncludesKey);
         new FileComponentIncludes(this);
         weakFileIncludes.clear();
+        hasBrokenIncludes = new AtomicBoolean(false);
 
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
@@ -684,6 +686,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             fileSnapshot = new FileSnapshot(this);
         }
         getFileIncludes().clean();
+        hasBrokenIncludes.set(false);
         getFileMacros().clean();
         _clearErrors();
         if (reportParse || logState || TraceFlags.DEBUG) {
@@ -745,6 +748,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (clearNonDisposable) {
             clearStateCache();
             getFileIncludes().clean();
+            hasBrokenIncludes.set(false);
             getFileMacros().clean();
             _clearErrors();
         }
@@ -1227,6 +1231,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public void addInclude(IncludeImpl includeImpl, boolean broken) {
         getFileIncludes().addInclude(includeImpl, broken);
+        if (broken) {
+            hasBrokenIncludes.set(true);
+        }
     }
 
     public static final Comparator<CsmOffsetable> START_OFFSET_COMPARATOR = new Comparator<CsmOffsetable>() {
@@ -1311,7 +1318,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public boolean hasBrokenIncludes() {
-        return getFileIncludes().hasBrokenIncludes();
+        return hasBrokenIncludes.get();
     }
 
     public boolean hasDeclarations() {
@@ -1656,6 +1663,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         fileDeclarationsKey.write(output);
         fileIncludesKey.write(output);
+        output.writeBoolean(hasBrokenIncludes.get());
         fileMacrosKey.write(output);
         factory.writeUIDCollection(this.fakeFunctionRegistrations, output, false);
 
@@ -1704,6 +1712,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileIncludesKey = new FileIncludesKey(input);
         assert fileIncludesKey != null : "file includes key can not be null";
         weakFileIncludes = new WeakContainer<FileComponentIncludes>(this._getProject(false), fileIncludesKey);
+        hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
 
         fileMacrosKey = new FileMacrosKey(input);
         assert fileMacrosKey != null : "file macros key can not be null";
@@ -1846,21 +1855,22 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private final FileDeclarationsKey fileDeclarationsKey;
     private final WeakContainer<FileComponentDeclarations> weakFileDeclarations;
-    final FileComponentDeclarations getFileDeclarations() {
+    private FileComponentDeclarations getFileDeclarations() {
         FileComponentDeclarations fd = weakFileDeclarations.getContainer();
         return fd != null ? fd : FileComponentDeclarations.empty();
     }
 
     private final FileMacrosKey fileMacrosKey;
     private final WeakContainer<FileComponentMacros> weakFileMacros;
-    final FileComponentMacros getFileMacros() {
+    private FileComponentMacros getFileMacros() {
         FileComponentMacros fd = weakFileMacros.getContainer();
         return fd != null ? fd : FileComponentMacros.empty();
     }
 
+    private final AtomicBoolean hasBrokenIncludes;
     private final FileIncludesKey fileIncludesKey;
     private final WeakContainer<FileComponentIncludes> weakFileIncludes;
-    final FileComponentIncludes getFileIncludes() {
+    private FileComponentIncludes getFileIncludes() {
         FileComponentIncludes fd = weakFileIncludes.getContainer();
         return fd != null ? fd : FileComponentIncludes.empty();
     }
