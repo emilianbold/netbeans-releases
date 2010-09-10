@@ -807,6 +807,10 @@ public class FolderChildrenTest extends NbTestCase {
         for (int i = 0; i < cnt; i++) {
             nodes.add(snapshot.get(i));
         }
+        if ("false".equals(System.getProperty("org.openide.loaders.DataFolder.lazy"))) {
+            assertEquals("Eager children generate one event", 1, listener.cnt);
+            return;
+        }
         assertEquals("No events delivered", 0, listener.cnt);
     }
 
