@@ -470,7 +470,7 @@ public final class WLPluginProperties {
                 File file = new File(setDomainEnv);
                 if (!file.exists()) {
                     LOGGER.log(Level.INFO, "Domain environment "
-                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
+                            + "setup setDomainEnv.cmd is not found. Probably server configuration was "
                             + "changed externally"); // NOI18N
                     return properties;
                 }
@@ -526,7 +526,7 @@ public final class WLPluginProperties {
                 File file = new File(setDomainEnv);
                 if (!file.exists()) {
                     LOGGER.log(Level.INFO, "Domain environment "
-                            + "setup setDomainEnv.cmd is not found. Probavly server configuration was "
+                            + "setup setDomainEnv.sh is not found. Probably server configuration was "
                             + "changed externally"); // NOI18N
                     return properties;
                 }
