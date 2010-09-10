@@ -91,6 +91,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -782,7 +784,7 @@ public class RetoucheUtils {
      * @param isAnonymous check if class or interface is annonymous
      * @return path to the enclosing ClassTree
      */
-    public static TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
+    public static @NullUnknown TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
         Tree selectedTree = path.getLeaf();
         TreeUtilities utils = javac.getTreeUtilities();
         while(true) {
@@ -803,8 +805,11 @@ public class RetoucheUtils {
             path = path.getParentPath();
             if (path == null) {
                 selectedTree = javac.getCompilationUnit().getTypeDecls().get(0);
-                path = javac.getTrees().getPath(javac.getCompilationUnit(), selectedTree);
-                break;
+                if (selectedTree.getKind().asInterface() == ClassTree.class) {
+                    return javac.getTrees().getPath(javac.getCompilationUnit(), selectedTree);
+                } else {
+                    return null;
+                }
             }
             selectedTree = path.getLeaf();
         }
