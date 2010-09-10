@@ -354,7 +354,15 @@ public class FormUtils
                 "documentBase", PROP_HIDDEN },
         { "javax.swing.JFileChooser", CLASS_EXACTLY,
                 "acceptAllFileFilter", PROP_HIDDEN,
-                "choosableFileFilters", PROP_HIDDEN }
+                "choosableFileFilters", PROP_HIDDEN },
+        { "javax.swing.Box$Filler", CLASS_EXACTLY,
+                "minimumSize", PROP_PREFERRED,
+                "preferredSize", PROP_PREFERRED,
+                "maximumSize", PROP_PREFERRED,
+                "background", PROP_NORMAL,
+                "border", PROP_NORMAL,
+                "foreground", PROP_NORMAL,
+                "toolTipText", PROP_NORMAL}
     };
 
     /** Table with explicit changes to propeties accessibility. E.g. some
@@ -449,6 +457,7 @@ public class FormUtils
         "javax.swing.JOptionPane", // NOI18N
         "javax.swing.JColorChooser", // NOI18N
         "javax.swing.JFileChooser", // NOI18N
+        "javax.swing.Box$Filler" // NOI18N
     };
 
     private static Map<Class<?>, Map<String, DefaultValueDeviation>> defaultValueDeviations;
