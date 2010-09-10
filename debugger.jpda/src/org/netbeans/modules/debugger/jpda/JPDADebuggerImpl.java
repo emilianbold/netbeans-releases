@@ -163,6 +163,7 @@ import org.openide.util.lookup.Lookups;
 *
 * @author   Jan Jancura
 */
+@JPDADebugger.Registration(path="netbeans-JPDASession")
 public class JPDADebuggerImpl extends JPDADebugger {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda");

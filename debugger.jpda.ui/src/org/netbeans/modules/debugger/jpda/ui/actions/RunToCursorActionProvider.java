@@ -62,6 +62,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 
@@ -69,6 +70,7 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
  *
  * @author  Jan Jancura
  */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions="runToCursor")
 public class RunToCursorActionProvider extends ActionsProviderSupport
                                        implements PropertyChangeListener,
                                                   ActionsManagerListener {

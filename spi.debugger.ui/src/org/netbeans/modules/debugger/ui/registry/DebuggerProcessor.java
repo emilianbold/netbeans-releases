@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.ui.registry;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -55,15 +56,19 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistrations;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.openide.filesystems.annotations.LayerBuilder;
 
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -123,6 +128,15 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             handleProviderRegistration(e, ColumnModel.class, path, position);
             cnt++;
         }
+        for (Element e : env.getElementsAnnotatedWith(ColumnModelRegistrations.class)) {
+            ColumnModelRegistrations regs = e.getAnnotation(ColumnModelRegistrations.class);
+            for (ColumnModelRegistration reg : regs.value()) {
+                final String path = reg.path();
+                final int position = reg.position();
+                handleProviderRegistration(e, ColumnModel.class, path, position);
+            }
+            cnt++;
+        }
         return cnt == annotations.size();
     }
 
@@ -136,14 +150,16 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         } else {
             path = "Debugger";
         }
-        layer(e).instanceFile(path, null, providerClass).
-                stringvalue(SERVICE_NAME, className).
-                stringvalue("serviceClass", providerClass.getName()).
-                stringvalue("instanceOf", providerClass.getName()).
-                //methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
-                methodvalue("instanceCreate", "org.netbeans.modules.debugger.ui.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
-                position(position).
-                write();
+        LayerBuilder lb = layer(e);
+        String basename = className.replace('.', '-');
+        LayerBuilder.File f = lb.file(path + "/" + basename + ".instance");
+        f.stringvalue(SERVICE_NAME, className).
+          stringvalue("serviceClass", providerClass.getName()).
+          stringvalue("instanceOf", providerClass.getName()).
+          //methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
+          methodvalue("instanceCreate", "org.netbeans.modules.debugger.ui.registry."+providerClass.getSimpleName()+"ContextAware", "createService").
+          position(position).
+          write();
     }
 
     private void handleProviderRegistrationDisplayName(Element e, Class providerClass, String displayName, String path, int position) throws IllegalArgumentException, LayerGenerationException {
@@ -156,14 +172,16 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         } else {
             path = "Debugger";
         }
-        layer(e).instanceFile(path, null, providerClass).
-                stringvalue(SERVICE_NAME, className).
-                stringvalue("serviceClass", providerClass.getName()).
-                stringvalue("instanceOf", providerClass.getName()).
-                bundlevalue("displayName", displayName).
-                methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
-                position(position).
-                write();
+        LayerBuilder lb = layer(e);
+        String basename = className.replace('.', '-');
+        LayerBuilder.File f = lb.file(path + "/" + basename + ".instance");
+        f.stringvalue(SERVICE_NAME, className).
+          stringvalue("serviceClass", providerClass.getName()).
+          stringvalue("instanceOf", providerClass.getName()).
+          bundlevalue("displayName", displayName).
+          methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
+          position(position).
+          write();
     }
 
     private boolean isClassOf(Element e, Class providerClass) {
@@ -211,14 +229,24 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 }
                 {
                     boolean hasDefaultCtor = false;
+                    boolean hasContextCtor = false;
                     for (ExecutableElement constructor : ElementFilter.constructorsIn(e.getEnclosedElements())) {
-                        if (constructor.getParameters().isEmpty()) {
+                        List<? extends VariableElement> parameters = constructor.getParameters();
+                        if (parameters.isEmpty()) {
                             hasDefaultCtor = true;
                             break;
                         }
+                        if (parameters.size() == 1) {
+                            String type = parameters.get(0).asType().toString();
+                            //System.err.println("Param type = "+type);
+                            if (ContextProvider.class.getName().equals(type)) {
+                                hasContextCtor = true;
+                                break;
+                            }
+                        }
                     }
-                    if (!hasDefaultCtor) {
-                        throw new LayerGenerationException(clazz + " must have a no-argument constructor", e);
+                    if (!(hasDefaultCtor || hasContextCtor)) {
+                        throw new LayerGenerationException(clazz + " must have a no-argument constructor or constuctor taking "+ContextProvider.class.getName()+" as a parameter.", e);
                     }
                 }
                 /*propType = processingEnv.getElementUtils().getTypeElement("java.util.Properties").asType();

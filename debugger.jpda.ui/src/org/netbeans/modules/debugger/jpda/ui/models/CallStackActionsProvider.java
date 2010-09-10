@@ -71,12 +71,14 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
 
 
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/CallStackView", types=NodeActionsProvider.class)
 public class CallStackActionsProvider implements NodeActionsProvider {
     
     private JPDADebugger    debugger;

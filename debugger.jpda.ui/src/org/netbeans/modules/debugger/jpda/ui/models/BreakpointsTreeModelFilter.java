@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -67,6 +68,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="BreakpointsView", types=TreeModelFilter.class)
 public class BreakpointsTreeModelFilter implements TreeModelFilter {
     
     private static Logger logger = Logger.getLogger(BreakpointsTreeModelFilter.class.getName());

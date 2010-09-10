@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.WeakListeners;
 
 
@@ -60,6 +61,7 @@ import org.openide.util.WeakListeners;
  *
  * @author  Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession", types={SmartSteppingFilter.class})
 public class SmartSteppingFilterImpl implements SmartSteppingFilter {
 
     private final HashSet<String> filter = new HashSet<String>();

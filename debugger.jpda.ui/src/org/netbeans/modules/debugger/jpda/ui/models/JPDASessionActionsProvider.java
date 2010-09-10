@@ -59,12 +59,14 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.util.*;
 import java.awt.event.ActionEvent;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
  * Provides popup menu for JPDA session nodes: suspend options and language selection. 
  *
  * @author Maros Sandor
  */
+@DebuggerServiceRegistration(path="SessionsView", types=NodeActionsProviderFilter.class)
 public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
 
     private HashSet         listeners;

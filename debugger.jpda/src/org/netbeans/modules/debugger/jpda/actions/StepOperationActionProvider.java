@@ -53,12 +53,14 @@ import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.ActionsProvider;
 
 
 /**
  *
  * @author  Martin Entlicher
  */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"stepOperation"})
 public class StepOperationActionProvider extends JPDADebuggerActionProvider {
     
     public StepOperationActionProvider (ContextProvider lookupProvider) {

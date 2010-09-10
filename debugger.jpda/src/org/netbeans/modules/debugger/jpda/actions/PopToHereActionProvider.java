@@ -55,6 +55,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.spi.debugger.ActionsProvider;
 
 
 /**
@@ -62,6 +63,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 *
 * @author   Jan Jancura
 */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"popTopmostCall"})
 public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     
     public PopToHereActionProvider (ContextProvider lookupProvider) {
