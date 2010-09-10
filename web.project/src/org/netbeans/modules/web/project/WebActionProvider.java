@@ -191,11 +191,11 @@ class WebActionProvider extends BaseActionProvider {
         commands.put(COMMAND_COMPILE_SINGLE, new String[]{"compile-single"}); // NOI18N
         commands.put(COMMAND_RUN, new String[]{"run"}); // NOI18N
         // the target name is run, except for Java files with main method, where it is run-main
-        commands.put(COMMAND_RUN_SINGLE, new String[]{"run"}); // NOI18N
+        commands.put(COMMAND_RUN_SINGLE, new String[]{"run-main"}); // NOI18N
         commands.put(WebProjectConstants.COMMAND_REDEPLOY, new String[]{"run-deploy"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[]{"debug"}); // NOI18N
         // the target name is debug, except for Java files with main method, where it is debug-single-main
-        commands.put(COMMAND_DEBUG_SINGLE, new String[]{"debug"}); // NOI18N
+        commands.put(COMMAND_DEBUG_SINGLE, new String[]{"debug-single-main"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[]{"javadoc"}); // NOI18N
         commands.put(COMMAND_TEST, new String[]{"test"}); // NOI18N
         commands.put(COMMAND_TEST_SINGLE, new String[]{"test-single"}); // NOI18N
@@ -286,7 +286,6 @@ class WebActionProvider extends BaseActionProvider {
         if (isDebugged()) {
             p.setProperty("is.debugged", "true");
         }
-        
         if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
             String res[] = super.getTargetNames(command, context, p, doJavaChecks);
             if (res != null) {

@@ -47,6 +47,8 @@ package org.netbeans.modules.maven.j2ee;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.j2ee.ejb.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
@@ -60,8 +62,9 @@ import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
-import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.openide.util.ChangeSupport;
 
 /**
  * An implementation of the <code>JPAModuleInfo, JPADataSourcePopulator, JPADataSourceProvider, ServerStatusProvider</code>
@@ -69,10 +72,11 @@ import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
  * 
  * @author Milos Kleint
  */
-class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator, 
-        JPADataSourceProvider, ServerStatusProvider {
+class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
+        JPADataSourceProvider, ServerStatusProvider2 {
     
     private final Project project;
+    private ChangeSupport support = new ChangeSupport(this);
     
     JPAStuffImpl(Project project) {
         this.project = project;
@@ -118,7 +122,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
     @Override
     public void connect(JComboBox comboBox) {
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
-        DatasourceUIHelper.connect(prvd, comboBox);
+        DatasourceUIHelper.connect(project, prvd, comboBox);
     }
 
     @Override
@@ -157,9 +161,35 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
     @Override
     public boolean validServerInstancePresent() {
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
-        return Util.isValidServerInstance(prvd);
+        return prvd != null && Util.isValidServerInstance(prvd);
     }
 
+    @Override
+    public boolean selectServer() {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        boolean res = ExecutionChecker.showServerSelectionDialog(project, provider, null);
+        if (res) {
+            // notify other parties that a server was selected
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    support.fireChange();
+                }
+            });
+        }
+        return res;
+    }
+
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        support.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        support.removeChangeListener(listener);
+    }
 
     /**
      * Provides <code>JPADataSource</code> interface for <code>Datasource</code>s.

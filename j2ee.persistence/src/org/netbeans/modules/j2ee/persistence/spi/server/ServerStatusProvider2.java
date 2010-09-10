@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,71 +42,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.repository;
+package org.netbeans.modules.j2ee.persistence.spi.server;
 
-import java.io.DataInput;
-import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
-import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import javax.swing.event.ChangeListener;
 
 /**
- * A key for CsmProject objects
+ * This interface should be implemented by projects that can have a target
+ * server. It provides means for showing a UI to select valid server and notify
+ * other parties that server was set.
  */
+public interface ServerStatusProvider2 extends ServerStatusProvider {
 
-/*package*/
-final class ProjectKey extends ProjectNameBasedKey {    
-    
-    ProjectKey(CharSequence projectUniqueName) {
-	super(projectUniqueName);
-    }
-    
-    /*package*/ ProjectKey(DataInput aStream) throws IOException {
-	super(aStream);
-    }
+    /**
+     * Show UI for server selection.
+     * 
+     * @return true if a new server was set
+     */ 
+    boolean selectServer();
 
-    ProjectKey(KeyDataPresentation presentation) {
-        super(presentation);
-    }
+    /**
+     * Add listener to be notified if server was changed via calling above method.
+     */
+    void addChangeListener(ChangeListener listener);
     
-    @Override
-    public String toString() {
-	String retValue;
-	
-	retValue = super.toString();
-	return "ProjectKey " + retValue; // NOI18N
-    }
+    /**
+     * Remove listener
+     */
+    void removeChangeListener(ChangeListener listener);
     
-    @Override
-    public PersistentFactory getPersistentFactory() {
-	return CsmObjectFactory.instance();
-    }
-    
-    @Override
-    public int getSecondaryDepth() {
-	return 1;
-    }
-    
-    @Override
-    public int getSecondaryAt(int level) {
-	assert (level == 0);
-	return KeyObjectFactory.KEY_PROJECT_KEY;
-    }
-    
-    @Override
-    public Key.Behavior getBehavior() {
-	return Behavior.LargeAndMutable;
-    }
-
-    @Override
-    public boolean hasCache() {
-        return true;
-    }
-
-    @Override
-    public final short getKindPresentation() {
-        return KeyObjectFactory.KEY_PROJECT_KEY;
-    }
 }

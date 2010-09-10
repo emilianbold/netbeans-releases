@@ -159,6 +159,8 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     @Override
     public void put(Key key, Persistent obj) {
         try {
+            // to expencive assert
+            //assert KeyPresentationFactorySupport.getDefaultFactory().create(key.getDataPresentation()).equals(key);
             getCreateUnit(key).putToCache(key, obj);
             queue.addLast(key, obj);
         } catch (Throwable ex) {

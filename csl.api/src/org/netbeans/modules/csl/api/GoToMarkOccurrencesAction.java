@@ -53,12 +53,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.csl.editor.semantic;
+package org.netbeans.modules.csl.api;
 
 import java.awt.event.ActionEvent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.modules.csl.editor.semantic.MarkOccurrencesHighlighter;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.awt.StatusDisplayer;
@@ -78,7 +79,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Voskresensky
  */
-public class GoToMarkOccurrencesAction extends BaseAction {
+public final class GoToMarkOccurrencesAction extends BaseAction {
 
     private static final String prevActionName = "csl-prev-marked-occurrence"; // NOI18N
     private static final String nextActionName = "csl-next-marked-occurrence"; // NOI18N
