@@ -405,10 +405,17 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             Rectangle rect = fromComponentPane(selectionResizingBounds(selComp));
             Rectangle inner = fromComponentPane(selComp.getBounds());
             g.setColor(HIGHLIGHT_COLOR);
-            g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
-            g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
-            g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
-            g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
+            if ((inner.width == 0) || (inner.height == 0)) {
+                // GridBagLayout sets location of such components
+                // to (0,0) which makes inner rectangle incorrect.
+                // Happily, we can ignore inner rectangle in this case.
+                g.fillRect(rect.x, rect.y, rect.width, rect.height);
+            } else {
+                g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
+                g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
+                g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
+                g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
+            }
             g.setColor(GridDesigner.SELECTION_COLOR);
             int x = rect.x-1;
             int y = rect.y-1;
