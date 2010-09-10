@@ -457,6 +457,7 @@ public class FormUtils
         "javax.swing.JOptionPane", // NOI18N
         "javax.swing.JColorChooser", // NOI18N
         "javax.swing.JFileChooser", // NOI18N
+        "javax.swing.Box$Filler" // NOI18N
     };
 
     private static Map<Class<?>, Map<String, DefaultValueDeviation>> defaultValueDeviations;

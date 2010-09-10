@@ -154,7 +154,7 @@ public class AddAction extends CallableSystemAction {
                                     FormEditor.getFormDataObject(formModel).getPrimaryFile());
                         }
                         if (formModel.getComponentCreator().createComponent(
-                                paletteItem.getComponentClassSource(), targetComponent, null)
+                                paletteItem, targetComponent, null)
                                 != null) {
                             added = true;
                         }
