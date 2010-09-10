@@ -48,6 +48,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
@@ -57,7 +58,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 /*package*/
 final class IncludeKey extends OffsetableKey {
 
-    public IncludeKey(CsmInclude obj) {
+    IncludeKey(CsmInclude obj) {
         super(obj, Utils.getCsmIncludeKindKey(), obj.getIncludeName()); // NOI18N
     }
 
@@ -65,6 +66,11 @@ final class IncludeKey extends OffsetableKey {
         super(aStream);
     }
 
+    IncludeKey(KeyDataPresentation presentation) {
+        super(presentation);
+    }
+
+    @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }

@@ -49,6 +49,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.openide.util.CharSequences;
 
 /**
@@ -74,6 +75,14 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         assert kind.length() == 1;
         this.name = NameCache.getManager().getString(name);
         this.hashCode = (_hashCode() << 8) | (kind.charAt(0) & 0xff);
+    }
+
+    protected OffsetableKey(KeyDataPresentation presentation) {
+        super(presentation);
+        this.startOffset = presentation.getStartPresentation();
+        this.endOffset = presentation.getEndPresentation();
+        this.name = NameCache.getManager().getString(presentation.getNamePresentation());
+        this.hashCode = (_hashCode() << 8) | (presentation.getKindPresentation() & 0xff);
     }
 
     /*package-local*/ char getKind() {
@@ -227,5 +236,25 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 
                 throw new IllegalArgumentException("not supported level" + level); // NOI18N
         }
+    }
+
+    @Override
+    public final int getStartPresentation() {
+        return startOffset;
+    }
+
+    @Override
+    public final int getEndPresentation() {
+        return endOffset;
+    }
+
+    @Override
+    public final CharSequence getNamePresentation() {
+        return name;
+    }
+
+    @Override
+    public final short getKindPresentation() {
+        return (short) getKind();
     }
 }
