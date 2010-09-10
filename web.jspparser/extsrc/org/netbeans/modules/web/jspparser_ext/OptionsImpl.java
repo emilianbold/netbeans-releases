@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.web.jspparser_ext;
 
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.apache.jasper.JspC;
@@ -51,6 +54,7 @@ import org.apache.jasper.Options;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.TagPluginManager;
 import org.apache.jasper.runtime.TldScanner;
+import org.apache.jasper.xmlparser.ParserUtils;
 
 /**
  *
@@ -73,7 +77,12 @@ public class OptionsImpl implements Options {
 
     /** Creates a new instance of OptionsImpl */
     public OptionsImpl(ServletContext context) {
-        scanner = new TldScanner(context, true);
+        ParserUtils.setSchemaResourcePrefix("/resources/schemas/");
+        ParserUtils.setDtdResourcePrefix("/resources/dtds/");
+        scanner = new TldScanner(context, false);
+        // #188703 - JSTL 1.1 handling
+        clearStaticHashSet(TldScanner.class, "systemUris");
+        clearStaticHashSet(TldScanner.class, "systemUrisJsf");
         jspConfig = new JspConfig(context);
         tagPluginManager = new TagPluginManager(context);
     }
@@ -237,5 +246,16 @@ public class OptionsImpl implements Options {
     @Override
     public TldScanner getTldScanner() {
         return scanner;
+    }
+
+    private void clearStaticHashSet(Class clazz, String fieldName) {
+        try {
+            Field f = clazz.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            HashSet s = (HashSet)f.get(null);
+            s.clear();
+        } catch (Exception e) {
+            LOGGER.log(Level.INFO, e.getMessage(), e);
+        }
     }
 }

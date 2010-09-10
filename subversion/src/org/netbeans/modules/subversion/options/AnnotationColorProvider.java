@@ -123,7 +123,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
         // {0} represents file name, {1} represents text annotations (branch name, status, etc.)
         StringBuilder annotationFormatString = new StringBuilder("{0}"); //NOI18N
         if (color != null) {
-            annotationFormatString = new StringBuilder("<font color=\"") //NOI18N
+            annotationFormatString = new StringBuilder("<font color=\"#") //NOI18N
                     .append(to2Hex(color.getRed()))
                     .append(to2Hex(color.getGreen()))
                     .append(to2Hex(color.getBlue()))

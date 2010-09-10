@@ -479,7 +479,7 @@ public abstract class StringUtils {
             missingBytesNumber++;
         }
         
-        int decodedLength = (completeBlocksNumber * 3) + (3 - missingBytesNumber);
+        int decodedLength = (completeBlocksNumber * 3) + (3 - missingBytesNumber) % 3;
         byte[] decodedBytes = new byte[decodedLength];
         
         int encodedCounter = 0;

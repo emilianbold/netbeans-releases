@@ -60,7 +60,6 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 /**
@@ -149,17 +148,8 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
     
     abstract URI[] createPath();
     
-    //to be overriden by subclasses..
-    protected FilteringPathResourceImplementation getFilteringResources() {
-        return null;
-    }
-
     private List<PathResourceImplementation> getPath() {
         List<PathResourceImplementation> base = getPath(createPath());
-        FilteringPathResourceImplementation filtering = getFilteringResources();
-        if (filtering != null) {
-            base.add(filtering);
-        }
         return Collections.<PathResourceImplementation>unmodifiableList(base);
     }
     
@@ -167,6 +157,7 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         for (int i = 0; i < pieces.length; i++) {
             try {
+                // XXX would be cleaner to take a File[] if that is what these all are anyway!
                 URL entry = FileUtil.urlForArchiveOrDir(new File(pieces[i]));
                 if (entry != null) {
                     result.add(ClassPathSupport.createResource(entry));

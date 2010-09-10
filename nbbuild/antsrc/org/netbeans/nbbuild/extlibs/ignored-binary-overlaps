@@ -10,8 +10,8 @@ ruby*/jruby-*/lib/*.jar ruby*/modules/ext/*.jar
 enterprise*/modules/ext/rest/http.jar java*/modules/ext/jaxws21/http.jar 
 enterprise*/modules/ext/rest/jdom-1.0.jar mobility*/modules/ext/jdom-1.0.jar  
 
-enterprise*/modules/ext/rest/jdom-1.0.jar java*/modules/ext/jdom-1.0.jar
-java*/modules/ext/jdom-1.0.jar mobility*/modules/ext/jdom-1.0.jar
+enterprise*/modules/ext/rest/jdom-1.0.jar java*/modules/ext/maven/jdom-1.0.jar
+java*/modules/ext/maven/jdom-1.0.jar mobility*/modules/ext/jdom-1.0.jar
 
 # Struts framework needs to bundle the official Struts release together
 # for well maintained and assure the compatibility issue. 

@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -86,6 +87,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     private final Persistent removedObject;
     private final ReadWriteLock queueLock;
     private final Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
+
     private static final class UnitLock {}
     private final Object mainUnitLock = new UnitLock();
     private final RepositoryTranslation translator = RepositoryAccessor.getTranslator();
@@ -96,6 +98,18 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         threadManager = new RepositoryThreadManager(this, queueLock);
         queue = threadManager.startup();
         units = new ConcurrentHashMap<Integer, Unit>();
+    }
+
+    @Override
+    public SortedMap<?,?> getStorage(Key key, String storageID) {
+        try {
+            UnitImpl impl = (UnitImpl) getCreateUnit(key);
+            return impl.getDatabase().getMap(storageID);
+        } catch (Throwable ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    getUnitNameSafe(key), new RepositoryException(ex));
+        }
+        return null;
     }
 
     private Object getUnitLock(int unitId) {
@@ -145,6 +159,8 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     @Override
     public void put(Key key, Persistent obj) {
         try {
+            // to expencive assert
+            //assert KeyPresentationFactorySupport.getDefaultFactory().create(key.getDataPresentation()).equals(key);
             getCreateUnit(key).putToCache(key, obj);
             queue.addLast(key, obj);
         } catch (Throwable ex) {

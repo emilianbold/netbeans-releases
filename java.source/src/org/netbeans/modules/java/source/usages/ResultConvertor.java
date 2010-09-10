@@ -48,5 +48,6 @@ package org.netbeans.modules.java.source.usages;
  * @author Tomas Zezula
  */
 public interface ResultConvertor<P,T> {
-    public abstract T convert (P p);
+    public static final class Stop extends Exception {};
+    public abstract T convert (P p) throws Stop;
 }

@@ -135,7 +135,7 @@ public class CNDValidation extends JellyTestCase {
         do {
             try {
                 // wait for error dialog if compiler is not set
-                NbDialogOperator errorOper = new NbDialogOperator("No Compilers Found");
+                NbDialogOperator errorOper = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.cnd.toolchain.compilerset.Bundle", "NO_COMPILERS_FOUND_TITLE"));
                 errorOper.close();
             } catch (TimeoutExpiredException e) {
                 // no more error dialog => we can continue
@@ -196,7 +196,7 @@ public class CNDValidation extends JellyTestCase {
             NbDialogOperator downloadOper = new NbDialogOperator("Download Tool Collection");
             new JButtonOperator(downloadOper, "No").clickMouse();
 
-            NbDialogOperator resolveOper = new NbDialogOperator("Resolve Missing Native Build Tools");
+            NbDialogOperator resolveOper = new NbDialogOperator(Bundle.getString("org.netbeans.modules.cnd.api.toolchain.ui.Bundle", "LBL_ResolveMissingTools_Title"));
             // select GNU collection
             
             JButtonOperator removeButton = new JButtonOperator(resolveOper, "Remove");

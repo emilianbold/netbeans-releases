@@ -80,7 +80,10 @@ import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.netbeans.modules.db.explorer.node.DDLHelper;
 import org.netbeans.modules.db.explorer.node.RootNode;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.DialogDisplayer;
@@ -195,6 +198,7 @@ public final class DatabaseConnection implements DBConnection {
             }
         });
     }
+    private static final RequestProcessor RP = new RequestProcessor(DatabaseConnection.class.getName(), 1);
 
     /** Default constructor */
     @SuppressWarnings("LeakingThisInConstructor")
@@ -1030,6 +1034,35 @@ public final class DatabaseConnection implements DBConnection {
         } catch (PropertyVetoException e) {
             Exceptions.printStackTrace(e);
             return;
+        }
+    }
+    
+    public void refreshInExplorer() throws DatabaseException {
+        final ConnectionNode connectionNode = findConnectionNode(getName());
+        if (connectionNode != null) {
+            RP.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        MetadataModel model = getMetadataModel();
+                        if (model != null) {
+                            try {
+                                model.runReadAction(
+                                    new Action<Metadata>() {
+                                        @Override
+                                        public void run(Metadata metaData) {
+                                            metaData.refresh();
+                                        }
+                                    }
+                                );
+                            } catch (MetadataModelException e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                        }
+                        connectionNode.refresh();
+                    }
+                }
+            );
         }
     }
 

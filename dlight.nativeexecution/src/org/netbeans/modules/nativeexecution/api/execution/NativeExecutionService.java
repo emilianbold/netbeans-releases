@@ -125,7 +125,7 @@ public final class NativeExecutionService {
         // So have to add a weak listener...
         listener = new ProcessChangeListener();
         processBuilder.addNativeProcessListener(WeakListeners.create(ChangeListener.class, listener, processBuilder));
-        
+
         postExecutable = descriptor.postExecution;
         descriptor.postExecution(new PostRunnable());
 
@@ -277,7 +277,7 @@ public final class NativeExecutionService {
                 outLineBased(descriptor.outLineBased).
                 showProgress(descriptor.showProgress).
                 postExecution(descriptor.postExecution).
-                noReset(descriptor.noReset).
+                noReset(!descriptor.resetInputOutputOnFinish).
                 errConvertorFactory(descriptor.errConvertorFactory).
                 outConvertorFactory(descriptor.outConvertorFactory).
                 charset(charset);
@@ -327,8 +327,10 @@ public final class NativeExecutionService {
 
                     StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(state, rc));
                 }
-                
-                closeIO();
+
+                if (descriptor.closeInputOutputOnFinish) {
+                    closeIO();
+                }
 
                 // Finally, if there was some post executable set before - call it
                 if (postExecutable != null) {

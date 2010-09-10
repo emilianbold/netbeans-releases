@@ -70,6 +70,7 @@ import java.util.List;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -518,7 +519,7 @@ public class GeneralPHP extends JellyTestCase {
                             !o.toString().contains("Scanning in progress...")) {
                         return result;
                     }
-                    Sleep(1000);
+                    Sleep(5000);
                 } catch (java.lang.Exception ex) {
                     return null;
                 }
@@ -528,7 +529,7 @@ public class GeneralPHP extends JellyTestCase {
                     return null;
                 }
             }
-            Sleep(100);
+            Sleep(1000);
         }
     }
 
@@ -640,8 +641,10 @@ public class GeneralPHP extends JellyTestCase {
     }
 
     public JDialogOperator selectPHPFromEditorOptions(int mode) {
-
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
+    
+            new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
+        
+        Sleep(1000);
         JDialogOperator window = new JDialogOperator("Options");
         if (mode == 0) {
         window.pressKey(KeyEvent.VK_RIGHT);
@@ -716,5 +719,9 @@ public class GeneralPHP extends JellyTestCase {
                 String.valueOf(arrayDeclarationIndentation));
 
 
+    }
+    
+    protected int getPlatform() {
+       return Utilities.getOperatingSystem();
     }
 }

@@ -109,7 +109,10 @@ class AntHighlightsContainer extends AbstractHighlightsContainer {
                     end = _endOffset;
                 }
                 assert start >= startOffset;
-                assert end <= _endOffset;
+                if (end > endOffset) {
+                    // #189668; happens when debugger tooltip created while hovering over var.
+                    return false;
+                }
                 assert end > start;
                 return true;
             }

@@ -39,15 +39,16 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.management.ui.spi;
 
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 
 /**
- *
+ * This SPI is for dealing with indicators.
+ * Once the implementation of this SPI gets notification about any change in
+ * DLightSession, it should open/close required (top) components with indicators
  * @author mt154047
  */
-public interface IndicatorComponentDelegator  extends  DLightSessionListener, SessionStateListener{
+public interface IndicatorComponentDelegator extends DLightSessionListener, SessionStateListener {
 }

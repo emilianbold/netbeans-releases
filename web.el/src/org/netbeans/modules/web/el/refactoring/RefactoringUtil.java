@@ -98,22 +98,22 @@ public final class RefactoringUtil {
 
     /**
      * Encodes angle brackets and highlights the {@code offsetRange} within
-     * in the given {@code expression}.
-     * @param text
-     * @param expression
-     * @param offsetRange the range within {@code expression} to highlight.
+     * in the given {@code expressionOffset}.
+     * @param text the full text within which the given offsets must be.
+     * @param expressionOffset the offset of the full expression (within
+     *  the given {@code text}).
+     * @param offsetRange the range within {@code expressionOffset} to highlight.
      * @return
      */
-    static String encodeAndHighlight(String text, String expression, OffsetRange offsetRange) {
+    static String encodeAndHighlight(String text, OffsetRange expressionOffset, OffsetRange nodeOffset) {
         StringBuilder result = new StringBuilder(text.length() + 7);
-        int expressionStart = text.indexOf(expression);
-        int expressionEnd = expressionStart + expression.length();
-        result.append(encodeAngleBrackets(text.substring(0, expressionStart)));
-        result.append(highlight(expression, offsetRange));
-        result.append(encodeAngleBrackets(text.substring(expressionEnd, text.length())));
+        String expression = text.substring(expressionOffset.getStart(), expressionOffset.getEnd());
+        result.append(encodeAngleBrackets(text.substring(0, expressionOffset.getStart())));
+        result.append(highlight(expression, nodeOffset));
+        result.append(encodeAngleBrackets(text.substring(expressionOffset.getEnd(), text.length())));
         return result.toString();
     }
-
+    
     private static String encodeAngleBrackets(String str) {
         return str.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); //NOI18N
     }
@@ -124,7 +124,7 @@ public final class RefactoringUtil {
         result.append("<b>");
         result.append(encodeAngleBrackets(text.subSequence(offsetRange.getStart(), offsetRange.getEnd()).toString()));
         result.append("</b>");
-        result.append(text.substring(offsetRange.getEnd(), text.length() - 1));
+        result.append(text.substring(offsetRange.getEnd(), text.length()));
         return result.toString();
     }
 

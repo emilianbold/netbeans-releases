@@ -184,7 +184,7 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
                     // Get current minor axis span before wrapInfo gets inited
                     // since the method behavior would get modified.
                     wrapInfo = new WrapInfo(childrenWidth, childrenHeight);
-                    float prefWidth = new WrapInfoUpdater(wrapInfo, this, paragraphView).initWrapInfo();
+                    float prefWidth = new WrapInfoUpdater(wrapInfo, paragraphView).initWrapInfo();
                     float prefHeight = wrapInfo.preferredHeight();
                     boxView.setMajorAxisSpan(prefWidth);
                     boxView.setMinorAxisSpan(prefHeight);
@@ -246,19 +246,37 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
             allocBounds.y += wrapLineIndex * wrapInfo.childrenHeight;
             allocBounds.height = wrapInfo.childrenHeight;
             Shape ret = null;
+            StringBuilder logBuilder = null;
+            if (LOG.isLoggable(Level.FINE)) {
+                logBuilder = new StringBuilder(100);
+                logBuilder.append("ParagraphViewChildren.modelToViewChecked(): offset="). // NOI18N
+                        append(offset).append(", wrapLineIndex=").append(wrapLineIndex). // NOI18N
+                        append(", orig-allocBounds=").append(allocBounds).append("\n    "); // NOI18N
+            }
 
             if (wrapLine.startViewPart != null && offset < wrapLine.startViewPart.getEndOffset()) {
-                ret = wrapLine.startViewPart.modelToViewChecked(offset, allocBounds, bias);
                 allocBounds.width = wrapLine.startViewX;
+                if (logBuilder != null) {
+                    logBuilder.append("START-part:width=").append(allocBounds.width); // NOI18N
+                }
+                ret = wrapLine.startViewPart.modelToViewChecked(offset, allocBounds, bias);
             } else if (wrapLine.endViewPart != null && offset >= wrapLine.endViewPart.getStartOffset()) {
                 assert (wrapLine.endViewPart != null) : "Invalid wrapLine: " + wrapLine; // NOI18N
+                allocBounds.width = wrapLine.endViewPart.getPreferredSpan(View.X_AXIS);
                 allocBounds.x += wrapLine.startViewX;
+                if (logBuilder != null) {
+                    logBuilder.append("END-part:width=").append(allocBounds.width). // NOI18N
+                            append(", startViewX=").append(wrapLine.startViewX). // NOI18N
+                            append(", x=").append(allocBounds.x); // NOI18N
+                }
                 if (wrapLine.hasFullViews()) {
                     allocBounds.x += (boxView.getViewVisualOffset(wrapLine.endViewIndex) -
                         boxView.getViewVisualOffset(wrapLine.startViewIndex));
+                    if (logBuilder != null) {
+                        logBuilder.append(" FULL-VIEWS:x=").append(allocBounds.x); // NOI18N
+                    }
                 }
                 // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
-                allocBounds.width = wrapLine.endViewPart.getPreferredSpan(View.X_AXIS);
                 ret = wrapLine.endViewPart.modelToViewChecked(offset, allocBounds, bias);
             } else {
                 assert (wrapLine.hasFullViews()) : wrapInfo.dumpWrapLine(boxView, wrapLineIndex);
@@ -270,11 +288,20 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
                                 : startVisualOffset;
                         allocBounds.x += wrapLine.startViewX + (visualOffset - startVisualOffset);
                         allocBounds.width = (boxView.getViewVisualOffset(i + 1) - visualOffset);
+                        if (logBuilder != null) {
+                            logBuilder.append("MIDDLE-part: view-index=").append(i). // NOI18N
+                                    append(",x=").append(allocBounds.x). // NOI18N
+                                    append(", width=").append(allocBounds.width); // NOI18N
+                        }
                         ret = boxView.getEditorView(i).modelToViewChecked(offset, allocBounds, bias);
                         assert (ret != null);
                         break;
                     }
                 }
+            }
+            if (logBuilder != null) {
+                logBuilder.append("\n    RET=").append(ViewUtils.toString(ret)).append('\n'); // NOI18N
+                LOG.fine(logBuilder.toString());
             }
             return ret;
 

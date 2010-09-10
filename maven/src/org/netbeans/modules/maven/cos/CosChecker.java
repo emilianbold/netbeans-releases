@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.maven.cos;
 
-import hidden.org.codehaus.plexus.util.DirectoryScanner;
-import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -169,7 +169,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     }
 
     private boolean hasChangedFilteredResources(boolean includeTests, long stamp, RunConfig config) {
-        @SuppressWarnings("unchecked")
         List<Resource> res = config.getMavenProject().getResources();
         for (Resource r : res) {
             if (r.isFiltering()) {
@@ -206,15 +205,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             DirectoryScanner ds = new DirectoryScanner();
             ds.setBasedir(dirFile);
             //includes/excludes
-            @SuppressWarnings("unchecked")
-            String[] incls = (String[]) r.getIncludes().toArray(new String[0]);
+            String[] incls = r.getIncludes().toArray(new String[0]);
             if (incls.length > 0) {
                 ds.setIncludes(incls);
             } else {
                 ds.setIncludes(DEFAULT_INCLUDES);
             }
-            @SuppressWarnings("unchecked")
-            String[] excls = (String[]) r.getExcludes().toArray(new String[0]);
+            String[] excls = r.getExcludes().toArray(new String[0]);
             if (excls.length > 0) {
                 ds.setExcludes(excls);
             }
@@ -343,7 +340,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if (testng == null) {
                 testng = "org.testng:testng"; //NOI18N
             }
-            @SuppressWarnings("unchecked")
             List<Dependency> deps = config.getMavenProject().getTestDependencies();
             for (Dependency d : deps) {
                 if (d.getManagementKey().startsWith(testng)) {

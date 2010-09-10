@@ -42,8 +42,10 @@ javahelp,\
 keyring.impl,\
 masterfs,\
 maven,\
+maven.apisupport,\
 maven.embedder,\
 maven.indexer,\
+maven.junit,\
 maven.model,\
 nbjunit,\
 o.apache.tools.ant.module,\

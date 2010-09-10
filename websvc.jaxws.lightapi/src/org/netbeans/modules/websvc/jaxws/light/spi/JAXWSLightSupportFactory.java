@@ -64,7 +64,7 @@ public final class JAXWSLightSupportFactory {
      * @return JAXWSLightSupport object
      */
     public static JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiJAXWSSupport) {
-        return JAXWSLightSupportAccessor.DEFAULT.createJAXWSSupport(spiJAXWSSupport);
+        return JAXWSLightSupportAccessor.getDefault().createJAXWSSupport(spiJAXWSSupport);
     }
 
 }

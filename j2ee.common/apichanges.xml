@@ -120,7 +120,7 @@ is the proper place.
                     as well.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.project" name="CompialtionOnlyClassPathModifier"/>
+            <class package="org.netbeans.modules.j2ee.common.project" name="CompilationOnlyClassPathModifier"/>
             <issue number="189174"/>
         </change>
 

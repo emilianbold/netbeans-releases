@@ -48,11 +48,14 @@ import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 
 
@@ -144,9 +147,35 @@ public final class WebBeansModel {
     }
     
     /**
+     * Test if variable element is event injection point.
+     * 
+     * @param element element for check
+     * @return true if element is event injection point
+     */
+    public boolean isEventInjectionPoint( VariableElement element )  
+    {
+        TypeMirror elementType = element.asType();
+        Element typeElement = getCompilationController().
+            getTypes().asElement( elementType);
+        if ( typeElement instanceof TypeElement ){
+            String typeElementFqn = ((TypeElement)typeElement).getQualifiedName().
+                toString();
+            if ( WebBeansModelProviderImpl.EVENT_INTERFACE.equals( typeElementFqn )){
+                try {
+                    return isInjectionPoint(element);
+                }
+                catch(InjectionPointDefinitionError e ){
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Test if variable element is injection point that is used for
      * programmatic lookup. It could happen if variable declared via 
-     * Instance<?> interface with binding annotations.
+     * Instance<?> interface with qualifier annotations.
      * Typesafe resolution in this case could not be done 
      * statically and method 
      * {@link #lookupInjectables(VariableElement, DeclaredType)} should
@@ -215,6 +244,50 @@ public final class WebBeansModel {
      */
     public List<AnnotationMirror> getQualifiers( Element element ){
         return getProvider().getQualifiers( element , getModelImplementation());
+    }
+    
+    /**
+     * Returns all observer methods for given injection point <code>element</code>
+     * field. 
+     * 
+    * @param element event injection point
+    * @param parentType parent type of <code>element</code>
+    * @return list of observer methods that will be notified about event fired by <code>element</code>
+    */
+    public List<ExecutableElement> getObservers(VariableElement element , 
+            DeclaredType parentType)
+    {
+        return getProvider().getObservers( element , parentType, 
+                getModelImplementation());
+    }
+    
+    /**
+     * Returns all event injection points that notifies observer method
+     * <code>element</code> on event fire.
+     * 
+     * @param element observer method
+     * @param parentType parent type of <code>element</code>
+     * @return list of event injection points that are used for firing event 
+     */
+    public List<VariableElement> getEventInjectionPoints( ExecutableElement element,
+            DeclaredType parentType  )
+    {
+        return getProvider().getEventInjectionPoints( element , parentType, 
+                getModelImplementation());
+    }
+    
+    /**
+     * Returns parameter of method <code>element</code> annotated by @Observes.
+     * Null will be returned if method is not observer method.
+     * 
+     * @param element observer method
+     * @param parentType parent type of <code>element</code>
+     * @return observer parameter 
+     */
+    public VariableElement getObserverParameter(ExecutableElement element )
+    {
+        return getProvider().getObserverParameter( element , 
+                getModelImplementation());
     }
     
     public AbstractModelImplementation getModelImplementation(){

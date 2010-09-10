@@ -333,10 +333,16 @@ final class StandardModule extends Module {
             StringTokenizer tok = new StringTokenizer(classPath);
             while (tok.hasMoreTokens()) {
                 String ext = tok.nextToken();
-                if (new File(ext).isAbsolute() || ext.indexOf("../") != -1) { // NOI18N
-                    Util.err.warning("Class-Path value " + ext + " from " + jar + " is illegal according to the Java Extension Mechanism: must be relative and not move up directories");
+                if (new File(ext).isAbsolute()) { // NOI18N
+                    Util.err.log(Level.WARNING, "Class-Path value {0} from {1} is illegal according to the Java Extension Mechanism: must be relative", new Object[] {ext, jar});
                 }
-                File extfile = new File(jar.getParentFile(), ext.replace('/', File.separatorChar));
+                File base = jar.getParentFile();
+                while (ext.startsWith("../")) {
+                    // cannot access FileUtil.normalizeFile from here, and URI.normalize might be unsafe for UNC paths
+                    ext = ext.substring(3);
+                    base = base.getParentFile();
+                }
+                File extfile = new File(base, ext.replace('/', File.separatorChar));
                 //No need to sync on extensionOwners - we are in write mutex
                 Set<File> owners = extensionOwners.get(extfile);
                 if (owners == null) {

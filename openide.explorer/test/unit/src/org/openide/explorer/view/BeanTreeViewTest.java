@@ -59,6 +59,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  * Tests for class BeanTreeViewTest
@@ -240,6 +241,46 @@ public class BeanTreeViewTest extends NbTestCase {
         }
         awt.checkNotGc();
     }
+    
+    public void testSelectingRootDoesNotClearExploredContext() throws InterruptedException, Throwable {
+        class AWTTst implements Runnable {
+
+            AbstractNode root = new AbstractNode(new Children.Array());
+            VisualizerNode visNode;
+            Panel p = new Panel();
+            BeanTreeView btv = new BeanTreeView();
+            JFrame f = new JFrame();
+            JTree tree = btv.tree;
+
+            {
+                root.setName("test root");
+                p.getExplorerManager().setRootContext(root);
+                p.add(BorderLayout.CENTER, btv);
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                f.getContentPane().add(BorderLayout.CENTER, p);
+                f.setVisible(true);
+            }
+
+            @Override
+            public void run() {
+                try {
+                    btv.selectionChanged(new Node[] { root }, p.getExplorerManager());
+                } catch (PropertyVetoException ex) {
+                    fail(ex.getMessage());
+                }
+                
+                assertSame("Root is explored", root, p.getExplorerManager().getExploredContext());
+            }
+            
+        }
+        AWTTst awt = new AWTTst();
+        holder = awt;
+        try {
+            SwingUtilities.invokeAndWait(awt);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+    }    
     
     public void testVisibleCollapsedNodesAreGCed() throws InterruptedException, Throwable {
         class AWTTst implements Runnable {

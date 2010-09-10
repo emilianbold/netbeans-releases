@@ -102,19 +102,19 @@ public class ConstructorPanel extends JPanel {
             case GETTER:
                 panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS");    //NOI18N
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getGetterExample(name));
+                    model.addElement(way.getSimpleDescription() + ": " + way.getGetterExample(name));
                 }
                 break;
             case SETTER:
                 panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_SETTERS");    //NOI18N
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSetterExample(name));
+                    model.addElement(way.getSimpleDescription() + ": " + way.getSetterExample(name));
                 }
                 break;
             case GETTER_AND_SETTER:
                 panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS_AND_SETTERS");    //NOI18N
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getGetterExample(name) + ", " + way.getSetterExample(name));
+                    model.addElement(way.getSimpleDescription() + ": " + way.getGetterExample(name) + ", " + way.getSetterExample(name));
                 }
                 break;
             case METHODS:

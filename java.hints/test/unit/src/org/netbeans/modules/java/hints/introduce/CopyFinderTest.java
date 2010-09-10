@@ -744,6 +744,10 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
 
+    public void testMatchInterfaceNoFQN() throws Exception {
+        performTest("package test; import java.util.*; public class Test { public void test() { |List| l1; |java.util.List| l2;} }");
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

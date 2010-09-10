@@ -49,6 +49,19 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="copy-handler">
+            <api name="masterfs"/>
+            <summary>Delegate FileObject.copy() to ProvidedExtensions</summary>
+            <version major="2" minor="28"/>
+            <date day="27" month="8" year="2010"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                ProvidedExtensions.getCopyHandler() allows to delegate a copy operation.
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="189921"/>
+        </change>
         <change id="event-order">
             <api name="masterfs"/>
             <summary>Guaranteed event order when deleting and creating files and new calls in ProvidedExtensions</summary>

@@ -72,6 +72,20 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         this.annotationProviders = annotationProviders;
     }
     
+    @Override
+    public IOHandler getCopyHandler(File from, File to) {
+        IOHandler retValue = null;
+        for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                ProvidedExtensions.IOHandler delgate = ((ProvidedExtensions)iListener).getCopyHandler(from, to);
+                retValue = delgate != null ? new DelegatingIOHandler(delgate) : null;
+            }
+        }
+        return retValue;
+    }
+
     public ProvidedExtensions.DeleteHandler getDeleteHandler(final File f) {
         ProvidedExtensions.DeleteHandler retValue = null;
         for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
@@ -380,6 +394,51 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
                 runCheckCode(new Runnable() {
                     public void run() {
                         ((ProvidedExtensions)iListener).moveFailure(from, to);
+                    }
+                });
+            }
+        }
+   }
+    
+    @Override
+    public void beforeCopy(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).beforeCopy(from, to);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void copySuccess(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).copySuccess(from, to);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void copyFailure(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).copyFailure(from, to);
                     }
                 });
             }

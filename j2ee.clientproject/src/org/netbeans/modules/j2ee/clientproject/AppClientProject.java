@@ -583,6 +583,11 @@ public final class AppClientProject implements Project, FileChangeListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            AppClientLogicalViewProvider logicalViewProvider =  AppClientProject.this.getLookup().lookup(AppClientLogicalViewProvider.class);
+            if (logicalViewProvider != null) {
+                logicalViewProvider.initialize();
+            }
+
             // Check up on build scripts.
             try {
                 //Check libraries and add them to classpath automatically
@@ -691,8 +696,7 @@ public final class AppClientProject implements Project, FileChangeListener {
                 Exceptions.printStackTrace(e);
             }
             
-            AppClientLogicalViewProvider physicalViewProvider =  AppClientProject.this.getLookup().lookup(AppClientLogicalViewProvider.class);
-            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
+            if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
             if(WebServicesClientSupport.isBroken(AppClientProject.this)) {

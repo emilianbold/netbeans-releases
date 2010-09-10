@@ -53,8 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -66,8 +64,6 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
-import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -85,10 +81,10 @@ import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvide
 import org.netbeans.modules.dlight.perfan.spi.datafilter.THAFilter;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.THAStartupFilter;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListenersSupport;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -110,7 +106,6 @@ public class SunStudioDataCollector
         extends IndicatorDataProvider<SunStudioDCConfiguration>
         implements DataCollector<SunStudioDCConfiguration>, SunStudioFiltersProvider {
 
-    private static final String COLLECTOR_NAME = "SunStudio"; // NOI18N
     private static final DataStorageType supportedStorageType;
     private static final AtomicInteger uid = new AtomicInteger(0);
     private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
@@ -126,20 +121,17 @@ public class SunStudioDataCollector
     private final Object lock = SunStudioDataCollector.class.getName() + "Lock"; // NOI18N
     // ***
     private final Collection<DataTableMetadata> dataTablesMetadata;
-    private final Collection<ValidationListener> validationListeners;
     private final Set<CollectedInfo> collectedInfo;
     private final List<DataFilter> dataFilters;
     // ***
-    private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private CollectorConfiguration config = null;
-    private DLightTarget validatedTarget;
     private Future<Integer> collectTaskResult = null;
     private MonitorsUpdateService monitorsUpdater = null;
     private String cmd;
     private String sproHome;
     private boolean isAttachable;
     private HostInfo hostInfo = null;
-    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
+    private DataCollectorListenersSupport dclsupport = new DataCollectorListenersSupport(this);
 
     static {
         SunStudioDCConfigurationAccessor dcAccess = SunStudioDCConfigurationAccessor.getDefault();
@@ -189,119 +181,37 @@ public class SunStudioDataCollector
     }
 
     public SunStudioDataCollector(Set<CollectedInfo> collectedInfoList) {
+        super("SunStudio"); // NOI18N
         collectedInfo = EnumSet.<CollectedInfo>noneOf(CollectedInfo.class);
         dataTablesMetadata = new HashSet<DataTableMetadata>();
-        validationListeners = new CopyOnWriteArraySet<ValidationListener>();
         isAttachable = true;
         dataFilters = new ArrayList<DataFilter>();
         addCollectedInfo(collectedInfoList);
     }
 
-    void addCollectedInfo(final Set<CollectedInfo> collectedInfoList) {
+    final void addCollectedInfo(final Set<CollectedInfo> collectedInfoList) {
         synchronized (lock) {
             collectedInfo.addAll(collectedInfoList);
         }
     }
 
-/**
-     * Adds collector state listener, all listeners will be notified about
-     * collector state change.
-     * @param listener add listener
-     */
     @Override
     public final void addDataCollectorListener(DataCollectorListener listener) {
-        if (listener == null) {
-            return;
-        }
-
-        synchronized (this) {
-            if (!listeners.contains(listener)) {
-                listeners.add(listener);
-            }
-        }
+        dclsupport.addListener(listener);
     }
 
-    /**
-     * Remove collector listener
-     * @param listener listener to remove from the list
-     */
     @Override
     public final void removeDataCollectorListener(DataCollectorListener listener) {
-        synchronized (this) {
-            listeners.remove(listener);
-        }
+        dclsupport.removeListener(listener);
     }
 
-    /**
-     * Notifies listeners target state changed in separate thread
-     * @param oldState state target was
-     * @param newState state  target is
-     */
     protected final void notifyListeners(final CollectorState state) {
-        DataCollectorListener[] ll;
-
-        synchronized (this) {
-            ll = listeners.toArray(new DataCollectorListener[0]);
-        }
-
-        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
-
-        // Will do notification in parallel, but wait until all listeners
-        // finish processing of event.
-        for (final DataCollectorListener l : ll) {
-            DLightExecutorService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        l.collectorStateChanged(SunStudioDataCollector.this, state);
-                    } finally {
-                        doneFlag.countDown();
-                    }
-                }
-            }, "Notifying " + l); // NOI18N
-        }
-
-        try {
-            doneFlag.await();
-        } catch (InterruptedException ex) {
-        }
-
+        dclsupport.notifyListeners(state);
     }
 
-    public void targetStateChanged(DLightTargetChangeEvent event) {
-        switch (event.state) {
-            case STARTING:
-                // TODO !!!
-                // In case of re-starting the target we just need to re-init
-                // this collector.
-                // But currently there is no way to "restart" the target -
-                // every time we do just new start with the new target/collector...
-                return;
-            case RUNNING:
-                targetStarted(event.target);
-                return;
-            case FAILED:
-                targetFinished(event.target);
-                return;
-            case TERMINATED:
-                targetFinished(event.target);
-                return;
-            case DONE:
-                targetFinished(event.target);
-                return;
-            case STOPPED:
-                targetFinished(event.target);
-                return;
-        }
-    }
-
-    public ValidationStatus validate(DLightTarget target) {
+    @Override
+    protected ValidationStatus doValidation(DLightTarget target) {
         synchronized (lock) {
-            if (validationStatus.isKnown()) {
-                return validationStatus;
-            }
-
             ExecutionEnvironment execEnv = target.getExecEnv();
 
             String command = null;
@@ -315,9 +225,8 @@ public class SunStudioDataCollector
                     case SUNOS:
                         break;
                     default:
-                        validationStatus = ValidationStatus.invalidStatus(
+                        return ValidationStatus.invalidStatus(
                                 loc("ValidationStatus.UnsupportedPlatform")); // NOI18N
-                        return validationStatus;
                 }
 
                 Collection<? extends SunStudioLocatorFactory> factories =
@@ -344,15 +253,15 @@ public class SunStudioDataCollector
                 }
 
                 if (notFound) {
-                    validationStatus = ValidationStatus.invalidStatus(
+                    return ValidationStatus.invalidStatus(
                             loc("ValidationStatus.NoSunStudioFound.html")); //NOI18N
-                    return validationStatus;
                 }
 
             } catch (IOException ex) {
                 final ConnectionManager mgr = ConnectionManager.getInstance();
                 Runnable onConnect = new Runnable() {
 
+                    @Override
                     public void run() {
                         DLightManager.getDefault().revalidateSessions();
                     }
@@ -360,52 +269,28 @@ public class SunStudioDataCollector
 
                 AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, onConnect);
 
-                validationStatus = ValidationStatus.unknownStatus(
+                return ValidationStatus.unknownStatus(
                         loc("ValidationStatus.ErrorWhileValidation", ex.getMessage()), // NOI18N
                         connectAction);
-                return validationStatus;
-            } catch(InterruptedException ex) {
-                validationStatus = ValidationStatus.invalidStatus(loc("ValidationStatus.InterruptedWhileValidation")); // NOI18N
-                return validationStatus;
+            } catch (InterruptedException ex) {
+                return ValidationStatus.invalidStatus(loc("ValidationStatus.InterruptedWhileValidation")); // NOI18N;
             }
 
             validateCollectedInfo();
 
-            validationStatus = ValidationStatus.validStatus();
             cmd = command;
             sproHome = sprohome;
-            validatedTarget = target;
             SunStudioUserCounter.countGizmo(sprohome, execEnv); // NOI18N
-            return validationStatus;
+            return ValidationStatus.validStatus();
         }
     }
 
-    public void invalidate() {
-        synchronized (lock) {
-            validationStatus = ValidationStatus.initialStatus();
-            validatedTarget = null;
-            config = null;
-        }
-    }
-
-    public ValidationStatus getValidationStatus() {
-        synchronized (lock) {
-            return validationStatus;
-        }
-    }
-
-    public void addValidationListener(ValidationListener listener) {
-        validationListeners.add(listener);
-    }
-
-    public void removeValidationListener(ValidationListener listener) {
-        validationListeners.remove(listener);
-    }
-
+    @Override
     public Collection<DataStorageType> getRequiredDataStorageTypes() {
         return Collections.singletonList(supportedStorageType);
     }
 
+    @Override
     public List<DataTableMetadata> getDataTablesMetadata() {
         synchronized (lock) {
             return new ArrayList<DataTableMetadata>(dataTablesMetadata);
@@ -421,7 +306,7 @@ public class SunStudioDataCollector
             if (ci.contains(CollectedInfo.DEADLOCKS) || ci.contains(CollectedInfo.DATARACES)) {
                 isChanged = ci.retainAll(EnumSet.of(CollectedInfo.DEADLOCKS, CollectedInfo.DATARACES));
             }
-            if (!isChanged){//is we do not have THA
+            if (!isChanged) {//is we do not have THA
                 for (CollectedInfo info : collectedInfo) {
                     ci.add(info);
 
@@ -455,7 +340,7 @@ public class SunStudioDataCollector
                             break;
                     }
                 }
-            }else{
+            } else {
                 for (CollectedInfo info : ci) {
                     switch (info) {
 
@@ -479,6 +364,7 @@ public class SunStudioDataCollector
         }
     }
 
+    @Override
     public void init(final Map<DataStorageType, DataStorage> storages, final DLightTarget target) {
         synchronized (lock) {
             DataStorage storage = storages.get(supportedStorageType);
@@ -486,9 +372,6 @@ public class SunStudioDataCollector
                 throw new IllegalArgumentException("Storage " + // NOI18N
                         storage + " cannot be used for PerfanDataCollector!"); // NOI18N
             }
-
-            DLightLogger.assertTrue(validatedTarget == target,
-                    "Validation was performed against another target"); // NOI18N
 
             String experimentDir = hostInfo.getTempDir() + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
 
@@ -501,6 +384,7 @@ public class SunStudioDataCollector
         }
     }
 
+    @Override
     public List<DataFilter> getDataFilters() {
         return dataFilters;
     }
@@ -536,18 +420,21 @@ public class SunStudioDataCollector
         }
     }
 
+    @Override
     public boolean isAttachable() {
         synchronized (lock) {
             return isAttachable;
         }
     }
 
+    @Override
     public String getCmd() {
         synchronized (lock) {
             return cmd;
         }
     }
 
+    @Override
     public String[] getArgs() {
         synchronized (lock) {
             if (cmd == null) {
@@ -567,11 +454,11 @@ public class SunStudioDataCollector
             //try to find THAFilter
             THAFilter thaFilter = null;
             THAStartupFilter thaStartupFilter = null;
-            for (DataFilter dataFilter : dataFilters){
-                if (dataFilter instanceof THAFilter){
-                    thaFilter = (THAFilter)dataFilter;
-                }else if (dataFilter instanceof THAStartupFilter){
-                    thaStartupFilter = (THAStartupFilter)dataFilter;
+            for (DataFilter dataFilter : dataFilters) {
+                if (dataFilter instanceof THAFilter) {
+                    thaFilter = (THAFilter) dataFilter;
+                } else if (dataFilter instanceof THAStartupFilter) {
+                    thaStartupFilter = (THAStartupFilter) dataFilter;
                 }
             }
             final boolean dataraces = collectedInfo.contains(CollectedInfo.DATARACES) && (thaFilter == null || thaFilter.getType().equals(THAFilter.CollectedDataType.DATARACES));
@@ -587,21 +474,21 @@ public class SunStudioDataCollector
                 }
 
                 args.add("-y"); // NOI18N
-                if (thaStartupFilter != null && thaStartupFilter.getStartMode() == THAStartupFilter.StartMode.STARTUP){
+                if (thaStartupFilter != null && thaStartupFilter.getStartMode() == THAStartupFilter.StartMode.STARTUP) {
                     args.add("USR1,r");// NOI18N
-                }else{
+                } else {
                     args.add("USR1"); // NOI18N
                 }
             } else {
 
-                if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
-                        collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
+                if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION)
+                        || collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
                     args.add("-s"); // NOI18N
                     args.add("1000"); // NOI18N
                 }
 
-                if (collectedInfo.contains(CollectedInfo.MEMORY) ||
-                        collectedInfo.contains(CollectedInfo.MEMSUMMARY)) {
+                if (collectedInfo.contains(CollectedInfo.MEMORY)
+                        || collectedInfo.contains(CollectedInfo.MEMSUMMARY)) {
                     args.add("-H"); // NOI18N
                     args.add("on"); // NOI18N
                 }
@@ -614,13 +501,10 @@ public class SunStudioDataCollector
         }
     }
 
-    public String getName() {
-        return COLLECTOR_NAME;
-    }
-
-    private void targetFinished(DLightTarget source) {
+    @Override
+    protected void targetFinished(DLightTarget source) {
         synchronized (lock) {
-            log.fine("Stopping PerfanDataCollector: " + cmd); // NOI18N
+            log.log(Level.FINE, "Stopping PerfanDataCollector: {0}", cmd); // NOI18N
 
             if (isAttachable()) {
                 // i.e. separate process
@@ -644,12 +528,14 @@ public class SunStudioDataCollector
         this.notifyIndicators(data);
     }
 
-    /*package*/ void notifyIndicatorsThatProviderFinished() {        
+    /*package*/ void notifyIndicatorsThatProviderFinished() {
         super.suggestIndicatorsRepaint();
-        this.notifyIndicators(Arrays.asList(new DataRow(Arrays.asList("sunstudio.finished"),Arrays.asList(Boolean.TRUE) )));//NOI18N
+        this.notifyIndicators(Arrays.asList(new DataRow(Arrays.asList("sunstudio.finished"), // NOI18N
+                Arrays.asList(Boolean.TRUE))));
     }
 
-    private void targetStarted(DLightTarget source) {
+    @Override
+    protected void targetStarted(DLightTarget source) {
         synchronized (lock) {
             if (source != config.target) {
                 return;
@@ -683,6 +569,7 @@ public class SunStudioDataCollector
         return NbBundle.getMessage(SunStudioDataCollector.class, key, params);
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         synchronized (dataFilters) {
             dataFilters.clear();
@@ -690,9 +577,9 @@ public class SunStudioDataCollector
             for (DataFilter filter : newSet) {
                 if (filter instanceof CollectedObjectsFilter) {
                     dataFilters.add(filter);
-                }else if (filter instanceof THAFilter){
+                } else if (filter instanceof THAFilter) {
                     dataFilters.add(filter);
-                }else if (filter instanceof THAStartupFilter){
+                } else if (filter instanceof THAStartupFilter) {
                     dataFilters.add(filter);
                 }
             }
@@ -702,6 +589,7 @@ public class SunStudioDataCollector
     private static class StdErrRedirectorFactory
             implements InputProcessorFactory {
 
+        @Override
         public InputProcessor newInputProcessor(InputProcessor p) {
             return InputProcessors.copying(new OutputStreamWriter(System.err) {
 
@@ -725,7 +613,7 @@ public class SunStudioDataCollector
     }
 
     private boolean prepareExperimentDirectory(ExecutionEnvironment execEnv, String experimentDirectory) {
-        log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDirectory); // NOI18N
+        log.log(Level.FINE, "Prepare PerfanDataCollector. Clean directory {0}", experimentDirectory); // NOI18N
         boolean result = true;
 
         try {
@@ -736,8 +624,8 @@ public class SunStudioDataCollector
             rmResult = rmFuture.get();
 
             if (rmResult == null || rmResult.intValue() != 0) {
-                log.info("SunStudioDataCollector: unable to delete directory " // NOI18N
-                        + execEnv.toString() + ":" + experimentDirectory); // NOI18N
+                log.log(Level.INFO, "SunStudioDataCollector: unable to delete directory {0}:{1}", // NOI18N
+                        new Object[]{execEnv.toString(), experimentDirectory});
                 result = false;
             }
 

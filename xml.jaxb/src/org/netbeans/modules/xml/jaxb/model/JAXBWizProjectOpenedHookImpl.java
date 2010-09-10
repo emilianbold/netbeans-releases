@@ -46,7 +46,7 @@ import java.math.BigDecimal;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
-import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;

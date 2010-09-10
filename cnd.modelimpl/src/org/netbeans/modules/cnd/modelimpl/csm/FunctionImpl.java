@@ -186,17 +186,61 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
+    public FunctionImpl(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, boolean global, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        assert !CHECK_SCOPE || (scope != null);
+
+        this.name = QualifiedNameCache.getManager().getString(name);
+        rawName = null;
+        setStatic(isStatic);
+
+        // change scope to file for static methods, but only to prevent
+        // registration in global  namespace
+        if(scope instanceof CsmNamespace) {
+            if( !NamespaceImpl.isNamespaceScope(this) ) {
+                    scope = file;
+            }
+        }
+
+        _setScope(scope);
+
+        if (global){
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(this);
+        }
+        setFlags(FLAGS_CONST, isConst);
+        // TODO
+        templateDescriptor = null;
+        // TODO
+        classTemplateSuffix = null;
+        returnType = type;
+
+        // set parameters, do it in constructor to have final fields
+        this.parameterList = parameterList;
+        if (this.parameterList.isEmpty()) {
+            // TODO
+            //setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
+        } else {
+            setFlags(FLAGS_VOID_PARMLIST, false);
+        }
+        if (name.toString().startsWith(OPERATOR) &&
+                (name.length() > OPERATOR.length()) &&
+                !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
+            setFlags(FLAGS_OPERATOR, true);
+        }
+        if (register) {
+            registerInProject();
+        }
+    }
+
     public void setScope(CsmScope scope) {
         unregisterInProject();
-        try {
-            this._setScope(scope);
-        } catch(AstRendererException e) {
-            DiagnosticExceptoins.register(e);
-        }
+        this._setScope(scope);
         registerInProject();
     }
 
-    private void _setScope(CsmScope scope) throws AstRendererException {
+    private void _setScope(CsmScope scope) {
         // for functions declared in bodies scope is CsmCompoundStatement - it is not Identifiable
         if ((scope instanceof CsmIdentifiable)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
@@ -231,6 +275,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
+    @Override
     public final boolean isStatic() {
         return hasFlags(FLAGS_STATIC);
     }

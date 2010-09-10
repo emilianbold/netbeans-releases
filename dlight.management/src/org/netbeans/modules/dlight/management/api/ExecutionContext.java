@@ -52,9 +52,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.ExecutionEnvVariablesProvider;
 import org.netbeans.modules.dlight.api.execution.Validateable;
@@ -74,21 +75,17 @@ import org.openide.util.Exceptions;
 
 final class ExecutionContext {
 
-    private static final Object lock = new Object();
-    private static final Logger log = DLightLogger.getLogger(ExecutionContext.class);
-    // ***
     private final DLightTarget target;
     private final DLightTargetExecutionEnvProviderCollection envProvider;
-    // Immutable
     private final List<DLightTool> tools;
-    // @GuardedBy("lock")
-    private List<ExecutionContextListener> listeners = null;
-    private volatile boolean validationInProgress = false;
-    private DLightConfiguration dlightConfiguration;
+    private final CopyOnWriteArrayList<ExecutionContextListener> listeners;
+    private final AtomicBoolean validationInProgress = new AtomicBoolean(false);
+    private final DLightConfiguration dlightConfiguration;
 
     ExecutionContext(final DLightTarget target, DLightConfiguration dlightConfiguration) {
         this.target = target;
         this.dlightConfiguration = dlightConfiguration;
+        listeners = new CopyOnWriteArrayList<ExecutionContextListener>();
         tools = Collections.unmodifiableList(dlightConfiguration.getToolsSet());
         DataCollectorProvider.getInstance().reset();
         envProvider = new DLightTargetExecutionEnvProviderCollection();
@@ -114,27 +111,15 @@ final class ExecutionContext {
         return envProvider;
     }
 
-    /**
-     * Do not call directly - use DLightSession.addDLightContextListener()
-     */
-    void setListeners(List<ExecutionContextListener> listeners) {
-        synchronized (lock) {
-            this.listeners = listeners;
-        }
-    }
-
     void validateTools() {
         validateTools(false);
     }
 
-    private final void validateTools(boolean performRequiredActions, List<DLightTool> toolsToValidate) {
+    private void validateTools(boolean performRequiredActions, List<DLightTool> toolsToValidate) {
         DLightLogger.assertNonUiThread();
 
-        synchronized (lock) {
-            if (validationInProgress) {
-                return;
-            }
-            validationInProgress = true;
+        if (!validationInProgress.compareAndSet(false, true)) {
+            return;
         }
 
         Map<Validateable<DLightTarget>, Future<ValidationStatus>> tasks =
@@ -143,7 +128,6 @@ final class ExecutionContext {
         Map<Validateable<DLightTarget>, ValidationStatus> states =
                 new HashMap<Validateable<DLightTarget>, ValidationStatus>();
 
-//        count++;
         List<DataCollector<?>> collectors = new ArrayList<DataCollector<?>>();
         if (getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
             //there is no need to check tools for turned off tools
@@ -151,7 +135,6 @@ final class ExecutionContext {
                 List<DataCollector<?>> toolCollectors = getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector<?> c : toolCollectors) {
-//                    if (c.getValidationStatus().isValid()) {//for valid collectors only
                     if (!collectors.contains(c)) {
                         collectors.add(c);
                     }
@@ -183,46 +166,28 @@ final class ExecutionContext {
             }
         }
 
-        //collect all validatable from tools: collectors and indicator data providers
-//        for (final DLightTool tool : tools) {
-////            System.out.printf("%d: VALIDATING TOOL: %s\n", count, tool.getName());
-//            ValidationStatus toolCurrentStatus = tool.getValidationStatus();
-//
-//            states.put(tool, toolCurrentStatus);
-////            System.out.printf("%d: CurrentStatus: %s\n", count, toolCurrentStatus.toString());
-//
-//            tasks.put(tool, DLightExecutorService.submit(new Callable<ValidationStatus>() {
-//
-//                public ValidationStatus call() throws Exception {
-//                    return tool.validate(target);
-//                }
-//            }, "Tool " + tool.getName() + " validation")); // NOI18N
-//
-////            System.out.printf("%d: Future for validation task: %s\n", count, tasks.get(tool).toString());
-//        }
         for (final DataCollector<?> c : collectors) {
             ValidationStatus collectorCurrentStatus = c.getValidationStatus();
             states.put(c, collectorCurrentStatus);
             tasks.put(c, DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
+                @Override
                 public ValidationStatus call() throws Exception {
                     return c.validate(target);
                 }
             }, "Data Collector " + c.getName() + " validation")); // NOI18N
-
-
         }
+
         for (final IndicatorDataProvider<?> idp : idps) {
             ValidationStatus collectorCurrentStatus = idp.getValidationStatus();
             states.put(idp, collectorCurrentStatus);
             tasks.put(idp, DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
+                @Override
                 public ValidationStatus call() throws Exception {
                     return idp.validate(target);
                 }
             }, "Indicator Data Provider " + idp.getName() + " validation")); // NOI18N
-
-
         }
 
         boolean changed = false;
@@ -259,6 +224,7 @@ final class ExecutionContext {
 
                             task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
+                                @Override
                                 public ValidationStatus call() throws Exception {
                                     return validatable.validate(target);
                                 }
@@ -293,28 +259,15 @@ final class ExecutionContext {
             notifyListeners(new ExecutionContextEvent(this, Type.TOOLS_CHANGED_EVENT, this));
         }
 
-        validationInProgress = false;
+        validationInProgress.set(false);
     }
 
-//    static int count = 0;
     void validateTools(boolean performRequiredActions) {
         validateTools(performRequiredActions, getTools());
-
-
     }
 
     private void notifyListeners(final ExecutionContextEvent event) {
-        ExecutionContextListener[] lls = null;
-
-        synchronized (lock) {
-            if (listeners == null) {
-                return;
-            }
-
-            lls = listeners.toArray(new ExecutionContextListener[0]);
-        }
-
-        for (ExecutionContextListener l : lls) {
+        for (ExecutionContextListener l : listeners) {
             l.contextChanged(event);
         }
     }
@@ -355,13 +308,21 @@ final class ExecutionContext {
         List<DLightTool> result = new ArrayList<DLightTool>();
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if ((tool.isEnabled() && (activeToolNames == null || activeToolNames.contains(tool.getID()))) ||
-                    (!tool.isEnabled() && activeToolNames != null && activeToolNames.contains(tool.getID()))) {
+            if ((tool.isEnabled() && (activeToolNames == null || activeToolNames.contains(tool.getID())))
+                    || (!tool.isEnabled() && activeToolNames != null && activeToolNames.contains(tool.getID()))) {
                 result.add(tool);
             }
         }
 
         return result;
+    }
+
+    void addListener(ExecutionContextListener listener) {
+        listeners.addIfAbsent(listener);
+    }
+
+    void removeListener(ExecutionContextListener listener) {
+        listeners.remove(listener);
     }
 
     private static final class DLightTargetExecutionEnvProviderCollection implements ExecutionEnvVariablesProvider {

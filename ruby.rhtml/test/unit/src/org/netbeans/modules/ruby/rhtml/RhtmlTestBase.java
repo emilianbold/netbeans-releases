@@ -39,8 +39,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.RubyTestBase;
@@ -90,9 +88,6 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         // Can't do this without LanguageRegistry finding Ruby
         //rubyReformatFactory = new GsfIndentTaskFactory();
         //IndentTestMimeDataProvider.addInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
-
-        Formatter.setFormatter(RhtmlKit.class, new ExtFormatter(RhtmlKit.class));
-
     }
 
     @Override

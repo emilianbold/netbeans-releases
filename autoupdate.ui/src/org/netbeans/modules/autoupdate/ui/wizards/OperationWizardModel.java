@@ -304,7 +304,7 @@ public abstract class OperationWizardModel {
                     OperationContainer<InstallSupport> container = null;
                     if (v.getUpdateUnit().getInstalled() == null) {
                         container = OperationContainer.createForInstall();
-                    } else if(!v.getUpdateUnit().getAvailableUpdates().isEmpty()) {
+                    } else if(!v.getUpdateUnit().getAvailableUpdates().isEmpty() && !v.getUpdateUnit().isPending()) {
                         container = OperationContainer.createForUpdate();
                     } else {
                         //already installed, end of operation sequence
@@ -319,7 +319,7 @@ public abstract class OperationWizardModel {
                 //filter out eager invisible modules, which are covered by other invisible
                 for (UpdateElement v : invisible) {
                     OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-                    if (v.getUpdateUnit().getInstalled() != null) {
+                    if (v.getUpdateUnit().getInstalled() != null && !v.getUpdateUnit().isPending()) {
                         container.add(v);
                         for (OperationInfo<InstallSupport> info : container.listAll()) {
                             if (info.getUpdateElement() != v) {

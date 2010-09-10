@@ -52,10 +52,6 @@ package org.netbeans.modules.editor.lib2.view;
 
 final class WrapLine {
 
-    WrapLine() {
-        this.startViewIndex = this.endViewIndex = -1;
-    }
-
     /**
      * Start view of this line that was obtained by breaking a view
      * at (viewIndex - 1). It may be null if this line starts at view boundary
@@ -70,6 +66,11 @@ final class WrapLine {
      */
     EditorView endViewPart;
 
+    /*
+     * X corresponding to the start view on the line (right next to startViewPart).
+     * If there's an existing startViewPart then the value is its width otherwise
+     * it's value is zero.
+     */
     float startViewX;
 
     /**
@@ -81,12 +82,29 @@ final class WrapLine {
 
     int endViewIndex;
 
-    boolean isInited() {
+    WrapLine() {
+        resetFullViews();
+    }
+
+    boolean noFullViews() {
         return (startViewIndex != -1);
     }
 
     boolean hasFullViews() {
         return startViewIndex != endViewIndex;
+    }
+    
+    void resetFullViews() {
+        startViewIndex = endViewIndex = -1;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("startPart=").append(startViewPart); // NOI18N
+        sb.append(" [").append(startViewIndex).append(",").append(endViewIndex).append("]"); // NOI18N
+        sb.append(" endPart=").append(endViewPart); // NOI18N
+        return sb.toString();
     }
 
 }

@@ -61,6 +61,7 @@ import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -79,6 +80,7 @@ class FilesystemHandler extends VCSInterceptor {
      * Stores all moved files for a later cache refresh in afterMove
      */
     private Set<File> movedFiles = new HashSet<File>();
+    private Set<File> copiedFiles = new HashSet<File>();
 
     private Set<File> internalyDeletedFiles = new HashSet<File>();
 
@@ -208,6 +210,33 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     /**
+     * Copies folder's content between different repositories.
+     * Does not copy folders, only files inside them.
+     * The created tree in the target working copy is created without subversion metadata.
+     * @param from folder being copied. MUST be a folder.
+     * @param to a folder from's content shall be copied into
+     * @throws java.io.IOException if error occurs
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException if error occurs
+     */
+    private void copyFolderToDifferentRepository(File from, File to) throws IOException, SVNClientException {
+        assert from.isDirectory();
+        assert to.getParentFile().exists();
+        if (!to.exists()) {
+            if (to.mkdir()) {
+                cache.refreshAsync(to);
+            } else {
+                Subversion.LOG.log(Level.WARNING, "{0}: Cannot create folder {1}", new Object[]{FilesystemHandler.class.getName(), to});
+            }
+        }
+        File[] files = from.listFiles();
+        for (File file : files) {
+            if (!SvnUtils.isAdministrative(file)) {
+                svnCopyImplementation(file, new File(to, file.getName()));
+            }
+        }
+    }
+
+    /**
      * Tries to determine if the <code>file</code> is supposed to be really removed by svn or not.<br/>
      * i.e. unversioned files should not be removed at all.
      * @param file file sheduled for removal
@@ -278,6 +307,177 @@ class FilesystemHandler extends VCSInterceptor {
                 Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());
             }
         }
+    }
+
+    @Override
+    public boolean beforeCopy(File from, File to) {
+        Subversion.LOG.fine("beforeCopy " + from +  " -> " + to);
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping copy due to missing client");
+            return false;
+        }
+
+        File destDir = to.getParentFile();
+        if (from != null && destDir != null) {
+            // a direct cache call could, because of the synchrone beforeCopy handling,
+            // trigger an reentrant call on FS => we have to check manually
+            if (isVersioned(from)) {
+                
+                if(from.isDirectory()) {
+                    // always handle copy of versioned folders.
+                    // we have to take care of metadata even if svn copy can't
+                    // be called - e.g when copy into an unversioned folder filesystem would also 
+                    // try to copy the .svn folder and fail
+                    return true;
+                } else {
+                    return SvnUtils.isManaged(to);
+                }
+            } 
+            // else XXX handle file with saved administative
+            // right now they have old status in cache but is it guaranteed?
+        }        
+
+        return false;
+    }
+
+    @Override
+    public void doCopy(final File from, final File to) throws IOException {
+        Subversion.LOG.fine("doCopy " + from +  " -> " + to);
+        if (SwingUtilities.isEventDispatchThread()) {
+            Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
+        }
+        svnCopyImplementation(from, to);
+    }
+
+    @Override
+    public void afterCopy(final File from, final File to) {
+        Subversion.LOG.fine("afterCopy " + from +  " -> " + to);
+        File[] files;
+        synchronized(copiedFiles) {
+            copiedFiles.add(from);
+            files = copiedFiles.toArray(new File[copiedFiles.size()]);
+            copiedFiles.clear();
+        }
+        cache.refreshAsync(true, to);  // refresh the whole target tree
+        cache.refreshAsync(files);
+        File parent = to.getParentFile();
+        if (parent != null) {
+            if (from.equals(to)) {
+                Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());
+            }
+        }
+    }
+
+    private void svnCopyImplementation(final File from, final File to) throws IOException {
+        try {
+            SvnClient client = Subversion.getInstance().getClient(false);
+
+            // prepare destination, it must be under Subversion control
+            removeInvalidMetadata();
+
+            File parent;
+            if (to.isDirectory()) {
+                parent = to;
+            } else {
+                parent = to.getParentFile();
+            }
+
+            boolean parentManaged = false;
+            if (parent != null) {
+                parentManaged = SvnUtils.isManaged(parent);
+                // a direct cache call could, because of the synchrone svnMove/CopyImplementation handling,
+                // trigger an reentrant call on FS => we have to check manually
+                if (parentManaged && !hasMetadata(parent)) {
+                    addDirectories(parent);
+                }
+            }
+
+            // perform
+            int retryCounter = 6;
+            while (true) {
+                try {
+                    ISVNStatus toStatus = getStatus(client, to);
+
+                    // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
+                    // then it also can't be moved via the svn client
+                    ISVNStatus status = getStatus(client, from);
+
+                    // store all from-s children -> they also have to be refreshed in after copy
+                    List<File> srcChildren = null;
+                    try {
+                        srcChildren = SvnUtils.listRecursively(from);
+                        if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
+                                || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
+                            // check if the file wasn't just deleted in this session
+                            revertDeleted(client, toStatus, to, false);
+
+                            if(!copyFile(from, to)) {
+                                Subversion.LOG.log(Level.INFO, "Cannot copy file {0} to {1}", new Object[] {from, to});
+                            }
+                        } else {
+                            SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
+                            SVNUrl repositoryTarget = parentManaged ? SvnUtils.getRepositoryRootUrl(parent) : null;
+                            if (parentManaged && repositorySource.equals(repositoryTarget)) {
+                                // use client.copy only for a single repository
+                                client.copy(from, to);
+                            } else {
+                                // copy into unversioned folder or
+                                // from a repository into another
+                                if (from.isDirectory()) {
+                                    // tree should be copied separately,
+                                    // otherwise the metadata from the source WC will be copied too
+                                    copyFolderToDifferentRepository(from, to);
+                                } else if (copyFile(from, to)) {
+                                    Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
+                                            + ": copying between different repositories {0} to {1}", new Object[] {from, to});
+                                } else {
+                                    Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
+                                            + ": cannot copy {0} to {1}", new Object[] {from, to});
+                                }
+                            }
+                        }
+                        break;
+                    } finally {
+                        // we moved the files so schedule them a for a refresh
+                        // in the following afterMove call
+                        synchronized(copiedFiles) {
+                            if(srcChildren != null) {
+                                copiedFiles.addAll(srcChildren);
+                            }
+                        }
+                    }
+                } catch (SVNClientException e) {
+                    // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
+                    if (e.getMessage().endsWith("' locked") && retryCounter > 0) { // NOI18N
+                        // XXX HACK AWT- or FS Monitor Thread performs
+                        // concurrent operation
+                        try {
+                            Thread.sleep(107);
+                        } catch (InterruptedException ex) {
+                            // ignore
+                        }
+                        retryCounter--;
+                        continue;
+                    }
+                    if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                        SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                    }
+                    IOException ex = new IOException(); // NOI18N
+                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_MoveFailed", new Object[] {from, to, e.getLocalizedMessage()}));
+                    ex.initCause(e);
+                    throw ex;
+                }
+            }
+        } catch (SVNClientException e) {
+            if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                SvnClientExceptionHandler.notifyException(e, false, false); // log this
+            }
+            IOException ex = new IOException(); // NOI18N
+            Exceptions.attachLocalizedMessage(e, "Subversion failed to move " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage());
+            ex.initCause(e);
+            throw ex;
+        }                 
+
     }
 
     @Override
@@ -505,124 +705,117 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    private void svnMoveImplementation(final File from, final File to) throws IOException {
+    private void svnMoveImplementation(final File from, final File to) throws IOException {        
         try {
             boolean force = true; // file with local changes must be forced
             SvnClient client = Subversion.getInstance().getClient(false);
 
-            File tmpMetadata = null;
-            try {
-                // prepare destination, it must be under Subversion control
-                removeInvalidMetadata();
+            // prepare destination, it must be under Subversion control
+            removeInvalidMetadata();
 
-                File parent;
-                if (to.isDirectory()) {
-                    parent = to;
-                } else {
-                    parent = to.getParentFile();
+            File parent;
+            if (to.isDirectory()) {
+                parent = to;
+            } else {
+                parent = to.getParentFile();
+            }
+
+            if (parent != null) {
+                assert SvnUtils.isManaged(parent) : "Cannot move " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ", " + parent.getAbsolutePath() + " is not managed";  // NOI18N see implsMove above
+                // a direct cache call could, because of the synchrone svnMoveImplementation handling,
+                // trigger an reentrant call on FS => we have to check manually
+                if (!hasMetadata(parent)) {
+                    addDirectories(parent);
                 }
+            }
 
-                if (parent != null) {
-                    assert SvnUtils.isManaged(parent) : "Cannot move " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ", " + parent.getAbsolutePath() + " is not managed";  // NOI18N see implsMove above
-                    // a direct cache call could, because of the synchrone svnMoveImplementation handling,
-                    // trigger an reentrant call on FS => we have to check manually
-                    if (!hasMetadata(parent)) {
-                        addDirectories(parent);
-                    }
-                }
+            // perform
+            int retryCounter = 6;
+            while (true) {
+                try {
+                    ISVNStatus toStatus = getStatus(client, to);
 
-                // perform
-                int retryCounter = 6;
-                while (true) {
+                    // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
+                    // then it also can't be moved via the svn client
+                    ISVNStatus status = getStatus(client, from);
+
+                    // store all from-s children -> they also have to be refreshed in after move
+                    List<File> srcChildren = null;
+                    SVNUrl url = status != null ? status.getUrlCopiedFrom() : null;
+                    SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
                     try {
-                        ISVNStatus toStatus = getStatus(client, to);
-                        
-                        // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
-                        // then it also can't be moved via the svn client
-                        ISVNStatus status = getStatus(client, from);
+                        srcChildren = SvnUtils.listRecursively(from);
+                        boolean moved = true;
+                        if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED) &&
+                                (!status.isCopied() || (url != null && url.equals(toUrl)))) {
+                            // 1. file is ADDED (new or added) AND is not COPIED (by invoking svn copy)
+                            // 2. file is ADDED and COPIED (by invoking svn copy) and target equals the original from the first copy
+                            // otherwise svn move should be invoked
 
-                        // store all from-s children -> they also have to be refreshed in after move
-                        List<File> srcChildren = null;
-                        SVNUrl url = status != null ? status.getUrlCopiedFrom() : null;
-                        SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
-                        try {
-                            srcChildren = SvnUtils.listRecursively(from);
-                            boolean moved = true;
-                            if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED) && 
-                                    (!status.isCopied() || (url != null && url.equals(toUrl)))) {
-                                // 1. file is ADDED (new or added) AND is not COPIED (by invoking svn copy)
-                                // 2. file is ADDED and COPIED (by invoking svn copy) and target equals the original from the first copy
-                                // otherwise svn move should be invoked
+                            // check if the file wasn't just deleted in this session
+                            revertDeleted(client, toStatus, to, false);
 
-                                // check if the file wasn't just deleted in this session
-                                revertDeleted(client, toStatus, to, false);
+                            client.revert(from, true);
+                            moved = from.renameTo(to);
+                        } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
+                                || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
+                            // check if the file wasn't just deleted in this session
+                            revertDeleted(client, toStatus, to, false);
 
-                                client.revert(from, true);
-                                moved = from.renameTo(to);
-                            } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
-                                    || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
-                                // check if the file wasn't just deleted in this session
-                                revertDeleted(client, toStatus, to, false);
-
-                                moved = from.renameTo(to);
+                            moved = from.renameTo(to);
+                        } else {
+                            SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
+                            SVNUrl repositoryTarget = SvnUtils.getRepositoryRootUrl(parent);
+                            if (repositorySource.equals(repositoryTarget)) {
+                                // use client.move only for a single repository
+                                client.move(from, to, force);
                             } else {
-                                SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
-                                SVNUrl repositoryTarget = SvnUtils.getRepositoryRootUrl(parent);
-                                if (repositorySource.equals(repositoryTarget)) {
-                                    // use client.move only for a single repository
-                                    client.move(from, to, force);
+                                if (from.isDirectory()) {
+                                    // tree should be moved separately, otherwise the metadata from the source WC will be copied too
+                                    moveFolderToDifferentRepository(from, to);
+                                } else if (from.renameTo(to)) {
+                                    client.remove(new File[] {from}, force);
+                                    Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
+                                            + ": moving between different repositories {0} to {1}", new Object[] {from, to});
                                 } else {
-                                    if (from.isDirectory()) {
-                                        // tree should be moved separately, otherwise the metadata from the source WC will be copied too
-                                        moveFolderToDifferentRepository(from, to);
-                                    } else if (from.renameTo(to)) {
-                                        client.remove(new File[] {from}, force);
-                                        Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
-                                                + ": moving between different repositories {0} to {1}", new Object[] {from, to});
-                                    } else {
-                                        Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
-                                                + ": cannot rename {0} to {1}", new Object[] {from, to});
-                                    }
-                                }
-                            }
-                            if (!moved) {
-                                Subversion.LOG.log(Level.INFO, "Cannot rename file {0} to {1}", new Object[] {from, to});
-                            }
-                        } finally {
-                            // we moved the files so schedule them a for a refresh
-                            // in the following afterMove call
-                            synchronized(movedFiles) {
-                                if(srcChildren != null) {
-                                    movedFiles.addAll(srcChildren);
+                                    Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
+                                            + ": cannot rename {0} to {1}", new Object[] {from, to});
                                 }
                             }
                         }
-                        break;
-                    } catch (SVNClientException e) {
-                        // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
-                        if (e.getMessage().endsWith("' locked") && retryCounter > 0) { // NOI18N
-                            // XXX HACK AWT- or FS Monitor Thread performs
-                            // concurrent operation
-                            try {
-                                Thread.sleep(107);
-                            } catch (InterruptedException ex) {
-                                // ignore
+                        if (!moved) {
+                            Subversion.LOG.log(Level.INFO, "Cannot rename file {0} to {1}", new Object[] {from, to});
+                        }
+                    } finally {
+                        // we moved the files so schedule them a for a refresh
+                        // in the following afterMove call
+                        synchronized(movedFiles) {
+                            if(srcChildren != null) {
+                                movedFiles.addAll(srcChildren);
                             }
-                            retryCounter--;
-                            continue;
                         }
-                        if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
-                            SvnClientExceptionHandler.notifyException(e, false, false); // log this
-                        }
-                        IOException ex = new IOException(); // NOI18N
-                        Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_RenameFailed", new Object[] {from, to, e.getLocalizedMessage()}));
-                        ex.initCause(e);
-                        throw ex;
                     }
-                }
-            } finally {
-                if (tmpMetadata != null) {
-                    FileUtils.deleteRecursively(tmpMetadata);
+                    break;
+                } catch (SVNClientException e) {
+                    // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
+                    if (e.getMessage().endsWith("' locked") && retryCounter > 0) { // NOI18N
+                        // XXX HACK AWT- or FS Monitor Thread performs
+                        // concurrent operation
+                        try {
+                            Thread.sleep(107);
+                        } catch (InterruptedException ex) {
+                            // ignore
+                        }
+                        retryCounter--;
+                        continue;
+                    }
+                    if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                        SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                    }
+                    IOException ex = new IOException(); // NOI18N
+                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_MoveFailed", new Object[] {from, to, e.getLocalizedMessage()}));
+                    ex.initCause(e);
+                    throw ex;
                 }
             }
         } catch (SVNClientException e) {
@@ -630,7 +823,7 @@ class FilesystemHandler extends VCSInterceptor {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
             }
             IOException ex = new IOException(); // NOI18N
-            Exceptions.attachLocalizedMessage(e, "Subversion failed to rename " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage());
+            Exceptions.attachLocalizedMessage(e, "Subversion failed to move " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage());
             ex.initCause(e);
             throw ex;
         }
@@ -670,4 +863,15 @@ class FilesystemHandler extends VCSInterceptor {
     private boolean equals(ISVNStatus status, SVNStatusKind kind) {
         return status != null && status.getTextStatus().equals(kind);
     }
+
+    private boolean copyFile(File from, File to) {
+        try {
+            FileUtils.copyFile(from, to);
+        } catch (IOException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, false); // log this
+            return false;
+        }
+        return true;
+    }
+
 }

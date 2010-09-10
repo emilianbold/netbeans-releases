@@ -62,12 +62,16 @@ import javax.lang.model.util.Types;
  */
 class AssignabilityChecker  implements Checker {
     
-    static AssignabilityChecker get() {
-        // could be changed to cached ThreadLocal access
-        return new AssignabilityChecker();
+    AssignabilityChecker(boolean eventCase ){
+        isEventAssignability = eventCase;
     }
     
-    void init( DeclaredType varType, ReferenceType checkedType, 
+    static AssignabilityChecker get(boolean eventAssignability) {
+        // could be changed to cached ThreadLocal access
+        return new AssignabilityChecker( eventAssignability );
+    }
+    
+    void init( ReferenceType varType, ReferenceType checkedType, 
             WebBeansModelImplementation impl)
     {
         myVarType = varType;
@@ -83,17 +87,23 @@ class AssignabilityChecker  implements Checker {
         return check;
     }
     
-    public boolean checkAssignability( DeclaredType variableType , 
+    public boolean checkAssignability( ReferenceType variableType , 
             ReferenceType refType) 
     {
-        Element variableElement = variableType.asElement();
+        boolean isDeclaredType = variableType instanceof DeclaredType ;
+        if ( !isDeclaredType ){
+            return checkParameter(refType, variableType);
+        }
+        Element variableElement = ((DeclaredType)variableType).asElement();
         if ( !( variableElement instanceof TypeElement ) ){
             return false;
         }
-        if ( ((TypeElement)variableElement).getTypeParameters().size() == 0 ){
+        // if variableType is raw type
+        if ( ((DeclaredType)variableType).getTypeArguments().size() == 0 ){
             return getImplementation().getHelper().getCompilationController().
                 getTypes().isAssignable( refType, variableType);
         }
+
         
         if ( !( refType instanceof DeclaredType ) ){
             return false;
@@ -145,7 +155,8 @@ class AssignabilityChecker  implements Checker {
             return false;
         }
         
-        List<? extends TypeMirror> varTypeArguments = variableType.getTypeArguments();
+        List<? extends TypeMirror> varTypeArguments = ((DeclaredType)variableType).
+            getTypeArguments();
         if ( varTypeArguments.size() == 0 || types.isSameType( variableType,
                 types.erasure( variableType )  ))
         /*
@@ -210,6 +221,19 @@ class AssignabilityChecker  implements Checker {
     
     private boolean checkParameter( TypeMirror argType, TypeMirror varTypeArg )
     {
+        if ( isEventAssignability ){
+            if ( varTypeArg.getKind()== TypeKind.TYPEVAR ){
+                TypeMirror upperBound = ((TypeVariable)varTypeArg).getUpperBound();
+                if ( upperBound == null || upperBound.getKind() == TypeKind.NULL ){
+                    return true;
+                }
+                else {
+                    return getImplementation().getHelper().getCompilationController().
+                        getTypes().isAssignable( argType, upperBound);
+                }
+            }
+        }
+        
         Types types = getImplementation().getHelper().getCompilationController().
             getTypes();
 
@@ -371,6 +395,9 @@ class AssignabilityChecker  implements Checker {
             }
         }            
         
+        if ( isEventAssignability ){
+            return false;
+        }
         /*
          * Implementation of spec item :
          * the required type parameter is a wildcard, the bean type parameter 
@@ -452,7 +479,7 @@ class AssignabilityChecker  implements Checker {
         }
     }
     
-    private DeclaredType getVarType(){
+    private ReferenceType getVarType(){
         return myVarType;
     }
     
@@ -464,8 +491,8 @@ class AssignabilityChecker  implements Checker {
         return myType;
     }
     
-    private DeclaredType myVarType;
+    private ReferenceType myVarType;
     private WebBeansModelImplementation myImpl;
     private ReferenceType myType;
-
+    private boolean isEventAssignability;
 }

@@ -60,7 +60,6 @@ import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
@@ -74,6 +73,7 @@ import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -114,7 +114,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Quote;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
@@ -143,17 +142,18 @@ import org.openide.util.Exceptions;
 public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private final FileScopeImpl fileScope;
+    private IndexScope indexScope;
     private Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
     private final Map<String, List<PhpDocTypeTagInfo>> varTypeComments;
     private volatile OccurenceBuilder occurencesBuilder;
     private volatile CodeMarkerBuilder markerBuilder;
     private final ModelBuilder modelBuilder;
-    private final ParserResult info;
+    private final PHPParseResult info;
     private boolean  askForEditorExtensions = true;
     private List<PhpBaseElement> baseElements;
 
 
-    public ModelVisitor(final ParserResult info) {
+    public ModelVisitor(final PHPParseResult info) {
         this.fileScope = new FileScopeImpl(info);
         varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
         occurencesBuilder = new OccurenceBuilder();
@@ -1000,6 +1000,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return fileScope;
     }
 
+    public IndexScope getIndexScope() {
+        synchronized(this) {
+            if (indexScope == null) {
+                indexScope = new IndexScopeImpl(info);
+            }
+        }
+        return indexScope;
+    }
+
     @CheckForNull
     public CodeMarker getCodeMarker(int offset) {
         buildCodeMarks(offset);
@@ -1191,14 +1200,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
         return retval;
-    }
-
-    public static IndexScope getIndexScope(ParserResult info) {
-        return new IndexScopeImpl(info);
-    }
-
-    public static IndexScope getIndexScope(ElementQuery.Index idx) {
-        return new IndexScopeImpl(idx);
     }
 
     private void buildCodeMarks(final int offset) {

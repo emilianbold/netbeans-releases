@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.dlight.toolsui;
 
-import org.netbeans.modules.dlight.toolsui.api.*;
-import org.netbeans.modules.dlight.api.tool.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
-import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationSupport;
 
 /**
  *
@@ -65,15 +64,14 @@ public class DLightConfigurationUIWrapper {
         this.dlightConfiguration = dlightConfiguration;
         this.name = dlightConfiguration.getConfigurationName();
         this.displayName = dlightConfiguration.getDisplayedName();
-        this.custom = DLightConfigurationSupport.getInstance().canRemoveConfiguration(dlightConfiguration.getConfigurationName());
+        this.custom = DLightConfigurationManagerAccessor.getDefault().canRemoveConfiguration(dlightConfiguration.getConfigurationName());
         copyOf = null;
         initWrapper(allDLightTools);
     }
 
     public DLightConfigurationUIWrapper(String name, String displayName, List<DLightTool> allDLightTools) {
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
-        DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
-        this.dlightConfiguration = accessor.getDefaultConfiguration(manager);
+        this.dlightConfiguration = accessor.getDefaultConfiguration();
         this.name = name;
         this.displayName = displayName;
         this.custom = true;

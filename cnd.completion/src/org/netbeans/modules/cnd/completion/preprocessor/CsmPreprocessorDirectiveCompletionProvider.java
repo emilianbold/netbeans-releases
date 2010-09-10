@@ -37,6 +37,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -223,20 +224,23 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
             if (CompletionSupport.isPreprocessorDirectiveCompletionEnabled(doc, caretOffset)) {
                 doc.readLock();
                 try {
-                    TokenSequence<CppTokenId> ppTs = CndLexerUtilities.getCppTokenSequence(doc, caretOffset, true, true);
+                    TokenSequence<TokenId> ppTs = CndLexerUtilities.getCppTokenSequence(doc, caretOffset, true, true);
                     if (ppTs == null || ppTs.token() == null) {
                         return false;
                     }
-                    switch (ppTs.token().id()) {
-                        case WHITESPACE:
-                        case PREPROCESSOR_START:
-                            // use caret offset
-                            queryAnchorOffset = caretOffset;
-                            break;
-                        default:
-                            // use start of token
-                            queryAnchorOffset = ppTs.offset();
-                            break;
+                    final TokenId id = ppTs.token().id();
+                    if(id instanceof CppTokenId) {
+                        switch ((CppTokenId)id) {
+                            case WHITESPACE:
+                            case PREPROCESSOR_START:
+                                // use caret offset
+                                queryAnchorOffset = caretOffset;
+                                break;
+                            default:
+                                // use start of token
+                                queryAnchorOffset = ppTs.offset();
+                                break;
+                        }
                     }
                     filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                 } catch (BadLocationException ex) {

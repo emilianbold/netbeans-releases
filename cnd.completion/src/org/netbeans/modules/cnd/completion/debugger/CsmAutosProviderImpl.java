@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
@@ -113,7 +114,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
                 document.render(new Runnable() {
                     @Override
                     public void run() {
-                        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(document, prevOffset.get(), false, true);
+                        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(document, prevOffset.get(), false, true);
                         if (ts == null) {
                             return;
                         }

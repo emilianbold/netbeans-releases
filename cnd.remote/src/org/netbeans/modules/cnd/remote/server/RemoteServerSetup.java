@@ -122,7 +122,7 @@ public class RemoteServerSetup {
                 String localFileName = binarySetupMap.get(path);
                 File file = new File(localFileName);
                 if (!file.isAbsolute()) {
-                    file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
+                    file = InstalledFileLocator.getDefault().locate(localFileName, "org.netbeans.modules.cnd.remote", false); //NOI18N
                 }
                 //String remotePath = REMOTE_LIB_DIR + file.getName();
                 String remotePath = path;

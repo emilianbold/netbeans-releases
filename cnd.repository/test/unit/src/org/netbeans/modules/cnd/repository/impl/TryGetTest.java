@@ -51,6 +51,7 @@ import org.netbeans.junit.*;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
@@ -69,30 +70,37 @@ public class TryGetTest extends CndBaseTestCase {
             this.key = key;
         }
 
+        @Override
         public int getSecondaryAt(int level) {
             return 0;
         }
 
+        @Override
         public String getAt(int level) {
             return key;
         }
 
+        @Override
         public String getUnit() {
             return "Repository_Test_Unit";
         }
 
+        @Override
         public int getUnitId() {
             return 1;
         }
 
+        @Override
         public int getSecondaryDepth() {
             return 0;
         }
 
+        @Override
         public PersistentFactory getPersistentFactory() {
             return factory;
         }
 
+        @Override
         public int getDepth() {
             return 1;
         }
@@ -104,12 +112,19 @@ public class TryGetTest extends CndBaseTestCase {
             super(key);
         }
 
+        @Override
         public Key.Behavior getBehavior() {
             return Key.Behavior.Default;
         }
 
+        @Override
         public boolean hasCache() {
             return false;
+        }
+
+        @Override
+        public KeyDataPresentation getDataPresentation() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
@@ -119,12 +134,19 @@ public class TryGetTest extends CndBaseTestCase {
             super(key);
         }
 
+        @Override
         public Key.Behavior getBehavior() {
             return Key.Behavior.LargeAndMutable;
         }
 
+        @Override
         public boolean hasCache() {
             return false;
+        }
+
+        @Override
+        public KeyDataPresentation getDataPresentation() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
@@ -157,15 +179,18 @@ public class TryGetTest extends CndBaseTestCase {
 
     private class Factory implements PersistentFactory {
 
+        @Override
         public boolean canWrite(Persistent obj) {
             return true;
         }
 
+        @Override
         public void write(DataOutput out, Persistent obj) throws IOException {
             assert obj instanceof Value;
             out.writeUTF(((Value) obj).value);
         }
 
+        @Override
         public Persistent read(DataInput in) throws IOException {
             readFlag = true;
             String value = in.readUTF();

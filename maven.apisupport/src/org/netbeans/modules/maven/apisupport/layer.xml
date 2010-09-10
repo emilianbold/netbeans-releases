@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Actions">
         <folder name="Project">
@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
             <folder name="Repositories">
                 <file name="netbeans">
                     <attr name="position" intvalue="250"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.apisupport.Bundle#repo.netbeans"/>
                     <attr name="provider" stringvalue="nexus"/>
                     <attr name="repoUrl" stringvalue="http://bits.netbeans.org/maven2/"/>
                     <attr name="repoIndexUrl" stringvalue="http://bits.netbeans.org/maven2/.index/"/>

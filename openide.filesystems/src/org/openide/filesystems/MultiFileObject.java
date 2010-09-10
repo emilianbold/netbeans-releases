@@ -849,6 +849,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                     }
                     Number weight = weightOf(fo, writable);
                     if (attr == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                        getAttributeCache().setDelegate(fo);
+                        getAttributeCache().setAttributeName(attrName);
                         attr = o;
                         maxWeight = weight;
                     }
@@ -867,6 +869,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                     if (o != null) {
                         Number weight = weightOf(fo, writable);
                         if (attr == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                            getAttributeCache().setDelegate(fo);
+                            getAttributeCache().setAttributeName(attrName);
                             attr = o;
                             maxWeight = weight;
                         }
@@ -908,13 +912,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             }
         } finally {
             attrAskedFileObject.set(previousFO);
-            }
-
-        if (o != null) {
-            getAttributeCache().setDelegate(fo);
-            getAttributeCache().setAttributeName(attrName);
         }
-
         return o;
     }
 

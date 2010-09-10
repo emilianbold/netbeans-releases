@@ -112,7 +112,13 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.getSourceFileInfo(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoStorage.getInfo());
+            long offset = functionCall.getOffset();
+            if (offset > 0) {
+                // FIXME
+                // Call stack has address of next instruction
+                offset--;
+            }
+            final SourceFileInfo sourceInfo = provider.getSourceFileInfo(functionCall.getFunction().getQuilifiedName(), -1, offset, serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }

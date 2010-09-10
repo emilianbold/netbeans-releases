@@ -841,6 +841,10 @@ public abstract class FileSystem implements Serializable {
         */
         public void run() throws IOException;
     }
+    
+    static interface AsyncAtomicAction extends AtomicAction {
+        boolean isAsynchronous();
+    }
 
     /** Allows a filesystem to annotate a group of files (typically comprising a data object) with additional markers.
      * <p>This could be useful, for

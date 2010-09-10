@@ -45,6 +45,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
@@ -57,8 +58,12 @@ public final class ClassifierContainerKey extends ProjectNameBasedKey {
         super(project);
     }
 
-    public ClassifierContainerKey(DataInput in) throws IOException {
+    ClassifierContainerKey(DataInput in) throws IOException {
         super(in);
+    }
+
+    ClassifierContainerKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
 
     @Override
@@ -96,5 +101,10 @@ public final class ClassifierContainerKey extends ProjectNameBasedKey {
     @Override
     public String toString() {
         return "ClassifierContainerKey " + getProjectName(); // NOI18N
+    }
+
+    @Override
+    public final short getKindPresentation() {
+        return KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY;
     }
 }

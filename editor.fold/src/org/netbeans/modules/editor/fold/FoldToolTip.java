@@ -84,7 +84,7 @@ public class FoldToolTip extends JPanel {
         Dimension prefSize = super.getPreferredSize();
         // Return width like for editor pane which forces the PopupManager to display
         // the tooltip to align exacty with the text (below/above).
-        prefSize.width = Math.max(prefSize.width, editorPaneWidth);
+        prefSize.width = Math.min(prefSize.width, editorPaneWidth);
         return prefSize;
     }
 

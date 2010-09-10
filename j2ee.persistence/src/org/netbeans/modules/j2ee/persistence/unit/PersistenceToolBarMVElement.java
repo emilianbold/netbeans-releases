@@ -53,6 +53,7 @@ import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -344,8 +345,11 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             if (result == NotifyDescriptor.OK_OPTION) {
                 String version=puDataObject.getPersistence().getVersion();
                 PersistenceUnit punit = null;
+                boolean useModelgen = false;
+                String modelGenLib = null;
                 if(Persistence.VERSION_2_0.equals(version))
                 {
+                    useModelgen = true;
                     punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
                 }
                 else//currently default 1.0
@@ -369,6 +373,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                         Library lib = PersistenceLibrarySupport.getLibrary(provider);
                         if (lib != null && !Util.isDefaultProvider(project, provider)) {
                             Util.addLibraryToProject(project, lib);
+                            modelGenLib = lib.getName()+"modelgen";//NOI18N
                             provider = null;//to avoid one more addition
                         }
                     }
@@ -376,6 +381,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                         Library lib = PersistenceLibrarySupport.getLibrary(provider);
                         if (lib != null){
                             Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
+                            modelGenLib = lib.getName()+"modelgen";//NOI18N
                         }
                     }
                 } else {
@@ -385,6 +391,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                     Library lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
                     if (lib != null){
                         Util.addLibraryToProject(project, lib);
+                        modelGenLib = lib.getName()+"modelgen";//NOI18N
                     }
                     JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(puJdbc.getPersistenceConnection().getDriverClass());
                     PersistenceLibrarySupport.addDriver(project, driver[0]);
@@ -394,6 +401,11 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                 ProviderUtil.setTableGeneration(punit, panel.getTableGeneration(), project);
                 puDataObject.addPersistenceUnit(punit);
                 comp.setLastActive(punit);
+                //modelgen
+                if(useModelgen && modelGenLib!=null){
+                    Library mLib = LibraryManager.getDefault().getLibrary(modelGenLib);
+                    if(mLib!=null) Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);//no real need to add modelgen to compile classpath
+                }
             }
         }
     }

@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -105,8 +106,11 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         Set<TypeResolver> instanceTypes = indexedConstant.getInstanceTypes();
         for (TypeResolver typeResolver : instanceTypes) {
             if (typeResolver.isResolved()) {
-                this.defaultType = typeResolver.getTypeName(false).getName();
-                break;
+                if (this.defaultType != null) {
+                    this.defaultType += String.format("|%s", typeResolver.getTypeName(false).getName()); //NOI18N
+                } else {
+                    this.defaultType = typeResolver.getTypeName(false).getName();
+                }
             }
         }
     }
@@ -141,7 +145,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         if (defaultType != null && defaultType.length() > 0) {
             String[] allTypeNames = defaultType.split("\\|");
             for (String typeName : allTypeNames) {
-                typeScopes.addAll(CachingSupport.getTypes(typeName, this));
+                typeScopes.addAll(IndexScopeImpl.getTypes(QualifiedName.create(typeName), this));
             }
         }            
         return typeScopes;

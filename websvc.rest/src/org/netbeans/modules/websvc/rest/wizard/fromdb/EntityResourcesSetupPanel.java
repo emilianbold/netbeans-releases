@@ -55,10 +55,12 @@ import org.openide.util.HelpCtx;
 final public class EntityResourcesSetupPanel extends AbstractPanel {
     
     private EntityResourcesSetupPanelVisual component;
+    private boolean javaEE6Project;
     
     /** Create the wizard panel descriptor. */
-    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor) {
+    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor, boolean javaEE6Project) {
         super(name, wizardDescriptor);
+        this.javaEE6Project = javaEE6Project;
     }
     
     @Override
@@ -69,7 +71,7 @@ final public class EntityResourcesSetupPanel extends AbstractPanel {
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName);
+            component = new EntityResourcesSetupPanelVisual(panelName, javaEE6Project);
             component.addChangeListener(this);
         }
         return component;

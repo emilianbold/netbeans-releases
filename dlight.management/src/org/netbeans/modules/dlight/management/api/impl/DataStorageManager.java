@@ -135,29 +135,29 @@ public final class DataStorageManager {
     }
 
     public synchronized Collection<DataStorage> getStorages(String uniqueKey) {
-        if (uniqueKey == null){
+        if (uniqueKey == null) {
             return null;
         }
         //for each key we should keep several storages, including ServiceInfoDataStorage
         Collection<DataStorage> result = activeStorages.get(uniqueKey);
-        if (result != null){
+        if (result != null) {
             return result;
         }
         result = new ArrayList<DataStorage>();
         //PersistentDataStorageFactory<?> persistentDataStorageFactories = Lookup.getDefault().lookupAll(DataStorageFactory.class);
-        
-        for (PersistentDataStorageFactory<?> factory : perstistentDataStorageFactories){
-            try{
+
+        for (PersistentDataStorageFactory<?> factory : perstistentDataStorageFactories) {
+            try {
                 DataStorage storage = factory.openStorage(uniqueKey);
-                if (storage != null){
+                if (storage != null) {
                     result.add(storage);
                 }
-            }catch(Throwable e){
+            } catch (Throwable e) {
 //                log.log(Level.SEVERE, "Exception has beem occurred while trying to open storage with the key=" + uniqueKey, e);
             }
         }
         return result;
-        
+
     }
 
     /**
@@ -188,7 +188,7 @@ public final class DataStorageManager {
 
                 if (storage.getStorageTypes().contains(storageType)) {
                     DataStorage newStorage = storage.openStorage(uniqueKey);
-                    if (newStorage != null){
+                    if (newStorage != null) {
                         if (newStorage instanceof ProxyDataStorage) {
                             ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
                             DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
@@ -202,7 +202,7 @@ public final class DataStorageManager {
                         uniqueStorages.add(newStorage);
                         activeStorages.put(uniqueKey, uniqueStorages);
                         return newStorage;
-                    }else{
+                    } else {
                         newStorage = storage.createStorage(uniqueKey);
                         if (newStorage instanceof ProxyDataStorage) {
                             ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
@@ -214,28 +214,6 @@ public final class DataStorageManager {
                         if (uniqueStorages == null) {
                             uniqueStorages = new ArrayList<DataStorage>();
                         }
-                        uniqueStorages.add(newStorage);                        
-                        activeStorages.put(uniqueKey, uniqueStorages);
-                        return newStorage;
-                    }
-                }
-            }
-        } else {
-            for (DataStorageFactory<?> storage : dataStorageFactories) {
-
-                if (storage instanceof PersistentDataStorageFactory<?> && storage.getStorageTypes().contains(storageType)) {
-                    DataStorage newStorage = ((PersistentDataStorageFactory<?>)storage).openStorage(uniqueKey);
-                    if (newStorage instanceof ProxyDataStorage) {
-                        ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
-                        DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
-                        proxyStorage.attachTo(backendStorage);
-                        uniqueStorages = activeStorages.get(uniqueKey);
-                    }
-                    if (newStorage != null) {
-                        newStorage.createTables(tableMetadatas);
-                        if (uniqueStorages == null) {
-                            uniqueStorages = new ArrayList<DataStorage>();
-                        }
                         uniqueStorages.add(newStorage);
                         activeStorages.put(uniqueKey, uniqueStorages);
                         return newStorage;
@@ -243,6 +221,45 @@ public final class DataStorageManager {
                 }
             }
         }
+        for (DataStorageFactory<?> storage : dataStorageFactories) {
+
+            if (storage instanceof PersistentDataStorageFactory<?> && storage.getStorageTypes().contains(storageType)) {
+                DataStorage newStorage = ((PersistentDataStorageFactory<?>) storage).openStorage(uniqueKey);
+                if (newStorage instanceof ProxyDataStorage) {
+                    ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                    DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    proxyStorage.attachTo(backendStorage);
+                    uniqueStorages = activeStorages.get(uniqueKey);
+                }
+                if (newStorage != null) {
+                    newStorage.createTables(tableMetadatas);
+                    if (uniqueStorages == null) {
+                        uniqueStorages = new ArrayList<DataStorage>();
+                    }
+                    uniqueStorages.add(newStorage);
+                    activeStorages.put(uniqueKey, uniqueStorages);
+                    return newStorage;
+                }
+            }else if  (storage.getStorageTypes().contains(storageType)) {
+                DataStorage newStorage = storage.createStorage();
+                if (newStorage instanceof ProxyDataStorage) {
+                    ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                    DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    proxyStorage.attachTo(backendStorage);
+                    uniqueStorages = activeStorages.get(uniqueKey);
+                }
+                if (newStorage != null) {
+                    newStorage.createTables(tableMetadatas);
+                    if (uniqueStorages == null) {
+                        uniqueStorages = new ArrayList<DataStorage>();
+                    }
+                    uniqueStorages.add(newStorage);
+                    activeStorages.put(uniqueKey, uniqueStorages);
+                    return newStorage;
+                }
+            }
+        }
+
         return null;
     }
 
@@ -289,4 +306,3 @@ public final class DataStorageManager {
         return null;
     }
 }
-

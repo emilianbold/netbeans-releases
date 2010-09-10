@@ -86,7 +86,7 @@ public class RemoteJarServiceProvider implements SetupProvider {
             }
             String relPath = path;
             String absPath = null;
-            File file = InstalledFileLocator.getDefault().locate(relPath, null, false);
+            File file = InstalledFileLocator.getDefault().locate(relPath, "org.netbeans.modules.cnd.dwarfdump", false); //NOI18N
             if (file != null) {
                 absPath = file.getAbsolutePath();
             }

@@ -67,9 +67,10 @@ public abstract class OutputTabMaintainer {
             new WeakHashMap<InputOutput, Collection<String>>();
     
     protected InputOutput io;
-    private String name;
+    private final String name;
     
     protected OutputTabMaintainer(String name) {
+        assert name != null;
         this.name = name;
     }
     

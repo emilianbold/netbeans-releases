@@ -137,9 +137,14 @@ bool JvmLauncher::start(const char *mainClassName, const list<string> &args, con
         logMsg("\t%s", it->c_str());
     }
 
-    if (javaExePath.empty() || (javaClientDllPath.empty() && javaServerDllPath.empty())) {
-        if (!initialize("")) {
-            return false;
+    if (!javaExePath.empty() && javaClientDllPath.empty() && javaServerDllPath.empty()) {
+        logMsg("Found only java.exe at %s. No DLLs. Falling back to java.exe\n", javaExePath.c_str());
+        separateProcess = true;
+    } else {
+        if (javaExePath.empty() || (javaClientDllPath.empty() && javaServerDllPath.empty())) {
+            if (!initialize("")) {
+                return false;
+            }
         }
     }
 
@@ -205,6 +210,7 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std:
 
         Jvm(JvmLauncher *jvmLauncher)
             : hDll(0)
+            , hSplash(0)
             , jvm(0)
             , env(0)
             , jvmOptions(0)
@@ -229,6 +235,9 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std:
             if (hDll) {
                 FreeLibrary(hDll);
             }
+            if (hSplash) {
+                FreeLibrary(hSplash);
+            }
         }
 
         bool init(const list<string> &options) {
@@ -241,6 +250,13 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std:
                     logErr(true, true, "Cannot load %s.", jvmLauncher->javaDllPath.c_str());
                     return false;
                 }
+                
+                string pref = jvmLauncher->javaBinPath;
+                pref += "\\splashscreen.dll";
+                const string splash = pref;
+                logMsg("Trying to load %s", splash.c_str());
+                hSplash = LoadLibrary(splash.c_str());
+                logMsg("Splash loaded as %d", hSplash);
             }
 
             CreateJavaVM createJavaVM = (CreateJavaVM) GetProcAddress(hDll, JNI_CREATEVM_FUNC);
@@ -255,6 +271,19 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std:
             for (list<string>::const_iterator it = options.begin(); it != options.end(); ++it, ++i) {
                 const string &option = *it;
                 logMsg("\t%s", option.c_str());
+                if (option.find("-splash:") == 0 && hSplash > 0) {
+                    const string splash = option.substr(8);
+                    logMsg("splash at %s", splash.c_str());
+                    
+                    SplashInit splashInit = (SplashInit)GetProcAddress(hSplash, "SplashInit");
+                    SplashLoadFile splashLoadFile = (SplashLoadFile)GetProcAddress(hSplash, "SplashLoadFile");
+                    
+                    logMsg("splash init %d and load %d", splashInit, splashLoadFile);
+                    if (splashInit && splashLoadFile) {
+                        splashInit();
+                        splashLoadFile(splash.c_str());
+                    }
+                }
                 jvmOptions[i].optionString = (char *) option.c_str();
                 jvmOptions[i].extraInfo = 0;
             }
@@ -274,8 +303,11 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std:
             return true;
         }
         typedef jint (CALLBACK *CreateJavaVM)(JavaVM **jvm, JNIEnv **env, void *args);
+        typedef void (CALLBACK *SplashInit)();
+        typedef int (CALLBACK *SplashLoadFile)(const char* file);
 
         HMODULE hDll;
+        HMODULE hSplash;
         JavaVM *jvm;
         JNIEnv *env;
         JavaVMOption *jvmOptions;

@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import org.openide.WizardValidationException;
 
 import org.openide.util.HelpCtx;

@@ -797,6 +797,15 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                 set.add(d.getAbsolutePath());
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
+                    try {
+                        String canPath = ff[i].getCanonicalPath();
+                        String absPath = ff[i].getAbsolutePath();
+                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                            continue;
+                        }
+                    } catch (IOException ex) {
+                        //Exceptions.printStackTrace(ex);
+                    }
                     gatherSubFolders(ff[i], set);
                 }
             }

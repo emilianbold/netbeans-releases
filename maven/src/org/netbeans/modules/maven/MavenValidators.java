@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
  */
 public class MavenValidators {
 
+    @SuppressWarnings("unchecked")
     public static Validator<String> createArtifactIdValidators() {
         return Validators.merge(true,
                     Validators.REQUIRE_NON_EMPTY_STRING,
@@ -61,6 +62,7 @@ public class MavenValidators {
                );
     }
 
+    @SuppressWarnings("unchecked")
     public static Validator<String> createGroupIdValidators() {
         return Validators.merge(true,
                     Validators.REQUIRE_NON_EMPTY_STRING,
@@ -70,6 +72,7 @@ public class MavenValidators {
                );
     }
 
+    @SuppressWarnings("unchecked")
     public static Validator<String> createVersionValidators() {
         return Validators.merge(true,
                     Validators.REQUIRE_NON_EMPTY_STRING,

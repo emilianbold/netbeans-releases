@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.repository.api;
 
 import java.util.Set;
+import java.util.SortedMap;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -147,4 +148,5 @@ public interface Repository {
      */
     void unregisterRepositoryListener(final RepositoryListener aListener);
 
+    SortedMap<?,?> getStorage(Key key, String storageID);
 }

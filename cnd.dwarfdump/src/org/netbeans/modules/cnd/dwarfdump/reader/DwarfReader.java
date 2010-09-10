@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
-import java.io.RandomAccessFile;
 import org.netbeans.modules.cnd.dwarfdump.Magic;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATE;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
@@ -69,7 +68,7 @@ import org.netbeans.modules.cnd.dwarfdump.section.DwarfRelaDebugInfoSection;
  */
 public class DwarfReader extends ElfReader {
     
-    public DwarfReader(String fname, RandomAccessFile reader, Magic magic, long shift, long length) throws IOException {
+    public DwarfReader(String fname, MyRandomAccessFile reader, Magic magic, long shift, long length) throws IOException {
         super(fname, reader, magic, shift, length);
         getSection(SECTIONS.DEBUG_STR); 
     }

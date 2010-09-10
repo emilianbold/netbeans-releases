@@ -42,13 +42,12 @@
 package org.netbeans.modules.maven.indexer.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileStateInvalidException;
 
 /**
  *
@@ -83,21 +82,11 @@ public final class RepositoryInfo {
             type = RepositoryPreferences.TYPE_NEXUS;
         }
         String id = fo.getName();
-        String name = (String) fo.getAttribute(RepositoryPreferences.KEY_DISPLAY_NAME);
-        if (name == null) {
+        String name;
+        try {
+            name = /* DataObject.find(fo).getNodeDelegate().getDisplayName() */ fo.getFileSystem().getStatus().annotateName(id, Collections.singleton(fo));
+        } catch (FileStateInvalidException x) {
             name = id;
-        }
-        String remoteBundleName = (String) fo.getAttribute ("SystemFileSystem.localizingBundle"); // NOI18N
-        if (remoteBundleName != null) {
-            try {
-                ResourceBundle bundle = NbBundle.getBundle (remoteBundleName);
-                String nm = bundle.getString(fo.getPath());
-                if (nm != null) {
-                    name = nm;
-                }
-            } catch (MissingResourceException e) {
-                //just ignore
-            }
         }
         String path = (String) fo.getAttribute(RepositoryPreferences.KEY_PATH);
         String repourl =(String) fo.getAttribute(RepositoryPreferences.KEY_REPO_URL);

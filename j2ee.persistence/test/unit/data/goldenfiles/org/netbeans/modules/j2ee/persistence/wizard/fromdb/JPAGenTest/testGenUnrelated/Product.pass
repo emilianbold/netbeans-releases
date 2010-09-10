@@ -75,6 +75,6 @@ public class Product implements Serializable {
 
     @Override
     public String toString() {
-        return "generated.Product[id=" + id + "]";
+        return "generated.Product[ id=" + id + " ]";
     }
 }

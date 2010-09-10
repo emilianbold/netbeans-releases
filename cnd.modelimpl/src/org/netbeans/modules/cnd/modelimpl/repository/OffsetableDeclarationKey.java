@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 
@@ -63,15 +64,19 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 /*package*/
 final class OffsetableDeclarationKey extends OffsetableKey {
     
-    public OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
+    OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
 	super((FileImpl) obj.getContainingFile(), obj.getStartOffset(), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), obj.getName());
 	// we use name, because all other (FQN and UniqueName) could change
 	// and name is fixed value
     }
     
-    public OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj, int index) {
+     OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj, int index) {
 	super((FileImpl) obj.getContainingFile(), obj.getStartOffset(), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), Integer.toString(index));
 	// we use index for unnamed objects
+    }
+
+     OffsetableDeclarationKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
     
     private static int getSmartEndOffset(OffsetableDeclarationBase<?> obj) {

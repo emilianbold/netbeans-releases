@@ -70,9 +70,9 @@ class Https_Institution_Get_Recruiters extends Subject implements IBuilder, IXHT
     public function setCSS() {
         ob_start();
 ?>
-        <link	rel="stylesheet"        
-              href=":server:/js/dojox/form/resources/FileInput.css?:version:"        
-              type="text/css" />        
+        <link	rel="stylesheet"
+              href=":server:/js/dojox/form/resources/FileInput.css?:version:"
+              type="text/css" />
 <?php
         $this->css = ob_get_contents();
         ob_end_clean();

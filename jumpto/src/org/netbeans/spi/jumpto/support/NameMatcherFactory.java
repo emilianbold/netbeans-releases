@@ -165,9 +165,9 @@ public final class NameMatcherFactory {
                 case PREFIX:
                     return new PrefixNameMatcher(text);
                 case REGEXP:
-                    return new RegExpNameMatcher(text, true);
+                    return new RegExpNameMatcher(wildcards2regexp(text), true);
                 case CASE_INSENSITIVE_REGEXP:
-                    return new RegExpNameMatcher(text, false);
+                    return new RegExpNameMatcher(wildcards2regexp(text), false);
                 case CASE_INSENSITIVE_PREFIX:
                      return new CaseInsensitivePrefixNameMatcher(text);
                 case CAMEL_CASE:
@@ -179,5 +179,9 @@ public final class NameMatcherFactory {
         catch( PatternSyntaxException ex ) {
             throw new IllegalArgumentException(ex);
         }
+    }
+
+    private static String wildcards2regexp(String pattern) {
+        return pattern.replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ); //NOI18N
     }
 }

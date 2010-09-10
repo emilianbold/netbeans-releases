@@ -93,6 +93,13 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         this.name = (name == null) ? CharSequences.empty() : NameCache.getManager().getString(name);
     }
 
+    protected ClassEnumBase(String name, String qName, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
+        this.name = NameCache.getManager().getString(name);
+        this.qualifiedName = QualifiedNameCache.getManager().getString(qName);
+    }
+
     public static int getEndOffset(AST node) {
         if (node != null) {
             AST rcurly = AstUtil.findChildOfType(node, CPPTokenTypes.RCURLY);
@@ -174,7 +181,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     }
 
     /** Initializes scope */
-    protected final void initScope(CsmScope scope, AST ast) {
+    protected final void initScope(CsmScope scope) {
         if (UIDCsmConverter.isIdentifiable(scope)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;

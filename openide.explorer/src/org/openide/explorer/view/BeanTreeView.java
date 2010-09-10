@@ -126,6 +126,7 @@ public class BeanTreeView extends TreeView {
     * @param nodes nodes
     * @param em explorer manager
     */
+    @Override
     protected void selectionChanged(Node[] nodes, ExplorerManager em)
     throws PropertyVetoException {
         if (nodes.length > 0) {
@@ -141,7 +142,7 @@ public class BeanTreeView extends TreeView {
 
             // May not set explored context above the root context:
             if (em.getRootContext().getParentNode() == context) {
-                em.setExploredContextAndSelection(null, nodes);
+                em.setExploredContextAndSelection(em.getRootContext(), nodes);
             } else {
                 em.setExploredContextAndSelection(context, nodes);
             }

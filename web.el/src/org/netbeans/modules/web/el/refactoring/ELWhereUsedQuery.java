@@ -47,12 +47,15 @@ import com.sun.el.parser.AstPropertySuffix;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import com.sun.source.tree.Tree.Kind;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -63,7 +66,11 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -77,6 +84,7 @@ import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -86,8 +94,9 @@ import org.openide.util.Lookup;
  */
 public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
-    private CompilationInfo info;
-    private ELTypeUtilities typeUtilities;
+    private static final Logger LOGGER = Logger.getLogger(ELWhereUsedQuery.class.getName());
+    protected CompilationInfo info;
+    protected ELTypeUtilities typeUtilities;
 
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
@@ -101,8 +110,12 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         }
         this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
         this.typeUtilities = ELTypeUtilities.create(info);
-        Element element = handle.resolveElement(info);
-        if (Kind.METHOD == handle.getKind()) {
+        Element element = resolveElement(handle);
+        if (element == null) {
+            LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
+            return null;
+        }
+        if (Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind()) {
             return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
         }
         if (Kind.CLASS == handle.getKind()) {
@@ -111,6 +124,24 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return null;
     }
 
+    private Element resolveElement(final TreePathHandle handle) {
+        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
+        final Element[] result = new Element[1];
+        try {
+            source.runUserActionTask(new Task<CompilationController>() {
+                @Override
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.RESOLVED);
+                    result[0] = handle.resolveElement(info);
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result[0];
+    }
+    
     protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
         TypeElement type = (TypeElement) targetType;
         String clazz = type.getQualifiedName().toString();
@@ -119,11 +150,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             ELIndex index = ELIndex.get(handle.getFileObject());
             Collection<? extends IndexResult> result = index.findIdentifierReferences(beanName);
             for (ELElement elem : getMatchingElements(result)) {
-                for (Node identifier : findMatchingIdentifierNodes(elem.getNode(), beanName)) {
-                    WhereUsedQueryElement wuqe =
-                            new WhereUsedQueryElement(elem.getParserResult().getFileObject(), beanName, elem, identifier, getParserResult(elem.getParserResult().getFileObject()));
-                    refactoringElementsBag.add(refactoring, wuqe);
-                }
+                addElements(elem, findMatchingIdentifierNodes(elem.getNode(), beanName), refactoringElementsBag);
             }
         }
         return null;
@@ -219,7 +246,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                         if (enclosing == null) {
                             break;
                         }
-                        if (info.getTypes().isSameType(targetType, enclosing) && ELTypeUtilities.isSameMethod(child, targetMethod)) {
+                        if (info.getTypes().isSameType(targetType, enclosing) && typeUtilities.isSameMethod(child, targetMethod)) {
                             TypeMirror matching = getTypeForProperty(child, enclosing);
                             if (matching != null) {
                                 result.add(child);
@@ -316,7 +343,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             ExecutableElement methodElem = (ExecutableElement) each;
             String methodName = methodElem.getSimpleName().toString();
 
-            if (ELTypeUtilities.isSameMethod(property, methodElem)) {
+            if (typeUtilities.isSameMethod(property, methodElem)) {
                 return typeUtilities.getReturnType(methodElem);
 
             } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
@@ -338,7 +365,9 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             String expression = ir.getValue(Fields.EXPRESSION);
             for (ELElement element : parserResultHolder.parserResult.getElements()) {
                 if (expression.equals(element.getExpression())) {
-                    result.add(element);
+                    if (!result.contains(element)) {
+                        result.add(element);
+                    }
                 }
             }
         }
