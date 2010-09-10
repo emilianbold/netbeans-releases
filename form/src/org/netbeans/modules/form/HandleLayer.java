@@ -2975,8 +2975,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         @Override
         void init() { // can be re-inited
             RADVisualComponent precreated =
-                getComponentCreator().precreateVisualComponent(
-                    paletteItem.getComponentClassSource());
+                getComponentCreator().precreateVisualComponent(paletteItem);
 
             if (precreated != null) {
                 if (movingComponents == null) {
