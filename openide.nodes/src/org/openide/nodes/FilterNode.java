@@ -1659,12 +1659,15 @@ public class FilterNode extends Node {
                 return hold;
             }
 
+            @Override
             public int callGetNodesCount(boolean optimalResult) {
-                Node[] hold = null;
+                int cnt = 0;
                 if (optimalResult) {
-                    hold = original.getChildren().getNodes(optimalResult);
+                    cnt = original.getChildren().getNodesCount(true);
                 }
-                return Children.this.getNodesCount();
+                int ret = Children.this.getNodesCount();
+                LOG.log(Level.FINEST, "Count {1} gives {2}", new Object[]{cnt, ret});
+                return ret;
             }
 
             public Node findChild(String name) {
@@ -1771,8 +1774,9 @@ public class FilterNode extends Node {
                 return hold;
             }
 
+            @Override
             public int callGetNodesCount(boolean optimalResult) {
-                return Children.this.getNodesCount();
+                return original.getChildren().getNodesCount(optimalResult);
             }
 
             public Node findChild(String name) {

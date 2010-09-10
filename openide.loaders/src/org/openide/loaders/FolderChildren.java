@@ -248,6 +248,9 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     private void waitOptimalResult() {
         if (checkChildrenMutex()) {
             err.fine("waitOptimalResult"); // NOI18N
+            if (!isInitialized()) {
+                refreshChildren(RefreshMode.SHALLOW);
+            }
             folder.waitProcessingFinished();
             refTask.waitFinished();
             err.fine("waitOptimalResult: waitProcessingFinished"); // NOI18N
@@ -287,12 +290,8 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             changeListener = WeakListeners.change(this, chF);
             chF.addChangeListener( changeListener );
         }
-        if (Boolean.TRUE.equals(folder.getPrimaryFile().getAttribute("isRemoteAndSlow"))) { // NOI18N
-            // #159628: do not block EQ loading this folder's children.
-            refreshChildren(RefreshMode.SHALLOW);
-        } else {
-            refreshChildren(RefreshMode.SHALLOW_IMMEDIATE);
-        }
+        // #159628: do not block EQ loading this folder's children.
+        refreshChildren(RefreshMode.SHALLOW);
         err.fine("addNotify end");
     }
 
