@@ -51,6 +51,7 @@ import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.modules.glassfish.spi.WSDesc;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -64,7 +65,7 @@ public class Hk2WSNode extends Hk2ItemNode {
     public Hk2WSNode(final Lookup lookup, final WSDesc ws, final Decorator decorator) {
         super(Children.LEAF, lookup, ws.getName(), decorator);
         setDisplayName(ws.getName());
-        setShortDescription("<html>name: " + ws.getName() + "<br>path: " + ws.getWsdlUrl() + "<br>enabled: " + ws.getEnabled() + "</html>");
+        setShortDescription(NbBundle.getMessage(Hk2WSNode.class, "WS_NODE_DESC", ws.getName(), ws.getWsdlUrl())); // "<html>name: " + ws.getName() + "<br>path: " + ws.getWsdlUrl() + "</html>"); // NOI18N
         this.ws = ws;
         this.lu = lookup;
 

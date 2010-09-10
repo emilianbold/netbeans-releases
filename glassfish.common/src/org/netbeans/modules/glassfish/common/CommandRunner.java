@@ -303,29 +303,18 @@ public class CommandRunner extends BasicTask<OperationState> {
      *
      * @return String array of names of deployed applications.
      */
-    public Map<String, List<WSDesc>> getWebServices(String container) {
-        Map<String, List<WSDesc>> result = Collections.emptyMap();
+    public List<WSDesc> getWebServices() {
+        List<WSDesc> result = Collections.emptyList();
         try {
-            Map<String, List<String>> wss = Collections.emptyMap();
-            Commands.ListWebservicesCommand cmd = new Commands.ListWebservicesCommand(container);
+            List<String> wss = Collections.emptyList();
+            Commands.ListWebservicesCommand cmd = new Commands.ListWebservicesCommand();
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
             if (state == OperationState.COMPLETED) {
-                wss = cmd.getWebserviceMap();
-            }
-            ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*");
-            serverCmd = getCmd;
-            task = executor().submit(this);
-            state = task.get();
-            if (state == OperationState.COMPLETED) {
-                ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.server.application-ref.*");
-                serverCmd = getRefs;
-                task = executor().submit(this);
-                state = task.get();
-                if (OperationState.COMPLETED == state) {
-                    result = processWebServices(wss, getCmd.getData(),getRefs.getData());
-                }
+                wss = cmd.getWebserviceList();
+
+                result = processWebServices(wss);
             }
         } catch (InterruptedException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
@@ -335,48 +324,10 @@ public class CommandRunner extends BasicTask<OperationState> {
         return result;
     }
 
-    private Map<String, List<WSDesc>> processWebServices(Map<String, List<String>> wssList, Map<String, String> properties, Map<String, String> refProperties){
-        Map<String, List<WSDesc>> result = new HashMap<String, List<WSDesc>>();
-        Iterator<String> wssItr = wssList.keySet().iterator();
-        while (wssItr.hasNext()) {
-            boolean enabled = false;
-            String engine = wssItr.next();
-            List<String> wss = wssList.get(engine);
-            for (int i = 0; i < wss.size(); i++) {
-                String name = wss.get(i).trim();
-                String wsname = "applications.application." + name; // NOI18N
-                String contextKey = wsname + ".context-root"; // NOI18N
-                String pathKey = wsname + ".location"; // NOI18N
-
-                String contextRoot = properties.get(contextKey);
-                if (contextRoot == null) {
-                    contextRoot = name;
-                }
-                if (contextRoot.startsWith("/")) {  // NOI18N
-                    contextRoot = contextRoot.substring(1);
-                }
-
-                String path = properties.get(pathKey);
-                if (path == null) {
-                    path = "unknown"; //NOI18N
-                }
-                if (path.startsWith("file:")) {  // NOI18N
-                    path = path.substring(5);
-                }
-
-                String enabledKey = "servers.server.server.application-ref."+name+".enabled";
-                String enabledValue = refProperties.get(enabledKey);
-                if (null != enabledValue) {
-                    enabled = Boolean.parseBoolean(enabledValue);
-
-                    List<WSDesc> wsList = result.get(engine);
-                    if(wsList == null) {
-                        wsList = new ArrayList<WSDesc>();
-                        result.put(engine, wsList);
-                    }
-                    wsList.add(new WSDesc(name, path, contextRoot, enabled));
-                }
-            }
+    private List<WSDesc> processWebServices(List<String> wssList){
+        List<WSDesc> result = new  ArrayList<WSDesc>();
+        for (String a : wssList) {
+            result.add(new WSDesc(a, a+"?wsdl", a+"?Tester")); // NOI18N
         }
         return result;
     }

@@ -45,13 +45,11 @@
 package org.netbeans.modules.glassfish.common.nodes;
 
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
-import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.WSDesc;
 import org.openide.nodes.Children;
@@ -78,7 +76,7 @@ public class Hk2WSChildren extends Children.Keys<Object> implements Refreshable 
     public void updateKeys(){
         setKeys(new Object[] { WAIT_NODE });
         
-        RequestProcessor t = new RequestProcessor("ws-child-updater");
+        RequestProcessor t = new RequestProcessor("ws-child-updater"); // NOI18N
         t.post(new Runnable() {
             Vector<Object> keys = new Vector<Object>();
             
@@ -89,15 +87,12 @@ public class Hk2WSChildren extends Children.Keys<Object> implements Refreshable 
                     try {
                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                         CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
-                        java.util.Map<String, List<WSDesc>> wsMap = mgr.getWebServices(null);
-                        for(Entry<String, List<WSDesc>> entry: wsMap.entrySet()) {
-                            List<WSDesc> wss = entry.getValue();
-                            for(WSDesc ws: wss) {
-                                keys.add(new Hk2WSNode(lookup, ws, Hk2ItemNode.WS_ENDPOINT)); //DecoratorManager.findDecorator(entry.getKey(), Hk2ItemNode.WS_ENDPOINT, ws.getEnabled())));
-                            }
+                        List<WSDesc> wsList = mgr.getWebServices();
+                        for(WSDesc ws: wsList) {
+                            keys.add(new Hk2WSNode(lookup, ws, Hk2ItemNode.WS_ENDPOINT));
                         }
                     } catch (Exception ex) {
-                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                     }
                     
                     setKeys(keys);

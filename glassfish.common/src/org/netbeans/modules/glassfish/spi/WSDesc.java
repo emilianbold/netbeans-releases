@@ -51,13 +51,11 @@ public class WSDesc {
     private final String testUrl;
     private final String wsdlUrl;
     private final String name;
-    private final boolean enabled;
     
-    public WSDesc(final String name, final String wsdlUrl, final String testUrl, boolean enabled) {
+    public WSDesc(final String name, final String wsdlUrl, final String testUrl) {
         this.name = name;
         this.testUrl = testUrl;
         this.wsdlUrl = wsdlUrl;
-        this.enabled = enabled;
     }
 
     public String getName() {
@@ -72,8 +70,4 @@ public class WSDesc {
         return wsdlUrl;
     }
 
-    public boolean getEnabled() {
-        return enabled;
-    }
-    
 }
