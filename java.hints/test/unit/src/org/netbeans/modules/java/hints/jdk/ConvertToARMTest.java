@@ -149,17 +149,18 @@ public class ConvertToARMTest extends TestBase {
                        "public class Test {" +
                        "     public void test() throws Exception {" +
                        "         System.out.println(\"Start\");" +
-                       "         final InputStream in = null;"+
+                       "         InputStream in = null;"+
                        "         try {"+
                        "            in = new FileInputStream(new File(\"a\"));"+
                        "            in.read();"+
                        "         } finally {"+
-                       "            in.close();"+
+                       "            if (in != null)"+
+                       "                in.close();"+
                        "         }"+
                        "         System.out.println(\"Done\");"+                                              
                        "     }" +
                        "}",
-                       "0:216-0:218:verifier:Convert to Automatic Resource Management",
+                       "0:210-0:212:verifier:Convert to Automatic Resource Management",
                        "FixImpl",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\"); try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }

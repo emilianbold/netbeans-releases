@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -162,6 +163,7 @@ public class ConvertToARM {
                         ctx.getPath(),
                         nestingKind,
                         varVar,
+                        vars.get("$init"),              //NOI18N
                         multiVars.get("$armres$"),      //NOI18N
                         multiVars.get("$stms$"),        //NOI18N
                         multiVars.get("$catches$"),     //NOI18N
@@ -175,10 +177,11 @@ public class ConvertToARM {
     private static final class ConvertToARMFix extends JavaFix {
         
         private final NestingKind nestingKind;
+        private final TreePath init;
+        private final TreePath var;
         private final Collection<? extends TreePath> armPaths;
         private final Collection<? extends TreePath> statementsPaths;
         private final Collection<? extends TreePath> catchesPaths;
-        private final TreePath var;
         private final Collection<? extends TreePath> finStatementsPath;
         
         private ConvertToARMFix(
@@ -186,16 +189,18 @@ public class ConvertToARM {
                 final TreePath owner,
                 final NestingKind nestignKind,
                 final TreePath var,
+                final TreePath init,
                 final Collection<? extends TreePath> armPaths,
                 final Collection<? extends TreePath> statements,
                 final Collection<? extends TreePath> catches,
                 final Collection<? extends TreePath> finStatementsPath) {
             super(info, owner);
             this.nestingKind = nestignKind;
+            this.var = var;
+            this.init = init;
             this.armPaths = armPaths;
             this.statementsPaths = statements;
             this.catchesPaths = catches;
-            this.var = var;
             this.finStatementsPath = finStatementsPath;
         }
 
@@ -213,7 +218,9 @@ public class ConvertToARM {
             if (nestingKind == NestingKind.NONE) {
                 final List<? extends StatementTree> statements = ConvertToARMFix.<StatementTree>asList(statementsPaths);
                 final BlockTree block = tm.Block(statements, false);
-                final VariableTree varTree = removeFinal(wc, (VariableTree)var.getLeaf());                
+                final VariableTree varTree = addInit(wc,
+                        removeFinal(wc, (VariableTree)var.getLeaf()),
+                        (ExpressionTree)init.getLeaf());
                 final TryTree tryTree = tm.Try(
                         Collections.singletonList(varTree),
                         block,
@@ -227,7 +234,9 @@ public class ConvertToARM {
                         statements));
             } else if (nestingKind == NestingKind.OUT) {                
                 final List<Tree> arm = new ArrayList<Tree>();                
-                arm.add(removeFinal(wc, (VariableTree)var.getLeaf()));
+                arm.add(addInit(wc,
+                        removeFinal(wc, (VariableTree)var.getLeaf()),
+                        (ExpressionTree)init.getLeaf()));
                 arm.addAll(removeFinal(wc, ConvertToARMFix.<Tree>asList(armPaths)));
                 final TryTree oldTry = findNestedARM(
                         ((BlockTree)tp.getLeaf()).getStatements(),
@@ -322,6 +331,20 @@ public class ConvertToARM {
             result.add(vt.getKind() == Kind.VARIABLE ? removeFinal(wc, (VariableTree)vt) : vt);
         }
         return result;
+    }
+    
+    private static VariableTree addInit (
+            final WorkingCopy wc,
+            final VariableTree var,
+            final ExpressionTree init) {
+        final ExpressionTree currentInit = var.getInitializer();
+        if (currentInit.getKind() == Kind.NULL_LITERAL) {
+            final VariableTree newVar = wc.getTreeMaker().Variable(var.getModifiers(), var.getName(), var.getType(), init);
+            wc.rewrite(var, newVar);
+            return newVar;
+        } else {
+            return var;
+        }
     }
     
     private static TryTree findNestedARM(
