@@ -62,6 +62,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
@@ -73,6 +74,7 @@ import org.openide.util.WeakListeners;
 *
 * @author   Jan Jancura
 */
+@ActionsProvider.Registration(actions="stepInto")
 public class StepIntoActionProvider extends ActionsProviderSupport {
 
 //    private MethodBreakpoint breakpoint;
