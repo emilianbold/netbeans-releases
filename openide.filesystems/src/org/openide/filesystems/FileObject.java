@@ -883,6 +883,53 @@ public abstract class FileObject extends Object implements Serializable {
     public FileObject createData(String name) throws IOException {
         return createData(name, ""); // NOI18N        
     }
+    
+    /** 
+     * Creates new file in this folder and immediately opens it for writing.
+     * This method prevents possible race condition which can happen
+     * when using the {@link #createData(java.lang.String)} method.  
+     * Using {@link #createData(java.lang.String) that method} makes it
+     * possible for someone to read the content of the newly created
+     * file before its content is written. This method does its best to eliminate
+     * such race condition.
+     * 
+     * <p class="nonnormative">
+     * This method usually delivers both, {@link FileChangeListener#fileDataCreated(org.openide.filesystems.FileEvent) data created}
+     * and {@link FileChangeListener#fileChanged(org.openide.filesystems.FileEvent) changed} 
+     * events. Preferably it delivers them asynchronously. The assumption
+     * is that the file will be (at least partially) written before
+     * the listeners start to process the first event. The safety is additionally
+     * ensured by <q>mutual exclusion</q> between output and input streams 
+     * for the same file (any call to {@link #getInputStream()} will be blocked
+     * for at least two seconds if there is existing open output stream). 
+     * If you finish writing the content of your file in those two seconds,
+     * you can be sure, nobody will have read its content yet.
+     * </p>
+     * 
+     * @param name name of file to create with its extension
+     * @return output stream to use to write content of the file
+     * @throws IOException if the file cannot be created (e.g. already exists), or if <code>this</code> is not a folder
+     * @since 7.41
+     */
+    public OutputStream createAndOpen(final String name) throws IOException {
+        class R implements FileSystem.AsyncAtomicAction {
+            OutputStream os;
+            
+            @Override
+            public void run() throws IOException {
+                FileObject fo = createData(name);
+                os = fo.getOutputStream();
+            }
+
+            @Override
+            public boolean isAsynchronous() {
+                return true;
+            }
+        }
+        R r = new R();
+        getFileSystem().runAtomicAction(r);
+        return r.os;
+    }
 
     /** Test whether this file can be written to or not.
      * <P>

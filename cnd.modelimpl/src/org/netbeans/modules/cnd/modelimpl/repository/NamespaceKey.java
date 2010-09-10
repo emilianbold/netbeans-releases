@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /*package*/
@@ -60,9 +61,15 @@ class NamespaceKey extends ProjectNameBasedKey {
     private final CharSequence fqn;
     private final int hashCode; // cashed hash code
 
-    public NamespaceKey(CsmNamespace ns) {
+    NamespaceKey(CsmNamespace ns) {
         super(getProjectName(ns));
         this.fqn = ns.getQualifiedName();
+        hashCode = _hashCode();
+    }
+
+    NamespaceKey(KeyDataPresentation presentation) {
+        super(presentation);
+        fqn = presentation.getNamePresentation();
         hashCode = _hashCode();
     }
 
@@ -148,5 +155,15 @@ class NamespaceKey extends ProjectNameBasedKey {
     @Override
     public boolean hasCache() {
         return true;
+    }
+
+    @Override
+    public short getKindPresentation() {
+        return KeyObjectFactory.KEY_NAMESPACE_KEY;
+    }
+
+    @Override
+    public final CharSequence getNamePresentation() {
+        return fqn;
     }
 }

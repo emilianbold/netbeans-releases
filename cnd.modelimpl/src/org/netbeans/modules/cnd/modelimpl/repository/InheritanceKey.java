@@ -48,6 +48,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
@@ -57,12 +58,16 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 /*package*/
 final class InheritanceKey extends OffsetableKey {
 
-    public InheritanceKey(CsmInheritance obj) {
+    InheritanceKey(CsmInheritance obj) {
         super(obj, Utils.getCsmInheritanceKindKey(obj), obj.getAncestorType().getClassifierText()); // NOI18N
     }
 
     /*package*/ InheritanceKey(DataInput aStream) throws IOException {
         super(aStream);
+    }
+
+    InheritanceKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
 
     @Override
@@ -91,4 +96,5 @@ final class InheritanceKey extends OffsetableKey {
             return super.getSecondaryAt(level - 1);
         }
     }
+
 }

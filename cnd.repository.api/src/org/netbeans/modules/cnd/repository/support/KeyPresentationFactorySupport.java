@@ -40,12 +40,71 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.cnd.repository.support;
+
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.netbeans.modules.cnd.repository.spi.KeyPresentationFactory;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public interface KeyFactory {
-    Key create(KeyDataPresentation presentation);
+public final class KeyPresentationFactorySupport {
+    private static KeyPresentationFactory defaultFactory = Lookup.getDefault().lookup(KeyPresentationFactory.class);
+
+    private KeyPresentationFactorySupport() {
+    }
+
+    public static KeyPresentationFactory getDefaultFactory() {
+        return defaultFactory;
+    }
+
+    public static final class KeyDataPresentationImpl implements KeyDataPresentation {
+        private short unit;
+        private short kind;
+        private CharSequence name;
+        private int file;
+        private int start;
+        private int end;
+
+        public KeyDataPresentationImpl(short unit, short kind, CharSequence name, int file, int start, int end) {
+            this.unit = unit;
+            this.kind = kind;
+            this.name = name;
+            this.file = file;
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        public short getUnitPresentation() {
+            return unit;
+        }
+
+        @Override
+        public short getKindPresentation() {
+            return kind;
+        }
+
+        @Override
+        public CharSequence getNamePresentation() {
+            return name;
+        }
+
+        @Override
+        public int getFilePresentation() {
+            return file;
+        }
+
+        @Override
+        public int getStartPresentation() {
+            return start;
+        }
+
+        @Override
+        public int getEndPresentation() {
+            return end;
+        }
+    }
 }
