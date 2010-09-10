@@ -226,6 +226,11 @@ public class FileEvent extends EventObject {
             if (atomicAction != null && atomicAction.getClass().getName().indexOf("AsyncRefreshAtomicAction") != -1) {
                 return true;
             }
+            if (atomicAction instanceof FileSystem.AsyncAtomicAction) {
+                if (((FileSystem.AsyncAtomicAction)atomicAction).isAsynchronous()) {
+                    return true;
+                }
+            }
             currentPropID = currentPropID.getPreviousLink();
         }
 
