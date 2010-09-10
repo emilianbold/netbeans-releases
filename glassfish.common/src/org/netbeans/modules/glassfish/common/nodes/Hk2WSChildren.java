@@ -45,14 +45,13 @@
 package org.netbeans.modules.glassfish.common.nodes;
 
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
-import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.WSDesc;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -64,12 +63,12 @@ import org.openide.util.RequestProcessor;
  * @author Ludovic Champenois
  * @author Peter Williams
  */
-public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Refreshable {
+public class Hk2WSChildren extends Children.Keys<Object> implements Refreshable {
     
     private Lookup lookup;
     private final static Node WAIT_NODE = Hk2ItemNode.createWaitNode();
     
-    Hk2ApplicationsChildren(Lookup lookup) {
+    Hk2WSChildren(Lookup lookup) {
         this.lookup = lookup;
     }
 
@@ -77,7 +76,7 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
     public void updateKeys(){
         setKeys(new Object[] { WAIT_NODE });
         
-        RequestProcessor t = new RequestProcessor("app-child-updater");
+        RequestProcessor t = new RequestProcessor("ws-child-updater"); // NOI18N
         t.post(new Runnable() {
             Vector<Object> keys = new Vector<Object>();
             
@@ -88,15 +87,12 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                     try {
                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                         CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
-                        java.util.Map<String, List<AppDesc>> appMap = mgr.getApplications(null);
-                        for(Entry<String, List<AppDesc>> entry: appMap.entrySet()) {
-                            List<AppDesc> apps = entry.getValue();
-                            for(AppDesc app: apps) {
-                                keys.add(new Hk2ApplicationNode(lookup, app, DecoratorManager.findDecorator(entry.getKey(), Hk2ItemNode.J2EE_APPLICATION, app.getEnabled())));
-                            }
+                        List<WSDesc> wsList = mgr.getWebServices();
+                        for(WSDesc ws: wsList) {
+                            keys.add(new Hk2WSNode(lookup, ws, Hk2ItemNode.WS_ENDPOINT));
                         }
                     } catch (Exception ex) {
-                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                     }
                     
                     setKeys(keys);

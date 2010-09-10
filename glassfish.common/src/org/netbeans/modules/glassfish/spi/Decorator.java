@@ -156,4 +156,22 @@ public abstract class Decorator {
         return false;
     }
 
+    /**
+     * Can this node be tested?
+     *
+     * @return true if test is supported.
+     */
+    public boolean canTest() {
+        return false;
+    }
+
+    /**
+     * Can this node be copied?
+     *
+     * @return true if copy is supported.
+     */
+    public boolean canCopy() {
+        return false;
+    }
+
 }
