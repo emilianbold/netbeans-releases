@@ -46,6 +46,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
@@ -62,8 +63,8 @@ public final class FileDeclarationsKey extends ProjectFileNameBasedKey {
 	super(aStream);
     }
 
-    /*package-local*/ CharSequence getName() {
-        return getFileName();
+    FileDeclarationsKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
 
     @Override
@@ -95,6 +96,11 @@ public final class FileDeclarationsKey extends ProjectFileNameBasedKey {
     @Override
     public boolean hasCache() {
         return true;
+    }
+
+    @Override
+    public final short getKindPresentation() {
+	return KeyObjectFactory.KEY_FILE_DECLARATIONS_KEY;
     }
 }
 

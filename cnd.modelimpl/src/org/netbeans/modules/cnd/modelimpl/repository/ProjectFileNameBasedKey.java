@@ -48,6 +48,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.openide.util.CharSequences;
 
 /**
@@ -69,6 +70,11 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
 
     protected ProjectFileNameBasedKey(FileImpl file) {
         this(getProjectName(file), file.getAbsolutePath());
+    }
+
+    protected ProjectFileNameBasedKey(KeyDataPresentation presentation) {
+        super(presentation);
+        fileNameIndex = presentation.getFilePresentation();
     }
 
     protected static CharSequence getProjectName(FileImpl file) {
@@ -110,11 +116,6 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
         return fileNameIndex;
     }
 
-    @Override
-    public final int getFilePresentation() {
-        return fileNameIndex;
-    }
-   
     protected CharSequence getFileName() {
         return KeyUtilities.getFileNameById(getUnitId(), this.fileNameIndex);
     }
@@ -134,5 +135,10 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     public CharSequence getAt(int level) {
         assert super.getDepth() == 0 && level < getDepth();
         return getFileName();
+    }
+
+    @Override
+    public final int getFilePresentation() {
+        return fileNameIndex;
     }
 }

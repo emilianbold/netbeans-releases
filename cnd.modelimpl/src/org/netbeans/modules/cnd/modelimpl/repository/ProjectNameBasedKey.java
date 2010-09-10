@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 
 /**
  * A common ancestor for nearly all keys 
@@ -59,6 +60,10 @@ abstract class ProjectNameBasedKey extends AbstractKey {
     protected ProjectNameBasedKey(CharSequence project) {
         assert project != null;
         this.unitIndex = (short)KeyUtilities.getUnitId(project);
+    }
+
+    protected ProjectNameBasedKey(KeyDataPresentation presentation) {
+        unitIndex = presentation.getUnitPresentation();
     }
 
     @Override
@@ -76,11 +81,6 @@ abstract class ProjectNameBasedKey extends AbstractKey {
         return unitIndex;
     }
 
-    @Override
-    public final short getUnitPresentation() {
-        return unitIndex;
-    }
-    
     @Override
     public boolean equals(Object obj) {
         if (!super.equals(obj)) {
@@ -118,5 +118,10 @@ abstract class ProjectNameBasedKey extends AbstractKey {
     public CharSequence getUnit() {
         // having this functionality here to be sure unit is the same thing as project
         return KeyUtilities.getUnitName(this.unitIndex);
+    }
+
+    @Override
+    public final short getUnitPresentation() {
+        return unitIndex;
     }
 }
