@@ -1135,6 +1135,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         TryTree at = (TryTree) p.getLeaf();
 
+        if (!checkLists(node.getResources(), at.getResources(), p)) {
+            return false;
+        }
+        
         if (!scan(node.getBlock(), at.getBlock(), p)) {
             return false;
         }

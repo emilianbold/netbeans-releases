@@ -1092,12 +1092,20 @@ public class CasualDiff {
                 copyTo(localPointer, pos);
                 boolean parens = oldT.resources.isEmpty() || newT.resources.isEmpty();
                 int oldPrec = printer.setPrec(TreeInfo.noPrec);
-                if (newT.resources.nonEmpty()) printer.oldTrees.remove(newT.resources.last());  //Remove the last stm (should not have ;) from oldTrees to force it to be reprinted by VeryPretty
+                if (newT.resources.nonEmpty()) {
+                    //Remove all stms from oldTrees to force it to be reprinted by VeryPretty
+                    com.sun.tools.javac.util.List<JCTree> l = newT.resources;
+                    for (Tree t = l.head; t!= null; l = l.tail, t = l.head) {
+                        printer.oldTrees.remove(t);
+                    }
+                }  
                 localPointer = diffParameterList(oldT.resources,
                         newT.resources,
                         parens ? new JavaTokenId[] { JavaTokenId.LPAREN, JavaTokenId.RPAREN } : null,
                         pos,
-                        Measure.ARGUMENT
+                        Measure.ARGUMENT,
+                        false,
+                        ";" //NOI18N
                 );
                 printer.setPrec(oldPrec);
                 if (parens && oldT.resources.isEmpty()) {
@@ -1845,7 +1853,7 @@ public class CasualDiff {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
             if (oldT.isEnum()) {
-                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT, true);
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT, true, ",");  //NOI18N
                 copyTo(pos, bounds[1]);
                 return bounds[1];
             } else {
@@ -2208,7 +2216,7 @@ public class CasualDiff {
             int pos,
             Comparator<JCTree> measure)
     {
-        return diffParameterList(oldList, newList, makeAround, pos, measure, false);
+        return diffParameterList(oldList, newList, makeAround, pos, measure, false, ",");   //NOI18N
     }
     private int diffParameterList(
             List<? extends JCTree> oldList,
@@ -2216,7 +2224,8 @@ public class CasualDiff {
             JavaTokenId[] makeAround,
             int pos,
             Comparator<JCTree> measure,
-            boolean isEnum)
+            boolean isEnum,
+            String separator)
     {
         assert oldList != null && newList != null;
         if (oldList == newList || oldList.equals(newList))
@@ -2317,7 +2326,7 @@ public class CasualDiff {
                     break;
             }
             if (commaNeeded(result, item)) {
-                printer.print(",");
+                printer.print(separator);
                 wasComma = true;
             } else {
                 if (item.operation != Operation.DELETE) {
