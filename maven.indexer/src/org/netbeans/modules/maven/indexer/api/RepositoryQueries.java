@@ -280,7 +280,9 @@ public final class RepositoryQueries {
                 if (impl != null) {
                     ClassesQuery chq = impl.getCapabilityLookup().lookup(ClassesQuery.class);
                     if (chq != null) {
-                        query.addResults(chq.findVersionsByClass(query.getClassName(), rps), !it1.hasNext() && !it.hasNext());
+                        List<RepositoryInfo> repositoryInfoL = new ArrayList<RepositoryInfo>(1);
+                        repositoryInfoL.add(repositoryInfo);
+                        query.addResults(chq.findVersionsByClass(query.getClassName(), repositoryInfoL), !it1.hasNext() && !it.hasNext());
                     } else {
                         query.addResults(null, !it1.hasNext() && !it.hasNext());
                     }

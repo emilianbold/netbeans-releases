@@ -163,13 +163,14 @@ public class DeleteTest extends JellyTestCase {
             TestKit.removeHandlers(log);
             log.addHandler(mh);
 
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            node = new SourcePackagesNode(PROJECT_NAME);
             RevertModificationsOperator rmo = RevertModificationsOperator.invoke(node);
             rmo.rbLocalChanges().push();
             rmo.revert();
             TestKit.waitText(mh);
             
             e = null;
+            // XXX: the following fails...
             Thread.sleep(1000);
             try {
                 vo = VersioningOperator.invoke();
@@ -268,9 +269,9 @@ public class DeleteTest extends JellyTestCase {
             TestKit.removeHandlers(log);
             log.addHandler(mh);
 
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            node = new SourcePackagesNode(PROJECT_NAME);
             CommitOperator cmo = CommitOperator.invoke(node);
-            assertEquals("There should be \"Main.java\" file in Commit dialog!!!", cmo.tabFiles().getValueAt(0, 0), "Main.java");
+            assertEquals("There should be \"Main.java\" file in Commit dialog!!!", "Main.java", cmo.tabFiles().getValueAt(1, 1));
             cmo.commit();
 
             TestKit.waitText(mh);

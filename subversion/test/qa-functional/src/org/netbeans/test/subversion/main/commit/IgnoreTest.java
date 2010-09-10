@@ -353,7 +353,7 @@ public class IgnoreTest extends JellyTestCase {
             node.performPopupAction("Subversion|Ignore");
 
             TestKit.waitText(mh);
-            Thread.sleep(2000);
+            Thread.sleep(5000);
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node2 = new Node(new SourcePackagesNode(PROJECT_NAME), "xx|NewClass");
@@ -373,7 +373,7 @@ public class IgnoreTest extends JellyTestCase {
 
             TestKit.waitText(mh);
 
-            Thread.sleep(2000);
+            Thread.sleep(5000);
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             node2 = new Node(new SourcePackagesNode(PROJECT_NAME), "xx|NewClass");
             nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
