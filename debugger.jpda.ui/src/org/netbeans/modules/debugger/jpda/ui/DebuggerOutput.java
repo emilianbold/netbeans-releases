@@ -84,6 +84,7 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
+@LazyActionsManagerListener.Registration(path="netbeans-JPDASession/Java")
 public class DebuggerOutput extends LazyActionsManagerListener implements
 PropertyChangeListener {
 

@@ -75,6 +75,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -84,6 +85,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ThreadsView", types=TreeModel.class)
 public class ThreadsTreeModel implements TreeModel {
 
     private static boolean verbose = 

@@ -51,12 +51,14 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.ThreadsCollectorImpl;
+import org.netbeans.spi.debugger.ActionsProvider;
 
 
 /**
  *
  * @author  Jan Jancura
  */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"continue"})
 public class ContinueActionProvider extends JPDADebuggerActionProvider {
     
     private ThreadsCollectorImpl threadsCollector;

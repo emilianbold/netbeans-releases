@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -59,6 +60,9 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.datatransfer.PasteType;
 
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                             types=ExtendedNodeModelFilter.class,
+                             position=280)
 public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
 
     private final Collection<ModelListener> listeners = new HashSet<ModelListener>();

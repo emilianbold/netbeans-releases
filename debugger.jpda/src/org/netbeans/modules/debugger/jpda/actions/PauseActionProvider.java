@@ -52,6 +52,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.ThreadsCollectorImpl;
+import org.netbeans.spi.debugger.ActionsProvider;
 
 
 /**
@@ -60,6 +61,7 @@ import org.netbeans.modules.debugger.jpda.ThreadsCollectorImpl;
 * @author   Jan Jancura
 * @author  Marian Petras
 */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"pause"})
 public class PauseActionProvider extends JPDADebuggerActionProvider {
     
     private ThreadsCollectorImpl threadsCollector;

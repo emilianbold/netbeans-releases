@@ -69,6 +69,8 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -93,6 +95,32 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types={ TreeModelFilter.class,
+                                         ExtendedNodeModelFilter.class,
+                                         TableModelFilter.class,
+                                         NodeActionsProviderFilter.class },
+                                 position=400),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types={ TreeModelFilter.class,
+                                         ExtendedNodeModelFilter.class,
+                                         TableModelFilter.class,
+                                         NodeActionsProviderFilter.class },
+                                 position=400),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types={ TreeModelFilter.class,
+                                         ExtendedNodeModelFilter.class,
+                                         TableModelFilter.class,
+                                         NodeActionsProviderFilter.class },
+                                 position=400),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types={ TreeModelFilter.class,
+                                         ExtendedNodeModelFilter.class,
+                                         TableModelFilter.class,
+                                         NodeActionsProviderFilter.class },
+                                 position=400)
+})
 public class VariablesTreeModelFilter implements TreeModelFilter, 
 ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     

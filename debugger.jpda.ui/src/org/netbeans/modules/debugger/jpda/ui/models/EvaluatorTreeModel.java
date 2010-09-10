@@ -52,6 +52,7 @@ import java.util.HashSet;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -62,6 +63,9 @@ import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                             types=NodeActionsProviderFilter.class,
+                             position=12000)
 public class EvaluatorTreeModel extends CachedChildrenTreeModel implements NodeActionsProviderFilter {
 
     public static final String HISTORY_NODE =

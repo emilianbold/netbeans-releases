@@ -46,11 +46,15 @@ package org.netbeans.modules.debugger.jpda.actions;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
@@ -67,6 +71,7 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.MethodChooser;
 
@@ -78,6 +83,7 @@ import org.netbeans.spi.debugger.ui.MethodChooser;
  *
  * @author  Jan Jancura
  */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"stepInto"})
 public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     
     public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
@@ -86,6 +92,9 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     private StepIntoNextMethod stepInto;
     private MethodChooser currentMethodChooser;
 
+    static final Map<ContextProvider, Reference<StepIntoActionProvider>> instanceByContext
+            = new WeakHashMap<ContextProvider, Reference<StepIntoActionProvider>>();
+
     public StepIntoActionProvider (ContextProvider contextProvider) {
         super (
             (JPDADebuggerImpl) contextProvider.lookupFirst 
@@ -93,6 +102,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         );
         stepInto = new StepIntoNextMethod(contextProvider);
         setProviderToDisableOnLazyAction(this);
+        instanceByContext.put(contextProvider, new WeakReference(this));
     }
 
 

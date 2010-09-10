@@ -83,6 +83,8 @@ import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -90,6 +92,14 @@ import org.openide.util.WeakListeners;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types={TreeModel.class},
+                                 position=11000),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types={TreeModel.class},
+                                 position=11000)
+})
 public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
 
 

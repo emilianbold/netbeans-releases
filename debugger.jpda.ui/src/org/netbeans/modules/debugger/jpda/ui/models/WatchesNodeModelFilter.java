@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -72,6 +73,7 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView", types=ExtendedNodeModelFilter.class, position=300)
 public class WatchesNodeModelFilter extends VariablesNodeModel implements ExtendedNodeModelFilter {
 
     public static final String WATCH =

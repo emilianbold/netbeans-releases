@@ -77,6 +77,7 @@ import org.openide.util.Exceptions;
 *
 * @author   Jan Jancura
 */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"start"})
 public class StartActionProvider extends ActionsProvider implements Cancellable {
 //    private static transient String []        stopMethodNames = 
 //        {"main", "start", "init", "<init>"}; // NOI18N

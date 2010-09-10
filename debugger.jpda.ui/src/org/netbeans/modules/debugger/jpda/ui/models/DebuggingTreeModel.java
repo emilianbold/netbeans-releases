@@ -71,7 +71,10 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -87,6 +90,9 @@ import org.openide.util.WeakListeners;
  *
  * @author martin
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                             types={TreeModel.class, AsynchronousModelFilter.class},
+                             position=10000)
 public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
     public static final String SORT_ALPHABET = "sort.alphabet";
@@ -621,6 +627,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
      * Defines model for one table view column. Can be used together with 
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
      */
+    @ColumnModelRegistration(path="netbeans-JPDASession/DebuggingView", position=100)
     public static class DefaultDebuggingColumn extends AbstractColumn {
 
         /**
@@ -667,6 +674,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
      * Defines model for one table view column. Can be used together with 
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
      */
+    @ColumnModelRegistration(path="netbeans-JPDASession/DebuggingView", position=200)
     public static class DebuggingSuspendColumn extends AbstractColumn {
 
         /**

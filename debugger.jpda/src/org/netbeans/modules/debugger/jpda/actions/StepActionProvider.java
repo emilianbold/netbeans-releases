@@ -110,9 +110,10 @@ import org.openide.util.Exceptions;
  *
  * @author  Jan Jancura
  */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"stepOver", "stepOut"})
 public class StepActionProvider extends JPDADebuggerActionProvider 
 implements Executor {
-    
+
     private StepRequest             stepRequest;
     private ContextProvider         lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
@@ -555,11 +556,7 @@ implements Executor {
     
     private StepIntoActionProvider getStepIntoActionProvider () {
         if (stepIntoActionProvider == null) {
-            List l = lookupProvider.lookup (null, ActionsProvider.class);
-            int i, k = l.size ();
-            for (i = 0; i < k; i++)
-                if (l.get (i) instanceof StepIntoActionProvider)
-                    stepIntoActionProvider = (StepIntoActionProvider) l.get (i);
+            stepIntoActionProvider = StepIntoActionProvider.instanceByContext.get(lookupProvider).get();
         }
         return stepIntoActionProvider;
     }

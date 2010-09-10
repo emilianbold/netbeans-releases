@@ -54,6 +54,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.openide.util.RequestProcessor;
 
 
@@ -62,6 +63,7 @@ import org.openide.util.RequestProcessor;
 *
 * @author   Jan Jancura
 */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions="makeCalleeCurrent")
 public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
 
     private RequestProcessor rp;

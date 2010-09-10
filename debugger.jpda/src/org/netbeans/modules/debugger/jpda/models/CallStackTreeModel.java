@@ -62,6 +62,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
@@ -71,6 +72,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Jan Jancura, Martin Entlicher
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/CallStackView", types={TreeModel.class})
 public class CallStackTreeModel implements TreeModel {
 
     private static boolean verbose = 

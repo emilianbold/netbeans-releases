@@ -46,11 +46,15 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.Collection;
 import java.util.HashSet;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                             types=TableModelFilter.class,
+                             position=330)
 public class EvaluatorTableModelFilter implements TableModelFilter {
 
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();

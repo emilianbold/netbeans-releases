@@ -57,6 +57,8 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
@@ -66,6 +68,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.DialogDisplayer;
@@ -78,6 +81,17 @@ import org.openide.util.datatransfer.PasteType;
  * 
  * @author Martin Entlicher
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types={NodeActionsProviderFilter.class, NodeModelFilter.class},
+                                 position=200),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types={NodeActionsProviderFilter.class, NodeModelFilter.class},
+                                 position=200),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types={NodeActionsProviderFilter.class, NodeModelFilter.class},
+                                 position=200)
+})
 public class LabelVarsFilter implements NodeActionsProviderFilter, ExtendedNodeModelFilter {
 
     private final JPDADebuggerImpl debugger;
