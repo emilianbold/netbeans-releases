@@ -129,13 +129,7 @@ public class Deploy extends Task implements Deployment.Logger {
                     getProject().setProperty("jpda.address", address);
                 }
             } catch (Deployment.DeploymentException ex) {
-                if (null != ex.getCause()) {
-                    // send the message and the exception to the ant output
-                    throw new BuildException(ex.getMessage(),ex);
-                } else {
-                    // just send the message to the ant output
-                    throw new BuildException(ex.getMessage());
-                }
+                throw new BuildException(ex.getMessage(),ex);
             } catch (Exception ex) {
                 throw new BuildException(ex);
             }

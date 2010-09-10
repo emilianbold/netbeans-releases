@@ -117,6 +117,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private static final RequestProcessor OBJECT_POLL_RP = new RequestProcessor("ProgressObject Poll", 1);
 
+    private static final Target DWP_TARGET = new WLTarget("myserver"); // NOI18N
+
     static {
         if (DEBUG_JSR88) {
             System.setProperty("weblogic.deployer.debug", "all"); // NOI18N
@@ -482,6 +484,12 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        // FIXME DWP fix this when we find a way how to connect to DWP
+        if (isWebProfile()) {
+            // DWP is single server according to presentation
+            return new Target[] {DWP_TARGET}; // NOI18N
+        }
+
         try {
             // we do this magic because default JSR-88 returns all targets
             // including for example JMSServer which is not very good for

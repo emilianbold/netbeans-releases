@@ -305,6 +305,30 @@ made subject to such option by the copyright holder.
 
             </folder>
 
+        <folder name="SwingFillers">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+
+            <attr name="position" intvalue="450"/>
+            <file name="BoxFillerGlue.palette_item" url="palette/BoxFillerGlue.palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="BoxFillerHorizontalGlue.palette_item" url="palette/BoxFillerHorizontalGlue.palette_item">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="BoxFillerHorizontalStrut.palette_item" url="palette/BoxFillerHorizontalStrut.palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="BoxFillerRigidArea.palette_item" url="palette/BoxFillerRigidArea.palette_item">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="BoxFillerVerticalGlue.palette_item" url="palette/BoxFillerVerticalGlue.palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="BoxFillerVerticalStrut.palette_item" url="palette/BoxFillerVerticalStrut.palette_item">
+                <attr name="position" intvalue="600"/>
+            </file>
+        </folder>
+
         <folder name="AWT">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
 

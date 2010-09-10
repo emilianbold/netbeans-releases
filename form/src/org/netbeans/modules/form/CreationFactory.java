@@ -769,6 +769,18 @@ public class CreationFactory {
             }
         );
 
+        // Box.Filler
+        constrParamTypes = new Class[][] {
+            { Dimension.class, Dimension.class, Dimension.class }
+        };
+        constrPropertyNames = new String[][] {
+            { "minimumSize", "preferredSize", "maximumSize" }
+        };
+        defaultConstrParams = new Object[] {new Dimension(), new Dimension(), new Dimension()};
+        registerDescriptor(new CreationDescriptor(
+                javax.swing.Box.Filler.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
+
         // ----------
 
         defaultDescriptorsCreated = true;
