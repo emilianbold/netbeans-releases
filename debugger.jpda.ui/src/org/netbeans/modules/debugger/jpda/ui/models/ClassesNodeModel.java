@@ -49,6 +49,8 @@ import com.sun.jdi.ClassType;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.ReferenceType;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -58,6 +60,7 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ClassesView", types=NodeModel.class)
 public class ClassesNodeModel implements NodeModel {
 
     private static final String CLASS =
@@ -192,6 +195,7 @@ public class ClassesNodeModel implements NodeModel {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
      * representation.
      */
+    @ColumnModelRegistration(path="netbeans-JPDASession/ClassesView")
     public static class DefaultClassesColumn extends 
     SourcesModel.AbstractColumn {
 

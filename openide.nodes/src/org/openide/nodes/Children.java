@@ -58,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -310,6 +311,19 @@ public abstract class Children extends Object {
         if (factory == null) throw new NullPointerException ("Null factory");
         return asynchronous ? new AsynchChildren <T> (factory) : 
             new SynchChildren <T> (factory);
+    }
+
+    /**
+     * Create a lazy children implementation.
+     * @param factory The {@link Callable} whose <code>call()</code> method
+     * is called just when node's children are really needed.
+     * @return Provides lazy children implementation that can be passed
+     * to {@link Node} constructor and thus allows the client code to decide
+     * what children the node should have when {@link Callable#call()} is called.
+     * @since 7.18
+     */
+    public static Children createLazy(Callable<Children> factory) {
+        return new LazyChildren(factory);
     }
 
     /** Get the parent node of these children.
@@ -1791,6 +1805,64 @@ public abstract class Children extends Object {
 
             return false;
         }
+    }
+
+    /**
+     * Lazy children implementation
+     */
+    static class LazyChildren extends Children {
+
+        private Callable<Children> factory;
+        private Children original;
+        private final Object originalLock= new Object();
+
+        LazyChildren(Callable<Children> factory) {
+            this.factory = factory;
+        }
+
+        Children getOriginal() {
+            synchronized (originalLock) {
+                if (original == null) {
+                    try {
+                        original = factory.call();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                return original;
+            }
+        }
+
+        @Override
+        public boolean add(Node[] nodes) {
+            return getOriginal().add(nodes);
+        }
+
+        @Override
+        public boolean remove(Node[] nodes) {
+            return getOriginal().remove(nodes);
+        }
+
+        @Override
+        protected void addNotify() {
+            getOriginal().addNotify();
+        }
+
+        @Override
+        protected void removeNotify() {
+            getOriginal().removeNotify();
+        }
+
+        @Override
+        EntrySupport entrySupport() {
+            return getOriginal().entrySupport();
+        }
+
+        @Override
+        public Node findChild(String name) {
+            return getOriginal().findChild(name);
+        }
+        
     }
 
     /*

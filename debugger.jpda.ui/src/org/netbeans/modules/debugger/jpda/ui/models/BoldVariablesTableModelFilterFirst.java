@@ -48,6 +48,8 @@ import java.awt.Color;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -61,6 +63,20 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types=TableModelFilter.class,
+                                 position=100),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types=TableModelFilter.class,
+                                 position=100),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types=TableModelFilter.class,
+                                 position=100),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types=TableModelFilter.class,
+                                 position=100)
+})
 public class BoldVariablesTableModelFilterFirst implements TableModelFilter, 
 Constants {
     

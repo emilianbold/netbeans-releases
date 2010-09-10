@@ -61,6 +61,8 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -77,6 +79,20 @@ import org.openide.util.NbPreferences;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types=TableModel.class,
+                                 position=750),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types=TableModel.class,
+                                 position=750),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types=TableModel.class,
+                                 position=750),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types=TableModel.class,
+                                 position=750)
+})
 public class VariablesTableModel implements TableModel, Constants {
     
     private JPDADebugger debugger;

@@ -1066,15 +1066,10 @@ public class FilterNode extends Node {
             }
 
             if (newChildren != null) {
-                final org.openide.nodes.Children set = newChildren;
-                Children.MUTEX.postWriteRequest(
-                    new Runnable() {
-                        public void run() {
-                            setChildren(set);
-                        }
-                    }
-                );
+                setChildren(newChildren);
             }
+        } else {
+            super.updateChildren();
         }
     }
 

@@ -51,6 +51,7 @@ import java.util.Vector;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -63,6 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="SessionsView", types=TableModelFilter.class)
 public class SessionsTableModelFilter implements TableModelFilter, Constants,
 PropertyChangeListener {
     

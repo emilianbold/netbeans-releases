@@ -80,6 +80,7 @@ public class TreeModelHyperNode extends TreeModelNode {
         super(
             model.getMain(),
             model.getColumns(),
+            null,
             createChildren(model, treeModelRoot, object),
             treeModelRoot,
             object

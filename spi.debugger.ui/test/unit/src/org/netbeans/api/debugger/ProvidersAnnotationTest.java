@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.providers.TestExtendedNodeModelFilter;
 import org.netbeans.api.debugger.providers.TestLazyActionsManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestLazyDebuggerManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestMIMETypeSensitiveActionProvider;
+import org.netbeans.api.debugger.providers.TestMultiModelRegistrations;
 import org.netbeans.api.debugger.providers.TestThreeModels;
 import org.netbeans.modules.debugger.ui.models.ColumnModels;
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -203,6 +204,47 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
         assertInstanceOf("Wrong looked up object", list4.get(0), NodeModelFilter.class);
         assertInstanceOf("Wrong looked up object", list4.get(0), ExtendedNodeModelFilter.class);
         assertEquals("One provider instance should be created!", 1, TestExtendedNodeModelFilter.INSTANCES.size());
+        }
+    }
+
+    public void testMultiModelRegistrations() throws Exception {
+        Lookup.MetaInf l = new Lookup.MetaInf("unittest");
+        Object instance;
+        {
+        List<? extends TreeModel> list = l.lookup("annotated1", TreeModel.class);
+        assertEquals("Wrong looked up object", 1, list.size());
+        instance = ((TestMultiModelRegistrations) list.get(0)).INSTANCES.iterator().next();
+        assertEquals("One provider instance should be created!", 1, TestMultiModelRegistrations.INSTANCES.size());
+        List<? extends NodeModel> list2 = l.lookup("annotated1", NodeModel.class);
+        assertEquals("Wrong looked up object", 0, list2.size());
+        List<? extends TableModel> list3 = l.lookup("annotated1", TableModel.class);
+        assertEquals("Wrong looked up object", 0, list3.size());
+        }
+
+        {
+        List<? extends TreeModel> list = l.lookup("annotated2", TreeModel.class);
+        assertEquals("Wrong looked up object", 0, list.size());
+        List<? extends NodeModel> list2 = l.lookup("annotated2", NodeModel.class);
+        assertEquals("Wrong looked up object", 1, list2.size());
+        List<? extends TableModel> list3 = l.lookup("annotated2", TableModel.class);
+        assertEquals("Wrong looked up object", 1, list3.size());
+        list2.get(0);
+        assertEquals("One provider instance should be created!", 1, TestMultiModelRegistrations.INSTANCES.size());
+        list3.get(0);
+        assertEquals("One provider instance should be created!", 1, TestMultiModelRegistrations.INSTANCES.size());
+        }
+
+        {
+        List<? extends TreeModel> list = l.lookup("annotated3", TreeModel.class);
+        assertEquals("Wrong looked up object", 0, list.size());
+        List<? extends NodeModel> list2 = l.lookup("annotated3", NodeModel.class);
+        assertEquals("Wrong looked up object", 1, list2.size());
+        List<? extends TableModel> list3 = l.lookup("annotated3", TableModel.class);
+        assertEquals("Wrong looked up object", 1, list3.size());
+        list2.get(0);
+        assertEquals("One provider instance should be created!", 1, TestMultiModelRegistrations.INSTANCES.size());
+        assertEquals("Wrong instance", instance, list3.get(0));
+        assertEquals("One provider instance should be created!", 1, TestMultiModelRegistrations.INSTANCES.size());
         }
     }
 

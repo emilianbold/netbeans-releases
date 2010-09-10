@@ -50,6 +50,7 @@ import java.util.Set;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.ActionsProvider;
 
 
 /**
@@ -59,6 +60,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  *
  * @author  Jan Jancura
  */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"stepIntoNextMethod"})
 public class StepIntoNextMethodActionProvider extends JPDADebuggerActionProvider {
 
     private StepIntoNextMethod stepInto;

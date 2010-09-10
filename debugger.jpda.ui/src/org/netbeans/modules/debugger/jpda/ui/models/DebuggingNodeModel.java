@@ -79,6 +79,7 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -100,6 +101,9 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author martin
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                             types=ExtendedNodeModel.class,
+                             position=400)
 public class DebuggingNodeModel implements ExtendedNodeModel {
 
     public static final String CURRENT_THREAD =

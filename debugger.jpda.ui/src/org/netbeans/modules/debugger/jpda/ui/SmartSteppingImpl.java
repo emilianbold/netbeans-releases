@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 
+@SmartSteppingCallback.Registration(path="netbeans-JPDASession")
 public class SmartSteppingImpl extends SmartSteppingCallback implements 
 PropertyChangeListener {
     

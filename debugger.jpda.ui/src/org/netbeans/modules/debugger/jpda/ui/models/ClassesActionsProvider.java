@@ -55,6 +55,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -68,6 +69,7 @@ import org.openide.util.actions.Presenter;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ClassesView", types=NodeActionsProvider.class)
 public class ClassesActionsProvider implements NodeActionsProvider {
     
     private static Properties classesProperties = Properties.getDefault().

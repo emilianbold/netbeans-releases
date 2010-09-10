@@ -48,34 +48,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Declarative registration of debugger service provider implementing a set
- * of interfaces.
- * By marking an implementation class with this annotation,
- * you automatically register that implementation for use by debugger.
- * The class must be public and have a public constructor which takes
- * no arguments or takes {@link ContextProvider} as an argument.
- * @since 1.16
+ * Allows registration of multiple {@link DebuggerServiceRegistration} annotations.
+ * @since 1.28
  *
  * @author Martin Entlicher
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})
-public @interface DebuggerServiceRegistration {
-
-    /**
-     * An optional path to register this implementation in.
-     * Usually the session ID, view name, etc.
-     */
-    String path() default "";
-
-    /**
-     * The list of interfaces that this class implements and wish to register for.
-     */
-    Class[] types();
-
-    /**
-     * Position of this service within its path.
-     * @since 1.28
-     */
-    int position() default Integer.MAX_VALUE;
+public @interface DebuggerServiceRegistrations {
+    DebuggerServiceRegistration[] value();
 }
