@@ -44,9 +44,12 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.server;
 
+import javax.swing.event.ChangeListener;
+
 /**
  * This interface should be implemented by projects that can have a target
- * server. It provides means for showing a UI to select valid server.
+ * server. It provides means for showing a UI to select valid server and notify
+ * other parties that server was set.
  */
 public interface ServerStatusProvider2 extends ServerStatusProvider {
 
@@ -56,5 +59,15 @@ public interface ServerStatusProvider2 extends ServerStatusProvider {
      * @return true if a new server was set
      */ 
     boolean selectServer();
+
+    /**
+     * Add listener to be notified if server was changed via calling above method.
+     */
+    void addChangeListener(ChangeListener listener);
+    
+    /**
+     * Remove listener
+     */
+    void removeChangeListener(ChangeListener listener);
     
 }

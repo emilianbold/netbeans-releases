@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -78,6 +79,7 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -113,6 +115,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private boolean sourceSchemaUpdateEnabled;
     private boolean allowUpdateRecreate = true;
 
+    private ChangeListener changeListener = null;
+    private ServerStatusProvider2 serverStatusProvider;
+
     private String[] filterComboTxts = {
         org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),//NOI18N
         org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_NEW"),//NOI18N
@@ -139,16 +144,43 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         changeSupport.addChangeListener(listener);
     }
 
-    public void initialize(Project project, DBSchemaFileList dbschemaFileList, PersistenceGenerator persistenceGen, TableSource tableSource, FileObject targetFolder) {
+    public void initialize(final Project project, DBSchemaFileList dbschemaFileList, PersistenceGenerator persistenceGen, TableSource tableSource, FileObject targetFolder) {
         this.persistenceGen = persistenceGen;
         this.project = project;
 
-        boolean enabled = ProviderUtil.isValidServerInstanceOrNone(project);
+        changeListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                    if (project != null && ProviderUtil.isValidServerInstanceOrNone(project)) {
+                        // stop listening once a server was set
+                        serverStatusProvider.removeChangeListener(changeListener);
+                        if (!Util.isContainerManaged(project)) {
+                            // if selected server does not support DataSource then
+                            // swap the combo to DB Connection selection
+                            datasourceComboBox.setModel(new DefaultComboBoxModel());
+                            initializeWithDbConnections();
+                            // notify user about result of server selection:
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DatabaseTablesPanel.class, "WRN_Server_Does_Not_Support_DS")));
+                        }
+                    }
+            }
+        };
+
+        // if no server is set then listen on the server selection:
+        if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
+            serverStatusProvider = project.getLookup().lookup(ServerStatusProvider2.class);
+            if (serverStatusProvider != null) {
+                serverStatusProvider.addChangeListener(changeListener);
+            }
+        }
+
+
+        boolean serverIsSelected = ProviderUtil.isValidServerInstanceOrNone(project);
         boolean canServerBeSelected = ProviderUtil.canServerBeSelected(project);
 
         {
             boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
-            if ((withDatasources && enabled) || canServerBeSelected) {
+            if ((withDatasources && serverIsSelected) || (canServerBeSelected && !serverIsSelected)) {
                 initializeWithDatasources();
             } else {
                 initializeWithDbConnections();

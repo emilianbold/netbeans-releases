@@ -82,6 +82,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -524,12 +525,21 @@ public final class DatasourceUIHelper {
 
     }
 
+    private static boolean isContainerManaged(Project project) {
+        PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
+        return providerSupplier != null && providerSupplier.supportsDefaultProvider();
+    }
+
     private static void performServerSelection(Project project, J2eeModuleProvider provider, final JComboBox combo) {
         ServerStatusProvider2 serverStatusProvider = project.getLookup().lookup(ServerStatusProvider2.class);
         if (serverStatusProvider.selectServer()) {
             provider = project.getLookup().lookup(J2eeModuleProvider.class);
-            final List<Datasource> datasources = fetchDataSources(provider);
-            populate(datasources, provider.isDatasourceCreationSupported(), combo, null, false, false);
+            // if server which does not support Data Sources was chosen then
+            // do not bother populating the list
+            if (isContainerManaged(project)) {
+                final List<Datasource> datasources = fetchDataSources(provider);
+                populate(datasources, provider.isDatasourceCreationSupported(), combo, null, false, false);
+            }
         }
     }
     
