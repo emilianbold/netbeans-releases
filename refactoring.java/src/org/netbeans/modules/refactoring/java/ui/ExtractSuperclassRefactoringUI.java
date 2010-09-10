@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePath;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -70,10 +71,19 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI {
     private ExtractSuperclassPanel panel;
     private final String name;
     
-    public ExtractSuperclassRefactoringUI(TreePathHandle selectedHandle, CompilationInfo info) {
+    public static ExtractSuperclassRefactoringUI create(TreePathHandle selectedHandle, CompilationInfo info) {
         TreePath path = selectedHandle.resolve(info);
+
         path = RetoucheUtils.findEnclosingClass(info, path, true, false, false, false, false);
-        
+
+        if (path != null) {
+            return new ExtractSuperclassRefactoringUI(path, info);
+        }
+
+        return null;
+    }
+
+    private ExtractSuperclassRefactoringUI(TreePath path, CompilationInfo info) {
         this.name = ElementHeaders.getHeader(path, info, ElementHeaders.NAME);
         this.sourceType = TreePathHandle.create(path, info);
         this.refactoring = new ExtractSuperclassRefactoring(sourceType);
