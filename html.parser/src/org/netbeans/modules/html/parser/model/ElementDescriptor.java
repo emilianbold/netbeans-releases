@@ -58,7 +58,6 @@ public enum ElementDescriptor {
     //
     //>>>>>>>>>>>>>>>>>>>>>>>>
 
-
 A(
         new Link("a", "http://www.whatwg.org/specs/web-apps/current-work/multipage/text-level-semantics.html#the-a-element"),
          "Hyperlink",
@@ -68,7 +67,7 @@ A(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_HYPERLINK_HREF, Attribute.ATTR_HYPERLINK_TARGET, Attribute.ATTR_HYPERLINK_PING, Attribute.ATTR_HYPERLINK_REL, Attribute.ATTR_HYPERLINK_MEDIA, Attribute.ATTR_HYPERLINK_HREFLANG, Attribute.ATTR_HYPERLINK_TYPE),
         new Link("HTMLAnchorElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/text-level-semantics.html#htmlanchorelement")
 ),
 
@@ -81,7 +80,7 @@ ABBR(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -94,7 +93,7 @@ ADDRESS(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -107,7 +106,7 @@ AREA(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_AREA_ALT, Attribute.ATTR_AREA_COORDS, Attribute.ATTR_AREA_SHAPE, Attribute.ATTR_HYPERLINK_HREF, Attribute.ATTR_HYPERLINK_TARGET, Attribute.ATTR_HYPERLINK_PING, Attribute.ATTR_HYPERLINK_REL, Attribute.ATTR_HYPERLINK_MEDIA, Attribute.ATTR_HYPERLINK_HREFLANG, Attribute.ATTR_HYPERLINK_TYPE),
         new Link("HTMLAreaElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-map-element.html#htmlareaelement")
 ),
 
@@ -120,7 +119,7 @@ ARTICLE(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -133,20 +132,20 @@ ASIDE(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
 AUDIO(
         new Link("audio", "http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#audio"),
          "Audio player",
-        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED, ContentType.INTERACTIVE),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"source"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_MEDIA_SRC, Attribute.ATTR_MEDIA_PRELOAD, Attribute.ATTR_MEDIA_AUTOPLAY, Attribute.ATTR_MEDIA_LOOP, Attribute.ATTR_MEDIA_CONTROLS),
         new Link("HTMLAudioElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#htmlaudioelement")
 ),
 
@@ -159,7 +158,7 @@ B(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -172,7 +171,7 @@ BASE(
         new String[]{"head"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_BASE_HREF, Attribute.ATTR_BASE_TARGET),
         new Link("HTMLBaseElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#htmlbaseelement")
 ),
 
@@ -185,7 +184,7 @@ BDO(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -198,7 +197,7 @@ BLOCKQUOTE(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_BLOCKQUOTE_CITE),
         new Link("HTMLQuoteElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmlquoteelement")
 ),
 
@@ -211,7 +210,7 @@ BODY(
         new String[]{"html"},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.HANDLER_WINDOW_ONAFTERPRINT, Attribute.HANDLER_WINDOW_ONBEFOREPRINT, Attribute.HANDLER_WINDOW_ONBEFOREUNLOAD, Attribute.HANDLER_WINDOW_ONBLUR, Attribute.HANDLER_WINDOW_ONERROR, Attribute.HANDLER_WINDOW_ONFOCUS, Attribute.HANDLER_WINDOW_ONHASHCHANGE, Attribute.HANDLER_WINDOW_ONLOAD, Attribute.HANDLER_WINDOW_ONMESSAGE, Attribute.HANDLER_WINDOW_ONOFFLINE, Attribute.HANDLER_WINDOW_ONONLINE, Attribute.HANDLER_WINDOW_ONPAGEHIDE, Attribute.HANDLER_WINDOW_ONPAGESHOW, Attribute.HANDLER_WINDOW_ONPOPSTATE, Attribute.HANDLER_WINDOW_ONREDO, Attribute.HANDLER_WINDOW_ONRESIZE, Attribute.HANDLER_WINDOW_ONSTORAGE, Attribute.HANDLER_WINDOW_ONUNDO, Attribute.HANDLER_WINDOW_ONUNLOAD),
         new Link("HTMLBodyElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#htmlbodyelement")
 ),
 
@@ -224,7 +223,7 @@ BR(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLBRElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/text-level-semantics.html#htmlbrelement")
 ),
 
@@ -237,7 +236,7 @@ BUTTON(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_FS_FORMACTION, Attribute.ATTR_FS_FORMENCTYPE, Attribute.ATTR_FS_FORMMETHOD, Attribute.ATTR_FS_FORMNOVALIDATE, Attribute.ATTR_FS_FORMTARGET, Attribute.ATTR_FE_NAME, Attribute.ATTR_BUTTON_TYPE, Attribute.ATTR_BUTTON_VALUE),
         new Link("HTMLButtonElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlbuttonelement")
 ),
 
@@ -250,7 +249,7 @@ CANVAS(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_CANVAS_WIDTH, Attribute.ATTR_CANVAS_HEIGHT),
         new Link("HTMLCanvasElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#htmlcanvaselement")
 ),
 
@@ -263,7 +262,7 @@ CAPTION(
         new String[]{"table"},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLTableCaptionElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltablecaptionelement")
 ),
 
@@ -276,7 +275,7 @@ CITE(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -289,7 +288,7 @@ CODE(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -302,7 +301,7 @@ COL(
         new String[]{"colgroup"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_COL_SPAN),
         new Link("HTMLTableColElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltablecolelement")
 ),
 
@@ -315,7 +314,7 @@ COLGROUP(
         new String[]{"table"},
         EnumSet.noneOf(ContentType.class),
         new String[]{"col"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_COLGROUP_SPAN),
         new Link("HTMLTableColElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltablecolelement")
 ),
 
@@ -328,7 +327,7 @@ COMMAND(
         new String[]{"head"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_COMMAND_TYPE, Attribute.ATTR_COMMAND_LABEL, Attribute.ATTR_COMMAND_ICON, Attribute.ATTR_COMMAND_DISABLED, Attribute.ATTR_COMMAND_CHECKED, Attribute.ATTR_COMMAND_RADIOGROUP),
         new Link("HTMLCommandElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/interactive-elements.html#htmlcommandelement")
 ),
 
@@ -341,7 +340,7 @@ DATALIST(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{"option"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLDataListElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmldatalistelement")
 ),
 
@@ -354,7 +353,7 @@ DD(
         new String[]{"dl"},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -367,7 +366,7 @@ DEL(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_MOD_CITE, Attribute.ATTR_MOD_DATETIME),
         new Link("HTMLModElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/edits.html#htmlmodelement")
 ),
 
@@ -380,7 +379,7 @@ DETAILS(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{"summary"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_DETAILS_OPEN),
         new Link("HTMLDetailsElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/interactive-elements.html#htmldetailselement")
 ),
 
@@ -393,7 +392,7 @@ DFN(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -406,7 +405,7 @@ DIV(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLDivElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmldivelement")
 ),
 
@@ -419,7 +418,7 @@ DL(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"dt", "dd"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLDListElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmldlistelement")
 ),
 
@@ -432,7 +431,7 @@ DT(
         new String[]{"dl"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -445,7 +444,7 @@ EM(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -458,7 +457,7 @@ EMBED(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_EMBED_SRC, Attribute.ATTR_EMBED_TYPE, Attribute.ATTR_DIM_WIDTH, Attribute.ATTR_DIM_HEIGHT),
         new Link("HTMLEmbedElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#htmlembedelement")
 ),
 
@@ -471,7 +470,7 @@ FIELDSET(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{"legend"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_FIELDSET_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_FE_NAME),
         new Link("HTMLFieldSetElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#htmlfieldsetelement")
 ),
 
@@ -484,7 +483,7 @@ FIGCAPTION(
         new String[]{"figure"},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -497,7 +496,7 @@ FIGURE(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{"figcaption"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -510,7 +509,7 @@ FOOTER(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -523,72 +522,72 @@ FORM(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_FORM_ACCEPT_CHARSET, Attribute.ATTR_FS_ACTION, Attribute.ATTR_FORM_AUTOCOMPLETE, Attribute.ATTR_FS_ENCTYPE, Attribute.ATTR_FS_METHOD, Attribute.ATTR_FORM_NAME, Attribute.ATTR_FS_NOVALIDATE, Attribute.ATTR_FS_TARGET),
         new Link("HTMLFormElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#htmlformelement")
 ),
 
 H1(
         new Link("h1", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
-         "Section heading",
+         "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{"hgroup"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLHeadingElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#htmlheadingelement")
 ),
 
 H2(
         new Link("h2", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
-         "Section heading",
+         "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{"hgroup"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLHeadingElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#htmlheadingelement")
 ),
 
 H3(
         new Link("h3", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
-         "Section heading",
+         "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{"hgroup"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLHeadingElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#htmlheadingelement")
 ),
 
 H4(
         new Link("h4", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
-         "Section heading",
+         "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{"hgroup"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLHeadingElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#htmlheadingelement")
 ),
 
 H5(
         new Link("h5", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
-         "Section heading",
+         "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{"hgroup"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLHeadingElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#htmlheadingelement")
 ),
 
@@ -601,7 +600,7 @@ H6(
         new String[]{"hgroup"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLHeadingElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#htmlheadingelement")
 ),
 
@@ -614,7 +613,7 @@ HEAD(
         new String[]{"html"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLHeadElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#htmlheadelement")
 ),
 
@@ -627,7 +626,7 @@ HEADER(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -640,7 +639,7 @@ HGROUP(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"h1", "h2", "h3", "h4", "h5", "h6"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -653,7 +652,7 @@ HR(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLHRElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmlhrelement")
 ),
 
@@ -666,7 +665,7 @@ HTML(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"head", "body"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_HTML_MANIFEST),
         new Link("HTMLHtmlElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#htmlhtmlelement")
 ),
 
@@ -679,7 +678,7 @@ I(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -692,7 +691,7 @@ IFRAME(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_IFRAME_SRC, Attribute.ATTR_IFRAME_SRCDOC, Attribute.ATTR_IFRAME_NAME, Attribute.ATTR_IFRAME_SANDBOX, Attribute.ATTR_IFRAME_SEAMLESS, Attribute.ATTR_DIM_WIDTH, Attribute.ATTR_DIM_HEIGHT),
         new Link("HTMLIFrameElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#htmliframeelement")
 ),
 
@@ -705,7 +704,7 @@ IMG(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_IMG_ALT, Attribute.ATTR_IMG_SRC, Attribute.ATTR_HYPERLINK_USEMAP, Attribute.ATTR_IMG_ISMAP, Attribute.ATTR_DIM_WIDTH, Attribute.ATTR_DIM_HEIGHT),
         new Link("HTMLImageElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content-1.html#htmlimageelement")
 ),
 
@@ -718,7 +717,7 @@ INPUT(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_INPUT_ACCEPT, Attribute.ATTR_INPUT_ALT, Attribute.ATTR_INPUT_AUTOCOMPLETE, Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_INPUT_CHECKED, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_FS_FORMACTION, Attribute.ATTR_FS_FORMENCTYPE, Attribute.ATTR_FS_FORMENCTYPE, Attribute.ATTR_FS_FORMMETHOD, Attribute.ATTR_FS_FORMNOVALIDATE, Attribute.ATTR_FS_FORMTARGET, Attribute.ATTR_DIM_HEIGHT, Attribute.ATTR_INPUT_LIST, Attribute.ATTR_INPUT_MAX, Attribute.ATTR_INPUT_MAXLENGTH, Attribute.ATTR_INPUT_MIN, Attribute.ATTR_INPUT_MULTIPLE, Attribute.ATTR_FE_NAME, Attribute.ATTR_INPUT_PATTERN, Attribute.ATTR_INPUT_PLACEHOLDER, Attribute.ATTR_INPUT_READONLY, Attribute.ATTR_INPUT_REQUIRED, Attribute.ATTR_INPUT_SIZE, Attribute.ATTR_INPUT_SRC, Attribute.ATTR_INPUT_STEP, Attribute.ATTR_INPUT_TYPE, Attribute.ATTR_INPUT_VALUE, Attribute.ATTR_DIM_WIDTH),
         new Link("HTMLInputElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#htmlinputelement")
 ),
 
@@ -731,7 +730,7 @@ INS(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_MOD_CITE, Attribute.ATTR_MOD_DATETIME),
         new Link("HTMLModElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/edits.html#htmlmodelement")
 ),
 
@@ -744,7 +743,7 @@ KBD(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -757,7 +756,7 @@ KEYGEN(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_KEYGEN_CHALLENGE, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_KEYGEN_KEYTYPE, Attribute.ATTR_FE_NAME),
         new Link("HTMLKeygenElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlkeygenelement")
 ),
 
@@ -770,7 +769,7 @@ LABEL(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_FAE_FORM, Attribute.ATTR_LABEL_FOR),
         new Link("HTMLLabelElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#htmllabelelement")
 ),
 
@@ -783,7 +782,7 @@ LEGEND(
         new String[]{"fieldset"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLLegendElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#htmllegendelement")
 ),
 
@@ -796,7 +795,7 @@ LI(
         new String[]{"ol", "ul", "menu"},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_LI_VALUE),
         new Link("HTMLLIElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmllielement")
 ),
 
@@ -809,7 +808,7 @@ LINK(
         new String[]{"head", "noscript"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_LINK_HREF, Attribute.ATTR_LINK_REL, Attribute.ATTR_LINK_MEDIA, Attribute.ATTR_LINK_HREFLANG, Attribute.ATTR_LINK_TYPE, Attribute.ATTR_LINK_SIZES),
         new Link("HTMLLinkElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#htmllinkelement")
 ),
 
@@ -822,7 +821,7 @@ MAP(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"area"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_MAP_NAME),
         new Link("HTMLMapElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-map-element.html#htmlmapelement")
 ),
 
@@ -835,20 +834,20 @@ MARK(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
 MENU(
         new Link("menu", "http://www.whatwg.org/specs/web-apps/current-work/multipage/interactive-elements.html#menus"),
          "Menu of commands",
-        EnumSet.of(ContentType.FLOW),
+        EnumSet.of(ContentType.FLOW, ContentType.INTERACTIVE),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{"li"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_MENU_TYPE, Attribute.ATTR_MENU_LABEL),
         new Link("HTMLMenuElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/interactive-elements.html#htmlmenuelement")
 ),
 
@@ -861,7 +860,7 @@ META(
         new String[]{"head", "noscript"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_META_NAME, Attribute.ATTR_META_HTTP_EQUIV, Attribute.ATTR_META_CONTENT, Attribute.ATTR_META_CHARSET),
         new Link("HTMLMetaElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#htmlmetaelement")
 ),
 
@@ -874,7 +873,7 @@ METER(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_METER_VALUE, Attribute.ATTR_METER_MIN, Attribute.ATTR_METER_MAX, Attribute.ATTR_METER_LOW, Attribute.ATTR_METER_HIGH, Attribute.ATTR_METER_OPTIMUM, Attribute.ATTR_FAE_FORM),
         new Link("HTMLMeterElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlmeterelement")
 ),
 
@@ -887,7 +886,7 @@ NAV(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -900,7 +899,7 @@ NOSCRIPT(
         new String[]{"head"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -913,7 +912,7 @@ OBJECT(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"param"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_OBJECT_DATA, Attribute.ATTR_OBJECT_TYPE, Attribute.ATTR_OBJECT_NAME, Attribute.ATTR_HYPERLINK_USEMAP, Attribute.ATTR_FAE_FORM, Attribute.ATTR_DIM_WIDTH, Attribute.ATTR_DIM_HEIGHT),
         new Link("HTMLObjectElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#htmlobjectelement")
 ),
 
@@ -926,7 +925,7 @@ OL(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"li"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_OL_REVERSED, Attribute.ATTR_OL_START),
         new Link("HTMLOListElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmlolistelement")
 ),
 
@@ -939,7 +938,7 @@ OPTGROUP(
         new String[]{"select"},
         EnumSet.noneOf(ContentType.class),
         new String[]{"option"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_OPTGROUP_DISABLED, Attribute.ATTR_OPTGROUP_LABEL),
         new Link("HTMLOptGroupElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmloptgroupelement")
 ),
 
@@ -952,7 +951,7 @@ OPTION(
         new String[]{"select", "datalist", "optgroup"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_OPTION_DISABLED, Attribute.ATTR_OPTION_LABEL, Attribute.ATTR_OPTION_SELECTED, Attribute.ATTR_OPTION_VALUE),
         new Link("HTMLOptionElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmloptionelement")
 ),
 
@@ -965,7 +964,7 @@ OUTPUT(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_OUTPUT_FOR, Attribute.ATTR_FAE_FORM, Attribute.ATTR_FE_NAME),
         new Link("HTMLOutputElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmloutputelement")
 ),
 
@@ -978,7 +977,7 @@ P(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLParagraphElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmlparagraphelement")
 ),
 
@@ -991,7 +990,7 @@ PARAM(
         new String[]{"object"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_PARAM_NAME, Attribute.ATTR_PARAM_VALUE),
         new Link("HTMLParamElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#htmlparamelement")
 ),
 
@@ -1004,7 +1003,7 @@ PRE(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLPreElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmlpreelement")
 ),
 
@@ -1017,7 +1016,7 @@ PROGRESS(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_PROGRESS_VALUE, Attribute.ATTR_PROGRESS_MAX, Attribute.ATTR_FAE_FORM),
         new Link("HTMLProgressElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlprogresselement")
 ),
 
@@ -1030,7 +1029,7 @@ Q(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_Q_CITE),
         new Link("HTMLQuoteElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmlquoteelement")
 ),
 
@@ -1041,9 +1040,9 @@ RP(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.noneOf(ContentType.class),
         new String[]{"ruby"},
-        EnumSet.of(ContentType.PHRASING),
+        EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1056,7 +1055,7 @@ RT(
         new String[]{"ruby"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1069,7 +1068,7 @@ RUBY(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{"rt", "rp"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1082,7 +1081,7 @@ SAMP(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1095,7 +1094,7 @@ SCRIPT(
         new String[]{"head"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_SCRIPT_SRC, Attribute.ATTR_SCRIPT_ASYNC, Attribute.ATTR_SCRIPT_DEFER, Attribute.ATTR_SCRIPT_TYPE, Attribute.ATTR_SCRIPT_CHARSET),
         new Link("HTMLScriptElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/scripting-1.html#htmlscriptelement")
 ),
 
@@ -1108,7 +1107,7 @@ SECTION(
         new String[]{},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1121,7 +1120,7 @@ SELECT(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"option", "optgroup"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_SELECT_MULTIPLE, Attribute.ATTR_FE_NAME, Attribute.ATTR_SELECT_REQUIRED, Attribute.ATTR_SELECT_SIZE),
         new Link("HTMLSelectElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlselectelement")
 ),
 
@@ -1134,7 +1133,7 @@ SMALL(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1147,7 +1146,7 @@ SOURCE(
         new String[]{"video", "audio"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_SOURCE_SRC, Attribute.ATTR_SOURCE_TYPE, Attribute.ATTR_SOURCE_MEDIA),
         new Link("HTMLSourceElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#htmlsourceelement")
 ),
 
@@ -1160,7 +1159,7 @@ SPAN(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLSpanElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/text-level-semantics.html#htmlspanelement")
 ),
 
@@ -1173,7 +1172,7 @@ STRONG(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1186,7 +1185,7 @@ STYLE(
         new String[]{"head", "noscript"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_STYLE_MEDIA, Attribute.ATTR_STYLE_TYPE, Attribute.ATTR_STYLE_SCOPED),
         new Link("HTMLStyleElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#htmlstyleelement")
 ),
 
@@ -1199,7 +1198,7 @@ SUB(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1212,7 +1211,7 @@ SUMMARY(
         new String[]{"details"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1225,7 +1224,7 @@ SUP(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1238,7 +1237,7 @@ TABLE(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"caption", "colgroup", "thead", "tbody", "tfoot", "tr"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_TABLE_SUMMARY),
         new Link("HTMLTableElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltableelement")
 ),
 
@@ -1251,7 +1250,7 @@ TBODY(
         new String[]{"table"},
         EnumSet.noneOf(ContentType.class),
         new String[]{"tr"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLTableSectionElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltablesectionelement")
 ),
 
@@ -1264,7 +1263,7 @@ TD(
         new String[]{"tr"},
         EnumSet.of(ContentType.FLOW),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_TDTH_COLSPAN, Attribute.ATTR_TDTH_ROWSPAN, Attribute.ATTR_TDTH_HEADERS),
         new Link("HTMLTableDataCellElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltabledatacellelement")
 ),
 
@@ -1277,7 +1276,7 @@ TEXTAREA(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_TEXTAREA_COLS, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_TEXTAREA_MAXLENGTH, Attribute.ATTR_FE_NAME, Attribute.ATTR_TEXTAREA_PLACEHOLDER, Attribute.ATTR_TEXTAREA_READONLY, Attribute.ATTR_TEXTAREA_REQUIRED, Attribute.ATTR_TEXTAREA_ROWS, Attribute.ATTR_TEXTAREA_WRAP),
         new Link("HTMLTextAreaElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmltextareaelement")
 ),
 
@@ -1290,7 +1289,7 @@ TFOOT(
         new String[]{"table"},
         EnumSet.noneOf(ContentType.class),
         new String[]{"tr"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLTableSectionElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltablesectionelement")
 ),
 
@@ -1303,8 +1302,8 @@ TH(
         new String[]{"tr"},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
-        new Link("bleHeaderCellElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltableheadercellelement")
+        EnumSet.of(Attribute.ATTR_TDTH_COLSPAN, Attribute.ATTR_TDTH_ROWSPAN, Attribute.ATTR_TDTH_HEADERS, Attribute.ATTR_TH_SCOPE),
+        new Link("HTMLTableHeaderCellElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltableheadercellelement")
 ),
 
 THEAD(
@@ -1316,7 +1315,7 @@ THEAD(
         new String[]{"table"},
         EnumSet.noneOf(ContentType.class),
         new String[]{"tr"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLTableSectionElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltablesectionelement")
 ),
 
@@ -1329,7 +1328,7 @@ TIME(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_TIME_DATETIME, Attribute.ATTR_TIME_PUBDATE),
         new Link("HTMLTimeElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/text-level-semantics.html#htmltimeelement")
 ),
 
@@ -1342,7 +1341,7 @@ TITLE(
         new String[]{"head"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLTitleElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#htmltitleelement")
 ),
 
@@ -1355,7 +1354,7 @@ TR(
         new String[]{"table", "thead", "tbody", "tfoot"},
         EnumSet.noneOf(ContentType.class),
         new String[]{"th", "td"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLTableRowElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#htmltablerowelement")
 ),
 
@@ -1368,7 +1367,7 @@ TRACK(
         new String[]{"audio", "video"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_TRACK_KIND, Attribute.ATTR_TRACK_LABEL, Attribute.ATTR_TRACK_SRC, Attribute.ATTR_TRACK_SRCLANG),
         new Link("HTMLTrackElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#htmltrackelement")
 ),
 
@@ -1381,7 +1380,7 @@ UL(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"li"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLUListElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#htmlulistelement")
 ),
 
@@ -1394,7 +1393,7 @@ VAR(
         new String[]{},
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 ),
 
@@ -1407,7 +1406,7 @@ VIDEO(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"source"},
-        Collections.<Attribute>emptyList(),
+        EnumSet.of(Attribute.ATTR_MEDIA_SRC, Attribute.ATTR_VIDEO_POSTER, Attribute.ATTR_MEDIA_PRELOAD, Attribute.ATTR_MEDIA_AUTOPLAY, Attribute.ATTR_MEDIA_LOOP, Attribute.ATTR_MEDIA_CONTROLS, Attribute.ATTR_DIM_WIDTH, Attribute.ATTR_DIM_HEIGHT),
         new Link("HTMLVideoElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#htmlvideoelement")
 ),
 
@@ -1420,9 +1419,10 @@ WBR(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        Collections.<Attribute>emptyList(),
+        EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
 );
+
 
 
 
