@@ -107,7 +107,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     private SelfSamplerAction() {
         putValue(Action.NAME, ACTION_NAME_START);
-//        putValue(Action.SHORT_DESCRIPTION, ACTION_DESCR);
+        putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_START);
         putValue(Action.SMALL_ICON,
                 ImageUtilities.loadImageIcon("org/netbeans/core/ui/sampler/selfSampler.png" //NOI18N
                 , false));
@@ -131,6 +131,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             Sampler c;
             if (RUNNING.compareAndSet(null, c = new InternalSampler(THREAD_NAME))) {
                 putValue(Action.NAME, ACTION_NAME_STOP);
+                putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_STOP);
                 putValue(Action.SMALL_ICON,
                         ImageUtilities.loadImageIcon(
                         "org/netbeans/core/ui/sampler/selfSamplerRunning.png" //NOI18N
@@ -151,6 +152,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                     @Override
                     protected void done() {
                         putValue(Action.NAME, ACTION_NAME_START);
+                        putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_START);
                         putValue(Action.SMALL_ICON,
                                 ImageUtilities.loadImageIcon(
                                 "org/netbeans/core/ui/sampler/selfSampler.png" //NOI18N
