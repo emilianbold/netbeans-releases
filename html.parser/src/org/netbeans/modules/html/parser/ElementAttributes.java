@@ -54,27 +54,29 @@ import java.util.Map;
 public class ElementAttributes {
 
     //parsed from http://www.whatwg.org/specs/web-apps/current-work/#global-attributes
-    private static final String[] GLOBAL = new String[]{
-        "accesskey",
-        "class",
-        "contenteditable",
-        "contextmenu",
-        "dir",
-        "draggable",
-        "hidden",
-        "id",
-        "itemid",
-        "itemprop",
-        "itemref",
-        "itemscope",
-        "itemtype",
-        "lang",
-        "spellcheck",
-        "style",
-        "tabindex",
-        "title"};
+    public  static final String GLOBAL_ATTRIBUTES_BASE_URL = "http://www.whatwg.org/specs/web-apps/current-work/multipage/";
+    public  static final String[] GLOBAL = new String[]{
+        "accesskey", "editing.html#the-accesskey-attribute",
+        "class", "elements.html#classes",
+        "contenteditable", "editing.html#attr-contenteditable",
+        "contextmenu", "interactive-elements.html#attr-contextmenu",
+        "dir", "elements.html#the-dir-attribute",
+        "draggable", "dnd.html#the-draggable-attribute",
+        "hidden", "editing.html#the-hidden-attribute",
+        "id", "elements.html#the-id-attribute",
+        "itemid", "links.html#attr-itemid",
+        "itemprop", "links.html#names:-the-itemprop-attribute",
+        "itemref", "links.html#attr-itemref",
+        "itemscope", "links.html#attr-itemscope",
+        "itemtype", "links.html#attr-itemtype",
+        "lang", "elements.html#attr-lang",
+        "spellcheck", "editing.html#attr-spellcheck",
+        "style", "elements.html#the-style-attribute",
+        "tabindex", "editing.html#attr-tabindex",
+        "title", "elements.html#the-title-attribute"};
 
-    private static final String[] GLOBAL_EVENT = new String[]{
+    public  static final String EVENT_ATTRIBUTES_BASE_URL = "http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#handler-";
+    public  static final String[] GLOBAL_EVENT = new String[]{
         "onabort",
         "onblur",
         "oncanplay",

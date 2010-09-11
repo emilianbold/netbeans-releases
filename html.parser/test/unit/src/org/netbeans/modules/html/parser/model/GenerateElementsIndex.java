@@ -50,14 +50,16 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import nu.validator.htmlparser.sax.HtmlParser;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.Attributes;
@@ -74,11 +76,90 @@ import org.xml.sax.SAXException;
  */
 public class GenerateElementsIndex extends NbTestCase {
 
+    //parsed from http://www.whatwg.org/specs/web-apps/current-work/#global-attributes
+    public static final String GLOBAL_ATTRIBUTES_BASE_URL = "http://www.whatwg.org/specs/web-apps/current-work/multipage/";
+    public static final String[] GLOBAL = new String[]{
+        "accesskey", "editing.html#the-accesskey-attribute",
+        "class", "elements.html#classes",
+        "contenteditable", "editing.html#attr-contenteditable",
+        "contextmenu", "interactive-elements.html#attr-contextmenu",
+        "dir", "elements.html#the-dir-attribute",
+        "draggable", "dnd.html#the-draggable-attribute",
+        "hidden", "editing.html#the-hidden-attribute",
+        "id", "elements.html#the-id-attribute",
+        "itemid", "links.html#attr-itemid",
+        "itemprop", "links.html#names:-the-itemprop-attribute",
+        "itemref", "links.html#attr-itemref",
+        "itemscope", "links.html#attr-itemscope",
+        "itemtype", "links.html#attr-itemtype",
+        "lang", "elements.html#attr-lang",
+        "spellcheck", "editing.html#attr-spellcheck",
+        "style", "elements.html#the-style-attribute",
+        "tabindex", "editing.html#attr-tabindex",
+        "title", "elements.html#the-title-attribute"};
+    public static final String EVENT_ATTRIBUTES_BASE_URL = "http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#handler-";
+    public static final String[] GLOBAL_EVENT = new String[]{
+        "onabort",
+        "onblur",
+        "oncanplay",
+        "oncanplaythrough",
+        "onchange",
+        "onclick",
+        "oncontextmenu",
+        "ondblclick",
+        "ondrag",
+        "ondragend",
+        "ondragenter",
+        "ondragleave",
+        "ondragover",
+        "ondragstart",
+        "ondrop",
+        "ondurationchange",
+        "onemptied",
+        "onended",
+        "onerror",
+        "onfocus",
+        "onformchange",
+        "onforminput",
+        "oninput",
+        "oninvalid",
+        "onkeydown",
+        "onkeypress",
+        "onkeyup",
+        "onload",
+        "onloadeddata",
+        "onloadedmetadata",
+        "onloadstart",
+        "onmousedown",
+        "onmousemove",
+        "onmouseout",
+        "onmouseover",
+        "onmouseup",
+        "onmousewheel",
+        "onpause",
+        "onplay",
+        "onplaying",
+        "onprogress",
+        "onratechange",
+        "onreadystatechange",
+        "onscroll",
+        "onseeked",
+        "onseeking",
+        "onselect",
+        "onshow",
+        "onstalled",
+        "onsubmit",
+        "onsuspend",
+        "ontimeupdate",
+        "onvolumechange",
+        "onwaiting"
+    };
     private static final String WHATWG_SPEC_HTML5_ELEMENTS_INDEX_URL = Constants.HTML5_MULTIPAGE_SPEC_BASE_URL + "section-index.html#elements-1";
     private boolean parse = true;
     private boolean intbody, intr, inth_or_td, ina;
     private int column;
     private String href;
+    private String attr_code;
     private final Collection<Element> elements = new LinkedList<Element>();
     private Stack<Element> currents = new Stack<Element>();
     private String LINK_URL_BASE; //if the spec contains full urls its empty
@@ -87,31 +168,21 @@ public class GenerateElementsIndex extends NbTestCase {
         super(name);
     }
 
-    //1. try to freshest spec from whatwg.org
-    //2. if unavailable, use local copy
-    private InputStream getSpec() throws URISyntaxException, MalformedURLException, IOException {
-        URL u = new URL(WHATWG_SPEC_HTML5_ELEMENTS_INDEX_URL);
-        try {
-            URLConnection con = u.openConnection();
-            LINK_URL_BASE = Constants.HTML5_MULTIPAGE_SPEC_BASE_URL; //only relative paths, use the relative link url
-            return con.getInputStream();
-        } catch (IOException ex) {
-            //cannot connect, use local copy
-            u = ClassLoader.getSystemResource("org/netbeans/modules/html/parser/model/section-index_2010_09_08.html");
-            assertNotNull(u);
-            try {
-                URLConnection con = u.openConnection();
-                LINK_URL_BASE = ""; //downloaded file has resolved links to full urls
-                System.err.println("Cannot download the specification from " + WHATWG_SPEC_HTML5_ELEMENTS_INDEX_URL + " using local copy.\nBEWARE, it is very likely outdated!!!");
-                return con.getInputStream();
-            } catch (IOException ex1) {
-                throw ex1;
-            }
-
-        }
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new GenerateElementsIndex("test_GenerateElementsIndex"));
+//        suite.addTest(new GenerateElementsIndex("test_GenerateGlobalAndEventAttributesEnumMembers"));
+//        suite.addTest(new GenerateElementsIndex("test_GenerateAttributesIndex"));
+        return suite;
     }
 
-    public void testGenerateElementsIndex() throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        parseSpecification();
+    }
+    
+    private void parseSpecification() throws URISyntaxException, MalformedURLException, IOException, SAXException {
         InputStream spec = getSpec();
         assertNotNull(spec);
 
@@ -145,7 +216,6 @@ public class GenerateElementsIndex extends NbTestCase {
                         } else {
                             //h1-h6 support (more elements in the element name cell)
                             Element filledElement = currents.pop();
-                            filledElement.done();
                             for (Element e : currents) {
                                 Element copy = filledElement.shallowCopy();
                                 copy.name = e.name;
@@ -172,6 +242,12 @@ public class GenerateElementsIndex extends NbTestCase {
                         } else {
                             href = null;
                         }
+                    }
+                } else if(localName.equals("code")) {
+                    if(inth_or_td) {
+                        attr_code = atts != null ? atts.getValue("title") : null;
+                    } else {
+                        attr_code = null;
                     }
                 }
             }
@@ -212,7 +288,7 @@ public class GenerateElementsIndex extends NbTestCase {
                     case 5:
                         //parents
                         if (ina) {
-                            currents.peek().attributes.add(new LLink(text, href));
+                            currents.peek().attributes.add(new LLink(attr_code, href));
                         }
                         break;
                     case 6:
@@ -232,11 +308,73 @@ public class GenerateElementsIndex extends NbTestCase {
         parser.parse(input);
 
         System.out.println("Found " + elements.size() + " elements:");
-//        for(Element e : elements) {
-//            System.out.println(e);
-//        }
 
+    }
 
+    //generates a list of global and event attributes - members of the Attribute enum
+    public void test_GenerateGlobalAndEventAttributesEnumMembers() throws IOException {
+        Writer out = new StringWriter();
+        out.write("//global attributes\n");
+        for (int i = 0; i < GLOBAL.length; i++) {
+            String name = GLOBAL[i];
+            String link = GLOBAL[++i];
+
+            String fullLink = GLOBAL_ATTRIBUTES_BASE_URL + link;
+
+            out.write(Attribute.attributeId2EnumName(name));
+            out.write("(new Link(\"");
+            out.write(name);
+            out.write("\", \"");
+            out.write(fullLink);
+            out.write("\")),\n");
+
+        }
+        out.write("\n//event attributes\n");
+        for (int i = 0; i < GLOBAL_EVENT.length; i++) {
+            String name = GLOBAL_EVENT[i];
+            String fullLink = EVENT_ATTRIBUTES_BASE_URL + name;
+
+            out.write(Attribute.attributeId2EnumName(name));
+            out.write("(new Link(\"");
+            out.write(name);
+            out.write("\", \"");
+            out.write(fullLink);
+            out.write("\")),\n");
+
+        }
+        System.out.println(out);
+    }
+
+    public void test_GenerateAttributesIndex() throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
+        //generate the part of the Attributes enum class for elements specific attributes
+        Writer out = new StringWriter();
+        out.write("\n//properietary attributes\n");
+        
+        //gather all possible attributes
+        Collection<Link> attrs = new HashSet<Link>();
+        for (Element e : elements) {
+           attrs.addAll(e.attributes);
+        }
+
+        for(Link l : attrs) {
+            String attrId = l.getName();
+            if(attrId == null) {
+                //not valid link, happens for the "global" attributes link
+                continue;
+            }
+
+            out.write(Attribute.attributeId2EnumName(attrId));
+            out.write("(new Link(\"");
+            out.write(attrId);
+            out.write("\", \"");
+            out.write(l.getUrl().toExternalForm());
+            out.write("\")),\n");
+        }
+
+        System.out.println(out);
+    }
+
+    public void test_GenerateElementsIndex() throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
         //generate the ElementDescriptor enum class
         Writer out = new StringWriter();
         Map<String, Element> elementsMap = new HashMap<String, Element>();
@@ -252,7 +390,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("\", \"");
             out.write(e.name.getUrl().toExternalForm());
             out.write("\"),\n\t \"");
-            out.write(e.description);
+            out.write(e.getDescription());
             out.write("\", ");
 
             out.write("\n\t");
@@ -268,7 +406,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("\n\t");
             writeElements(e.parents, elementsMap, out);
             out.write("\n\t");
-            
+
             //children - content type or element
             writeContentTypes(e.children, out);
             out.write("\n\t");
@@ -276,8 +414,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("\n\t");
 
             //attributes
-            //XXX implement!!!
-            out.write("Collections.<Attribute>emptyList(),");
+            writeAttributes(e.attributes, out);
             out.write("\n\t");
 
             //dom interface
@@ -292,6 +429,29 @@ public class GenerateElementsIndex extends NbTestCase {
 
 
         System.out.println(out);
+    }
+
+    private void writeAttributes(Collection<? extends Link> links, Writer out) throws IOException {
+        Collection<Attribute> attrs = new ArrayList<Attribute>();
+
+        for (Iterator<? extends Link> i = links.iterator(); i.hasNext();) {
+            Link cat = i.next();
+
+            if(cat.getName() == null) {
+                //not valid attribute link, skip
+                continue;
+            }
+
+            //Attribute
+            try {
+                Attribute attr = Attribute.valueOf(Attribute.attributeId2EnumName(cat.getName()));
+                attrs.add(attr);
+            } catch (IllegalArgumentException ex) {
+                //the element doesn't represent content type
+            }
+        }
+
+        writeEnumCollection(attrs, "Attribute", out);
     }
 
     private void writeElements(Collection<Link> links, Map<String, Element> elementsMap, Writer out) throws IOException {
@@ -369,8 +529,6 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write(enumName);
             out.write(".class), ");
         } else {
-            //EnumSet.of(...) up to 5 arguments only!, if more modify to use the vararg version
-            assert enumCollection.size() < 6;
             out.write("EnumSet.of(");
             for (Iterator<? extends Enum> i = enumCollection.iterator(); i.hasNext();) {
                 Enum ct = i.next();
@@ -382,6 +540,30 @@ public class GenerateElementsIndex extends NbTestCase {
                 }
             }
             out.write("), ");
+        }
+    }
+
+    //1. try to freshest spec from whatwg.org
+    //2. if unavailable, use local copy
+    private InputStream getSpec() throws URISyntaxException, MalformedURLException, IOException {
+        URL u = new URL(WHATWG_SPEC_HTML5_ELEMENTS_INDEX_URL);
+        try {
+            URLConnection con = u.openConnection();
+            LINK_URL_BASE = Constants.HTML5_MULTIPAGE_SPEC_BASE_URL; //only relative paths, use the relative link url
+            return con.getInputStream();
+        } catch (IOException ex) {
+            //cannot connect, use local copy
+            u = ClassLoader.getSystemResource("org/netbeans/modules/html/parser/model/section-index_2010_09_08.html");
+            assertNotNull(u);
+            try {
+                URLConnection con = u.openConnection();
+                LINK_URL_BASE = ""; //downloaded file has resolved links to full urls
+                System.err.println("Cannot download the specification from " + WHATWG_SPEC_HTML5_ELEMENTS_INDEX_URL + " using local copy.\nBEWARE, it is very likely outdated!!!");
+                return con.getInputStream();
+            } catch (IOException ex1) {
+                throw ex1;
+            }
+
         }
     }
 
@@ -405,7 +587,7 @@ public class GenerateElementsIndex extends NbTestCase {
 
         @Override
         public String toString() {
-            return "Element{" + "name=" + name + ", description=" + description
+            return "Element{" + "name=" + name + ", description=" + getDescription()
                     + ", categories=" + categories + ", parents=" + parents
                     + ", children=" + children + ", attributes=" + attributes
                     + ", interfacee=" + interfacee + '}';
@@ -414,7 +596,7 @@ public class GenerateElementsIndex extends NbTestCase {
         public Element shallowCopy() {
             Element copy = new Element();
             copy.name = name;
-            copy.description = description;
+            copy.description = getDescription();
             copy.categories = categories;
             copy.parents = parents;
             copy.children = children;
@@ -423,10 +605,10 @@ public class GenerateElementsIndex extends NbTestCase {
             return copy;
         }
 
-        private void done() {
-            //called when the element is complete
-            description = descriptionBuilder.toString().trim();
+        public String getDescription() {
+            return descriptionBuilder.toString().trim();
         }
+
     }
 
     private static class PrinteableArrayList<T> extends ArrayList<T> {
