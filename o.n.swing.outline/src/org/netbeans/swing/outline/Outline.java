@@ -576,11 +576,19 @@ public class Outline extends ETable {
                         Object ourObject = path.getLastPathComponent();
                         int cCount = getOutlineModel().getChildCount(ourObject);
                         if (cCount > 0) {
-                            Object lastChild = getOutlineModel().getChild(ourObject, cCount - 1);
-                            TreePath lastChildPath = path.pathByAddingChild(lastChild);
-                            int lastRow = getLayoutCache().getRowForPath(lastChildPath);
+                            int lastRow = row;
+                            for (int i = 0; i < cCount; i++) {
+                                Object child = getOutlineModel().getChild(ourObject, i);
+                                TreePath childPath = path.pathByAddingChild(child);
+                                int childRow = getLayoutCache().getRowForPath(childPath);
+                                childRow = convertRowIndexToView(childRow);
+                                if (childRow > lastRow) {
+                                    lastRow = childRow;
+                                }
+                            }
+                            int firstRow = row;
                             Rectangle rectLast = getCellRect(lastRow, 0, true);
-                            Rectangle rectFirst = getCellRect(getLayoutCache().getRowForPath(path), 0, true);
+                            Rectangle rectFirst = getCellRect(firstRow, 0, true);
                             Rectangle rectFull = new Rectangle(
                                     rectFirst.x,
                                     rectFirst.y,
