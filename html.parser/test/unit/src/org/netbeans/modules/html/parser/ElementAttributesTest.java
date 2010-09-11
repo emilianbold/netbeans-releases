@@ -43,6 +43,8 @@
 package org.netbeans.modules.html.parser;
 
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -57,11 +59,11 @@ public class ElementAttributesTest extends NbTestCase {
 
     public void testAttributes() {
         Collection<String> attrs = ElementAttributes.getAttrNamesForElement("div"); //only global attrs
-        
+
         assertNotNull(attrs);
         assertTrue(attrs.contains("class"));
         assertTrue(attrs.contains("onclick"));
-        
+
         assertFalse(attrs.contains("bla"));
         assertFalse(attrs.contains("href"));
 

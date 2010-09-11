@@ -39,33 +39,65 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.parser;
+
+package org.netbeans.modules.html.parser.model;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import org.netbeans.modules.html.parser.model.Attribute;
-import org.netbeans.modules.html.parser.model.ElementDescriptor;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author marekfukala
  */
-public class ElementAttributes {
+public class AttributeTest extends NbTestCase {
+
+    public AttributeTest(String name) {
+        super(name);
+    }
+
+    public void testBasic() {
+        ElementDescriptor div = ElementDescriptor.byName("div");
+        assertNotNull(div);
+        Link nameLink = div.getName();
+        assertNotNull(nameLink);
+        assertEquals("div", nameLink.getName());
+        assertEquals("http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-div-element",
+                nameLink.getUrl().toExternalForm());
+
+        Collection<ContentType> cats = div.getCategoryTypes();
+        assertNotNull(cats);
+        assertTrue(cats.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
+        Collection<FormAssociatedElementsCategory> fasecs = div.getFormCategories();
+        assertTrue(fasecs.isEmpty());
 
 
-    public static synchronized Collection<String> getAttrNamesForElement(String elementName) {
-        ElementDescriptor descriptor = ElementDescriptor.byName(elementName);
-        if(descriptor == null) {
-//            throw new IllegalArgumentException("No such element " + elementName);
-            return Collections.emptyList();
-        }
-        Collection<String> attrNames = new LinkedList<String>();
-        for(Attribute a : descriptor.getAttributes()) {
-            attrNames.add(a.getName());
-        }
+        Collection<ContentType> parentTypes = div.getParentTypes();
+        assertNotNull(parentTypes);
+        assertTrue(parentTypes.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
 
-        return attrNames;
+        Collection<ElementDescriptor> parentElements = div.getParentElements();
+        assertTrue(parentElements.isEmpty());
+
+        Collection<ContentType> childrenTypes = div.getChildrenTypes();
+        assertNotNull(childrenTypes);
+        assertTrue(parentTypes.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
+
+        Collection<ElementDescriptor> childrenElements = div.getChildrenElements();
+        assertTrue(childrenElements.isEmpty());
+
+        Link domInterface = div.getDomInterface();
+        assertNotNull(domInterface);
+        assertEquals("HTMLDivElement", domInterface.getName());
+
+    }
+
+    public void testNonExisting() {
+        ElementDescriptor el = ElementDescriptor.byName("nosuchelement");
+        assertNull(el);
+
     }
 
 }

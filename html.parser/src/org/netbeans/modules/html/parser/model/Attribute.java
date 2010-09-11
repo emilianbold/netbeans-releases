@@ -44,6 +44,8 @@ package org.netbeans.modules.html.parser.model;
 import java.net.URL;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -308,8 +310,11 @@ public enum Attribute {
 
     public static Collection<Attribute> GLOBAL_ATTRIBUTES = EnumSet.range(ACCESSKEY, TITLE);
     public static Collection<Attribute> EVENT_ATTRIBUTES = EnumSet.range(ONABORT, ONWAITING);
-    
+
+    private static final Pattern ENUM_NAME_PATTERN = Pattern.compile(".*?-.*?-(.*)");
+
     private Link link;
+    private String name;
 
     private Attribute() {
     }
@@ -321,10 +326,19 @@ public enum Attribute {
     public static String attributeId2EnumName(String attributeId) {
         return attributeId.replace('-', '_').toUpperCase();
     }
-
-    public String getName() {
-        return getAttributeId().substring(getAttributeId().lastIndexOf('_'));
+    
+    static String parseName(String id) {
+        Matcher matcher = ENUM_NAME_PATTERN.matcher(id);
+        return matcher.matches() ? matcher.group(1) : id;
     }
+
+    public synchronized String getName() {
+        if(name == null) {
+            name = parseName(getAttributeId());
+        }
+        return name;
+    }
+
 
     public URL getDescription() {
         return link.getUrl();

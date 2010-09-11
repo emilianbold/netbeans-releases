@@ -71,11 +71,11 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite() {
+    public static Test suite() {
         AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
         TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testUnclosedTitleTag"));
+        suite.addTest(new Html5ParserTest("testGetPossibleOpenTagsInContext"));
         return suite;
     }
 

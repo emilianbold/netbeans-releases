@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 
 /**
  *
@@ -1487,7 +1488,10 @@ WBR(
     }
 
     public Collection<Attribute> getAttributes() {
-        return attributes;
+        Collection<Attribute> withGlobal = new LinkedList<Attribute>(attributes);
+        withGlobal.addAll(Attribute.GLOBAL_ATTRIBUTES);
+        withGlobal.addAll(Attribute.EVENT_ATTRIBUTES);
+        return withGlobal;
     }
 
     public Collection<ContentType> getCategoryTypes() {
