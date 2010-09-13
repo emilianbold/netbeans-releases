@@ -175,7 +175,11 @@ public class CsmAutosProviderImpl implements AutosProvider {
                                     }
                                     if (i > 0) {
                                         sb.insert(0, token.fixedText());
-                                        sb.insert(0, context.getReference(i-1).getText());
+                                        CsmReference prevReference = context.getReference(i-1);
+                                        if (prevReference == null) {
+                                            break outer;
+                                        }
+                                        sb.insert(0, prevReference.getText());
                                     }
                                 }
                             }
