@@ -76,6 +76,11 @@ import org.openide.util.Utilities;
  */
 
 public class RADComponent {
+    /**
+     * Name of key of an aux-value holding additional information
+     * about the component class (like "RigidArea" for {@code Box.Filler}s).
+     */
+    public static final String AUX_VALUE_CLASS_DETAILS = "classDetails"; // NOI18N
 
     // -----------------------------------------------------------------------------
     // Static variables
