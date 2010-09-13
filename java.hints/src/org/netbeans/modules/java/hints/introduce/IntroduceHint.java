@@ -81,6 +81,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -437,7 +438,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                 //introduce method based on expression:
                 Element methodEl = info.getTrees().getElement(method);
-                ScanStatement scanner = new ScanStatement(info, resolved.getLeaf(), resolved.getLeaf(), cancel);
+                Map<TypeMirror, TreePathHandle> typeVar2Def = new HashMap<TypeMirror, TreePathHandle>();
+                List<TreePathHandle> typeVars = new LinkedList<TreePathHandle>();
+
+                prepareTypeVars(method, info, typeVar2Def, typeVars);
+
+                ScanStatement scanner = new ScanStatement(info, resolved.getLeaf(), resolved.getLeaf(), typeVar2Def, cancel);
 
                 if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
                     ExecutableElement ee = (ExecutableElement) methodEl;
@@ -463,7 +469,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                 int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
 
-                methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount);
+                typeVars.retainAll(scanner.usedTypeVariables);
+                
+                methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars);
             }
 
             if (fixesMap != null) {
@@ -527,11 +535,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             errorMessage.put(IntroduceKind.CREATE_METHOD, "ERR_Invalid_Selection"); // NOI18N
             return null;
         }
+
+        Map<TypeMirror, TreePathHandle> typeVar2Def = new HashMap<TypeMirror, TreePathHandle>();
+        List<TreePathHandle> typeVars = new LinkedList<TreePathHandle>();
+
+        prepareTypeVars(method, info, typeVar2Def, typeVars);
         
         Element methodEl = info.getTrees().getElement(method);
         List<? extends StatementTree> parentStatements = CopyFinder.getStatements(block);
         List<? extends StatementTree> statementsToWrap = parentStatements.subList(statements[0], statements[1] + 1);
-        ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), cancel);
+        ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), typeVar2Def, cancel);
         Set<TypeMirror> exceptions = new HashSet<TypeMirror>();
         int index = 0;
         TypeMirror methodReturnType = info.getTypes().getNoType(TypeKind.VOID);
@@ -631,7 +644,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             exceptionHandles.add(TypeMirrorHandle.create(tm));
         }
 
-        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], duplicatesCount);
+        typeVars.retainAll(scanner.usedTypeVariables);
+
+        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], duplicatesCount, typeVars);
     }
 
     private static boolean isInsideSameClass(TreePath one, TreePath two) {
@@ -985,6 +1000,24 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return vars;
     }
 
+    private static void prepareTypeVars(TreePath method, CompilationInfo info, Map<TypeMirror, TreePathHandle> typeVar2Def, List<TreePathHandle> typeVars) throws IllegalArgumentException {
+        if (method.getLeaf().getKind() == Kind.METHOD) {
+            MethodTree mt = (MethodTree) method.getLeaf();
+
+            for (TypeParameterTree tv : mt.getTypeParameters()) {
+                TreePath def = new TreePath(method, tv);
+                TypeMirror type = info.getTrees().getTypeMirror(def);
+
+                if (type != null && type.getKind() == TypeKind.TYPEVAR) {
+                    TreePathHandle tph = TreePathHandle.create(def, info);
+
+                    typeVar2Def.put(type, tph);
+                    typeVars.add(tph);
+                }
+            }
+        }
+    }
+
     private static final class ScanStatement extends TreePathScanner<Void, Void> {
         private static final int PHASE_BEFORE_SELECTION = 1;
         private static final int PHASE_INSIDE_SELECTION = 2;
@@ -1001,17 +1034,20 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private Set<VariableElement> usedSelectionLocalVariables = new HashSet<VariableElement>();
         private Set<TreePath> selectionExits = new HashSet<TreePath>();
         private Set<Tree> treesSeensInSelection = new HashSet<Tree>();
+        private final Map<TypeMirror, TreePathHandle> typeVar2Def;
+        private Set<TreePathHandle> usedTypeVariables = new HashSet<TreePathHandle>();
         private boolean hasReturns = false;
         private boolean hasBreaks = false;
         private boolean hasContinues = false;
         private boolean secondPass = false;
         private boolean stopSecondPass = false;
-        private AtomicBoolean cancel;
+        private final AtomicBoolean cancel;
 
-        public ScanStatement(CompilationInfo info, Tree firstInSelection, Tree lastInSelection, AtomicBoolean cancel) {
+        public ScanStatement(CompilationInfo info, Tree firstInSelection, Tree lastInSelection, Map<TypeMirror, TreePathHandle> typeVar2Def, AtomicBoolean cancel) {
             this.info = info;
             this.firstInSelection = firstInSelection;
             this.lastInSelection = lastInSelection;
+            this.typeVar2Def = typeVar2Def;
             this.cancel = cancel;
         }
 
@@ -1131,6 +1167,17 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
                 }
             }
+
+            if (phase == PHASE_INSIDE_SELECTION) {
+                TypeMirror type = info.getTrees().getTypeMirror(getCurrentPath());
+
+                if (type != null) {
+                    TreePathHandle def = typeVar2Def.get(type);
+
+                    usedTypeVariables.add(def);
+                }
+            }
+
             return super.visitIdentifier(node, p);
         }
 
@@ -1699,8 +1746,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private int from;
         private int to;
         private final int duplicatesCount;
+        private final List<TreePathHandle> typeVars;
 
-        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount) {
+        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount, List<TreePathHandle> typeVars) {
             this.js = js;
             this.parentBlock = parentBlock;
             this.parameters = parameters;
@@ -1715,6 +1763,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             this.from = from;
             this.to = to;
             this.duplicatesCount = duplicatesCount;
+            this.typeVars = typeVars;
         }
 
         public String getText() {
@@ -1968,7 +2017,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return; //XXX
                     }
 
-                    MethodTree method = make.Method(mods, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), formalArguments, thrown, make.Block(methodStatements, false), null);
+                    List<TypeParameterTree> typeVars = new LinkedList<TypeParameterTree>();
+
+                    for (TreePathHandle tph : IntroduceMethodFix.this.typeVars) {
+                        typeVars.add((TypeParameterTree) tph.resolve(copy).getLeaf());
+                    }
+
+                    MethodTree method = make.Method(mods, name, returnTypeTree, typeVars, formalArguments, thrown, make.Block(methodStatements, false), null);
 
                     TreePath pathToClass = findClass(firstStatement);
 
@@ -2023,13 +2078,15 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private final List<TreePathHandle> parameters;
         private final Set<TypeMirrorHandle> thrownTypes;
         private final int duplicatesCount;
+        private final List<TreePathHandle> typeVars;
 
-        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount) {
+        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars) {
             this.js = js;
             this.expression = expression;
             this.parameters = parameters;
             this.thrownTypes = thrownTypes;
             this.duplicatesCount = duplicatesCount;
+            this.typeVars = typeVars;
         }
 
         public String getText() {
@@ -2102,7 +2159,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     methodStatements.add(make.Return((ExpressionTree) expression.getLeaf()));
 
-                    MethodTree method = make.Method(mods, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), formalArguments, thrown, make.Block(methodStatements, false), null);
+                    List<TypeParameterTree> typeVars = new LinkedList<TypeParameterTree>();
+
+                    for (TreePathHandle tph : IntroduceExpressionBasedMethodFix.this.typeVars) {
+                        typeVars.add((TypeParameterTree) tph.resolve(copy).getLeaf());
+                    }
+
+                    MethodTree method = make.Method(mods, name, returnTypeTree, typeVars, formalArguments, thrown, make.Block(methodStatements, false), null);
                     TreePath pathToClass = findClass(expression);
 
                     assert pathToClass != null;

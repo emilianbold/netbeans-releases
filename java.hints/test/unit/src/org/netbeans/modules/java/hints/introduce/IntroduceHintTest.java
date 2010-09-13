@@ -1250,6 +1250,58 @@ public class IntroduceHintTest extends NbTestCase {
                        "ERR_Invalid_Selection");
     }
 
+    public void testIntroduceMethodTypeParam183435a() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static <T extends Number> void test(T t) {\n" +
+                       "        String allianceString = new String(\"[]\");\n" +
+                       "        |allianceString += t.toString();|" +
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static <T extends Number> void test(T t) { String allianceString = new String(\"[]\"); name(allianceString, t); } private static <T extends Number> void name(String allianceString, T t) { allianceString += t.toString(); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+
+    public void testIntroduceMethodTypeParam183435b() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static <T extends Number> void test(T t) {\n" +
+                       "        String allianceString = new String(\"[]\");\n" +
+                       "        String s = t.toString();" +
+                       "        |allianceString += s;|" +
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static <T extends Number> void test(T t) { String allianceString = new String(\"[]\"); String s = t.toString(); name(allianceString, s); } private static void name(String allianceString, String s) { allianceString += s; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+
+    public void testIntroduceMethodTypeParam183435c() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static <T extends Number> void test(T t) {\n" +
+                       "        String allianceString = new String(\"[]\");\n" +
+                       "        allianceString += |t.toString()|;" +
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static <T extends Number> void test(T t) { String allianceString = new String(\"[]\"); allianceString += name(t); } private static <T extends Number> String name(T t) { return t.toString(); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       3, 2);
+    }
+
+    public void testIntroduceMethodTypeParam183435d() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static <T extends Number> void test(T t) {\n" +
+                       "        String allianceString = new String(\"[]\");\n" +
+                       "        String s = t.toString();" +
+                       "        allianceString += |s|;" +
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static <T extends Number> void test(T t) { String allianceString = new String(\"[]\"); String s = t.toString(); allianceString += name(s); } private static String name(String s) { return s; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       3, 2);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
