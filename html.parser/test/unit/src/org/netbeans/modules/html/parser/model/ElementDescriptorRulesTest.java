@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,57 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.cli;
+package org.netbeans.modules.html.parser.model;
 
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.modules.subversion.Subversion;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import nu.validator.htmlparser.impl.ElementName;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author tomas
+ * @author marekfukala
  */
-public class ParsedStatusTest extends AbstractCLITest {
-    
-    // XXX terst remote change
-    
-    private enum StatusCall {
-        filearray,
-        file
-    }
-    
-    public ParsedStatusTest(String testName) throws Exception {
-        super(testName);
+public class ElementDescriptorRulesTest extends NbTestCase {
+
+    public ElementDescriptorRulesTest(String name) {
+        super(name);
     }
 
-    // XXX check with javahl
-    public void testGetStatusWrongAmount() throws Exception {                                
-        File folder = createFolder("folder");        
-        File folder1 = createFolder(folder, "folder1");        
-        File folder2 = createFolder(folder, "folder2");        
-        File file1 = createFolder(folder2, "file1");        
+    public void testOpenEndTags() {
+        ElementDescriptor div = ElementDescriptor.forElementName(ElementName.DIV);
+
+        assertFalse(ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(div));
+        assertFalse(ElementDescriptorRules.OPTIONAL_END_TAGS.contains(div));
+
+        ElementDescriptor tbody = ElementDescriptor.forElementName(ElementName.TBODY);
+        assertTrue(ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(tbody));
+        assertTrue(ElementDescriptorRules.OPTIONAL_END_TAGS.contains(tbody));
+    }
+
+    public void testMathMLTags() {
+
+        ElementName sin = ElementName.SIN;
+        assertNull(ElementDescriptor.forElementName(sin));
+
+        assertTrue(ElementDescriptorRules.MATHML_TAG_NAMES.contains(sin.name));
+        assertFalse(ElementDescriptorRules.SVG_TAG_NAMES.contains(sin.name));
         
-        add(folder);
-        add(folder1);
-        add(folder2);
-        add(file1);
-        commit(getWC());
-                
-        ISVNStatus[] s1 = getNbClient().getStatus(folder, true, false);        
-        
-        assertEquals(4, s1.length);                        
+    }
+
+    public void testSVGTags() {
+
+        ElementName svg = ElementName.SVG;
+        assertNull(ElementDescriptor.forElementName(svg));
+
+        assertTrue(ElementDescriptorRules.SVG_TAG_NAMES.contains(svg.name));
+        assertFalse(ElementDescriptorRules.MATHML_TAG_NAMES.contains(svg.name));
+
     }
     
-    
+
 }

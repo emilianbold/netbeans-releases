@@ -791,12 +791,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 return ;
             }
             TopComponent activetc = TopComponent.getRegistry().getActivated();
-            
-            if (ui!=null) {
-                UI.openRefactoringUI(ui, activetc);
-            } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameKeyword"));
-            }
+
+            SHOW.show(ui, activetc);
         }
         
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info);
@@ -1003,5 +999,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     private static Logger logger() {
         return Logger.getLogger(RefactoringActionsProvider.class.getName());
+    }
+
+    public static ShowUI SHOW = new ShowUI() {
+        @Override
+        public void show(RefactoringUI ui, TopComponent activetc) {
+            if (ui!=null) {
+                UI.openRefactoringUI(ui, activetc);
+            } else {
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameKeyword"));
+            }
+        }
+    };
+    public interface ShowUI {
+        public void show(RefactoringUI ui, TopComponent activetc);
     }
 }

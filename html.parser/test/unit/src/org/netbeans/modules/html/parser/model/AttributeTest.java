@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,64 +34,70 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.cli;
+package org.netbeans.modules.html.parser.model;
 
-import java.io.File;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import java.util.Collection;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author tomas
+ * @author marekfukala
  */
-public class MkdirTest extends AbstractCLITest {
-    
-    public MkdirTest(String testName) throws Exception {
-        super(testName);
-    }
-            
-    public void testMkdirUrl() throws Exception {                                                
-                        
-        ISVNClientAdapter c = getNbClient();        
-        SVNUrl url = getRepoUrl().appendPath("mrkvadir");
-        c.mkdir(url, "trkvadir");       
+public class AttributeTest extends NbTestCase {
 
-        ISVNInfo info = getInfo(url);
-        assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());        
-        assertNotifiedFiles(new File[] {});        
+    public AttributeTest(String name) {
+        super(name);
     }
-    
-    public void testMkdirFile() throws Exception {                                                
-                        
-        File folder = new File(getWC(), "folder");
-        
-        ISVNClientAdapter c = getNbClient();                
-        c.mkdir(folder);       
 
-        ISVNInfo info = getInfo(folder);
-        assertNotNull(info);        
-        assertStatus(SVNStatusKind.ADDED, folder);
-        assertNotifiedFiles(new File[] {folder});        
+    public void testBasic() {
+        ElementDescriptor div = ElementDescriptor.forName("div");
+        assertNotNull(div);
+        Link nameLink = div.getName();
+        assertNotNull(nameLink);
+        assertEquals("div", nameLink.getName());
+        assertEquals("http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-div-element",
+                nameLink.getUrl().toExternalForm());
+
+        Collection<ContentType> cats = div.getCategoryTypes();
+        assertNotNull(cats);
+        assertTrue(cats.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
+        Collection<FormAssociatedElementsCategory> fasecs = div.getFormCategories();
+        assertTrue(fasecs.isEmpty());
+
+
+        Collection<ContentType> parentTypes = div.getParentTypes();
+        assertNotNull(parentTypes);
+        assertTrue(parentTypes.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
+
+        Collection<ElementDescriptor> parentElements = div.getParentElements();
+        assertTrue(parentElements.isEmpty());
+
+        Collection<ContentType> childrenTypes = div.getChildrenTypes();
+        assertNotNull(childrenTypes);
+        assertTrue(parentTypes.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
+
+        Collection<ElementDescriptor> childrenElements = div.getChildrenElements();
+        assertTrue(childrenElements.isEmpty());
+
+        Link domInterface = div.getDomInterface();
+        assertNotNull(domInterface);
+        assertEquals("HTMLDivElement", domInterface.getName());
+
     }
-    
-    public void testMkdirUrlParents() throws Exception {                                                                        
-        ISVNClientAdapter c = getNbClient();        
-        SVNUrl url = getRepoUrl().appendPath("mrkvadira").appendPath("mrkvadirb").appendPath("mrkvadirc").appendPath("mrkvadird");
-        c.mkdir(url, true, "trkvadir");       
 
-        ISVNInfo info = getInfo(url);
-        assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());                
-        assertNotifiedFiles(new File[] {});        
-    }            
-    
+    public void testNonExisting() {
+        ElementDescriptor el = ElementDescriptor.forName("nosuchelement");
+        assertNull(el);
+
+    }
+
 }

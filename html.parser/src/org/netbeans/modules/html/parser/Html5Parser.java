@@ -66,7 +66,6 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.Validator;
@@ -195,9 +194,9 @@ public class Html5Parser implements HtmlParser {
             super(source, root, problems, version);
         }
 
-        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, HtmlTagType type) {
+        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, boolean type) {
             Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
-            if (type == HtmlTagType.OPEN_TAG) {
+            if (type) {
                 //open tags
                 StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
                 ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);

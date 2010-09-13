@@ -54,8 +54,11 @@ public interface HtmlParseResult extends ParseResult {
 
     public HtmlVersion version();
 
-    /** experimental - may be refactored out of this class */
-    public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type);
+    /** experimental - may be refactored out of this class 
+     * @param openTags the method is supposed to return possible open tags in the given contextt if true
+     * otherwise it returns possible end tags.
+     */
+    public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean openTags);
 
     public Collection<HtmlTag> getAllTags();
 

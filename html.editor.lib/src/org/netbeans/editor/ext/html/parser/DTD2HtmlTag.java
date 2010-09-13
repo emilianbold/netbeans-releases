@@ -53,6 +53,7 @@ import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 
 /**
  *
@@ -153,6 +154,11 @@ public class DTD2HtmlTag {
                 return null;
             }
             return getHtmlTagAttribute(attr);
+        }
+
+        @Override
+        public HtmlTagType getTagClass() {
+            return HtmlTagType.HTML;
         }
     }
 

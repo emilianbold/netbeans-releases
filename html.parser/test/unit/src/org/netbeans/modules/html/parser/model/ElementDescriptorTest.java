@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.html.parser.model;
 
-import java.util.Collection;
+import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -55,49 +55,12 @@ public class ElementDescriptorTest extends NbTestCase {
         super(name);
     }
 
-    public void testBasic() {
-        ElementDescriptor div = ElementDescriptor.byName("div");
-        assertNotNull(div);
-        Link nameLink = div.getName();
-        assertNotNull(nameLink);
-        assertEquals("div", nameLink.getName());
-        assertEquals("http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-div-element",
-                nameLink.getUrl().toExternalForm());
-
-        Collection<ContentType> cats = div.getCategoryTypes();
-        assertNotNull(cats);
-        assertTrue(cats.contains(ContentType.FLOW));
-        assertFalse(cats.contains(ContentType.METADATA));
-        Collection<FormAssociatedElementsCategory> fasecs = div.getFormCategories();
-        assertTrue(fasecs.isEmpty());
-
-
-        Collection<ContentType> parentTypes = div.getParentTypes();
-        assertNotNull(parentTypes);
-        assertTrue(parentTypes.contains(ContentType.FLOW));
-        assertFalse(cats.contains(ContentType.METADATA));
-
-        Collection<ElementDescriptor> parentElements = div.getParentElements();
-        assertTrue(parentElements.isEmpty());
-
-        Collection<ContentType> childrenTypes = div.getChildrenTypes();
-        assertNotNull(childrenTypes);
-        assertTrue(parentTypes.contains(ContentType.FLOW));
-        assertFalse(cats.contains(ContentType.METADATA));
-
-        Collection<ElementDescriptor> childrenElements = div.getChildrenElements();
-        assertTrue(childrenElements.isEmpty());
-
-        Link domInterface = div.getDomInterface();
-        assertNotNull(domInterface);
-        assertEquals("HTMLDivElement", domInterface.getName());
-
+    public void testNamePattern() {
+        assertEquals("title", Attribute.parseName("title"));
+        assertEquals("href", Attribute.parseName("attr-link-href"));
+        assertEquals("http-equiv", Attribute.parseName("attr-meta-http-equiv"));
     }
 
-    public void testNonExisting() {
-        ElementDescriptor el = ElementDescriptor.byName("nosuchelement");
-        assertNull(el);
 
-    }
-
+  
 }

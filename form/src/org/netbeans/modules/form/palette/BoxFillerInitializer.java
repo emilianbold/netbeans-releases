@@ -43,6 +43,7 @@
 package org.netbeans.modules.form.palette;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -74,6 +75,8 @@ public class BoxFillerInitializer {
     }
 
     public void initialize() {
+        metaComp.setAuxValue(RADComponent.AUX_VALUE_CLASS_DETAILS, initializerId);
+        boolean dialogOKClosed = true;
         if ("Box.Filler.Glue".equals(initializerId)) { // NOI18N
             setProperty("maximumSize", new Dimension(Short.MAX_VALUE, Short.MAX_VALUE)); // NOI18N
         } else if ("Box.Filler.HorizontalGlue".equals(initializerId)) { // NOI18N
@@ -82,39 +85,49 @@ public class BoxFillerInitializer {
             setProperty("maximumSize", new Dimension(0, Short.MAX_VALUE)); // NOI18N
         } else if ("Box.Filler.HorizontalStrut".equals(initializerId)) { // NOI18N
             WidthHeightPanel panel = new WidthHeightPanel(true, false);
-            showDialog(panel, "BoxFillerInitializer.HorizontalStrut"); // NOI18N
+            dialogOKClosed = showDialog(panel, "BoxFillerInitializer.HorizontalStrut"); // NOI18N
             int width = panel.getFillerWidth();
             setProperty("minimumSize", new Dimension(width, 0)); // NOI18N
             setProperty("preferredSize", new Dimension(width, 0)); // NOI18N
             setProperty("maximumSize", new Dimension(width, Short.MAX_VALUE)); // NOI18N
         } else if ("Box.Filler.VerticalStrut".equals(initializerId)) { // NOI18N
             WidthHeightPanel panel = new WidthHeightPanel(false, true);
-            showDialog(panel, "BoxFillerInitializer.VerticalStrut"); // NOI18N
+            dialogOKClosed = showDialog(panel, "BoxFillerInitializer.VerticalStrut"); // NOI18N
             int height = panel.getFillerHeight();
             setProperty("minimumSize", new Dimension(0, height)); // NOI18N
             setProperty("preferredSize", new Dimension(0, height)); // NOI18N
             setProperty("maximumSize", new Dimension(Short.MAX_VALUE, height)); // NOI18N
         } else if ("Box.Filler.RigidArea".equals(initializerId)) { // NOI18N
             WidthHeightPanel panel = new WidthHeightPanel(true, true);
-            showDialog(panel, "BoxFillerInitializer.RigidArea"); // NOI18N
+            dialogOKClosed = showDialog(panel, "BoxFillerInitializer.RigidArea"); // NOI18N
             int width = panel.getFillerWidth();
             int height = panel.getFillerHeight();
             setProperty("minimumSize", new Dimension(width, height)); // NOI18N
             setProperty("preferredSize", new Dimension(width, height)); // NOI18N
             setProperty("maximumSize", new Dimension(width, height)); // NOI18N
         }
+        if (!dialogOKClosed) {
+            if (metaComp.isInModel()) {
+                metaComp.getFormModel().removeComponent(metaComp, true);
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        PaletteUtils.clearPaletteSelection();
+                    }
+                });
+            }
+        }
     }
 
-    private void showDialog(WidthHeightPanel panel, String titleKey) {
+    private boolean showDialog(WidthHeightPanel panel, String titleKey) {
         DialogDescriptor dd = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(BoxFillerInitializer.class, titleKey), // NOI18N
                 true,
                 null);
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-        if (dd.getValue() != DialogDescriptor.OK_OPTION) {
-            // PENDING 
-        }
+        return (dd.getValue() == DialogDescriptor.OK_OPTION);
     }
 
     private void setProperty(String propName, Dimension value) {

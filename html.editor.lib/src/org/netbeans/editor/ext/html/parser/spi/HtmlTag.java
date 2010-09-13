@@ -56,10 +56,12 @@ public interface HtmlTag {
 
     public HtmlTagAttribute getAttribute(String name);
 
-    public boolean isEmpty(); //forbidden end tag
+    public boolean isEmpty(); 
 
     public boolean hasOptionalOpenTag();
 
     public boolean hasOptionalEndTag();
+
+    public HtmlTagType getTagClass();
 
 }

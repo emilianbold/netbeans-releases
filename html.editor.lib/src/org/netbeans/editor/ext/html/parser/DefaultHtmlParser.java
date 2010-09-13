@@ -119,28 +119,25 @@ public class DefaultHtmlParser implements HtmlParser {
         return new DefaultHtmlParseResult(source, root, Collections.<ProblemDescription>emptyList(), version) {
 
             @Override
-            public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, HtmlTagType type) {
-                switch(type) {
-                    case OPEN_TAG:
-                        return DTD2HtmlTag.convert(AstNodeUtils.getPossibleOpenTagElements(afterNode));
-                    case END_TAG:
-                        Collection<AstNode> possibleEndTags = AstNodeUtils.getPossibleEndTagElements(afterNode);
-                        Collection<HtmlTag> result = new LinkedList<HtmlTag>();
-                        for(AstNode node : possibleEndTags) {
-                            if(node.getDTDElement() != null) {
-                                //DTD element bound node
-                                result.add(DTD2HtmlTag.getTagForElement(node.getDTDElement()));
-                            } else {
-                                //non-dtd node
-                                result.add(new UnknownHtmlTag(node.name()));
-                            }
-                        }
-                        return result;
+            public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean type) {
+                if (type) {
 
-                    default:
-                        assert false : "A new member added to the HtmlTagType enum - add the rule here!"; //NOI18N
-                        return Collections.emptyList();
+                    return DTD2HtmlTag.convert(AstNodeUtils.getPossibleOpenTagElements(afterNode));
+                } else {
+                    Collection<AstNode> possibleEndTags = AstNodeUtils.getPossibleEndTagElements(afterNode);
+                    Collection<HtmlTag> result = new LinkedList<HtmlTag>();
+                    for (AstNode node : possibleEndTags) {
+                        if (node.getDTDElement() != null) {
+                            //DTD element bound node
+                            result.add(DTD2HtmlTag.getTagForElement(node.getDTDElement()));
+                        } else {
+                            //non-dtd node
+                            result.add(new UnknownHtmlTag(node.name()));
+                        }
+                    }
+                    return result;
                 }
+
             }
 
             @Override
@@ -198,6 +195,11 @@ public class DefaultHtmlParser implements HtmlParser {
         @Override
         public boolean hasOptionalEndTag() {
             return false;
+        }
+
+        @Override
+        public HtmlTagType getTagClass() {
+            return HtmlTagType.HTML;
         }
 
     }

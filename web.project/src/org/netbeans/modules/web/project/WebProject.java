@@ -115,6 +115,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
@@ -829,6 +830,12 @@ public final class WebProject implements Project {
             }
 
             try {
+                
+                if (webModule.getDeploymentDescriptor() == null
+                        && webModule.getConfigSupport().isDescriptorRequired()) {
+                    DDHelper.createWebXml(webModule.getJ2eeProfile(), webModule.getWebInf());
+                }
+
                 //DDDataObject initialization to be ready to listen on changes (#45771)
 
                 // web.xml
@@ -923,7 +930,7 @@ public final class WebProject implements Project {
                 }
                 
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
 
             webModule.getConfigSupport().addLibraryChangeListener(new ChangeListener() {

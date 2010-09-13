@@ -333,7 +333,7 @@ public class HtmlCompletionQuery extends UserTask {
             result = new ArrayList<CompletionItem>();
 
             if (queryHtmlContent) {
-                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, HtmlTagType.OPEN_TAG);
+                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, true);
                 Collection<HtmlTag> allTags = htmlResult.getAllTags();
                 Collection<HtmlTag> filteredByPrefix = filterHtmlElements(possibleOpenTags, preText);
                 result.addAll(translateHtmlTags(documentItemOffset - 1, filteredByPrefix, allTags));
@@ -353,7 +353,7 @@ public class HtmlCompletionQuery extends UserTask {
             result = new ArrayList<CompletionItem>();
 
             if (queryHtmlContent) {
-                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, HtmlTagType.OPEN_TAG);
+                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, true);
                 Collection<HtmlTag> allTags = htmlResult.getAllTags();
                 result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
 
@@ -581,7 +581,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private Collection<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, AstNode leaf, int offset, String prefix) {
-        Collection<HtmlTag> possible = htmlResult.getPossibleTagsInContext(leaf, HtmlTagType.END_TAG);
+        Collection<HtmlTag> possible = htmlResult.getPossibleTagsInContext(leaf, false);
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
         int order = 0;
         for(HtmlTag tag : possible) {

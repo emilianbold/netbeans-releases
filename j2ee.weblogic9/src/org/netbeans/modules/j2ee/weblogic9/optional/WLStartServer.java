@@ -550,15 +550,18 @@ public final class WLStartServer extends StartServer {
                 long start = System.currentTimeMillis();
 
                 File startup = null;
+                boolean needsJavaHome = false;
                 if (Utilities.isWindows()) {
                     startup = new File(domainHome, STARTUP_BAT);
                     if (!startup.exists()) {
                         startup = new File(new File(domainHome, "bin"), STARTUP_BAT_11_WEB); // NOI18N
+                        needsJavaHome = true;
                     }
                 } else {
                     startup = new File(domainHome, STARTUP_SH);
                     if (!startup.exists()) {
                         startup = new File(new File(domainHome, "bin"), STARTUP_SH_11_WEB); // NOI18N
+                        needsJavaHome = true;
                     }
                 }
 
@@ -569,6 +572,10 @@ public final class WLStartServer extends StartServer {
                 String mwHome = dm.getProductProperties().getMiddlewareHome();
                 if (mwHome != null) {
                     builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
+                }
+                
+                if (needsJavaHome) {
+                    builder = builder.addEnvironmentVariable("JAVA_HOME", WLPluginProperties.getDefaultPlatformHome());
                 }
 
                 builder = initBuilder(builder);
