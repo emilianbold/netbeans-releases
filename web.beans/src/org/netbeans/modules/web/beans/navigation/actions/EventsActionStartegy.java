@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.navigation.actions;
 
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.swing.SwingUtilities;
@@ -53,7 +54,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.navigation.ObserversModel;
+import org.netbeans.modules.web.beans.navigation.EventsModel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -63,82 +64,78 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class InspectObserversAtCaretAction extends AbstractObserversAction {
-    
-    private static final long serialVersionUID = 3982229267831538567L;
+final class EventsActionStartegy implements ModelActionStrategy {
 
-    private static final String INSPECT_OBSERVERS_AT_CARET =
-        "inspect-observers-at-caret";                       // NOI18N
-    
-    private static final String INSPECT_OBSERVERS_AT_CARET_POPUP =
-        "inspect-observers-at-caret-popup";                 // NOI18N
-
-    public InspectObserversAtCaretAction() {
-        super(NbBundle.getMessage(InspectObserversAtCaretAction.class, 
-                INSPECT_OBSERVERS_AT_CARET));
-        
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#isApplicable(org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId)
+     */
+    @Override
+    public boolean isApplicable( InspectActionId id ) {
+        return id == InspectActionId.EVENTS;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#isApplicable(org.netbeans.modules.web.beans.api.model.WebBeansModel, java.lang.Object[])
      */
     @Override
-    protected void modelAcessAction( WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, final Object[] variable,
-            final JTextComponent component, FileObject fileObject )
+    public boolean isApplicable( WebBeansModel model, Object context[] ) {
+        final Object handle = context[0];
+        if ( handle == null ){
+            return false;
+        }
+        Element element = ((ElementHandle<?>)handle).resolve( 
+                model.getCompilationController());
+        ExecutableElement method = (ExecutableElement)element;
+        if ( model.getObserverParameter( method ) == null ){
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
+                            "LBL_NotObserverContext"), // NOI18N
+                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+            return false;
+        }
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#invokeModelAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
+     */
+    @Override
+    public void invokeModelAction( final WebBeansModel model,
+            final MetadataModel<WebBeansModel> metaModel, Object[] subject,
+            JTextComponent component, FileObject fileObject )
     {
-        final VariableElement var = WebBeansActionHelper.findVariable(model,variable);
-        if (var == null) {
-            return;
-        }
-        if (!model.isEventInjectionPoint(var)) {
+        final Object handle = subject[0];
+        Element element = ((ElementHandle<?>)handle).resolve( 
+                model.getCompilationController());
+        ExecutableElement method = (ExecutableElement)element;
+        if ( model.getObserverParameter( method ) == null ){
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,
-                            "LBL_NotEventInjectionPoint"), // NOI18N
+                            "LBL_NotObserverContext"), // NOI18N
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return;
         }
-        final List<ExecutableElement> observers = model.getObservers( var , null );
-        if ( observers.size() == 0 ){
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
-                            "LBL_ObserversNotFound"), // NOI18N
-                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-            return;
-        }
-        final CompilationController controller = model.getCompilationController();
-        final ObserversModel uiModel = new ObserversModel(observers,controller, 
-                metaModel);
-        final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
-        final String name = var.getSimpleName().toString();
+        List<VariableElement> eventInjectionPoints = model.getEventInjectionPoints( 
+                method , null );
+        CompilationController controller = model
+            .getCompilationController();
+        final EventsModel uiModel = new EventsModel(eventInjectionPoints, 
+                controller, metaModel);
+        final ElementHandle<ExecutableElement> methodHandle = 
+            ElementHandle.create( method);
+        final String name = method.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
-            WebBeansActionHelper.showObserversDialog(observers,  metaModel , 
-                    model , handleVar, uiModel ,name );
+            WebBeansActionHelper.showEventsDialog( metaModel, model, 
+                    methodHandle , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    WebBeansActionHelper.showObserversDialog(observers,  
-                            metaModel, null , handleVar, uiModel , name );
+                    WebBeansActionHelper.showEventsDialog(metaModel, null , 
+                            methodHandle ,uiModel , name );
                 }
             });
         }
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
-     */
-    @Override
-    protected String getActionCommand() {
-        return INSPECT_OBSERVERS_AT_CARET;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getPopupMenuKey()
-     */
-    @Override
-    protected String getPopupMenuKey() {
-        return INSPECT_OBSERVERS_AT_CARET_POPUP;
     }
 
 }

@@ -44,7 +44,6 @@
 package org.netbeans.modules.web.beans.navigation.actions;
 
 import javax.lang.model.element.VariableElement;
-import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
@@ -55,8 +54,6 @@ import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
-import org.netbeans.modules.web.beans.navigation.InjectablesPanel;
-import org.netbeans.modules.web.beans.navigation.ResizablePopup;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -150,31 +147,18 @@ public final class InspectInjectablesAtCaretAction extends AbstractInjectableAct
         final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
         final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
-            showDialog(metaModel, model, handleVar , uiModel , name );
+            WebBeansActionHelper.showInjectablesDialog(metaModel, model, 
+                    handleVar , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    showDialog(metaModel, null , handleVar ,
-                            uiModel , name );
+                    WebBeansActionHelper.showInjectablesDialog(metaModel, 
+                            null , handleVar ,uiModel , name );
                 }
             });
         }
     }
 
-    private void showDialog( MetadataModel<WebBeansModel> metamodel,
-            WebBeansModel model, ElementHandle<VariableElement> variable, 
-            InjectablesModel uiModel , String name ) 
-    {
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));           // NOI18N
-        JDialog dialog = ResizablePopup.getDialog();
-        String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
-                "TITLE_Injectables" , name );//NOI18N
-        dialog.setTitle( title );
-        dialog.setContentPane( new InjectablesPanel(variable, metamodel, model,
-                uiModel ));
-        dialog.setVisible( true );
-    }
 
 }
