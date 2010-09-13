@@ -55,9 +55,8 @@ public class ElementAttributes {
 
 
     public static synchronized Collection<String> getAttrNamesForElement(String elementName) {
-        ElementDescriptor descriptor = ElementDescriptor.byName(elementName);
+        ElementDescriptor descriptor = ElementDescriptor.forName(elementName);
         if(descriptor == null) {
-//            throw new IllegalArgumentException("No such element " + elementName);
             return Collections.emptyList();
         }
         Collection<String> attrNames = new LinkedList<String>();

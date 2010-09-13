@@ -56,7 +56,7 @@ public class AttributeTest extends NbTestCase {
     }
 
     public void testBasic() {
-        ElementDescriptor div = ElementDescriptor.byName("div");
+        ElementDescriptor div = ElementDescriptor.forName("div");
         assertNotNull(div);
         Link nameLink = div.getName();
         assertNotNull(nameLink);
@@ -95,7 +95,7 @@ public class AttributeTest extends NbTestCase {
     }
 
     public void testNonExisting() {
-        ElementDescriptor el = ElementDescriptor.byName("nosuchelement");
+        ElementDescriptor el = ElementDescriptor.forName("nosuchelement");
         assertNull(el);
 
     }

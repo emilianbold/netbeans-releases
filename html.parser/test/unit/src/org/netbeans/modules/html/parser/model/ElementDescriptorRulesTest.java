@@ -40,14 +40,51 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.spi;
+package org.netbeans.modules.html.parser.model;
+
+import nu.validator.htmlparser.impl.ElementName;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author marekfukala
  */
-public enum HtmlTagType {
+public class ElementDescriptorRulesTest extends NbTestCase {
 
-    OPEN_TAG, END_TAG;
+    public ElementDescriptorRulesTest(String name) {
+        super(name);
+    }
+
+    public void testOpenEndTags() {
+        ElementDescriptor div = ElementDescriptor.forElementName(ElementName.DIV);
+
+        assertFalse(ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(div));
+        assertFalse(ElementDescriptorRules.OPTIONAL_END_TAGS.contains(div));
+
+        ElementDescriptor tbody = ElementDescriptor.forElementName(ElementName.TBODY);
+        assertTrue(ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(tbody));
+        assertTrue(ElementDescriptorRules.OPTIONAL_END_TAGS.contains(tbody));
+    }
+
+    public void testMathMLTags() {
+
+        ElementName sin = ElementName.SIN;
+        assertNull(ElementDescriptor.forElementName(sin));
+
+        assertTrue(ElementDescriptorRules.MATHML_TAG_NAMES.contains(sin.name));
+        assertFalse(ElementDescriptorRules.SVG_TAG_NAMES.contains(sin.name));
+        
+    }
+
+    public void testSVGTags() {
+
+        ElementName svg = ElementName.SVG;
+        assertNull(ElementDescriptor.forElementName(svg));
+
+        assertTrue(ElementDescriptorRules.SVG_TAG_NAMES.contains(svg.name));
+        assertFalse(ElementDescriptorRules.MATHML_TAG_NAMES.contains(svg.name));
+
+    }
+    
 
 }

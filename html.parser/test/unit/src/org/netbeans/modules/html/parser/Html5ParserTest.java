@@ -58,6 +58,7 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.SAXException;
 
@@ -246,7 +247,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, HtmlTagType.OPEN_TAG);
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, true);
 
         assertTrue(!possible.isEmpty());
 
@@ -257,7 +258,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(headTag));
 
         AstNode head = AstNodeUtils.query(result.root(), "html/head");
-        possible = result.getPossibleTagsInContext(head, HtmlTagType.OPEN_TAG);
+        possible = result.getPossibleTagsInContext(head, true);
 
         assertTrue(!possible.isEmpty());
 
@@ -266,7 +267,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(headTag));
 
         AstNode html = AstNodeUtils.query(result.root(), "html");
-        possible = result.getPossibleTagsInContext(html, HtmlTagType.OPEN_TAG);
+        possible = result.getPossibleTagsInContext(html, true);
         assertTrue(!possible.isEmpty());
         assertTrue(possible.contains(divTag));
 
@@ -278,7 +279,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, HtmlTagType.END_TAG);
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, false);
 
         assertTrue(!possible.isEmpty());
 
@@ -294,7 +295,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(divTag));
 
         AstNode head = AstNodeUtils.query(result.root(), "html/head");
-        possible = result.getPossibleTagsInContext(head, HtmlTagType.OPEN_TAG);
+        possible = result.getPossibleTagsInContext(head, true);
 
         assertTrue(!possible.isEmpty());
 
@@ -317,7 +318,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode div = AstNodeUtils.query(result.root(), "html/body/div");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(div, HtmlTagType.OPEN_TAG);
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(div, true);
 
         assertTrue(!possible.isEmpty());
 
@@ -555,6 +556,10 @@ public class Html5ParserTest extends NbTestCase {
 
         public HtmlTagAttribute getAttribute(String name) {
             return null;
+        }
+
+        public HtmlTagType getTagClass() {
+            return HtmlTagType.HTML;
         }
     }
 }
