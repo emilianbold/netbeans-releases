@@ -43,8 +43,11 @@ package org.netbeans.modules.html.parser.model;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Some additional html5 metadata
@@ -52,6 +55,8 @@ import java.util.HashSet;
  * @author marekfukala
  */
 public class ElementDescriptorRules {
+
+    private static final Map<ContentType, Collection<ElementDescriptor>> CONTENTTYPE2ELEMENTS = new EnumMap<ContentType, Collection<ElementDescriptor>>(ContentType.class);
 
     //manually extracted from http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#optional-tags
     //
@@ -107,5 +112,21 @@ public class ElementDescriptorRules {
         "polyline", "prefetch", "radialGradient", "rect", "script", "set", "solidColor", "stop",
         "svg", "switch", "tbreak", "text", "textArea", "title", "tspan", "use", "video"
     }));
-    
+
+    public static synchronized Collection<ElementDescriptor> getElementsByContentType(ContentType ctype) {
+        //the mapping needs to be extracted from the reverse information element->ctype first
+        Collection<ElementDescriptor> members = CONTENTTYPE2ELEMENTS.get(ctype);
+        if(members == null) {
+            //init
+            members = new LinkedList<ElementDescriptor>();
+            for(ElementDescriptor ed : ElementDescriptor.values()) {
+                if(ed.getCategoryTypes().contains(ctype)) {
+                    members.add(ed);
+                }
+            }
+            CONTENTTYPE2ELEMENTS.put(ctype, members);
+        }
+        return members;
+    }
+
 }

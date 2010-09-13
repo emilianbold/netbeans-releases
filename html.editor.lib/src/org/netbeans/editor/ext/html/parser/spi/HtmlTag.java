@@ -64,4 +64,6 @@ public interface HtmlTag {
 
     public HtmlTagType getTagClass();
 
+    public Collection<HtmlTag> getChildren();
+
 }

@@ -40,27 +40,39 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.spi;
+package org.netbeans.modules.html.parser;
 
 import java.util.Collection;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import nu.validator.htmlparser.impl.ElementName;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.model.ElementDescriptor;
 
 /**
  *
  * @author marekfukala
  */
-public interface HtmlParseResult extends ParseResult {
+public class HtmlTagProviderTest extends NbTestCase {
 
-    public HtmlVersion version();
+    public HtmlTagProviderTest(String name) {
+        super(name);
+    }
 
-    public HtmlModel model();
+    public void testHtmlTagConversion() {
+        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.HTML.name);
+        assertNotNull(t);
 
-    /** experimental - may be refactored out of this class 
-     * @param openTags the method is supposed to return possible open tags in the given contextt if true
-     * otherwise it returns possible end tags.
-     */
-    public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean openTags);
+        assertEquals(ElementDescriptor.HTML.getNameLink().getName(), t.getName());
+        assertEquals(HtmlTagType.HTML, t.getTagClass());
 
+        Collection<HtmlTag> children = t.getChildren();
+        assertNotNull(children);
+        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.BODY.name)));
+        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.HEAD.name)));
+        
+        assertFalse(children.contains(HtmlTagProvider.getTagForElement(ElementName.VIDEO.name)));
 
+    }
+    
 }

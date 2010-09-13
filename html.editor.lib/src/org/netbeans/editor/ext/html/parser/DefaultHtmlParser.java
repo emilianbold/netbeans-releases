@@ -55,6 +55,7 @@ import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
@@ -73,6 +74,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = HtmlParser.class, position = 10)
 public class DefaultHtmlParser implements HtmlParser {
 
+    private static final String PARSER_NAME = String.format("Legacy html4 parser (%s) ", DefaultHtmlParser.class); //NOI18N
+
     private static final Map<HtmlVersion, Collection<HtmlTag>> ALL_TAGS_MAP = new EnumMap<HtmlVersion, Collection<HtmlTag>>(HtmlVersion.class);
 
     private static synchronized Collection<HtmlTag> getAllTags(HtmlVersion version) {
@@ -84,7 +87,7 @@ public class DefaultHtmlParser implements HtmlParser {
             List<Element> all = dtd.getElementList("");
             value = new ArrayList<HtmlTag>();
             for (Element e : all) {
-                value.add(DTD2HtmlTag.getTagForElement(e));
+                value.add(DTD2HtmlTag.getTagForElement(dtd, e));
             }
             ALL_TAGS_MAP.put(version, value);
         }
@@ -119,17 +122,22 @@ public class DefaultHtmlParser implements HtmlParser {
         return new DefaultHtmlParseResult(source, root, Collections.<ProblemDescription>emptyList(), version) {
 
             @Override
+            public HtmlModel model() {
+                return new Html4Model(version);
+            }
+
+            @Override
             public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean type) {
                 if (type) {
 
-                    return DTD2HtmlTag.convert(AstNodeUtils.getPossibleOpenTagElements(afterNode));
+                    return DTD2HtmlTag.convert(version.getDTD(), AstNodeUtils.getPossibleOpenTagElements(afterNode));
                 } else {
                     Collection<AstNode> possibleEndTags = AstNodeUtils.getPossibleEndTagElements(afterNode);
                     Collection<HtmlTag> result = new LinkedList<HtmlTag>();
                     for (AstNode node : possibleEndTags) {
                         if (node.getDTDElement() != null) {
                             //DTD element bound node
-                            result.add(DTD2HtmlTag.getTagForElement(node.getDTDElement()));
+                            result.add(DTD2HtmlTag.getTagForElement(version.getDTD(), node.getDTDElement()));
                         } else {
                             //non-dtd node
                             result.add(new UnknownHtmlTag(node.name()));
@@ -140,23 +148,45 @@ public class DefaultHtmlParser implements HtmlParser {
 
             }
 
-            @Override
-            public Collection<HtmlTag> getAllTags() {
-                return DefaultHtmlParser.getAllTags(version);
-            }
-
-            @Override
-            public HtmlTag getTag(String tagName) {
-                DTD.Element element = version.getDTD().getElement(tagName);
-                assert element != null;
-                if(element == null) {
-                    return null;
-                }
-                return DTD2HtmlTag.getTagForElement(element);
-            }
-
         };
 
+    }
+
+    @Override
+    public HtmlModel getModel(final HtmlVersion version) {
+        if (!canParse(version)) {
+            throw new IllegalArgumentException(
+                    String.format("The parser doesn't suppport the requested html version %s!", version)); //NOI18N
+        }
+        return new Html4Model(version);
+    }
+
+    @Override
+    public String getName() {
+        return PARSER_NAME;//NOI18N
+    }
+
+    private static class Html4Model implements HtmlModel {
+
+        private HtmlVersion version;
+
+        public Html4Model(HtmlVersion version) {
+            this.version = version;
+        }
+
+        @Override
+        public Collection<HtmlTag> getAllTags() {
+            return DefaultHtmlParser.getAllTags(version);
+        }
+
+        @Override
+        public HtmlTag getTag(String tagName) {
+            DTD.Element element = version.getDTD().getElement(tagName);
+            if (element == null) {
+                return null;
+            }
+            return DTD2HtmlTag.getTagForElement(version.getDTD(), element);
+        }
     }
 
     private static class UnknownHtmlTag implements HtmlTag {
@@ -201,6 +231,12 @@ public class DefaultHtmlParser implements HtmlParser {
         public HtmlTagType getTagClass() {
             return HtmlTagType.HTML;
         }
+
+        @Override
+        public Collection<HtmlTag> getChildren() {
+            return Collections.emptyList();
+        }
+
 
     }
 
