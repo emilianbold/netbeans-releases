@@ -47,7 +47,5 @@ package org.netbeans.editor.ext.html.parser.spi;
  * @author marekfukala
  */
 public enum HtmlTagType {
-
-    OPEN_TAG, END_TAG;
-
+    HTML, ARIA, SVG, MATHML, UNKNOWN;
 }

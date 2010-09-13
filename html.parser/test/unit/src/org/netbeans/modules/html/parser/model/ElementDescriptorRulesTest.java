@@ -40,28 +40,51 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.spi;
+package org.netbeans.modules.html.parser.model;
 
-import java.util.Collection;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import nu.validator.htmlparser.impl.ElementName;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author marekfukala
  */
-public interface HtmlParseResult extends ParseResult {
+public class ElementDescriptorRulesTest extends NbTestCase {
 
-    public HtmlVersion version();
+    public ElementDescriptorRulesTest(String name) {
+        super(name);
+    }
 
-    /** experimental - may be refactored out of this class 
-     * @param openTags the method is supposed to return possible open tags in the given contextt if true
-     * otherwise it returns possible end tags.
-     */
-    public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean openTags);
+    public void testOpenEndTags() {
+        ElementDescriptor div = ElementDescriptor.forElementName(ElementName.DIV);
 
-    public Collection<HtmlTag> getAllTags();
+        assertFalse(ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(div));
+        assertFalse(ElementDescriptorRules.OPTIONAL_END_TAGS.contains(div));
 
-    public HtmlTag getTag(String tagName);
+        ElementDescriptor tbody = ElementDescriptor.forElementName(ElementName.TBODY);
+        assertTrue(ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(tbody));
+        assertTrue(ElementDescriptorRules.OPTIONAL_END_TAGS.contains(tbody));
+    }
+
+    public void testMathMLTags() {
+
+        ElementName sin = ElementName.SIN;
+        assertNull(ElementDescriptor.forElementName(sin));
+
+        assertTrue(ElementDescriptorRules.MATHML_TAG_NAMES.contains(sin.name));
+        assertFalse(ElementDescriptorRules.SVG_TAG_NAMES.contains(sin.name));
+        
+    }
+
+    public void testSVGTags() {
+
+        ElementName svg = ElementName.SVG;
+        assertNull(ElementDescriptor.forElementName(svg));
+
+        assertTrue(ElementDescriptorRules.SVG_TAG_NAMES.contains(svg.name));
+        assertFalse(ElementDescriptorRules.MATHML_TAG_NAMES.contains(svg.name));
+
+    }
     
+
 }

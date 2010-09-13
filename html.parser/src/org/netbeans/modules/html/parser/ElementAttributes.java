@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.html.parser;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.LinkedList;
-import java.util.Map;
+import org.netbeans.modules.html.parser.model.Attribute;
+import org.netbeans.modules.html.parser.model.ElementDescriptor;
 
 /**
  *
@@ -53,207 +53,18 @@ import java.util.Map;
  */
 public class ElementAttributes {
 
-    //parsed from http://www.whatwg.org/specs/web-apps/current-work/#global-attributes
-    private static final String[] GLOBAL = new String[]{
-        "accesskey",
-        "class",
-        "contenteditable",
-        "contextmenu",
-        "dir",
-        "draggable",
-        "hidden",
-        "id",
-        "itemid",
-        "itemprop",
-        "itemref",
-        "itemscope",
-        "itemtype",
-        "lang",
-        "spellcheck",
-        "style",
-        "tabindex",
-        "title"};
-
-    private static final String[] GLOBAL_EVENT = new String[]{
-        "onabort",
-        "onblur",
-        "oncanplay",
-        "oncanplaythrough",
-        "onchange",
-        "onclick",
-        "oncontextmenu",
-        "ondblclick",
-        "ondrag",
-        "ondragend",
-        "ondragenter",
-        "ondragleave",
-        "ondragover",
-        "ondragstart",
-        "ondrop",
-        "ondurationchange",
-        "onemptied",
-        "onended",
-        "onerror",
-        "onfocus",
-        "onformchange",
-        "onforminput",
-        "oninput",
-        "oninvalid",
-        "onkeydown",
-        "onkeypress",
-        "onkeyup",
-        "onload",
-        "onloadeddata",
-        "onloadedmetadata",
-        "onloadstart",
-        "onmousedown",
-        "onmousemove",
-        "onmouseout",
-        "onmouseover",
-        "onmouseup",
-        "onmousewheel",
-        "onpause",
-        "onplay",
-        "onplaying",
-        "onprogress",
-        "onratechange",
-        "onreadystatechange",
-        "onscroll",
-        "onseeked",
-        "onseeking",
-        "onselect",
-        "onshow",
-        "onstalled",
-        "onsubmit",
-        "onsuspend",
-        "ontimeupdate",
-        "onvolumechange",
-        "onwaiting"
-    };
-
-    //generated
-    private static final String[][] ATTRS = new String[][]{
-        {"a"}, {"href", "target", "ping", "rel", "media", "hreflang", "type"},
-        {"b"}, {},
-        {"i"}, {},
-        {"p"}, {},
-        {"q"}, {"cite"},
-        {"br"}, {},
-        {"dd"}, {},
-        {"dl"}, {},
-        {"dt"}, {},
-        {"em"}, {},
-        {"hr"}, {},
-        {"li"}, {"ol", "value"},
-        {"ol"}, {"reversed", "start"},
-        {"rp"}, {},
-        {"rt"}, {},
-        {"td"}, {"colspan", "rowspan", "headers"},
-        {"th"}, {"colspan", "rowspan", "headers", "scope"},
-        {"tr"}, {},
-        {"ul"}, {},
-        {"bdo"}, {"dir"},
-        {"col"}, {"span"},
-        {"del"}, {"cite", "datetime"},
-        {"dfn"}, {"title"},
-        {"div"}, {},
-        {"img"}, {"alt", "src", "usemap", "ismap", "width", "height"},
-        {"ins"}, {"cite", "datetime"},
-        {"kbd"}, {},
-        {"map"}, {"name"},
-        {"nav"}, {},
-        {"pre"}, {},
-        {"var"}, {},
-        {"wbr"}, {},
-        {"area"}, {"alt", "coords", "shape", "href", "target", "ping", "rel", "media", "hreflang", "type"},
-        {"abbr"}, {"title"},
-        {"base"}, {"href", "target"},
-        {"body"}, {"onafterprint", "onbeforeprint", "onbeforeunload", "onblur", "onerror", "onfocus", "onhashchange", "onload", "onmessage", "onoffline", "ononline", "onpagehide", "onpageshow", "onpopstate", "onredo", "onresize", "onstorage", "onundo", "onunload"},
-        {"code"}, {},
-        {"cite"}, {},
-        {"form"}, {"accept-charset", "action", "autocomplete", "enctype", "method", "name", "novalidate", "target"},
-        {"head"}, {},
-        {"html"}, {"manifest"},
-        {"link"}, {"href", "rel", "media", "hreflang", "type", "sizes", "title"},
-        {"meta"}, {"name", "http-equiv", "content", "charset"},
-        {"mark"}, {},
-        {"menu"}, {"type", "label"},
-        {"ruby"}, {},
-        {"span"}, {},
-        {"samp"}, {},
-        {"time"}, {"datetime", "pubdate"},
-        {"aside"}, {},
-        {"audio"}, {"src", "preload", "autoplay", "loop", "controls"},
-        {"embed"}, {"src", "type", "width", "height"},
-        {"input"}, {"accept", "alt", "autocomplete", "autofocus", "checked", "disabled", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget", "height", "list", "max", "maxlength", "min", "multiple", "name", "pattern", "placeholder", "readonly", "required", "size", "src", "step", "type", "value", "width"},
-        {"label"}, {"form", "for"},
-        {"meter"}, {"value", "min", "max", "low", "high", "optimum", "form"},
-        {"param"}, {"name", "value"},
-        {"style"}, {"media", "type", "scoped", "title"},
-        {"small"}, {},
-        {"thead"}, {},
-        {"table"}, {"summary"},
-        {"title"}, {},
-        {"tfoot"}, {},
-        {"tbody"}, {},
-        {"video"}, {"src", "poster", "preload", "autoplay", "loop", "controls", "width", "height"},
-        {"button"}, {"autofocus", "disabled", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget", "name", "type", "value"},
-        {"canvas"}, {"width", "height"},
-        {"figure"}, {},
-        {"footer"}, {},
-        {"header"}, {},
-        {"iframe"}, {"src", "srcdoc", "name", "sandbox", "seamless", "width", "height"},
-        {"keygen"}, {"autofocus", "challenge", "disabled", "form", "keytype", "name"},
-        {"legend"}, {},
-        {"option"}, {"disabled", "label", "selected", "value"},
-        {"object"}, {"data", "type", "name", "usemap", "form", "width", "height"},
-        {"output"}, {"for", "form", "name"},
-        {"source"}, {"src", "type", "media"},
-        {"strong"}, {},
-        {"select"}, {"autofocus", "disabled", "form", "multiple", "name", "size"},
-        {"script"}, {"Global", " attributes", "src", "async", "defer", "type", "charset"},
-        {"article"}, {},
-        {"address"}, {},
-        {"command"}, {"type", "label", "icon", "disabled", "checked", "radiogroup", "title"},
-        {"caption"}, {},
-        {"details"}, {"open"},
-        {"section"}, {},
-        {"colgroup"}, {"span"},
-        {"fieldset"}, {"disabled", "form", "name"},
-        {"noscript"}, {},
-        {"optgroup"}, {"disabled", "label"},
-        {"progress"}, {"value", "max", "form"},
-        {"textarea"}, {"autofocus", "cols", "disabled", "form", "maxlength", "name", "placeholder", "readonly", "required", "rows", "wrap"},
-        {"blockquote"}, {"cite"}};
-
-
-    private static Map<String, Collection<String>> ELEMENT2ATTRS;
-
-    private static void initialize() {
-        ELEMENT2ATTRS = new HashMap<String, Collection<String>>();
-
-        Collection<String> global = Arrays.asList(GLOBAL);
-        Collection<String> event = Arrays.asList(GLOBAL_EVENT);
-
-        for(int i = 0; i < ATTRS.length; ) {
-            String name = ATTRS[i++][0];
-            String[] attrs = ATTRS[i++];
-
-            Collection joined = new LinkedList(Arrays.asList(attrs)); //specific
-            joined.addAll(global);
-            joined.addAll(event);
-
-            ELEMENT2ATTRS.put(name, joined);
-        }
-
-    }
 
     public static synchronized Collection<String> getAttrNamesForElement(String elementName) {
-        if(ELEMENT2ATTRS == null) {
-            initialize();
+        ElementDescriptor descriptor = ElementDescriptor.forName(elementName);
+        if(descriptor == null) {
+            return Collections.emptyList();
+        }
+        Collection<String> attrNames = new LinkedList<String>();
+        for(Attribute a : descriptor.getAttributes()) {
+            attrNames.add(a.getName());
         }
 
-        return ELEMENT2ATTRS.get(elementName);
+        return attrNames;
     }
 
 }

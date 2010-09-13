@@ -40,28 +40,64 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.spi;
+package org.netbeans.modules.html.parser.model;
 
 import java.util.Collection;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author marekfukala
  */
-public interface HtmlParseResult extends ParseResult {
+public class AttributeTest extends NbTestCase {
 
-    public HtmlVersion version();
+    public AttributeTest(String name) {
+        super(name);
+    }
 
-    /** experimental - may be refactored out of this class 
-     * @param openTags the method is supposed to return possible open tags in the given contextt if true
-     * otherwise it returns possible end tags.
-     */
-    public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean openTags);
+    public void testBasic() {
+        ElementDescriptor div = ElementDescriptor.forName("div");
+        assertNotNull(div);
+        Link nameLink = div.getName();
+        assertNotNull(nameLink);
+        assertEquals("div", nameLink.getName());
+        assertEquals("http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-div-element",
+                nameLink.getUrl().toExternalForm());
 
-    public Collection<HtmlTag> getAllTags();
+        Collection<ContentType> cats = div.getCategoryTypes();
+        assertNotNull(cats);
+        assertTrue(cats.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
+        Collection<FormAssociatedElementsCategory> fasecs = div.getFormCategories();
+        assertTrue(fasecs.isEmpty());
 
-    public HtmlTag getTag(String tagName);
-    
+
+        Collection<ContentType> parentTypes = div.getParentTypes();
+        assertNotNull(parentTypes);
+        assertTrue(parentTypes.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
+
+        Collection<ElementDescriptor> parentElements = div.getParentElements();
+        assertTrue(parentElements.isEmpty());
+
+        Collection<ContentType> childrenTypes = div.getChildrenTypes();
+        assertNotNull(childrenTypes);
+        assertTrue(parentTypes.contains(ContentType.FLOW));
+        assertFalse(cats.contains(ContentType.METADATA));
+
+        Collection<ElementDescriptor> childrenElements = div.getChildrenElements();
+        assertTrue(childrenElements.isEmpty());
+
+        Link domInterface = div.getDomInterface();
+        assertNotNull(domInterface);
+        assertEquals("HTMLDivElement", domInterface.getName());
+
+    }
+
+    public void testNonExisting() {
+        ElementDescriptor el = ElementDescriptor.forName("nosuchelement");
+        assertNull(el);
+
+    }
+
 }
