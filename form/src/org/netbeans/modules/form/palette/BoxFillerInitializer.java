@@ -75,6 +75,7 @@ public class BoxFillerInitializer {
     }
 
     public void initialize() {
+        metaComp.setAuxValue(RADComponent.AUX_VALUE_CLASS_DETAILS, initializerId);
         boolean dialogOKClosed = true;
         if ("Box.Filler.Glue".equals(initializerId)) { // NOI18N
             setProperty("maximumSize", new Dimension(Short.MAX_VALUE, Short.MAX_VALUE)); // NOI18N
@@ -117,7 +118,6 @@ public class BoxFillerInitializer {
                 });
             }
         }
-        metaComp.setAuxValue(RADComponent.AUX_VALUE_CLASS_DETAILS, initializerId);
     }
 
     private boolean showDialog(WidthHeightPanel panel, String titleKey) {
