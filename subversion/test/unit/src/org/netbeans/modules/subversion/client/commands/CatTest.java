@@ -44,7 +44,10 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -87,7 +90,7 @@ public class CatTest extends AbstractCommandTest {
         commit(file);
 
         InputStream is1 = getNbClient().getContent(file, SVNRevision.HEAD);
-        InputStream is2 = getReferenceClient().getContent(file, SVNRevision.HEAD);
+        InputStream is2 = new FileInputStream(file);
 
         assertInputStreams(is2, is1);
     }
@@ -108,14 +111,17 @@ public class CatTest extends AbstractCommandTest {
         write(file, 1);
         add(file);
         commit(file);
-        
+
+        File prevRevisionCopy = new File(file.getParentFile(), "prevRevisionCopy");
+        FileUtils.copyFile(file, prevRevisionCopy);
+
         ISVNClientAdapter c = getNbClient();        
         SVNRevision prevrev = getRevision(file);
         write(file, 2);        
         commit(file);
         
         InputStream is1 = c.getContent(file, prevrev);
-        InputStream is2 = getReferenceClient().getContent(file, prevrev);
+        InputStream is2 = new FileInputStream(prevRevisionCopy);
         
         assertInputStreams(is2, is1);
     }               
@@ -149,7 +155,7 @@ public class CatTest extends AbstractCommandTest {
         
         ISVNClientAdapter c = getNbClient();        
         InputStream is1 = c.getContent(getFileUrl(file), SVNRevision.HEAD);
-        InputStream is2 = getReferenceClient().getContent(getFileUrl(file), SVNRevision.HEAD);
+        InputStream is2 = new FileInputStream(file);
         
         assertInputStreams(is2, is1);
     }               
@@ -169,14 +175,17 @@ public class CatTest extends AbstractCommandTest {
         write(file, 1);
         add(file);
         commit(file);
-        
+
+        File prevRevisionCopy = new File(file.getParentFile(), "prevRevisionCopy");
+        FileUtils.copyFile(file, prevRevisionCopy);
+
         ISVNClientAdapter c = getNbClient();        
         SVNRevision prevrev = getRevision(file);
         write(file, 2);        
         commit(file);
         
         InputStream is1 = c.getContent(getFileUrl(file), prevrev);
-        InputStream is2 = getReferenceClient().getContent(getFileUrl(file), prevrev);
+        InputStream is2 = new FileInputStream(prevRevisionCopy);
         
         assertInputStreams(is2, is1);
     }               

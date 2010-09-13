@@ -96,17 +96,6 @@ public class RevertTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {file});        
     }            
     
-    public void testRevertNoFiles() throws Exception {                                                
-        ISVNClientAdapter c = getNbClient();        
-        SVNClientException e1 = null;
-        try {
-            c.revert(null, false);
-        } catch (SVNClientException e) {
-            e1 = e;
-        }
-        assertNull(e1);
-    }            
-    
     public void testRevertFiles() throws Exception {                                                
         File file1 = createFile("file1");
         File file2 = createFile("file2");

@@ -61,35 +61,34 @@ public class CLIClientTest extends NbTestCase {
     
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
-        SvnClientTestFactory.setClientType("commandline");
-        SvnClientTestFactory.reset();
+        System.setProperty("svnClientAdapterFactory", "commandline");
         
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(AvailabilityTest.class);
-        suite.addTestSuite(BlameTest.class);
-//        suite.addTestSuite(CancelTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(DifferentWorkingDirsTest.class);
-        suite.addTestSuite(ImportTest.class);
-        suite.addTestSuite(InfoTest.class);
-        suite.addTestSuite(ListTest.class);
-        suite.addTestSuite(LogTest.class);
-        suite.addTestSuite(MergeTest.class);
-        suite.addTestSuite(MkdirTest.class);
-        suite.addTestSuite(MoveTest.class);
-        suite.addTestSuite(ParsedStatusTest.class);
-        suite.addTestSuite(PropertyTest.class);
-        suite.addTestSuite(RelocateTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(ResolvedTest.class);
-        suite.addTestSuite(RevertTest.class);
-        suite.addTestSuite(StatusTest.class);
-        suite.addTestSuite(SwitchToTest.class);
+//        suite.addTestSuite(AddTest.class);
+//        suite.addTestSuite(AvailabilityTest.class);
+//        suite.addTestSuite(BlameTest.class);
+////        suite.addTestSuite(CancelTest.class);
+//        suite.addTestSuite(CatTest.class);
+//        suite.addTestSuite(CheckoutTest.class);
+//        suite.addTestSuite(CommitTest.class);
+//        suite.addTestSuite(CopyTest.class);
+//        suite.addTestSuite(DifferentWorkingDirsTest.class);
+//        suite.addTestSuite(ImportTest.class);
+//        suite.addTestSuite(InfoTest.class);
+//        suite.addTestSuite(ListTest.class);
+//        suite.addTestSuite(LogTest.class);
+//        suite.addTestSuite(MergeTest.class);
+//        suite.addTestSuite(MkdirTest.class);
+//        suite.addTestSuite(MoveTest.class);
+//        suite.addTestSuite(ParsedStatusTest.class);
+//        suite.addTestSuite(PropertyTest.class);
+//        suite.addTestSuite(RelocateTest.class);
+//        suite.addTestSuite(RemoveTest.class);
+//        suite.addTestSuite(ResolvedTest.class);
+//        suite.addTestSuite(RevertTest.class);
+//        suite.addTestSuite(StatusTest.class);
+//        suite.addTestSuite(TreeConflictsTest.class);
+//        suite.addTestSuite(SwitchToTest.class);
         suite.addTestSuite(UpdateTest.class);
-        suite.addTestSuite(TreeConflictsTest.class);
         
         return suite;
     }
