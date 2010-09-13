@@ -40,59 +40,59 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.commands;
+package org.netbeans.modules.subversion.client;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.modules.subversion.Subversion;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.subversion.client.commands.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author tomas
  */
-public class ParsedStatusTest extends AbstractCommandTest {
-    
-    // XXX terst remote change
-    
-    private enum StatusCall {
-        filearray,
-        file
-    }
-    
-    public ParsedStatusTest(String testName) throws Exception {
-        super(testName);
+public class SvnKitClientTest extends NbTestCase {
+    // XXX test cancel
+
+    public SvnKitClientTest(String arg0) {
+        super(arg0);
     }
 
-    // XXX check with javahl
-    public void testGetStatusWrongAmount() throws Exception {                                
-        File folder = createFolder("folder");        
-        File folder1 = createFolder(folder, "folder1");        
-        File folder2 = createFolder(folder, "folder2");        
-        File file1 = createFolder(folder2, "file1");        
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+    
+    public static Test suite() throws Exception {
+
+        System.setProperty("svnClientAdapterFactory", "svnkit");
+
+        TestSuite suite = new TestSuite();        
+        suite.addTestSuite(AddTest.class);
+        suite.addTestSuite(BlameTest.class);
+        // suite.addTestSuite(CancelTest.class); XXX works only for cli
+        suite.addTestSuite(CatTest.class);
+        suite.addTestSuite(CheckoutTest.class);
+        suite.addTestSuite(CommitTest.class);
+        suite.addTestSuite(CopyTest.class);
+        suite.addTestSuite(ImportTest.class);
+        suite.addTestSuite(InfoTest.class);
+        suite.addTestSuite(ListTest.class);
+        suite.addTestSuite(LogTest.class);
+        suite.addTestSuite(MergeTest.class);
+        suite.addTestSuite(MkdirTest.class);
+        suite.addTestSuite(MoveTest.class);
+        suite.addTestSuite(ParsedStatusTest.class);
+        suite.addTestSuite(PropertyTest.class);
+        suite.addTestSuite(RelocateTest.class);
+        suite.addTestSuite(RemoveTest.class);
+        suite.addTestSuite(ResolvedTest.class);
+        suite.addTestSuite(RevertTest.class);
+        suite.addTestSuite(StatusTest.class);
+        suite.addTestSuite(TreeConflictsTest.class);
+        suite.addTestSuite(SwitchToTest.class);
+        suite.addTestSuite(UpdateTest.class);
         
-        add(folder);
-        add(folder1);
-        add(folder2);
-        add(file1);
-        commit(getWC());
-                
-        ISVNStatus[] s1 = getNbClient().getStatus(folder, true, false);
-
-        // returns crap (4 entries) only for the cli which was intentionaly implemted that way
-        // to stay compatible with svnClientAdapter's commandline client.
-        // javahl and svnkit should return a zero length array
-        if(isCommandLine()) {
-            assertEquals(4, s1.length);
-        } else {
-            assertEquals(0, s1.length);
-        }
+        return suite;
     }
-    
-    
 }
