@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePath;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -73,11 +74,20 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
     /** Creates a new instance of ExtractInterfaceRefactoringUI
      * @param selectedElement Elements the refactoring action was invoked on.
      */
-    public ExtractInterfaceRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
-        // compute source type
+    public static ExtractInterfaceRefactoringUI create(TreePathHandle selectedElement, CompilationInfo info) {
         TreePath path = selectedElement.resolve(info);
+
         path = RetoucheUtils.findEnclosingClass(info, path, true, true, true, true, false);
-        
+
+        if (path != null) {
+            return new ExtractInterfaceRefactoringUI(path, info);
+        }
+
+        return null;
+    }
+
+    private ExtractInterfaceRefactoringUI(TreePath path, CompilationInfo info) {
+        // compute source type
         this.name = ElementHeaders.getHeader(path, info, ElementHeaders.NAME);
         this.sourceType = TreePathHandle.create(path, info);
         // create an instance of pull up refactoring object

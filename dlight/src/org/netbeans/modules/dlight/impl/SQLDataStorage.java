@@ -91,6 +91,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     private boolean enabled = false;
     private AsyncThread asyncThread = null;
     private ServiceInfoDataStorage serviceInfoDataStorage;
+    private final String dburl;
 
     static {
         classToType.put(Byte.class, "tinyint"); // NOI18N
@@ -179,13 +180,9 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         }
     }
 
-    protected SQLDataStorage() {
-        insertPreparedStatments = new HashMap<String, PreparedStatement>();
-    }
-
     protected SQLDataStorage(String dburl) throws SQLException {
-        this();
-        connect(dburl);
+        insertPreparedStatments = new HashMap<String, PreparedStatement>();
+        this.dburl = dburl;
         if (!enabled) {
             enable();
         }
@@ -245,8 +242,13 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         asyncThread = null;
     }
 
-    protected abstract void connect(String dburl) throws SQLException;
-
+    public abstract void connect() throws SQLException;
+    
+    
+    protected final String getDbURL(){
+        return dburl;
+    }
+            
     protected String classToType(Class<?> clazz) {
         return classToType.get(clazz);
     }

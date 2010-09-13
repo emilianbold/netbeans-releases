@@ -218,8 +218,8 @@ public final class H2DataStorage extends SQLDataStorage {
     }
 
     @Override
-    protected void connect(String dburl) throws SQLException {
-        connection = DriverManager.getConnection(dburl, "admin", ""); // NOI18N
+    public void connect() throws SQLException {
+        connection = DriverManager.getConnection(getDbURL(), "admin", ""); // NOI18N
     }
 
 //    public int putStack(List<CharSequence> stack, long sampleDuration) {

@@ -57,13 +57,20 @@ public class JhlClientTest extends NbTestCase {
     public JhlClientTest(String arg0) {
         super(arg0);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
     
     public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        SvnClientTestFactory.setClientType("javahl");
+
+        System.setProperty("svnClientAdapterFactory", "javahl");
+
+        TestSuite suite = new TestSuite();        
         suite.addTestSuite(AddTest.class);
         suite.addTestSuite(BlameTest.class);
-        suite.addTestSuite(CancelTest.class);
+          // suite.addTestSuite(CancelTest.class); XXX works only for cli
         suite.addTestSuite(CatTest.class);
         suite.addTestSuite(CheckoutTest.class);
         suite.addTestSuite(CommitTest.class);

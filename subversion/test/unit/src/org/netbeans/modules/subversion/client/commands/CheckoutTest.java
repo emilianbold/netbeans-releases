@@ -168,11 +168,19 @@ public class CheckoutTest extends AbstractCommandTest {
                 
         File chFolder1 = new File(checkout, folder1.getName());
         File chFile = new File(chFolder1, file.getName());
-        
-        assertTrue(!chFolder1.exists());
-        assertTrue(!chFile.exists());
-        assertStatus(SVNStatusKind.NORMAL, checkout);                
-        assertStatus(SVNStatusKind.UNVERSIONED, chFolder1);        
+
+        if(isCommandLine()) {
+            assertFalse(chFolder1.exists());
+        } else {
+            assertTrue(chFolder1.exists());
+        }
+        assertFalse(chFile.exists());
+        assertStatus(SVNStatusKind.NORMAL, checkout);
+        if(isCommandLine()) {
+            assertStatus(SVNStatusKind.UNVERSIONED, chFolder1);
+        } else {
+            assertStatus(SVNStatusKind.NORMAL, chFolder1);
+        }
         assertStatus(SVNStatusKind.UNVERSIONED, chFile); 
         
         assertNotifiedFiles(new File[] {});

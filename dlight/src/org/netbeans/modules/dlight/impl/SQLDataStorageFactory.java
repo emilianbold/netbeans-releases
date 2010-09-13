@@ -11,11 +11,12 @@ import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 
 /**
- *
- * @author masha
+ * Please be sure you have connected the database at the time it was created
+ * Use connect() method 
  */
 public abstract class SQLDataStorageFactory<G extends SQLDataStorage> implements PersistentDataStorageFactory<G> {
 
+    @Override
     public Collection<DataStorageType> getStorageTypes() {
         return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }

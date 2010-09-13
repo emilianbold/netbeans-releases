@@ -56,7 +56,6 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  * Provided information for {@link org.netbeans.modules.dlight.spi.indicator.Indicator}.
@@ -150,8 +149,8 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
 
     @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
-        DLightLogger.assertTrue(validatedTarget == event.target,
-                "Validation was performed against another target"); // NOI18N
+//        DLightLogger.assertTrue(validatedTarget == event.target,
+//                "Validation was performed against another target"); // NOI18N
 
         switch (event.state) {
             case RUNNING:
@@ -173,12 +172,12 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     }
 
     /**
-     * Try to subscibe indicator to this Indicator DataProvider.
-     * To successfuly subscribe indicator {@link #getDataTablesMetadata()} should contain
+     * Try to subscribe indicator to this Indicator DataProvider.
+     * To successfully subscribe indicator {@link #getDataTablesMetadata()} should contain
      * columns which are required by indicator(the result of
      * {@link Indicator#getMetadataColumns()} method)
      * @param indicator indicator to subscribe
-     * @return <code>true</code> if indicator was successfuly subscribed,
+     * @return <code>true</code> if indicator was successfully subscribed,
      * <code>false</code> otherwise
      */
     public final boolean subscribe(Indicator<?> indicator) {
@@ -209,8 +208,8 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     }
 
     /**
-     * Use this method to unsubscribe from this data provider
-     * @param indicator indicator to unsubscribe
+     * Use this method to un-subscribe from this data provider
+     * @param indicator indicator to un-subscribe
      */
     public final void unsubscribe(Indicator<?> indicator) {
         removeIndicatorDataProviderListener(indicator);
@@ -253,7 +252,7 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
 
     /**
      *  Initialize with service info data storage
-     * @param infoStorage service infor data storage
+     * @param infoStorage service info data storage
      */
     public final void init(ServiceInfoDataStorage infoStorage) {
         this.serviceInfoDataStorage = infoStorage;

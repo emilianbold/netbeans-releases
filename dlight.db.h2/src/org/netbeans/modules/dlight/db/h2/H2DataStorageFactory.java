@@ -53,7 +53,6 @@ import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
-import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -115,31 +114,23 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     @Override
     public H2DataStorage createStorage() {
         try {
-            return new H2DataStorage();
-
-
-
-
+            H2DataStorage result =  new H2DataStorage();
+            result.connect();
+            return result;
         } catch (SQLException ex) {
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
-
-
-
             return null;
         }
-
-
     }
 
     @Override
     public H2DataStorage createStorage(String uniqueKey) {
         try {
             H2DataStorage result = new H2DataStorage(true, uniqueKey);
+            result.connect();
             result.isPersistent = true;
             rcFile.put("h2.storages", uniqueKey, result.dbURL);//NOI18N
             rcFile.save();
-
-
             return result;
         } catch (IOException ex) {
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
@@ -150,12 +141,14 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
         }
     }
 
+    @Override
     public H2DataStorage openStorage(String uniqueKey) {
         try {
             //find dburl
             String dbURL = rcFile.get("h2.storages", uniqueKey);// NOI18N
             if (dbURL != null) {
                 H2DataStorage result = new H2DataStorage(dbURL);
+                result.connect();
                 result.loadSchema();
                 result.isPersistent = true;
                 return result;
@@ -170,6 +163,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
     }
 
+    @Override
     public String getUniqueKey(H2DataStorage storage) {
         try {
             //generate key, put in the
@@ -182,6 +176,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
         return null;
     }
 
+    @Override
     public H2DataStorage openStorage(String uniqueKey, Mode mode) {
         return openStorage(uniqueKey);
 
