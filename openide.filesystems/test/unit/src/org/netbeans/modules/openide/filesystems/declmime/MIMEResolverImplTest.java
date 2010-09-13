@@ -63,6 +63,7 @@ public class MIMEResolverImplTest extends NbTestCase {
     List<MIMEResolver> resolvers;
     FileObject root;
     FileObject resolversRoot;
+    Logger LOG;
            
     public MIMEResolverImplTest(String testName) {
         super(testName);
@@ -70,12 +71,14 @@ public class MIMEResolverImplTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.OFF;
+        return Level.INFO;
     }
 
     @SuppressWarnings("deprecation")
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test.mime.resolver");
+        
         URL u = this.getClass().getResource ("code-fs.xml");        
         FileSystem fs = new XMLFileSystem(u);
         
@@ -215,6 +218,8 @@ public class MIMEResolverImplTest extends NbTestCase {
             @Override
             public void publish(LogRecord record) {
                 if (record.getThrown().getMessage().startsWith("Second pattern element on the same level not allowed")) {
+                    LOG.info("failed.set(true");
+                    LOG.log(record);
                     failed.set(true);
                 }
             }
@@ -233,8 +238,10 @@ public class MIMEResolverImplTest extends NbTestCase {
         assertFalse("Pattern elements in patternValid.xml not parsed.", failed.get());
 
         failed.set(false);
+        LOG.info("Clearing the flag");
         declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("pattern-resolver-invalid1.xml"));
         declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
+        LOG.info("Verify");
         assertTrue("Pattern elements in patternInvalid1.xml should not be parsed.", failed.get());
 
         failed.set(false);
