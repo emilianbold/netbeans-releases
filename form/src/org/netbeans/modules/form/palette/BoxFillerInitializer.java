@@ -103,6 +103,7 @@ public class BoxFillerInitializer {
             setProperty("preferredSize", new Dimension(width, height)); // NOI18N
             setProperty("maximumSize", new Dimension(width, height)); // NOI18N
         }
+        metaComp.setAuxValue(RADComponent.AUX_VALUE_CLASS_DETAILS, initializerId);
     }
 
     private void showDialog(WidthHeightPanel panel, String titleKey) {
