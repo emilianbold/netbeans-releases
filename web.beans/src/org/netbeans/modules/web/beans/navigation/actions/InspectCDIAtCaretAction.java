@@ -45,6 +45,8 @@ package org.netbeans.modules.web.beans.navigation.actions;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,19 +60,68 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractInjectableAction extends AbstractWebBeansAction {
+public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
+    
+    private static final long serialVersionUID = -4505119467924502377L;
+    
+    private static final String INSPECT_CDI_AT_CARET =
+        "inspect-cdi-at-caret";                     // NOI18N
+    
+    private static final String INSPECT_CDI_AT_CARET_POPUP =
+        "inspect-cdi-at-caret-popup";               // NOI18N
 
-    private static final long serialVersionUID = 6150283611609922936L;
+    public InspectCDIAtCaretAction( ) {
+        super(NbBundle.getMessage(InspectCDIAtCaretAction.class, 
+                INSPECT_CDI_AT_CARET));
+        myStrategies = new ArrayList<ModelActionStrategy>( 3 );
+        myStrategies.add( new ObserversActionStrategy());
+        myStrategies.add( new InjectablesActionStrategy());
+        myStrategies.add( new EventsActionStartegy());
+    }
 
-    AbstractInjectableAction(String name ){
-        super( name );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
+     */
+    @Override
+    protected void modelAcessAction( WebBeansModel model,
+            MetadataModel<WebBeansModel> metaModel, Object[] subject,
+            JTextComponent component, FileObject fileObject )
+    {
+        InspectActionId id = (InspectActionId) subject[2];
+        for( ModelActionStrategy strategy : myStrategies ){
+            if ( strategy.isApplicable( id ) && strategy.isApplicable( model ,
+                    subject ))
+            {
+                strategy.invokeModelAction(model, metaModel, subject, 
+                        component, fileObject);
+                return;
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
+     */
+    @Override
+    protected String getActionCommand() {
+        return INSPECT_CDI_AT_CARET;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getPopupMenuKey()
+     */
+    @Override
+    protected String getPopupMenuKey() {
+        return INSPECT_CDI_AT_CARET_POPUP;
     }
 
     /* (non-Javadoc)
@@ -105,18 +156,19 @@ abstract class AbstractInjectableAction extends AbstractWebBeansAction {
          *  this list will contain variable element name and TypeElement 
          *  qualified name which contains variable element. 
          */
-        final Object[] variableAtCaret = new Object[3];
+        final Object[] subject = new Object[3];
         if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
-                variableAtCaret , true ))
+                subject , false ) && !WebBeansActionHelper.
+                getContextEventInjectionAtDot( component, subject  ) &&
+                    !WebBeansActionHelper.getMethodAtDot(component, subject))
         {
             return;
         }
-        
         try {
             metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
 
                 public Void run( WebBeansModel model ) throws Exception {
-                    modelAcessAction(model, metaModel, variableAtCaret, component, 
+                    modelAcessAction(model, metaModel, subject, component, 
                             fileObject);
                     return null;
                 }
@@ -131,4 +183,7 @@ abstract class AbstractInjectableAction extends AbstractWebBeansAction {
                 log( Level.WARNING, e.getMessage(), e);
         }
     }
+    
+    private List<ModelActionStrategy> myStrategies;
+
 }
