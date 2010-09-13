@@ -53,8 +53,12 @@ import org.openide.util.Lookup;
  */
 public interface HtmlParser {
 
+    public String getName();
+
     public boolean canParse(HtmlVersion version);
 
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException;
-    
+
+    public HtmlModel getModel(HtmlVersion version);
+
 }

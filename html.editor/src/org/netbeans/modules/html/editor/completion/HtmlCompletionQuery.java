@@ -44,6 +44,7 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.modules.html.editor.api.Utils;
@@ -211,6 +212,8 @@ public class HtmlCompletionQuery extends UserTask {
             Exceptions.printStackTrace(ex);
             return null;
         }
+
+        HtmlModel model = htmlResult.model();
         
         DTD dtd = parserResult.getSyntaxAnalyzerResult().getHtmlVersion().getDTD();
         Snapshot snapshot = parserResult.getSnapshot();
@@ -334,7 +337,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             if (queryHtmlContent) {
                 Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, true);
-                Collection<HtmlTag> allTags = htmlResult.getAllTags();
+                Collection<HtmlTag> allTags = model.getAllTags();
                 Collection<HtmlTag> filteredByPrefix = filterHtmlElements(possibleOpenTags, preText);
                 result.addAll(translateHtmlTags(documentItemOffset - 1, filteredByPrefix, allTags));
             }
@@ -354,7 +357,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             if (queryHtmlContent) {
                 Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, true);
-                Collection<HtmlTag> allTags = htmlResult.getAllTags();
+                Collection<HtmlTag> allTags = model.getAllTags();
                 result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
 
                 if(HtmlPreferences.completionOffersEndTagAfterLt()) {
@@ -408,7 +411,7 @@ public class HtmlCompletionQuery extends UserTask {
                 //should be open tag if not unknown or root in case of the text being broken
                 //that the parser cannot recognize the tag node
                 assert node.type() == AstNode.NodeType.OPEN_TAG : "Unexpected node type " + node.type(); //NOI18N
-                    HtmlTag tag = htmlResult.getTag(node.name());
+                    HtmlTag tag = model.getTag(node.name());
                     if(tag == null) {
                         return null;
                     }
@@ -467,7 +470,7 @@ public class HtmlCompletionQuery extends UserTask {
                     argName = argName.toLowerCase(Locale.ENGLISH);
                 }
 
-                HtmlTag tag = htmlResult.getTag(node.name());
+                HtmlTag tag = model.getTag(node.name());
                 if(tag == null) {
                     return null;
                 }

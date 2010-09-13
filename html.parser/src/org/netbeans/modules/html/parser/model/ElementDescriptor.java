@@ -1530,8 +1530,12 @@ WBR(
         return formCategories;
     }
 
-    public Link getName() {
+    public Link getNameLink() {
         return name;
+    }
+
+    public String getName() {
+        return getNameLink().getName();
     }
 
     public synchronized Collection<ElementDescriptor> getParentElements() {
@@ -1549,4 +1553,16 @@ WBR(
         return parents;
     }
 
+    public boolean hasOptionalOpenTag() {
+        return ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(this);
+    }
+
+    public boolean hasOptionalEndTag() {
+        return ElementDescriptorRules.OPTIONAL_END_TAGS.contains(this);
+    }
+
+    public boolean isEmpty() {
+        return children.isEmpty() && getChildrenElements().isEmpty(); //empty content model
+    }
+    
 }

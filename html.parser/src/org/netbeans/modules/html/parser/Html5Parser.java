@@ -61,6 +61,7 @@ import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
@@ -84,18 +85,10 @@ import org.xml.sax.SAXParseException;
 @ServiceProvider(service = HtmlParser.class, position = 100)
 public class Html5Parser implements HtmlParser {
 
-    private static Collection<HtmlTag> ALL_TAGS;
+    private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
 
-    private static synchronized Collection<HtmlTag> getAllTags() {
-        if (ALL_TAGS == null) {
-            ALL_TAGS = new ArrayList<HtmlTag>();
-            for (ElementName element : ElementName.ELEMENT_NAMES) {
-                ALL_TAGS.add(HtmlTagProvider.getTagForElement(element));
-            }
-        }
-        return ALL_TAGS;
-    }
-
+    private static final HtmlModel HTML5MODEL = new Html5Model();
+    
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
         try {
             String code = source.getSourceCode().toString();
@@ -175,6 +168,15 @@ public class Html5Parser implements HtmlParser {
                 || version == HtmlVersion.XHTML11;
     }
 
+    public HtmlModel getModel(HtmlVersion version) {
+        assert version == HtmlVersion.HTML5;
+        return HTML5MODEL;
+    }
+
+    public String getName() {
+        return PARSER_NAME;
+    }
+
     public static StateSnapshot makeTreeBuilderSnapshot(AstNode node) {
         int treeBuilderState = node.treeBuilderState;
         List<StackNode> stack = new ArrayList<StackNode>();
@@ -192,6 +194,10 @@ public class Html5Parser implements HtmlParser {
 
         public Html5ParserResult(HtmlSource source, AstNode root, Collection<ProblemDescription> problems, HtmlVersion version) {
             super(source, root, problems, version);
+        }
+
+        public HtmlModel model() {
+            return HTML5MODEL;
         }
 
         public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, boolean type) {
@@ -220,7 +226,7 @@ public class Html5Parser implements HtmlParser {
                         if (enabled.booleanValue()) {
                             //add all element from the group as possible
                             for (ElementName member : ElementNames.getElementForTreeBuilderGroup(group)) {
-                                possible.add(HtmlTagProvider.getTagForElement(member));
+                                possible.add(HtmlTagProvider.getTagForElement(member.name));
                             }
 
                         }
@@ -236,7 +242,7 @@ public class Html5Parser implements HtmlParser {
                     ElementName element = (ElementName) node.elementName;
                     if (element != null) {
                         //TODO if(element is not empty tag (end tag forbidden) {
-                        possible.add(HtmlTagProvider.getTagForElement(element));
+                        possible.add(HtmlTagProvider.getTagForElement(element.name));
                         //}
                     }
                 } while ((node = node.parent()) != null && !node.isRootNode());
@@ -245,19 +251,26 @@ public class Html5Parser implements HtmlParser {
 
             return possible;
         }
+        
+    }
 
-        public Collection<HtmlTag> getAllTags() {
-            return Html5Parser.getAllTags();
+    private static final class Html5Model implements HtmlModel {
+
+        private static Collection<HtmlTag> ALL_TAGS;
+
+        public synchronized Collection<HtmlTag> getAllTags() {
+            if (ALL_TAGS == null) {
+                ALL_TAGS = new ArrayList<HtmlTag>();
+                for (ElementName element : ElementName.ELEMENT_NAMES) {
+                    ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.name));
+                }
+            }
+            return ALL_TAGS;
         }
 
         public HtmlTag getTag(String tagName) {
-            ElementName element = ElementNames.forName(tagName);
-            assert element != null;
-            if(element == null) {
-                return null;
-            }
-            return HtmlTagProvider.getTagForElement(element);
+            return HtmlTagProvider.getTagForElement(tagName);
         }
-        
     }
+    
 }

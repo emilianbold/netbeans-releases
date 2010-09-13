@@ -47,12 +47,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
-import nu.validator.htmlparser.impl.ElementName;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.modules.html.parser.model.Attribute;
+import org.netbeans.modules.html.parser.model.ContentType;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.ElementDescriptorRules;
 
@@ -63,27 +63,37 @@ import org.netbeans.modules.html.parser.model.ElementDescriptorRules;
 public class HtmlTagProvider {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlTagProvider.class.getName());
-    private static HashMap<ElementName, HtmlTag> MAP = new HashMap<ElementName, HtmlTag>();
+    private static HashMap<String, HtmlTag> MAP = new HashMap<String, HtmlTag>();
 
-    public static synchronized HtmlTag getTagForElement(ElementName elementName) {
-        HtmlTag impl = MAP.get(elementName);
+    public static synchronized HtmlTag getTagForElement(String name) {
+        assert name != null;
+        HtmlTag impl = MAP.get(name);
         if (impl == null) {
-            impl = new ElementName2HtmlTagAdapter(elementName);
-            MAP.put(elementName, impl);
+            impl = new ElementName2HtmlTagAdapter(name);
+            MAP.put(name, impl);
         }
         return impl;
     }
 
+     public static synchronized Collection<HtmlTag> convert(Collection<ElementDescriptor> elements) {
+        Collection<HtmlTag> converted = new LinkedList<HtmlTag>();
+        for(ElementDescriptor element : elements) {
+            converted.add(getTagForElement(element.getName()));
+        }
+        return converted;
+    }
+
     private static class ElementName2HtmlTagAdapter implements HtmlTag {
 
-        private ElementName element;
+        private String elementName;
         private ElementDescriptor descriptor;
         private Map<String, HtmlTagAttribute> attrs; //attr name to HtmlTagAttribute instance map
         private HtmlTagType type;
+        private Collection<HtmlTag> children;
 
-        private ElementName2HtmlTagAdapter(ElementName element) {
-            this.element = element;
-            this.descriptor = ElementDescriptor.forElementName(element);
+        private ElementName2HtmlTagAdapter(String elementName) {
+            this.elementName = elementName;
+            this.descriptor = ElementDescriptor.forName(elementName);
             this.attrs = isPureHtmlTag()
                     ? wrap(descriptor.getAttributes())
                     : Collections.<String, HtmlTagAttribute>emptyMap();
@@ -119,14 +129,14 @@ public class HtmlTagProvider {
                 if (hta != null) {
                     attributes.put(an.getName(), hta);
                 } else {
-                    LOGGER.info(String.format("Unknown attribute %1$ requested.", an));//NOI18N
+                    LOGGER.info(String.format("Unknown attribute %s requested.", an));//NOI18N
                 }
             }
             return attributes;
         }
 
         public String getName() {
-            return element.name;
+            return elementName;
         }
 
         @Override
@@ -153,32 +163,23 @@ public class HtmlTagProvider {
 
         @Override
         public String toString() {
-            return String.format("ElementName2HtmlTagAdapter{name=%1$}", getName());
+            return String.format("ElementName2HtmlTagAdapter{name=%s}", getName());
         }
 
         public Collection<HtmlTagAttribute> getAttributes() {
             return attrs.values();
         }
 
-        //TODO TBD - do we need this?
         public boolean isEmpty() {
-            return false;
+            return isPureHtmlTag() ? descriptor.isEmpty() : false;
         }
 
         public boolean hasOptionalOpenTag() {
-            if(isPureHtmlTag()) {
-                return ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(descriptor);
-            } else {
-                return false;
-            }
+            return isPureHtmlTag() ? descriptor.hasOptionalOpenTag() : false;
         }
 
         public boolean hasOptionalEndTag() {
-            if(isPureHtmlTag()) {
-                return ElementDescriptorRules.OPTIONAL_END_TAGS.contains(descriptor);
-            } else {
-                return false;
-            }
+             return isPureHtmlTag() ? descriptor.hasOptionalEndTag() : false;
         }
 
         public HtmlTagAttribute getAttribute(String name) {
@@ -187,6 +188,25 @@ public class HtmlTagProvider {
 
         public HtmlTagType getTagClass() {
             return type;
+        }
+
+        public synchronized Collection<HtmlTag> getChildren() {
+            if (children == null) {
+                if (isPureHtmlTag()) {
+                    //add all directly specified children
+                    Collection<ElementDescriptor> directChildren = descriptor.getChildrenElements();
+                    children = new LinkedList<HtmlTag>(convert(directChildren));
+                    //add all members of children content types
+                    for(ContentType ct : descriptor.getChildrenTypes()) {
+                        Collection<ElementDescriptor> contentTypeChildren = ElementDescriptorRules.getElementsByContentType(ct);
+                        children.addAll(convert(contentTypeChildren));
+                    }
+                } else {
+                    //no children info
+                    children = Collections.emptyList();
+                }
+            }
+            return children;
         }
     }
 

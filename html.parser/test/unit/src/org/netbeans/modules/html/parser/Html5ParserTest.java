@@ -561,5 +561,11 @@ public class Html5ParserTest extends NbTestCase {
         public HtmlTagType getTagClass() {
             return HtmlTagType.HTML;
         }
+
+        public Collection<HtmlTag> getChildren() {
+            return Collections.emptyList();
+        }
+
+
     }
 }

@@ -58,7 +58,7 @@ public class AttributeTest extends NbTestCase {
     public void testBasic() {
         ElementDescriptor div = ElementDescriptor.forName("div");
         assertNotNull(div);
-        Link nameLink = div.getName();
+        Link nameLink = div.getNameLink();
         assertNotNull(nameLink);
         assertEquals("div", nameLink.getName());
         assertEquals("http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-div-element",
