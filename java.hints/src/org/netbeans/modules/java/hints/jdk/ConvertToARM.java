@@ -142,16 +142,16 @@ public class ConvertToARM {
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_SHADOW) &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_FIN_SHADOW) &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_NULL_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY2_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY_FIN_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY2_FIN_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY2_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_FIN_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY2_FIN_SHADOW) &&            
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_NULL_SHADOW) &&
-            !MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_NULL2_SHADOW)) {
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY2_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY_FIN_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY2_FIN_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY2_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_FIN_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY2_FIN_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_NULL_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_NULL2_SHADOW) && insideARM(ctx))) {
             return hintImpl(ctx, NestingKind.NONE);
         } else {
             return Collections.<ErrorDescription>emptyList();
@@ -187,7 +187,11 @@ public class ConvertToARM {
         }
     )
     public static List<ErrorDescription> hint3(HintContext ctx) {
-        return hintImpl(ctx, NestingKind.IN);
+        if (insideARM(ctx)) {
+            return hintImpl(ctx, NestingKind.IN);
+        } else {
+            return Collections.<ErrorDescription>emptyList();
+        }
     }       
     
     private static List<ErrorDescription> hintImpl(final HintContext ctx, final NestingKind nestingKind) {
@@ -460,6 +464,11 @@ public class ConvertToARM {
             return null;
         }        
         return (TryTree) parent.getLeaf();
+    }
+    
+    private static boolean insideARM(final HintContext ctx) {
+        final TryTree enc = findEnclosingARM(ctx.getVariables().get("$var"));   //NOI18N
+        return enc != null && enc.getResources() != null && !enc.getResources().isEmpty();  
     }
     
     private enum NestingKind {
