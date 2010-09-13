@@ -68,6 +68,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
@@ -455,6 +456,13 @@ public final class WLPluginProperties {
         return properties;
     }
     
+    
+    public static String getDefaultPlatformHome() {
+        Collection<FileObject> instFolders = JavaPlatformManager.getDefault().
+                getDefaultPlatform().getInstallFolders();
+        return instFolders.isEmpty() ? null : FileUtil.toFile(
+                instFolders.iterator().next()).getAbsolutePath();
+    }
     /**
      * Returns map of JDK configuration which is used for starting server
      */
@@ -472,6 +480,8 @@ public final class WLPluginProperties {
                     LOGGER.log(Level.INFO, "Domain environment "
                             + "setup setDomainEnv.cmd is not found. Probably server configuration was "
                             + "changed externally"); // NOI18N
+                    // could be the web profile
+                    javaHomeVendors.put("", getDefaultPlatformHome());
                     return properties;
                 }
                 BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -528,6 +538,8 @@ public final class WLPluginProperties {
                     LOGGER.log(Level.INFO, "Domain environment "
                             + "setup setDomainEnv.sh is not found. Probably server configuration was "
                             + "changed externally"); // NOI18N
+                    // could be the web profile
+                    javaHomeVendors.put("", getDefaultPlatformHome());
                     return properties;
                 }
                 BufferedReader reader = new BufferedReader(new FileReader(file));
