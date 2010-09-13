@@ -179,8 +179,8 @@ public class DerbyDataStorage extends SQLDataStorage {
     }
 
     @Override
-    protected void connect(String dburl) throws SQLException {
-        connection = DriverManager.getConnection(dburl);
+    public void connect() throws SQLException {
+        connection = DriverManager.getConnection(getDbURL());
     }
 
     @Override
