@@ -1549,4 +1549,16 @@ WBR(
         return parents;
     }
 
+    public boolean hasOptionalOpenTag() {
+        return ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(this);
+    }
+
+    public boolean hasOptionalEndTag() {
+        return ElementDescriptorRules.OPTIONAL_END_TAGS.contains(this);
+    }
+
+    public boolean isEmpty() {
+        return children.isEmpty(); //empty content model
+    }
+    
 }

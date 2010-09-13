@@ -44,7 +44,6 @@ package org.netbeans.modules.html.parser;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ElementName;
@@ -160,25 +159,16 @@ public class HtmlTagProvider {
             return attrs.values();
         }
 
-        //TODO TBD - do we need this?
         public boolean isEmpty() {
-            return false;
+            return isPureHtmlTag() ? descriptor.isEmpty() : false;
         }
 
         public boolean hasOptionalOpenTag() {
-            if(isPureHtmlTag()) {
-                return ElementDescriptorRules.OPTIONAL_OPEN_TAGS.contains(descriptor);
-            } else {
-                return false;
-            }
+            return isPureHtmlTag() ? descriptor.hasOptionalOpenTag() : false;
         }
 
         public boolean hasOptionalEndTag() {
-            if(isPureHtmlTag()) {
-                return ElementDescriptorRules.OPTIONAL_END_TAGS.contains(descriptor);
-            } else {
-                return false;
-            }
+             return isPureHtmlTag() ? descriptor.hasOptionalEndTag() : false;
         }
 
         public HtmlTagAttribute getAttribute(String name) {

@@ -85,7 +85,7 @@ public class ElementDescriptorRules {
         "fn", "forall", "function", "gcd", "geq", "grad", "gt", "ident", "image", "imaginary",
         "imaginaryi", "implies", "in", "infinity", "int", "integers", "intersect", "interval",
         "inverse", "lambda", "laplacian", "lcm", "leq", "limit", "list", "ln", "log", "logbase",
-        "lowlimit", "lt", "m:apply", "m:mrow", "maction", "malign", "maligngroup", "malignmark",
+        "lowlimit", "lt", "apply", "mrow", "maction", "malign", "maligngroup", "malignmark",
         "malignscope", "math", "matrix", "matrixrow", "max", "mean", "median", "menclose", "merror",
         "mfenced", "mfrac", "mfraction", "mglyph", "mi", "min", "minus", "mlabeledtr", "mmultiscripts",
         "mn", "mo", "mode", "moment", "momentabout", "mover", "mpadded", "mphantom", "mprescripts",
