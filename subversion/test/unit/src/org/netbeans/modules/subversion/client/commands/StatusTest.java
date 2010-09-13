@@ -50,6 +50,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -122,11 +123,10 @@ public class StatusTest extends AbstractCommandTest {
         File external = createExternal("externals");
         
         File[] files = new File[] { notmanagedfile, notmanagedfolder, unversioned, added, uptodate, deleted, ignoredFile, ignoredFolder, fileInIgnoredFolder, external };
-        ISVNStatus[] sNb = getNbClient().getStatus(files);
-        ISVNStatus[] sRef = getReferenceClient().getStatus(files);
+        ISVNStatus[] sNb = getNbClient().getStatus(files);        
         
         assertEquals(10, sNb.length);
-        assertStatus(sRef, sNb);        
+        fail("implement status assert against expected values");
     }
 
     /**
@@ -212,7 +212,7 @@ public class StatusTest extends AbstractCommandTest {
         status(uptodate,            false,   false, false,          true            , 0);               
         status(deleted,             false,   true,  false,          true            , 1);               
         status(deleted,             false,   false, false,          true            , 1);               
-        status(ignoredFile,         false,   false, false,          true            , 0);
+        status(ignoredFile,         false,   false, false,          true            , isCommandLine() ? 0 : 1); // cli returns 1 entry for ignored; javahl & svnkit noen
         status(ignoredFolder,       false,   false, false,          true            , 0);
         status(fileInIgnoredFolder, false,   false, false,          true            , 0);
   
@@ -293,10 +293,8 @@ public class StatusTest extends AbstractCommandTest {
         
     private void status(File file, boolean descend, boolean getAll, boolean contactServer, boolean ignoreExternals, int c) throws Exception {        
         ISVNStatus[] sNb  = getNbClient().getStatus(file, descend, getAll, contactServer, ignoreExternals);
-        ISVNStatus[] sRef = getReferenceClient().getStatus(file, descend, getAll, contactServer, ignoreExternals);
-        
         assertEquals(c, sNb.length);
-        assertStatus(sRef, sNb);         
+        fail("implement status assert against expected values");
     }
 
     private void assertStatus(ISVNStatus[] refs, ISVNStatus[] nbs) {
@@ -331,17 +329,18 @@ public class StatusTest extends AbstractCommandTest {
     private File createExternal(String fileName) throws Exception {
         File externals = createFolder(fileName);                
         add(externals);
-        
+        SVNUrl repo2Url = copyRepo();
+
         try {
-            mkdir(getRepo2Url().appendPath("e1"));
-            mkdir(getRepo2Url().appendPath("e1").appendPath("e2"));
-            mkdir(getRepo2Url().appendPath("e1").appendPath("e2").appendPath("e3"));
+            mkdir(repo2Url.appendPath("e1"));
+            mkdir(repo2Url.appendPath("e1").appendPath("e2"));
+            mkdir(repo2Url.appendPath("e1").appendPath("e2").appendPath("e3"));
         } catch (SVNClientException e) {
             if(e.getMessage().indexOf("file already exists") > -1) {
                 throw e;
             }
         }
-        setProperty(externals, "svn:externals", "e1/e2\t" + getRepo2Url().appendPath("e1").appendPath("e2").toString().replaceAll(" ", "%20"));
+        setProperty(externals, "svn:externals", "e1/e2\t" + repo2Url.appendPath("e1").appendPath("e2").toString().replaceAll(" ", "%20"));
         
         commit(externals);
         update(externals);        

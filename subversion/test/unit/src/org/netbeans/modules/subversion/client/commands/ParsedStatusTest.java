@@ -82,9 +82,16 @@ public class ParsedStatusTest extends AbstractCommandTest {
         add(file1);
         commit(getWC());
                 
-        ISVNStatus[] s1 = getNbClient().getStatus(folder, true, false);        
-        
-        assertEquals(4, s1.length);                        
+        ISVNStatus[] s1 = getNbClient().getStatus(folder, true, false);
+
+        // returns crap (4 entries) only for the cli which was intentionaly implemted that way
+        // to stay compatible with svnClientAdapter's commandline client.
+        // javahl and svnkit should return a zero length array
+        if(isCommandLine()) {
+            assertEquals(4, s1.length);
+        } else {
+            assertEquals(0, s1.length);
+        }
     }
     
     

@@ -104,14 +104,14 @@ public class SwitchToTest extends AbstractCommandTest {
         c.switchToUrl(file, getFileUrl(file), SVNRevision.HEAD, false);        
         assertInfo(file, getFileUrl(file));        
         
-        // switch to copies prev rev ision
+        // switch to copies prev revision
         c.switchToUrl(file, getFileUrl(filecopy), prevrev, false);    
         
         // test
         assertInfo(file, getFileUrl(filecopy));        
         assertContents(file, 1);
         SVNRevision rev = getRevision(file);
-        assertEquals(((SVNRevision.Number)prevrev).getNumber() , ((SVNRevision.Number)rev).getNumber());
+        assertEquals(((SVNRevision.Number)prevrev).getNumber(), ((SVNRevision.Number)rev).getNumber());
         assertNotifiedFiles(file);        
     }                 
 
