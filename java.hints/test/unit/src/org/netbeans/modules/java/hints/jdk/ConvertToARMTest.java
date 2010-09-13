@@ -538,7 +538,7 @@ public class ConvertToARMTest extends TestBase {
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } }}"
         );
     }
-    
+            
     public void testEnclosedLazy() throws Exception {
         setSourceLevel("1.7");
         ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
@@ -562,6 +562,32 @@ public class ConvertToARMTest extends TestBase {
                        "0:246-0:248:verifier:Convert to Automatic Resource Management",
                        "FixImpl",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"b\"))) {in.read(); } }}"
+        );
+    }
+    
+    public void testEnclosedLazyInCatchFinally() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         try (InputStream in2 = new FileInputStream(new File(\"a\"))) {"+
+                       "             InputStream in = null;"+
+                       "             try {"+
+                       "                in = new FileInputStream(new File(\"b\"));"+
+                       "                in.read();"+
+                       ""+
+                       "             } finally { if (in != null) in.close(); }"+
+                       "         }catch(Exception e) { throw e;} finally {System.exit(1);}"+
+                       "     }"+
+                       "}",
+                       "0:246-0:248:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"b\"))) {in.read(); }catch(Exception e) { throw e;} finally {System.exit(1);} }}"
         );
     }
     
