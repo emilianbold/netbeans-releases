@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -232,18 +233,18 @@ public class ConvertToARM {
                         (StatementTree)var.getLeaf(),
                         tryTree,
                         statements));
-            } else if (nestingKind == NestingKind.OUT) {                
-                final List<Tree> arm = new ArrayList<Tree>();                
-                arm.add(addInit(wc,
-                        removeFinal(wc, (VariableTree)var.getLeaf()),
-                        (ExpressionTree)init.getLeaf()));
-                arm.addAll(removeFinal(wc, ConvertToARMFix.<Tree>asList(armPaths)));
+            } else if (nestingKind == NestingKind.OUT) {
                 final TryTree oldTry = findNestedARM(
                         ((BlockTree)tp.getLeaf()).getStatements(),
                         (StatementTree)var.getLeaf());
                 if (oldTry == null) {
                     return;
                 }
+                final List<Tree> arm = new ArrayList<Tree>();                
+                arm.add(addInit(wc,
+                        removeFinal(wc, (VariableTree)var.getLeaf()),
+                        (ExpressionTree)init.getLeaf()));
+                arm.addAll(removeFinal(wc, ConvertToARMFix.<Tree>asList(armPaths)));                
                 final TryTree newTry = tm.Try(
                         arm,
                         oldTry.getBlock(),
@@ -284,7 +285,10 @@ public class ConvertToARM {
                     state = 1;
                     continue;
                 } else if (state == 1) {
-                    state =  toRemove.contains(statement) ? 2 : 0;
+                    state =  toRemove.contains(statement) || 
+                            (statement.getKind() == Kind.TRY && 
+                            ((TryTree)statement).getResources() != null &&
+                            !((TryTree)statement).getResources().isEmpty())? 2 : 0;
                     statement = newTry;
                 } else if (state == 2) {
                     if (!toRemove.contains(statement)) {
@@ -360,11 +364,17 @@ public class ConvertToARM {
                     if (tryTree.getResources() != null && !tryTree.getResources().isEmpty()) {
                         return tryTree;
                     } else {
-                        final List<? extends StatementTree> blkStms = tryTree.getBlock().getStatements();
-                        if (!blkStms.isEmpty()) {
-                            final StatementTree blkStm = blkStms.get(0);
-                            if (blkStm.getKind() == Kind.TRY) {
-                                return (TryTree)blkStm;
+                        final Iterator<? extends StatementTree> blkStms = tryTree.getBlock().getStatements().iterator();
+                        if (blkStms.hasNext()) {
+                            StatementTree bstm = blkStms.next();
+                            if (bstm.getKind() == Kind.TRY) {
+                                return (TryTree)bstm;
+                            }
+                            if (bstm.getKind() == Kind.EXPRESSION_STATEMENT && blkStms.hasNext()) {
+                                bstm = blkStms.next();
+                                if (bstm.getKind() == Kind.TRY) {
+                                    return (TryTree)bstm;
+                                }
                             }
                         }
                     }

@@ -253,6 +253,140 @@ public class ConvertToARMTest extends TestBase {
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }
     
+    public void testNestedInFinally() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         InputStream in = new FileInputStream(new File(\"a\"));"+
+                       "         try {"+
+                       "             try (InputStream in2 = new FileInputStream(new File(\"a\"))){" +
+                       "                 in.read();"+
+                       "             }"+
+                       "         } finally {"+
+                       "             in.close();"+
+                       "         }"+
+                       "     }" +
+                       "}",
+                       "0:173-0:175:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } }}"
+        );
+    }
+    
+    public void testNestedInFinal() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         final InputStream in = new FileInputStream(new File(\"a\"));"+
+                       "         try {"+
+                       "             try (InputStream in2 = new FileInputStream(new File(\"a\"))){" +
+                       "                 in.read();"+
+                       "             }"+
+                       "         } finally {"+
+                       "             in.close();"+
+                       "         }"+
+                       "     }" +
+                       "}",
+                       "0:179-0:181:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } }}"
+        );
+    }
+    
+    public void testNestedInCatchFinally() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         InputStream in = new FileInputStream(new File(\"a\"));"+
+                       "         try {"+
+                       "             try (InputStream in2 = new FileInputStream(new File(\"a\"))){" +
+                       "                 in.read();"+
+                       "             }"+
+                       "         } catch (Exception e) {"+
+                       "             throw e;"+
+                       "         }finally {"+
+                       "             in.close();"+
+                       "             System.gc();"+
+                       "         }"+
+                       "     }" +
+                       "}",
+                       "0:173-0:175:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } catch (Exception e) { throw e; }finally { System.gc(); } }}"
+        );
+    }
+    
+    public void testNestedInLazyCatchFinally() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         InputStream in = null;"+
+                       "         try {"+
+                       "             in = new FileInputStream(new File(\"a\"));"+
+                       "             try (InputStream in2 = new FileInputStream(new File(\"a\"))){" +
+                       "                 in.read();"+
+                       "             }"+
+                       "         } catch (Exception e) {"+
+                       "             throw e;"+
+                       "         }finally {"+
+                       "             if (in != null)"+
+                       "             in.close();"+
+                       "             System.gc();"+
+                       "         }"+
+                       "     }" +
+                       "}",
+                       "0:173-0:175:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } catch (Exception e) { throw e; }finally { System.gc(); } }}"
+        );
+    }
+    
+    public void testNestedInStms() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         InputStream in = new FileInputStream(new File(\"a\"));"+
+                       "         try (InputStream in2 = new FileInputStream(new File(\"a\"))){"+
+                       "             in.read();"+
+                       "         }"+
+                       "         in.close();"+
+                       "     }" +
+                       "}",
+                       "0:173-0:175:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception {try (InputStream in = new FileInputStream(new File(\"a\"));InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } }}"
+        );
+    }
     
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
