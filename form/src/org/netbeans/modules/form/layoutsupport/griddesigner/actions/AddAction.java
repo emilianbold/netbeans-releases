@@ -156,7 +156,8 @@ public class AddAction extends AbstractGridAction {
             FormModel formModel = container.getFormModel();
             RADComponent metacomp = formModel.getComponentCreator().createComponent(
                     pItem, container, null);
-            if (metacomp instanceof RADVisualComponent) {
+            if (metacomp.isInModel() // It is not in the model when the addition was canceled
+                    && (metacomp instanceof RADVisualComponent)) {
                 replicator.addComponent(metacomp);
                 Component comp = (Component)replicator.getClonedComponent(metacomp);
                 gridManager.setGridX(comp, context.getFocusedColumn());
