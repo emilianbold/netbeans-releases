@@ -63,41 +63,45 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class InspectObserversAtCaretAction extends AbstractObserversAction {
-    
-    private static final long serialVersionUID = 3982229267831538567L;
+final class ObserversActionStrategy implements ModelActionStrategy {
 
-    private static final String INSPECT_OBSERVERS_AT_CARET =
-        "inspect-observers-at-caret";                       // NOI18N
-    
-    private static final String INSPECT_OBSERVERS_AT_CARET_POPUP =
-        "inspect-observers-at-caret-popup";                 // NOI18N
-
-    public InspectObserversAtCaretAction() {
-        super(NbBundle.getMessage(InspectObserversAtCaretAction.class, 
-                INSPECT_OBSERVERS_AT_CARET));
-        
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#isApplicable(org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId)
+     */
+    @Override
+    public boolean isApplicable( InspectActionId id ) {
+        return id == InspectActionId.INJECTABLES || id == InspectActionId.OBSERVERS;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#isApplicable(org.netbeans.modules.web.beans.api.model.WebBeansModel, java.lang.Object[])
      */
     @Override
-    protected void modelAcessAction( WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, final Object[] variable,
-            final JTextComponent component, FileObject fileObject )
-    {
-        final VariableElement var = WebBeansActionHelper.findVariable(model,variable);
+    public boolean isApplicable( WebBeansModel model, Object context[] ) {
+        final VariableElement var = WebBeansActionHelper.findVariable(model,context);
         if (var == null) {
-            return;
+            return false;
         }
-        if (!model.isEventInjectionPoint(var)) {
+        /*if (!model.isEventInjectionPoint(var)) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,
                             "LBL_NotEventInjectionPoint"), // NOI18N
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-            return;
-        }
+            return false;
+        }*/
+        return model.isEventInjectionPoint(var);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#invokeModelAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
+     */
+    @Override
+    public void invokeModelAction( final WebBeansModel model,
+            final MetadataModel<WebBeansModel> metaModel, Object[] subject,
+            JTextComponent component, FileObject fileObject )
+    {
+        final VariableElement var = WebBeansActionHelper.findVariable(model,
+                subject);
         final List<ExecutableElement> observers = model.getObservers( var , null );
         if ( observers.size() == 0 ){
             StatusDisplayer.getDefault().setStatusText(
@@ -123,22 +127,6 @@ public class InspectObserversAtCaretAction extends AbstractObserversAction {
                 }
             });
         }
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
-     */
-    @Override
-    protected String getActionCommand() {
-        return INSPECT_OBSERVERS_AT_CARET;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getPopupMenuKey()
-     */
-    @Override
-    protected String getPopupMenuKey() {
-        return INSPECT_OBSERVERS_AT_CARET_POPUP;
     }
 
 }

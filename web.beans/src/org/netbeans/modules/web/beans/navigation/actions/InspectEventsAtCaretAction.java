@@ -47,7 +47,6 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
@@ -56,9 +55,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.EventsModel;
-import org.netbeans.modules.web.beans.navigation.EventsPanel;
-import org.netbeans.modules.web.beans.navigation.InjectablesModel;
-import org.netbeans.modules.web.beans.navigation.ResizablePopup;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -131,31 +127,17 @@ public class InspectEventsAtCaretAction extends AbstractEventAction {
             ElementHandle.create( method);
         final String name = method.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
-            showDialog( metaModel, model, methodHandle , uiModel , name );
+            WebBeansActionHelper.showEventsDialog( metaModel, model, 
+                    methodHandle , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    showDialog(metaModel, null , methodHandle ,
-                            uiModel , name );
+                    WebBeansActionHelper.showEventsDialog(metaModel, null , 
+                            methodHandle ,uiModel , name );
                 }
             });
         }
-    }
-    
-    private void showDialog( MetadataModel<WebBeansModel> metaModel , 
-            WebBeansModel model,ElementHandle<ExecutableElement> method, 
-            EventsModel uiModel , String name ) 
-    {
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
-        JDialog dialog = ResizablePopup.getDialog();
-        String title = NbBundle.getMessage(InspectEventsAtCaretAction.class,
-                "TITLE_Events" , name );//NOI18N
-        dialog.setTitle( title );
-        dialog.setContentPane( new EventsPanel(method, metaModel, 
-                model ,uiModel ));
-        dialog.setVisible( true );
     }
 
 }
