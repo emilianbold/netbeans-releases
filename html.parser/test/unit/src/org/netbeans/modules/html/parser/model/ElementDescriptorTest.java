@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.html.parser.model;
 
+import java.util.Collection;
 import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
 
@@ -61,6 +62,73 @@ public class ElementDescriptorTest extends NbTestCase {
         assertEquals("http-equiv", Attribute.parseName("attr-meta-http-equiv"));
     }
 
+    public void testBodyElement() {
+        ElementDescriptor body = ElementDescriptor.forName("body");
+        assertNotNull(body);
 
+        Link link = body.getNameLink();
+        assertNotNull(link);
+
+        assertEquals("body", link.getName());
+
+        Collection<ElementDescriptor> directChildren = body.getChildrenElements();
+        assertNotNull(directChildren);
+        assertTrue(directChildren.isEmpty());
+
+        Collection<ContentType> contentTypes = body.getChildrenTypes();
+        assertNotNull(contentTypes);
+        assertTrue(contentTypes.contains(ContentType.FLOW));
+
+        assertFalse(body.isEmpty());
+    }
+
+    public void testHtmlElement() {
+        ElementDescriptor html = ElementDescriptor.forName("html");
+        assertNotNull(html);
+
+        Link link = html.getNameLink();
+        assertNotNull(link);
+
+        assertEquals("html", link.getName());
+
+        Collection<ElementDescriptor> directChildren = html.getChildrenElements();
+        assertNotNull(directChildren);
+        assertTrue(directChildren.contains(ElementDescriptor.BODY));
+        assertTrue(directChildren.contains(ElementDescriptor.HEAD));
+
+        Collection<ContentType> contentTypes = html.getChildrenTypes();
+        assertNotNull(contentTypes);
+        assertTrue(contentTypes.isEmpty());
+
+        assertFalse(html.isEmpty());
+    }
+
+    public void testHeadElement() {
+        ElementDescriptor head = ElementDescriptor.forName("head");
+        assertNotNull(head);
+
+        Link link = head.getNameLink();
+        assertNotNull(link);
+
+        assertEquals("head", link.getName());
+
+        Collection<ElementDescriptor> directChildren = head.getChildrenElements();
+        assertNotNull(directChildren);
+        assertTrue(directChildren.isEmpty());
+        
+        Collection<ContentType> contentTypes = head.getChildrenTypes();
+        assertNotNull(contentTypes);
+
+        //XXX bug in the spec parsing!!!!!!!!!!!!
+//        assertTrue(contentTypes.contains(ContentType.METADATA));
+
+        assertFalse(head.isEmpty());
+    }
+
+    public void testBrIfItsEmpty() {
+        ElementDescriptor br = ElementDescriptor.forName("br");
+        assertNotNull(br);
+        assertTrue(br.isEmpty());
+    }
   
 }

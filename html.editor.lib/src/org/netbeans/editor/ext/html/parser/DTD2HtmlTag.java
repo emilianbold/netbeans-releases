@@ -45,7 +45,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Attribute;
@@ -68,19 +71,19 @@ public class DTD2HtmlTag {
     private static HashMap<DTD.Element, HtmlTag> MAP = new HashMap<DTD.Element, HtmlTag>();
     private static HashMap<Attribute, HtmlTagAttribute> ATTRS_MAP = new HashMap<Attribute, HtmlTagAttribute>();
 
-    public static synchronized HtmlTag getTagForElement(DTD.Element elementName) {
+    public static synchronized HtmlTag getTagForElement(DTD dtd, DTD.Element elementName) {
         HtmlTag impl = MAP.get(elementName);
         if (impl == null) {
-            impl = new DTDElement2HtmlTagAdapter(elementName);
+            impl = new DTDElement2HtmlTagAdapter(dtd, elementName);
             MAP.put(elementName, impl);
         }
         return impl;
     }
 
-    public static synchronized Collection<HtmlTag> convert(Collection<DTD.Element> elements) {
+    public static synchronized Collection<HtmlTag> convert(DTD dtd, Collection<DTD.Element> elements) {
         Collection<HtmlTag> converted = new ArrayList<HtmlTag>();
         for(DTD.Element element : elements) {
-            converted.add(getTagForElement(element));
+            converted.add(getTagForElement(dtd, element));
         }
         return converted;
     }
@@ -98,9 +101,12 @@ public class DTD2HtmlTag {
     private static class DTDElement2HtmlTagAdapter implements HtmlTag {
 
         private DTD.Element element;
+        private DTD dtd; //needed just because of the html-body child hack
         private Collection<HtmlTagAttribute> attrs;
+        private Collection<HtmlTag> children;
 
-        public DTDElement2HtmlTagAdapter(Element element) {
+        public DTDElement2HtmlTagAdapter(DTD dtd, Element element) {
+            this.dtd = dtd;
             this.element = element;
             this.attrs = wrap(element.getAttributeList(null));
         }
@@ -160,6 +166,36 @@ public class DTD2HtmlTag {
         public HtmlTagType getTagClass() {
             return HtmlTagType.HTML;
         }
+
+        @Override
+        public synchronized Collection<HtmlTag> getChildren() {
+            //logic copied from David Konecny's HtmlIndenter.
+            if (children == null) {
+                Set<Element> set = new HashSet<Element>();
+                for (DTD.Element el : (Set<DTD.Element>) element.getContentModel().getIncludes()) {
+                    if (el != null) {
+                        set.add(el);
+                    }
+                }
+                for (DTD.Element el : (Set<DTD.Element>) element.getContentModel().getExcludes()) {
+                    if (el != null) {
+                        set.remove(el);
+                    }
+                }
+                for (DTD.Element el : (Set<DTD.Element>) element.getContentModel().getContent().getPossibleElements()) {
+                    if (el != null) {
+                        set.add(el);
+                    }
+                }
+                if (element.getName().equalsIgnoreCase("HTML")) {
+                    // XXXXXXXXXXXXXXXXX TODO:
+                    set.add(dtd.getElement("BODY"));
+                }
+                children = convert(dtd, set);
+            }
+            return children;
+        }
+
     }
 
      private static class Attribute2HtmlTagAttribute implements HtmlTagAttribute {
