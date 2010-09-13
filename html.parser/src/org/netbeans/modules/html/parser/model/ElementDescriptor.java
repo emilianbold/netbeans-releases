@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
+import nu.validator.htmlparser.impl.ElementName;
 
 /**
  *
@@ -1478,13 +1479,17 @@ WBR(
         this.domInterface = domInterface;
     }
 
-    public static ElementDescriptor byName(String name) {
+    public static ElementDescriptor forName(String name) {
         try {
             return valueOf(name.toUpperCase());
         } catch (IllegalArgumentException iae) {
             //no such enum member
             return null;
         }
+    }
+
+    public static ElementDescriptor forElementName(ElementName elementName) {
+        return forName(elementName.name);
     }
 
     public Collection<Attribute> getAttributes() {
@@ -1507,7 +1512,7 @@ WBR(
         if(childrenElements == null) {
             childrenElements = new ArrayList<ElementDescriptor>();
             for(String elementName : childrenElementNames) {
-                childrenElements.add(byName(elementName));
+                childrenElements.add(forName(elementName));
             }
         }
         return childrenElements;
@@ -1534,7 +1539,7 @@ WBR(
         if(parentElements == null) {
             parentElements = new ArrayList<ElementDescriptor>();
             for(String elementName : parentElementNames) {
-                parentElements.add(byName(elementName));
+                parentElements.add(forName(elementName));
             }
         }
         return parentElements;
