@@ -40,23 +40,49 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.projects;
+package org.netbeans.modules.debugger.jpda.models;
 
-import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
- *
+ * Prevents the models from contacting debuggee when an action is pending.
  * @author martin
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
-                             types=TreeModelFilter.class,
-                             position=370)
-public class ToolTipTreeModelFilter implements TreeModelFilter {
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types={ TreeModelFilter.class, TableModelFilter.class },
+                                 position=10),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types={ TreeModelFilter.class, TableModelFilter.class },
+                                 position=10)
+})
+public class PendingActionsFilter implements TreeModelFilter, TableModelFilter {
+
+    private JPDADebuggerImpl debugger;
+    
+    public PendingActionsFilter(ContextProvider lookupProvider) {
+        debugger = (JPDADebuggerImpl) lookupProvider.
+            lookupFirst (null, JPDADebugger.class);
+    }
+
+    private boolean isPending() {
+        JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
+        if (ct != null) {
+            return ct.getPendingAction() != null;
+        } else {
+            return false;
+        }
+    }
 
     @Override
     public Object getRoot(TreeModel original) {
@@ -65,13 +91,8 @@ public class ToolTipTreeModelFilter implements TreeModelFilter {
 
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
-        if (parent == TreeModel.ROOT) {
-            ObjectVariable tooltipVar = ToolTipView.getVariable();
-            if (tooltipVar != null) {
-                return new Object[] { tooltipVar };
-            } else {
-                return new Object[] { };
-            }
+        if (isPending()) {
+            return new Object[] {};
         } else {
             return original.getChildren(parent, from, to);
         }
@@ -79,7 +100,7 @@ public class ToolTipTreeModelFilter implements TreeModelFilter {
 
     @Override
     public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
-        return Integer.MAX_VALUE;
+        return original.getChildrenCount(node);
     }
 
     @Override
@@ -89,10 +110,34 @@ public class ToolTipTreeModelFilter implements TreeModelFilter {
 
     @Override
     public void addModelListener(ModelListener l) {
+        
     }
 
     @Override
     public void removeModelListener(ModelListener l) {
+        
+    }
+
+    @Override
+    public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
+        if (ct != null) {
+            Object pa = ct.getPendingAction();
+            if (pa != null) {
+                return ct.getPendingString(pa);
+            }
+        }
+        return original.getValueAt(node, columnID);
+    }
+
+    @Override
+    public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        return original.isReadOnly(node, columnID);
+    }
+
+    @Override
+    public void setValueAt(TableModel original, Object node, String columnID, Object value) throws UnknownTypeException {
+        original.setValueAt(node, columnID, value);
     }
 
 }

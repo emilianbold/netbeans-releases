@@ -69,6 +69,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.debugger.jpda.projects.SourcePathProviderImpl.FileObjectComparator;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -94,6 +95,10 @@ import org.openide.util.WeakListeners;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="SourcesView/netbeans-JPDASession/Remote",
+                             types={ TreeModel.class,
+                                     CheckNodeModelFilter.class,
+                                     NodeActionsProvider.class })
 public class SourcesRemoteModel implements TreeModel, CheckNodeModelFilter,
 NodeActionsProvider {
 

@@ -92,7 +92,7 @@ public class StepOperationActionProvider extends JPDADebuggerActionProvider {
     @Override
     public void postAction(final Object action,
                            final Runnable actionPerformedNotifier) {
-        doLazyAction(new Runnable() {
+        doLazyAction(action, new Runnable() {
             @Override
             public void run() {
                 try {

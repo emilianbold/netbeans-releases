@@ -112,7 +112,7 @@ public class ThreadsNodeModel implements NodeModel {
                 synchronized(currentNodes) {
                     currentNodes.add(o);
                 }
-                return BoldVariablesTableModelFilterFirst.toHTML (
+                return BoldVariablesTableModelFilter.toHTML (
                     ((JPDAThread) o).getName (),
                     true,
                     false,
@@ -130,7 +130,7 @@ public class ThreadsNodeModel implements NodeModel {
                 synchronized(currentNodes) {
                     currentNodes.add(o);
                 }
-                return BoldVariablesTableModelFilterFirst.toHTML (
+                return BoldVariablesTableModelFilter.toHTML (
                     ((JPDAThreadGroup) o).getName (),
                     true,
                     false,

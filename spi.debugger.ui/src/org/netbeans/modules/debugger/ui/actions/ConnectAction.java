@@ -53,6 +53,8 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.debugger.ui.Utils;
 import org.netbeans.spi.debugger.ui.AttachType;
@@ -109,6 +111,7 @@ public final class ConnectAction extends AbstractAction {
         bCancel = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Cancel")); // NOI18N
         bOk.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Ok")); // NOI18N
         bCancel.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Cancel")); // NOI18N
+        bCancel.setDefaultCapable(false);
         cp = new ConnectorPanel ();
         descr = new DialogDescriptor (
             cp,
