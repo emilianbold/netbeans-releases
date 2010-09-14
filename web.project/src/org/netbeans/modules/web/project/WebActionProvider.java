@@ -542,6 +542,7 @@ class WebActionProvider extends BaseActionProvider {
             return runEmptyMapping(javaFile);
         }
         p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
+        commands.put(COMMAND_RUN_SINGLE, new String[]{"run"}); // NOI18N
         return true;
     }
 
