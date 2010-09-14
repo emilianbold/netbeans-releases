@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.RADVisualComponent;
@@ -301,6 +302,11 @@ public class GridBagManager implements GridManager {
 
     public void setFill(Component component, int fill) {
         setProperty(component, "fill", fill); // NOI18N
+    }
+
+    @Override
+    public Container encloseInContainer(Set<Component> components) {
+        return null;
     }
 
 }
