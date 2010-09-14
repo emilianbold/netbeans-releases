@@ -1168,6 +1168,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                                 menu.add(menuItem);
                             }
                         }
+                        designer.updateContextMenu(context, menu);
                         draggingStart = null;
                         menu.show(GlassPane.this, point.x, point.y);
                     }
