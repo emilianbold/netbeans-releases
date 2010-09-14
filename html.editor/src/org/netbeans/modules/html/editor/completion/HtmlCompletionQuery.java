@@ -44,6 +44,7 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
@@ -58,9 +59,11 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNode.NodeFilter;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -217,7 +220,8 @@ public class HtmlCompletionQuery extends UserTask {
         String sourceMimetype = snapshot.getSource().getMimeType();
         int astOffset = snapshot.getEmbeddedOffset(offset);
         lowerCase = usesLowerCase(parserResult, astOffset);
-        isXHtml = parserResult.getHtmlVersion().isXhtml();
+        HtmlVersion version = parserResult.getHtmlVersion();
+        isXHtml = version.isXhtml();
 
         TokenHierarchy<?> hi = snapshot.getTokenHierarchy();
         TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
@@ -279,24 +283,41 @@ public class HtmlCompletionQuery extends UserTask {
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
         //finds a leaf node for all the declared namespaces content including the default html content
-        AstNode node = parserResult.findLeaf(searchAstOffset, backward);
-        if (node == null) {
-            return null;
+        AstNode node;
+        AstNode root;
+        //html5 parse tree broken workaround:
+        //In most cases when user edits the file the resulting parse tree
+        //from the html5 parser is broken to such extent, that it is not possible
+        //to resolve the real context node for given completion offset.
+        //So if the edited source is html5 && there is a parser error, use
+        //different approach - simply build a nesting tree of tag from the
+        //actual position to the root by using the lexical syntax elements
+        boolean useHtmlParseResult = true;
+        if(version == HtmlVersion.HTML5) {
+            for(ProblemDescription pd : htmlResult.getProblems()) {
+                if(pd.getType() > ProblemDescription.WARNING) {
+                    useHtmlParseResult = false;
+                    break;
+                }
+            }
         }
-
-        AstNode root = node.getRootNode();
-        if(node == root) {
-            //no node found - likely a broken parse tree. See for example issue 190183
-            //
-            //try to find last open tag node before the searched offset not using
-            //logical ranges but the physical offsets of existing nodes
-            node = AstNodeUtils.getClosestNodeBackward(root, offset, new NodeFilter() {
-                @Override
-                public boolean accepts(AstNode node) {
-                    return !node.isVirtual() && node.type() == AstNode.NodeType.OPEN_TAG;
-                }                
-            });
-
+        if(useHtmlParseResult) {
+            //use the standart mechanism
+            node = parserResult.findLeaf(searchAstOffset, backward);
+            if(node == null) {
+                return null;
+            }
+            root = node.getRootNode();
+        } else {
+            //html5 && errors in the source => likely broken parse tree
+            //force use the legacy tree builder, even if the tree is quite inaccurate,
+            //it is not broken to such extent as the html5 parser one.
+//            System.err.println("Broken HTML5 parse tree, using the legacy SyntaxTreeBuilder!");
+            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
+            node = AstNodeUtils.findDescendant(root, searchAstOffset, backward);
+            if(node == null) {
+                return null;
+            }
         }
 
         //find a leaf node for undeclared tags
