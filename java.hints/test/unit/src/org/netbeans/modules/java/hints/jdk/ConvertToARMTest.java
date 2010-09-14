@@ -591,6 +591,316 @@ public class ConvertToARMTest extends TestBase {
         );
     }
     
+    public void testTryTry() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.OutputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.FileOutputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test(File from, File to1) throws Exception {" +                       
+                       "         final byte[] data = new byte[512];" +
+                       "         final InputStream in = new FileInputStream(from);"+
+                       "         try {"+
+                       "            final OutputStream out1 = new FileOutputStream(to1);"+
+                       "            try {"+
+                       "                int len;"+
+                       "                while ((len = in.read(data)) > 0) {"+
+                       "                    out1.write(data, 0, len);"+
+                       "                }"+
+                       "            } finally {"+
+                       "                out1.close();"+
+                       "            }"+
+                       "        } finally {" +
+                       "            in.close();"+
+                       "        }"+                                                                     
+                       "     }"+
+                       "}",
+                       "0:301-0:303:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from)) { final OutputStream out1 = new FileOutputStream(to1); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); } } finally { out1.close(); } } }}"
+                       );
+        
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.OutputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.FileOutputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test(File from, File to1) throws Exception {" +                       
+                       "         final byte[] data = new byte[512];" +
+                       "         final InputStream in = new FileInputStream(from);"+
+                       "         try {"+
+                       "            final OutputStream out1 = new FileOutputStream(to1);"+
+                       "            try {"+
+                       "                int len;"+
+                       "                while ((len = in.read(data)) > 0) {"+
+                       "                    out1.write(data, 0, len);"+
+                       "                }"+
+                       "            } finally {"+
+                       "                out1.close();"+
+                       "            }"+
+                       "        } finally {" +
+                       "            in.close();"+
+                       "        }"+                                                                     
+                       "     }"+
+                       "}",
+                       "0:377-0:381:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try (OutputStream out1 = new FileOutputStream(to1)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); } } } finally { in.close(); } }}"
+        );
+    }
+    
+    public void testTryTryTry() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.OutputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.FileOutputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test(File from, File to1, File to2) throws Exception {" +                       
+                       "         final byte[] data = new byte[512];" +
+                       "         final InputStream in = new FileInputStream(from);"+
+                       "         try {"+
+                       "            final OutputStream out1 = new FileOutputStream(to1);"+
+                       "            try {"+
+                       "                final OutputStream out2 = new FileOutputStream(to2);"+
+                       "                try {"+
+                       "                    int len;"+
+                       "                    while ((len = in.read(data)) > 0) {"+
+                       "                        out1.write(data, 0, len);"+
+                       "                        out2.write(data, 0, len);"+
+                       "                    }"+
+                       "                } finally {"+
+                       "                    out2.close();"+
+                       "                }"+
+                       "            } finally {"+
+                       "                out1.close();"+
+                       "            }"+
+                       "        } finally {"+
+                       "            in.close();"+
+                       "        }"+
+                       "    }"+
+                       "}",
+                       "0:311-0:313:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from)) { final OutputStream out1 = new FileOutputStream(to1); try { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } finally { out1.close(); } } }}"
+                       );
+        
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.OutputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.FileOutputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test(File from, File to1, File to2) throws Exception {" +                       
+                       "         final byte[] data = new byte[512];" +
+                       "         final InputStream in = new FileInputStream(from);"+
+                       "         try {"+
+                       "            final OutputStream out1 = new FileOutputStream(to1);"+
+                       "            try {"+
+                       "                final OutputStream out2 = new FileOutputStream(to2);"+
+                       "                try {"+
+                       "                    int len;"+
+                       "                    while ((len = in.read(data)) > 0) {"+
+                       "                        out1.write(data, 0, len);"+
+                       "                        out2.write(data, 0, len);"+
+                       "                    }"+
+                       "                } finally {"+
+                       "                    out2.close();"+
+                       "                }"+
+                       "            } finally {"+
+                       "                out1.close();"+
+                       "            }"+
+                       "        } finally {"+
+                       "            in.close();"+
+                       "        }"+
+                       "    }"+
+                       "}",
+                       "0:387-0:391:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try (OutputStream out1 = new FileOutputStream(to1)) { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } } finally { in.close(); } }}"
+                       );
+        
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.OutputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.FileOutputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test(File from, File to1, File to2) throws Exception {" +                       
+                       "         final byte[] data = new byte[512];" +
+                       "         final InputStream in = new FileInputStream(from);"+
+                       "         try {"+
+                       "            final OutputStream out1 = new FileOutputStream(to1);"+
+                       "            try {"+
+                       "                final OutputStream out2 = new FileOutputStream(to2);"+
+                       "                try {"+
+                       "                    int len;"+
+                       "                    while ((len = in.read(data)) > 0) {"+
+                       "                        out1.write(data, 0, len);"+
+                       "                        out2.write(data, 0, len);"+
+                       "                    }"+
+                       "                } finally {"+
+                       "                    out2.close();"+
+                       "                }"+
+                       "            } finally {"+
+                       "                out1.close();"+
+                       "            }"+
+                       "        } finally {"+
+                       "            in.close();"+
+                       "        }"+
+                       "    }"+
+                       "}",
+                       "0:472-0:476:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { final OutputStream out1 = new FileOutputStream(to1); try { try (OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { out1.close(); } } finally { in.close(); } }}"
+                       );
+    }
+    
+    public void testTryTryTryPathUp() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.OutputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.FileOutputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test(File from, File to1, File to2) throws Exception {" +                       
+                       "         final byte[] data = new byte[512];" +
+                       "         final InputStream in = new FileInputStream(from);"+
+                       "         try {"+
+                       "            final OutputStream out1 = new FileOutputStream(to1);"+
+                       "            try {"+
+                       "                final OutputStream out2 = new FileOutputStream(to2);"+
+                       "                try {"+
+                       "                    int len;"+
+                       "                    while ((len = in.read(data)) > 0) {"+
+                       "                        out1.write(data, 0, len);"+
+                       "                        out2.write(data, 0, len);"+
+                       "                    }"+
+                       "                } finally {"+
+                       "                    out2.close();"+
+                       "                }"+
+                       "            } finally {"+
+                       "                out1.close();"+
+                       "            }"+
+                       "        } finally {"+
+                       "            in.close();"+
+                       "        }"+
+                       "    }"+
+                       "}",
+                       "0:472-0:476:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { final OutputStream out1 = new FileOutputStream(to1); try { try (OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { out1.close(); } } finally { in.close(); } }}"
+                       );
+        performFixTest("test/Test.java",
+                "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { final OutputStream out1 = new FileOutputStream(to1); try { try (OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { out1.close(); } } finally { in.close(); } }}",
+                "0:348-0:352:verifier:Convert to Automatic Resource Management",
+                "FixImpl",
+                "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try ( OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { in.close(); } }}"
+                );
+        performFixTest("test/Test.java",
+                "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try ( OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { in.close(); } }}",
+                "0:291-0:293:verifier:Convert to Automatic Resource Management",
+                "FixImpl",
+                "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try ( InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } }}"
+                );
+    }
+    
+    public void testTryTryTryPathDown() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.OutputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.FileOutputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test(File from, File to1, File to2) throws Exception {" +                       
+                       "         final byte[] data = new byte[512];" +
+                       "         final InputStream in = new FileInputStream(from);"+
+                       "         try {"+
+                       "            final OutputStream out1 = new FileOutputStream(to1);"+
+                       "            try {"+
+                       "                final OutputStream out2 = new FileOutputStream(to2);"+
+                       "                try {"+
+                       "                    int len;"+
+                       "                    while ((len = in.read(data)) > 0) {"+
+                       "                        out1.write(data, 0, len);"+
+                       "                        out2.write(data, 0, len);"+
+                       "                    }"+
+                       "                } finally {"+
+                       "                    out2.close();"+
+                       "                }"+
+                       "            } finally {"+
+                       "                out1.close();"+
+                       "            }"+
+                       "        } finally {"+
+                       "            in.close();"+
+                       "        }"+
+                       "    }"+
+                       "}",
+                       "0:311-0:313:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from)) { final OutputStream out1 = new FileOutputStream(to1); try { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } finally { out1.close(); } } }}"
+                       );
+        performFixTest("test/Test.java",
+                "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from)) { final OutputStream out1 = new FileOutputStream(to1); try { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } finally { out1.close(); } } }}",
+                "0:343-0:347:verifier:Convert to Automatic Resource Management",
+                "FixImpl",
+                "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1)) {final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } }}"
+                );
+        performFixTest("test/Test.java",
+                "package test;"+
+                "import java.io.InputStream;"+
+                "import java.io.OutputStream;"+
+                "import java.io.FileInputStream;"+
+                "import java.io.FileOutputStream;"+
+                "import java.io.File;"+
+                "public class Test {"+ 
+                "public void test(File from, File to1, File to2) throws Exception {"+
+                "   final byte[] data = new byte[512];"+
+                "   try ( InputStream in = new FileInputStream(from);  OutputStream out1 = new FileOutputStream(to1)) {"+
+                "       final OutputStream out2 = new FileOutputStream(to2);"+
+                "       try {"+
+                "           int len;"+
+                "           while ((len = in.read(data)) > 0) {"+
+                "               out1.write(data, 0, len);"+
+                "               out2.write(data, 0, len);"+
+                "           }"+
+                "       } finally {"+
+                "           out2.close();"+
+                "       }"+
+                "   }"+
+                "}"+
+                "}",
+                "0:401-0:405:verifier:Convert to Automatic Resource Management",
+                "FixImpl",
+                "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test {public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try ( InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) {int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } }}}"
+                );
+    }
+    
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";
