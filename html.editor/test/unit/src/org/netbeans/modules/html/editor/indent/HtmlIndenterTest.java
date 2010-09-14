@@ -43,6 +43,8 @@
 package org.netbeans.modules.html.editor.indent;
 
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -74,6 +76,12 @@ public class HtmlIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CssTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
+    }
+
+    public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new HtmlIndenterTest("testFormattingHTML04_HTML5"));
+        return suite;
     }
 
     @Override
@@ -314,6 +322,11 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "<table width = '100%'><tr><td id='picture'>^</a></td></tr></table>",
             "<table width = '100%'><tr><td id='picture'>\n            ^</a></td></tr></table>", null);
+    }
+
+
+    public void testFormattingHTML04_HTML5() throws Exception {
+        reformatFileContents("testfiles/simple04_html5.html",new IndentPrefs(4,4));
     }
 
 }
