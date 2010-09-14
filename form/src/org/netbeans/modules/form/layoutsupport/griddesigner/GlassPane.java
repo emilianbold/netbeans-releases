@@ -1346,8 +1346,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             int[] originalColumnBounds = info.getColumnBounds();
             int[] originalRowBounds = info.getRowBounds();
 
-            int columns = Math.max(info.getColumnCount(), newGridX+newGridWidth);
-            int rows = Math.max(info.getRowCount(), newGridY+newGridHeight);
+            int columns = info.getColumnCount();
+            int rows = info.getRowCount();
             int xDelta = newGridX - info.getGridX(focusedComponent);
             int yDelta = newGridY - info.getGridY(focusedComponent);
             int heightDelta = newGridHeight - info.getGridHeight(focusedComponent);
@@ -1366,6 +1366,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     gridManager.setGridY(selComp, gridY+yDelta);
                     gridManager.setGridWidth(selComp, width+widthDelta);
                     gridManager.setGridHeight(selComp, height+heightDelta);
+                    columns = Math.max(columns, gridX+xDelta+width+widthDelta);
+                    rows = Math.max(rows, gridY+yDelta+height+heightDelta);
                 }
             }
             GridUtils.addPaddingComponents(gridManager, columns, rows);
