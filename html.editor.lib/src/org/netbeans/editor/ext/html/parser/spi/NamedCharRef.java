@@ -42,18 +42,14 @@
 
 package org.netbeans.editor.ext.html.parser.spi;
 
-import java.util.Collection;
-
 /**
  *
  * @author marekfukala
  */
-public interface HtmlModel {
+public interface NamedCharRef {
 
-    public Collection<HtmlTag> getAllTags();
+    public String getName();
 
-    public HtmlTag getTag(String tagName);
+    public char getValue();
 
-    public Collection<? extends NamedCharRef> getNamedCharacterReferences();
-    
 }

@@ -398,6 +398,16 @@ public class AstNode {
         child.setParent(this);
     }
 
+    public boolean insertBefore(AstNode node, AstNode insertBeforeNode) {
+        initChildren();
+        int idx = children.indexOf(insertBeforeNode);
+        if(idx == -1) {
+            return false; //no such node in children
+        }
+        children.add(idx, node);
+        return true;
+    }
+
     public void addChildren(List<AstNode> childrenList) {
         initChildren();
         for(AstNode child : childrenList) {
