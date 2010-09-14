@@ -43,6 +43,7 @@ package org.netbeans.modules.dlight.spi.indicator;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
@@ -75,6 +76,7 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
             new CopyOnWriteArrayList<IndicatorNotificationsListener>();
     private final CopyOnWriteArrayList<ValidationListener> validationListeners =
             new CopyOnWriteArrayList<ValidationListener>();
+    private final AtomicBoolean hasListeners = new AtomicBoolean(false);
     private ServiceInfoDataStorage serviceInfoDataStorage;
     private DLightTarget validatedTarget = null;
     private ValidationStatus validationStatus;
@@ -85,12 +87,22 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         validationStatus = ValidationStatus.initialStatus();
     }
 
-    private void addIndicatorDataProviderListener(IndicatorNotificationsListener l) {
-        notificationListeners.addIfAbsent(l);
+    private synchronized void addIndicatorDataProviderListener(IndicatorNotificationsListener l) {
+        boolean added = notificationListeners.addIfAbsent(l);
+
+        if (hasListeners.compareAndSet(false, added)) {
+            resume();
+        }
     }
 
-    private boolean removeIndicatorDataProviderListener(IndicatorNotificationsListener l) {
-        return notificationListeners.remove(l);
+    private synchronized void removeIndicatorDataProviderListener(IndicatorNotificationsListener l) {
+        boolean removed = notificationListeners.remove(l);
+
+        if (removed && notificationListeners.isEmpty()) {
+            if (hasListeners.compareAndSet(true, false)) {
+                pause();
+            }
+        }
     }
 
     @Override
@@ -266,6 +278,12 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         return serviceInfoDataStorage;
     }
 
+    protected void pause() {
+    }
+
+    protected void resume() {
+    }
+
     private static final class IndicatorDataProviderAccessorImpl extends IndicatorDataProviderAccessor {
 
         @Override
@@ -274,8 +292,8 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         }
 
         @Override
-        public boolean removeIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l) {
-            return provider.removeIndicatorDataProviderListener(l);
+        public void removeIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l) {
+            provider.removeIndicatorDataProviderListener(l);
         }
     }
 }
