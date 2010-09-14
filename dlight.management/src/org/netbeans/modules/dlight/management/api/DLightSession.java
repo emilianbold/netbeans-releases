@@ -730,9 +730,9 @@ public final class DLightSession implements
                             storages.add(storage);
                         }
                     }
+                    toolCollector.init(serviceInfoDataStorage);
                     toolCollector.init(currentStorages, target);
                     addDataFilterListener(toolCollector);
-                    toolCollector.init(serviceInfoDataStorage);
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                         notAttachableDataCollector = toolCollector;
                     }
