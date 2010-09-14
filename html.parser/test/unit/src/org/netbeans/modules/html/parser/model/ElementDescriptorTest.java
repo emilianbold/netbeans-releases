@@ -122,10 +122,16 @@ public class ElementDescriptorTest extends NbTestCase {
         assertFalse(head.isEmpty());
     }
 
-    public void testBrIfItsEmpty() {
+    public void testBr() {
         ElementDescriptor br = ElementDescriptor.forName("br");
         assertNotNull(br);
         assertTrue(br.isEmpty());
+    }
+
+    public void testTitleEmpty() {
+        ElementDescriptor title = ElementDescriptor.forName("title");
+        assertNotNull(title);
+        assertFalse(title.isEmpty());
     }
   
 }

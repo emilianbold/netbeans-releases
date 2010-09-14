@@ -163,6 +163,7 @@ public class GenerateElementsIndex extends NbTestCase {
     private final Collection<Element> elements = new LinkedList<Element>();
     private Stack<Element> currents = new Stack<Element>();
     private String LINK_URL_BASE; //if the spec contains full urls its empty
+    private StringBuilder textBuffer;
 
     public GenerateElementsIndex(String name) {
         super(name);
@@ -191,11 +192,13 @@ public class GenerateElementsIndex extends NbTestCase {
 
             @Override
             public void endElement(String uri, String localName, String qName) throws SAXException {
+                handleWholeText();
                 element(localName, false, null);
             }
 
             @Override
             public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+                handleWholeText();
                 element(localName, true, atts);
             }
 
@@ -254,7 +257,18 @@ public class GenerateElementsIndex extends NbTestCase {
 
             @Override
             public void characters(char[] ch, int start, int length) throws SAXException {
-                String text = new String(ch, start, length);
+                if(textBuffer == null) {
+                    textBuffer = new StringBuilder();
+                }
+                textBuffer.append(ch, start, length);
+            }
+
+            private void handleWholeText() {
+                if(textBuffer == null) {
+                    return ;
+                }
+                String text = textBuffer.toString();
+                textBuffer = null;
 
                 if(column >= 2 && column <=5) {
                     //metadata content fix:
