@@ -105,6 +105,8 @@
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.tools.customizer</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.analytics.oss.support.ui</friend>                
                 <friend>com.sun.tools.analytics.previse</friend>
                 <friend>com.sun.tools.analytics.previse.cli</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
