@@ -48,6 +48,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -63,6 +64,7 @@ public class TestKey implements Key, SelfPersistent {
     private String unit;
     private Behavior behavior;
     
+    @Override
     public Behavior getBehavior() {
 	return Behavior.Default;
     }
@@ -80,22 +82,27 @@ public class TestKey implements Key, SelfPersistent {
     }
     
     
+    @Override
     public String getAt(int level) {
 	return key;
     }
     
+    @Override
     public int getDepth() {
 	return 1;
     }
     
+    @Override
     public PersistentFactory getPersistentFactory() {
 	return TestFactory.instance();
     }
     
+    @Override
     public int getSecondaryAt(int level) {
 	return 0;
     }
     
+    @Override
     public int getSecondaryDepth() {
 	return 0;
     }
@@ -136,21 +143,30 @@ public class TestKey implements Key, SelfPersistent {
 	return unit + ':' + key + ' ' + behavior;
     }
 
+    @Override
     public String getUnit() {
 	return unit;
     }
 
+    @Override
     public int getUnitId() {
         return 0;
     }
 
+    @Override
     public void write(DataOutput output) throws IOException {
         output.writeUTF(key);
         output.writeUTF(unit);
         output.writeBoolean(behavior == Behavior.LargeAndMutable);
     }
 
+    @Override
     public boolean hasCache() {
         return false;
+    }
+
+    @Override
+    public KeyDataPresentation getDataPresentation() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

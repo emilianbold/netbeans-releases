@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ServerLibraryConfiguration;
@@ -98,7 +99,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         implements ServerLibraryConfiguration, ModuleConfiguration,
-        ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
+        ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener, DeploymentDescriptorConfiguration {
 
 
     private final ChangeSupport serverLibraryChangeSupport = new ChangeSupport(this);
@@ -148,6 +149,11 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         if (dataObject != null) {
             dataObject.removePropertyChangeListener(this);
         }
+    }
+
+    @Override
+    public boolean isDescriptorRequired() {
+        return true;
     }
     
     /**

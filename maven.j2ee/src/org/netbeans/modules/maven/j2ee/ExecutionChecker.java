@@ -201,57 +201,63 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
     }
 
+    public static boolean showServerSelectionDialog(Project project, J2eeModuleProvider provider, RunConfig config) {
+        if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
+            boolean isDefaultGoal = config == null ? true : neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
+            SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal, project);
+            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
+            panel.setNLS(dd.createNotificationLineSupport());
+            Object obj = DialogDisplayer.getDefault().notify(dd);
+            if (obj == NotifyDescriptor.OK_OPTION) {
+                String instanceId = panel.getSelectedServerInstance();
+                String serverId = panel.getSelectedServerType();
+                if (!ExecutionChecker.DEV_NULL.equals(instanceId)) {
+                    boolean permanent = panel.isPermanent();
+                    if (permanent) {
+                        persistServer(project, instanceId, serverId, panel.getChosenProject());
+
+                    } else {
+                        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+                        sc.setServerInstanceId(instanceId);
+                        WebModuleProviderImpl prv = project.getLookup().lookup(WebModuleProviderImpl.class);
+                        POHImpl poh = project.getLookup().lookup(POHImpl.class);
+                        if (prv != null) {
+                            poh.setContextPath(prv.getWebModuleImplementation().getContextPath());
+                        }
+                        poh.hackModuleServerChange();
+                        //provider instance not relevant from here
+                        provider = null;
+                    }
+
+                    // USG logging
+                    LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
+                    record.setLoggerName(POHImpl.USG_LOGGER_NAME);
+                    record.setParameters(new Object[] { POHImpl.obtainServerName(project) });
+                    POHImpl.USG_LOGGER.log(record);
+
+                    return true;
+                } else {
+                    //ignored used now..
+                    if (panel.isIgnored() && config != null) {
+                        removeNetbeansDeployFromActionMappings(project, config.getActionName());
+                        return true;
+                    }
+                }
+            }
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
+            return false;
+        }
+        return false;
+    }
+
     @Override
     public boolean checkRunConfig(RunConfig config) {
         boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
         if (depl) {
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
-                if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
-                    boolean isDefaultGoal = neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
-                    SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal, project);
-                    DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
-                    panel.setNLS(dd.createNotificationLineSupport());
-                    Object obj = DialogDisplayer.getDefault().notify(dd);
-                    if (obj == NotifyDescriptor.OK_OPTION) {
-                        String instanceId = panel.getSelectedServerInstance();
-                        String serverId = panel.getSelectedServerType();
-                        if (!ExecutionChecker.DEV_NULL.equals(instanceId)) {
-                            boolean permanent = panel.isPermanent();
-                            if (permanent) {
-                                persistServer(instanceId, serverId, panel.getChosenProject());
 
-                            } else {
-                                SessionContent sc = project.getLookup().lookup(SessionContent.class);
-                                sc.setServerInstanceId(instanceId);
-                                WebModuleProviderImpl prv = project.getLookup().lookup(WebModuleProviderImpl.class);
-                                POHImpl poh = project.getLookup().lookup(POHImpl.class);
-                                if (prv != null) {
-                                    poh.setContextPath(prv.getWebModuleImplementation().getContextPath());
-                                }
-                                poh.hackModuleServerChange();
-                                //provider instance not relevant from here
-                                provider = null;
-                            }
 
-                            // USG logging
-                            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
-                            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
-                            record.setParameters(new Object[] { POHImpl.obtainServerName(project) });
-                            POHImpl.USG_LOGGER.log(record);
-
-                            return true;
-                        } else {
-                            //ignored used now..
-                            if (panel.isIgnored()) {
-                                removeNetbeansDeployFromActionMappings(config.getActionName());
-                                return true;
-                            }
-                        }
-                    }
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
-                    return false;
-                }
             }
         }
         return true;
@@ -287,17 +293,10 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         if (nbprj == null) {
             return false;
         }
-        Build build = nbprj.getMavenProject().getBuild();
-        if (build == null || build.getOutputDirectory() == null) {
-            return false;
-        }
-        File fl = new File(build.getOutputDirectory());
-        fl = FileUtil.normalizeFile(fl);
-        File check = new File(fl, NB_COS);
-        return check.exists();
+        return new File(nbprj.getOutputDirectory(false), NB_COS).exists();
     }
 
-    private void removeNetbeansDeployFromActionMappings(String actionName) {
+    private static void removeNetbeansDeployFromActionMappings(Project project, String actionName) {
         try {
             ModelHandle handle = ModelHandleUtils.createModelHandle(project);
             NetbeansActionMapping mapp = ModelHandle.getActiveMapping(actionName, project);
@@ -317,7 +316,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
     }
 
-    private boolean neitherJettyNorCargo(List<String> goals) {
+    private static boolean neitherJettyNorCargo(List<String> goals) {
         for (String goal : goals) {
             if (goal.contains("jetty") || goal.contains("cargo")) {
                 return false;
@@ -340,7 +339,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
     }
 
-    private void persistServer(final String iID, final String sID, final Project targetPrj) {
+    private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
         final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Properties props = model.getProject().getProperties();

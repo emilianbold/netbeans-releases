@@ -377,7 +377,7 @@ public class ListComponent extends JPanel {
     private static final int BOTTOMMARGIN = 2;
     private static final int BETWEENTEXTMARGIN = 3;
     
-    static final int ITEM_WIDTH = 400;
+    static final int ITEM_WIDTH = 600;
     
     private class CustomLayout implements LayoutManager {
         

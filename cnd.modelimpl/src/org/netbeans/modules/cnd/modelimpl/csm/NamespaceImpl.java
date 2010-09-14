@@ -121,7 +121,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         nsDefinitions = new TreeMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>(defenitionComparator);
 
         this.projectRef = new WeakReference<ProjectBase>(project);
-        this.declarationsSorageKey = fake ? null : new DeclarationContainer(this).getKey();
+        this.declarationsSorageKey = fake ? null : new DeclarationContainerNamespace(this).getKey();
         if (!fake) {
             project.registerNamespace(this);
         }
@@ -155,7 +155,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert parentUID != null || parent == null;
 
         this.parentRef = null;
-        declarationsSorageKey = new DeclarationContainer(this).getKey();
+        declarationsSorageKey = new DeclarationContainerNamespace(this).getKey();
         
         project.registerNamespace(this);
         if( parent != null ) {
@@ -260,14 +260,14 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return out;
     }
 
-    private WeakReference<DeclarationContainer> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ?  new WeakReference<DeclarationContainer>(null) : null;
+    private WeakReference<DeclarationContainerNamespace> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ?  new WeakReference<DeclarationContainerNamespace>(null) : null;
     private int preventMultiplyDiagnosticExceptions = 0;
-    private DeclarationContainer getDeclarationsSorage() {
+    private DeclarationContainerNamespace getDeclarationsSorage() {
         if (declarationsSorageKey == null) {
-            return DeclarationContainer.empty();
+            return DeclarationContainerNamespace.empty();
         }
-        DeclarationContainer dc = null;
-        WeakReference<DeclarationContainer> weak = null;
+        DeclarationContainerNamespace dc = null;
+        WeakReference<DeclarationContainerNamespace> weak = null;
         if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
             weak = weakDeclarationContainer;
             if (weak != null) {
@@ -277,15 +277,15 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                 }
             }
         }
-        dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        dc = (DeclarationContainerNamespace) RepositoryUtils.get(declarationsSorageKey);
         if (dc == null && preventMultiplyDiagnosticExceptions < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
             preventMultiplyDiagnosticExceptions++;
         }
         if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
-            weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);
+            weakDeclarationContainer = new WeakReference<DeclarationContainerNamespace>(dc);
         }
-        return dc != null ? dc : DeclarationContainer.empty();
+        return dc != null ? dc : DeclarationContainerNamespace.empty();
     }
     
     @Override
@@ -398,7 +398,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
      * @return true if the variable has namesapce scope or global scope,
      * or false if it is file-local scope (i.e. no external linkage)
      */
-    public static boolean isNamespaceScope(VariableImpl var, boolean isFileLevel) {
+    public static boolean isNamespaceScope(VariableImpl<?> var, boolean isFileLevel) {
         if( ((FileImpl) var.getContainingFile()).isHeaderFile() && ! CsmKindUtilities.isVariableDefinition(var)) {
             return true;
         } else if( var.isStatic() ) {
@@ -420,7 +420,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
      * @return true if the function has namesapce scope or global scope,
      * or false if it is file-local scope (i.e. no external linkage)
      */
-    public static boolean isNamespaceScope(FunctionImpl func) {
+    public static boolean isNamespaceScope(FunctionImpl<?> func) {
         if( ((FileImpl) func.getContainingFile()).isHeaderFile() && ! func.isPureDefinition() ) {
             return true;
         } else if (func.isStatic()) {
@@ -595,8 +595,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         Object o = projectRef;
         if (o instanceof ProjectBase) {
             return (ProjectBase) o;
-        } else if (o instanceof Reference) {
-            ProjectBase prj = (ProjectBase)((Reference) o).get();
+        } else if (o instanceof Reference<?>) {
+            ProjectBase prj = (ProjectBase)((Reference<?>) o).get();
             if (prj != null) {
                 return prj;
             }
@@ -606,7 +606,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             ProjectBase prj = null;
             if (projectRef instanceof ProjectBase) {
                 prj = (ProjectBase)projectRef;
-            } else if (projectRef instanceof Reference) {
+            } else if (projectRef instanceof Reference<?>) {
                 @SuppressWarnings("unchecked")
                 Reference<ProjectBase> ref = (Reference<ProjectBase>) projectRef;
                 prj = ref.get();

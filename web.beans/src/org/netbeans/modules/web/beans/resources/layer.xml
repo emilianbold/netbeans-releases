@@ -58,10 +58,26 @@ made subject to such option by the copyright holder.
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-GoToInjectableAtCaretAction.instance"/>
                             <attr name="position" intvalue="3100"/>
                         </file>
-                        <file name="org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/>
+                        <file name="org-netbeans-modules-web-beans-navigation-actions-InspectCDIAtCaretAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectCDIAtCaretAction.instance"/>
                             <attr name="position" intvalue="3200"/>
                         </file>
+                        <!--  file name="org-netbeans-modules-web-beans-navigation-actions-GoToObserverAtCaretAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-GoToObserverAtCaretAction.instance"/>
+                            <attr name="position" intvalue="3200"/>
+                        </file>
+                        <file name="org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/>
+                            <attr name="position" intvalue="3300"/>
+                        </file>
+                        <file name="org-netbeans-modules-web-beans-navigation-actions-InspectObserversAtCaretAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectObserversAtCaretAction.instance"/>
+                            <attr name="position" intvalue="3400"/>
+                        </file>
+                        <file name="org-netbeans-modules-web-beans-navigation-actions-InspectEventsAtCaretAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectEventsAtCaretAction.instance"/>
+                            <attr name="position" intvalue="3500"/>
+                        </file-->
                     </folder>
                 </folder>
             </folder>
@@ -70,16 +86,29 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Edit">
             <file name="org-netbeans-modules-web-beans-navigation-actions-GoToInjectableAtCaretAction.instance"/>
+            <file name="org-netbeans-modules-web-beans-navigation-actions-InspectCDIAtCaretAction.instance"/>
+            <!-- file name="org-netbeans-modules-web-beans-navigation-actions-GoToObserverAtCaretAction.instance"/>
             <file name="org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/>
+            <file name="org-netbeans-modules-web-beans-navigation-actions-InspectObserversAtCaretAction.instance"/>
+            <file name="org-netbeans-modules-web-beans-navigation-actions-InspectEventsAtCaretAction.instance"/-->
         </folder>
     </folder>
     <folder name="Shortcuts">
         <file name="DO-J.shadow">
-           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/>
-        </file>
-        <file name="DO-T.shadow">
            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-GoToInjectableAtCaretAction.instance"/>
         </file>
+        <file name="DO-C.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectCDIAtCaretAction.instance"/>
+        </file>
+        <!--  file name="DO-O.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-GoToObserverAtCaretAction.instance"/>
+        </file>
+         <file name="DO-S.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectObserversAtCaretAction.instance"/>
+        </file>
+        <file name="DO-E.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectEventsAtCaretAction.instance"/>
+        </file-->
     </folder>
     <folder name="Templates">
         <folder name="CDI">
@@ -135,5 +164,12 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
         </folder>
+    </folder>
+    <folder name="org-netbeans-modules-java-hints">
+    	<folder name="rules">
+    		<folder name="errors">
+    			<file name="org-netbeans-modules-web-beans-hints-CreateQualifier.instance"/>
+    		</folder>
+    	</folder>
     </folder>
 </filesystem>

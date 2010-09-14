@@ -48,11 +48,9 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.lib.profiler.common.SessionSettings;
-import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.marker.MethodMarker;
@@ -75,25 +73,19 @@ import org.netbeans.spi.project.support.ant.*;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectUtils;
@@ -350,7 +342,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                                         final FileObject profiledClass) {
         switch (type) {
             case TARGET_PROFILE:
-                return "profile-j2ee"; // NOI18N
+                return "profile"; // NOI18N
             case TARGET_PROFILE_TEST:
                 return null; // not currently supported // "profile-test"; // NOI18N
             case TARGET_PROFILE_TEST_SINGLE:
@@ -498,149 +490,6 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             // Profile single
             return isFileObjectSupported(project, profiledClassFile);
         }
-    }
-
-    public boolean checkProjectIsModifiedForProfiler(final Project project) {
-        if (ProjectUtilities.isProfilerIntegrated(project)) {
-            return true; // already modified by this version, nothing more to do
-        }
-
-        String projectName = ProjectUtils.getInformation(project).getDisplayName();
-        String caption = MessageFormat.format(MODIFY_BUILDSCRIPT_CAPTION, new Object[] { projectName });
-        String message = MessageFormat.format(MODIFY_BUILDSCRIPT_MSG, new Object[] { projectName, "build-before-profiler.xml" }); // NOI18N
-        if (ProfilerDialogs.notify(new NotifyDescriptor(message, caption, NotifyDescriptor.OK_CANCEL_OPTION,
-                                                        NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION,
-                                                        NotifyDescriptor.CANCEL_OPTION }, NotifyDescriptor.OK_OPTION)) != NotifyDescriptor.OK_OPTION) {
-            return false; // cancelled by the user
-        }
-
-        // not yet modified for profiler => create profiler-build-impl & modify build.xml and project.xml
-        final Element profilerFragment = XMLUtil.createDocument("ignore", null, null, null)
-                                                .createElementNS(ProjectUtilities.PROFILER_NAME_SPACE, "data"); // NOI18N
-        profilerFragment.setAttribute(PROFILE_VERSION_ATTRIBUTE, VERSION_NUMBER); // NOI18N
-
-        ProjectUtils.getAuxiliaryConfiguration(project).putConfigurationFragment(profilerFragment, false);
-
-        try {
-            ProjectManager.getDefault().saveProject(project);
-        } catch (IOException e1) {
-            err.notify(e1);
-            ProfilerLogger.log(e1);
-
-            return false;
-        }
-
-        // we are going to regenerate the build script in one of 3 cases:
-        // 1. it has not been generated yet
-        // 2. the profiler version has been changed (see above)
-        // 3. the stylesheet changed (usually should be caught by 2.)
-        final GeneratedFilesHelper gfh = new GeneratedFilesHelper(project.getProjectDirectory());
-        int flags = gfh.getBuildScriptState("nbproject/profiler-build-impl.xml",
-                                            J2EEProjectTypeProfiler.class.getResource("profiler-build-impl.xsl")); // NOI18N
-
-        if (((flags & GeneratedFilesHelper.FLAG_MISSING) != 0) || ((flags & GeneratedFilesHelper.FLAG_OLD_STYLESHEET) != 0)) {
-            try {
-                if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0) {
-                    if (ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(MessageFormat.format(REGENERATE_BUILDSCRIPT_MSG,
-                                                                                                          new Object[] {
-                                                                                                              "profiler-build-impl.xml"
-                                                                                                          }), // NOI18N
-                                                                                     NotifyDescriptor.OK_CANCEL_OPTION)) != NotifyDescriptor.OK_OPTION) {
-                        return false;
-                    }
-                }
-
-                gfh.generateBuildScriptFromStylesheet("nbproject/profiler-build-impl.xml",
-                                                      J2EEProjectTypeProfiler.class.getResource("profiler-build-impl.xsl")); // NOI18N
-            } catch (IOException e1) {
-                err.notify(ErrorManager.WARNING, e1);
-
-                return false;
-            }
-        }
-
-        final String buildScript = ProjectUtilities.getProjectBuildScript(project);
-
-        if (buildScript == null) {
-            ProfilerDialogs.notify(new NotifyDescriptor.Message(MessageFormat.format(CANNOT_FIND_BUILDSCRIPT_MSG,
-                                                                                     new Object[] { "build.xml" }), // NOI18N
-                                                                NotifyDescriptor.ERROR_MESSAGE));
-
-            return false;
-        }
-
-        if (!ProjectUtilities.backupBuildScript(project)) {
-            if (ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(CANNOT_BACKUP_BUILDSCRIPT_MSG,
-                                                                             NotifyDescriptor.OK_CANCEL_OPTION,
-                                                                             NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
-                return false; // cancelled by the user
-            }
-        }
-
-        final StringBuffer newDataBuffer = new StringBuffer(buildScript.length() + 200);
-        final int importIndex = buildScript.indexOf(STANDARD_IMPORT_STRING);
-
-        if (importIndex == -1) {
-            // notify the user that the build script cannot be modified, and he should perform the change himself
-            ProfilerDialogs.notify(new NotifyDescriptor.Message(MessageFormat.format(MODIFY_BUILDSCRIPT_MANUALLY_MSG,
-                                                                                     new Object[] {
-                                                                                         "build.xml",
-                                                                                         "<import file=\"nbproject/profiler-build-impl.xml\"/>"
-                                                                                     }), // NOI18N
-                                                                NotifyDescriptor.WARNING_MESSAGE));
-
-            return false;
-        }
-
-        String indent = ""; // NOI18N
-        int idx = importIndex - 1;
-
-        while (idx >= 0) {
-            if (buildScript.charAt(idx) == ' ') {
-                indent = " " + indent; // NOI18N
-            } else if (buildScript.charAt(idx) == '\t') {
-                indent = "\t" + indent; // NOI18N
-            } else {
-                break;
-            }
-
-            idx--;
-        }
-
-        newDataBuffer.append(buildScript.substring(0, importIndex + STANDARD_IMPORT_STRING.length() + 1));
-        newDataBuffer.append("\n"); // NOI18N
-        newDataBuffer.append(indent);
-        newDataBuffer.append(PROFILER_IMPORT_STRING);
-        newDataBuffer.append(buildScript.substring(importIndex + STANDARD_IMPORT_STRING.length() + 1));
-
-        final FileObject buildFile = getProjectBuildScript(project);
-        FileLock lock = null;
-        OutputStreamWriter writer = null;
-
-        try {
-            lock = buildFile.lock();
-            writer = new OutputStreamWriter(buildFile.getOutputStream(lock), "UTF-8"); // NOI18N // According to Issue 65557, build.xml uses UTF-8, not default encoding!
-            writer.write(newDataBuffer.toString());
-        } catch (FileNotFoundException e1) {
-            err.notify(e1);
-            ProfilerLogger.log(e1);
-        } catch (IOException e1) {
-            err.notify(e1);
-            ProfilerLogger.log(e1);
-        } finally {
-            if (lock != null) {
-                lock.releaseLock();
-            }
-
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException ex) {
-                }
-            }
-        }
-
-        return true;
     }
 
     public void configurePropertiesForProfiling(final Properties props, final Project project, final FileObject profiledClassFile) {

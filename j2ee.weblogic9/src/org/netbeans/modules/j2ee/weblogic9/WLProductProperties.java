@@ -86,10 +86,10 @@ public final class WLProductProperties {
 
     @CheckForNull
     public String getMiddlewareHome() {
-        String wlHome = System.getenv("MW_HOME"); //NOI18N
-        if (wlHome != null) {
-            return wlHome;
-        }
+//        String wlHome = System.getenv("MW_HOME"); //NOI18N
+//        if (wlHome != null) {
+//            return wlHome;
+//        }
         synchronized(this) {
             checkProperty();
 

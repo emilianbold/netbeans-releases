@@ -324,6 +324,76 @@ public class FileObjectTestHid extends TestBaseHid {
         value.equals((String)fo3.getAttribute(attrName)) );
         fileDataCreatedAssert("parent should fire fileDataCreated",1);
     }
+
+    public void  testCreateAndOpen() throws Exception {
+        checkSetUp();
+        FileObject f;
+        try {
+            f = getTestFolder1(root).createFolder("createAndOpen");
+        } catch (IOException iex) {
+            fsAssert("If read only FS, then OK to fail",
+            fs.isReadOnly());
+            return;
+        }
+        final FileObject fold = f;
+        
+        class L extends FileChangeAdapter {
+            String dataCreated;
+            String changed;
+
+            @Override
+            public synchronized void fileDataCreated(FileEvent fe) {
+                try {
+                    FileObject ch = fold.getFileObject("child.txt");
+                    assertNotNull("Child found", ch);
+                    
+                    dataCreated = ch.asText();
+                    notifyAll();
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+
+            @Override
+            public synchronized void fileChanged(FileEvent fe) {
+                try {
+                    FileObject ch = fold.getFileObject("child.txt");
+                    assertNotNull("Child found", ch);
+
+                    changed = ch.asText();
+                    notifyAll();
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+            
+
+            public synchronized void waitEvents() throws InterruptedException {
+                for (int i = 0; i < 100; i++) {
+                    if (changed != null && dataCreated != null) {
+                        break;
+                    }
+                    wait(100);
+                }
+            }
+        }
+
+        L l = new L();
+        fold.addFileChangeListener(l);
+        assertEquals("No children", 0, fold.getChildren().length);
+        
+        OutputStream os = fold.createAndOpen("child.txt");
+        os.write("Ahoj".getBytes());
+        os.close();
+        
+        FileObject ch = fold.getFileObject("child.txt");
+        assertNotNull("Child found", ch);
+        assertEquals("Right content now", "Ahoj", ch.asText());
+        
+        l.waitEvents();
+        assertEquals("Right content when changed", "Ahoj", l.changed);
+        assertEquals("Right content when created", "Ahoj", l.dataCreated);
+    }
     
     /** Test of copy method, of class org.openide.filesystems.FileObject. */
     public void  testCopy1_FS() throws IOException {
@@ -2809,7 +2879,28 @@ public class FileObjectTestHid extends TestBaseHid {
             // it this way.
         }
     }
+
+    public void testCreateDataWithSlash() throws Exception {
+        checkSetUp();
+        final FileObject fold = getTestFolder1(root);
+        try {
+            FileObject none = fold.createData("name/slash");
+            fail("FileObject shall not be created: " + none);
+        } catch (IOException ex) {
+            // OK
+        }
+    }
     
+    public void testCreateDataWithBackSlash() throws Exception {
+        checkSetUp();
+        final FileObject fold = getTestFolder1(root);
+        try {
+            FileObject none = fold.createData("name\\backslash");
+            fail("FileObject shall not be created: " + none);
+        } catch (IOException ex) {
+            // OK
+        }
+    }
  
     /*#46885: File not refreshed in editor if modified externally the first time after an internal modification*/
     public void testExternalChange () throws Exception {        

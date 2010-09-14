@@ -158,7 +158,7 @@ public final class DataRow {
         sb.append("\n"); //NOI18N
 
         for (Object v : data) {
-            sb.append(v.toString()).append(" | "); //NOI18N
+            sb.append((v  == null ? "NULL" : v.toString())).append(" | "); //NOI18N
         }
 
         return sb.toString();

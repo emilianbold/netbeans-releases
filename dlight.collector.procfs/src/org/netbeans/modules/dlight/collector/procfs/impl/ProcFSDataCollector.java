@@ -52,9 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -63,8 +60,6 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.Info;
-import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
-import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -82,11 +77,13 @@ import org.netbeans.modules.dlight.procfs.reader.api.ProcReader;
 import org.netbeans.modules.dlight.procfs.reader.api.ProcReaderFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListenersSupport;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.TasksCachedProcessor;
 
@@ -95,20 +92,17 @@ public class ProcFSDataCollector
         implements DataCollector<ProcFSDCConfiguration> {
 
     private final static Logger log = DLightLogger.getLogger(ProcFSDataCollector.class);
-    private final List<ValidationListener> validationListeners = new CopyOnWriteArrayList<ValidationListener>();
-    private final ProcFSDCConfiguration configuration;
     private TasksCachedProcessor<DLightTarget, ValidationStatus> validator =
             new TasksCachedProcessor<DLightTarget, ValidationStatus>(new ProcFSDataCollectorValidator(), false);
-    private DLightTarget target;
-    private volatile Future<?> mainLoop;
+    private DLightScheduledTask mainLoop = null;
     private final boolean msaEnabled, prstatEnabled;
-    private final List<DataTableMetadata> providedDataTables;
     private SQLDataStorage sqlStorage;
     private PreparedStatement insertMSAStatement = null;
-    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
+    private final List<DataTableMetadata> metadata;
+    private final DataCollectorListenersSupport dclsupport = new DataCollectorListenersSupport(this);
 
     public ProcFSDataCollector(ProcFSDCConfiguration configuration) {
-        this.configuration = configuration;
+        super("ProcFSReader"); // NOI18N
 
         ProcFSDCConfigurationAccessor access = ProcFSDCConfigurationAccessor.getDefault();
         msaEnabled = access.msaSampling(configuration) > 0;
@@ -125,102 +119,25 @@ public class ProcFSDataCollector
             tables.add(MSASQLTables.lwps.tableMetadata);
         }
 
-        providedDataTables = Collections.unmodifiableList(tables);
+        metadata = Collections.unmodifiableList(tables);
     }
 
-/**
-     * Adds collector state listener, all listeners will be notified about
-     * collector state change.
-     * @param listener add listener
-     */
     @Override
     public final void addDataCollectorListener(DataCollectorListener listener) {
-        if (listener == null) {
-            return;
-        }
-
-        synchronized (this) {
-            if (!listeners.contains(listener)) {
-                listeners.add(listener);
-            }
-        }
+        dclsupport.addListener(listener);
     }
 
-    /**
-     * Remove collector listener
-     * @param listener listener to remove from the list
-     */
     @Override
     public final void removeDataCollectorListener(DataCollectorListener listener) {
-        synchronized (this) {
-            listeners.remove(listener);
-        }
+        dclsupport.removeListener(listener);
     }
 
-    /**
-     * Notifies listeners target state changed in separate thread
-     * @param oldState state target was
-     * @param newState state  target is
-     */
     protected final void notifyListeners(final CollectorState state) {
-        DataCollectorListener[] ll;
-
-        synchronized (this) {
-            ll = listeners.toArray(new DataCollectorListener[0]);
-        }
-
-        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
-
-        // Will do notification in parallel, but wait until all listeners
-        // finish processing of event.
-        for (final DataCollectorListener l : ll) {
-            DLightExecutorService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        l.collectorStateChanged(ProcFSDataCollector.this, state);
-                    } finally {
-                        doneFlag.countDown();
-                    }
-                }
-            }, "Notifying " + l); // NOI18N
-        }
-
-        try {
-            doneFlag.await();
-        } catch (InterruptedException ex) {
-        }
-
+        dclsupport.notifyListeners(state);
     }
 
     @Override
-    public String getName() {
-        return "ProcFSReader"; // NOI18N
-    }
-
-    public void targetStateChanged(DLightTargetChangeEvent event) {
-        switch (event.state) {
-            case RUNNING:
-                targetStarted(event.target);
-                break;
-            case FAILED:
-                targetFinished(event.target);
-                break;
-            case TERMINATED:
-                targetFinished(event.target);
-                break;
-            case DONE:
-                targetFinished(event.target);
-                break;
-            case STOPPED:
-                targetFinished(event.target);
-                return;
-        }
-    }
-
-    public ValidationStatus validate(final DLightTarget target) {
-        this.target = target;
+    protected ValidationStatus doValidation(DLightTarget target) {
         ValidationStatus result = ValidationStatus.initialStatus();
 
         try {
@@ -229,47 +146,15 @@ public class ProcFSDataCollector
             result = ValidationStatus.invalidStatus(ex.getMessage());
         }
 
-        notifyStatusChanged(null, result);
         return result;
     }
 
-    public synchronized void invalidate() {
-        validator.remove(target);
-        target = null;
-        notifyStatusChanged(null, ValidationStatus.initialStatus());
-    }
-
-    public ValidationStatus getValidationStatus() {
-        if (target == null) {
-            return ValidationStatus.initialStatus();
-        }
-
-        return validate(target);
-    }
-
-    public void addValidationListener(ValidationListener listener) {
-        if (!validationListeners.contains(listener)) {
-            validationListeners.add(listener);
-        }
-    }
-
-    public void removeValidationListener(ValidationListener listener) {
-        validationListeners.remove(listener);
-    }
-
-    private final void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
-        if (oldStatus != null && oldStatus.equals(newStatus)) {
-            return;
-        }
-        for (ValidationListener validationListener : validationListeners) {
-            validationListener.validationStateChanged(this, oldStatus, newStatus);
-        }
-    }
-
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public Collection<DataStorageType> getRequiredDataStorageTypes() {
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
 
@@ -277,10 +162,12 @@ public class ProcFSDataCollector
                 dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
 
+    @Override
     public List<DataTableMetadata> getDataTablesMetadata() {
-        return providedDataTables;
+        return metadata;
     }
 
+    @Override
     public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
         // TODO: make it better...
         for (DataStorage ds : storages.values()) {
@@ -294,28 +181,23 @@ public class ProcFSDataCollector
         }
     }
 
+    @Override
     public boolean isAttachable() {
         return true;
     }
 
+    @Override
     public String getCmd() {
         throw new UnsupportedOperationException("Not supported operation."); // NOI18N
     }
 
+    @Override
     public String[] getArgs() {
         throw new UnsupportedOperationException("Not supported operation."); // NOI18N
     }
 
-    private void targetStarted(final DLightTarget target) {
-        if (this.target != target) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine(String.format("Got UNEXPECTED targetStarted() notification. " + // NOI18N
-                        "Validation was performed against %s, but notified about %s", // NOI18N
-                        this.target.toString(), target.toString()));
-            }
-            return;
-        }
-
+    @Override
+    protected synchronized void targetStarted(final DLightTarget target) {
         if (!prstatEnabled && !msaEnabled) {
             // Nothing to do...
             return;
@@ -346,9 +228,11 @@ public class ProcFSDataCollector
                 "ProcFSDataCollector data fetching loop"); // NOI18N
     }
 
-    private void targetFinished(DLightTarget target) {
-        if (this.target == target && mainLoop != null) {
-            mainLoop.cancel(true);
+    @Override
+    protected synchronized void targetFinished(DLightTarget target) {
+        if (mainLoop != null) {
+            mainLoop.cancel();
+            mainLoop = null;
         }
     }
 
@@ -383,10 +267,11 @@ public class ProcFSDataCollector
             this.attachTimeNano = attachTimeNano;
         }
 
-        private final long toNanoOffset(long timenano) {
+        private long toNanoOffset(long timenano) {
             return timenano - ((attachTimeNano > 0) ? attachTimeNano : processStartTime.get());
         }
 
+        @Override
         public void run() {
             try {
                 if (prstatEnabled) {

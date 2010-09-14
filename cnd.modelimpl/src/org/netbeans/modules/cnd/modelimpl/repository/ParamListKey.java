@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.openide.util.CharSequences;
 
@@ -55,12 +56,16 @@ import org.openide.util.CharSequences;
  * @author Vladimir Voskresensky
  */
 /*package*/final class ParamListKey extends OffsetableKey {
-    public ParamListKey(CsmParameterList obj) {
+    ParamListKey(CsmParameterList obj) {
         super(obj, Utils.getCsmParamListKindKey(), CharSequences.empty()); // NOI18N
     }
 
     /*package*/ ParamListKey(DataInput aStream) throws IOException {
         super(aStream);
+    }
+
+    ParamListKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
 
     @Override

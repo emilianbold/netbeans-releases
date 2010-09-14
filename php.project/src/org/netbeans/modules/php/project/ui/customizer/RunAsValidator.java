@@ -89,8 +89,6 @@ public final class RunAsValidator {
         String err = null;
         if (!Utils.isValidUrl(url)) {
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl");
-        } else if (!url.endsWith("/")) { // NOI18N
-            err = NbBundle.getMessage(RunAsValidator.class, "MSG_UrlNotTrailingSlash");
         } else {
             err = validateIndexFile(webRoot, indexFile, arguments);
         }

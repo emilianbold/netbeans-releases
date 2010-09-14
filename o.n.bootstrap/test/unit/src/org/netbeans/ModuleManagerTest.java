@@ -965,6 +965,36 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testProvReqAllowsDisable() throws Exception {
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, false, false);
+            Module m2 = mgr.create(new File(jars, "recommends-foo.jar"), null, false, false, false);
+            
+            Set<Module> m1PlusM2 = new HashSet<Module>();
+            m1PlusM2.add(m1);
+            m1PlusM2.add(m2);
+            mgr.enable(m1PlusM2);
+            
+            assertTrue("m1 enabled", m1.isEnabled());
+            assertTrue("m2 enabled", m2.isEnabled());
+            
+            mgr.disable(m1);
+            
+            assertFalse("m1 disabled", m1.isEnabled());
+            assertTrue("m2 remains enabled", m2.isEnabled());
+            
+            mgr.disable(m2);
+            assertFalse(m1.isEnabled());
+            assertFalse(m2.isEnabled());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    
     public void testProvReqCycles() throws Exception {
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();

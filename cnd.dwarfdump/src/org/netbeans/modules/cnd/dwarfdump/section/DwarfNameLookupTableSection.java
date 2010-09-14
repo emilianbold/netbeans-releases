@@ -60,19 +60,20 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author ak119685
  */
 public class DwarfNameLookupTableSection extends ElfSection {
-    private ArrayList<DwarfNameLookupTable> tables = null;
+    private List<DwarfNameLookupTable> tables = null;
     
     public DwarfNameLookupTableSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
     }
 
-    public ArrayList<DwarfNameLookupTable> getNameLookupTables() {
+    public List<DwarfNameLookupTable> getNameLookupTables() {
         if (tables == null) {
             try {
                 tables = readNameLookupTables();
@@ -84,8 +85,8 @@ public class DwarfNameLookupTableSection extends ElfSection {
         return tables;
     }
 
-    private ArrayList<DwarfNameLookupTable> readNameLookupTables() throws IOException {
-        ArrayList<DwarfNameLookupTable> result = new ArrayList<DwarfNameLookupTable>();
+    private List<DwarfNameLookupTable> readNameLookupTables() throws IOException {
+        List<DwarfNameLookupTable> result = new ArrayList<DwarfNameLookupTable>();
         
         long currPos = reader.getFilePointer();
         reader.seek(header.getSectionOffset());

@@ -188,6 +188,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
         static {
             DANGEROUS_DEPS.add(new String[] {"javax", "javaee-web-api"});
             DANGEROUS_DEPS.add(new String[] {"javax", "javaee-api"});
+            DANGEROUS_DEPS.add(new String[] {"javaee", "javaee-api"});
         }
 
         public List(POMModel model, Element element) {

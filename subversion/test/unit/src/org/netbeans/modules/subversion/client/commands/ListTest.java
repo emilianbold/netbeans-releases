@@ -61,14 +61,14 @@ public class ListTest extends AbstractCommandTest {
 
     @Override
     protected void setUp() throws Exception {
-        if(getName().equals("testListNullAuthor")) {
-            setAnnonWriteAccess();
-            runSvnServer();
-        }
         try {
             super.setUp();
         } catch (Exception e) {
             stopSvnServer();
+        }
+        if(getName().equals("testListNullAuthor")) {
+            setAnnonWriteAccess();
+            runSvnServer();
         }
     }
     
@@ -125,9 +125,7 @@ public class ListTest extends AbstractCommandTest {
         commit(getWC());
                                 
         ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);        
-        ISVNDirEntry[] entries2 = getReferenceClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
-        
-        assertEntryArrays(entries1, entries2);
+        fail("implement list assert against expected values");
     }
     
     public void testListFilesRecursively() throws Exception {                        
@@ -143,22 +141,21 @@ public class ListTest extends AbstractCommandTest {
         commit(getWC());
                         
         ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);        
-        ISVNDirEntry[] entries2 = getReferenceClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
-        
-        assertEntryArrays(entries1, entries2);                
+        fail("implement list assert against expected values");
     }
-   
-    public void testListNullAuthor() throws Exception {
-        File file = createFile("file");
 
-        add(file);
-        commit(getWC());
-
-        ISVNClientAdapter c = getNbClient();
-        ISVNDirEntry[] entries = c.getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
-
-        assertNull(entries[0].getLastCommitAuthor());
-
-    }
+//    XXX not idea how to push a null username through svnclientadapter
+//    public void testListNullAuthor() throws Exception {
+//        File file = createFile("file");
+//
+//        add(file);
+//        commit(getWC());
+//
+//        ISVNClientAdapter c = getNbClient();
+//        ISVNDirEntry[] entries = c.getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
+//
+//        assertNull(entries[0].getLastCommitAuthor());
+//
+//    }
     
 }

@@ -4,7 +4,7 @@
     <welcome file="Welcome.html"></welcome>
     <license file="License.txt"></license>
     <background file="background.tif" scaling="none" alignment="topleft"></background>
-    <options allow-external-scripts="no" customize="never" rootVolumeOnly="false"></options>
+    <options allow-external-scripts="no" customize="never" rootVolumeOnly="false" hostArchitectures="i386"></options>
     <installation-check script="checkMemsize()"></installation-check>
     <volume-check script="checkSystemversion()"></volume-check>
     <script>
@@ -47,9 +47,9 @@ function checkSystemversion() {
 	try {
 		version = my.target.systemVersion.ProductVersion;
 		if(version == 'undefined') {
-			result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.4'));
+			result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.5'));
 		} else {
-			result = ( -1 != system.compareVersions(version, '10.4'));
+			result = ( -1 != system.compareVersions(version, '10.5'));
 		}
 	
 	} catch (e) {}

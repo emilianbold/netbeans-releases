@@ -90,7 +90,7 @@ public final class CommandLine {
      * @param args the array of strings to process
      * @exception CommandException if processing is not possible or failed
      */
-    public void process(String[] args) throws CommandException {
+    public void process(String... args) throws CommandException {
         process(args, null, null, null, null);
     }
     

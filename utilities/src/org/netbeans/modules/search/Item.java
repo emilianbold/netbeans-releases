@@ -45,6 +45,7 @@
 package org.netbeans.modules.search;
 
 import java.util.List;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -73,9 +74,9 @@ final class Item {
         if (detailIndex == -1) {
             return null;
         }
-        
+        FileObject fo = matchingObj.getFileObject();
         List<TextDetail> textDetails
-            = resultModel.basicCriteria.getTextDetails(matchingObj.object);
+            = resultModel.basicCriteria.getTextDetails(fo);
         return detailIndex < textDetails.size()
                ? textDetails.get(detailIndex)
                : null;

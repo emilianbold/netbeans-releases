@@ -106,7 +106,7 @@ import org.openide.util.WeakListeners;
 public final class ClasspathInfo {
     
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
-    private static Logger log = Logger.getLogger(ClasspathInfo.class.getName());
+    private static final Logger log = Logger.getLogger(ClasspathInfo.class.getName());
     
     static {
         ClasspathInfoAccessor.setINSTANCE(new ClasspathInfoAccessorImpl());

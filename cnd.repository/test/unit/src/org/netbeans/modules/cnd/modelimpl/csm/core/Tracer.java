@@ -121,7 +121,7 @@ public final class Tracer {
         }
     }
 
-    private static void dumpProjectContainers(DeclarationContainer container, PrintStream printStream){
+    private static void dumpProjectContainers(DeclarationContainerProject container, PrintStream printStream){
         printStream.println("\n========== Dumping Project declarations");
         for(Map.Entry<CharSequence, Object> entry : container.testDeclarations().entrySet()){
             printStream.println("\t"+entry.getKey().toString());

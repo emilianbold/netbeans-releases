@@ -73,6 +73,8 @@ import org.netbeans.api.java.source.ui.ElementOpen;
  */
 public class InjectablesPopup extends JPanel implements FocusListener {
     
+    private static final long serialVersionUID = -6156872540472708548L;
+
     /** Creates new form DeclarationPopup */
     public InjectablesPopup(String title, List<ElementHandle<Element>> handles,
             CompilationController controller ) 
@@ -139,14 +141,12 @@ public class InjectablesPopup extends JPanel implements FocusListener {
     }// </editor-fold>//GEN-END:initComponents
     
     private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
-        // TODO add your handling code here:
         if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 1) {
             openSelected();
         }
     }//GEN-LAST:event_jList1MouseClicked
     
     private void jList1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jList1KeyPressed
-        // TODO add your handling code here:
         if (evt.getKeyCode() == KeyEvent.VK_ENTER && evt.getModifiers() == 0) {
             openSelected();
         }
@@ -179,6 +179,8 @@ public class InjectablesPopup extends JPanel implements FocusListener {
     
     private static class RendererImpl extends DefaultListCellRenderer {
         
+        private static final long serialVersionUID = -15584610894401459L;
+
         RendererImpl(CompilationController controller){
             myController = controller;
         }

@@ -48,6 +48,10 @@ public class FunctionImpl implements Function {
 
     private final String longName;
     private final long objRef;
+    private String sourceFileName;
+    private String moduleName;
+    private String moduleOffset;
+    
 
     public FunctionImpl(String name, long objRef) {
         if (name == null) {
@@ -99,5 +103,32 @@ public class FunctionImpl implements Function {
         hash = 29 * hash + (this.longName != null ? this.longName.hashCode() : 0);
         hash = 29 * hash + (int) (this.objRef ^ (this.objRef >>> 32));
         return hash;
+    }
+    
+    public synchronized  void setSourcefileName(String fileName){
+        this.sourceFileName = fileName;
+    }
+    
+    public synchronized  void setModuleName(String moduleName){
+        this.moduleName = moduleName;
+    }
+    
+    public synchronized void setModuleOffset(String moduleOffset){
+        this.moduleOffset = moduleOffset;
+    }
+
+    @Override
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    @Override
+    public String getModuleOffset() {
+        return moduleOffset;
+    }
+
+    @Override
+    public String getSourceFile() {
+        return sourceFileName;
     }
 }

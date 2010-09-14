@@ -183,6 +183,20 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
 //                    ConfigurationFilesListener.class, cfl, j2eeModuleProvider));
     }
 
+    /**
+     * Returns <code>true</code> if the provider has been initialized and broken
+     * checks may proceed.
+     *
+     * @since 1.54
+     * @return <code>true</code> if the provider has been initialized and broken
+     *            checks may proceed
+     */
+    protected boolean isInitialized() {
+        // #187910 - ignore events which are received too early, that is before
+        // project lookup was constructed
+        return project.getLookup() != null;
+    }
+
     @Override
     public Node findPath(Node root, Object target) {
         Project proj = root.getLookup().lookup(Project.class);
@@ -338,12 +352,9 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
      */
     @Override
     public void testBroken () {
-        if (project.getLookup() == null) {
-            // #187910 - ignore events which are received too early, that is before
-            // project lookup was constructed
-            return;
+        if (isInitialized()) {
+            task.schedule(100);
         }
-        task.schedule(100);
     }
     
     private static Lookup createLookup( Project project ) {
@@ -358,6 +369,10 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     }
     
     abstract protected String[] getBreakableProperties();
+
+    protected final Project getProject() {
+        return project;
+    }
 
     protected final String[] createListOfBreakableProperties(SourceRoots sources, SourceRoots tests, String[] otherBreakableProperties) {
         String[] srcRootProps = sources.getRootProperties();

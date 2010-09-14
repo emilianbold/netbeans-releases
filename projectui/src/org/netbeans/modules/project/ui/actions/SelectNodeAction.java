@@ -46,39 +46,20 @@ package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JMenuItem;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.ProjectTab;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
-/** Action sensitive to current project
- * 
- * @author Pet Hrebejk 
- */
-public class SelectNodeAction extends LookupSensitiveAction implements Presenter.Menu, Presenter.Popup {
+public class SelectNodeAction extends LookupSensitiveAction {
     
-    // XXX Better icons
     private static final Icon SELECT_IN_PROJECTS_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/projectTab.png", false); //NOI18N
     private static final Icon SELECT_IN_FILES_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/filesTab.png", false); //NOI18N
     
-    private static final String SELECT_IN_PROJECTS_NAME = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_Name" ); // NOI18N
-    private static final String SELECT_IN_FILES_NAME = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_Name" ); // NOI18N
-    
-    private static final String SELECT_IN_PROJECTS_NAME_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_MenuName" ); // NOI18N
-    private static final String SELECT_IN_FILES_NAME_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_MenuName" ); // NOI18N
-    private static final String SELECT_IN_PROJECTS_NAME_MAIN_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_MainMenuName" ); // NOI18N
-    private static final String SELECT_IN_FILES_NAME_MAIN_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_MainMenuName" ); // NOI18N
-    
-    private String command;
-    private ProjectActionPerformer performer;
-    private String namePattern;
+    private static final String SELECT_IN_PROJECTS_NAME = NbBundle.getMessage(CloseProject.class, "LBL_SelectInProjectsAction_MainMenuName"); // NOI18N
+    private static final String SELECT_IN_FILES_NAME = NbBundle.getMessage(CloseProject.class, "LBL_SelectInFilesAction_MainMenuName"); // NOI18N
     
     private String findIn;
     
@@ -100,11 +81,6 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         return a;
     }
     
-    /** 
-     * Constructor for global actions. E.g. actions in main menu which 
-     * listen to the global context.
-     *
-     */
     public SelectNodeAction( Icon icon, String name ) {
         this(icon, name, null);
     }
@@ -112,17 +88,8 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         super( icon, lookup, new Class[] { DataObject.class, FileObject.class } );
         this.setDisplayName( name );
     }
-    
-    private SelectNodeAction(String command, ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
-        super( icon, lookup, new Class[] { Project.class, DataObject.class, FileObject.class } );
-        this.command = command;
-        this.performer = performer;
-        this.namePattern = namePattern;
-        refresh(getLookup(), true);
-    }
        
     protected void actionPerformed( Lookup context ) {
-        
         FileObject fo = getFileFromLookup( context );
         if ( fo != null ) {
             ProjectTab pt  = ProjectTab.findDefault( findIn );      
@@ -135,37 +102,6 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         setEnabled( fo != null );        
     }
     
-    protected final String getCommand() {
-        return command;
-    }
-    
-    protected final String getNamePattern() {
-        return namePattern;
-    }
-    
-    // Presenter.Menu implementation ------------------------------------------
-    
-    public JMenuItem getMenuPresenter () {
-        if (ProjectTab.ID_LOGICAL.equals (this.findIn)) {
-            return buildPresenter(SELECT_IN_PROJECTS_NAME_MAIN_MENU);
-        } else {
-            return buildPresenter(SELECT_IN_FILES_NAME_MAIN_MENU);
-        }
-    }
-
-    // Presenter.Popup implementation ------------------------------------------
-    
-    public JMenuItem getPopupPresenter() {
-        if (ProjectTab.ID_LOGICAL.equals (this.findIn)) {
-            return buildPresenter(SELECT_IN_PROJECTS_NAME_MENU);
-        } else {
-            return buildPresenter(SELECT_IN_FILES_NAME_MENU);
-        }
-    }
-
-    
-   // Private methods ---------------------------------------------------------
-    
     private FileObject getFileFromLookup( Lookup context ) {
    
         FileObject fo = context.lookup(FileObject.class);     
@@ -177,14 +113,5 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         
         return dobj == null ? null : dobj.getPrimaryFile();
     }
-    
-    private JMenuItem buildPresenter (String title) {
-        JMenuItem menuPresenter = new JMenuItem (this);
-        Mnemonics.setLocalizedText(menuPresenter, title);
-        menuPresenter.setIcon(null);
-        
-        return menuPresenter;
-    }
-
     
 }

@@ -146,7 +146,7 @@ public class RefactoringTest extends JellyTestCase {
             int result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong files in Versioning View", 3, result);
 
-            expected = new String[]{"Locally Deleted", "Locally New", "Locally Copied"};
+            expected = new String[]{"Locally Deleted", "Locally Added", "Locally Copied"};
             actual = new String[vo.tabFiles().getRowCount()];
             for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
                 actual[i] = vo.tabFiles().getValueAt(i, 1).toString().trim();
@@ -158,7 +158,7 @@ public class RefactoringTest extends JellyTestCase {
 //            TestKit.removeHandlers(log);
 //            log.addHandler(mh);
 
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
+            node = new SourcePackagesNode(PROJECT_NAME);
             CommitOperator cmo = CommitOperator.invoke(node);
 
 //            TestKit.waitText(mh);
@@ -170,15 +170,15 @@ public class RefactoringTest extends JellyTestCase {
             expected = new String[]{"Main.java", "Main.java", "javaapp_ren"};
             actual = new String[cmo.tabFiles().getRowCount()];
             for (int i = 0; i < actual.length; i++) {
-                actual[i] = cmo.tabFiles().getValueAt(i, 0).toString();
+                actual[i] = cmo.tabFiles().getValueAt(i, 1).toString();
             }
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong files in Commit dialog", 3, result);
 
-            expected = new String[]{"Locally Deleted", "Locally New", "Locally Copied"};
+            expected = new String[]{"Locally Deleted", "Locally Added", "Locally Copied"};
             actual = new String[cmo.tabFiles().getRowCount()];
             for (int i = 0; i < actual.length; i++) {
-                actual[i] = cmo.tabFiles().getValueAt(i, 1).toString();
+                actual[i] = cmo.tabFiles().getValueAt(i, 2).toString();
             }
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong status in Commit dialog", 3, result);

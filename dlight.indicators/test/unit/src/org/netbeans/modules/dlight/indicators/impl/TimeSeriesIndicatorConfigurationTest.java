@@ -85,7 +85,7 @@ public class TimeSeriesIndicatorConfigurationTest {
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         assertEquals(Aggregation.SUM, accessor.getAggregation(conf));
         assertEquals(1000000000L, accessor.getGranularity(conf));
-        assertTrue(accessor.getLabelRenderer(conf) instanceof org.netbeans.modules.dlight.util.BytesFormatter);
+        assertTrue(accessor.getLabelFormatter(conf) instanceof org.netbeans.modules.dlight.util.BytesFormatter);
         assertEquals("My First I/O bytes DLight Tool", accessor.getTitle(conf));
     }
 

@@ -358,6 +358,11 @@ public final class EarProject implements Project, AntProjectListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            J2eeArchiveLogicalViewProvider logicalViewProvider = (J2eeArchiveLogicalViewProvider) EarProject.this.getLookup().lookup (J2eeArchiveLogicalViewProvider.class);
+            if (logicalViewProvider != null) {
+                logicalViewProvider.initialize();
+            }
+
             try {
                 getAppModule().setModules(EarProjectProperties.getModuleMap(EarProject.this));
                 // Check up on build scripts.
@@ -406,7 +411,6 @@ public final class EarProject implements Project, AntProjectListener {
                 Deployment.getDefault().enableCompileOnSaveSupport(appModule);
             }
             
-            J2eeArchiveLogicalViewProvider logicalViewProvider = (J2eeArchiveLogicalViewProvider) EarProject.this.getLookup().lookup (J2eeArchiveLogicalViewProvider.class);
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
@@ -569,7 +573,7 @@ public final class EarProject implements Project, AntProjectListener {
                         "Cannot resolve " + EarProjectProperties.META_INF + // NOI18N
                         " property for " + this); // NOI18N
             }
-            return null;
+            metaInfProp = "src/conf"; // NOI18N
         }
         FileObject metaInfFO = null;
         try {

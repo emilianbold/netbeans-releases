@@ -113,6 +113,8 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public static final String PROP_LAYOUT_CODE_TARGET = "layoutCodeTarget"; // NOI18N
     /** Property name of the generate FQN property. */
     public static final String PROP_GENERATE_FQN = "generateFQN"; // NOI18N
+    /** Property name of the pad empty property. */
+    public static final String PROP_PAD_EMPTY_CELLS = "padEmptyCells"; // NOI18N
 
     /** Name of the property for automatic resources/i18n management.
      * The name refers only to i18n for compatibility reasons. */
@@ -129,7 +131,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     private static final int MIN_GRID_X = 2;
     private static final int MIN_GRID_Y = 2;
 
-    public static final Preferences getPreferences() {
+    public static Preferences getPreferences() {
         return NbPreferences.forModule(FormLoaderSettings.class);
     }
     
@@ -587,7 +589,15 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public void setGenerateFQN(boolean generateFQN) {
         getPreferences().putBoolean(PROP_GENERATE_FQN, generateFQN);    
     }
-        
+
+    public boolean getPadEmptyCells() {
+        return getPreferences().getBoolean(PROP_PAD_EMPTY_CELLS, true);
+    }
+
+    public void setPadEmptyCells(boolean padEmptyCells) {
+        getPreferences().putBoolean(PROP_PAD_EMPTY_CELLS, padEmptyCells);
+    }
+   
     private static String[] toArray(String esp) {
         return esp.split(" , ");//NOI18N
     }

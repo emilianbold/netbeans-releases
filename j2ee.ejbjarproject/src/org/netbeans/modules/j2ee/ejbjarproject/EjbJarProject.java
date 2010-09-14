@@ -772,6 +772,11 @@ public class EjbJarProject implements Project, FileChangeListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            EjbJarLogicalViewProvider logicalViewProvider = EjbJarProject.this.getLookup().lookup(EjbJarLogicalViewProvider.class);
+            if (logicalViewProvider != null) {
+                logicalViewProvider.initialize();
+            }
+
             try {
                 //Check libraries and add them to classpath automatically
                 String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.LIBRARIES_DIR);
@@ -882,8 +887,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             }
             artifactSupport.enableArtifactSynchronization(true);
             
-            EjbJarLogicalViewProvider physicalViewProvider = EjbJarProject.this.getLookup().lookup(EjbJarLogicalViewProvider.class);
-            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
+            if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
             if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {

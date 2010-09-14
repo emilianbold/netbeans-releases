@@ -52,7 +52,10 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIS;
 import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 
 /**
@@ -62,8 +65,8 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 public class DwarfEntry {
     private final CompilationUnit compilationUnit;
     private final DwarfAbbriviationTableEntry abbriviationTableEntry;
-    private final ArrayList<Object> values = new ArrayList<Object>();
-    private final ArrayList<DwarfEntry> children = new ArrayList<DwarfEntry>();
+    private final List<Object> values;
+    private final List<DwarfEntry> children;
     private final long refference;
     private final int hierarchyLevel;
     private String qualifiedName = null;
@@ -77,6 +80,12 @@ public class DwarfEntry {
         this.compilationUnit = compilationUnit;
         this.refference = refference;
         this.hierarchyLevel = hierarchyLevel;
+        if (abbriviationTableEntry.hasChildren()) {
+            children = new ArrayList<DwarfEntry>();
+        } else {
+            children = Collections.<DwarfEntry>emptyList();
+        }
+        values = new ArrayList<Object>(abbriviationTableEntry.getAttributesCount());
     }
     
     public TAG getKind() {
@@ -116,12 +125,12 @@ public class DwarfEntry {
             case DW_TAG_compile_unit:
                 return getName();
             case DW_TAG_lexical_block:
-                return null;
+                return getName();
         }
         
         String aName = getName();
         String pname = parent.getQualifiedName();
-        String qname = (pname != null && aName != null && !pname.equals("") && !aName.equals("")) ? pname + "::" + aName : null;  // NOI18N
+        String qname = (pname != null && aName != null && !pname.equals("") && !aName.equals("")) ? pname + "::" + aName : aName;  // NOI18N
 
         return qname;
     }
@@ -218,7 +227,7 @@ public class DwarfEntry {
         values.add(value);
     }
     
-    public ArrayList<DwarfEntry> getChildren() {
+    public List<DwarfEntry> getChildren() {
         return children;
     }
     
@@ -278,7 +287,7 @@ public class DwarfEntry {
     }
     
     public String getParametersString(boolean withNames) throws IOException {
-        ArrayList<DwarfEntry> params = getParameters();
+        List<DwarfEntry> params = getParameters();
         StringBuilder paramStr = new StringBuilder(); // NOI18N
         DwarfEntry param = null;
                 
@@ -338,9 +347,9 @@ public class DwarfEntry {
         return getUintAttributeValue(ATTR.DW_AT_decl_column);
     }
     
-    public ArrayList<DwarfEntry> getParameters() throws IOException {
-        ArrayList<DwarfEntry> result = new ArrayList<DwarfEntry>();
-        ArrayList<DwarfEntry> aChildren = getChildren();
+    public List<DwarfEntry> getParameters() throws IOException {
+        List<DwarfEntry> result = new ArrayList<DwarfEntry>();
+        List<DwarfEntry> aChildren = getChildren();
         
         for (DwarfEntry child: aChildren) {
             if (child.isParameter() && !child.isArtifitial()) {
@@ -351,9 +360,9 @@ public class DwarfEntry {
         return result;
     }
     
-    public ArrayList<DwarfEntry> getMembers() throws IOException {
-        ArrayList<DwarfEntry> result = new ArrayList<DwarfEntry>();
-        ArrayList<DwarfEntry> aChildren = getChildren();
+    public List<DwarfEntry> getMembers() throws IOException {
+        List<DwarfEntry> result = new ArrayList<DwarfEntry>();
+        List<DwarfEntry> aChildren = getChildren();
         
         for (DwarfEntry child: aChildren) {
             if (child.isMember() && !child.isArtifitial()) {
@@ -399,7 +408,15 @@ public class DwarfEntry {
         Object result = getAttributeValue(ATTR.DW_AT_external);
         return ((result != null) && ((Boolean)result).booleanValue());
     }
-    
+
+    public VIS getVisibility() throws IOException {
+        Object result = getAttributeValue(ATTR.DW_AT_visibility);
+        if (result instanceof Byte) {
+            return VIS.get((Byte)result);
+        }
+        return null;
+    }
+
     public boolean isNamespace() {
         return getKind().equals(TAG.DW_TAG_namespace);
     }
@@ -447,7 +464,17 @@ public class DwarfEntry {
         return (typeRef == null) ? getType() : typeRef.getType();
     }
     
-    ArrayList<Object> getValues() {
+    public long getSibling() throws IOException{
+        Object refIdx = getAttributeValue(ATTR.DW_AT_sibling, false);
+        if (refIdx instanceof Integer) {
+            return ((Integer)refIdx).intValue();
+        } else if (refIdx instanceof Long) {
+            return ((Long)refIdx).longValue();
+        }
+        return -1;
+    }
+
+    List<Object> getValues() {
         return values;
     }
 

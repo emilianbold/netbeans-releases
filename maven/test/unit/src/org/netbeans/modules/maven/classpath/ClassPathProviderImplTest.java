@@ -46,9 +46,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.test.MockPropertyChangeListener;
 
 public class ClassPathProviderImplTest extends NbTestCase {
 
@@ -72,6 +74,33 @@ public class ClassPathProviderImplTest extends NbTestCase {
         FileObject src = FileUtil.createFolder(d, "src/main/java");
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull(cp);
+        assertEquals(Collections.<FileObject>emptyList(), Arrays.asList(cp.getRoots()));
+    }
+
+    public void testEndorsedClassPath() throws Exception {
+        clearWorkDir();
+        FileObject d = FileUtil.toFileObject(getWorkDir());
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        ClassPath cp = ClassPath.getClassPath(src, ClassPathSupport.ENDORSED);
+        assertNotNull(cp);
+        MockPropertyChangeListener pcl = new MockPropertyChangeListener();
+        cp.addPropertyChangeListener(pcl);
+        assertEquals(Collections.<FileObject>emptyList(), Arrays.asList(cp.getRoots()));
+        FileObject jar = TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
+        pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+        assertEquals(Collections.singletonList(FileUtil.getArchiveRoot(jar)), Arrays.asList(cp.getRoots()));
+        d.getFileObject("target").delete();
+        pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertEquals(Collections.<FileObject>emptyList(), Arrays.asList(cp.getRoots()));
     }
 

@@ -59,6 +59,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
@@ -315,7 +316,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         }
     }
 
-    private final static class FieldAccessTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
+    private final static class FieldAccessTokenProcessor implements CndTokenProcessor<Token<TokenId>> {
 
         enum State {
 
@@ -343,7 +344,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             return fldInfo;
         }
 
-        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<TokenId> token, int tokenOffset) {
             if (blockConsumer != null) {
                 if (blockConsumer.isLastToken(token)) {
                     blockConsumer = null;
@@ -377,33 +378,39 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             return false;
         }
 
-        private void afterFieldAccess(Token<CppTokenId> token, int offset) {
+        private void afterFieldAccess(Token<TokenId> token, int offset) {
             if (!isWS(token)) {
-                switch (token.id()) {
-                    case LPAREN:
-                        blockConsumer = new BlockConsumer(CppTokenId.LT, CppTokenId.GT);
-                        break;
-                    case SEMICOLON:
-                    case RPAREN:
-                        state = State.END;
-                        break;
-                    case EQ:
-                        state = State.LVALUE;
-                        break;
+                TokenId tokenID = token.id();
+                if(tokenID instanceof CppTokenId) {
+                    switch ((CppTokenId)tokenID) {
+                        case LPAREN:
+                            blockConsumer = new BlockConsumer(CppTokenId.LT, CppTokenId.GT);
+                            break;
+                        case SEMICOLON:
+                        case RPAREN:
+                            state = State.END;
+                            break;
+                        case EQ:
+                            state = State.LVALUE;
+                            break;
+                    }
                 }
             }
         }
 
-        private boolean isWS(Token<CppTokenId> t) {
-            switch (t.id()) {
-                case WHITESPACE:
-                case BLOCK_COMMENT:
-                case DOXYGEN_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                case LINE_COMMENT:
-                case ESCAPED_LINE:
-                case ESCAPED_WHITESPACE:
-                    return true;
+        private boolean isWS(Token<TokenId> t) {
+            TokenId tokenID = t.id();
+            if(tokenID instanceof CppTokenId) {
+                switch ((CppTokenId)tokenID) {
+                    case WHITESPACE:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                    case LINE_COMMENT:
+                    case ESCAPED_LINE:
+                    case ESCAPED_WHITESPACE:
+                        return true;
+                }
             }
             return false;
         }
@@ -432,7 +439,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 depth = 0;
             }
 
-            public boolean isLastToken(Token<CppTokenId> token) {
+            public boolean isLastToken(Token<TokenId> token) {
                 boolean stop = false;
                 if (token.id() == openBracket) {
                     ++depth;

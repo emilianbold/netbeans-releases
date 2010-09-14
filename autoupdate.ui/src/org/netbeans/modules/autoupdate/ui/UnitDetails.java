@@ -178,7 +178,12 @@ public class UnitDetails extends DetailsPanel {
 
         if (u.getDescription() != null && u.getDescription().length() > 0) {
             text.append("<br><h3>" + getBundle("UnitDetails_Plugin_Description") + "</h3>"); // NOI18N
-            text.append(u.getDescription());
+            String description = u.getDescription();
+            if(description.toLowerCase().startsWith("<html>")) {
+                text.append(description.substring(6));
+            } else {
+                text.append(description);
+            }
         }
         if (desc != null && desc.length() > 0) {
             text.append("<br><br><h4>" + getBundle("Unit_InternalUpdates_Title") + "</h4>"); // NOI18N

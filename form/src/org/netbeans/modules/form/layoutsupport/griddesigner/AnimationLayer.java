@@ -330,7 +330,14 @@ public class AnimationLayer implements ActionListener {
         // Print doesn't use double buffering and it solves some mysterious
         // problems with modified clip during painting of containers.
         // BTW: animated transitions library also uses print()
-        comp.print(gg);
+        if (comp instanceof JComponent) {
+            comp.print(gg);
+        } else {
+            java.awt.peer.ComponentPeer peer = comp.getPeer();
+            if (peer != null) {
+                peer.paint(gg);
+            }
+        }
         gg.dispose();
     }
 

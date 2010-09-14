@@ -11,7 +11,7 @@ public abstract class PhpBaseElement {
 
     private final String name;
     private final String fullyQualifiedName;
-    private final FileObject file;
+    private FileObject file;
     private final int offset;
     private final String description;
     private final PhpClass type;
@@ -95,5 +95,12 @@ public abstract class PhpBaseElement {
 
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * @param file the file to set
+     */
+    public void setFile(FileObject file) {
+        this.file = file;
     }
 }

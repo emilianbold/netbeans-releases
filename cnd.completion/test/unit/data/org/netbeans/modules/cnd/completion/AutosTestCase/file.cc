@@ -1,4 +1,4 @@
-//#include <iostream>
+int x = 10;//#include <iostream>
 int main(int argc, char**argv) {
     std::cout << "Welcome ..." << std::endl;
 
@@ -27,6 +27,8 @@ int main(int argc, char**argv) {
     int y = 5;
 
     if (argc == 1) { return argv; }
+
+    x = ::x;
 
     return 0;
 }

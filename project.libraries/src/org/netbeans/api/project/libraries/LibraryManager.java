@@ -129,7 +129,7 @@ public final class LibraryManager {
         this.alp = alp;
         this.area = area;
         LibraryProvider lp = LibraryAccessor.getLibraries(alp, area);
-        lp.addPropertyChangeListener(plistener);
+        lp.addPropertyChangeListener(WeakListeners.propertyChange(plistener, lp));
         currentStorages.add(lp);
     }
 

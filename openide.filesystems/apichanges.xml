@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="createAndOpen">
+            <api name="filesystems"/>
+            <summary>FileObject.createAndOpen</summary>
+            <version major="7" minor="41"/>
+            <date day="10" month="9" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                Create a file and write its content (almost) atomically using the new
+                <a href="@TOP@/org/openide/filesystems/FileObject.html#createAndOpen(java.lang.String)">FileObject.createAndOpen</a>
+                method.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="40739"/>
+        </change>
         <change id="addRecursiveListenerStop">
             <api name="filesystems"/>
             <summary>Interruptable addRecursiveListener</summary>

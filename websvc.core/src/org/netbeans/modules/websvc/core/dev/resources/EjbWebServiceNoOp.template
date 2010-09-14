@@ -1,0 +1,21 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import javax.jws.WebService;
+import javax.ejb.Stateless;
+
+/**
+ *
+ * @author ${user}
+ */
+@WebService(serviceName="${name}")
+@Stateless()
+public class ${name} {
+
+}

@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.versioning.util;
 
+import java.awt.Cursor;
+import java.awt.EventQueue;
+import javax.swing.tree.TreePath;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -91,6 +94,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Utilities class.
@@ -561,6 +565,20 @@ public final class Utils {
         int idx = list.getSelectedIndex();
         if (idx == -1) idx = 0;
         Rectangle rect = list.getCellBounds(idx, idx);
+        rect.x += 10; rect.y += rect.height;
+        return rect.getLocation();
+    }
+
+    /**
+     * For popups invoked by keyboard determines best location for it.
+     *
+     * @param tree source of popup event
+     * @return Point best location for menu popup
+     */
+    public static Point getPositionForPopup(JTree tree) {
+        TreePath path = tree.getSelectionPath();
+        if (path == null) path = tree.getPathForRow(0);
+        Rectangle rect = tree.getPathBounds(path);
         rect.x += 10; rect.y += rect.height;
         return rect.getLocation();
     }
@@ -1286,7 +1304,7 @@ public final class Utils {
         return false;
     }
 
-/**
+    /**
      * Returns hash value for the given byte array and algoritmus in a hex string form.
      * @param alg Algoritmus to compute the hash value (see also Appendix A in the
      * Java Cryptography Architecture API Specification &amp; Reference </a>
@@ -1336,5 +1354,31 @@ public final class Utils {
             }
         }
         return openFiles;
+    }
+
+    /**
+     * Switches the wait cursor on the NetBeans glasspane of/on
+     * 
+     * @param on
+     */
+    public static void setWaitCursor(final boolean on) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+                mainWindow
+                    .getGlassPane()
+                    .setCursor(Cursor.getPredefinedCursor(
+                        on ?
+                        Cursor.WAIT_CURSOR :
+                        Cursor.DEFAULT_CURSOR));
+                mainWindow.getGlassPane().setVisible(on);
+            }
+        };
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
     }
 }

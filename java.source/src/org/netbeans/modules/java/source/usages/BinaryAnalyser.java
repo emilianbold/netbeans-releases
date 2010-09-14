@@ -166,7 +166,7 @@ public class BinaryAnalyser {
 
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
 
-    private final Index index;
+    private final ClassIndexImpl.Writer writer;
     private final File cacheRoot;
     private final Map<Pair<String,String>,Object[]> refs = new HashMap<Pair<String,String>,Object[]>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
@@ -174,10 +174,10 @@ public class BinaryAnalyser {
     private Continuation cont;
     private Pair<LongHashMap<String>,Set<String>> timeStamps;
 
-    BinaryAnalyser (final @NonNull Index index, final @NonNull File cacheRoot) {
-       Parameters.notNull("index", index);   //NOI18N
+    BinaryAnalyser (final @NonNull ClassIndexImpl.Writer writer, final @NonNull File cacheRoot) {
+       Parameters.notNull("writer", writer);   //NOI18N
        Parameters.notNull("cacheRoot", cacheRoot);  //NOI18N
-       this.index = index;
+       this.writer = writer;
        this.cacheRoot = cacheRoot;
        this.lmListener = new LMListener();
     }
@@ -240,7 +240,7 @@ public class BinaryAnalyser {
                 File archive = new File (URI.create(innerURL.toExternalForm()));
                 if (archive.exists() && archive.canRead()) {
                     if (!isUpToDate(ROOT,archive.lastModified())) {
-                        index.clear();
+                        writer.clear();
                         try {
                             final ZipFile zipFile = new ZipFile(archive);
                             prebuildArgs(zipFile, root);
@@ -260,7 +260,7 @@ public class BinaryAnalyser {
                 FileObject rootFo =  URLMapper.findFileObject(root);
                 if (rootFo != null) {
                     if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {
-                        index.clear();
+                        writer.clear();
                         Enumeration<? extends FileObject> todo = rootFo.getData(true);
                         cont = new FileObjectContinuation (todo, ctx);
                         return cont.execute();
@@ -293,7 +293,7 @@ public class BinaryAnalyser {
         else {
             FileObject rootFo =  URLMapper.findFileObject(root);
             if (rootFo != null) {
-                index.clear();
+                writer.clear();
                 Enumeration<? extends FileObject> todo = rootFo.getData(true);
                 cont = new FileObjectContinuation (todo, ctx);
                 return cont.execute();
@@ -503,7 +503,7 @@ public class BinaryAnalyser {
     private void store() throws IOException {
         try {
             if (this.refs.size()>0 || this.toDelete.size()>0) {
-                this.index.store(this.refs,this.toDelete);
+                this.writer.store(this.refs,this.toDelete);
             }
         } finally {
             refs.clear();
@@ -1005,7 +1005,7 @@ public class BinaryAnalyser {
 
         @Override
         protected Result doExecute() throws IOException {
-            index.clear();
+            writer.clear();
             return Result.FINISHED;
         }
 

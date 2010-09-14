@@ -49,6 +49,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
@@ -58,12 +59,16 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 /*package*/
 final class ProjectKey extends ProjectNameBasedKey {    
     
-    public ProjectKey(CharSequence projectUniqueName) {
+    ProjectKey(CharSequence projectUniqueName) {
 	super(projectUniqueName);
     }
     
     /*package*/ ProjectKey(DataInput aStream) throws IOException {
 	super(aStream);
+    }
+
+    ProjectKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
     
     @Override
@@ -98,5 +103,10 @@ final class ProjectKey extends ProjectNameBasedKey {
     @Override
     public boolean hasCache() {
         return true;
+    }
+
+    @Override
+    public final short getKindPresentation() {
+        return KeyObjectFactory.KEY_PROJECT_KEY;
     }
 }

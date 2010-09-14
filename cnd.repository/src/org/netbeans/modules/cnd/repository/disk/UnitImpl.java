@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import org.netbeans.modules.cnd.repository.berkelydb.DatabaseStorageImpl;
 import org.netbeans.modules.cnd.repository.sfs.FileStorage;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -62,14 +63,17 @@ public final class UnitImpl implements Unit {
     
     private Storage    singleFileStorage;
     private Storage    multyFileStorage;
+    private DatabaseStorageImpl databaseStorage;
     private final CharSequence unitName;
     private final MemoryCache cache;
     
     public UnitImpl(final CharSequence unitName) throws IOException {
        assert unitName != null;
        this.unitName = unitName;
-       singleFileStorage = FileStorage.create(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));
+       File homeDir = new File(StorageAllocator.getInstance().getUnitStorageName(unitName));
+       singleFileStorage = FileStorage.create(homeDir);
        multyFileStorage = new MultyFileStorage(getName());
+       databaseStorage = new DatabaseStorageImpl(homeDir);
        cache = new MemoryCache();
     }
     
@@ -81,6 +85,10 @@ public final class UnitImpl implements Unit {
         } else {
             return multyFileStorage;
         }
+    }
+
+    DatabaseStorageImpl getDatabase() {
+        return databaseStorage;
     }
 
     @Override
@@ -151,6 +159,7 @@ public final class UnitImpl implements Unit {
         }
         singleFileStorage.close();
         multyFileStorage.close();
+        databaseStorage.close();
     }
 
     @Override

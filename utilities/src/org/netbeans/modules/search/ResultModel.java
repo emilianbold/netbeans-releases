@@ -333,12 +333,12 @@ public final class ResultModel {
      */
     private int getDetailsCountReal(MatchingObject matchingObject) {
         int count = isFullText ? 
-            basicCriteria.getDetailsCount(matchingObject.object) : 0;
+            basicCriteria.getDetailsCount(matchingObject.getFileObject()) : 0;
         if (isBasicCriteriaOnly) {
             return count;
         }
         
-        final Object foundObject = matchingObject.object;
+        final Object foundObject = matchingObject.getDataObject();
         for (SearchType searchType : searchGroup.getSearchTypes()) {
             Node[] detailNodes = searchType.getDetails(foundObject);
             count += (detailNodes != null) ? detailNodes.length : 0;
@@ -387,14 +387,14 @@ public final class ResultModel {
         Node[] nodesTotal = null;
         if (basicCriteria != null) {
             nodesTotal = basicCriteria.isFullText()
-                         ? basicCriteria.getDetails(matchingObject.object)
+                         ? basicCriteria.getDetails(matchingObject.getFileObject())
                          : null;
 	}
         if (isBasicCriteriaOnly) {
             return nodesTotal;
         }
         
-        final Object foundObject = matchingObject.object;
+        final Object foundObject = matchingObject.getDataObject();
         for (SearchType searchType : searchGroup.getSearchTypes()) {
             Node[] detailNodes = searchType.getDetails(foundObject);
             if ((detailNodes == null) || (detailNodes.length == 0)) {

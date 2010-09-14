@@ -63,7 +63,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
 
     private static final String[] JAXRS_LIBRARIES =
-        new String[] {"asm", "jackson", "jersey-gf-bundle", "jettison", "jsr311-api"}; //NOI18N
+        new String[] {"jackson", "jersey-gf-bundle", "jettison", "jsr311-api"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
 
     private String gfRootStr;
@@ -74,21 +74,25 @@ public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
         jaxRs = new JaxRs();
     }
 
+    @Override
     public JaxRs get() {
         return jaxRs;
     }
 
+    @Override
     public WSStackVersion getVersion() {
         return WSStackVersion.valueOf(1, 1, 0, 0);
     }
 
+    @Override
     public WSTool getWSTool(Tool toolId) {
         if (toolId == JaxRs.Tool.JAXRS) {
-            return WSStackFactory.createWSTool(new JaxRsTool(JaxRs.Tool.JAXRS));
+            return WSStackFactory.createWSTool(new JaxRsTool(JaxRs.Tool.JAXRS, JAXRS_LIBRARIES));
         }
         return null;
     }
 
+    @Override
     public boolean isFeatureSupported(Feature feature) {
         boolean isFeatureSupported = false;
         if (feature == JaxRs.Feature.JAXRS) {
@@ -123,27 +127,32 @@ public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
             this.nameprefix = nameprefix;
         }
 
+        @Override
         public boolean accept(File file) {
             return file.getName().startsWith(nameprefix);
         }
 
     }
 
-    private class JaxRsTool implements WSToolImplementation {
+    protected class JaxRsTool implements WSToolImplementation {
 
         JaxRs.Tool tool;
+        String[] libraries;
 
-        JaxRsTool(JaxRs.Tool tool) {
+        JaxRsTool(JaxRs.Tool tool, String[] libraries) {
             this.tool = tool;
+            this.libraries = libraries;
         }
-
+        
+        @Override
         public String getName() {
             return tool.getName();
         }
 
+        @Override
         public URL[] getLibraries() {
             List<URL> cPath = new ArrayList<URL>();
-            for (String entry : JAXRS_LIBRARIES) {
+            for (String entry : libraries) {
                 File f = getJarName(gfRootStr, entry);
                 if ((f != null) && (f.exists())) {
                     try {

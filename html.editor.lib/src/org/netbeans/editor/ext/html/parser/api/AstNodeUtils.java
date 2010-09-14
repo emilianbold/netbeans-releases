@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -156,38 +157,51 @@ public class AstNodeUtils {
         int so = nodeRange[0];
         int eo = nodeRange[1];
 
+        if(!node.isVirtual()) {
 
-        if (astOffset < so || astOffset > eo) {
-            //we are out of the scope - may happen just with the first client call
-            return node;
-        }
+            if (astOffset < so || astOffset > eo) {
+                //we are out of the scope - may happen just with the first client call
+                return node;
+            }
 
-        if (exclusiveStartOffset) {
-            so++;
-        }
+            if (exclusiveStartOffset) {
+                so++;
+            }
 
-        if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
-            //if the node matches and has no children we found it
-            return node;
+            if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
+                //if the node matches and has no children we found it
+                return node;
+            }
+
         }
 
         for (AstNode child : node.children()) {
-            int[] childNodeRange = child.getLogicalRange();
-            int ch_so = childNodeRange[0];
+            if(child.isVirtual()) {
+//                return findDescendant(child, astOffset, exclusiveStartOffset);
+                AstNode candidate = findDescendant(child, astOffset, exclusiveStartOffset);
+                if(candidate != null) {
+                    return candidate;
+                }
+            } else {
 
-            if (exclusiveStartOffset) {
-                ch_so++;
-            }
+                int[] childNodeRange = child.getLogicalRange();
+                int ch_so = childNodeRange[0];
 
-            int ch_eo = childNodeRange[1];
-            if (astOffset >= ch_so && astOffset < ch_eo) {
-                //the child is or contains the searched node
-                return findDescendant(child, astOffset, exclusiveStartOffset);
+                if (exclusiveStartOffset) {
+                    ch_so++;
+                }
+
+                int ch_eo = childNodeRange[1];
+                if (astOffset >= ch_so && astOffset < ch_eo) {
+                    //the child is or contains the searched node
+                    return findDescendant(child, astOffset, exclusiveStartOffset);
+                }
             }
 
         }
 
-        return node;
+//        return node;
+         return node.isVirtual() ? null : node;
     }
 
     /**
@@ -319,6 +333,38 @@ public class AstNodeUtils {
         return null;
     }
 
+    public static Collection<AstNode> getPossibleEndTagElements(AstNode leaf) {
+        Collection<AstNode> possible = new LinkedList<AstNode>();
+
+        for (;;) {
+            if (leaf.type() == AstNode.NodeType.ROOT) {
+                break;
+            }
+
+            //if dtd element and doesn't have forbidden end tag
+            if ((leaf.getDTDElement() == null || !AstNodeUtils.hasForbiddenEndTag(leaf))
+                    && leaf.type() == AstNode.NodeType.OPEN_TAG) {
+
+                possible.add(leaf);
+
+                //check if the tag needs to have a matching tag and if is matched already
+                if (leaf.needsToHaveMatchingTag() && leaf.getMatchingTag() == null) {
+                    //if not, any of its parent cannot be closed here
+                    break;
+                }
+            }
+            leaf = leaf.parent();
+            assert leaf != null;
+        }
+        return possible;
+    }
+
+
+    public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode node) {
+        return getPossibleOpenTagElements(node.getRootNode(), node.endOffset());
+
+    }
+
     public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode root, int astPosition) {
         HashSet<DTD.Element> elements = new HashSet<DTD.Element>();
 
@@ -403,6 +449,83 @@ public class AstNodeUtils {
         return elements;
     }
 
+//    public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode leafNodeForPosition) {
+//        HashSet<DTD.Element> elements = new HashSet<DTD.Element>();
+//
+//        int astPosition = leafNodeForPosition.startOffset();
+//        AstNode root = leafNodeForPosition.getRootNode();
+//
+//        //search first dtd element node in the tree path
+//        while (leafNodeForPosition.getDTDElement() == null &&
+//                leafNodeForPosition.type() != AstNode.NodeType.ROOT) {
+//            leafNodeForPosition = leafNodeForPosition.parent();
+//        }
+//
+//        assert leafNodeForPosition != null;
+//
+//        //root allows all dtd elements
+//        if (leafNodeForPosition == root) {
+//            return root.getAllPossibleElements();
+//        }
+//
+//
+//        assert leafNodeForPosition.type() == AstNode.NodeType.OPEN_TAG; //nothing else than open tag can contain non-tag content
+//
+//        DTD.ContentModel contentModel = leafNodeForPosition.getDTDElement().getContentModel();
+//        DTD.Content content = contentModel.getContent();
+//        //resolve all preceding siblings before the astPosition
+//        Collection<DTD.Element> childrenBefore = new ArrayList<DTD.Element>();
+//        for (AstNode sibling : leafNodeForPosition.children()) {
+//            if (sibling.startOffset() >= astPosition) {
+//                //process only siblings before the offset!
+//                break;
+//            }
+//            if (sibling.type() == AstNode.NodeType.OPEN_TAG) {
+//                DTD.Content subcontent = content.reduce(sibling.getDTDElement().getName());
+//                if (subcontent != null) {
+//                    //sibling reduced - update the content to the resolved one
+//                    if(content == subcontent) {
+//                        //the content is reduced to itself
+//                    } else {
+//                        content = subcontent;
+//                        childrenBefore.add(sibling.getDTDElement());
+//                    }
+//                } else {
+//                    //the siblibg doesn't reduce the content - it is unallowed there - ignore it
+//                }
+//            }
+//        }
+//
+//        if (!leafNodeForPosition.needsToHaveMatchingTag()) {
+//            //optional end, we need to also add results for the situation
+//            //the node is automatically closed - which is before the node start
+//
+//            //but do not do that on the root level
+//            if (leafNodeForPosition.parent().type() != AstNode.NodeType.ROOT) {
+//                Collection<DTD.Element> elementsBeforeLeaf = getPossibleOpenTagElements(root, leafNodeForPosition.startOffset());
+//                //remove all elements which has already been reduced before
+//                elementsBeforeLeaf.removeAll(childrenBefore);
+//                elements.addAll(elementsBeforeLeaf);
+//            }
+//        }
+//
+////      elements.addAll(content.getPossibleElements());
+//        addAllPossibleElements(elements, content.getPossibleElements());
+//
+//        //process includes/excludes from the root node to the leaf
+//        List<AstNode> path = new ArrayList<AstNode>();
+//        for(AstNode node = leafNodeForPosition; node.type() != AstNode.NodeType.ROOT; node = node.parent()) {
+//            path.add(0, node);
+//        }
+//        for(AstNode node : path) {
+//            DTD.ContentModel cModel = node.getDTDElement().getContentModel();
+//            elements.addAll(cModel.getIncludes());
+//            elements.removeAll(cModel.getExcludes());
+//        }
+//
+//        return elements;
+//    }
+
     private static void addAllPossibleElements(Set<DTD.Element> result, Collection<DTD.Element> elements) {
         for(DTD.Element element : elements) {
             result.add(element);
@@ -436,5 +559,17 @@ public class AstNodeUtils {
             visitAncestors(parent, visitor);
         }
     }
+
+    /** finds closest physical preceeding node to the offset */
+    public static AstNode getClosestNodeBackward(AstNode context, int offset, AstNode.NodeFilter filter) {
+        for (AstNode child : context.children(filter)) {
+            if (child.startOffset >= offset) {
+                return context;
+            }
+            context = getClosestNodeBackward(child, offset, filter);
+        }
+        return context;
+    }
+
 }
     

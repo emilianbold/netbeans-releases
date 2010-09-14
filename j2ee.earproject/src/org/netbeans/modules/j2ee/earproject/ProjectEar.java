@@ -670,6 +670,7 @@ public final class ProjectEar extends J2eeApplicationProvider
         public void cleanup() throws FileStateInvalidException {
             if (resources != null) {
                 FileUtil.removeFileChangeListener(this, resources);
+                resources = null;
             }
 
             ProjectEar.this.project.evaluator().removePropertyChangeListener(this);

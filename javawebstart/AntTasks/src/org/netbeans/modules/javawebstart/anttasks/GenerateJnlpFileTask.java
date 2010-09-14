@@ -81,6 +81,7 @@ public class GenerateJnlpFileTask extends Task {
     private static final String DEFAULT_JNLP_APPLET_PARAMS = "${JNLP.APPLET.PARAMS}";
     private static final String DEFAULT_JNLP_APPLET_WIDTH = "${jnlp.applet.width}";
     private static final String DEFAULT_JNLP_APPLET_HEIGHT = "${jnlp.applet.height}";
+    private static final String JNLP_LAZY_FORMAT = "jnlp.lazy.jar.%s"; //NOI18N
     
     private static final String DESC_APPLICATION = "application-desc";
     private static final String DESC_APPLET = "applet-desc";
@@ -410,14 +411,13 @@ public class GenerateJnlpFileTask extends Task {
                         resourceElem.removeChild(node);
                         String cpProp = getProperty("run.classpath", null); // property in project.properties
                         log("run.classpath = " + cpProp, Project.MSG_VERBOSE);
-                        final PathTokenizer ptok = new PathTokenizer(cpProp);
-                        final Set<? extends String> lazyJarsSet = getLazyJarsSet(lazyJars);
-                        while (ptok.hasMoreTokens()) {
-                            final String path = ptok.nextToken();
-                            final String fileName = stripFilename(path);
+                        final List<? extends File> runCpResolved = resolveCp(getProject(), cpProp);
+                        final Set<? extends File> lazyJarsSet = getLazyJarsSet(getProject(), runCpResolved, lazyJars);
+                        for (File re : runCpResolved) {
+                            final String fileName = re.getName();
                             if (fileName.endsWith("jar") && !fileName.equals("javaws.jar")) {
                                 // lib/ should be probably taken from some properties file ?
-                                final boolean eager = !lazyJarsSet.contains(getProject().resolveFile(path).getPath());
+                                final boolean eager = !lazyJarsSet.contains(re);
                                 resourceElem.appendChild(createJarElement(docDom, "lib/" + fileName, false, eager));
                             }
                         }
@@ -592,12 +592,26 @@ public class GenerateJnlpFileTask extends Task {
         return  path.substring(sepIndex + 1);
     }
 
-    private static Set<? extends String> getLazyJarsSet(final Path value) {
-        final Set<String> result = new HashSet<String>();
+    private static Set<? extends File> getLazyJarsSet(final Project prj, final List<? extends File> runCp, final Path value) {
+        final Set<File> result = new HashSet<File>();
         if (value != null) {
             for (String pathElement : value.list()) {
-                result.add(pathElement);
+                result.add(prj.resolveFile(pathElement));
             }
+        }
+        for (File re : runCp) {
+            if (Project.toBoolean(prj.getProperty(String.format(JNLP_LAZY_FORMAT, re.getName())))) {
+                result.add(re);
+            }
+        }
+        return result;
+    }
+    
+    private static List<? extends File> resolveCp(final Project prj, final String path) {
+        final PathTokenizer ptok = new PathTokenizer(path);
+        final List<File> result = new ArrayList<File>();
+        while (ptok.hasMoreTokens()) {
+            result.add(prj.resolveFile(ptok.nextToken()));
         }
         return result;
     }

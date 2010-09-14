@@ -85,28 +85,30 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     
     private final DeploymentFactory df;
     private final ServerUtilities commonUtilities;
+    private final boolean hasWizard;
 
-    protected Hk2OptionalFactory(DeploymentFactory df, ServerUtilities su) {
+    protected Hk2OptionalFactory(DeploymentFactory df, ServerUtilities su, boolean hasWizard) {
         this.df = df;
         this.commonUtilities = su;
+        this.hasWizard = hasWizard;
     }
 
     public static Hk2OptionalFactory createPrelude() {
         ServerUtilities t = ServerUtilities.getPreludeUtilities();
         return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createPrelude(),
-                t);
+                t, false);
     }
     
     public static Hk2OptionalFactory createEe6() {
         ServerUtilities t = ServerUtilities.getEe6Utilities();
         return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6(),
-                t);
+                t, true);
     }
     
     public static Hk2OptionalFactory createEe6WC() {
         ServerUtilities t = ServerUtilities.getEe6WCUtilities();
         return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6WC(),
-                t);
+                t, true);
     }
 
     @Override
@@ -150,7 +152,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     
     @Override
     public InstantiatingIterator getAddInstanceIterator() {
-        return new J2eeInstantiatingIterator(commonUtilities);
+        return hasWizard ? new J2eeInstantiatingIterator(commonUtilities) : null;
     }
     
     @Override

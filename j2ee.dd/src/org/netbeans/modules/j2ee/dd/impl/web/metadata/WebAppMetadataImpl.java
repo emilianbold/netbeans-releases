@@ -221,7 +221,7 @@ public class WebAppMetadataImpl implements WebAppMetadata {
                 webXmlLastModification = lastModif;
             }
             catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Error during web.xml parsing!", ex);
+                LOG.log(Level.INFO, "Error during web.xml parsing!", ex);
                 webXml = null;
             }
         }
@@ -298,9 +298,9 @@ public class WebAppMetadataImpl implements WebAppMetadata {
             myRootToFragment.put( root, rec );
         }
         catch (Exception ex) {
-            LOG.log(Level.SEVERE,
-                    "Error during web-fragment.xml parsing! File: " + fo,
-                    ex);
+            LOG.log(Level.INFO,
+                    "Error during web-fragment.xml parsing! File: " + fo+
+                    " in the classpath unit : " + root,ex);
         }
     }
 

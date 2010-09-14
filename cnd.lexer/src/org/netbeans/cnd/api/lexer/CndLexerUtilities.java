@@ -43,15 +43,20 @@
  */
 package org.netbeans.cnd.api.lexer;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -78,7 +83,7 @@ public final class CndLexerUtilities {
      *   two tokens. If <code>false</code> the forward lying token will be used.     * 
      * @return token sequence positioned on token with offset (no need to call moveNext()/movePrevious() before token())
      */
-    public static TokenSequence<CppTokenId> getCppTokenSequence(final JTextComponent component, final int offset,
+    public static TokenSequence<TokenId> getCppTokenSequence(final JTextComponent component, final int offset,
             boolean lexPP, boolean backwardBias) {
         Document doc = component.getDocument();
         return getCppTokenSequence(doc, offset, lexPP, backwardBias);
@@ -118,7 +123,7 @@ public final class CndLexerUtilities {
      *   two tokens. If <code>false</code> the forward lying token will be used.     * 
      * @return token sequence positioned on token with offset (no need to call moveNext()/movePrevious() before token())
      */
-    public static TokenSequence<CppTokenId> getCppTokenSequence(final Document doc, final int offset,
+    public static TokenSequence<TokenId> getCppTokenSequence(final Document doc, final int offset,
             boolean lexPP, boolean backwardBias) {
         if (doc == null) {
             return null;
@@ -131,7 +136,7 @@ public final class CndLexerUtilities {
             final Language<?> lang = ts.languagePath().innerLanguage();
             if (isCppLanguage(lang, lexPP)) {
                 @SuppressWarnings("unchecked")
-                TokenSequence<CppTokenId> cppInnerTS = (TokenSequence<CppTokenId>) ts;
+                TokenSequence<TokenId> cppInnerTS = (TokenSequence<TokenId>) ts;
                 return cppInnerTS;
             }
         }
@@ -139,6 +144,16 @@ public final class CndLexerUtilities {
     }
 
     public static boolean isCppLanguage(Language<?> lang, boolean allowPrepoc) {
+        Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
+        for (CndLexerLanguageEmbeddingProvider provider : providers) {
+            Map<CppTokenId, LanguageEmbedding<?>> embeddings = provider.getEmbeddings();
+            for (CppTokenId cppTokenId : embeddings.keySet()) {
+                if(embeddings.get(cppTokenId).language() == lang) {
+                    return true;
+                }
+            }
+        }
+
         return lang == CppTokenId.languageC() || lang == CppTokenId.languageCpp()
                 || lang == CppTokenId.languageHeader()
                 || (allowPrepoc && lang == CppTokenId.languagePreproc());

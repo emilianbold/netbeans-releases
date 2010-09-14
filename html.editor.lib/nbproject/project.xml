@@ -63,8 +63,8 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>2.1</specification-version>
+                        <release-version>3</release-version>
+                        <specification-version>3.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -215,10 +215,10 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.html.lexer</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-<!--                    <test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.html.parser</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>-->
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
                         <compile-dependency/>
@@ -267,7 +267,8 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
-<!--                <friend>org.netbeans.modules.html.parser</friend>-->
+                <friend>org.netbeans.modules.html.parser</friend>
+                <friend>org.netbeans.modules.html.validation</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
@@ -278,6 +279,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.editor.ext.html.parser</package>
                 <package>org.netbeans.editor.ext.html.parser.api</package>
                 <package>org.netbeans.editor.ext.html.parser.spi</package>
+                <package>org.netbeans.html.api.validation</package>
             </friend-packages>
         </data>
     </configuration>

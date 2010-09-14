@@ -125,9 +125,22 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
                     switch (actChar) {
                         case '{':
                             if (input.readLength() > 2) {
-                                //we have something read except the '${' or '#{' => it's content language
-                                input.backup(2); //backup the '$/#{'
-                                return token(XhtmlElTokenId.HTML);
+                                input.backup(3); //backup the '$/#{' and possible '\'
+                                // check whether we've read literal EL ('\#{' or '\${')
+                                boolean escaped = '\\' == input.read();
+                                if (escaped && input.readLength() > 3) {
+                                    input.backup(1); // backup the escape char
+                                    //we have something read except the '\${' or '\#{' => it's content language
+                                    return token(XhtmlElTokenId.HTML);
+                                } else if (!escaped) {
+                                    //we have something read except the '${' or '#{' => it's content language
+                                    return token(XhtmlElTokenId.HTML);
+                                } else {
+                                    // we're in EL - read back the remaining 
+                                    // backed up characters ('${' or '#{') and continue
+                                    input.read();
+                                    input.read();
+                                }
                             }
                             lexerState = ISI_EL;
                             break;

@@ -44,11 +44,12 @@ package org.netbeans.modules.maven.indexer;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -64,24 +65,29 @@ import org.sonatype.nexus.index.context.IndexingContext;
  *
  * @author Anuradha G
  */
-public class RepositoryIndexerListener implements ArtifactScanningListener {
+public class RepositoryIndexerListener implements ArtifactScanningListener, Cancellable {
 
     private final IndexingContext indexingContext;
     private final NexusIndexer nexusIndexer;
     private long tstart;
     
     private int count;
-   private ProgressHandle handle;
+   private final ProgressHandle handle;
+    private final AtomicBoolean canceled = new AtomicBoolean();
     
-    private RepositoryInfo ri;
+    private final RepositoryInfo ri;
     /*Debug*/
     private final boolean DEBUG = false;
      private InputOutput io;
     private OutputWriter writer;
+
+    @SuppressWarnings("LeakingThisInConstructor")
     public RepositoryIndexerListener(NexusIndexer nexusIndexer, IndexingContext indexingContext) {
         this.indexingContext = indexingContext;
         this.nexusIndexer = nexusIndexer;
         ri = RepositoryPreferences.getInstance().getRepositoryInfoById(indexingContext.getId());
+        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
+        Cancellation.register(this);
 
         if (DEBUG) {
             io = IOProvider.getDefault().getIO("Indexing " +(ri!=null? ri.getName():indexingContext.getId()), true); //NOI18N
@@ -90,7 +96,6 @@ public class RepositoryIndexerListener implements ArtifactScanningListener {
     }
 
     public void scanningStarted(IndexingContext ctx) {
-        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_Indexing") + (ri!=null? ri.getName() : indexingContext.getId()));
         if (DEBUG) {
             writer.println("Indexing Repo   : " + (ri!=null? ri.getName():ctx.getId())); //NOI18N
             writer.println("Index Directory : " + ctx.getIndexDirectory().toString());//NOI18N
@@ -102,7 +107,15 @@ public class RepositoryIndexerListener implements ArtifactScanningListener {
         tstart = System.currentTimeMillis();
     }
 
+    public @Override boolean cancel() {
+        return canceled.compareAndSet(false, true);
+    }
+
     public void artifactDiscovered(ArtifactContext ac) {
+        if (canceled.get()) {
+            throw new Cancellation();
+        }
+
         count++;
 
 
@@ -129,6 +142,10 @@ public class RepositoryIndexerListener implements ArtifactScanningListener {
     }
 
     public void artifactError(ArtifactContext ac, Exception e) {
+        if (canceled.get()) {
+            throw new Cancellation();
+        }
+
         if (DEBUG) {
             writer.printf("! %6d %s - %s\n", count, formatFile(ac.getPom()), e.getMessage());//NOI18N
 
@@ -165,7 +182,9 @@ public class RepositoryIndexerListener implements ArtifactScanningListener {
 
             }
         }
-        
+    }
+
+    void close() {
         handle.finish();
-   }
+    }
 }

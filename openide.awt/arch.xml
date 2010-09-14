@@ -574,6 +574,17 @@ made subject to such option by the copyright holder.
       If not overriden by this property it is done after 5000ms. 
       O means that the last text will be shown and not removed.
       </api>
+      
+      <api name="org.openide.awt.ActionReference.completion" category="devel" group="systemproperty" type="export">
+          If <a href="@JDK@/java/lang/System.html">System.getProperty("org.openide.awt.ActionReference.completion")</a>
+          is specified, then the dedicated processor for <a href="@TOP@/org/openide/awt/ActionReference.html">ActionReference</a>
+          tries to load such class, casts it to 
+          <a href="@JDK@/javax/annotation/processing/Processor.html">Processor</a>
+          and asks it for additional completion items for its
+          <code>path</code> attribute. By default, when running inside NetBeans IDE,
+          <code>apisupport.project</code> registers such class and provides
+          items representing valid paths in current project.
+      </api>
   </p>
  </answer>
 

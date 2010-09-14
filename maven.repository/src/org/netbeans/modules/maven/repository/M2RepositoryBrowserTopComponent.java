@@ -372,6 +372,7 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     }
 
     private Node createRootNode() {
+        // XXX replace with ChildFactory<RepositoryInfo>
         Children.Array array = new Children.Array();
         List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
         for (RepositoryInfo ri : infos) {

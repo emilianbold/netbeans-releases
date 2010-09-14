@@ -45,9 +45,9 @@ import org.openide.util.Exceptions;
  * @author peter
  */
 public final class TestKit {
-    public final static String MODIFIED_COLOR = "#0000FF";
+    public final static String MODIFIED_COLOR = "#0000ff";
     public final static String NEW_COLOR = "#008000";
-    public final static String CONFLICT_COLOR = "#FF0000";
+    public final static String CONFLICT_COLOR = "#ff0000";
     public final static String IGNORED_COLOR = "#999999";
     
     public final static String MODIFIED_STATUS = "[Modified ]";

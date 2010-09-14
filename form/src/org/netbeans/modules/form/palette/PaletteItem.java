@@ -70,6 +70,7 @@ public final class PaletteItem implements Node.Cookie {
     ClassSource componentClassSource;
 //    Boolean isContainer_explicit;
     String componentType_explicit;
+    String componentInitializerId;
     Image icon;
     private FileObject cpRepresentative;
 
@@ -106,6 +107,10 @@ public final class PaletteItem implements Node.Cookie {
 
     void setComponentExplicitType(String type) {
         componentType_explicit = type;
+    }
+
+    void setComponentInitializerId(String initializerId) {
+        componentInitializerId = initializerId;
     }
 
     /**
@@ -165,6 +170,10 @@ public final class PaletteItem implements Node.Cookie {
      * "layout", border */
     public String getExplicitComponentType() {
         return componentType_explicit;
+    }
+
+    public String getInitializerId() {
+        return componentInitializerId;
     }
 
     /** @return whether the component of this palette item is a visual component

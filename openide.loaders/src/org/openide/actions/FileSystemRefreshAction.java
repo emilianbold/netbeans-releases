@@ -72,7 +72,7 @@ public final class FileSystemRefreshAction extends CookieAction {
     }
     
     protected boolean asynchronous() {
-        return false;
+        return true;
     }
 
     protected int mode () {

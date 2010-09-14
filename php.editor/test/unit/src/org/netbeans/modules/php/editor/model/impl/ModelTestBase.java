@@ -70,7 +70,7 @@ public class ModelTestBase extends TestBase {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
-                Model model = ModelFactory.getModel(parameter);
+                Model model = parameter.getModel();
                 globals[0] = model;
             }
         });
@@ -83,7 +83,7 @@ public class ModelTestBase extends TestBase {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
-                Model mod = model != null ? model : ModelFactory.getModel(parameter);
+                Model mod = model != null ? model : parameter.getModel();
                 OccurencesSupport occurencesSupport = mod.getOccurencesSupport(offset);
                 Occurence underCaret = occurencesSupport.getOccurence();
                 occurences.add(underCaret);

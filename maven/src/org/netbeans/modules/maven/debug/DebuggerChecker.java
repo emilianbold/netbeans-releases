@@ -189,7 +189,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             logger.println("NetBeans: No debugging sessions was found.");
             return;
         }
-        JPDADebugger debugger = (JPDADebugger) debuggerEngine.lookupFirst 
+        JPDADebugger debugger = debuggerEngine.lookupFirst 
             (null, JPDADebugger.class);
         if (debugger == null) {
             logger.println("NetBeans: Current debugger is not JPDA one.");
@@ -207,7 +207,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         logger.println ("NetBeans: Classes to be reloaded:");
         
         Map<String, byte[]> map = new HashMap<String, byte[]>();
-        EditorContext editorContext = (EditorContext) DebuggerManager.
+        EditorContext editorContext = DebuggerManager.
             getDebuggerManager ().lookupFirst (null, EditorContext.class);
 
         String clazz = classname.replace('.', '/') + ".class"; //NOI18N
