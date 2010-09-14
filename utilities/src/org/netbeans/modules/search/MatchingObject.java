@@ -710,4 +710,27 @@ final class MatchingObject
     public String toString() {
         return super.toString() + "[" + getName()+ "]"; // NOI18N
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MatchingObject other = (MatchingObject) obj;
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 73 * hash + (this.file != null ? this.file.hashCode() : 0);
+        return hash;
+    }
+
 }
