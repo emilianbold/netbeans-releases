@@ -373,6 +373,14 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 return AbstractVariable.getValue (v);
             if (v instanceof CharValue)
                 return "\'" + v.toString () + "\'";
+            /*JPDAThread ct = debugger.getCurrentThread();
+            if (ct != null) { For the case that toString() should be blocked by pending actions
+                Object pendingAction = ((JPDAThreadImpl) ct).getPendingAction();
+                if (pendingAction != null) {
+                    return ((JPDAThreadImpl) ct).getPendingString(pendingAction);
+                    //return "Action "+pendingActions.iterator().next()+" is pending...";
+                }
+            }*/
             boolean addQuotation = false;
             boolean addDots = false;
             StringReference sr;
