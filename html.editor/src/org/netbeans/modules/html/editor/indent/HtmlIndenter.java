@@ -179,7 +179,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         }
         Set<String> set = new TreeSet<String>();
         for(HtmlTag child : tag.getChildren()) {
-            set.add(child.getName());
+            String name = child.getName().toUpperCase(); //the MarkupAbstractIndenter needs the names to be uppercase
+            set.add(name);
         }
         return set;
     }
