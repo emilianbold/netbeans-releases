@@ -666,7 +666,7 @@ public final class DLightSession implements
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
 
                         for (Indicator<?> i : indicators) {
-                            i.setIndicatorActionsProviderContext(Lookups.fixed(context.getDLightConfiguration(), tool));
+                            i.setIndicatorActionsProviderContext(Lookups.fixed(context.getDLightConfiguration(), tool, i));
                             target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {
@@ -730,9 +730,9 @@ public final class DLightSession implements
                             storages.add(storage);
                         }
                     }
+                    toolCollector.init(serviceInfoDataStorage);
                     toolCollector.init(currentStorages, target);
                     addDataFilterListener(toolCollector);
-                    toolCollector.init(serviceInfoDataStorage);
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                         notAttachableDataCollector = toolCollector;
                     }

@@ -44,8 +44,11 @@ package org.netbeans.modules.dlight.spi.indicator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  *
@@ -54,6 +57,7 @@ import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTas
 final class IndicatorTickerService {
 
     private static final IndicatorTickerService instance = new IndicatorTickerService();
+    private static final Logger log = DLightLogger.getLogger(IndicatorTickerService.class);
     private final List<TickerListener> listeners = new ArrayList<TickerListener>();
     private DLightScheduledTask tickerTask;
     private final Lock lock = new Lock();
@@ -89,7 +93,13 @@ final class IndicatorTickerService {
         public void run() {
             synchronized (lock) {
                 for (TickerListener l : listeners) {
-                    l.tick();
+                    try {
+                        l.tick();
+                    } catch (Throwable th) {
+                        if (log.isLoggable(Level.WARNING)) {
+                            log.log(Level.WARNING, "Exception while indicator " + l + " notification:", th); // NOI18N
+                        }
+                    }
                 }
 
                 if (listeners.isEmpty() && tickerTask != null) {
