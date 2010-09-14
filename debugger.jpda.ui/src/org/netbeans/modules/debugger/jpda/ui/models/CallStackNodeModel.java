@@ -106,7 +106,7 @@ public class CallStackNodeModel implements NodeModel {
             // Do not call JDI in AWT
             //CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
             if (isCurrent) {
-                return BoldVariablesTableModelFilterFirst.toHTML (
+                return BoldVariablesTableModelFilter.toHTML (
                     getCSFName (session, sf, false),
                     true,
                     false,

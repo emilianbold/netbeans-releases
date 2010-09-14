@@ -455,8 +455,8 @@ NodeActionsProvider {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
      */
     @ColumnModelRegistrations({
-        @ColumnModelRegistration(path="SourcesView/netbeans-JPDASession/Current", position=100),
-        @ColumnModelRegistration(path="SourcesView/netbeans-JPDASession/Remote", position=100)
+        @ColumnModelRegistration(path="SourcesView/netbeans-JPDASession/Current"),
+        @ColumnModelRegistration(path="SourcesView/netbeans-JPDASession/Remote")
     })
     public static class DefaultSourcesColumn extends AbstractColumn {
 
