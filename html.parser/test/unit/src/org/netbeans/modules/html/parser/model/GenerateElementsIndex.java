@@ -255,6 +255,21 @@ public class GenerateElementsIndex extends NbTestCase {
             @Override
             public void characters(char[] ch, int start, int length) throws SAXException {
                 String text = new String(ch, start, length);
+
+                if(column >= 2 && column <=5) {
+                    //metadata content fix:
+                    //the ContentType.METADATA name
+                    //needs to be matched for "metadata content" text
+                    //in the link. It seems to be the only such link
+                    //in the spec's index.
+                    text = text.trim();
+                    int wsIndex = text.indexOf(' ');
+                    if(wsIndex != -1) {
+                        System.out.println(String.format("Whitespace in '%s' link name at the column %d. Trimming...", text, column));
+                        text = text.substring(0, wsIndex);
+                    }
+                }
+                
                 switch (column) {
                     case 0:
                         //name
@@ -280,13 +295,13 @@ public class GenerateElementsIndex extends NbTestCase {
                         }
                         break;
                     case 4:
-                        //parents
+                        //children
                         if (ina) {
                             currents.peek().children.add(new LLink(text, href));
                         }
                         break;
                     case 5:
-                        //parents
+                        //attributes
                         if (ina) {
                             currents.peek().attributes.add(new LLink(attr_code, href));
                         }

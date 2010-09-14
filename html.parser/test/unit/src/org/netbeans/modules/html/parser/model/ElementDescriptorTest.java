@@ -120,7 +120,7 @@ public class ElementDescriptorTest extends NbTestCase {
         assertNotNull(contentTypes);
 
         //XXX bug in the spec parsing!!!!!!!!!!!!
-//        assertTrue(contentTypes.contains(ContentType.METADATA));
+        assertTrue(contentTypes.contains(ContentType.METADATA));
 
         assertFalse(head.isEmpty());
     }

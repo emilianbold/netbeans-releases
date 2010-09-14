@@ -193,7 +193,7 @@ BDO(
 BLOCKQUOTE(
         new Link("blockquote", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-blockquote-element"),
          "A section quoted from another source",
-        EnumSet.of(ContentType.FLOW),
+        EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{},
@@ -206,7 +206,7 @@ BLOCKQUOTE(
 BODY(
         new Link("body", "http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-body-element-0"),
          "Document body",
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.SECTIONING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.noneOf(ContentType.class),
         new String[]{"html"},
@@ -236,7 +236,7 @@ BUTTON(
         EnumSet.of(FormAssociatedElementsCategory.LISTED, FormAssociatedElementsCategory.LABELABLE, FormAssociatedElementsCategory.SUBMITTABLE),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.PHRASING),
         new String[]{},
         EnumSet.of(Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_FS_FORMACTION, Attribute.ATTR_FS_FORMENCTYPE, Attribute.ATTR_FS_FORMMETHOD, Attribute.ATTR_FS_FORMNOVALIDATE, Attribute.ATTR_FS_FORMTARGET, Attribute.ATTR_FE_NAME, Attribute.ATTR_BUTTON_TYPE, Attribute.ATTR_BUTTON_VALUE),
         new Link("HTMLButtonElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlbuttonelement")
@@ -375,7 +375,7 @@ DEL(
 DETAILS(
         new Link("details", "http://www.whatwg.org/specs/web-apps/current-work/multipage/interactive-elements.html#the-details-element"),
          "Disclosure control for hiding details",
-        EnumSet.of(ContentType.FLOW, ContentType.INTERACTIVE),
+        EnumSet.of(ContentType.FLOW, ContentType.SECTIONING, ContentType.INTERACTIVE),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{},
@@ -466,7 +466,7 @@ EMBED(
 FIELDSET(
         new Link("fieldset", "http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#the-fieldset-element"),
          "Group of form controls",
-        EnumSet.of(ContentType.FLOW),
+        EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
         EnumSet.of(FormAssociatedElementsCategory.LISTED),
         EnumSet.of(ContentType.FLOW),
         new String[]{},
@@ -492,7 +492,7 @@ FIGCAPTION(
 FIGURE(
         new Link("figure", "http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-figure-element"),
          "Figure with optional caption",
-        EnumSet.of(ContentType.FLOW),
+        EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.FLOW),
         new String[]{},
@@ -613,7 +613,7 @@ HEAD(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.noneOf(ContentType.class),
         new String[]{"html"},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.METADATA),
         new String[]{},
         EnumSet.noneOf(Attribute.class),
         new Link("HTMLHeadElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#htmlheadelement")
@@ -719,7 +719,7 @@ INPUT(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
-        EnumSet.of(Attribute.ATTR_INPUT_ACCEPT, Attribute.ATTR_INPUT_ALT, Attribute.ATTR_INPUT_AUTOCOMPLETE, Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_INPUT_CHECKED, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_FS_FORMACTION, Attribute.ATTR_FS_FORMENCTYPE, Attribute.ATTR_FS_FORMENCTYPE, Attribute.ATTR_FS_FORMMETHOD, Attribute.ATTR_FS_FORMNOVALIDATE, Attribute.ATTR_FS_FORMTARGET, Attribute.ATTR_DIM_HEIGHT, Attribute.ATTR_INPUT_LIST, Attribute.ATTR_INPUT_MAX, Attribute.ATTR_INPUT_MAXLENGTH, Attribute.ATTR_INPUT_MIN, Attribute.ATTR_INPUT_MULTIPLE, Attribute.ATTR_FE_NAME, Attribute.ATTR_INPUT_PATTERN, Attribute.ATTR_INPUT_PLACEHOLDER, Attribute.ATTR_INPUT_READONLY, Attribute.ATTR_INPUT_REQUIRED, Attribute.ATTR_INPUT_SIZE, Attribute.ATTR_INPUT_SRC, Attribute.ATTR_INPUT_STEP, Attribute.ATTR_INPUT_TYPE, Attribute.ATTR_INPUT_VALUE, Attribute.ATTR_DIM_WIDTH),
+        EnumSet.of(Attribute.ATTR_INPUT_ACCEPT, Attribute.ATTR_INPUT_ALT, Attribute.ATTR_INPUT_AUTOCOMPLETE, Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_INPUT_CHECKED, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_FS_FORMACTION, Attribute.ATTR_FS_FORMENCTYPE, Attribute.ATTR_FS_FORMMETHOD, Attribute.ATTR_FS_FORMMETHOD, Attribute.ATTR_FS_FORMNOVALIDATE, Attribute.ATTR_FS_FORMTARGET, Attribute.ATTR_DIM_HEIGHT, Attribute.ATTR_INPUT_LIST, Attribute.ATTR_INPUT_MAX, Attribute.ATTR_INPUT_MAXLENGTH, Attribute.ATTR_INPUT_MIN, Attribute.ATTR_INPUT_MULTIPLE, Attribute.ATTR_FE_NAME, Attribute.ATTR_INPUT_PATTERN, Attribute.ATTR_INPUT_PLACEHOLDER, Attribute.ATTR_INPUT_READONLY, Attribute.ATTR_INPUT_REQUIRED, Attribute.ATTR_INPUT_SIZE, Attribute.ATTR_INPUT_SRC, Attribute.ATTR_INPUT_STEP, Attribute.ATTR_INPUT_TYPE, Attribute.ATTR_INPUT_VALUE, Attribute.ATTR_DIM_WIDTH),
         new Link("HTMLInputElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#htmlinputelement")
 ),
 
@@ -950,7 +950,7 @@ OPTION(
         EnumSet.noneOf(ContentType.class),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.noneOf(ContentType.class),
-        new String[]{"select", "datalist", "optgroup"},
+        new String[]{"datalist", "optgroup"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
         EnumSet.of(Attribute.ATTR_OPTION_DISABLED, Attribute.ATTR_OPTION_LABEL, Attribute.ATTR_OPTION_SELECTED, Attribute.ATTR_OPTION_VALUE),
@@ -1042,7 +1042,7 @@ RP(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.noneOf(ContentType.class),
         new String[]{"ruby"},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.PHRASING),
         new String[]{},
         EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
@@ -1081,7 +1081,7 @@ SAMP(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.of(ContentType.PHRASING),
+        EnumSet.noneOf(ContentType.class),
         new String[]{},
         EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#htmlelement")
@@ -1122,7 +1122,7 @@ SELECT(
         new String[]{},
         EnumSet.noneOf(ContentType.class),
         new String[]{"option", "optgroup"},
-        EnumSet.of(Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_SELECT_MULTIPLE, Attribute.ATTR_FE_NAME, Attribute.ATTR_SELECT_REQUIRED, Attribute.ATTR_SELECT_SIZE),
+        EnumSet.of(Attribute.ATTR_FE_AUTOFOCUS, Attribute.ATTR_FE_DISABLED, Attribute.ATTR_FAE_FORM, Attribute.ATTR_SELECT_MULTIPLE, Attribute.ATTR_FE_NAME, Attribute.ATTR_SELECT_REQUIRED, Attribute.ATTR_SELECT_SIZE),
         new Link("HTMLSelectElement", "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlselectelement")
 ),
 
@@ -1259,7 +1259,7 @@ TBODY(
 TD(
         new Link("td", "http://www.whatwg.org/specs/web-apps/current-work/multipage/tabular-data.html#the-td-element"),
          "Table cell",
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.SECTIONING),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.noneOf(ContentType.class),
         new String[]{"tr"},
@@ -1366,7 +1366,7 @@ TRACK(
         EnumSet.noneOf(ContentType.class),
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.noneOf(ContentType.class),
-        new String[]{"audio", "video"},
+        new String[]{"video"},
         EnumSet.noneOf(ContentType.class),
         new String[]{},
         EnumSet.of(Attribute.ATTR_TRACK_KIND, Attribute.ATTR_TRACK_LABEL, Attribute.ATTR_TRACK_SRC, Attribute.ATTR_TRACK_SRCLANG),
