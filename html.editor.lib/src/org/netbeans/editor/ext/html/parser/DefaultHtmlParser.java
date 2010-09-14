@@ -63,6 +63,7 @@ import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
+import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -187,6 +188,12 @@ public class DefaultHtmlParser implements HtmlParser {
             }
             return DTD2HtmlTag.getTagForElement(version.getDTD(), element);
         }
+
+        @Override
+        public Collection<NamedCharRef> getNamedCharacterReferences() {
+            return version.getDTD().getCharRefList("");
+        }
+        
     }
 
     private static class UnknownHtmlTag implements HtmlTag {

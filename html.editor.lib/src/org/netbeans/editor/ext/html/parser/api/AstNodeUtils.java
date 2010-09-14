@@ -570,6 +570,18 @@ public class AstNodeUtils {
         }
         return context;
     }
+//
+//    /**
+//     * @return an Iterator of nodes preceeding the given node to the root.
+//     * The algorithm is to:
+//     * 1) return preceeding siblings of the given node,
+//     * 2) then its parent and all its siblings
+//     * 3) -> 1) until root node is reached
+//     */
+//
+//    public static Iterator<AstNode> getAllPredecessorsIterator() {
+//        return null;
+//    }
 
 }
     
