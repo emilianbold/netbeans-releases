@@ -43,7 +43,6 @@
 package org.netbeans.modules.html.parser.model;
 
 import java.util.Collection;
-import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -119,9 +118,7 @@ public class ElementDescriptorTest extends NbTestCase {
         Collection<ContentType> contentTypes = head.getChildrenTypes();
         assertNotNull(contentTypes);
 
-        //XXX bug in the spec parsing!!!!!!!!!!!!
         assertTrue(contentTypes.contains(ContentType.METADATA));
-
         assertFalse(head.isEmpty());
     }
 
