@@ -40,20 +40,28 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.spi;
+package org.netbeans.modules.html.parser.model;
 
-import java.util.Collection;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author marekfukala
  */
-public interface HtmlModel {
+public class NamedCharacterReferenceTest extends NbTestCase {
 
-    public Collection<HtmlTag> getAllTags();
+    public NamedCharacterReferenceTest(String name) {
+        super(name);
+    }
 
-    public HtmlTag getTag(String tagName);
+    public void testBasic() {
+        NamedCharacterReference amp = NamedCharacterReference.AMP;
+        assertEquals("AMP", amp.getName());
+        assertEquals("&AMP;", amp.getReferenceCode());
+        assertEquals(0x00026, amp.getCode());
+        assertEquals('\u0026', amp.getValue());
+    }
 
-    public Collection<? extends NamedCharRef> getNamedCharacterReferences();
     
+
 }

@@ -45,9 +45,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ElementName;
@@ -67,10 +70,12 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.Validator;
 import org.netbeans.html.api.validation.ValidatorService;
+import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.ErrorHandler;
@@ -200,57 +205,91 @@ public class Html5Parser implements HtmlParser {
             return HTML5MODEL;
         }
 
-        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, boolean type) {
-            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
-            if (type) {
-                //open tags
-                StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
-                ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);
-
-                HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
-                for (ElementName element : ElementName.ELEMENT_NAMES) {
-                    int group = element.group;
-                    Boolean enabled = enabledGroups.get(group);
-
-                    if (enabled == null) {
-                        //not checked yet
-
-                        //XXX is it even correct to assume that the result
-                        //will be the same for all members of one group????
-
-//                        System.out.print("element " + element + "...");
-                        enabled = builder.canFollow(node, element);
-//                        System.out.println(enabled ? "+" : "-");
-                        enabledGroups.put(group, enabled);
-
-                        if (enabled.booleanValue()) {
-                            //add all element from the group as possible
-                            for (ElementName member : ElementNames.getElementForTreeBuilderGroup(group)) {
-                                possible.add(HtmlTagProvider.getTagForElement(member.name));
-                            }
-
-                        }
-
-                    }
-
-                }
-
-
-            } else {
-                //end tags
-                do {
-                    ElementName element = (ElementName) node.elementName;
-                    if (element != null) {
-                        //TODO if(element is not empty tag (end tag forbidden) {
-                        possible.add(HtmlTagProvider.getTagForElement(element.name));
-                        //}
-                    }
-                } while ((node = node.parent()) != null && !node.isRootNode());
-
+        public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean openTags) {
+            HtmlTag tag = model().getTag(afterNode.getNameWithoutPrefix());
+            if(tag == null) {
+                return Collections.emptyList();
             }
+            if (openTags) {
+                Collection<HtmlTag> possibleChildren = new LinkedHashSet<HtmlTag>();
+                addPossibleTags(tag, possibleChildren);
+                return possibleChildren;
+            } else {
+                return completeEndTags(afterNode);
+            }
+        }
+
+        public void addPossibleTags(HtmlTag tag, Collection<HtmlTag> possible) {
+            //1.add all children of the tag
+            //2.if a child has optional end, add its possible children
+            //3.if a child is transparent, add its possible children
+            Collection<HtmlTag> children = tag.getChildren();
+            possible.addAll(children);
+            for(HtmlTag child : children) {
+                if(child.hasOptionalOpenTag()) {
+                    addPossibleTags(child, possible);
+                }
+                //TODO add the transparent check
+            }
+        }
+
+        private Collection<HtmlTag> completeEndTags(AstNode node) {
+            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
+            //end tags
+            do {
+                ElementName element = (ElementName) node.elementName;
+                if (element != null) {
+                    //TODO if(element is not empty tag (end tag forbidden) {
+                    possible.add(HtmlTagProvider.getTagForElement(element.name));
+                    //}
+                }
+            } while ((node = node.parent()) != null && !node.isRootNode());
 
             return possible;
         }
+
+
+//        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, boolean type) {
+//            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
+//            if (type) {
+//                //open tags
+//                StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
+//                ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);
+//
+//                HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
+//                for (ElementName element : ElementName.ELEMENT_NAMES) {
+//                    int group = element.group;
+//                    Boolean enabled = enabledGroups.get(group);
+//
+//                    if (enabled == null) {
+//                        //not checked yet
+//
+//                        //XXX is it even correct to assume that the result
+//                        //will be the same for all members of one group????
+//
+////                        System.out.print("element " + element + "...");
+//                        enabled = builder.canFollow(node, element);
+////                        System.out.println(enabled ? "+" : "-");
+//                        enabledGroups.put(group, enabled);
+//
+//                        if (enabled.booleanValue()) {
+//                            //add all element from the group as possible
+//                            for (ElementName member : ElementNames.getElementForTreeBuilderGroup(group)) {
+//                                possible.add(HtmlTagProvider.getTagForElement(member.name));
+//                            }
+//
+//                        }
+//
+//                    }
+//
+//                }
+//
+//            } else {
+//                possible = completeEndTags(node);
+//            }
+//
+//            return possible;
+//        }
         
     }
 
@@ -271,6 +310,11 @@ public class Html5Parser implements HtmlParser {
         public HtmlTag getTag(String tagName) {
             return HtmlTagProvider.getTagForElement(tagName);
         }
+
+        public Collection<? extends NamedCharRef> getNamedCharacterReferences() {
+            return EnumSet.allOf(NamedCharacterReference.class);
+        }
+
     }
     
 }

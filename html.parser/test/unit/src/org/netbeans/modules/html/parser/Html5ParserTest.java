@@ -58,7 +58,6 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.SAXException;
 
@@ -76,9 +75,41 @@ public class Html5ParserTest extends NbTestCase {
         AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
         TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testGetPossibleOpenTagsInContext"));
+        suite.addTest(new Html5ParserTest("testaParseErrorneousHeadContent"));
         return suite;
     }
+
+    public void testaParseErrorneousHeadContent() throws ParseException {
+        //the &lt; char after the title close tag makes the parse tree really bad
+        String code = "<!doctype html>\n"
+                + "<html>\n"
+                + "<head>\n"
+                + "<title>\n"
+                + "</title> < \n"
+                + "</head>\n"
+                + "<body>\n"
+                + "</body>\n"
+                + "</html>\n";
+
+        AstNodeTreeBuilder.DEBUG_STATES = true;
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+        assertNotNull(root);
+        AstNodeUtils.dumpTree(result.root());
+
+        Collection<ProblemDescription> problems = result.getProblems();
+        for(ProblemDescription pd : problems) {
+            System.out.println(pd);
+        }
+
+        AstNode leaf = AstNodeUtils.findDescendant(root, 48, true);
+
+        System.out.println("leaf="+leaf);
+
+    }
+
+
+
 
     public void testBasic() throws SAXException, IOException, ParseException {
         HtmlParseResult result = parse("<!doctype html><section><div></div></section>");
