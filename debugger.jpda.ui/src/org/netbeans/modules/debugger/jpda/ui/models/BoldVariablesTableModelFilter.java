@@ -77,7 +77,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
                                  types=TableModelFilter.class,
                                  position=100)
 })
-public class BoldVariablesTableModelFilterFirst implements TableModelFilter, 
+public class BoldVariablesTableModelFilter implements TableModelFilter,
 Constants {
     
     private Map variableToValueType = new WeakHashMap ();

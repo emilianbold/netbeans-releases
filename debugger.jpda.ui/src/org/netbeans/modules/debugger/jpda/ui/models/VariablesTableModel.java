@@ -153,7 +153,7 @@ public class VariablesTableModel implements TableModel, Constants {
                 JPDAWatch w = (JPDAWatch) row;
                 String e = w.getExceptionDescription ();
                 if (e != null)
-                    return BoldVariablesTableModelFilterFirst.toHTML(">" + e + "<", false, false, Color.RED);
+                    return BoldVariablesTableModelFilter.toHTML(">" + e + "<", false, false, Color.RED);
                 return w.getValue ();
             } else 
             if (row instanceof Variable) {
@@ -348,6 +348,6 @@ public class VariablesTableModel implements TableModel, Constants {
             p.close();
             m += " \n"+s.toString();
         }
-        return BoldVariablesTableModelFilterFirst.toHTML(">" + m + "<", false, false, Color.RED);
+        return BoldVariablesTableModelFilter.toHTML(">" + m + "<", false, false, Color.RED);
     }
 }
