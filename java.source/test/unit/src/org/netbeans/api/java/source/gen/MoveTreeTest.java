@@ -46,9 +46,11 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -324,6 +326,69 @@ public class MoveTreeTest extends GeneratorTest {
                 BlockTree body = method.getBody();
                 BlockTree inner = make.Block(body.getStatements().subList(1, 5), false);
                 BlockTree nue = make.Block(Arrays.asList(body.getStatements().get(0), inner, body.getStatements().get(5)), false);
+
+                workingCopy.rewrite(body, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testMoveStatements2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        System.err.println(1);\n" +
+            "        {\n" +
+            "            while (true) {\n" +
+            "                System.err.println(2);\n" +
+            "\n" +
+            "\n" +
+            "                System.err.println(3);System.err.println(3.5);\n" +
+            "                System.     err.\n" +
+            "                                println(4);\n" +
+            "            }\n" +
+            "        }\n" +
+            "        if (true) {\n" +
+            "            System.err.println(5);\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        System.err.println(1);\n" +
+            "        if (true) {\n" +
+            "            System.err.println(2);\n" +
+            "\n" +
+            "\n" +
+            "            System.err.println(3);System.err.println(3.5);\n" +
+            "            System.     err.\n" +
+            "                            println(4);\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree body = method.getBody();
+                BlockTree block = (BlockTree)body.getStatements().get(1);
+                WhileLoopTree loop = (WhileLoopTree)block.getStatements().get(0);
+                IfTree inner = make.If(make.Parenthesized(make.Literal(Boolean.TRUE)), loop.getStatement(), null);
+                BlockTree nue = make.Block(Arrays.asList(body.getStatements().get(0), inner), false);
 
                 workingCopy.rewrite(body, nue);
             }
