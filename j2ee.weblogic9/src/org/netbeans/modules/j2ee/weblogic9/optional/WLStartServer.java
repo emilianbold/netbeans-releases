@@ -489,6 +489,8 @@ public final class WLStartServer extends StartServer {
         
         static final String MEMORY_OPTIONS_VARIABLE= "USER_MEM_ARGS";// NOI18N
 
+        static final String MEMORY_OPTIONS_VARIABLE_11_WEB = "MEM_ARGS";// NOI18N
+
         private static final String KEY_UUID = "NB_EXEC_WL_START_PROCESS_UUID"; //NOI18N
 
         /**
@@ -635,15 +637,21 @@ public final class WLStartServer extends StartServer {
             
             result = setJavaOptionsEnv( result );
             String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            if ( vendor != null && vendor.trim().length() >0 ){
+            if (vendor != null && vendor.trim().length() >0) {
                 result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
                         vendor.trim());
             }
             String memoryOptions = dm.getInstanceProperties().getProperty(
                     WLPluginProperties.MEM_OPTS);
-            if ( memoryOptions != null && memoryOptions.trim().length() >0 ){
-                result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,         
-                        memoryOptions.trim());
+            if (memoryOptions != null && memoryOptions.trim().length() >0) {
+                // FIXME DWP
+                if (dm.isWebProfile()) {
+                    result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE_11_WEB,
+                            memoryOptions.trim());
+                } else {
+                    result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,
+                            memoryOptions.trim());
+                }
             }  
             return result;
         }

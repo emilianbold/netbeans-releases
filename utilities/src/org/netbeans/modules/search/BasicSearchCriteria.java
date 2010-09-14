@@ -143,9 +143,9 @@ final class BasicSearchCriteria {
 
     /**
      * Holds information about occurences of matching strings within individual
-     * {@code DataObject}s.
+     * {@code FileObject}s.
      */
-    private Map<DataObject, List<TextDetail>> detailsMap;
+    private Map<FileObject, List<TextDetail>> detailsMap;
 
     /**
      * Holds a {@code DataObject} that will be used to create
@@ -744,6 +744,7 @@ final class BasicSearchCriteria {
      *          matching the pattern, {@code false} otherwise
      */
     private boolean checkFileContent(FileObject fo) {
+        assert fo != null;
         lastCharset = FileEncodingQuery.getEncoding(fo);
         SearchPattern sp = createSearchPattern();
         BufferedCharSequence bcs = null;
@@ -754,8 +755,7 @@ final class BasicSearchCriteria {
             if (txtDetails.isEmpty()){
                 return false;
             }
-            assert dataObject != null;
-            getDetailsMap().put(dataObject, txtDetails);
+            getDetailsMap().put(fo, txtDetails);
             freeDataObject();
             return true;
         }
@@ -854,14 +854,15 @@ final class BasicSearchCriteria {
     }
 
     /**
-     * @param  resultObject  <code>DataObject</code> to create the nodes for
-     * @return  <code>DetailNode</code>s representing the matches,
+     *
+     * @param fo {@code FileObject} to create the nodes for.
+     * @return {@codeDetailNode}s representing the matches,
      *          or <code>null</code> if no matching string is known for the
-     *          specified object
+     *          specified {@code FileObject}
      * @see  DetailNode
      */
-    public Node[] getDetails(Object resultObject) {
-        List<TextDetail> details = getDetailsMap().get(resultObject);
+    public Node[] getDetails(FileObject fo) {
+        List<TextDetail> details = getDetailsMap().get(fo);
         if (details == null) {
             return null;
         }
@@ -875,14 +876,14 @@ final class BasicSearchCriteria {
     }
 
     /** Gets details map. */
-    private Map<DataObject, List<TextDetail>> getDetailsMap() {
+    private Map<FileObject, List<TextDetail>> getDetailsMap() {
         if (detailsMap != null) {
             return detailsMap;
         }
         
         synchronized(this) {
             if (detailsMap == null) {
-                detailsMap = new HashMap<DataObject, List<TextDetail>>(20);
+                detailsMap = new HashMap<FileObject, List<TextDetail>>(20);
             }
         }
         
@@ -896,27 +897,33 @@ final class BasicSearchCriteria {
      *          a <code>DataObject</code> or if no matching string is known for
      *          the specified object
      */
-    public Node[] getDetails(Node node) {
-        DataObject data = node.getCookie(DataObject.class);
-        
-        if (data == null) {
-            return null;
-        }
-        
-        return getDetails(data);
-    }
+// vvg: a FileObject should be stored in the node's cooke !?
+//    public Node[] getDetails(Node node) {
+//        DataObject data = node.getCookie(DataObject.class);
+//
+//        if (data == null) {
+//            return null;
+//        }
+//
+//        return getDetails(data);
+//    }
     
     /**
      */
-    public int getDetailsCount(Object resultObject) {
+    int getDetailsCount(FileObject resultObject) {
         List<TextDetail> details = getDetailsMap().get(resultObject);
         return (details != null) ? details.size() : 0;
     }
     
     /**
+     * Returns a list of the {@code TextDetail}s associated with the specified
+     * {@code FileObject}.
+     *
+     * @param fo the {@code FileObject}.
+     * @return a list of the {@code TextDetail}s if any, otherwise {@code null}.
      */
-    public List<TextDetail> getTextDetails(Object resultObject) {
-        List<TextDetail> obtained = getDetailsMap().get(resultObject);
+    List<TextDetail> getTextDetails(FileObject fo) {
+        List<TextDetail> obtained = getDetailsMap().get(fo);
         return (obtained != null) ? new ArrayList<TextDetail>(obtained) : null;
     }
 

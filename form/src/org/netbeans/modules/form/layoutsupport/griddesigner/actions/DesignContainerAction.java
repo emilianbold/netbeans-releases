@@ -37,38 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.db.h2;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
+package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
+
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.form.RADVisualContainer;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesigner;
+import org.openide.util.NbBundle;
 
 /**
- * @author Alexey Vladykin
+ * Action that changes the designed container.
+ *
+ * @author Jan Stola
  */
-public class H2StackStorageTest extends CommonStackDataStorageTests {
+public class DesignContainerAction extends AbstractAction {
+    /** Designer whose designed component should be changed. */
+    private GridDesigner designer;
+    /** New designed container. */
+    private RADVisualContainer container;
 
-    protected StackDataStorage createStorage() {
-        try {
-            SQLStackDataStorage result = new SQLStackDataStorage();
-            H2DataStorage st = new H2DataStorage();
-            st.connect();
-            result.attachTo(st);
-            return result;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    /**
+     * Creates a new {@code DesignContainerAction}.
+     * 
+     * @param designer designer whose designed component should be changed.
+     * @param container new designed container.
+     * @param parent determines whether the new designed container
+     * is a parent container or a subcomponent.
+     */
+    public DesignContainerAction(GridDesigner designer, RADVisualContainer container, boolean parent) {
+        this.designer = designer;
+        this.container = container;
+        String name = NbBundle.getMessage(DesignContainerAction.class,
+                parent ? "DesignParentContainer_Name" : "DesignThisContainer_Name"); // NOI18N
+        putValue(Action.NAME, name);
     }
 
-    protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage) db).shutdown(true);
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        designer.setObject(container);
+        designer.revalidate();
+        designer.repaint();
     }
 
-    protected void flush(StackDataStorage db) {
-        ((SQLStackDataStorage) db).flush();
-    }
 }

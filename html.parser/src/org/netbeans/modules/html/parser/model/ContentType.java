@@ -48,6 +48,6 @@ package org.netbeans.modules.html.parser.model;
  */
 public enum ContentType {
 
-    METADATA, FLOW, SECTIONING, HEADING, PHRASING, EMBEDDED, INTERACTIVE;
+    METADATA, FLOW, SECTIONING, HEADING, PHRASING, EMBEDDED, INTERACTIVE, TEXT 
 
 }

@@ -37,38 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.db.h2;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
+package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
+
+import java.awt.Component;
+import java.util.Collections;
+import javax.swing.Action;
+import org.netbeans.modules.form.layoutsupport.griddesigner.DesignerContext;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridInfoProvider;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridManager;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridUtils;
+import org.openide.util.NbBundle;
 
 /**
- * @author Alexey Vladykin
+ * Action that encloses the selected components in a separate container.
+ *
+ * @author Jan Stola
  */
-public class H2StackStorageTest extends CommonStackDataStorageTests {
+public class EncloseInContainerAction extends AbstractGridAction {
+    private String name;
 
-    protected StackDataStorage createStorage() {
-        try {
-            SQLStackDataStorage result = new SQLStackDataStorage();
-            H2DataStorage st = new H2DataStorage();
-            st.connect();
-            result.attachTo(st);
-            return result;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    public EncloseInContainerAction() {
+        name = NbBundle.getMessage(EncloseInContainerAction.class, "EncloseInContainerAction_Name"); // NOI18N
     }
 
-    protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage) db).shutdown(true);
+    @Override
+    public Object getValue(String key) {
+        return key.equals(Action.NAME) ? name : null;
     }
 
-    protected void flush(StackDataStorage db) {
-        ((SQLStackDataStorage) db).flush();
+    @Override
+    public boolean isEnabled(DesignerContext context) {
+        return !context.getSelectedComponents().isEmpty();
     }
+
+    @Override
+    public GridBoundsChange performAction(GridManager gridManager, DesignerContext context) {
+        GridInfoProvider info = gridManager.getGridInfo();
+        int columns = info.getColumnCount();
+        int rows = info.getRowCount();
+        GridUtils.removePaddingComponents(gridManager);
+
+        Component container = gridManager.encloseInContainer(context.getSelectedComponents());
+        context.setSelectedComponents(Collections.singleton(container));
+
+        GridUtils.addPaddingComponents(gridManager, columns, rows);
+        GridUtils.revalidateGrid(gridManager);
+        return null;
+    }
+
 }

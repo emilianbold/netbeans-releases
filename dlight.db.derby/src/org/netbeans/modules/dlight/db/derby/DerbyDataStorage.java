@@ -153,7 +153,6 @@ public class DerbyDataStorage extends SQLDataStorage {
         dbURL = url;
         this.tableMetadatas = new ArrayList<DataTableMetadata>();
         initStorageTypes();
-        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
     }
 
     String getURL() {
@@ -181,6 +180,7 @@ public class DerbyDataStorage extends SQLDataStorage {
     @Override
     public void connect() throws SQLException {
         connection = DriverManager.getConnection(getDbURL());
+        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);        
     }
 
     @Override
