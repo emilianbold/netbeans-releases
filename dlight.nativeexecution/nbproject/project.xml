@@ -181,6 +181,8 @@
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
