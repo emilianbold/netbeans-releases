@@ -666,7 +666,7 @@ public final class DLightSession implements
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
 
                         for (Indicator<?> i : indicators) {
-                            i.setIndicatorActionsProviderContext(Lookups.fixed(context.getDLightConfiguration(), tool));
+                            i.setIndicatorActionsProviderContext(Lookups.fixed(context.getDLightConfiguration(), tool, i));
                             target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {

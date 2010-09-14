@@ -76,5 +76,5 @@ public abstract class IndicatorDataProviderAccessor {
 
     public abstract void addIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l);
 
-    public abstract boolean removeIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l);
+    public abstract void removeIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l);
 }
