@@ -339,6 +339,18 @@ public class GridBagManager implements GridManager {
             RADVisualComponent metaComp = componentMap.get(comp);
             creator.moveComponent(metaComp, panel);
         }
+        if (minx != 0) {
+            for (Component comp : components) {
+                int gridx = info.getGridX(comp);
+                setGridX(comp, gridx-minx);
+            }
+        }
+        if (miny != 0) {
+            for (Component comp : components) {
+                int gridy = info.getGridY(comp);
+                setGridY(comp, gridy-miny);
+            }
+        }
         Container clone = (Container)replicator.getClonedComponent(panel);
         if (clone == null) {
             clone = (Container)replicator.createClone(panel);
