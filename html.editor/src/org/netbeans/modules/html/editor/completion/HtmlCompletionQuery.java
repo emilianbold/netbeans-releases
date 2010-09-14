@@ -60,6 +60,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
+import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNode.NodeFilter;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
@@ -313,7 +314,8 @@ public class HtmlCompletionQuery extends UserTask {
             //force use the legacy tree builder, even if the tree is quite inaccurate,
             //it is not broken to such extent as the html5 parser one.
 //            System.err.println("Broken HTML5 parse tree, using the legacy SyntaxTreeBuilder!");
-            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
+//            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
+            root = XmlSyntaxTreeBuilder.makeUncheckedTree(htmlResult.source(), parserResult.getSyntaxAnalyzerResult().getElements().items());
             node = AstNodeUtils.findDescendant(root, searchAstOffset, backward);
             if(node == null) {
                 return null;
