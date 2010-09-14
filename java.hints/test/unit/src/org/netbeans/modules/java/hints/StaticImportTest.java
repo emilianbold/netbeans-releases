@@ -105,6 +105,11 @@ public class StaticImportTest extends TreeRuleTestBase {
 //        performAnalysisTest(test);
 //    }
 
+    public void testStaticImportHint190135() throws Exception {
+        String test = "package test; public class Test extends Foo { class FooBar { FooBar() { Foo.<String>foo|(); } } } class Foo { static protected void foo() { } }";
+        performAnalysisTest(test);
+    }
+
     // test is single line source code for test.Test, | in the member select, space before
     // golden is the output to test against
     // sn is the simple name of the static method

@@ -163,6 +163,7 @@ public class GenerateElementsIndex extends NbTestCase {
     private final Collection<Element> elements = new LinkedList<Element>();
     private Stack<Element> currents = new Stack<Element>();
     private String LINK_URL_BASE; //if the spec contains full urls its empty
+    private StringBuilder textBuffer;
 
     public GenerateElementsIndex(String name) {
         super(name);
@@ -191,11 +192,13 @@ public class GenerateElementsIndex extends NbTestCase {
 
             @Override
             public void endElement(String uri, String localName, String qName) throws SAXException {
+                handleWholeText();
                 element(localName, false, null);
             }
 
             @Override
             public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+                handleWholeText();
                 element(localName, true, atts);
             }
 
@@ -254,7 +257,33 @@ public class GenerateElementsIndex extends NbTestCase {
 
             @Override
             public void characters(char[] ch, int start, int length) throws SAXException {
-                String text = new String(ch, start, length);
+                if(textBuffer == null) {
+                    textBuffer = new StringBuilder();
+                }
+                textBuffer.append(ch, start, length);
+            }
+
+            private void handleWholeText() {
+                if(textBuffer == null) {
+                    return ;
+                }
+                String text = textBuffer.toString();
+                textBuffer = null;
+
+                if(column >= 2 && column <=5) {
+                    //metadata content fix:
+                    //the ContentType.METADATA name
+                    //needs to be matched for "metadata content" text
+                    //in the link. It seems to be the only such link
+                    //in the spec's index.
+                    text = text.trim();
+                    int wsIndex = text.indexOf(' ');
+                    if(wsIndex != -1) {
+                        System.out.println(String.format("Whitespace in '%s' link name at the column %d. Trimming...", text, column));
+                        text = text.substring(0, wsIndex);
+                    }
+                }
+                
                 switch (column) {
                     case 0:
                         //name
@@ -280,13 +309,13 @@ public class GenerateElementsIndex extends NbTestCase {
                         }
                         break;
                     case 4:
-                        //parents
+                        //children
                         if (ina) {
                             currents.peek().children.add(new LLink(text, href));
                         }
                         break;
                     case 5:
-                        //parents
+                        //attributes
                         if (ina) {
                             currents.peek().attributes.add(new LLink(attr_code, href));
                         }
