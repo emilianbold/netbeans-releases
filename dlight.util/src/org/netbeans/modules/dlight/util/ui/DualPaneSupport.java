@@ -54,7 +54,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
-import org.netbeans.modules.dlight.util.ui.Renderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -157,6 +156,7 @@ public final class DualPaneSupport<T> extends JSplitPane {
             final DataAdapter<Node, V> dataAdapter) {
         final DualPaneSupport<V> dualPaneSupport = new DualPaneSupport<V>(component, detailsRenderer);
         explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
                     Node[] selectedNodes = (Node[]) evt.getNewValue();
