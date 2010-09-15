@@ -75,7 +75,9 @@ import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -93,6 +95,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.FileDeclarationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileIncludesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileMacrosKey;
+import org.netbeans.modules.cnd.modelimpl.repository.FileReferencesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
@@ -252,6 +255,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         new FileComponentIncludes(this);
         weakFileIncludes.clear();
         hasBrokenIncludes = new AtomicBoolean(false);
+
+        fileReferencesKey = new FileReferencesKey(this);
+        weakFileReferences = new WeakContainer<FileComponentReferences>(project, fileReferencesKey);
+        new FileComponentReferences(this);
+        weakFileReferences.clear();
 
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
@@ -688,6 +696,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         getFileIncludes().clean();
         hasBrokenIncludes.set(false);
         getFileMacros().clean();
+        getFileReferences().clean();
         _clearErrors();
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
@@ -1356,6 +1365,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getFileDeclarations().getDeclarations(offset);
     }
 
+    public Iterator<CsmReference> getReferences(Collection<CsmObject> objects) {
+        return getFileReferences().getReferences(objects);
+    }
+
+    public void addReference(CsmReference ref, CsmObject referencedObject) {
+        getFileReferences().addReference(ref, referencedObject);
+    }
+
     public void addMacro(CsmMacro macro) {
         getFileMacros().addMacro(macro);
     }
@@ -1665,6 +1682,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileIncludesKey.write(output);
         output.writeBoolean(hasBrokenIncludes.get());
         fileMacrosKey.write(output);
+        fileReferencesKey.write(output);
         factory.writeUIDCollection(this.fakeFunctionRegistrations, output, false);
 
         factory.writeUIDCollection(FakeIncludePair.toIncludeUIDCollection(fakeIncludeRegistrations), output, false);
@@ -1717,6 +1735,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileMacrosKey = new FileMacrosKey(input);
         assert fileMacrosKey != null : "file macros key can not be null";
         weakFileMacros = new WeakContainer<FileComponentMacros>(this._getProject(false), fileMacrosKey);
+
+        fileReferencesKey = new FileReferencesKey(input);
+        assert fileReferencesKey != null : "file referebces key can not be null";
+        weakFileReferences = new WeakContainer<FileComponentReferences>(this._getProject(false), fileReferencesKey);
 
         factory.readUIDCollection(this.fakeFunctionRegistrations, input);
 
@@ -1873,6 +1895,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileComponentIncludes getFileIncludes() {
         FileComponentIncludes fd = weakFileIncludes.getContainer();
         return fd != null ? fd : FileComponentIncludes.empty();
+    }
+
+    private final FileReferencesKey fileReferencesKey;
+    private final WeakContainer<FileComponentReferences> weakFileReferences;
+    private FileComponentReferences getFileReferences() {
+        FileComponentReferences fd = weakFileReferences.getContainer();
+        return fd != null ? fd : FileComponentReferences.empty();
     }
 
     private static final class FakeIncludePair {

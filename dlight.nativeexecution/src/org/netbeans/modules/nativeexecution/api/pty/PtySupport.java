@@ -48,6 +48,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.pty.PtyAllocator;
+import org.netbeans.modules.nativeexecution.pty.SttySupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.windows.InputOutput;
 
@@ -120,5 +121,14 @@ public final class PtySupport {
 
     public static void deallocate(Pty pty) throws IOException {
         pty.close();
+    }
+
+    /**
+     * Disables echo in the tty (stty -echo)
+     * @param env - environmant in which a tty is used
+     * @param tty - tty name
+     */
+    public static void disableEcho(ExecutionEnvironment exEnv, String tty) {
+        SttySupport.apply(exEnv, tty, "-echo"); //NOI18N
     }
 }

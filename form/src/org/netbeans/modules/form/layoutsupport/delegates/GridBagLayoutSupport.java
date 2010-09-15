@@ -88,7 +88,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     }
 
     private boolean isGridDesignerEnabled() {
-        return Boolean.getBoolean("netbeans.modules.form.griddesigner"); // NOI18N
+        return !Boolean.getBoolean("netbeans.modules.form.oldgriddesigner"); // NOI18N
     }
     
     /** Returns a class of customizer for GridBagLayout.
