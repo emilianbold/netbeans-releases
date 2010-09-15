@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.dlight.visualizers.api.impl;
+package org.netbeans.modules.dlight.visualizers.support;
 
 import java.util.Collection;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;

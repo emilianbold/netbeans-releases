@@ -37,50 +37,72 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.visualizers.support;
 
-import javax.swing.AbstractSpinnerModel;
+package org.netbeans.modules.html.parser;
+
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.regex.Matcher;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * @author Alexey Vladykin
+ *  
+ * @author marekfukala
  */
-public class SpinnerTimeModel extends AbstractSpinnerModel {
+public class DocumentationTest extends NbTestCase {
 
-    private static final long NANOS_PER_SECOND = 1000000000L;
-    private long nanos;
-
-    public Object getValue() {
-        return Math.max(0, nanos);
+    public DocumentationTest(String name) {
+        super(name);
     }
 
-    public void setValue(Object value) {
-        if (value instanceof Long) {
-            nanos = ((Long) value).longValue();
-            fireStateChanged();
-        } else {
-            throw new IllegalArgumentException();
+     public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new DocumentationTest("testSectioningPattern"));
+        return suite;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));
+    }
+
+    public void testDocZipPresence() throws IOException {
+        URL zipUrl = Documentation.getZipURL();
+        assertNotNull(zipUrl);
+
+        URLConnection con = zipUrl.openConnection();
+        assertNotNull(con);
+    }
+
+    public void testResolveLink() throws IOException {
+        URL url = Documentation.resolveLink("sections.html#the-article-element");
+        assertNotNull(url);
+
+        String content = Documentation.getContentAsString(url, null);
+        assertTrue(content.startsWith("<!DOCTYPE html>"));
+    }
+
+    public void testSectioningPattern() {
+        String code = "w<h1 id=\"mojeid\">xxx<h1 id=\"jeho\">sew";
+        Matcher m = Documentation.SECTIONS_PATTERN.matcher(code);
+        int i = 0;
+        while(m.find()) {
+            i++;
         }
+        assertEquals(2, i);
+    }
+    
+    public void testSectionContent() throws IOException {
+        URL url = Documentation.resolveLink("sections.html#the-article-element");
+        assertNotNull(url);
+        String content = Documentation.getSectionContent(url, null);
+        assertTrue(content.startsWith("<h4 id=\"the-article-element\">"));
     }
 
-    public Object getNextValue() {
-        if (nanos == Long.MAX_VALUE) {
-            return null;
-        } else if (Long.MAX_VALUE - NANOS_PER_SECOND <= nanos) {
-            return Long.MAX_VALUE;
-        } else {
-            return nanos + NANOS_PER_SECOND;
-        }
-    }
-
-    public Object getPreviousValue() {
-        if (nanos <= 0) {
-            return null;
-        } else if (nanos <= NANOS_PER_SECOND) {
-            return 0L;
-        } else {
-            return nanos - NANOS_PER_SECOND;
-        }
-    }
 }

@@ -39,33 +39,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.visualizers.support;
+package org.netbeans.modules.dlight.visualizers.util;
 
-import javax.swing.JFormattedTextField;
-import javax.swing.JFormattedTextField.AbstractFormatter;
-import javax.swing.JFormattedTextField.AbstractFormatterFactory;
-import javax.swing.JSpinner;
-import org.netbeans.modules.dlight.util.TimeFormatter;
+import javax.swing.AbstractSpinnerModel;
 
 /**
- *
  * @author Alexey Vladykin
  */
-public class SpinnerTimeEditor extends JSpinner.DefaultEditor {
+public class SpinnerTimeModel extends AbstractSpinnerModel {
 
-    public SpinnerTimeEditor(JSpinner spinner) {
-        super(spinner);
-        getTextField().setFormatterFactory(new TimeFormatterFactory());
-        getTextField().setEditable(true);
+    private static final long NANOS_PER_SECOND = 1000000000L;
+    private long nanos;
+
+    public Object getValue() {
+        return Math.max(0, nanos);
     }
 
-    private static class TimeFormatterFactory extends AbstractFormatterFactory {
+    public void setValue(Object value) {
+        if (value instanceof Long) {
+            nanos = ((Long) value).longValue();
+            fireStateChanged();
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
 
-        private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
+    public Object getNextValue() {
+        if (nanos == Long.MAX_VALUE) {
+            return null;
+        } else if (Long.MAX_VALUE - NANOS_PER_SECOND <= nanos) {
+            return Long.MAX_VALUE;
+        } else {
+            return nanos + NANOS_PER_SECOND;
+        }
+    }
 
-        @Override
-        public AbstractFormatter getFormatter(JFormattedTextField tf) {
-            return TIME_FORMATTER;
+    public Object getPreviousValue() {
+        if (nanos <= 0) {
+            return null;
+        } else if (nanos <= NANOS_PER_SECOND) {
+            return 0L;
+        } else {
+            return nanos - NANOS_PER_SECOND;
         }
     }
 }
