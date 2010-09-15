@@ -40,45 +40,43 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.modules.git;
 
-import org.netbeans.libs.git.jgit.JGitRepository;
-import org.netbeans.libs.git.jgit.JGitClient;
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
  *
  * @author ondra
  */
-public final class GitClientFactory {
+class Annotator extends VCSAnnotator {
 
-    private static GitClientFactory instance;
-    private final Map<File, JGitRepository> repositoryPool;
-
-    private GitClientFactory () {
-        repositoryPool = new HashMap<File, JGitRepository>(5);
+    public Annotator() {
     }
 
-    public static synchronized GitClientFactory getInstance () {
-        if (instance == null) {
-            instance = new GitClientFactory();
-        }
-        return instance;
-    }
-
-    public GitClient getClient (File repositoryLocation) throws GitException {
-        synchronized (repositoryPool) {
-            JGitRepository repository = repositoryPool.get(repositoryLocation);
-            if (repository == null) {
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
+    @Override
+    public Action[] getActions (VCSContext context, ActionDestination destination) {
+        return new Action[] {
+            new AbstractAction("Dummy Action") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    
+                }
             }
-            return createClient(repository);
-        }
+        };
     }
 
-    private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
+    @Override
+    public Image annotateIcon(Image icon, VCSContext context) {
+        return super.annotateIcon(icon, context);
+    }
+
+    @Override
+    public String annotateName(String name, VCSContext context) {
+        return name + " [Git is the best]";
     }
 }

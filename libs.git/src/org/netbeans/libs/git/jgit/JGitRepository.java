@@ -40,45 +40,31 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.libs.git.jgit;
 
-import org.netbeans.libs.git.jgit.JGitRepository;
-import org.netbeans.libs.git.jgit.JGitClient;
+import org.netbeans.libs.git.GitException;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import org.eclipse.jgit.lib.Repository;
 
 /**
  *
  * @author ondra
  */
-public final class GitClientFactory {
+public final class JGitRepository {
+    private final File location;
+    private final Repository repository;
 
-    private static GitClientFactory instance;
-    private final Map<File, JGitRepository> repositoryPool;
-
-    private GitClientFactory () {
-        repositoryPool = new HashMap<File, JGitRepository>(5);
+    public JGitRepository (File location) throws GitException {
+        this.location = location;
+        this.repository = getRepository(location);
     }
 
-    public static synchronized GitClientFactory getInstance () {
-        if (instance == null) {
-            instance = new GitClientFactory();
+    private Repository getRepository (File workDir) throws GitException {
+        try {
+            return Utils.getRepositoryForWorkingDir(workDir);
+        } catch (IOException ex) {
+            throw new GitException(ex);
         }
-        return instance;
-    }
-
-    public GitClient getClient (File repositoryLocation) throws GitException {
-        synchronized (repositoryPool) {
-            JGitRepository repository = repositoryPool.get(repositoryLocation);
-            if (repository == null) {
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
-            }
-            return createClient(repository);
-        }
-    }
-
-    private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
     }
 }

@@ -42,43 +42,13 @@
 
 package org.netbeans.libs.git;
 
-import org.netbeans.libs.git.jgit.JGitRepository;
-import org.netbeans.libs.git.jgit.JGitClient;
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  *
  * @author ondra
  */
-public final class GitClientFactory {
+public abstract class GitClient {
 
-    private static GitClientFactory instance;
-    private final Map<File, JGitRepository> repositoryPool;
-
-    private GitClientFactory () {
-        repositoryPool = new HashMap<File, JGitRepository>(5);
-    }
-
-    public static synchronized GitClientFactory getInstance () {
-        if (instance == null) {
-            instance = new GitClientFactory();
-        }
-        return instance;
-    }
-
-    public GitClient getClient (File repositoryLocation) throws GitException {
-        synchronized (repositoryPool) {
-            JGitRepository repository = repositoryPool.get(repositoryLocation);
-            if (repository == null) {
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
-            }
-            return createClient(repository);
-        }
-    }
-
-    private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
+    protected GitClient () {
+        
     }
 }

@@ -40,45 +40,51 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.modules.git;
 
-import org.netbeans.libs.git.jgit.JGitRepository;
-import org.netbeans.libs.git.jgit.JGitClient;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.logging.Logger;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 /**
  *
  * @author ondra
  */
-public final class GitClientFactory {
+public final class Git {
 
-    private static GitClientFactory instance;
-    private final Map<File, JGitRepository> repositoryPool;
+    private static Git instance;
+    private Annotator annotator;
+    private FilesystemInterceptor interceptor;
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.git"); //NOI18N
 
-    private GitClientFactory () {
-        repositoryPool = new HashMap<File, JGitRepository>(5);
+    public Git () {
     }
 
-    public static synchronized GitClientFactory getInstance () {
+    public static synchronized Git getInstance () {
         if (instance == null) {
-            instance = new GitClientFactory();
+            instance = new Git();
+            instance.init();
         }
         return instance;
     }
 
-    public GitClient getClient (File repositoryLocation) throws GitException {
-        synchronized (repositoryPool) {
-            JGitRepository repository = repositoryPool.get(repositoryLocation);
-            if (repository == null) {
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
-            }
-            return createClient(repository);
-        }
+    private void init() {
+        annotator = new Annotator();
+        interceptor = new FilesystemInterceptor();
     }
 
-    private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
+    VCSAnnotator getVCSAnnotator() {
+        return annotator;
     }
+
+    VCSInterceptor getVCSInterceptor() {
+        return interceptor;
+    }
+
+    void getOriginalFile (File workingCopy, File originalFile) {
+        
+    }
+
+
 }

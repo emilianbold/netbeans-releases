@@ -40,45 +40,27 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.libs.git.jgit;
 
-import org.netbeans.libs.git.jgit.JGitRepository;
-import org.netbeans.libs.git.jgit.JGitClient;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Repository;
 
 /**
  *
  * @author ondra
  */
-public final class GitClientFactory {
+public final class Utils {
+    private Utils () {
 
-    private static GitClientFactory instance;
-    private final Map<File, JGitRepository> repositoryPool;
-
-    private GitClientFactory () {
-        repositoryPool = new HashMap<File, JGitRepository>(5);
     }
 
-    public static synchronized GitClientFactory getInstance () {
-        if (instance == null) {
-            instance = new GitClientFactory();
-        }
-        return instance;
+    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
+         return new Repository(getMetadataFolder(workDir), workDir);
     }
 
-    public GitClient getClient (File repositoryLocation) throws GitException {
-        synchronized (repositoryPool) {
-            JGitRepository repository = repositoryPool.get(repositoryLocation);
-            if (repository == null) {
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
-            }
-            return createClient(repository);
-        }
-    }
-
-    private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
+    public static File getMetadataFolder (File workDir) {
+        return new File(workDir, Constants.DOT_GIT);
     }
 }

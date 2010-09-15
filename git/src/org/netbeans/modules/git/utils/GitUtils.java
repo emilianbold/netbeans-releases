@@ -40,45 +40,46 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.modules.git.utils;
 
-import org.netbeans.libs.git.jgit.JGitRepository;
-import org.netbeans.libs.git.jgit.JGitClient;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author ondra
  */
-public final class GitClientFactory {
+public final class GitUtils {
 
-    private static GitClientFactory instance;
-    private final Map<File, JGitRepository> repositoryPool;
+    private static final String DOT_GIT = ".git"; //NOI18N
+    private static final Pattern METADATA_PATTERN = Pattern.compile(".*\\" + File.separatorChar + "(\\.)git(\\" + File.separatorChar + ".*|$)"); // NOI18N
 
-    private GitClientFactory () {
-        repositoryPool = new HashMap<File, JGitRepository>(5);
+    /**
+     * Checks file location to see if it is part of git metadata
+     *
+     * @param file file to check
+     * @return true if the file or folder is a part of git metadata, false otherwise
+     */
+    public static boolean isPartOfGitMetadata (File file) {
+        return METADATA_PATTERN.matcher(file.getAbsolutePath()).matches();
     }
 
-    public static synchronized GitClientFactory getInstance () {
-        if (instance == null) {
-            instance = new GitClientFactory();
-        }
-        return instance;
+    /**
+     * Tests <tt>.hg</tt> directory itself.
+     */
+    public static boolean isAdministrative (File file) {
+        String name = file.getName();
+        return isAdministrative(name) && file.isDirectory();
     }
 
-    public GitClient getClient (File repositoryLocation) throws GitException {
-        synchronized (repositoryPool) {
-            JGitRepository repository = repositoryPool.get(repositoryLocation);
-            if (repository == null) {
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
-            }
-            return createClient(repository);
-        }
+    public static boolean isAdministrative (String fileName) {
+        return fileName.equals(DOT_GIT); // NOI18N
     }
 
-    private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
+    public static boolean repositoryExistsFor (File file) {
+        return new File(file, DOT_GIT).exists();
+    }
+
+    public GitUtils() {
     }
 }
