@@ -40,18 +40,66 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.cnd.modelimpl.repository;
+
+import java.io.DataInput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public interface KeyDataPresentation {
-    short getUnitPresentation();
-    CharSequence getNamePresentation();
-    short getKindPresentation();
+public class FileReferencesKey extends ProjectFileNameBasedKey {
 
-    int getFilePresentation();
-    int getStartPresentation();
-    int getEndPresentation();
+    public FileReferencesKey(FileImpl file) {
+	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
+    }
+
+    public FileReferencesKey(DataInput aStream) throws IOException {
+	super(aStream);
+    }
+
+    FileReferencesKey(KeyDataPresentation presentation) {
+        super(presentation);
+    }
+
+    @Override
+    public String toString() {
+	return "FileReferencesKey (" + getProjectName() + ", " + getFileNameSafe() + ")"; // NOI18N
+    }
+
+    @Override
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_FILE_REFERENCES_KEY + super.hashCode();
+    }
+
+    @Override
+    public PersistentFactory getPersistentFactory() {
+	return CsmObjectFactory.instance();
+    }
+
+    @Override
+    public int getSecondaryDepth() {
+	return 1;
+    }
+
+    @Override
+    public int getSecondaryAt(int level) {
+	assert level == 0;
+	return KeyObjectFactory.KEY_FILE_REFERENCES_KEY;
+    }
+
+    @Override
+    public boolean hasCache() {
+        return true;
+    }
+
+    @Override
+    public final short getKindPresentation() {
+	return KeyObjectFactory.KEY_FILE_REFERENCES_KEY;
+    }
 }
