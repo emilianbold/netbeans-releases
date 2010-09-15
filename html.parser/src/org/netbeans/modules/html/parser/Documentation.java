@@ -39,14 +39,26 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.parser;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.StringBuilder;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
@@ -56,14 +68,14 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class Documentation {
 
+    static final Pattern SECTIONS_PATTERN = Pattern.compile("<h[\\w\\d]*\\s*id=\\\"(.*?)\\\">");
     private static final String DOC_ZIP_FILE_NAME = "docs/html5doc.zip"; //NOI18N
-
     private static URL DOC_ZIP_URL;
 
     public static URL getZipURL() {
-        if(DOC_ZIP_URL == null) {
+        if (DOC_ZIP_URL == null) {
             File file = InstalledFileLocator.getDefault().locate(DOC_ZIP_FILE_NAME, null, false);
-            if(file != null) {
+            if (file != null) {
                 try {
                     URL url = file.toURI().toURL();
                     DOC_ZIP_URL = FileUtil.getArchiveRoot(url);
@@ -77,4 +89,71 @@ public class Documentation {
         return DOC_ZIP_URL;
     }
 
+    static URL resolveLink(String relativeLink) {
+        try {
+            return new URI(getZipURL().toExternalForm() + relativeLink).toURL();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    static String getContentAsString(URL url, Charset charset) {
+        if (charset == null) {
+            charset = Charset.defaultCharset();
+        }
+        try {
+            URLConnection con = url.openConnection();
+            con.connect();
+            Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
+            char[] buf = new char[2048];
+            int read;
+            StringBuilder content = new StringBuilder();
+            while ((read = r.read(buf)) != -1) {
+                content.append(buf, 0, read);
+            }
+            r.close();
+            return content.toString();
+        } catch (IOException ex) {
+            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    public static String getSectionContent(URL url, Charset charset) {
+        String surl = url.toExternalForm();
+        int hashIndex = surl.indexOf('#');
+        if (hashIndex == -1) {
+            throw new IllegalArgumentException();
+        }
+        String sectionName = surl.substring(hashIndex + 1);
+
+        String content = getContentAsString(url, charset);
+        Matcher matcher = SECTIONS_PATTERN.matcher(content);
+
+        int from = -1;
+        int to = -1;
+        while (matcher.find()) {
+            if (from != -1) {
+                to = matcher.start();
+                break;
+            }
+            if (matcher.group(1).equals(sectionName)) {
+                from = matcher.start();
+            }
+        }
+
+        if (from != -1) {
+            if (to == -1) {
+                to = content.length();
+            }
+            return content.substring(from, to);
+        } else {
+
+            return null;
+        }
+    }
 }
