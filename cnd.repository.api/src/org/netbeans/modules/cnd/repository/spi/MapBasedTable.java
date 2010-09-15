@@ -42,16 +42,18 @@
 
 package org.netbeans.modules.cnd.repository.spi;
 
+import java.util.Collection;
+import java.util.Map;
+import org.netbeans.modules.cnd.repository.api.DatabaseTable;
+
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public interface KeyDataPresentation {
-    short getUnitPresentation();
-    CharSequence getNamePresentation();
-    short getKindPresentation();
-
-    int getFilePresentation();
-    int getStartPresentation();
-    int getEndPresentation();
+public interface MapBasedTable extends DatabaseTable {
+    Object put(Object key, Object data);
+    Object get(Object key);
+    Object remove(Object key);
+    Collection<Map.Entry<?,?>> getSubMap(Object from, Object to);
+    Collection<?> duplicates(Object key);
 }

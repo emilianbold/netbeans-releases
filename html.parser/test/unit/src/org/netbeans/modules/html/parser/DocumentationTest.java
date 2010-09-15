@@ -40,18 +40,69 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.html.parser;
+
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.regex.Matcher;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
 
 /**
- *
- * @author Vladimir Voskresensky
+ *  
+ * @author marekfukala
  */
-public interface KeyDataPresentation {
-    short getUnitPresentation();
-    CharSequence getNamePresentation();
-    short getKindPresentation();
+public class DocumentationTest extends NbTestCase {
 
-    int getFilePresentation();
-    int getStartPresentation();
-    int getEndPresentation();
+    public DocumentationTest(String name) {
+        super(name);
+    }
+
+     public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new DocumentationTest("testSectioningPattern"));
+        return suite;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));
+    }
+
+    public void testDocZipPresence() throws IOException {
+        URL zipUrl = Documentation.getZipURL();
+        assertNotNull(zipUrl);
+
+        URLConnection con = zipUrl.openConnection();
+        assertNotNull(con);
+    }
+
+    public void testResolveLink() throws IOException {
+        URL url = Documentation.resolveLink("sections.html#the-article-element");
+        assertNotNull(url);
+
+        String content = Documentation.getContentAsString(url, null);
+        assertTrue(content.startsWith("<!DOCTYPE html>"));
+    }
+
+    public void testSectioningPattern() {
+        String code = "w<h1 id=\"mojeid\">xxx<h1 id=\"jeho\">sew";
+        Matcher m = Documentation.SECTIONS_PATTERN.matcher(code);
+        int i = 0;
+        while(m.find()) {
+            i++;
+        }
+        assertEquals(2, i);
+    }
+    
+    public void testSectionContent() throws IOException {
+        URL url = Documentation.resolveLink("sections.html#the-article-element");
+        assertNotNull(url);
+        String content = Documentation.getSectionContent(url, null);
+        assertTrue(content.startsWith("<h4 id=\"the-article-element\">"));
+    }
+
 }
