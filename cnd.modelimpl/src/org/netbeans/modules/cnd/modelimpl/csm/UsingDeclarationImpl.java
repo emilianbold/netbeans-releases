@@ -84,7 +84,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, boolean global, CsmVisibility visibility) {
         super(file, getUsingDeclarationStartOffset(ast), getEndOffset(ast));
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        name = NameCache.getManager().getString(ast.getText());
+        name = NameCache.getManager().getString(AstUtil.getText(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
         if (!global) {
             Utils.setSelfUID(this);
@@ -204,6 +204,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         return referencedDeclaration;
     }
 
+    @Override
     public CsmDeclaration getReferencedDeclaration() {
         return getReferencedDeclaration(null);
     }
@@ -251,6 +252,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         assert this.referencedDeclarationUID != null || referencedDeclaration == null;
     }
 
+    @Override
     public CsmClass getContainingClass() {
         CsmScope scope = getScope();
         if(CsmKindUtilities.isClass(scope)) {
@@ -259,30 +261,37 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         return null;
     }
 
+    @Override
     public CsmVisibility getVisibility() {
         return visibility;
     }
 
+    @Override
     public boolean isStatic() {
         return false;
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.USING_DECLARATION;
     }
     
+    @Override
     public CharSequence getName() {
         return name;
     }
     
+    @Override
     public CharSequence getQualifiedName() {
         return getName();
     }
     
+    @Override
     public CharSequence[] getRawName() {
         return rawName;
     }
     
+    @Override
     public CsmScope getScope() {
         return  UIDCsmConverter.UIDtoScope(this.scopeUID);
     }

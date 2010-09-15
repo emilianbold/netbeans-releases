@@ -116,12 +116,12 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	    if( next != null && next.getType() == CPPTokenTypes.SCOPE ) {
 		List<CharSequence> l = new ArrayList<CharSequence>();
                 APTStringManager manager = NameCache.getManager();
-		l.add(manager.getString(child.getText()));
+		l.add(manager.getString(AstUtil.getText(child)));
 		begin:
 		for( next = next.getNextSibling(); next != null; next = next.getNextSibling() ) {
 		    switch( next.getType() ) {
 			case CPPTokenTypes.ID:
-			    l.add(manager.getString(next.getText()));
+			    l.add(manager.getString(AstUtil.getText(next)));
                             break;
 			case CPPTokenTypes.SCOPE:
 			    break; // do nothing

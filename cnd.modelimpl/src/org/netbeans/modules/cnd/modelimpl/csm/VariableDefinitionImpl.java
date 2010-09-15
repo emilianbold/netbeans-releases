@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
@@ -77,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -91,7 +93,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private final TemplateDescriptor templateDescriptor;
 
     /** Creates a new instance of VariableDefinitionImpl */
-    public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, String name) {
+    public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, CharSequence name) {
         super(ast, file, type, getLastname(name), null, false, true);
         templateDescriptor = createTemplateDescriptor(ast, null, null, true);
         classOrNspNames = getClassOrNspNames(ast);
@@ -99,17 +101,17 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     }
 
     /** Creates a new instance of VariableDefinitionImpl */
-    public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, String name, boolean _static, boolean _extern) {
+    public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern) {
         super(ast, file, type, getLastname(name), null,_static, _extern, false, true);
         templateDescriptor = createTemplateDescriptor(ast, null, null, true);
         classOrNspNames = getClassOrNspNames(ast);
         registerInProject();
     }
 
-    private static String getLastname(String name){
-        int i = name.lastIndexOf("::"); // NOI18N
+    private static CharSequence getLastname(CharSequence name){
+        int i = CharSequenceUtils.indexOf(name, "::"); // NOI18N
         if (i >=0){
-            name = name.substring(i+2);
+            name = name.toString().substring(i+2);
         }
         return name;
     }
@@ -262,7 +264,8 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
-                        l.add(NameCache.getManager().getString(token.getText()));
+                        CharSequence name = AstUtil.getText(token);
+                        l.add(NameCache.getManager().getString(name));
                     }
                 }
             }

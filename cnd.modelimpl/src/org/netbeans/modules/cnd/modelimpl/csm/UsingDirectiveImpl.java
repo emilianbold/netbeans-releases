@@ -72,7 +72,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         super(file, ((CsmAST)ast.getFirstChild()).getOffset(), getEndOffset(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
         
-        name = NameCache.getManager().getString(ast.getText());
+        name = NameCache.getManager().getString(AstUtil.getText(ast));
         if (!global) {
             Utils.setSelfUID(UsingDirectiveImpl.this);
         }
@@ -113,22 +113,27 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         assert this.referencedNamespaceUID != null || referencedNamespace == null;
     }
  
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.USING_DIRECTIVE;
     }
     
+    @Override
     public CharSequence getName() {
         return name;
     }
     
+    @Override
     public CharSequence getQualifiedName() {
         return getName();
     }
     
+    @Override
     public CharSequence[] getRawName() {
         return rawName;
     }
     
+    @Override
     public CsmScope getScope() {
         //TODO: implement!
         return null;
