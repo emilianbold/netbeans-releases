@@ -903,6 +903,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 registerLineWithListener(lineIdx, info, important);
             } else {
                 info.addSegment(len, err, l, c, important);
+                if (important) {
+                    importantLines.add(lineIdx);
+                }
             }
         }
         return len;

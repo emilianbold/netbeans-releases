@@ -52,7 +52,6 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -92,6 +91,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     private boolean enabled = false;
     private AsyncThread asyncThread = null;
     private ServiceInfoDataStorage serviceInfoDataStorage;
+    private final String dburl;
 
     static {
         classToType.put(Byte.class, "tinyint"); // NOI18N
@@ -109,7 +109,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         void execute() throws SQLException;
     }
 
-    public final static DataStorageType getStorageType() {
+    public static DataStorageType getStorageType() {
         return storageType;
     }
 
@@ -117,6 +117,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
 
         abstract PreparedStatement getPreparedStatement() throws SQLException;
 
+        @Override
         public void execute() throws SQLException {
             PreparedStatement statement = getPreparedStatement();
             if (logger.isLoggable(Level.FINE)) {
@@ -179,18 +180,15 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         }
     }
 
-    protected SQLDataStorage() {
-        insertPreparedStatments = new HashMap<String, PreparedStatement>();
-    }
-
     protected SQLDataStorage(String dburl) throws SQLException {
-        this();
-        connect(dburl);
+        insertPreparedStatments = new HashMap<String, PreparedStatement>();
+        this.dburl = dburl;
         if (!enabled) {
             enable();
         }
     }
 
+    @Override
     public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
         this.serviceInfoDataStorage = serviceInfoStorage;
     }
@@ -199,6 +197,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         return serviceInfoDataStorage;
     }
 
+    @Override
     public boolean shutdown() {
         disable();
         if (connection != null) {
@@ -218,7 +217,19 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
      * in Derby you should not use any.
      * @return delimiter which will be added to all statements execution.
      */
-    abstract protected String getSQLQueriesDelimeter();
+    abstract public String getSQLQueriesDelimeter();
+
+    /**
+     * Different SQL Storages can have different expression for primary key definition
+     * @return String which defines primary Key
+     */
+    abstract public String getPrimaryKeyExpression();
+
+    /**
+     * Different SQL storages can have different expression to define Auto Increment
+     * @return auto increment expression, in not supported return <code>null</code>
+     */
+    abstract public String getAutoIncrementExpresion();
 
     @Override
     protected void finalize() throws Throwable {
@@ -231,8 +242,13 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         asyncThread = null;
     }
 
-    protected abstract void connect(String dburl) throws SQLException;
-
+    public abstract void connect() throws SQLException;
+    
+    
+    protected final String getDbURL(){
+        return dburl;
+    }
+            
     protected String classToType(Class<?> clazz) {
         return classToType.get(clazz);
     }
@@ -266,11 +282,12 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         createViewQuery.append(new EnumStringConstructor<Column>().constructEnumString(columns,
                 new Convertor<Column>() {
 
+            @Override
                     public String toString(Column item) {
-                        return (item.getExpression() == null) ? item.getColumnName() : item.getExpression();
+                        return (item.getExpression() == null) ? item.getColumnName() : (item.getExpression() + " AS " + item.getColumnName());
                     }
                 }));
-        createViewQuery.append(" FROM " + tableName); // NOI18N
+        createViewQuery.append(" FROM ").append(tableName); // NOI18N
         //check if we can create WHERE expression
         String whereClause = null;
         for (DataTableMetadataFilter filter : filters) {
@@ -304,7 +321,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         return viewName;
     }
 
-    protected final void loadTable(final DataTableMetadata metadata){
+    protected final void loadTable(final DataTableMetadata metadata) {
         tables.put(metadata.getName(), metadata);
     }
 
@@ -317,13 +334,18 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         sb.append(new EnumStringConstructor<DataTableMetadata.Column>().constructEnumString(metadata.getColumns(),
                 new Convertor<DataTableMetadata.Column>() {
 
+            @Override
                     public String toString(DataTableMetadata.Column item) {
-                        return item.getColumnName() + " " + classToType(item.getColumnClass()); //NOI18N
+                        return item.getColumnName() + " " + classToType(item.getColumnClass()) // NOI18N
+                                + " " + (metadata.isAutoIncrement(item) && getAutoIncrementExpresion() != null ? getAutoIncrementExpresion() : "") // NOI18N
+                                + " " + (metadata.isPrimaryKey(item) && getPrimaryKeyExpression() != null ? getPrimaryKeyExpression() : ""); //NOI18N
                     }
                 }));
-        sb.append(")" + getSQLQueriesDelimeter()); //NOI18N
+        sb.append(")").append(getSQLQueriesDelimeter()); //NOI18N
 
-        logger.fine("About to execute query: " + sb.toString()); //NOI18N
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("About to execute query: " + sb.toString()); //NOI18N
+        }
 
         try {
             Statement stmt = connection.createStatement();
@@ -337,7 +359,9 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
             return false;
         }
 
-        logger.fine("Table " + tableName + " created"); //NOI18N
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Table " + tableName + " created"); //NOI18N
+        }
 
         tables.put(tableName, metadata);
 
@@ -359,11 +383,21 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
 
         DLightExecutorService.submit(new Runnable() {
 
+            @Override
             public void run() {
                 getPreparedInsertStatement(metadata);
             }
         }, "SQL: Prepare Insert Statement for " + metadata.getName()); // NOI18N
         return true;
+    }
+
+    public PreparedStatement getPreparedInsertStatement(DataTableMetadata tableDescription, DataRow row) {
+        String tableName = tableDescription.getName();
+        if (tables.get(tableName) == null) {
+            createTable(tableDescription);
+            tableDescription = tables.get(tableName);
+        }                    
+        return createRowInsertStatement(tableDescription, row);
     }
 
     private PreparedStatement getPreparedInsertStatement(DataTableMetadata tableDescription) {
@@ -373,6 +407,10 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                 return statement;
             }
             String tableName = tableDescription.getName();
+            if (tables.get(tableName) == null) {
+                createTable(tableDescription);
+                tableDescription = tables.get(tableName);
+            }            
             StringBuilder query = new StringBuilder("insert into " + tableName + " ("); //NOI18N
             query.append(new EnumStringConstructor<String>().constructEnumString(tableDescription.getColumnNames(),
                     new Convertor<String>() {
@@ -389,7 +427,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                 query.append("?, "); //NOI18N
                 i++;
             }
-            query.append("? ) " + getSQLQueriesDelimeter()); //NOI18N
+            query.append("? ) ").append(getSQLQueriesDelimeter()); //NOI18N
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("SQL: dispatching " + query.toString()); //NOI18N
@@ -412,6 +450,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         return select(tableName, columns, null);
     }
 
+    @Override
     public Collection<DataStorageType> getStorageTypes() {
         return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE));
     }
@@ -425,7 +464,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         List<Column> columns = metadata.getColumns();
         //apply to source tables if any
         List<DataTableMetadata> sourceTables = metadata.getSourceTables();
-        Hashtable<String, String> renamedTableNames = new Hashtable<String, String>();
+        Map<String, String> renamedTableNames = new HashMap<String, String>();
         if (sourceTables != null) {
             for (DataTableMetadata sourceTable : sourceTables) {
                 String viewName = createView(filters, sourceTable.getName(), sourceTable.getColumns());
@@ -460,8 +499,9 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
             query.append(new EnumStringConstructor<Column>().constructEnumString(columns,
                     new Convertor<Column>() {
 
+                @Override
                         public String toString(Column item) {
-                            return (item.getExpression() == null) ? item.getColumnName() : item.getExpression();
+                            return (item.getExpression() == null) ? item.getColumnName() : (item.getExpression() + " AS " + item.getColumnName());
                         }
                     }));
 
@@ -474,9 +514,9 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
             rs = connection.createStatement().executeQuery(sqlQuery);
         } catch (SQLException ex) {
             Throwable cause = ex.getCause();
-            if (cause != null &&
-                    (cause instanceof InterruptedIOException ||
-                    cause instanceof InterruptedException)) {
+            if (cause != null
+                    && (cause instanceof InterruptedIOException
+                    || cause instanceof InterruptedException)) {
                 // skip exception
             } else {
                 logger.log(Level.SEVERE, null, ex);
@@ -495,6 +535,15 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         }
     }
 
+    public int executeUpdate(PreparedStatement statement) {
+        try {
+            return statement.executeUpdate();
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        return -1;
+    }
+
     protected final Connection getConnection() {
         return connection;
     }
@@ -507,12 +556,14 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         requestQueue.add(new CustomRequest(st));
     }
 
+    @Override
     public final void addData(String tableName, List<DataRow> data) {
         for (DataRow row : data) {
             requestQueue.add(new DataRowInsertRequest(tableName, row));
         }
     }
 
+    @Override
     public final synchronized void syncAddData(String tableName, List<DataRow> data) {
         for (DataRow row : data) {
             DataRowInsertRequest request = new DataRowInsertRequest(tableName, row);
@@ -529,7 +580,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
      * NB: FILLS the statement with data
      */
     private PreparedStatement createRowInsertStatement(String tableName, DataRow row) {
-        if (logger.isLoggable(Level.INFO)) {
+        if (logger.isLoggable(Level.FINE)) {
             logger.fine("Will add to the queue with using prepared statement"); //NOI18N
         }
         StringBuilder query = new StringBuilder("insert into " + tableName + " ("); //NOI18N
@@ -537,6 +588,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         query.append(new EnumStringConstructor<String>().constructEnumString(row.getColumnNames(),
                 new Convertor<String>() {
 
+            @Override
                     public String toString(String item) {
                         return item;
                     }
@@ -547,12 +599,13 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         query.append(new EnumStringConstructor<Object>().constructEnumString(row.getData(),
                 new Convertor<Object>() {
 
+            @Override
                     public String toString(Object item) {
                         return '\'' + String.valueOf(item) + '\'';
                     }
                 }));
 
-        query.append(")" + getSQLQueriesDelimeter()); //NOI18N
+        query.append(")").append(getSQLQueriesDelimeter()); //NOI18N
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("----------SQL: dispatching " + query.toString()); //NOI18N
         }
@@ -563,6 +616,55 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
             return null;
         }
     }
+    
+    /**
+     * Returns a prepared statement for insertion of the row into the table
+     * NB: FILLS the statement with data
+     */
+    private PreparedStatement createRowInsertStatement(final DataTableMetadata table, DataRow row) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Will add to the queue with using prepared statement"); //NOI18N
+        }
+        String tableName = table.getName();
+        StringBuilder query = new StringBuilder("insert into " + tableName + " ("); //NOI18N
+        StringBuilder sb = new StringBuilder();
+        Iterator<Column> i = table.getColumns().iterator();
+        Column item;
+
+        while (i.hasNext()) {
+            item = i.next();
+            if (table.isAutoIncrement(item)){
+                continue;
+            }            
+            sb.append(item.getColumnName());
+            if (i.hasNext()) {
+                sb.append(", "); //NOI18N
+            }
+        }
+
+        query.append(sb.toString());
+        query.append(") values ("); //NOI18N
+
+        query.append(new EnumStringConstructor<Object>().constructEnumString(row.getData(),
+                new Convertor<Object>() {
+
+            @Override
+                    public String toString(Object item) {
+                        return '\'' + String.valueOf(item) + '\'';
+                    }
+                }));
+
+        query.append(")").append(getSQLQueriesDelimeter()); //NOI18N
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "----------SQL: dispatching {0}", query.toString()); //NOI18N
+        }
+        try {
+            return connection.prepareStatement(query.toString());
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }    
 
     private synchronized void enable() {
         if (!enabled) {

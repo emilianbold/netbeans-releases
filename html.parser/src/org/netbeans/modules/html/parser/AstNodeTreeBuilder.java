@@ -41,93 +41,139 @@
  */
 package org.netbeans.modules.html.parser;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
+import java.util.ListIterator;
 import java.util.Stack;
 import nu.validator.htmlparser.common.TokenizerState;
 import nu.validator.htmlparser.common.TokenizerStateListener;
 import nu.validator.htmlparser.impl.CoalescingTreeBuilder;
 import nu.validator.htmlparser.impl.ElementName;
 import nu.validator.htmlparser.impl.HtmlAttributes;
+import nu.validator.htmlparser.impl.TreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
 import org.xml.sax.SAXException;
 
 /**
+ * An implementation of {@link TreeBuilder} building a tree of {@link AstNode}s
+ *
+ * In contrary to the default implementations of the {@link TreeBuilder} this
+ * builder also puts end tags to the tree of nodes.
  *
  * @author marekfukala
  */
 public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implements TokenizerState, TokenizerStateListener {
 
     public static boolean DEBUG = false;
+    public static boolean DEBUG_STATES = false;
     private final AstNodeFactory factory;
     private AstNode root;
     //element's internall offsets
     private int tag_lt_offset;
     private int tag_gt_offset;
-    private boolean isEndTag;
-//    private int open_tag_name_offset;
     private boolean self_closing_starttag;
-    //<<<
+    //stack of opened tags
     private Stack<AstNode> stack = new Stack<AstNode>();
-    Queue<AstNode> physicalEndTagsQueue = new LinkedList<AstNode>();
+    //stack of encountered end tags
+    LinkedList<AstNode> physicalEndTagsQueue = new LinkedList<AstNode>();
     private ElementName startTag;
-
+    //holds found attributes of an open tag
     private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
 
-//    private int offset;
-    public AstNodeTreeBuilder() {
+    public AstNodeTreeBuilder(AstNode rootNode) {
+        this.root = rootNode;
         factory = AstNodeFactory.instance();
-//        root = factory.createRootNode();
     }
 
     public AstNode getRoot() {
         return root;
     }
 
-//    public AstNode getCurrentNode() {
-//        return stack.peek();
-//    }
+    public AstNode getCurrentNode() {
+        return stack.peek();
+    }
+
     @Override
     protected void elementPopped(String namespace, String name, AstNode t) throws SAXException {
         if (DEBUG) {
-            System.out.println("-" + t + "; stack:" + dumpStack());
+            System.out.println("-" + t + (t.isVirtual() ? "[virtual]" : "") + "; stack:" + dumpStack());
+        }
+
+
+        //normally the stack.pop() == t, but under some circumstances when the code is broken
+        //this doesn't need to be true. In such case drop all the nodes from top
+        //of the stack until we find t node.
+        AstNode top = null;
+        while(!stack.isEmpty()) {
+            top = stack.pop();
+            if(top == t) {
+                break;
+            }
+            //if we got here the parse tree is broken, so just try not to throw exceptions :-)
+        }
+        if(top != t) {
+            throw new IllegalStateException("Stack's top " + top + " is not the same as " + t);
         }
         
-        AstNode top = stack.pop();
-        assert top == t;
 
-
-        AstNode node = physicalEndTagsQueue.poll();
-        if (node != null) {
-            if (node.name().equals(t.name())) {
-                //the popped node closed by physical endtag
-                //add the end tag node to its parent
-                if(!stack.isEmpty()) {
-                    stack.peek().addChild(node);
-                }
-
-                //set matching node
-                t.setMatchingNode(node);
-                node.setMatchingNode(t);
-
-                //set logical end of the paired open tag
-                t.setLogicalEndOffset(node.endOffset());
-
+        AstNode match = null;
+        for (AstNode n : physicalEndTagsQueue) {
+            if (n.name().equals(t.name())) {
+                match = n;
+                break;
             }
         }
 
+        if (match != null) {
+            //remove all until the found element
+            List<AstNode> toremove = physicalEndTagsQueue.subList(0, physicalEndTagsQueue.indexOf(match) + 1);
 
+            if (toremove.size() > 1) {
+                //there are some stray end tags, add them to the current open tag node
+                for (AstNode n : toremove.subList(0, toremove.size() - 1)) {
+                    t.addChild(n);
+                }
+            }
+            //and remove all the end tags
+            toremove.clear();
 
-        if (!isEndTag && tagBeginningOffset() != -1) {
-            //set logical range of the current open tag node to the beginning of the current open tag node
-            t.setLogicalEndOffset(tagBeginningOffset());
+            //add the end tag node to its parent
+            if (!stack.isEmpty()) {
+                stack.peek().addChild(match);
+            }
+
+            //set matching node
+            t.setMatchingNode(match);
+            match.setMatchingNode(t);
+
+            //set logical end of the paired open tag
+            t.setLogicalEndOffset(match.endOffset());
+        } else {
+            //no match found, the open tag node's logical range should be set to something meaningful -
+            //to the latest end tag found likely causing this element to be popped
+            AstNode latestEndTag = physicalEndTagsQueue.peek();
+            if(latestEndTag != null) {
+                t.setLogicalEndOffset(latestEndTag.startOffset());
+            }
         }
 
+        if (stack.size() == 1 /* only root tag in the stack */ && !physicalEndTagsQueue.isEmpty()) {
+            //there are no nodes on the stack, but there are some physical endtags left
+            if (DEBUG) {
+                System.out.println("LEFT in stack of end tags: " + dumpEndTags());
+            }
+            //attach all the stray end tags to the currently popped node
+            for (ListIterator<AstNode> leftEndTags = physicalEndTagsQueue.listIterator(); leftEndTags.hasNext();) {
+                AstNode left = leftEndTags.next();
+                t.addChild(left);
+                leftEndTags.remove();
+            }
 
+
+        }
 
         super.elementPopped(namespace, name, t);
     }
@@ -138,33 +184,46 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if (DEBUG) {
             System.out.println("+" + t + "; stack:" + dumpStack());
         }
-        
+
         stack.push(t);
+
+        //>>>experimental only!!!
+        t.elementName = startTag;
+        //<<<
 
         //stray end tags - add them to the current node
         AstNode head;
         while ((head = physicalEndTagsQueue.poll()) != null) {
             stack.peek().addChild(head);
         }
+
         super.elementPushed(namespace, name, t);
     }
 
     private String dumpStack() {
+        return collectionOfNodesToString(stack);
+    }
+
+    private String dumpEndTags() {
+        return collectionOfNodesToString(physicalEndTagsQueue);
+    }
+
+    private String collectionOfNodesToString(Collection<AstNode> col) {
         StringBuilder b = new StringBuilder();
         b.append('[');
-        for (Iterator<AstNode> i = stack.iterator(); i.hasNext();) {
+        for (Iterator<AstNode> i = col.iterator(); i.hasNext();) {
             AstNode en = i.next();
             b.append(en.name());
             b.append(", ");
         }
         b.append(']');
         return b.toString();
+
     }
 
     @Override
     public void stateChanged(int from, int to, int offset) {
-//        this.offset = offset;
-        if(DEBUG) {
+        if (DEBUG_STATES) {
             System.out.println(STATE_NAMES[from] + " -> " + STATE_NAMES[to] + " at " + offset);
         }
 
@@ -173,12 +232,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 tag_lt_offset = offset;
                 break;
 
-//            case TAG_NAME:
-//                open_tag_name_offset = offset;
-//                break;
-
             case CLOSE_TAG_OPEN_NOT_PCDATA:
-                switch(from) {
+                switch (from) {
                     case TAG_OPEN_NON_PCDATA:
                         //close tag in CDATA (e.g. </style> tag after embedded stylesheet)
                         tag_lt_offset = offset - 1; //the state transition happens after <'/' char found
@@ -203,7 +258,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case ATTRIBUTE_NAME:
-                switch(from) {
+                switch (from) {
                     case BEFORE_ATTRIBUTE_NAME:
                         //switching to attribute name
                         AttrInfo ainfo = new AttrInfo();
@@ -214,10 +269,10 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case BEFORE_ATTRIBUTE_VALUE:
-                switch(from) {
+                switch (from) {
                     case ATTRIBUTE_NAME:
                         attrs.peek().equalSignOffset = offset;
-                         break;
+                        break;
                 }
                 break;
 
@@ -233,7 +288,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.NONE;
                 attrs.peek().valueOffset = offset;
                 break;
-                
+
         }
     }
 
@@ -243,34 +298,45 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
             System.out.println("startTag " + en.name + "(" + tagBeginningOffset() + " - " + tagEndOffset() + ")");
         }
 
-        isEndTag = false;
         startTag = en;
         super.startTag(en, ha, bln);
+
+        //>>>experimental only!!!!!!!!!
+        AstNode last = stack.peek();
+        last.treeBuilderState = mode;
+        //<<<
+
+
         startTag = null;
     }
 
     @Override
     public void endTag(ElementName en) throws SAXException {
         if (DEBUG) {
-            System.out.println("endTag " + en.name + "(" + tagBeginningOffset() + " - " + tagEndOffset() + ")");
+            System.out.print("endTag " + en.name + "(" + tagBeginningOffset() + " - " + tagEndOffset() + ")");
         }
-        isEndTag = true;
+
         physicalEndTagsQueue.add(factory.createEndTag(en.name, tagBeginningOffset(), tagEndOffset()));
+
+        if (DEBUG) {
+            System.out.println("end tags: " + dumpEndTags());
+
+        }
+
         super.endTag(en);
     }
 
-    private int tagBeginningOffset() {
+    public int tagBeginningOffset() {
         return tag_lt_offset;
     }
 
-    private int tagEndOffset() {
+    public int tagEndOffset() {
         return tag_gt_offset + 1 /* 1 == the '>' length */;
     }
 
     private void resetIntenallPositions() {
         tag_gt_offset = -1;
         tag_lt_offset = -1;
-//        open_tag_name_offset = -1;
         self_closing_starttag = false;
         attrs.clear();
     }
@@ -298,9 +364,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     @Override
     protected AstNode createElement(String namespace, String name, HtmlAttributes attributes) throws SAXException {
 
-        if (DEBUG) {
-            System.out.println("ns=" + namespace);
-        }
         AstNode node;
         if (startTag != null && startTag.name.equals(name)) {
             node = factory.createOpenTag(name, tag_lt_offset, tag_gt_offset + 1, self_closing_starttag);
@@ -318,17 +381,15 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected AstNode createHtmlElementSetAsRoot(HtmlAttributes attributes) throws SAXException {
-        if(DEBUG) {
+        if (DEBUG) {
             System.out.println("+HTML ROOT");
         }
-        
-        root = factory.createRootNode();
 
         AstNode rootTag = createElement("http://www.w3.org/1999/xhtml", "html", attributes);
         stack.push(root);
 
         root.addChild(rootTag);
-        
+
         return rootTag;
     }
 
@@ -355,14 +416,25 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         to.addChildren(children);
     }
 
+    //http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#foster-parenting
     @Override
-    protected void insertFosterParentedChild(AstNode t, AstNode t1, AstNode t2) throws SAXException {
-        //????
+    protected void insertFosterParentedChild(AstNode child, AstNode table, AstNode stackParent) throws SAXException {
+        AstNode parent = table.parent();
+        if (parent != null) { // always an element if not null
+            parent.insertBefore(child, table);
+        } else {
+            stackParent.addChild(child);
+        }
     }
 
     @Override
     protected void addAttributesToElement(AstNode node, HtmlAttributes attributes) throws SAXException {
-        for (int i = 0; i < attributes.getLength(); i++) {
+        //there are situations (when the code is corrupted) when 
+        //the attributes recorded during lexing (lexical states switching)
+        //do not contain all the attrs from HtmlAttributes.
+        int attrs_count = Math.min(attributes.getLength(), attrs.size());
+
+        for (int i = 0; i < attrs_count; i++) {
             //XXX I assume the attributes order is the same as in the source code
             AttrInfo attrInfo = attrs.elementAt(i);
             AstNode.Attribute attr = factory.createAttribute(
@@ -376,9 +448,12 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     }
 
     private static class AttrInfo {
+
         public int nameOffset, equalSignOffset, valueOffset;
         public ValueQuotation valueQuotationType;
+
         private enum ValueQuotation {
+
             NONE, SINGLE, DOUBLE;
         }
     }

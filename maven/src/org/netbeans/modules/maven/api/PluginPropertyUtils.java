@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.api;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -389,8 +390,9 @@ public class PluginPropertyUtils {
                 Xpp3Dom[] childs = source.getChildren(singleproperty);
                 for (Xpp3Dom ch : childs) {
                     try {
-                        Object evaluated = eval.evaluate(ch.getValue().trim());
-                        toRet.add(evaluated != null ? ("" + evaluated) : ch.getValue().trim());  //NOI18N
+                        String chvalue = ch.getValue()==null ? "" : ch.getValue().trim();  //NOI18N
+                        Object evaluated = eval.evaluate(chvalue);
+                        toRet.add(evaluated != null ? ("" + evaluated) : chvalue);  //NOI18N
                     } catch (ExpressionEvaluationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -661,8 +663,10 @@ public class PluginPropertyUtils {
     }
 
     private static NBPluginParameterExpressionEvaluator createEvaluator(MavenProject prj) {
-        FileObject bsd = FileUtil.toFileObject(FileUtil.normalizeFile(prj.getBasedir()));
         Properties props = new Properties();
+        File basedir = prj.getBasedir();
+        if (basedir != null) {
+        FileObject bsd = FileUtil.toFileObject(FileUtil.normalizeFile(basedir));
         if (bsd != null) {
             Project p = FileOwnerQuery.getOwner(bsd);
             if (p != null) {
@@ -671,6 +675,7 @@ public class PluginPropertyUtils {
                     props = project.createSystemPropsForPropertyExpressions();
                 }
             }
+        }
         }
         //ugly
         Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();

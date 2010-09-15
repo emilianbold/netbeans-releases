@@ -287,7 +287,7 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 	@Override
 	public void perform() {
 	    String newTitle = terminal().getTitle();
-	    if (terminal().isConnected()) {
+	    if (terminal().isConnected() && newTitle != null) {
 		String escaped;
 		try {
 		    escaped = XMLUtil.toAttributeValue(newTitle);

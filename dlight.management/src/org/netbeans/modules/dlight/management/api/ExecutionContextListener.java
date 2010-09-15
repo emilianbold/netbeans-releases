@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.management.api;
 
 /**
@@ -47,5 +46,6 @@ package org.netbeans.modules.dlight.management.api;
  * @author ak119685
  */
 public interface ExecutionContextListener {
-  public void contextChanged(ExecutionContextEvent event);
+
+    public void contextChanged(ExecutionContextEvent event);
 }

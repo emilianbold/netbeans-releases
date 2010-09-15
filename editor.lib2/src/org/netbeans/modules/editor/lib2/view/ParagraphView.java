@@ -134,7 +134,7 @@ public class ParagraphView extends EditorBoxView<EditorView> {
         // to notify parent about preferenceChange later (unless there's e.g. a word wrap).
         if (parent instanceof EditorBoxView) {
             DocumentView documentView = getDocumentView();
-            if (documentView != null) {
+            if (documentView != null && getMinorAxisSpan() == 0f) { // Not inited yet
                 setMinorAxisSpan(documentView.getDefaultLineHeight());
             }
         }

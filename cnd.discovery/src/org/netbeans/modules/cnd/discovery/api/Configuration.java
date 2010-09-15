@@ -61,7 +61,7 @@ public interface Configuration {
     /**
      * Returns configuration dependencies
      */
-    List<Configuration> getDependencies();
+    List<String> getDependencies();
 
     /**
      * Returns list of source files properties. 

@@ -49,8 +49,8 @@ import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvi
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -157,7 +157,7 @@ public class CCGoToDeclarationAction extends BaseAction {
             BaseDocument doc = (BaseDocument) target.getDocument();
             int offset = target.getSelectionStart();
             // don't need to lock document because we are in EQ
-            TokenItem<CppTokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset);
+            TokenItem<TokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset);
             if (token != null) {
                 if (CsmIncludeHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION)) {
                     retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-included-file");

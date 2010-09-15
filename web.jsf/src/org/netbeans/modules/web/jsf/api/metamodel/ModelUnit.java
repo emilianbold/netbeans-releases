@@ -87,7 +87,7 @@ public class ModelUnit {
      * Cached list of folders under which some configuration files may be created,
      * eg. Java source root under which MEAT-INF/*faces-config.xml can be created.
      */
-    private List<FileObject> configRoots = new LinkedList<FileObject>();
+    private List<FileObject> configRoots = Collections.synchronizedList(new LinkedList<FileObject>());
 
     private static final String META_INF = "META-INF";      // NOI18N
     private static final String FACES_CONFIG = "faces-config.xml";// NOI18N
@@ -219,8 +219,8 @@ public class ModelUnit {
         FileObject[] objects = ConfigurationUtils.getFacesConfigFiles( module );
         //add all the configs from WEB-INF/faces-config.xml and all configs declared in faces config DD entry
         //we need to ensure the original ordering
-        configs = new LinkedList<FileObject>(Arrays.asList(objects));
-        configRoots = new LinkedList<FileObject>();
+        configs = Collections.synchronizedList(new LinkedList<FileObject>(Arrays.asList(objects)));
+        configRoots = Collections.synchronizedList(new LinkedList<FileObject>());
         if (module.getDocumentBase() != null) {
             configRoots.add(module.getDocumentBase());
         }
@@ -285,12 +285,12 @@ public class ModelUnit {
                 // of the folder we are keeping eye on; that way we will ignore
                 // events coming for JSF configuration files from different projects
                 res = false;
-                for (FileObject fo : ModelUnit.this.getConfigRoots()) {
-                    if (FileUtil.isParentOf(fo, fe.getFile())) {
-                        res = true;
-                        break;
+                    for (FileObject fo : ModelUnit.this.getConfigRoots()) {
+                        if (FileUtil.isParentOf(fo, fe.getFile())) {
+                            res = true;
+                            break;
+                        }
                     }
-                }
             }
             return res;
         }

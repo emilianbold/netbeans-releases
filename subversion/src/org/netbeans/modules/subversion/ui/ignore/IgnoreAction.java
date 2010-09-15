@@ -136,8 +136,9 @@ public class IgnoreAction extends ContextAction {
         if (actionStatus != IGNORING && actionStatus != UNIGNORING) {
             throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
         }
-        
-        final File files[] = SvnUtils.getCurrentContext(nodes).getRootFiles();                                                
+
+        Context ctx = SvnUtils.getCurrentContext(nodes);
+        final File files[] = ctx.getRootFiles();
 
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
@@ -206,7 +207,7 @@ public class IgnoreAction extends ContextAction {
                 }
             }
         };            
-        support.start(createRequestProcessor(nodes));
+        support.start(createRequestProcessor(ctx));
     }
 
     private Map<File, Set<String>> splitByParent(File[] files) {

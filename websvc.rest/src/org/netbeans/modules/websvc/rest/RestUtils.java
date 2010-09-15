@@ -432,4 +432,29 @@ public class RestUtils {
         }
         return false;
     }
+
+    public static boolean isJSR_311OnClasspath(Project project) throws IOException {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+            if (sourceGroups.length>0) {
+                ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+                if (cp.findResource("javax/ws/rs/Path.class") != null) { //NOI18M
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isJavaEE6(Project project) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            Profile profile = webModule.getJ2eeProfile();
+            if (Profile.JAVA_EE_6_WEB == profile || Profile.JAVA_EE_6_FULL == profile) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -67,6 +67,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -128,7 +129,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
             public void run() {
                 // Init token sequences
-                TokenSequence<CppTokenId> docTS = CndLexerUtilities.getCppTokenSequence(inDoc, inDoc.getLength(), false, true);
+                TokenSequence<TokenId> docTS = CndLexerUtilities.getCppTokenSequence(inDoc, inDoc.getLength(), false, true);
                 if (docTS == null) {
                     return;
                 }
@@ -142,7 +143,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 boolean inDeadCode = true;
 
                 while (docTS.moveNext()) {
-                    Token<CppTokenId> docToken = docTS.token();
+                    Token<TokenId> docToken = docTS.token();
 
                     int docTokenStartOffset = docTS.offset();
                     int docTokenEndOffset = docTokenStartOffset + docToken.length();
@@ -515,7 +516,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
             public void run() {
                 // Init document token sequence
-                TokenSequence<CppTokenId> docTS = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
+                TokenSequence<TokenId> docTS = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
                 if (docTS == null) {
                     return;
                 }
@@ -532,7 +533,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 boolean inDeadCode = true;
 
                 while (docTS.moveNext()) {
-                    Token<CppTokenId> docToken = docTS.token();
+                    Token<TokenId> docToken = docTS.token();
 
                     int docTokenStartOffset = docTS.offset();
                     int docTokenEndOffset = docTokenStartOffset + docToken.length();
@@ -644,7 +645,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         addString(expandedToken, expandedData);
     }
 
-    private void expandIcludeToken(TokenSequence<CppTokenId> docTS, Document inDoc, CsmFile file, TransformationTable tt, StringBuilder expandedData) {
+    private void expandIcludeToken(TokenSequence<TokenId> docTS, Document inDoc, CsmFile file, TransformationTable tt, StringBuilder expandedData) {
         int incStartOffset = docTS.offset();
         String includeName = getIncludeName(file, incStartOffset);
         if (includeName == null) {
@@ -652,50 +653,53 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         int incNameStartOffset = incStartOffset;
         int incNameEndOffset = incStartOffset;
-        Token<CppTokenId> docToken = docTS.token();
-        switch (docToken.id()) {
-            case PREPROCESSOR_DIRECTIVE:
-                TokenSequence<?> embTS = docTS.embedded();
-                if (embTS != null) {
-                    embTS.moveStart();
-                    if (!embTS.moveNext()) {
-                        return;
-                    }
-                    Token embToken = embTS.token();
-                    if (embToken == null || !(embToken.id() instanceof CppTokenId) || (embToken.id() != CppTokenId.PREPROCESSOR_START)) {
-                        return;
-                    }
-                    if (!embTS.moveNext()) {
-                        return;
-                    }
-                    skipWhitespacesAndComments(embTS);
-                    embToken = embTS.token();
-                    if (embToken != null && (embToken.id() instanceof CppTokenId)) {
-                        switch ((CppTokenId) embToken.id()) {
-                            case PREPROCESSOR_INCLUDE:
-                                if (!embTS.moveNext()) {
-                                    return;
-                                }
-                                skipWhitespacesAndComments(embTS);
-                                incNameStartOffset = embTS.offset();
-                                embToken = embTS.token();
-                                while (embToken != null && (embToken.id() instanceof CppTokenId) && (embToken.id() != CppTokenId.NEW_LINE)) {
+        Token<TokenId> docToken = docTS.token();
+        TokenId id = docToken.id();
+        if(id instanceof CppTokenId) {
+            switch ((CppTokenId)id) {
+                case PREPROCESSOR_DIRECTIVE:
+                    TokenSequence<?> embTS = docTS.embedded();
+                    if (embTS != null) {
+                        embTS.moveStart();
+                        if (!embTS.moveNext()) {
+                            return;
+                        }
+                        Token embToken = embTS.token();
+                        if (embToken == null || !(embToken.id() instanceof CppTokenId) || (embToken.id() != CppTokenId.PREPROCESSOR_START)) {
+                            return;
+                        }
+                        if (!embTS.moveNext()) {
+                            return;
+                        }
+                        skipWhitespacesAndComments(embTS);
+                        embToken = embTS.token();
+                        if (embToken != null && (embToken.id() instanceof CppTokenId)) {
+                            switch ((CppTokenId) embToken.id()) {
+                                case PREPROCESSOR_INCLUDE:
                                     if (!embTS.moveNext()) {
                                         return;
                                     }
-                                    incNameEndOffset = embTS.offset();
                                     skipWhitespacesAndComments(embTS);
+                                    incNameStartOffset = embTS.offset();
                                     embToken = embTS.token();
-                                }
-                                break;
-                            default:
-                                return;
+                                    while (embToken != null && (embToken.id() instanceof CppTokenId) && (embToken.id() != CppTokenId.NEW_LINE)) {
+                                        if (!embTS.moveNext()) {
+                                            return;
+                                        }
+                                        incNameEndOffset = embTS.offset();
+                                        skipWhitespacesAndComments(embTS);
+                                        embToken = embTS.token();
+                                    }
+                                    break;
+                                default:
+                                    return;
+                            }
                         }
                     }
-                }
-                break;
-            default:
-                return;
+                    break;
+                default:
+                    return;
+            }
         }
         copyInterval(inDoc, incNameStartOffset - incStartOffset, tt, expandedData);
         int expandedLength = addString(includeName, expandedData);
@@ -799,48 +803,53 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return ""; // NOI18N
     }
 
-    private boolean isWhitespace(Token<CppTokenId> docToken) {
-        switch (docToken.id()) {
-            case NEW_LINE:
-            case WHITESPACE:
-            case ESCAPED_WHITESPACE:
-            case ESCAPED_LINE:
-                return true;
-            default:
-                return false;
+    private boolean isWhitespace(Token<TokenId> docToken) {
+        TokenId id = docToken.id();
+        if(id instanceof CppTokenId) {
+            switch ((CppTokenId)id) {
+                case NEW_LINE:
+                case WHITESPACE:
+                case ESCAPED_WHITESPACE:
+                case ESCAPED_LINE:
+                    return true;
+            }
         }
+        return false;
     }
 
-    private boolean isOnInclude(TokenSequence<CppTokenId> docTS) {
-        Token<CppTokenId> docToken = docTS.token();
-        switch (docToken.id()) {
-            case PREPROCESSOR_DIRECTIVE:
-                TokenSequence<?> embTS = docTS.embedded();
-                if (embTS != null) {
-                    embTS.moveStart();
-                    if (embTS.moveNext()) {
-                        Token embToken = embTS.token();
-                        if (embToken == null || !(embToken.id() instanceof CppTokenId) || (embToken.id() != CppTokenId.PREPROCESSOR_START)) {
-                            return false;
-                        }
+    private boolean isOnInclude(TokenSequence<TokenId> docTS) {
+        Token<TokenId> docToken = docTS.token();
+        TokenId id = docToken.id();
+        if(id instanceof CppTokenId) {
+            switch ((CppTokenId)id) {
+                case PREPROCESSOR_DIRECTIVE:
+                    TokenSequence<?> embTS = docTS.embedded();
+                    if (embTS != null) {
+                        embTS.moveStart();
                         if (embTS.moveNext()) {
-                            skipWhitespacesAndComments(embTS);
-                            embToken = embTS.token();
-                            if (embToken != null && (embToken.id() instanceof CppTokenId)) {
-                                switch ((CppTokenId) embToken.id()) {
-                                    case PREPROCESSOR_INCLUDE:
-                                    case PREPROCESSOR_INCLUDE_NEXT:
-                                        return true;
-                                    default:
-                                        return false;
+                            Token embToken = embTS.token();
+                            if (embToken == null || !(embToken.id() instanceof CppTokenId) || (embToken.id() != CppTokenId.PREPROCESSOR_START)) {
+                                return false;
+                            }
+                            if (embTS.moveNext()) {
+                                skipWhitespacesAndComments(embTS);
+                                embToken = embTS.token();
+                                if (embToken != null && (embToken.id() instanceof CppTokenId)) {
+                                    switch ((CppTokenId) embToken.id()) {
+                                        case PREPROCESSOR_INCLUDE:
+                                        case PREPROCESSOR_INCLUDE_NEXT:
+                                            return true;
+                                        default:
+                                            return false;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                break;
-            default:
-                return false;
+                    break;
+                default:
+                    return false;
+            }
         }
         return false;
     }

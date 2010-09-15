@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -599,6 +600,58 @@ public class Commands {
         @Override
         public String getSrc() {
             return "/management/domain/";
+        }
+    }
+
+    static class ListWebservicesCommand extends ServerCommand {
+
+        private Manifest manifest;
+        private List<String> wsList;
+
+        public ListWebservicesCommand() {
+            super("__list-webservices"); // NOI18N
+        }
+
+        public List<String> getWebserviceList() {
+            // !PW Can still modify sublist... is there a better structure?
+            if(wsList != null) {
+                return Collections.unmodifiableList(wsList);
+            } else {
+                return Collections.emptyList();
+            }
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            this.manifest = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(manifest == null) {
+                return false;
+            }
+            
+            Map <String, String> filter = new HashMap<String, String>();
+
+            Iterator<String> keyIterator = manifest.getEntries().keySet().iterator();
+            while (keyIterator.hasNext()) {
+                String k = keyIterator.next();
+                if (!k.contains("address:/")) // NOI18N
+                    continue;
+                if (k.contains("address:/wsat-wsat")) // NOI18N
+                    continue;
+                String a = k.replaceFirst(".* address:/", "").replaceFirst("\\. .*", ""); // NOI18N
+                if (filter.containsKey(a))
+                    continue;
+                filter.put(a,a);
+                if(wsList == null) {
+                    wsList = new ArrayList<String>();
+                }
+                wsList.add(a);
+            }
+
+            return true;
         }
     }
 }

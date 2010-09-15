@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.repository.impl;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -61,6 +62,11 @@ public class HashMapRepository implements Repository {
 
     @Override
     public void debugDistribution() {
+    }
+
+    @Override
+    public SortedMap<?,?> getStorage(Key key, String storageID) {
+        return null;
     }
 
     /** represents a single unit */

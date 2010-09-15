@@ -62,7 +62,7 @@ public class CopyTest extends AbstractCommandTest {
         super(testName);
     }
     
-    public void testCopyURL2URL() throws Exception {                                        
+    public void testCopyURL2URL() throws Exception {
         testCopyURL2URL("file", "filecopy");
     }
 
@@ -99,21 +99,21 @@ public class CopyTest extends AbstractCommandTest {
         File file = createFile(srcPath);
         add(file);
         commit(file);
-                
+
         File filecopy = createFile(renameFile(srcPath, targetFileName));
         filecopy.delete();
-        
+
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(file), getFileUrl(filecopy), "copy", SVNRevision.HEAD);
 
         ISVNInfo info = getInfo(getFileUrl(filecopy));
         assertNotNull(info);
         assertEquals(getFileUrl(filecopy), TestUtilities.decode(info.getUrl()));
-        
-        assertNotifiedFiles(new File[] {});
-    }        
 
-    public void testCopyURL2URLPrevRevision() throws Exception {                                        
+        assertNotifiedFiles(new File[] {});
+    }
+
+    public void testCopyURL2URLPrevRevision() throws Exception {
         testCopyURL2URLPrevRevision("file", "filecopy");
     }
 
@@ -138,11 +138,11 @@ public class CopyTest extends AbstractCommandTest {
         commit(file);
         SVNRevision prevRev = getRevision(file);
         write(file, 2);
-        commit(getWC());        
-        
+        commit(getWC());
+
         File filecopy = createFile(renameFile(srcPath, targetFileName));
         filecopy.delete();
-        
+
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(file), getFileUrl(filecopy), "copy", prevRev);
 
@@ -152,7 +152,7 @@ public class CopyTest extends AbstractCommandTest {
         InputStream is = getContent(getFileUrl(filecopy));
         assertContents(is, 1);
         assertNotifiedFiles(new File[] {});
-    }        
+    }
 
     public void testCopyFile2URL() throws Exception {
         testCopyFile2URL("file", "filecopy");
@@ -192,10 +192,12 @@ public class CopyTest extends AbstractCommandTest {
         add(file);
         commit(file);
                 
+        // File filecopy = new File(createFolder(file.getParentFile(), targetFileName), file.getName());
         File filecopy = createFile(renameFile(srcPath, targetFileName));
-        
+
         ISVNClientAdapter c = getNbClient();
-        c.copy(file, getFileUrl(filecopy), "copy");
+//        c.copy(file, getFileUrl(filecopy), "copy"); XXX is failing with javahl and we don't use it anyway
+        c.copy(new File[] {file}, getFileUrl(filecopy), "copy", false, true);
 
         ISVNInfo info = getInfo(getFileUrl(filecopy));
         assertNotNull(info);
@@ -240,18 +242,18 @@ public class CopyTest extends AbstractCommandTest {
         File file = createFile(srcPath);
         add(file);
         commit(file);
-                
+
         File filecopy = createFile(renameFile(srcPath, targetFileName));
         filecopy.delete();
-        
+
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(file), filecopy, SVNRevision.HEAD);
 
         assertTrue(filecopy.exists());
         assertStatus(SVNStatusKind.ADDED, filecopy);
-        assertNotifiedFiles(new File[] {filecopy});        
-    }        
-    
+        assertNotifiedFiles(new File[] {filecopy});
+    }
+
     public void testCopyURL2FilePrevRevision() throws Exception {
         testCopyURL2FilePrevRevision("file", "filecopy");
     }
@@ -277,16 +279,16 @@ public class CopyTest extends AbstractCommandTest {
         commit(file);
         SVNRevision prevRev = getRevision(file);
         write(file, 2);
-        commit(getWC());        
-                        
+        commit(getWC());
+
         File filecopy = createFile(renameFile(srcPath, targetFileName));
         filecopy.delete();
-        
+
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(file), filecopy, prevRev);
-        
+
         assertContents(filecopy, 1);
-        assertNotifiedFiles(new File[] {filecopy});        
-    }            
+        assertNotifiedFiles(new File[] {filecopy});
+    }
     
 }

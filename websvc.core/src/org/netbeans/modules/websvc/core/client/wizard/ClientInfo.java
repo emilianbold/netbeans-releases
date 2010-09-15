@@ -62,14 +62,19 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JFileChooser;
 import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -85,7 +90,6 @@ import org.netbeans.modules.websvc.core.JaxWsUtils;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -158,6 +162,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         initComponents();
         jLblClientType.setVisible(false);
         jCbxClientType.setVisible(false);
+        jComboBoxJaxVersion.setRenderer(new CBRenderer());
         jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(new String[]{ClientWizardProperties.JAX_WS, ClientWizardProperties.JAX_RPC}));
         initUserComponents();
     }
@@ -1423,6 +1428,31 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
             
         return false;
+    }
+
+    private class CBRenderer extends JTextField implements ListCellRenderer {
+
+        CBRenderer() {
+            setOpaque(true);
+        }
+        
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+//            if (isSelected) {
+//                setBackground(list.getSelectionBackground());
+//                setForeground(list.getSelectionForeground());
+//            } else {
+//                setBackground(list.getBackground());
+//                setForeground(list.getForeground());
+//            }
+            setEditable(false);
+            setText(ClientWizardProperties.JAX_RPC.equals(value) ?
+                    NbBundle.getMessage(ClientInfo.class, "TXT_JAX_RPC_Style") : //NOI18N
+                    NbBundle.getMessage(ClientInfo.class, "TXT_JAX_WS_Style")); //NOI18N
+            return this;
+
+        }
+
     }
 
 }

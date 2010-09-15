@@ -78,6 +78,7 @@ final class FileObjectKeeper implements FileChangeListener {
         if (listeners == null) {
             listeners = new CopyOnWriteArraySet<FileChangeListener>();
         }
+        LOG.log(Level.FINEST, "addRecursiveListener for {0} isEmpty: {1}", new Object[]{root, listeners.isEmpty()});
         if (listeners.isEmpty()) {
             Callable<?> stop = null;
             if (fcl instanceof Callable && fcl.getClass().getName().equals("org.openide.filesystems.DeepListener")) { // NOI18N
@@ -93,6 +94,7 @@ final class FileObjectKeeper implements FileChangeListener {
             return;
         }
         listeners.remove(fcl);
+        LOG.log(Level.FINEST, "removeRecursiveListener for {0} isEmpty: {1}", new Object[]{root, listeners.isEmpty()});
         if (listeners.isEmpty()) {
             listenNoMore();
         }
@@ -160,6 +162,7 @@ final class FileObjectKeeper implements FileChangeListener {
         FileObjectFactory factory = null;
         for (;;) {
             File f = it.poll();
+            LOG.log(Level.FINEST, "listenToAll, processing {0}", f);
             if (f == null) {
                 break;
             }
@@ -167,6 +170,7 @@ final class FileObjectKeeper implements FileChangeListener {
                 factory = FileObjectFactory.getInstance(f);
             }
             FileObject fo = factory.getValidFileObject(f, Caller.Others);
+            LOG.log(Level.FINEST, "listenToAll, check {0} for stop {1}", new Object[] { fo, stop });
             if (fo instanceof FolderObj) {
                 FolderObj obj = (FolderObj) fo;
                 Object shallStop = null;

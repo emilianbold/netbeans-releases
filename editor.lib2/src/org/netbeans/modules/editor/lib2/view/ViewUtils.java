@@ -57,6 +57,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  * Various view utilities.
@@ -178,6 +179,14 @@ public final class ViewUtils {
     public static String toString(Rectangle2D r) {
         return "XYWH[" + r.getX() + ';' + r.getY() + ';' + r.getWidth() + ';' + r.getHeight() + ']'; // NOI18N
     }
+    
+    public static String toString(Shape s) {
+        if (s instanceof Rectangle2D) {
+            return toString((Rectangle2D)s);
+        } else {
+            return s.toString();
+        }
+    }
 
     public static String toStringHex8(int i) {
         String s = Integer.toHexString(i);
@@ -275,6 +284,8 @@ public final class ViewUtils {
         }
         StringBuilder sb = new StringBuilder(100);
         sb.append(toStringNameId(doc));
+        sb.append(", Length=").append(doc.getLength());
+        sb.append(", Version=").append(DocumentUtilities.getDocumentVersion(doc));
         sb.append(", StreamDesc:");
         Object streamDesc = doc.getProperty(Document.StreamDescriptionProperty);
         if (streamDesc != null) {

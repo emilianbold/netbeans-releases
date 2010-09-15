@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.php;
 
 import java.util.Collection;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
@@ -95,7 +96,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             new RefactoringTask.TextComponentTask(ec) {
 
                 @Override
-                protected RefactoringUI createRefactoringUI(final ParserResult info, final int offset) {
+                protected RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset) {
                     WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
                     if (ctx != null && ctx.getName() != null) {
                         return new WhereUsedQueryUI(ctx);
@@ -118,7 +119,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             new RefactoringTask.TextComponentTask(ec) {
 
                 @Override
-                protected RefactoringUI createRefactoringUI(final ParserResult info, final int offset) {
+                protected RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset) {
                     WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
                     if (ctx != null && ctx.getName() != null) {
                         final FileObject fileObject = ctx.getModelElement().getFileObject();
@@ -149,7 +150,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         new RefactoringTask.NodeToFileTask(currentNode) {
 
             @Override
-            protected RefactoringUI createRefactoringUI(ParserResult info) {
+            protected RefactoringUI createRefactoringUI(PHPParseResult info) {
                 SafeDeleteSupport ctx = SafeDeleteSupport.getInstance(info);
                 if (ctx != null) {
                     final FileObject fileObject = ctx.getModel().getFileScope().getFileObject();

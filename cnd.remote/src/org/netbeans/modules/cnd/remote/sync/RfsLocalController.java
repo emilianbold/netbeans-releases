@@ -51,6 +51,7 @@ import org.openide.util.Utilities;
 
 class RfsLocalController extends NamedRunnable {
 
+    private final NativeProcess remoteControllerProcess;
     private final BufferedReader requestReader;
     private final PrintWriter responseStream;
     private final File[] files;
@@ -66,6 +67,7 @@ class RfsLocalController extends NamedRunnable {
     private String timeStampFile;
 
     private static final boolean USE_TIMESTAMPS = DebugUtils.getBoolean("cnd.rfs.timestamps", true);
+    private static final boolean CHECK_ALIVE = DebugUtils.getBoolean("cnd.rfs.check.alive", true);
 
     /**
      * Maps remote canonical remote path remote controller operates with
@@ -80,11 +82,12 @@ class RfsLocalController extends NamedRunnable {
     }
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
-            BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
+            NativeProcess remoteControllerProcess, BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
             File privProjectStorageDir) {
         super("RFS local controller thread " + executionEnvironment); //NOI18N
         this.execEnv = executionEnvironment;
         this.files = files;
+        this.remoteControllerProcess = remoteControllerProcess;
         this.requestReader = requestStreamReader;
         this.responseStream = responseStreamWriter;
         this.err = err;
@@ -242,7 +245,9 @@ class RfsLocalController extends NamedRunnable {
             timeStampFile = null;
             String errMsg = NbBundle.getMessage(getClass(), "MSG_Error_Running_Command", "mktemp -p " + remoteSyncRoot, execEnv, res.error, res.exitCode);
             logger.log(Level.INFO, errMsg);
-            err.printf("%s\n", errMsg); // NOI18N
+            if (err != null) {
+                err.printf("%s\n", errMsg); // NOI18N
+            }
             return false;
         }
     }
@@ -390,6 +395,12 @@ class RfsLocalController extends NamedRunnable {
 
         char version = USE_TIMESTAMPS ? '2' : '1';
         logger.log(Level.FINE, "Initialization. Version=%c", version);
+        if (CHECK_ALIVE && !ProcessUtils.isAlive(remoteControllerProcess)) { // fixup for remote tests unstable failure (caused by jsch issue)
+            if (err != null) {
+                err.printf("Process exited unexpectedly when initializing\n"); //NOI18N
+            }
+            return false;
+        }
         responseStream.printf("VERSION=%c\n", version); //NOI18N
         responseStream.flush();
 
@@ -456,7 +467,20 @@ class RfsLocalController extends NamedRunnable {
 
         time = System.currentTimeMillis();
         for (FileGatheringInfo info : filesToFeed) {
-            sendFileInitRequest(info);
+            try {
+                sendFileInitRequest(info);
+            } catch (IOException ex) {
+                if (err != null) {
+                    err.printf("Process exited unexpectedly while file info was being sent\n"); //NOI18N
+                }
+                return false;
+            }
+        }
+        if (CHECK_ALIVE && !ProcessUtils.isAlive(remoteControllerProcess)) { // fixup for remote tests unstable failure (caused by jsch issue)
+            if (err != null) {
+                err.printf("Process exited unexpectedly\n"); //NOI18N
+            }
+            return false;
         }
         responseStream.printf("\n"); // NOI18N
         responseStream.flush();
@@ -672,7 +696,10 @@ class RfsLocalController extends NamedRunnable {
         }
     }
     
-    private void sendFileInitRequest(FileGatheringInfo fgi) {
+    private void sendFileInitRequest(FileGatheringInfo fgi) throws IOException {
+        if (CHECK_ALIVE && !ProcessUtils.isAlive(remoteControllerProcess)) { // fixup for remote tests unstable failure (caused by jsch issue)
+            throw new IOException("process already exited"); //NOI18N
+        }
         if(fgi.isLink()) {
             responseStream.printf("L %s\n%s\n", fgi.remotePath, fgi.getLinkTarget()); //NOI18N
         } else if (fgi.file.isDirectory()) {

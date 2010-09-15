@@ -120,6 +120,10 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         updateInProjectCombo(false);
     }
 
+    static boolean isMaven(Project project) {
+        return project.getLookup().lookup(AntArtifactProvider.class) == null;
+    }
+
     private void updateInProjectCombo(boolean show) {
         if (show) {
             remoteCheckBox.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_In_Project")); // NOI18N
@@ -148,14 +152,20 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
     private List<Project> getProjectsList() {
         List<Project> names = new ArrayList<Project>();
+        boolean maven = isMaven(project);
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             if (p.equals(project)) {
                 continue;
             }
-            // if this is an Ant-based project and not e.g. a Maven project
-            if (p.getLookup().lookup(AntArtifactProvider.class) != null) {
-                // list only projects which produce jars so that they can be added to classpath
-                if (AntArtifactQuery.findArtifactsByType(p, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
+            if (maven) {
+                // if project is maven then only list maven projects which produce JARs
+                if (p.getLookup().lookup(AntArtifactProvider.class) != null) {
+                    continue;
+                }
+            } else {
+                // if project is ant then only list ant projects which produce JARs
+                if (p.getLookup().lookup(AntArtifactProvider.class) == null ||
+                        AntArtifactQuery.findArtifactsByType(p, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
                     continue;
                 }
             }

@@ -459,7 +459,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
         Set<Profile> profiles = new HashSet<Profile>(5);
         profiles.add(Profile.J2EE_13);
         profiles.add(Profile.J2EE_14);
-        if (manager.isTomcat60()) {
+        if (manager.isTomcat60() || manager.isTomcat70()) {
             profiles.add(Profile.JAVA_EE_5);
         }
         if (manager.isTomcat70()) {

@@ -68,7 +68,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -127,6 +126,7 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
     
     /**
      */
+    @Override
     public Component getTreeCellRendererComponent(JTree tree,
                                                   Object value,
                                                   boolean selected,
@@ -153,14 +153,14 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
             
         } else if (value.getClass() == MatchingObject.class) {
             final MatchingObject matchingObj = (MatchingObject) value;
-            final DataObject dataObj = (DataObject) matchingObj.object;
+            final DataObject dataObj = (DataObject) matchingObj.getDataObject();
             final boolean valid = matchingObj.isObjectValid();
             if (valid) {
                 final Node node = dataObj.getNodeDelegate();
                 FileObject fileFolder = dataObj.getPrimaryFile().getParent();
                 String folderPath = FileUtil.getFileDisplayName(fileFolder);
                 try {
-                    text = node.getHtmlDisplayName();
+                    text = matchingObj.getHtmlDisplayName();
                     isHtml = true;
                     if (text == null) {
                         text = XMLUtil.toElementContent(node.getDisplayName());
@@ -174,7 +174,7 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
                 }
                 iconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
             } else {
-                text = dataObj.getName() + getDeletedObjectHtmlSuffix();
+                text = matchingObj.getName() + getDeletedObjectHtmlSuffix();
                 isHtml = true;
                 iconImage = getDeletedObjectIconImage();
             }

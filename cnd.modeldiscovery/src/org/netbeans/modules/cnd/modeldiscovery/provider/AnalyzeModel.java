@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -244,6 +245,15 @@ public class AnalyzeModel implements DiscoveryProvider {
                 set.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
+                    try {
+                        String canPath = ff[i].getCanonicalPath();
+                        String absPath = ff[i].getAbsolutePath();
+                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                            continue;
+                        }
+                    } catch (IOException ex) {
+                        //Exceptions.printStackTrace(ex);
+                    }
                     gatherSubFolders(ff[i], set);
                 }
             }
@@ -271,7 +281,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
-        return new ApplicableImpl(true, null, 40, false);
+        return new ApplicableImpl(true, null, 40, false, null, null, null);
     }
     
     private class MyConfiguration implements Configuration{
@@ -295,7 +305,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         }
        
         @Override
-        public List<Configuration> getDependencies() {
+        public List<String> getDependencies() {
             return null;
         }
         

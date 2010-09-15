@@ -46,8 +46,10 @@ package org.netbeans.spi.editor.hints;
 import java.util.Collection;
 import java.util.ArrayList;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.editor.hints.HintsControllerImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,8 +72,11 @@ public final class HintsController {
      * @param layer unique layer ID
      * @param errors to use
      */
-    public static void setErrors(final Document doc, final String layer, Collection<? extends ErrorDescription> errors) {
-        assert doc != null;
+    public static void setErrors(final @NonNull Document doc, final @NonNull String layer, @NonNull Collection<? extends ErrorDescription> errors) {
+        Parameters.notNull("doc", doc);
+        Parameters.notNull("layer", layer);
+        Parameters.notNull("errors", errors);
+
         final Collection<? extends ErrorDescription> errorsCopy = new ArrayList<ErrorDescription>(errors);
 
         WORKER.post(new Runnable() {
@@ -89,7 +94,11 @@ public final class HintsController {
      * @param layer unique layer ID
      * @param errors to use
      */
-    public static void setErrors(final FileObject file, final String layer, Collection<? extends ErrorDescription> errors) {
+    public static void setErrors(final @NonNull FileObject file, @NonNull final String layer, @NonNull Collection<? extends ErrorDescription> errors) {
+        Parameters.notNull("file", file);
+        Parameters.notNull("layer", layer);
+        Parameters.notNull("errors", errors);
+
         final Collection<? extends ErrorDescription> errorsCopy = new ArrayList<ErrorDescription>(errors);
 
         WORKER.post(new Runnable() {

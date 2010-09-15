@@ -134,6 +134,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.odb</friend>
                 <friend>org.netbeans.modules.db.metadata.model</friend>
                 <friend>org.netbeans.modules.db.mysql</friend>
                 <friend>org.netbeans.modules.db.sql.editor</friend>

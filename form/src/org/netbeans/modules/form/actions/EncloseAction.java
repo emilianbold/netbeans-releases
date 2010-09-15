@@ -222,7 +222,7 @@ public class EncloseAction extends NodeAction {
                         boolean autoUndo = true; // in case of unexpected error, for robustness
                         try {
                             // create and add the new container
-                            RADComponent newComp = creator.createComponent(paletteItem.getComponentClassSource(), metacont, null);
+                            RADComponent newComp = creator.createComponent(paletteItem, metacont, null);
                             boolean success = (newComp instanceof RADVisualContainer);
                             if (!success) {
                                 String msg = NbBundle.getMessage(EncloseAction.class, "MSG_EncloseInNotEmpty"); // NOI18N

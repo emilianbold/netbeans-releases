@@ -211,8 +211,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
 
-            if (panel.getJsfComponentsLibrary() != null ) {
-                ProjectClassPathModifier.addLibraries(new Library[]{panel.getJsfComponentsLibrary()}, javaSources[0], ClassPath.COMPILE);
+            if (panel.getJsfComponentDescriptor() != null ) {
+                ProjectClassPathModifier.addLibraries(new Library[]{panel.getJsfComponentDescriptor().getLibrary()}, javaSources[0], ClassPath.COMPILE);
             }
 
             boolean isMyFaces;
@@ -650,6 +650,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     HashMap<String, Object> params = new HashMap<String, Object>();
                     if (isJSF20) {
                         params.put("isJSF20", Boolean.TRUE);    //NOI18N
+                        if (panel.getJsfComponentDescriptor() != null) {
+                            params.put("welcomeBody", panel.getJsfComponentDescriptor().getWelcomeBody());  //NOI18N
+                            params.put("welcomeInclude", "xmlns:"+panel.getJsfComponentDescriptor().getNsPrefix()+"=\""+panel.getJsfComponentDescriptor().getNamespace()+"\"");    //NOI18N
+                        }
                     }
                     JSFPaletteUtilities.expandJSFTemplate(template, params, target);
                 }

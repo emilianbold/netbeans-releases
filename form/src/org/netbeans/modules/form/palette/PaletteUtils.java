@@ -379,7 +379,7 @@ public final class PaletteUtils {
         }
     }
     
-    public static Image getIconForClass(String className, int type, boolean optimalResult) {
+    public static Image getIconForClass(String className, String classDetails, int type, boolean optimalResult) {
         Image img = null;
         for (PaletteItem item : getAllItems(optimalResult)) {
             if (PaletteItem.TYPE_CHOOSE_BEAN.equals(item.getExplicitComponentType())) {
@@ -391,6 +391,9 @@ public final class PaletteUtils {
                     img = node.getIcon(type);
                 } else {
                     img = item.getIcon(type);
+                }
+                if ((classDetails == null) || (classDetails.equals(item.getInitializerId()))) {
+                    break;
                 }
             }
         }

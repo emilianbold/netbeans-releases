@@ -251,7 +251,7 @@ public class ImportUITest extends JellyTestCase {
             Thread.sleep(1000);
 
             FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
-            ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            ftiso.setRepositoryFolder("trunk/Import" + PROJECT_NAME);
             ftiso.setImportMessage("initial import");
             ftiso.next();
             Thread.sleep(1000);
@@ -261,10 +261,10 @@ public class ImportUITest extends JellyTestCase {
             Thread.sleep(1000);
             JTableOperator table = cso.tabFiles();
             TableModel model = table.getModel();
-            String[] expected = {"genfiles.properties", "build-impl.xml", "Main.java", "manifest.mf", "src", "project.xml", PROJECT_NAME.toLowerCase(), "nbproject", "project.properties", "test", "build.xml"};
+            String[] expected = {"genfiles.properties", "build-impl.xml", "JavaApp.java", "manifest.mf", "src", "project.xml", PROJECT_NAME.toLowerCase(), "nbproject", "project.properties", "test", "build.xml"};
             String[] actual = new String[model.getRowCount()];
             for (int i = 0; i < actual.length; i++) {
-                actual[i] = model.getValueAt(i, 0).toString();
+                actual[i] = model.getValueAt(i, 1).toString();
             }
             assertEquals("Incorrect count of records for addition!!!", 11, model.getRowCount());
             assertEquals("Some records were omitted from addition", 11, TestKit.compareThem(expected, actual, false));
@@ -272,8 +272,8 @@ public class ImportUITest extends JellyTestCase {
             cso.selectCommitAction("project.xml", "Add As Text");
             cso.selectCommitAction("project.xml", "Add As Binary");
             cso.selectCommitAction("project.xml", "Exclude from Commit");
-            cso.selectCommitAction("test", "Add Directory");
-            cso.selectCommitAction("test", "Exclude from Commit");
+            cso.selectCommitAction("test", "Exclude Recursively");
+            cso.selectCommitAction("test", "Include Recursively");
             iwo.cancel();
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);

@@ -52,6 +52,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -197,11 +198,11 @@ public class CKit extends CCKit {
                                 endPos = startPos = target.getSelectionStart();
                             }
                             // get token inside selection
-                            TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startPos, true, false);
+                            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startPos, true, false);
                             if (ts == null) {
                                 return;
                             }
-                            Token<CppTokenId> tok = ts.token();
+                            Token<TokenId> tok = ts.token();
                             int offset = ts.offset();
                             while (offset < endPos && tok.id() == CppTokenId.WHITESPACE && ts.moveNext()) {
                                 tok = ts.token();
@@ -270,7 +271,7 @@ public class CKit extends CCKit {
 
                 public void run() {
                     Caret caret = target.getCaret();
-                    Token<CppTokenId> tok = null;
+                    Token<TokenId> tok = null;
                     try {
                         int startPos;
                         int endPos;
@@ -286,7 +287,7 @@ public class CKit extends CCKit {
                             endPos = startPos = target.getSelectionStart();
                         }
                         // get token inside selection
-                        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startPos, true, false);
+                        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startPos, true, false);
                         if (ts == null) {
                             return;
                         }

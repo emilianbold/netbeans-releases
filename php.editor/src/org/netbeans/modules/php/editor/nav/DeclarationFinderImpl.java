@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.nav;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -195,7 +196,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     }
 
     private static DeclarationLocation findDeclarationImpl(Occurence underCaret, ParserResult info) {
-        DeclarationLocation retval = DeclarationLocation.NONE;
+        DeclarationLocation location = DeclarationLocation.NONE;
         if (underCaret != null) {
             Collection<? extends PhpElement> gotoDeclarations = underCaret.gotoDeclarations();
             if (gotoDeclarations == null || gotoDeclarations.isEmpty()) {
@@ -206,30 +207,34 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (declarationFo == null) {
                 return DeclarationLocation.NONE;
             }
-            retval = new DeclarationLocation(declarationFo, declaration.getOffset(), declaration);
-            //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
-            if (info.getSnapshot().getSource().getFileObject() == declaration.getFileObject()) {
-                return retval;
-            }
+            location = new DeclarationLocation(declarationFo, declaration.getOffset(), declaration);
             Collection<? extends PhpElement> alternativeDeclarations = gotoDeclarations;
             if (alternativeDeclarations.size() > 1) {
-                retval = DeclarationLocation.NONE;
+                final FileObject currentFile = info.getSnapshot().getSource().getFileObject();
+                int numberOfCurrentDeclaration = 0;
+                DeclarationLocation alternatives = DeclarationLocation.NONE;
                 for (PhpElement elem : alternativeDeclarations) {
                     FileObject elemFo = elem.getFileObject();
                     if (elemFo == null) {
                         continue;
                     }
                     DeclarationLocation declLocation = new DeclarationLocation(elemFo, elem.getOffset(), elem);
-                    AlternativeLocation al = new AlternativeLocationImpl(elem, declLocation);
-                    if (retval == DeclarationLocation.NONE) {
-                        retval = al.getLocation();
+                    if (currentFile == elemFo) {
+                        location = declLocation;
+                        numberOfCurrentDeclaration++;
                     }
-                    retval.addAlternative(al);
+                    AlternativeLocation al = new AlternativeLocationImpl(elem, declLocation);
+                    if (alternatives == DeclarationLocation.NONE) {
+                        alternatives = al.getLocation();
+                    }
+                    alternatives.addAlternative(al);
                 }
-                return retval;
+                return (numberOfCurrentDeclaration == 1 && 
+                        !EnumSet.<Occurence.Accuracy>of(Occurence.Accuracy.MORE_TYPES, Occurence.Accuracy.MORE).contains(underCaret.degreeOfAccuracy()))
+                        ? location : alternatives;
             }
         }
-        return retval;
+        return location;
     }
 
     public static class AlternativeLocationImpl implements AlternativeLocation {

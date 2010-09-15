@@ -110,6 +110,23 @@ public class CommonTestCase extends JavaSourceTestCase {
         System.out.println(message);
     }
     
+    protected void createQualifier(String name ) throws IOException{
+        TestUtilities.copyStringToFileObject(srcFO, "foo/"+name+".java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface "+name+"  {} ");
+    }
+    
     /**
      * This method should be changed to loading jar which injection annotations
      * into classpath.   
@@ -266,6 +283,18 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Retention(RUNTIME) "+
                 "@Target({ANNOTATION_TYPE}) "+          
                 "public @interface Stereotype  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/event/Event.java",
+                "package javax.enterprise.event; " +
+                "public interface Event<T>  {" +
+                " void fire( T event ); "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Instance.java",
+                "package javax.enterprise.inject; " +
+                "public interface Instance<T>  extends java.lang.Iterable<T> {" +
+                " void fire( T event ); "+
+                "}");
     }
 
     public final void assertFindParameterResultInjectables(VariableElement element,

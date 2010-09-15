@@ -58,48 +58,50 @@ public class RelocateTest extends AbstractCommandTest {
         super(testName);
     }
     
-    public void testRelocateFile() throws Exception {                                        
+    public void testRelocateFile() throws Exception {
         File file = createFile("file");
         add(file);
         commit(file);
-        
-        assertInfo(file, getFileUrl(file));
-        
-        ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), getRepo2Url().toString(), file.getAbsolutePath(), false);
+        SVNUrl repo2Url = copyRepo();
 
-        assertInfo(file, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(file.getName()));        
-        
-        //assertNotifiedFiles(file); // XXX no notif fromthe cli        
+        assertInfo(file, getFileUrl(file));
+
+        ISVNClientAdapter c = getNbClient();
+        c.relocate(getRepoUrl().toString(), repo2Url.toString(), file.getAbsolutePath(), false);
+
+        assertInfo(file, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(file.getName()));
+
+        //assertNotifiedFiles(file); // XXX no notif fromthe cli
     }
-    
-    public void testRelocateFolderRec() throws Exception {                                        
+
+    public void testRelocateFolderRecursively() throws Exception {
         File folder = createFolder("folder");
         File folder1 = createFolder(folder, "folder1");
         File file = createFile(folder, "folder");
         File file1 = createFile(folder1, "file1");
-        
+
         add(folder);
         add(file);
         add(folder1);
         add(file1);
         commit(folder);
-        
+        SVNUrl repo2Url = copyRepo();
+
         assertInfo(folder, getFileUrl(folder));
         assertInfo(file, getFileUrl(folder).appendPath(file.getName()));
         assertInfo(folder1, getFileUrl(folder).appendPath(folder1.getName()));
         assertInfo(file1, getFileUrl(folder).appendPath(folder1.getName()).appendPath(file1.getName()));
-        
-        ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), getRepo2Url().toString(), folder.getAbsolutePath(), true);
 
-        assertInfo(folder, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()));        
-        assertInfo(file, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName()));        
-        assertInfo(folder1, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()));        
-        assertInfo(file1, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()).appendPath(file1.getName()));        
+        ISVNClientAdapter c = getNbClient();
+        c.relocate(getRepoUrl().toString(), repo2Url.toString(), folder.getAbsolutePath(), true);
+
+        assertInfo(folder, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()));
+        assertInfo(file, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName()));
+        assertInfo(folder1, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()));
+        assertInfo(file1, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()).appendPath(file1.getName()));
     }
     
-    public void testRelocateFolderNonRec() throws Exception {                                        
+    public void testRelocateFolderNonRecursively() throws Exception {
         File folder = createFolder("folder");
         File folder1 = createFolder(folder, "folder1");
         File file = createFile(folder, "folder");
@@ -110,7 +112,8 @@ public class RelocateTest extends AbstractCommandTest {
         add(folder1);
         add(file1);
         commit(folder);
-        
+        SVNUrl repo2Url = copyRepo();
+
         SVNUrl folderUrl = getFileUrl(folder);
         SVNUrl fileUrl = getFileUrl(folder).appendPath(file.getName());
         SVNUrl folder1Url = getFileUrl(folder).appendPath(folder1.getName());
@@ -122,10 +125,10 @@ public class RelocateTest extends AbstractCommandTest {
         assertInfo(file1,file1Url);
         
         ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), getRepo2Url().toString(), folder.getAbsolutePath(), false);
+        c.relocate(getRepoUrl().toString(), repo2Url.toString(), folder.getAbsolutePath(), false);
 
-        SVNUrl folderNewUrl = getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName());
-        SVNUrl fileNewUrl = getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName());
+        SVNUrl folderNewUrl = repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName());
+        SVNUrl fileNewUrl = repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName());
         
         assertInfo(folder, folderNewUrl);        
         assertInfo(file, fileNewUrl);        

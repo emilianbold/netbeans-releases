@@ -466,10 +466,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private boolean renderBitField(AST token) {
 
             AST typeAST = token.getFirstChild();
-            if (typeAST == null ||
-                    (typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
-                    typeAST.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+            if (typeAST == null) {
                 return false;
+            }
+            if (typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                if (typeAST.getType() == CPPTokenTypes.LITERAL_enum) {
+                    typeAST = typeAST.getNextSibling();
+                }
+                if (typeAST == null || (typeAST.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                    return false;
+                }
             }
 
             // common type for all bit fields
@@ -719,8 +725,25 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         kind = findKind(ast);
     }
 
+    public ClassImpl(CsmFile file, CsmScope scope, String name, CsmDeclaration.Kind kind, int startOffset, int endOffset, boolean register) {
+        super(name, name, file, startOffset, endOffset);
+        members = new ArrayList<CsmUID<CsmMember>>();
+        friends = new ArrayList<CsmUID<CsmFriend>>(0);
+        inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
+        this.kind = kind;
+        initScope(scope);
+        if (register) {
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(this);
+        }
+        if (register) {
+            register(getScope(), false);
+        }
+    }
+
     protected void init(CsmScope scope, AST ast, boolean register) {
-        initScope(scope, ast);
+        initScope(scope);
         initQualifiedName(scope, ast);
         if (register) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"

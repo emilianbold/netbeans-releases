@@ -167,6 +167,8 @@ public interface CsmFunction extends CsmOffsetableDeclaration, CsmScope {
     
     boolean isInline();
 
+    boolean isStatic();
+
     CsmType getReturnType();
     
     CsmFunctionParameterList  getParameterList();

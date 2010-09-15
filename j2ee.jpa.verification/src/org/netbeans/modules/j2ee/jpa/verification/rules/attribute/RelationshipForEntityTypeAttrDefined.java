@@ -43,7 +43,10 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -58,6 +61,9 @@ import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateOneToOneRelationsh
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirManyToOneRelationship;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirOneToOneRelationship;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
@@ -75,6 +81,7 @@ public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeChec
         if (ctx.isEmbeddable()) {
             return null;
         }
+
         
         Element typeElement = ctx.getCompilationInfo().getTypes().asElement(attrib.getType());
         
@@ -82,6 +89,21 @@ public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeChec
             Entity entity = ModelUtils.getEntity(ctx.getMetaData(), ((TypeElement)typeElement));
             
             if (entity != null){
+                //not appliable to derived ids, it's already attribute and relationship
+                //if id and have one-one and many-one
+                List<? extends AnnotationMirror> anns = attrib.getJavaElement().getAnnotationMirrors();
+                if(anns!=null){
+                    boolean id=false;
+                    boolean rel=false;
+                    for(AnnotationMirror ann:anns){ann.getAnnotationType().asElement().toString();
+                        if(ann.getAnnotationType().asElement().toString().equals("javax.persistence.Id"))id=true;//NOI18N
+                        else if(ann.getAnnotationType().asElement().toString().equals("javax.persistence.ManyToOne") || ann.getAnnotationType().asElement().toString().equals("javax.persistence.OneToOne"))
+                        rel = true;//NOI18N
+                        if(id && rel)return null;//in future more strict verification may be done
+                    }
+
+                }
+                //other cases
                 ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
                 ElementHandle<Element> elemHandle = ElementHandle.create(attrib.getJavaElement());
                 String remoteClassName = ((TypeElement)typeElement).getQualifiedName().toString();

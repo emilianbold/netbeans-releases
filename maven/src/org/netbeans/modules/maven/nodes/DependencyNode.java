@@ -65,14 +65,13 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Profile;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -80,13 +79,18 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.dependencies.DependencyExcludeNodeVisitor;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.dependencies.ExcludeDependencyPanel;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
@@ -122,6 +126,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 /**
  * node representing a dependency
@@ -129,7 +134,6 @@ import org.openide.util.WeakListeners;
  */
 public class DependencyNode extends AbstractNode {
     private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
-    private static final String MISSING_BADGE_ICON = "org/netbeans/modules/maven/ResourceNotIncluded.gif"; //NOI18N
     private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
     private static final String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
 
@@ -143,39 +147,30 @@ public class DependencyNode extends AbstractNode {
             + NbBundle.getMessage(DependencyNode.class, "ICON_JavadocBadge");//NOI18N
     private static String toolTipSource = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_SourceBadge");//NOI18N
-    private static String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MISSING_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MavenProjectNode.BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_MissingBadge");//NOI18N
     private static String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor("DependencyNode",1); //NOI18N
 
-    public static Children createChildren(Lookup look, boolean longLiving) {
+    public static Children createChildren(Artifact art, boolean longLiving) {
+        assert art != null;
+        assert art.getFile() != null;
         if (!longLiving) {
             return Children.LEAF;
         }
-        Artifact art = look.lookup(Artifact.class);
-        if (art.getFile() != null) {//#135463
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
-            if (fo != null && FileUtil.isArchiveFile(fo)) {
-                return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
-            }
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
+        if (fo != null && FileUtil.isArchiveFile(fo)) {
+            return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
         }
         return Children.LEAF;
     }
 
-    /**
-     *@param lookup - expects instance of NbMavenProjectImpl, Artifact
-     */
-    public DependencyNode(Lookup lookup, boolean isLongLiving) {
-        super(createChildren(lookup, isLongLiving), lookup);
-//        super(isLongLiving ? new DependencyChildren(lookup) : Children.LEAF, lookup);
-        project = lookup.lookup(NbMavenProjectImpl.class);
-        art = lookup.lookup(Artifact.class);
-        assert art != null;
-        if (art.getFile() == null) {
-            throw new IllegalStateException("Artifact " + art.getId() + " is not resolved and is missing the file association in local repository. Please report at issue #140253."); //NOI18N
-        }
+    public DependencyNode(NbMavenProjectImpl project, Artifact art, Dependency dependency, boolean isLongLiving) {
+        super(createChildren(art, isLongLiving), Lookups.fixed(project, art, dependency));
+        this.project = project;
+        this.art = art;
         longLiving = isLongLiving;
         if (longLiving) {
             listener = new PropertyChangeListener() {
@@ -231,7 +226,7 @@ public class DependencyNode extends AbstractNode {
     }
 
     private void setIconBase(boolean longLiving) {
-        if (longLiving && isDependencyProjectOpen()) {
+        if (longLiving && isDependencyProjectAvailable()) {
             if (isTransitive()) {
                 setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveMaven2Icon.gif"); //NOI18N
             } else {
@@ -273,14 +268,12 @@ public class DependencyNode extends AbstractNode {
      * this call is slow
      * @return
      */
-    boolean isDependencyProjectOpen() {
+    private boolean isDependencyProjectAvailable() {
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             return false;
         }
         URI uri = art.getFile().toURI();
-//        URI  rootUri = project.getRepositoryRoot().getURL().toURI();
-//        URI uri = rootUri.create(rootUri.toString() + "/" + project.getArtifactRelativeRepositoryPath(art));
-        Project depPrj = MavenFileOwnerQueryImpl.getInstance().getOwner(uri);
+        Project depPrj = FileOwnerQuery.getOwner(uri);
         return depPrj != null;
     }
 
@@ -296,7 +289,7 @@ public class DependencyNode extends AbstractNode {
         //#142784
         if (longLiving) {
             if (Children.LEAF == getChildren()) {
-                Children childs = createChildren(getLookup(), true);
+                Children childs = createChildren(art, true);
                 if (childs != Children.LEAF) {
                     setChildren(childs);
                 }
@@ -314,22 +307,15 @@ public class DependencyNode extends AbstractNode {
     }
 
     private String createName() {
-        if (art instanceof NbArtifact) {
-            NbArtifact nb = (NbArtifact)art;
-            if (nb.isFakedSystemDependency()) {
-                return nb.getNonFakedFile().getName();
-            }
-            if (nb.isFakedPomDependency()) {
-                return nb.getNonFakedFile().getName();
-            }
-        }
         return art.getFile().getName();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Action[] getActions(boolean context) {
         Collection<Action> acts = new ArrayList<Action>();
+        if (longLiving && isDependencyProjectAvailable()) {
+            acts.add(OpenProjectAction.SINGLETON);
+        }
         if (isAddedToCP()) {
             InstallLocalArtifactAction act = new InstallLocalArtifactAction();
             acts.add(act);
@@ -341,11 +327,17 @@ public class DependencyNode extends AbstractNode {
 //        acts.add(new EditAction());
 //        acts.add(RemoveDepAction.get(RemoveDepAction.class));
 //        acts.add(new DownloadJavadocAndSourcesAction());
-        if (isAddedToCP() && !hasJavadocInRepository()) {
-            acts.add(new InstallLocalJavadocAction());
+        if (!hasJavadocInRepository()) {
+            acts.add(new DownloadJavadocSrcAction(true));
+            if (isAddedToCP()) {
+                acts.add(new InstallLocalJavadocAction());
+            }
         }
-        if (isAddedToCP() && !hasSourceInRepository()) {
-            acts.add(new InstallLocalSourcesAction());
+        if (!hasSourceInRepository()) {
+            acts.add(new DownloadJavadocSrcAction(false));
+            if (isAddedToCP()) {
+                acts.add(new InstallLocalSourcesAction());
+            }
         }
         if (isTransitive()) {
             acts.add(new ExcludeTransitiveAction());
@@ -358,9 +350,11 @@ public class DependencyNode extends AbstractNode {
         acts.add(CommonArtifactActions.createFindUsages(art));
         acts.add(null);
         acts.add(CommonArtifactActions.createViewJavadocAction(art));
+        /* #164992: disabled
         acts.add(CommonArtifactActions.createViewProjectHomeAction(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
         acts.add(CommonArtifactActions.createViewBugTrackerAction(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
         acts.add(CommonArtifactActions.createSCMActions(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
+         */
         acts.add(null);
         acts.add(PropertiesAction.get(PropertiesAction.class));
         return acts.toArray(new Action[acts.size()]);
@@ -368,7 +362,11 @@ public class DependencyNode extends AbstractNode {
 
     @Override
     public boolean canDestroy() {
-        return true;
+        return !isTransitive();
+    }
+    @Override
+    public void destroy() throws IOException {
+        REMOVEDEPINSTANCE.createContextAwareInstance(getLookup()).actionPerformed(null);
     }
 
     @Override
@@ -393,12 +391,6 @@ public class DependencyNode extends AbstractNode {
     }
 
     public boolean isLocal() {
-        if (art instanceof NbArtifact) {
-            NbArtifact nb = (NbArtifact) art;
-            if (nb.isFakedSystemDependency()) {
-                return false;
-            }
-        }
         return art.getFile().exists();
     }
 
@@ -473,8 +465,10 @@ public class DependencyNode extends AbstractNode {
     
     @Override
     public Image getIcon(int param) {
-        Image retValue;
-        retValue = super.getIcon(param);
+        return badge(super.getIcon(param));
+    }
+
+    private Image badge(Image retValue) {
         if (isLocal()) {
             if (hasJavadocInRepository()) {
                 Image ann = ImageUtilities.loadImage(JAVADOC_BADGE_ICON); //NOI18N
@@ -493,7 +487,7 @@ public class DependencyNode extends AbstractNode {
             }
             return retValue;
         } else {
-            Image ann = ImageUtilities.loadImage(MISSING_BADGE_ICON); //NOI18N
+            Image ann = ImageUtilities.loadImage(MavenProjectNode.BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipMissing);
             return ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
         }
@@ -501,25 +495,7 @@ public class DependencyNode extends AbstractNode {
 
     @Override
     public Image getOpenedIcon(int type) {
-        Image retValue;
-        retValue = super.getOpenedIcon(type);
-        if (isLocal()) {
-            if (hasJavadocInRepository()) {
-                Image ann = ImageUtilities.loadImage(JAVADOC_BADGE_ICON); //NOI18N
-                ann = ImageUtilities.addToolTipToImage(ann, toolTipJavadoc);
-                retValue = ImageUtilities.mergeImages(retValue, ann, 12, 0);//NOI18N
-            }
-            if (hasSourceInRepository()) {
-                Image ann = ImageUtilities.loadImage(SOURCE_BADGE_ICON); //NOI18N
-                ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
-                retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
-            }
-            return retValue;
-        } else {
-            Image ann = ImageUtilities.loadImage(MISSING_BADGE_ICON); //NOI18N
-            ann = ImageUtilities.addToolTipToImage(ann, toolTipMissing);
-            return ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
-        }
+        return badge(super.getOpenedIcon(type));
     }
 
     @Override
@@ -743,6 +719,50 @@ public class DependencyNode extends AbstractNode {
         }
     }
 
+    @SuppressWarnings("serial")
+    private class DownloadJavadocSrcAction extends AbstractAction {
+        private boolean javadoc;
+        public DownloadJavadocSrcAction(boolean javadoc) {
+            putValue(Action.NAME, javadoc ? org.openide.util.NbBundle.getMessage(DependencyNode.class, "LBL_Download_Javadoc") : org.openide.util.NbBundle.getMessage(DependencyNode.class, "LBL_Download__Sources"));
+            this.javadoc = javadoc;
+        }
+
+       
+        
+        @Override
+        public void actionPerformed(ActionEvent evnt) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                   
+                    ProgressContributor contributor =AggregateProgressFactory.createProgressContributor("multi-1");
+                   
+                    String label = javadoc ? NbBundle.getMessage(DependencyNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependencyNode.class, "Progress_Source");
+                    AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label, 
+                            new ProgressContributor [] {contributor}, ProgressTransferListener.cancellable(), null);
+                    handle.start();
+                    try {
+                        ProgressTransferListener.setAggregateHandle(handle);
+
+                        if (javadoc && !hasJavadocInRepository()) {
+                            downloadJavadocSources(online, contributor, javadoc);
+                        } else if (!javadoc && !hasSourceInRepository()) {
+                            downloadJavadocSources(online, contributor, javadoc);
+                        } else {
+                            contributor.finish();
+                        }
+                        
+                    } catch (ThreadDeath d) { // download interrupted
+                    } finally {
+                        handle.finish();
+                        ProgressTransferListener.clearAggregateHandle();
+                    }
+                }
+            });
+        }
+    } 
+    
     //why oh why do we have to suffer through this??
     private static SetInCurrentAction SETINCURRENTINSTANCE = new SetInCurrentAction(Lookup.EMPTY);
 
@@ -1114,4 +1134,34 @@ public class DependencyNode extends AbstractNode {
             }
         }
     }
+
+    private static class OpenProjectAction extends AbstractAction implements ContextAwareAction {
+
+        static final OpenProjectAction SINGLETON = new OpenProjectAction();
+
+        private OpenProjectAction() {}
+
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
+        }
+
+        public @Override Action createContextAwareInstance(final Lookup context) {
+            return new AbstractAction(NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project")) {
+                public @Override void actionPerformed(ActionEvent e) {
+                    Set<Project> projects = new HashSet<Project>();
+                    for (Artifact art : context.lookupAll(Artifact.class)) {
+                        File f = art.getFile();
+                        if (f != null) {
+                            Project p = FileOwnerQuery.getOwner(f.toURI());
+                            if (p != null) {
+                                projects.add(p);
+                            }
+                        }
+                    }
+                    OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);
+                }
+            };
+        }
+    }
+
 }

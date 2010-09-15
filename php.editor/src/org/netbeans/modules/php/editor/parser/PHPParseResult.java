@@ -61,7 +61,7 @@ public class PHPParseResult extends ParserResult {
     
     private final Program root;
     private List<Error> errors;
-    private volatile Model model;
+    private Model model;
 
     public PHPParseResult(Snapshot snapshot, Program rootNode) {
         super(snapshot);

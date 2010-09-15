@@ -231,6 +231,7 @@ public class MakeProjectGenerator {
         projectDescriptor.setState(State.READY);
 
         Project project = projectDescriptor.getProject();
+        projectDescriptor.setProject(project);
         // create main source file
         final String mainFilePath;
         if (mainFile.length() > 0) {

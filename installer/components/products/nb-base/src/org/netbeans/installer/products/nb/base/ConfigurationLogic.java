@@ -459,6 +459,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             filesList.add(coreProp.getParentFile().getParentFile().getParentFile());
             
             //GlassFish v3/Tomcat integration files
+            filesList.add(new File (nbCluster, "config/GlassFishEE6WC/Instances/.nbattrs"));
+            filesList.add(new File (nbCluster, "config/GlassFishEE6WC/Instances/glassfish_autoregistered_instance"));
+            filesList.add(new File (nbCluster, "config/GlassFishEE6WC/Instances"));
+            filesList.add(new File (nbCluster, "config/GlassFishEE6WC"));
             filesList.add(new File (nbCluster, "config/GlassFishEE6/Instances/.nbattrs"));
             filesList.add(new File (nbCluster, "config/GlassFishEE6/Instances/glassfish_autoregistered_instance"));
             filesList.add(new File (nbCluster, "config/GlassFishEE6/Instances"));

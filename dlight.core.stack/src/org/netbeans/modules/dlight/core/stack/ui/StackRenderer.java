@@ -72,6 +72,7 @@ public final class StackRenderer implements Renderer<DataRow> {
                 new ArrayList<Column>(stackColumns)); // yes, it's paranoia :)
     }
 
+    @Override
     public JComponent render(final DataRow data) {
         synchronized (lock) {
             final StackDataProvider stackProvider = findStackDataProvider();
@@ -79,6 +80,7 @@ public final class StackRenderer implements Renderer<DataRow> {
             if (stackProvider != null) {
                 DLightExecutorService.submit(new Runnable() {
 
+                    @Override
                     public void run() {
                         final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>();
                         stacks.setSize(stackColumns.size());

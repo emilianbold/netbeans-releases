@@ -222,6 +222,34 @@ public class ChildrenKeysTest extends NbTestCase {
         assertTrue ("Preempted thread finished correctly", done[0]);
         assertTrue ("Other thread finished correctly", done[1]);
     }
+    
+    public void testNodesCountDelegated() throws Exception {
+        class K extends Children.Keys<String> {
+            int cnt;
+            
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected Node[] createNodes(String key) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public int getNodesCount(boolean optimalResult) {
+                cnt++;
+                return super.getNodesCount(optimalResult);
+            }
+        }
+        
+        K k = new K();
+        Node n = createNode(k);
+        assertEquals("Returns nothing", 0, n.getChildren().getNodesCount(true));
+        assertEquals("getNodesCount method called", 1, k.cnt);
+        
+    }
+            
 
     /**
      * See issue #76614
@@ -1241,7 +1269,9 @@ public class ChildrenKeysTest extends NbTestCase {
      * @param arr names
      */
     private void checkNames (Node ch, String[] arr) {
+        LOG.log(Level.INFO, "About to get children: {0}", Arrays.toString(arr));
         Node[] nodes = ch.getChildren ().getNodes ();
+        LOG.info("Children computed");
         
         if (nodes.length != arr.length) {
             fail ("Keys: " + arr.length + " Nodes: " + nodes.length);

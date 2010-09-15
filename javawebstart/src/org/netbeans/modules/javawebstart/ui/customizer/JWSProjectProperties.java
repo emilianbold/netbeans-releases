@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -129,7 +131,21 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     public static final String JNLP_SIGNED = "jnlp.signed";
     public static final String JNLP_MIXED_CODE = "jnlp.mixed.code";
+
+    public static final String JNLP_SIGNING = "jnlp.signing";
+    public static final String JNLP_SIGNING_KEYSTORE = "jnlp.signing.keystore";
+    public static final String JNLP_SIGNING_KEY = "jnlp.signing.alias";
+    public static final String JNLP_SIGNING_KEYSTORE_PASSWORD = "jnlp.signing.storepass";
+    public static final String JNLP_SIGNING_KEY_PASSWORD = "jnlp.signing.keypass";
+    public static final String RUN_CP = "run.classpath";    //NOI18N
+    public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
+    public static final String JNLP_LAZY_JARS = "jnlp.lazy.jars";   //NOI18N
+    private static final String JNLP_LAZY_JAR = "jnlp.lazy.jar."; //NOI18N
+    private static final String JNLP_LAZY_FORMAT = JNLP_LAZY_JAR +"%s"; //NOI18N
     
+    static final String SIGNING_GENERATED = "generated";
+    static final String SIGNING_KEY = "key";
+
     public static final String CB_TYPE_LOCAL = "local";
     public static final String CB_TYPE_WEB = "web";
     public static final String CB_TYPE_USER = "user";
@@ -169,7 +185,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     private List<Map<String,String>> extResProperties;
     private List<Map<String,String>> appletParamsProperties;
-    
+
     public static final String extResSuffixes[] = new String[] { "href", "name", "version" };
     public static final String appletParamsSuffixes[] = new String[] { "name", "value" };
 
@@ -187,10 +203,21 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     boolean jnlpImplOldOrModified = false;
 
+    // signing
+    String signing;
+    String signingKeyStore;
+    String signingKeyAlias;
+    char [] signingKeyStorePassword;
+    char [] signingKeyPassword;
+    
+    // resources
+    List<? extends File> runtimeCP;
+    List<? extends File> lazyJars;
+    boolean lazyJarsChanged;
+
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
     JToggleButton.ToggleButtonModel allowOfflineModel;
-    JToggleButton.ToggleButtonModel signedModel;
     
     ComboBoxModel codebaseModel;
     ComboBoxModel appletClassModel;
@@ -223,7 +250,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         
             enabledModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_ENABLED);
             allowOfflineModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_OFFLINE);
-            signedModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_SIGNED);
             iconDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_ICON);
             appletWidthDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_APPLET_WIDTH);
             appletHeightDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_APPLET_HEIGHT);
@@ -235,9 +261,12 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             mixedCodeModel = createMixedCodeModel(j2sePropEval.evaluator());
             initRadioButtons();
 
+            initSigning(evaluator);
+
             extResProperties = readProperties(evaluator, JNLP_EXT_RES_PREFIX, extResSuffixes);
             appletParamsProperties = readProperties(evaluator, JNLP_APPLET_PARAMS_PREFIX, appletParamsSuffixes);
-
+            
+            initResources(evaluator, project);            
             // check if the jnlp-impl.xml script is of previous version -> should be upgraded
             FileObject jnlpImlpFO = project.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
             if (jnlpImlpFO != null) {
@@ -313,10 +342,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         } else {
             applicationDescButtonModel.setSelected(true);
         }
-        
+
     }
     
-    private void storeRest(EditableProperties editableProps) {
+    private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
         // store codebase type
         String selItem = ((CodebaseComboBoxModel) codebaseModel).getSelectedCodebaseItem();
         String propName = null;
@@ -381,18 +410,44 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
             editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
         }
+        // store signing info
+        editableProps.setProperty(JNLP_SIGNING, signing);
+        editableProps.setProperty(JNLP_SIGNED, "".equals(signing) ? "false" : "true");
+        setOrRemove(editableProps, JNLP_SIGNING_KEY, signingKeyAlias);
+        setOrRemove(editableProps, JNLP_SIGNING_KEYSTORE, signingKeyStore);
+        setOrRemove(privProps, JNLP_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
+        setOrRemove(privProps, JNLP_SIGNING_KEY_PASSWORD, signingKeyPassword);
+        
+        // store resources
+        storeResources(editableProps);
+
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
         storeProperties(editableProps, appletParamsProperties, JNLP_APPLET_PARAMS_PREFIX);
+    }
+
+    private void setOrRemove(EditableProperties props, String name, char [] value) {
+        setOrRemove(props, name, value != null ? new String(value) : null);
+    }
+
+    private void setOrRemove(EditableProperties props, String name, String value) {
+        if (value != null) {
+            props.setProperty(name, value);
+        } else {
+            props.remove(name);
+        }
     }
     
     public void store() throws IOException {
         
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        final EditableProperties pep = new EditableProperties(true);
+        final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         
         try {
             final InputStream is = projPropsFO.getInputStream();
+            final InputStream pis = privPropsFO.getInputStream();
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
@@ -403,14 +458,33 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                             is.close();
                         }
                     }
+                    try {
+                        pep.load(pis);
+                    } finally {
+                        if (pis != null) {
+                            pis.close();
+                        }
+                    }
                     jnlpPropGroup.store(ep);
-                    storeRest(ep);
+                    storeRest(ep, pep);
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
                         lock = projPropsFO.lock();
                         os = projPropsFO.getOutputStream(lock);
                         ep.store(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                    try {
+                        lock = privPropsFO.lock();
+                        os = privPropsFO.getOutputStream(lock);
+                        pep.store(os);
                     } finally {
                         if (lock != null) {
                             lock.releaseLock();
@@ -770,6 +844,71 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                 }
             }
             return null;
+        }
+    }
+
+    private void initSigning(PropertyEvaluator eval) {
+        signing = eval.getProperty(JNLP_SIGNING);
+        if (signing == null) signing = "";
+        signingKeyStore = eval.getProperty(JNLP_SIGNING_KEYSTORE);
+        if (signingKeyStore == null) signingKeyStore = "";
+        signingKeyAlias = eval.getProperty(JNLP_SIGNING_KEY);
+        if (signingKeyAlias == null) signingKeyAlias = "";
+        if (eval.getProperty(JNLP_SIGNING_KEYSTORE_PASSWORD) != null) {
+            signingKeyStorePassword = eval.getProperty(JNLP_SIGNING_KEYSTORE_PASSWORD).toCharArray();
+        }
+        if (eval.getProperty(JNLP_SIGNING_KEY_PASSWORD) != null) {
+            signingKeyPassword = eval.getProperty(JNLP_SIGNING_KEY_PASSWORD).toCharArray();
+        }
+        // compatibility
+        if ("".equals(signing) && "true".equals(eval.getProperty(JNLP_SIGNED))) {
+            signing = SIGNING_GENERATED;
+        }
+    }
+    
+    private void initResources (final PropertyEvaluator eval, final Project prj) {
+        final String lz = eval.getProperty(JNLP_LAZY_JARS); //old way, when changed rewritten to new
+        final String rcp = eval.getProperty(RUN_CP);        
+        final String bc = eval.getProperty(BUILD_CLASSES);        
+        final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        final File bcDir = PropertyUtils.resolveFile(prjDir, bc);
+        final List<File> lazyFileList = new ArrayList<File>();
+        String[] paths;
+        if (lz != null) {
+            paths = PropertyUtils.tokenizePath(lz);            
+            for (String p : paths) {
+                lazyFileList.add(PropertyUtils.resolveFile(prjDir, p));
+            }
+        }
+        paths = PropertyUtils.tokenizePath(rcp);
+        final List<File> resFileList = new ArrayList<File>(paths.length);
+        for (String p : paths) {
+            final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (!bcDir.equals(f)) {
+                resFileList.add(f);
+                if (isTrue(eval.getProperty(String.format(JNLP_LAZY_FORMAT, f.getName())))) {
+                    lazyFileList.add(f);
+                }
+            }
+        }
+        lazyJars = lazyFileList;
+        runtimeCP = resFileList;
+        lazyJarsChanged = false;
+    }
+    
+    private void storeResources(final EditableProperties props) {
+        if (lazyJarsChanged) {
+            //Remove old way if exists
+            props.remove(JNLP_LAZY_JARS);
+            final Iterator<Map.Entry<String,String>> it = props.entrySet().iterator();
+            while (it.hasNext()) {
+                if (it.next().getKey().startsWith(JNLP_LAZY_JAR)) {
+                    it.remove();
+                }
+            }
+            for (File lazyJar : lazyJars) {
+                props.setProperty(String.format(JNLP_LAZY_FORMAT, lazyJar.getName()), "true");  //NOI18N
+            }
         }
     }
 

@@ -49,6 +49,8 @@ import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -92,7 +94,6 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
             TreePath selPath = tree.getSelectionPath();
             if (selPath != null) {
                 if (e.getClickCount() == 2) {
-                    e.consume();
                     Object lastPathComponent = selPath.getLastPathComponent();
                     if (lastPathComponent instanceof TypeNode) {
                         final TypeNode typeNode = (TypeNode) lastPathComponent;
@@ -354,6 +355,17 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         public abstract String toStringAsHtml();
     }
 
+    private static TypeNode[] sortTypes(final TypeNode[] types) {
+        Arrays.<TypeNode>sort(types, new Comparator<TypeNode>() {
+            @Override
+            public int compare(TypeNode o1, TypeNode o2) {
+                int compareTo = new Boolean(o1.isClass).compareTo(o2.isClass);
+                return compareTo == 0 ? o1.toString().compareToIgnoreCase(o2.toString()) : compareTo;
+            }
+        });
+        return types;
+    }
+
     protected TreeNode createRoot(final Model model, final boolean subDirection) {
         final FileRootNode retval = new FileRootNode(model);
         FileScope fileScope = model.getFileScope();
@@ -374,7 +386,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
                 childernNodes[i] = createTypeNode(retval, treeType, recursionDetection);
             }
         }
-        retval.setChildern(childernNodes);
+        retval.setChildern(sortTypes(childernNodes));
         return retval;
     }
 
@@ -388,7 +400,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
                 childernList.add(createTypeNode(retval, child, recursionDetection));
             }
         }
-        retval.setChildern(childernList.toArray(new TypeNode[childernList.size()]));
+        retval.setChildern(sortTypes(childernList.toArray(new TypeNode[childernList.size()])));
         return retval;
     }
 
@@ -445,13 +457,13 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
                 ClassElement clz = (ClassElement) type;
                 QualifiedName superClassName = clz.getSuperClassName();
                 if (superClassName != null) {
-                    this.superTypes.add(superClassName.getName());
+                    this.superTypes.add(superClassName.toString());
                 }
             }
             Set<QualifiedName> superInterfaces = type.getSuperInterfaces();
             for (QualifiedName supeIfaceName : superInterfaces) {
                 if (supeIfaceName != null) {
-                    this.superTypes.add(supeIfaceName.getName());
+                    this.superTypes.add(supeIfaceName.toString());
                 }
             }
         }

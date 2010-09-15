@@ -577,7 +577,7 @@ final class NodeListener implements MouseListener, KeyListener,
         
         if (isFileNode) {
             node = (resultModel==null) ? null : 
-                resultModel.getSearchGroup().getNodeForFoundObject(mo.object);
+                resultModel.getSearchGroup().getNodeForFoundObject(mo.getDataObject());
         } else {
             assert obj instanceof Node;         //detail node
             node = (Node) obj;

@@ -64,23 +64,21 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
 
     private final CharSequence name;
-    private final int startOffset;
     private final CharSequence[] rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
     public UsingDirectiveImpl(AST ast, CsmFile file, boolean global) {
-        super(ast, file);
-        // TODO: here we override startOffset which is not good because startPosition is now wrong
-        startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
+        super(file, ((CsmAST)ast.getFirstChild()).getOffset(), getEndOffset(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
         
         name = NameCache.getManager().getString(ast.getText());
         if (!global) {
-            Utils.setSelfUID(this);
+            Utils.setSelfUID(UsingDirectiveImpl.this);
         }
     }
     
+    @Override
     public CsmNamespace getReferencedNamespace() {
         return getReferencedNamespace(null);
     }
@@ -92,7 +90,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
             _setReferencedNamespace(null);
             CsmObject result = ResolverFactory.createResolver(
                     getContainingFile(),
-                    startOffset, resolver).
+                    getStartOffset(), resolver).
                     resolve(name, Resolver.NAMESPACE);
             if (result != null && result instanceof CsmNamespaceDefinition) {
                 result = ((CsmNamespaceDefinition)result).getNamespace();
@@ -113,11 +111,6 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
         this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
         assert this.referencedNamespaceUID != null || referencedNamespace == null;
-    }
-    
-    @Override
-    public int getStartOffset() {
-        return startOffset;
     }
  
     public CsmDeclaration.Kind getKind() {
@@ -149,7 +142,6 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        output.writeInt(this.startOffset);
         PersistentUtils.writeStrings(this.rawName, output);
         
         // save cached namespace
@@ -160,7 +152,6 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.startOffset = input.readInt();
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
         
         // read cached namespace

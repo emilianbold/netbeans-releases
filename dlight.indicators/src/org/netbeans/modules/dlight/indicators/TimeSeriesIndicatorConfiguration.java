@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigurationAccessor;
@@ -65,6 +66,7 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
     private final List<DetailDescriptor> detailDescriptors;
     private DataRowToTimeSeries dataRowHandler;
     private long granularity;
+    private long extent;
     private Aggregation aggr;
     private ValueFormatter formatter;
     private boolean lastNonNull;
@@ -76,9 +78,10 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         this.scale = 100;
         this.seriesDescriptors = new ArrayList<TimeSeriesDescriptor>();
         this.detailDescriptors = new ArrayList<DetailDescriptor>();
-        this.granularity = 1000000000;
         this.aggr = Aggregation.LAST;
         this.lastNonNull = true;
+        this.granularity = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
+        this.extent = TimeUnit.NANOSECONDS.convert(20, TimeUnit.SECONDS);
     }
 
     @Override
@@ -90,132 +93,101 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         this.title = title;
     }
 
-    private String getTitle() {
-        return title;
-    }
-
     public void setGraphScale(int scale) {
         this.scale = scale;
     }
 
-    private int getGraphScale() {
-        return scale;
+    public void setExtent(long extent) {
+        this.extent = extent;
     }
 
     public void addTimeSeriesDescriptors(TimeSeriesDescriptor... seriesDescriptors) {
         this.seriesDescriptors.addAll(Arrays.asList(seriesDescriptors));
     }
 
-    private List<TimeSeriesDescriptor> getTimeSeriesDescriptors() {
-        return Collections.unmodifiableList(seriesDescriptors);
-    }
-
     public void addDetailDescriptors(DetailDescriptor... detailDescriptors) {
         this.detailDescriptors.addAll(Arrays.asList(detailDescriptors));
-    }
-
-    private List<DetailDescriptor> getDetailDescriptors() {
-        return Collections.unmodifiableList(detailDescriptors);
     }
 
     public void setDataRowHandler(DataRowToTimeSeries dataRowHandler) {
         this.dataRowHandler = dataRowHandler;
     }
 
-    private DataRowToTimeSeries getDataRowHandler() {
-        return dataRowHandler;
-    }
-
     public void setLabelFormatter(ValueFormatter formatter) {
         this.formatter = formatter;
-    }
-
-    private ValueFormatter getLabelRenderer() {
-        return formatter;
     }
 
     public void setAggregation(Aggregation aggr) {
         this.aggr = aggr;
     }
 
-    private Aggregation getAggregation() {
-        return aggr;
-    }
-
     public void setGranularity(long granularity) {
         this.granularity = granularity;
-    }
-
-    private long getGranularity() {
-        return granularity;
     }
 
     public void setLastNonNull(boolean lastNonNull) {
         this.lastNonNull = lastNonNull;
     }
 
-    private boolean getLastNonNull() {
-        return lastNonNull;
-    }
-
     public void setPersistencePrefix(String persistencePrefix) {
         this.persistencePrefix = persistencePrefix;
-    }
-
-    private String getPersistencePrefix() {
-        return persistencePrefix;
     }
 
     private static class TimeSeriesIndicatorConfigurationAccessorImpl extends TimeSeriesIndicatorConfigurationAccessor {
 
         @Override
         public String getTitle(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getTitle();
+            return conf.title;
         }
 
         @Override
         public int getGraphScale(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getGraphScale();
+            return conf.scale;
         }
 
         @Override
         public List<TimeSeriesDescriptor> getTimeSeriesDescriptors(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getTimeSeriesDescriptors();
+            return Collections.unmodifiableList(conf.seriesDescriptors);
         }
 
         @Override
         public List<DetailDescriptor> getDetailDescriptors(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getDetailDescriptors();
+            return Collections.unmodifiableList(conf.detailDescriptors);
         }
 
         @Override
         public DataRowToTimeSeries getDataRowHandler(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getDataRowHandler();
+            return conf.dataRowHandler;
         }
 
         @Override
-        public ValueFormatter getLabelRenderer(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getLabelRenderer();
+        public ValueFormatter getLabelFormatter(TimeSeriesIndicatorConfiguration conf) {
+            return conf.formatter;
         }
 
         @Override
         public long getGranularity(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getGranularity();
+            return conf.granularity;
         }
 
         @Override
         public Aggregation getAggregation(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getAggregation();
+            return conf.aggr;
         }
 
         @Override
         public boolean getLastNonNull(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getLastNonNull();
+            return conf.lastNonNull;
         }
 
         @Override
         public String getPersistencePrefix(TimeSeriesIndicatorConfiguration conf) {
-            return conf.getPersistencePrefix();
+            return conf.persistencePrefix;
+        }
+
+        @Override
+        public long getExtent(TimeSeriesIndicatorConfiguration conf) {
+            return conf.extent;
         }
     }
 

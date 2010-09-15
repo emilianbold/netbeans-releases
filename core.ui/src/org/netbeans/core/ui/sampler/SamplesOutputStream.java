@@ -42,12 +42,11 @@
 
 package org.netbeans.core.ui.sampler;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.lang.management.ThreadInfo;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -57,12 +56,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.zip.GZIPOutputStream;
 import javax.management.openmbean.CompositeData;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -78,7 +74,7 @@ class SamplesOutputStream {
     static final String FILE_EXT = ".npss"; // NOI18N
     static final int RESET_THRESHOLD = 5000;
     static final int STEPS = 1000;
-    static byte version = 1;
+    static byte version = 1; //2;
     private static Method toCompositeDataMethod;
 
     static {
@@ -99,25 +95,25 @@ class SamplesOutputStream {
     }
     OutputStream outStream;
     Map<Long, ThreadInfo> lastThreadInfos;
-    Map<StackTraceElement, StackTraceElement> steCache;
+    Map<StackTraceElement, WeakReference<StackTraceElement>> steCache;
     List<Sample> samples;
-    volatile ProgressHandle progress;
+    Sampler progress;
+    int maxSamples;
+    int offset;
 
     static boolean isSupported() {
         return toCompositeDataMethod != null;
     }
 
-    SamplesOutputStream(OutputStream os) throws IOException {
+    SamplesOutputStream(OutputStream os, Sampler progress, int max) throws IOException {
+        maxSamples = max;
+        this.progress = progress;
         outStream = os;
         writeHeader(os);
 //        out = new ObjectOutputStream(os);
         lastThreadInfos = new HashMap();
-        steCache = new HashMap(8*1024);
+        steCache = new WeakHashMap(8*1024);
         samples = new ArrayList(1024);
-    }
-
-    SamplesOutputStream(File file) throws IOException {
-        this(new FileOutputStream(file));
     }
 
     void writeSample(ThreadInfo[] infos, long time, long selfThreadId) throws IOException {
@@ -151,11 +147,53 @@ class SamplesOutputStream {
                 lastThreadInfos.put(tid, tinfo);
             }
         }
-        samples.add(new Sample(time, sameT, newT));
+        addSample(new Sample(time, sameT, newT));
         // remove dead threads
         Set<Long> ids = new HashSet(lastThreadInfos.keySet());
         ids.removeAll(tids);
         lastThreadInfos.keySet().removeAll(ids);
+    }
+
+    private void addSample(Sample sample) {
+        if (samples.size() == maxSamples) {
+            Sample lastSample;
+            Sample removedSample = samples.set(offset, sample);
+            offset = (offset + 1) % maxSamples;
+            lastSample = samples.get(offset);
+            updateLastSample(removedSample,lastSample);
+        } else {
+            samples.add(sample);
+        }
+    }
+    
+    Sample getSample(int index) {
+        int arrayIndex = index;
+        if (samples.size() == maxSamples) {
+            arrayIndex = (offset + index) % maxSamples;
+        }
+        return samples.get(arrayIndex);
+    }
+
+    void removeSample(int index) {
+        int arrayIndex = index;
+        if (samples.size() == maxSamples) {
+            arrayIndex = (offset + index) % maxSamples;
+        }
+        samples.set(arrayIndex,null);
+    }
+    
+    private void updateLastSample(Sample removedSample, Sample lastSample) {
+        List<ThreadInfo> removedNewThreads = removedSample.getNewThreads();
+        List<Long> sameThreads = lastSample.getSameThread();
+        List<ThreadInfo> newThreads = lastSample.getNewThreads();
+        
+        for (ThreadInfo ti : removedNewThreads) {
+            Long tid = Long.valueOf(ti.getThreadId());
+            if (sameThreads.contains(tid)) {
+                newThreads.add(ti);
+                sameThreads.remove(tid);
+            }
+        }
     }
 
     private static CompositeData toCompositeData(ThreadInfo tinfo) {
@@ -175,11 +213,12 @@ class SamplesOutputStream {
         GZIPOutputStream stream = new GZIPOutputStream(outStream, 64 * 1024);
         ObjectOutputStream out = new ObjectOutputStream(stream);
         int size = samples.size();
-
+//        out.writeInt(size);
+//        out.writeLong(getSample(size-1).getTime());
         openProgress();
         for (int i=0; i<size;i++) {
-            Sample s = samples.get(i);
-            samples.set(i, null);
+            Sample s = getSample(i);
+            removeSample(i);
             if (i > 0 && i % RESET_THRESHOLD == 0) {
                 out.reset();
             }
@@ -201,52 +240,27 @@ class SamplesOutputStream {
 
         for (int i = 0; i < stack.length; i++) {
             StackTraceElement ste = stack[i];
-            StackTraceElement oldStack = steCache.get(ste);
+            WeakReference<StackTraceElement> oldStackRef = steCache.get(ste);
 
-            if (oldStack != null) {
-                stack[i] = oldStack;
+            if (oldStackRef != null) {
+                stack[i] = oldStackRef.get();
+                assert stack[i] != null;
             } else {
-                steCache.put(ste, ste);
+                steCache.put(ste, new WeakReference(ste));
             }
         }
     }
 
     private void openProgress() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            // log warnining
-            return;
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(SamplesOutputStream.class, "Save_Progress"));
-                progress.start(STEPS);
-            }
-        });
+        progress.openProgress(STEPS);
     }
 
     private void closeProgress() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            return;
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                progress.finish();
-                progress = null;
-            }
-        });
+        progress.closeProgress();
     }
 
     private void step(int i) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            return;
-        }
-        if (progress != null) {
-            progress.progress(i);
-        }
+        progress.progress(i);
     }
 
     private static class Sample {

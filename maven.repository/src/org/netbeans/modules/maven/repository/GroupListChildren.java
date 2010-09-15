@@ -41,22 +41,14 @@
  */
 package org.netbeans.modules.maven.repository;
 
-import java.awt.Image;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -64,68 +56,33 @@ import org.openide.util.WeakListeners;
  * @author mkleint
  * @author Anuradha
  */
-public class GroupListChildren extends Children.Keys implements ChangeListener {
+public class GroupListChildren extends ChildFactory.Detachable<String> implements ChangeListener {
 
-    private static final RequestProcessor RP = new RequestProcessor(GroupListChildren.class);
-
-    public static final Object LOADING = new Object();
     private RepositoryInfo info;
-    public static Node createLoadingNode() {
-        AbstractNode nd = new AbstractNode(Children.LEAF){
-
-            @Override
-            public Image getIcon(int arg0) {
-                return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/wait.gif"); //NOI18N
-            }
-         
-        };
-        nd.setName("Loading"); //NOI18N
-        nd.setDisplayName(NbBundle.getMessage(GroupListChildren.class, "Node_Loading"));
-        return nd;
-    }
-    private List keys;
 
     public GroupListChildren(RepositoryInfo info) {
         this.info = info;
-        
     }
 
-    /** Creates a new instance of GroupListChildren */
+    public void setInfo(RepositoryInfo info) {
+        this.info = info;
+        refresh(false);
+    }
+
+    protected @Override Node createNodeForKey(String key) {
+        return new GroupNode(info, key);
+    }
+
+    protected @Override boolean createKeys(List<String> toPopulate) {
+        toPopulate.addAll(RepositoryQueries.getGroups(info));
+        return true;
+    }
     
-
-    protected Node[] createNodes(Object key) {
-        if (LOADING == key) {
-            return new Node[]{createLoadingNode()};
-        }
-        String groupId = (String) key;
-        return new Node[]{new GroupNode(info,groupId)};
-    }
-
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        refreshGroups();
+    protected @Override void addNotify() {
         info.addChangeListener(WeakListeners.change(this, info));
     }
     
-    public void refreshGroups() {
-        setKeys(Collections.singletonList(LOADING));
-        RP.post(new Runnable() {
-            public void run() {
-                keys = new ArrayList(RepositoryQueries.getGroups(info));
-                setKeys(keys);
-            }
-        });
-    }
-
-    @Override
-    protected void removeNotify() {
-        super.removeNotify();
-        keys = Collections.EMPTY_LIST;
-        setKeys(Collections.EMPTY_LIST);
-    }
-
-    public void stateChanged(ChangeEvent e) {
-        refreshGroups();
+    public @Override void stateChanged(ChangeEvent e) {
+        refresh(false);
     }
 }

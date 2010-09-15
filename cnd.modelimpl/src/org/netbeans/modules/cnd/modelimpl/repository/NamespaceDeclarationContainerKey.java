@@ -47,6 +47,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 
 /**
  *
@@ -56,6 +57,10 @@ final public class NamespaceDeclarationContainerKey extends NamespaceKey {
 
     public NamespaceDeclarationContainerKey(CsmNamespace ns) {
         super(ns);
+    }
+
+    NamespaceDeclarationContainerKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
 
     @Override
@@ -91,5 +96,10 @@ final public class NamespaceDeclarationContainerKey extends NamespaceKey {
     @Override
     public boolean hasCache() {
         return true;
+    }
+
+    @Override
+    public final short getKindPresentation() {
+        return KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY;
     }
 }

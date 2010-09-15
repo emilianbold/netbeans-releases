@@ -1001,8 +1001,7 @@ public final class PhpProject implements Project {
         private SearchInfo.Files delegate = null;
 
         private PhpSearchInfo(PhpProject project) {
-            this.project = project;
-            delegate = createDelegate();
+            this.project = project;            
         }
 
         public static SearchInfo create(PhpProject project) {
@@ -1014,7 +1013,7 @@ public final class PhpProject implements Project {
         }
 
         private SearchInfo.Files createDelegate() {
-            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(getSourceFileObjects(), true, new FileObjectFilter[]{project.getFileObjectFilter()});
+            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(getSearchRoots(), true, new FileObjectFilter[]{project.getFileObjectFilter()});
             // XXX ugly, see #178634 for more info
             assert searchInfo instanceof SearchInfo.Files : "Unknown type: " + searchInfo.getClass().getName();
             return (SearchInfo.Files) searchInfo;
@@ -1027,18 +1026,19 @@ public final class PhpProject implements Project {
 
         @Override
         public synchronized Iterator<DataObject> objectsToSearch() {
-            return delegate.objectsToSearch();
+            return getDelegate().objectsToSearch();
         }
 
         @Override
         public Iterator<FileObject> filesToSearch() {
-            return delegate.filesToSearch();
+            return getDelegate().filesToSearch();
         }
 
-        private FileObject[] getSourceFileObjects() {
+        private FileObject[] getSearchRoots() {
             List<FileObject> roots = new LinkedList<FileObject>(Arrays.asList(project.getSourceRoots().getRoots()));
             roots.addAll(Arrays.asList(project.getTestRoots().getRoots()));
             roots.addAll(Arrays.asList(project.getSeleniumRoots().getRoots()));
+            roots.addAll(PhpSourcePath.getIncludePath(project.getSourcesDirectory()));
             return roots.toArray(new FileObject[roots.size()]);
         }
 
@@ -1049,6 +1049,16 @@ public final class PhpProject implements Project {
                     delegate = createDelegate();
                 }
             }
+        }
+
+        /**
+         * @return the delegate
+         */
+        private synchronized SearchInfo.Files getDelegate() {
+            if (delegate == null) {
+                delegate = createDelegate();
+            }
+            return delegate;
         }
     }
 

@@ -286,7 +286,10 @@ public final class FileObjectFactory {
                 if (foForFile == null) {
                     exist = (realExists == -1) ? false : touchExists(file, realExists);
                     if (fcb.impeachExistence(file, exist)) {
-                        exist = touchExists(file, realExists);
+                        if (exist != touchExists(file, realExists)) {
+                            exist = !exist;
+                            refreshFromGetter(parent, asyncFire);
+                        }
                     }
                     assert checkCacheState(exist, file, caller);
                 } else if (foForFile.isValid()) {

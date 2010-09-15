@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.php.editor.PHPCompletionItem.BasicFieldItem;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
 import org.netbeans.modules.php.editor.api.AliasedName;
-import org.netbeans.modules.php.editor.elements.PhpElementImpl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,10 +75,6 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
-import org.netbeans.modules.php.api.editor.PhpBaseElement;
-import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpClass.Field;
-import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.PHPCompletionItem.MethodElementItem;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
@@ -104,7 +99,6 @@ import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
@@ -285,7 +279,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             request.result = result;
             request.info = info;
             request.prefix = prefix;
-            request.index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            request.index = ElementQueryFactory.getIndexQuery(info);
 
             try {
                 request.currentlyEditedFileURL = fileObject.getURL().toString();
@@ -301,7 +295,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     final ElementFilter forName = ElementFilter.forName(nameKindPrefix);
                     final Model model = request.result.getModel();
                     final Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
-                    Set<ConstantElement> constants = request.index.getConstants(nameKindPrefix, aliasedNames);
+                    Set<ConstantElement> constants = request.index.getConstants(nameKindPrefix, aliasedNames, Trait.ALIAS);
                     for (ConstantElement constant : forName.filter(constants)) {
                         completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
                     }
@@ -468,7 +462,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private void autoCompleteNewClass(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
-        if (request.prefix.isEmpty()) {
+        if (QualifiedName.create(request.prefix).getName().isEmpty()) {
             autoCompleteClassNames(completionResult, request, false);
             return;
         }
@@ -481,7 +475,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         Model model = request.result.getModel();
         Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
-        Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames);
+        Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
         if (!constructors.isEmpty()) {
             completionResult.setFilterable(false);
         }
@@ -501,7 +495,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final NameKind nameQuery = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
         Model model = request.result.getModel();
-        Set<ClassElement> classes = request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor));
+        Set<ClassElement> classes = request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
 
         if (!classes.isEmpty()) {
             completionResult.setFilterable(false);
@@ -519,7 +513,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
 
         Model model = request.result.getModel();
-        Set<InterfaceElement> interfaces = request.index.getInterfaces(nameQuery, ModelUtils.getAliasedNames(model, request.anchor));
+        Set<InterfaceElement> interfaces = request.index.getInterfaces(nameQuery, ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
         if (!interfaces.isEmpty()) {
             completionResult.setFilterable(false);
         }
@@ -565,7 +559,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         } else {
             Model model = request.result.getModel();
             Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
-            Collection<PhpElement> allTopLevel = request.index.getTopLevelElements(NameKind.empty(), aliasedNames);
+            Collection<PhpElement> allTopLevel = request.index.getTopLevelElements(NameKind.empty(), aliasedNames, Trait.ALIAS);
             for (PhpElement element : allTopLevel) {
                 if (element instanceof ClassElement) {
                     completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, endWithDoubleColon, kind));
@@ -595,7 +589,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
         Model model = request.result.getModel();
         Set<NamespaceElement> namespaces = request.index.getNamespaces(NameKind.prefix(prefix),
-                ModelUtils.getAliasedNames(model, request.anchor));
+                ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
         for (NamespaceElement namespace : namespaces) {
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
         }
@@ -736,26 +730,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             ElementFilter.forName(NameKind.prefix(request.prefix)),
                             ElementFilter.forInstanceOf(TypeConstantElement.class)
                             );
-                    List<PhpBaseElement> extendedElements = request.result.getModel().getExtendedElements();
-                    for (PhpBaseElement phpBaseElement : extendedElements) {
-                        if (phpBaseElement instanceof PhpVariable) {
-                            PhpVariable variable  = (PhpVariable) phpBaseElement;
-                            final PhpClass type = variable.getType();
-                            final Collection<Field> fields = type != null ? type.getFields() : Collections.<Field>emptySet();
-                            for (final Field field : fields) {
-                                final PhpClass fldType = field.getType();
-                                final PhpElementImpl fldHandle = PhpElementImpl.create(
-                                        field.getName(),
-                                        type.getName(),
-                                        field.getOffset(),
-                                        field.getFile(),
-                                        PhpElementKind.FIELD);
-                                BasicFieldItem fieldItem = PHPCompletionItem.BasicFieldItem.getItem(
-                                        fldHandle, fldType != null ? fldType.getName() : null, request);
-                                completionResult.add(fieldItem);
-                            }
-                        }
-                    }
                     for (final PhpElement phpElement : request.index.getAccessibleTypeMembers(typeScope, enclosingType)) {
                         if (methodsFilter.isAccepted(phpElement)) {
                             MethodElement method = (MethodElement) phpElement;
@@ -847,7 +821,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         Model model = request.result.getModel();
         Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
 
-        for (final PhpElement element : request.index.getTopLevelElements(prefix, aliasedNames)) {
+        for (final PhpElement element : request.index.getTopLevelElements(prefix, aliasedNames, Trait.ALIAS)) {
             if (element instanceof FunctionElement) {
                 for (final PHPCompletionItem.FunctionElementItem functionItem :
                     PHPCompletionItem.FunctionElementItem.getItems((FunctionElement) element, request)) {

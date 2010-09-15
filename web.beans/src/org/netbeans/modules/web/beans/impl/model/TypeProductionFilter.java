@@ -56,7 +56,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -80,10 +79,10 @@ class TypeProductionFilter extends Filter<Element> {
         return new TypeProductionFilter();
     }
     
-    void init( VariableElement element , TypeMirror elementType ,
+    void init( TypeMirror elementType , String name ,
             WebBeansModelImplementation model)
     {
-        myElement = element;
+        myName = name;
         myImpl = model;
         myType = elementType;
         myResult = new HashMap<Element, List<DeclaredType>>();
@@ -104,7 +103,7 @@ class TypeProductionFilter extends Filter<Element> {
         }
         
         TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init(getElement(), getElementType(), getImplementation());
+        filter.init(getElementType(), getName(), getImplementation());
         
         // this cycle care only about declared types.
         for ( Iterator<? extends Element> iterator = productionElements.iterator() ; 
@@ -288,18 +287,18 @@ class TypeProductionFilter extends Filter<Element> {
         return myImpl;
     }
     
-    private VariableElement getElement(){
-        return myElement;
-    }
-    
     private TypeMirror getElementType(){
         return myType;
     }
+    
+    private String getName(){
+        return myName;
+    }
 
     private WebBeansModelImplementation myImpl;
-    private VariableElement myElement;
     private TypeMirror myType;
     private Map<Element, List<DeclaredType>> myResult;
+    private String myName;
     
     
     private static final Set<String> WRAPPERS = new HashSet<String>();

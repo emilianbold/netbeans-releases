@@ -3,6 +3,41 @@
 <filesystem>
     <folder name="CND">
         <folder name="Tool">
+            
+            <file name="SunStudioExpressSpica_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-sparc_flavor.xml">
+                <attr name="extends" stringvalue="SunStudio_12_flavor"/>
+            </file>
+            <file name="SunStudioExpressSpica_solaris-sparc_c" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-sparc_c.xml">
+                <attr name="extends" stringvalue="SunStudio_12_c"/>
+            </file>
+            <file name="SunStudioExpressSpica_solaris-sparc_cpp" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-sparc_cpp.xml">
+                <attr name="extends" stringvalue="SunStudio_12_cpp"/>
+            </file>
+            <file name="SunStudioExpressSpica_solaris-sparc_fortran" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-sparc_fortran.xml">
+                <attr name="extends" stringvalue="SunStudio_12_fortran"/>
+            </file>
+            <file name="SunStudioExpressSpica_linuxGNU_flavor" url="resources/toolchaindefinition/SunStudioExpressSpica_linuxGNU_flavor.xml">
+                <attr name="extends" stringvalue="SunStudioExpressAten_solaris-x86_linux_flavor"/>
+            </file>
+            <file name="SunStudioExpressSpica_linuxGNU_cpp" url="resources/toolchaindefinition/SunStudioExpressSpica_linuxGNU_cpp.xml">
+                <attr name="extends" stringvalue="SunStudioExpressAten_solaris-x86_linux_cpp"/>
+            </file>
+            <file name="SunStudioExpressSpica_linuxGNU_linker" url="resources/toolchaindefinition/SunStudioExpressSpica_linuxGNU_linker.xml">
+                <attr name="extends" stringvalue="SunStudio_linker"/>
+            </file>
+            <file name="SunStudioExpressSpica_solaris-x86_linux_flavor" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-x86_linux_flavor.xml">
+                <attr name="extends" stringvalue="SunStudio_12_flavor"/>
+            </file>
+            <file name="SunStudioExpressSpica_solaris-x86_linux_c" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-x86_linux_c.xml">
+                <attr name="extends" stringvalue="SunStudio_12_c"/>
+            </file>
+            <file name="SunStudioExpressSpica_solaris-x86_linux_cpp" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-x86_linux_cpp.xml">
+                <attr name="extends" stringvalue="SunStudio_12_cpp"/>
+            </file>
+            <file name="SunStudioExpressSpica_solaris-x86_linux_fortran" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-x86_linux_fortran.xml">
+                <attr name="extends" stringvalue="SunStudio_12_fortran"/>
+            </file>
+
             <file name="SunStudio_12.2_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudio_12.2_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -36,6 +71,7 @@
             <file name="SunStudio_12.2_solaris-x86_linux_fortran" url="resources/toolchaindefinition/SunStudio_12.2_solaris-x86_linux_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
+
             <file name="SunStudioExpressAten_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudioExpressAten_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -69,6 +105,7 @@
             <file name="SunStudioExpressAten_solaris-x86_linux_fortran" url="resources/toolchaindefinition/SunStudioExpressAten_solaris-x86_linux_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
+
             <file name="SunStudio_12.1_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudio_12.1_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -342,6 +379,119 @@
             </file>
         </folder>
         <folder name="ToolChains">
+
+            <folder name="SunStudioExpressSpica_solaris-sparc">
+                <attr name="position" intvalue="1110"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-sparc_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-sparc_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-sparc_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-sparc_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="SunStudioExpressSpica_solaris-x86_linux">
+                <attr name="position" intvalue="1115"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-x86_linux_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-x86_linux_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-x86_linux_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-x86_linux_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="SunStudioExpressSpica_linuxGNU">
+                <attr name="position" intvalue="1116"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_linuxGNU_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-x86_linux_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_linuxGNU_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_solaris-x86_linux_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressSpica_linuxGNU_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+
             <folder name="SunStudio_12.2_solaris-sparc">
                 <attr name="position" intvalue="1120"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>

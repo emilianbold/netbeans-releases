@@ -43,27 +43,27 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Projects">
         <folder name="org-netbeans-modules-maven">
             <folder name="Repositories">
                 <file name="local">
                     <attr name="position" intvalue="50"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.indexer.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.indexer.Bundle#local"/>
                     <attr name="provider" stringvalue="nexus"/>
                     <attr name="path" methodvalue="org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl.createLocalRepositoryPath"/>
                 </file>
                 <file name="central">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.indexer.Bundle"/>
                     <attr name="position" intvalue="100"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.indexer.Bundle#central"/>
                     <attr name="provider" stringvalue="nexus"/>
                     <attr name="repoUrl" stringvalue="http://repo1.maven.org/maven2"/>
                     <attr name="repoIndexUrl" stringvalue="http://repo1.maven.org/maven2/.index"/>
                 </file>
                 <file name="java.net2.ext">
                     <attr name="position" intvalue="150"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.indexer.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.indexer.Bundle#java.net2.ext"/>
                     <attr name="provider" stringvalue="nexus"/>
                     <attr name="repoUrl" stringvalue="http://download.java.net/maven/2/"/>
                     <attr name="repoIndexUrl" stringvalue="http://download.java.net/maven/2/.index/"/>

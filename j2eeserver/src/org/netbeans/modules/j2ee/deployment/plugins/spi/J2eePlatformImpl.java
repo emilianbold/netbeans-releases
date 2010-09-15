@@ -86,6 +86,20 @@ public abstract class J2eePlatformImpl {
      */
     public abstract LibraryImplementation[] getLibraries();
 
+    /**
+     * Return platform's libraries including the libraries required by passed
+     * dependencies. In any case the returned array should be superset or
+     * equal (containing same elements) to the return value of {@link #getLibraries()}.
+     * <p>
+     * This default implementation return the same libraries as {@link #getLibraries()}.
+     * It should be overridden to handle passed dependencies as well. It is
+     * also implementors responsibility to return libraries in correct order
+     * in which these will be used on classpath.
+     *
+     * @param libraries the dependencies required
+     * @return platform's libraries including the libraries required by passed
+     *             dependencies
+     */
     public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
         return getLibraries();
     }

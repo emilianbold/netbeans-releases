@@ -39,15 +39,25 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.parser;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.SAXException;
 
@@ -59,42 +69,534 @@ public class Html5ParserTest extends NbTestCase {
 
     public Html5ParserTest(String name) {
         super(name);
-//        AstNodeTreeBuilder.DEBUG = true;
     }
 
-//        String code = "<!DOCTYPE html><body xmlns:f=\"http://sun.com/jsf/core\"></p><section><f:xx></f:xx><p>cau<p>  <p>ahoj</section><section><div></div></section></body>";
-//        String code = "<!DOCTYPE html></p><section><p>cau<p>  <p>ahoj</section><section><div></div></section>";
-//        String code = "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"><section><p id=\"my\">cau<p><p class=\"klasa\">ahoj</section>";
-//        String code = "<!DOCTYPE html><html xmlns:myns=\"http://marek.org/\"><myns:section><p id=\"my\">cau<p><p class=\"klasa\">ahoj</myns:section></html>";
+    public static Test suite() {
+        AstNodeTreeBuilder.DEBUG = true;
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
+        TestSuite suite = new TestSuite();
+        suite.addTest(new Html5ParserTest("testaParseErrorneousHeadContent"));
+        return suite;
+    }
 
-//        AstNodeUtils.dumpTree(root);
+    public void testaParseErrorneousHeadContent() throws ParseException {
+        //the &lt; char after the title close tag makes the parse tree really bad
+        String code = "<!doctype html>\n"
+                + "<html>\n"
+                + "<head>\n"
+                + "<title>\n"
+                + "</title> < \n"
+                + "</head>\n"
+                + "<body>\n"
+                + "</body>\n"
+                + "</html>\n";
 
-    
+        AstNodeTreeBuilder.DEBUG_STATES = true;
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+        assertNotNull(root);
+        AstNodeUtils.dumpTree(result.root());
+
+        Collection<ProblemDescription> problems = result.getProblems();
+        for(ProblemDescription pd : problems) {
+            System.out.println(pd);
+        }
+
+        AstNode leaf = AstNodeUtils.findDescendant(root, 48, true);
+
+        System.out.println("leaf="+leaf);
+
+    }
+
+
+
+
     public void testBasic() throws SAXException, IOException, ParseException {
-        AstNode root = parse("<!doctype html><section><div></div></section>");
+        HtmlParseResult result = parse("<!doctype html><section><div></div></section>");
+        AstNode root = result.root();
         assertNotNull(root);
         assertNotNull(AstNodeUtils.query(root, "html/body/section/div")); //html/body are generated
+
     }
 
-    
     public void testHtmlAndBodyTags() throws ParseException {
-        AstNode root = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
+        HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
+        AstNode root = result.root();
+//        AstNodeUtils.dumpTree(root);
         assertNotNull(root);
         assertNotNull(AstNodeUtils.query(root, "html"));
         assertNotNull(AstNodeUtils.query(root, "html/head"));
         assertNotNull(AstNodeUtils.query(root, "html/head/title"));
         assertNotNull(AstNodeUtils.query(root, "html/body"));
         assertNotNull(AstNodeUtils.query(root, "html/body/div"));
+    }
+
+    public void testAttributes() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body onclick=\"alert()\"></body></html>");
+        AstNode root = result.root();
+//        AstNodeUtils.dumpTree(root);
+        assertNotNull(root);
+        AstNode body = AstNodeUtils.query(root, "html/body");
+        assertNotNull(body);
+
+        assertEquals(1, body.getAttributes().size());
+
+        Attribute attr = body.getAttributes().iterator().next();
+        assertNotNull(attr);
+        assertEquals("onclick", attr.name());
+        assertEquals("alert()", attr.value());
+    }
+
+    public void testProblemsReporting() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html></section>");
+        //                              012345678901234567890123456789
+        //                              0         1         2
+        Collection<ProblemDescription> problems = result.getProblems();
+
+        assertEquals(1, problems.size());
+        ProblemDescription p = problems.iterator().next();
+
+        assertEquals(ProblemDescription.ERROR, p.getType());
+        assertEquals("nokey", p.getKey()); //XXX fix that
+        assertEquals("Stray end tag “section”.", p.getText());
+        assertEquals(15, p.getFrom());
+        assertEquals(25, p.getTo());
 
     }
 
-    private AstNode parse(CharSequence code) throws ParseException {
-        HtmlSource source = new HtmlSource(code);
-        AstNode root = SyntaxAnalyzer.create(source).analyze().parseHtml().root();
+    public void testStyle() throws ParseException {
+        String code = "<!DOCTYPE html>\n"
+                + "<style type=\"text/css\">\n"
+                + "@import \"resources2/ezcompik/newcss2moje.css\";\n"
+                + "</style>\n";
+
+//        AstNodeTreeBuilder.DEBUG = true;
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+        assertNotNull(root);
+        AstNode head = AstNodeUtils.query(root, "html/head");
+        assertNotNull(head);
+        assertEquals(2, head.children().size());
+        AstNode styleOpenTag = head.children().get(0);
+
+        assertNotNull(styleOpenTag);
+        assertEquals(16, styleOpenTag.startOffset());
+        assertEquals(39, styleOpenTag.endOffset());
+
+        AstNode styleEndTag = head.children().get(1);
+        assertNotNull(styleEndTag);
+        assertEquals(87, styleEndTag.startOffset());
+        assertEquals(95, styleEndTag.endOffset());
+
+        assertSame(styleEndTag, styleOpenTag.getMatchingTag());
+        assertEquals(95, styleOpenTag.getLogicalRange()[1]);
+
+//        AstNodeUtils.dumpTree(result.root());
+    }
+
+    public void testParseUnfinishedCode() throws ParseException {
+        String code = "<!DOCTYPE HTML>"
+                + "<html>"
+                + "<head>"
+                + "<title>"
+                + "</title>"
+                + "</head>"
+                + "<body>"
+                + "</table>"
+                + "</html>";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
 
         assertNotNull(root);
 
-        return root;
+//        AstNodeUtils.dumpTree(root);
+
+        AstNode html = AstNodeUtils.query(root, "html");
+        assertNotNull(html);
+
+        Collection<AstNode> children = html.children();
+        assertEquals(4, children.size()); // <head>, </head>,<body>,</table>
+        Iterator<AstNode> childernItr = children.iterator();
+
+        assertTrue(childernItr.hasNext());
+        AstNode child = childernItr.next();
+        assertEquals("head", child.name());
+        assertEquals(AstNode.NodeType.OPEN_TAG, child.type());
+        assertTrue(childernItr.hasNext());
+        child = childernItr.next();
+        assertEquals("head", child.name());
+        assertEquals(AstNode.NodeType.ENDTAG, child.type());
+        assertTrue(childernItr.hasNext());
+        child = childernItr.next();
+        assertEquals("body", child.name());
+        assertEquals(AstNode.NodeType.OPEN_TAG, child.type());
+        assertTrue(childernItr.hasNext());
+        child = childernItr.next();
+        assertEquals("table", child.name());
+        assertEquals(AstNode.NodeType.ENDTAG, child.type());
+
+
+//        AstNodeUtils.dumpTree(root);
+
     }
 
+    public void testLogicalRangesOfUnclosedOpenTags() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html>"
+                + "<html>"
+                + "<head>"
+                + "<title>hello</title>"
+                + "</head>"
+                + "<body>"
+                + "<table>"
+                + "</html>");
+        AstNode root = result.root();
+
+        AstNodeUtils.dumpTree(root);
+
+        assertNotNull(root);
+        AstNode htmlOpen = AstNodeUtils.query(root, "html");
+        assertNotNull(htmlOpen);
+        AstNode htmlEnd = htmlOpen.getMatchingTag();
+        assertNotNull(htmlEnd);
+
+        assertNotNull(AstNodeUtils.query(root, "html/head"));
+        assertNotNull(AstNodeUtils.query(root, "html/head/title"));
+        AstNode body = AstNodeUtils.query(root, "html/body");
+        assertNotNull(body);
+        AstNode table = AstNodeUtils.query(root, "html/body/table");
+        assertNotNull(table);
+
+        //both body and table should be logically closed at the beginning of the html end tag
+        assertEquals(htmlEnd.startOffset(), body.logicalEndOffset());
+        assertEquals(htmlEnd.startOffset(), table.logicalEndOffset());
+    }
+
+    public void testGetPossibleOpenTagsInContext() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
+
+        assertNotNull(result.root());
+
+        AstNode body = AstNodeUtils.query(result.root(), "html/body");
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, true);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag divTag = new HtmlTagImpl("div");
+        HtmlTag headTag = new HtmlTagImpl("head");
+
+        assertTrue(possible.contains(divTag));
+        assertFalse(possible.contains(headTag));
+
+        AstNode head = AstNodeUtils.query(result.root(), "html/head");
+        possible = result.getPossibleTagsInContext(head, true);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag titleTag = new HtmlTagImpl("title");
+        assertTrue(possible.contains(titleTag));
+        assertFalse(possible.contains(headTag));
+
+        AstNode html = AstNodeUtils.query(result.root(), "html");
+        possible = result.getPossibleTagsInContext(html, true);
+        assertTrue(!possible.isEmpty());
+        assertTrue(possible.contains(divTag));
+
+    }
+
+    public void testGetPossibleEndTagsInContext() throws ParseException {
+        HtmlParseResult result = parse("<!DOCTYPE html><html><head><title>hello</title></head><body><div>ahoj</div></body></html>");
+
+        assertNotNull(result.root());
+
+        AstNode body = AstNodeUtils.query(result.root(), "html/body");
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, false);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag htmlTag = new HtmlTagImpl("html");
+        HtmlTag headTag = new HtmlTagImpl("head");
+        HtmlTag bodyTag = new HtmlTagImpl("body");
+        HtmlTag divTag = new HtmlTagImpl("div");
+
+        Iterator<HtmlTag> possibleItr = possible.iterator();
+        assertEquals(bodyTag, possibleItr.next());
+        assertEquals(htmlTag, possibleItr.next());
+
+        assertFalse(possible.contains(divTag));
+
+        AstNode head = AstNodeUtils.query(result.root(), "html/head");
+        possible = result.getPossibleTagsInContext(head, true);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag titleTag = new HtmlTagImpl("title");
+        assertTrue(possible.contains(titleTag));
+        assertFalse(possible.contains(headTag));
+
+    }
+
+    public void testAllowDialogInDiv() throws ParseException {
+        HtmlParseResult result = parse("<!doctype html>"
+                + "<html>\n"
+                + "<title>title</title>\n"
+                + "<body>\n"
+                + "<div>\n"
+                + "</div>\n"
+                + "</body>\n"
+                + "</html>\n");
+
+        assertNotNull(result.root());
+
+        AstNode div = AstNodeUtils.query(result.root(), "html/body/div");
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(div, true);
+
+        assertTrue(!possible.isEmpty());
+
+        HtmlTag divTag = new HtmlTagImpl("div");
+        HtmlTag dialogTag = new HtmlTagImpl("dialog");
+
+        assertTrue(possible.contains(divTag));
+
+        //fails - bug
+//        assertFalse(possible.contains(dialogTag));
+
+    }
+
+    public void testParseUnfinishedTagFollowedByChars() throws ParseException {
+        String code = "<!doctype html> \n"
+                + "<html>    \n"
+                + "<title>dd</title>\n"
+                + "<b\n" //the tag is unfinished during typing
+                + "      a\n" //this text is considered as the tag's attribute (correctly)
+                + "</body>\n"
+                + "</html> ";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testParseNotMatchingBodyTags() throws ParseException {
+        String code = "<!doctype html>\n"
+                + "<html>\n"
+                + "<title></title>\n"
+                + "<body>\n"
+                + "</body>\n"
+                + "</html>\n";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testParseFileLongerThan2048chars() throws ParseException {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < 2048 * 3; i++) {
+            b.append('*');
+        }
+
+        String code = "<!doctype html>\n"
+                + "<html>\n"
+                + "<title></title>\n"
+                + "<body>\n"
+                + b.toString()
+                + "</body>\n"
+                + "</html>\n";
+
+//        System.out.println("code len = " + code.length());
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNode body = AstNodeUtils.query(result.root(), "html/body");
+        assertNotNull(body);
+
+        AstNode bodyEnd = body.getMatchingTag();
+        assertNotNull(bodyEnd);
+
+        assertEquals(6190, bodyEnd.startOffset());
+        assertEquals(6197, bodyEnd.endOffset());
+
+//        AstNodeUtils.dumpTree(root);
+    }
+
+    public void test_A_TagProblem() throws ParseException {
+        //
+        //java.lang.AssertionError
+        //at org.netbeans.modules.html.parser.AstNodeTreeBuilder.elementPopped(AstNodeTreeBuilder.java:106)
+        //
+
+        //such broken source really confuses the html parser
+        String code = "<!DOCTYPE html>\n"
+                + "<html>\n"
+                + "     <title>HTML5 Demo: geolocation</title>\n"
+                + "     <body>\n"
+                + "         <a>  \n"
+                + "         <footer>\n"
+                + "             <a>\n"
+                + "         </footer> \n"
+                + "     </body>\n" //from some reason the tree builder pushes <a> open tag node here?!?!?
+                + "</html>  \n";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testParseTreeAfterOpenedTag() throws ParseException {
+        String code = "<!DOCTYPE html>\n"
+                + "<html>\n"
+                + "<title>HTML5 Demo: geolocation</title>\n"
+                + "<body>\n"
+                + "<div></\n"
+                + "</body>\n"
+                + "</html>\n";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testBodyTagHasNoParent() throws ParseException {
+        String code = "<!doctype html> "
+                + "<html> "
+                + "<body >"
+                + "      "
+                + "<       "
+                + "</body>"
+                + "</html>";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNode body = AstNodeUtils.query(result.root(), "html/body");
+        assertNotNull(body);
+
+        assertNotNull(body.parent());
+
+        AstNodeUtils.dumpTree(root);
+    }
+
+    public void testUnclosedTitleTag() throws ParseException {
+        //this is causing all the nodes missing their logical ranges
+        //the body tag is parsed as virtual only regardless the open and end
+        //tag is present in the code.
+
+        //looks like caused by the CDATA content of the unclosed title tag
+        //which causes the parser consume everything after as unparseable code :-(
+        String code = "<!doctype html><html><head><title></head><body></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234567890123456789
+        //             0         1         2         3         4         5         6
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNode title = AstNodeUtils.query(result.root(), "html/head/title");
+        assertNotNull(title);
+
+        AstNodeUtils.dumpTree(root);
+
+        //FAILING - http://netbeans.org/bugzilla/show_bug.cgi?id=190183
+        
+//        assertTrue(title.logicalEndOffset() != -1);
+
+    }
+
+    private HtmlParseResult parse(CharSequence code) throws ParseException {
+        HtmlSource source = new HtmlSource(code);
+        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
+
+        assertNotNull(result);
+
+        return result;
+    }
+
+    private static class HtmlTagImpl implements HtmlTag {
+
+        private String name;
+
+        public HtmlTagImpl(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof HtmlTag)) {
+                return false;
+            }
+            final HtmlTag other = (HtmlTag) obj;
+            if ((this.name == null) ? (other.getName() != null) : !this.name.equals(other.getName())) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 67 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "HtmlTagImpl{" + "name=" + name + '}';
+        }
+
+        public Collection<HtmlTagAttribute> getAttributes() {
+            return Collections.emptyList();
+        }
+
+        public boolean isEmpty() {
+            return false;
+        }
+
+        public boolean hasOptionalOpenTag() {
+            return false;
+        }
+
+        public boolean hasOptionalEndTag() {
+            return false;
+        }
+
+        public HtmlTagAttribute getAttribute(String name) {
+            return null;
+        }
+
+        public HtmlTagType getTagClass() {
+            return HtmlTagType.HTML;
+        }
+
+        public Collection<HtmlTag> getChildren() {
+            return Collections.emptyList();
+        }
+
+
+    }
 }

@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.openide.util.RequestProcessor;
@@ -190,6 +191,7 @@ public class MemoryCacheTest extends NbTestCase {
             return i;
         }
 
+        @Override
         public int getUnitId() {
             return 1;
         }
@@ -199,36 +201,49 @@ public class MemoryCacheTest extends NbTestCase {
             return ((MyKey) obj).i == i;
         }
 
+        @Override
         public PersistentFactory getPersistentFactory() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public CharSequence getUnit() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public Behavior getBehavior() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public int getDepth() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public CharSequence getAt(int level) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public int getSecondaryDepth() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public int getSecondaryAt(int level) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public boolean hasCache() {
             return false;
+        }
+
+        @Override
+        public KeyDataPresentation getDataPresentation() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

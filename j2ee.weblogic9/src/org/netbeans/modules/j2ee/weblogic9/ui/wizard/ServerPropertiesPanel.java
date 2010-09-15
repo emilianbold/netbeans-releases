@@ -43,7 +43,9 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.awt.Component;
-import java.util.Vector;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -51,12 +53,18 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author thuy
+ * @author Petr Hejl
  */
 public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeListener {
 
-     private ServerPropertiesVisual component;
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+
+    private final AtomicBoolean isValidating = new AtomicBoolean();
+
+    private ServerPropertiesVisual component;
+
     private WizardDescriptor wizard;
+    
     private transient WLInstantiatingIterator instantiatingIterator;
 
     public ServerPropertiesPanel (WLInstantiatingIterator instantiatingIterator) {
@@ -64,14 +72,14 @@ public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeList
     }
     
     public Component getComponent() {
-          if (component == null) {
+        if (component == null) {
             component = new ServerPropertiesVisual(instantiatingIterator);
             component.addChangeListener(this);
         }
         return component;
     }
 
-     public  ServerPropertiesVisual getVisual() {
+    public  ServerPropertiesVisual getVisual() {
         return (ServerPropertiesVisual) getComponent();
     }
 
@@ -80,7 +88,14 @@ public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeList
     }
 
     public boolean isValid() {
-        return getVisual().valid(wizard);
+        if (isValidating.compareAndSet(false, true)) {
+            try {
+                return getVisual().valid(wizard);
+            } finally {
+                isValidating.set(false);
+            }
+        }
+        return true;
     }
 
     public void readSettings(Object settings) {
@@ -89,23 +104,8 @@ public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeList
         }
     }
 
-     public void storeSettings(Object settings) {
+    public void storeSettings(Object settings) {
         
-    }
-
-   private transient Vector listeners = new Vector();
-    
-    /**
-     * Removes a registered listener
-     *
-     * @param listener the listener to be removed
-     */
-    public void removeChangeListener(ChangeListener listener) {
-        if (listeners != null) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
     }
 
     /**
@@ -114,24 +114,24 @@ public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeList
      * @param listener the listener to be added
      */
     public void addChangeListener(ChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
-     public void stateChanged(ChangeEvent event) {
+    /**
+     * Removes a registered listener
+     *
+     * @param listener the listener to be removed
+     */
+    public void removeChangeListener(ChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    public void stateChanged(ChangeEvent event) {
         fireChangeEvent(event);
     }
 
     private void fireChangeEvent(ChangeEvent event) {
-        Vector targetListeners;
-        synchronized (listeners) {
-            targetListeners = (Vector) listeners.clone();
-        }
-
-        for (int i = 0; i < targetListeners.size(); i++) {
-            ChangeListener listener = (ChangeListener) targetListeners.
-                    elementAt(i);
+        for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
         }
     }

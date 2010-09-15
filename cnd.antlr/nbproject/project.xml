@@ -13,6 +13,7 @@
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
+                <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <package>org.netbeans.modules.cnd.antlr</package>
                 <package>org.netbeans.modules.cnd.antlr.ASdebug</package>
                 <package>org.netbeans.modules.cnd.antlr.collections</package>

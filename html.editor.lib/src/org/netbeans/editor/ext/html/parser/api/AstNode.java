@@ -69,9 +69,9 @@ public class AstNode {
     };
     private String name;
     private NodeType nodeType;
-    private int startOffset;
-    private int endOffset;
-    private int logicalEndOffset;
+    protected int startOffset;
+    protected int endOffset;
+    protected int logicalEndOffset;
     private List<AstNode> children = null;
     private AstNode parent = null;
     private Map<String, Attribute> attributes = null;
@@ -83,6 +83,11 @@ public class AstNode {
     private AstNode matchingNode = null;
     private boolean isEmpty = false;
     private Map<String, Object> properties;
+
+    //>>>experimental
+    public  int treeBuilderState;
+    public Object elementName;
+    //<<<
 
     public static AstNode createRootNode(int from, int to, DTD dtd) {
         return new RootAstNode(from, to, dtd);
@@ -104,6 +109,10 @@ public class AstNode {
         this.endOffset = endOffset;
         this.logicalEndOffset = endOffset;
         this.isEmpty = isEmpty;
+    }
+
+    public boolean isRootNode() {
+        return false;
     }
 
     public boolean isVirtual() {
@@ -389,6 +398,16 @@ public class AstNode {
         child.setParent(this);
     }
 
+    public boolean insertBefore(AstNode node, AstNode insertBeforeNode) {
+        initChildren();
+        int idx = children.indexOf(insertBeforeNode);
+        if(idx == -1) {
+            return false; //no such node in children
+        }
+        children.add(idx, node);
+        return true;
+    }
+
     public void addChildren(List<AstNode> childrenList) {
         initChildren();
         for(AstNode child : childrenList) {
@@ -505,6 +524,14 @@ public class AstNode {
             b.append("]");
         }
 
+        b.append('{');
+        //attributes
+        for(Attribute a : getAttributes()) {
+            b.append(a.toString());
+            b.append(',');
+        }
+        b.append('}');
+
         //attched messages
         for (ProblemDescription d : getDescriptions()) {
             b.append(d.getKey());
@@ -521,12 +548,18 @@ public class AstNode {
             b.deleteCharAt(b.length() - 1);
         }
 
+        b.append("; mode=");
+        b.append(treeBuilderState);
+        b.append("; ElementName=");
+        b.append(elementName);
+
         if(!getDescriptions().isEmpty()) {
             b.append("; issues:");
             for(ProblemDescription d : getDescriptions()) {
                 b.append(d);
             }
         }
+
 
         return b.toString();
     }
@@ -615,6 +648,13 @@ public class AstNode {
                         (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
             }
         }
+
+        @Override
+        public String toString() {
+            return "Attr[" + name() + "(" + nameOffset() + ")=" + value + "(" + valueOffset() + ")]";
+        }
+
+
     }
 
     private static class RootAstNode extends AstNode {
@@ -622,9 +662,14 @@ public class AstNode {
         private static String ROOT_NODE_NAME = "root"; //NOI18N
         private DTD dtd;
 
-        RootAstNode(int startOffset, int endOffset, DTD dtd) {
+        private RootAstNode(int startOffset, int endOffset, DTD dtd) {
             super(ROOT_NODE_NAME, NodeType.ROOT, startOffset, endOffset, false);
             this.dtd = dtd;
+        }
+
+        @Override
+        public boolean isRootNode() {
+            return true;
         }
 
         @Override

@@ -68,6 +68,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
@@ -197,6 +198,16 @@ public class CompilationUnit {
         return null;
     }
 
+    public DwarfEntry getReferencedFriend(DwarfEntry entry) throws IOException{
+        Object typeRef = entry.getAttributeValue(ATTR.DW_AT_friend);
+        if (typeRef instanceof Integer) {
+            return getEntry((Integer)typeRef);
+        } else if (typeRef instanceof Long) {
+            return getEntry((Long)typeRef);
+        }
+        return null;
+    }
+
     public String getType(DwarfEntry entry) throws IOException {
         TAG entryKind = entry.getKind();
         
@@ -283,7 +294,7 @@ public class CompilationUnit {
         }
         
         if (kind.equals(TAG.DW_TAG_subroutine_type)) {
-            return getType(typeEntry);
+            return typeEntry.getParametersString(false);
         }
         
         if (kind.equals(TAG.DW_TAG_volatile_type)) {
@@ -478,23 +489,18 @@ public class CompilationUnit {
             setSpecializations(child);
         }
     }
-    
-    private DwarfEntry readEntry(int level, boolean readChildren) throws IOException {
+
+    private DwarfEntry readEntry(int level) throws IOException {
         long refference = reader.getFilePointer() - debugInfoSectionOffset - unit_offset;
         long idx = reader.readUnsignedLEB128();
-        
         if (idx == 0) {
             return null;
         }
-        
         DwarfAbbriviationTableEntry abbreviationEntry = abbr_table.getEntry(idx);
-        
         if (abbreviationEntry == null) {
             return null;
         }
-        
         DwarfEntry entry = new DwarfEntry(this, abbreviationEntry, refference, level);
-        entries.put(refference, entry);
         for (int i = 0; i < abbreviationEntry.getAttributesCount(); i++) {
             DwarfAttribute attr = abbreviationEntry.getAttribute(i);
             long dif = reader.getFilePointer() - debugInfoSectionOffset;
@@ -502,7 +508,7 @@ public class CompilationUnit {
             if (rela != null){
                 replace = rela.getAddend(dif);
             }
-            if (replace != null && attr.valueForm.equals(FORM.DW_FORM_strp)) {
+            if (replace != null && attr.valueForm == FORM.DW_FORM_strp) {
                 reader.readAttrValue(attr);
                 String s = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(replace.longValue());
                 entry.addValue(s);
@@ -510,14 +516,21 @@ public class CompilationUnit {
                 entry.addValue(reader.readAttrValue(attr));
             }
         }
+        return entry;
+    }
 
-        if (readChildren == true && entry.hasChildren()) {
+    private DwarfEntry readEntry(int level, boolean readChildren) throws IOException {
+        DwarfEntry entry = readEntry(level);
+        if (entry == null) {
+            return null;
+        }
+        entries.put(entry.getRefference(), entry);
+        if (readChildren  && entry.hasChildren()) {
             DwarfEntry child;
             while ((child = readEntry(level + 1, true)) != null) {
                 entry.addChild(child);
             }
         }
-        
         return entry;
     }
     
@@ -567,6 +580,40 @@ public class CompilationUnit {
         getPubnamesTable();
         return getDebugInfo(true).getChildren();
     }
+
+    public List<DwarfEntry> getTopLevelEntries() throws IOException {
+        // Read pubnames section first
+        getPubnamesTable();
+        reader.seek(debugInfoOffset);
+        DwarfEntry aRoot = readEntry(0);
+        if (aRoot == null) {
+            return null;
+        }
+        if (aRoot.hasChildren()) {
+            while (true) {
+                DwarfEntry child = readEntry(1);
+                if (child == null) {
+                    break;
+                }
+                aRoot.addChild(child);
+                if (child.hasChildren()) {
+                    long sibling = child.getSibling();
+                    if (sibling <= 0) {
+                        break;
+                    } else {
+                        if (sibling <= child.getRefference()) {
+                            System.err.println("Infinite loop in sibling chain");
+                            System.err.println(""+child);
+                            break;
+                        }
+                        long refference = debugInfoSectionOffset + unit_offset + sibling;
+                        reader.seek(refference);
+                    }
+                }
+            }
+        }
+        return aRoot.getChildren();
+    }
     
     /**
      * Used to get a list of declarations defined/used in this CU.
@@ -580,7 +627,7 @@ public class CompilationUnit {
         // make sure that pubnames table has been read ...
         getPubnamesTable();
         
-        ArrayList<DwarfEntry> result = new ArrayList<DwarfEntry>();
+        List<DwarfEntry> result = new ArrayList<DwarfEntry>();
         
         if (limitedToFile) {
             fileEntryIdx = getStatementList().getFileEntryIdx(getSourceFileName());
@@ -644,6 +691,15 @@ public class CompilationUnit {
         if( macinfoTable != null ) {
             macinfoTable.dump(out);
         }
+
+        Set<LineNumber> numbers = getLineNumbers();
+        if (numbers != null && numbers.size() > 0) {
+            numbers = new TreeSet<LineNumber>(numbers);
+            for(LineNumber line : numbers) {
+                out.println(line);
+            }
+        }
+
         
         out.println();
     }

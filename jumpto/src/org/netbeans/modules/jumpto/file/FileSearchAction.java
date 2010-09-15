@@ -78,6 +78,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -107,15 +108,19 @@ import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfoFactory;
 /**
@@ -233,6 +238,29 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         FileDescriptor[] result = null;
         panel = new FileSearchPanel(this, findCurrentProject());
         dialog = createDialog(panel);
+
+        Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
+        if (arr.length > 0) {
+            EditorCookie ec = arr[0].getCookie (EditorCookie.class);
+            if (ec != null) {
+                JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
+                if (recentPane != null) {
+                    String initSearchText = null;
+                    if (org.netbeans.editor.Utilities.isSelectionShowing(recentPane.getCaret())) {
+                        initSearchText = recentPane.getSelectedText();
+                    }
+                    if (initSearchText != null) {
+                        panel.setInitialText(initSearchText);
+                    } else {
+                        FileObject fo = arr[0].getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            panel.setInitialText(fo.getNameExt());
+                        }
+                    }
+                }
+            }
+        }
+
         dialog.setVisible(true);
         result = panel.getSelectedFiles();
         return result;

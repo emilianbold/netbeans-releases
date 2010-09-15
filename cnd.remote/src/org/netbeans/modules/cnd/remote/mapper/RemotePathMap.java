@@ -439,11 +439,14 @@ public abstract class RemotePathMap extends PathMap {
 
         @Override
         public void init() {
-            if (!loadFromPrefs()) {
+            // Fix for noIZ: IDE fails to build if -J-Dcnd.remote.sync.root is specified
+            // Loading from prefs leads to incompatibility with MirrorPathProvider.getRemoteMirror,
+            // which is widely used 
+            //if (!loadFromPrefs()) {
                 if (remoteBase != null) {
                     super.addMappingImpl("/", remoteBase); // NOI18N
                 }
-            }
+            //}
         }
 
         @Override

@@ -47,6 +47,7 @@ public final class ProblemDescription {
     public static final int WARNING = 1;
     public static final int ERROR = 2;
     public static final int FATAL = 3;
+    
     private String key;
     private String text;
     private int from;

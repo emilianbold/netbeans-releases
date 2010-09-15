@@ -54,14 +54,22 @@ public abstract class JAXWSClientViewAccessor {
 
     public static JAXWSClientViewAccessor DEFAULT;
     
-    // force loading of WebServicesClientView class. That will set DEFAULT variable.
-    static {
+    // force loading of JAXWSClientView class. That will set DEFAULT variable.
+    public static JAXWSClientViewAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        // invokes static initializer of JAXWSClientView.class
+        // that will assign value to the DEFAULT field above
         Class c = JAXWSClientView.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
         }
+        assert DEFAULT != null : "The DEFAULT field must be initialized";
+        return DEFAULT;
     }
     
     public abstract JAXWSClientView createJAXWSClientView(JAXWSClientViewImpl spiJAXWSClientView);

@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.php.editor.model;
 
-import java.util.Set;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
@@ -55,9 +55,13 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
@@ -386,10 +390,18 @@ public class ParameterInfoSupport {
                         Collection<? extends PhpElement> allDeclarations = occurence.getAllDeclarations();
                         if (allDeclarations.size() > 0) {
                             PhpElement declaration = allDeclarations.iterator().next();
-                            if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
+                            final boolean oneDeclaration = occurence.getAllDeclarations().size() == 1;
+                            if (declaration instanceof FunctionScope && oneDeclaration) {
                                 FunctionScope functionScope = (FunctionScope) declaration;
                                 return new ParameterInfo(toParamNames(functionScope), idx, anchor);
+                            } else if (declaration instanceof FunctionElement && oneDeclaration) {
+                                FunctionElement functionElement = (FunctionElement) declaration;
+                                return new ParameterInfo(toParamNames(functionElement), idx, anchor);
+                            } else if (declaration instanceof ClassElement && oneDeclaration) {
+                                ClassElement clsElement = (ClassElement) declaration;
+                                return new ParameterInfo(toParamNames(clsElement), idx, anchor);
                             }
+
                         }
                     }
                 }
@@ -412,6 +424,32 @@ public class ParameterInfoSupport {
         List<? extends ParameterElement> parameters = functionScope.getParameters();
         for (ParameterElement parameter : parameters) {
             paramNames.add(parameter.asString(true));
+        }
+        return paramNames;
+    }
+    @CheckForNull
+    private static List<String> toParamNames(FunctionElement functionElement) {
+        List<String> paramNames = new ArrayList<String>();
+        List<? extends ParameterElement> parameters = functionElement.getParameters();
+        for (ParameterElement parameter : parameters) {
+            paramNames.add(parameter.asString(true));
+        }
+        return paramNames;
+    }
+    @CheckForNull
+    private static List<String> toParamNames(ClassElement clzElement) {
+        List<String> paramNames = new ArrayList<String>();
+        ElementQuery elementQuery = clzElement.getElementQuery();
+        if (elementQuery instanceof ElementQuery.Index) {
+            ElementQuery.Index index = (Index) elementQuery;
+            Iterator<MethodElement> iterator = index.getConstructors(clzElement).iterator();
+            MethodElement constructor = iterator.hasNext() ? iterator.next() : null;
+            if (constructor != null) {
+                List<? extends ParameterElement> parameters = constructor.getParameters();
+                for (ParameterElement parameter : parameters) {
+                    paramNames.add(parameter.asString(true));
+                }
+            }
         }
         return paramNames;
     }

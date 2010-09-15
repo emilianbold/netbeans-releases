@@ -92,11 +92,6 @@ import org.openide.windows.InputOutput;
  */
 public class GlassfishInstance implements ServerInstanceImplementation, LookupListener {
 
-    // !PW FIXME Can we extract the server name from the install?  That way,
-    // perhaps we can distinguish between GF V3 and Sun AS 10.0
-    private static final String GLASSFISH_PRELUDE_SERVER_NAME = "GlassFish v3 Prelude"; // NOI18N
-    private static final String GLASSFISH_SERVER_NAME = "GlassFish Server 3"; // NOI18N
-
     // Reasonable default values for various server parameters.  Note, don't use
     // these unless the server's actual setting cannot be determined in any way.
     public static final String DEFAULT_HOST_NAME = "localhost"; // NOI18N
@@ -173,7 +168,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
                 }
             }
         } else {
-            Logger.getLogger("glassfish").log(Level.WARNING, asenvConf.getAbsolutePath() + " does not exist"); // NOI18N
+            Logger.getLogger("glassfish").log(Level.WARNING, "{0} does not exist", asenvConf.getAbsolutePath()); // NOI18N
         }
         Set<GlassfishModuleFactory> added = new HashSet<GlassfishModuleFactory>();
         //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
@@ -187,7 +182,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
                 if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
                     Object t = moduleFactory.createModule(lookup);
                     if (null == t) {
-                        Logger.getLogger("glassfish").log(Level.WARNING, moduleFactory+" created a null module"); // NOI18N
+                        Logger.getLogger("glassfish").log(Level.WARNING, "{0} created a null module", moduleFactory); // NOI18N
                     } else {
                         ic.add(t);
                     }
@@ -302,7 +297,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
                         }
                     }
                 } catch(TimeoutException ex) {
-                    Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command."); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.FINE, "Server {0} timed out sending stop-domain command.", getDeployerUri()); // NOI18N
                 } catch(Exception ex) {
                     Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
@@ -325,12 +320,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     // TODO -- this should be done differently
     @Override
     public String getServerDisplayName() {
-        File f = new File(commonSupport.getGlassfishRoot(), "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd"); // NOI18N
-        if (f.exists()) {
-            return GLASSFISH_SERVER_NAME;
-        } else {
-            return GLASSFISH_PRELUDE_SERVER_NAME;
-        }
+        return commonSupport.getInstanceProvider().getDisplayName();
     }
 
     @Override
