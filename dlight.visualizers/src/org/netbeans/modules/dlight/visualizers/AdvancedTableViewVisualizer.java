@@ -601,6 +601,14 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                                 public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                                     //throw new UnsupportedOperationException("Not supported yet.");
                                 }
+
+                                @Override
+                                public Object getValue(String attributeName) {
+                                    if ("suppressCustomEditor".equals(attributeName)) {//NOI18N
+                                        return true;
+                                    }                                    
+                                    return super.getValue(attributeName);
+                                }
                             };
                             result.add(propery);
                         }
