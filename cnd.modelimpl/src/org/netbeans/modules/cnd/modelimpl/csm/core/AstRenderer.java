@@ -1181,7 +1181,7 @@ public class AstRenderer {
     }
 
     /**
-     * Returns first sibling (or just passed ast), skipps cv-qualifiers and storage class specifiers
+     * Returns first sibling (or just passed ast), skips cv-qualifiers and storage class specifiers
      */
     public static AST getFirstSiblingSkipQualifiers(AST ast) {
         while (ast != null && isQualifier(ast.getType())) {
@@ -1191,7 +1191,7 @@ public class AstRenderer {
     }
 
     /**
-     * Returns first child, skipps cv-qualifiers and storage class specifiers
+     * Returns first child, skips cv-qualifiers and storage class specifiers
      */
     public static AST getFirstChildSkipQualifiers(AST ast) {
         return getFirstSiblingSkipQualifiers(ast.getFirstChild());
@@ -1252,11 +1252,11 @@ public class AstRenderer {
 
     /**
      * Checks whether the given AST is a variable declaration(s), 
-     * if yes, creates variable(s), adds to conteiner(s), returns true,
+     * if yes, creates variable(s), adds to container(s), returns true,
      * otherwise returns false;
      *
      * There might be two containers, in which the given variable should be added.
-     * For example, global variables should beadded both to file and to global namespace;
+     * For example, global variables should be added both to file and to global namespace;
      * variables, declared in some namespace definition, should be added to both this definition and correspondent namespace as well.
      *
      * On the other hand, local variables are added only to it's containing scope, so either container1 or container2 might be null.
@@ -1454,8 +1454,8 @@ public class AstRenderer {
             // TODO What about global variable definitions:
             // extern int i; - declaration
             // int i; - definition
-            VariableDefinitionImpl var = new VariableDefinitionImpl(offsetAst, file, type, name);
-            var.setStatic(_static);
+            // TODO _extern = false?
+            VariableDefinitionImpl var = new VariableDefinitionImpl(offsetAst, file, type, name, _static, _extern);
             if (container2 != null) {
                 container2.addDeclaration(var);
             }
@@ -1474,9 +1474,7 @@ public class AstRenderer {
     protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static,  boolean _extern,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
         type = TemplateUtils.checkTemplateType(type, scope);
-        VariableImpl var = new VariableImpl(offsetAst, file, type, name, scope, !isRenderingLocalContext(), !isRenderingLocalContext());
-        var.setStatic(_static);
-        var.setExtern(_extern);
+        VariableImpl var = new VariableImpl(offsetAst, file, type, name, scope, _static, _extern, !isRenderingLocalContext(), !isRenderingLocalContext());
         return var;
     }
 

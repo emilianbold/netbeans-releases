@@ -1044,7 +1044,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         @Override
         public String getDisplayedName() {
             if (hasLineNumber()){
-                return getFunction().getName() + "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
+                return FunctionNameUtils.getFunctionName(getFunction().getName()) + "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
             }
             return getFunction().getName() + (hasOffset() ? ("+0x" + Long.toHexString(getOffset())) : ""); //NOI18N
         }

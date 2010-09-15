@@ -98,9 +98,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         protected VariableImpl<CsmField> createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern,
                 MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
-            FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
-            field.setStatic(_static);
-            field.setExtern(_extern);
+            FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility, _static, _extern, !isRenderingLocalContext());
             ClassImpl.this.addMember(field,!isRenderingLocalContext());
             return field;
         }
