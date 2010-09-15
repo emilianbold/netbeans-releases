@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
+import org.netbeans.modules.dlight.util.ui.DualPaneSupport;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;

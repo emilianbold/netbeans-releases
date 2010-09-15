@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.visualizers;
+package org.netbeans.modules.dlight.util.ui;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
