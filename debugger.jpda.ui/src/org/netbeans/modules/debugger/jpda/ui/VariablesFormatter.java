@@ -45,6 +45,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.NbBundle;
 
 /**
@@ -360,6 +361,7 @@ public class VariablesFormatter implements Cloneable {
 
 
 
+    @DebuggerServiceRegistration(types=Properties.Reader.class)
     public static class ReaderWriter implements Properties.Reader {
 
         public String[] getSupportedClassNames() {

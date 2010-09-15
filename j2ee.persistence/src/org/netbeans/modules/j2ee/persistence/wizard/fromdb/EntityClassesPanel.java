@@ -151,6 +151,19 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         changeSupport.addChangeListener(listener);
     }
 
+    boolean isBeanValidationSupported() {
+        if (project == null) {
+            return false;
+        }
+        
+        final String notNullAnnotation = "javax.validation.constraints.NotNull";    //NOI18N
+        ClassPath classPath = ClassPath.getClassPath(project.getProjectDirectory(), ClassPath.COMPILE);
+        if (classPath == null) {
+            return false;
+        }
+        return classPath.findResource(notNullAnnotation.replace('.', '/')+".class")!=null;
+    }
+
     public void initialize(PersistenceGenerator persistenceGen, Project project, boolean cmp, FileObject targetFolder) {
         this.persistenceGen = persistenceGen;
         this.project = project;
@@ -196,7 +209,6 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         updatePersistenceUnitButton(true);
-
 
     }
 
@@ -247,6 +259,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         return generateJAXBCheckBox.isSelected();
     }
 
+    public boolean getGenerateValidationConstraints() {
+        return isBeanValidationSupported();
+    }
+    
     public boolean getCreatePersistenceUnit() {
         return createPUCheckbox.isVisible() && createPUCheckbox.isSelected();
     }
@@ -434,7 +450,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         spacerPanelLayout.setHorizontalGroup(
             spacerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, spacerPanelLayout.createSequentialGroup()
-                .addContainerGap(353, Short.MAX_VALUE)
+                .addContainerGap(382, Short.MAX_VALUE)
                 .add(tableActionsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         spacerPanelLayout.setVerticalGroup(
@@ -475,25 +491,25 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                     .add(packageLabel))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(spacerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(packageComboBox, 0, 377, Short.MAX_VALUE)
-                    .add(locationComboBox, 0, 377, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)))
-            .add(layout.createSequentialGroup()
-                .add(createPUCheckbox)
-                .addContainerGap())
+                    .add(spacerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
+                    .add(packageComboBox, 0, 406, Short.MAX_VALUE)
+                    .add(locationComboBox, 0, 406, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(cmpFieldsInInterfaceCheckBox)
+                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(generateJAXBCheckBox)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(generateFinderMethodsCheckBox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(createPUCheckbox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(cmpFieldsInInterfaceCheckBox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -503,7 +519,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(11, 11, 11)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classNamesLabel)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE))
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(spacerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -526,7 +542,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(cmpFieldsInInterfaceCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createPUCheckbox)
-                .add(5, 5, 5)
+                .add(33, 33, 33)
                 .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -740,6 +756,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             helper.setCmpFieldsInInterface(getComponent().getCmpFieldsInInterface());
             helper.setGenerateFinderMethods(getComponent().getGenerateFinderMethods());
             helper.setGenerateJAXBAnnotations(getComponent().getGenerateJAXB());
+            helper.setGenerateValidationConstraints(getComponent().getGenerateValidationConstraints());
             helper.setCreatePU(getComponent().getCreatePersistenceUnit());
         }
 

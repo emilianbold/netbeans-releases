@@ -45,6 +45,8 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.Set;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -54,6 +56,17 @@ import org.openide.util.WeakSet;
 /**
  * @author   Martin Entlicher
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types=TreeExpansionModel.class,
+                                 position=10000),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types=TreeExpansionModel.class,
+                                 position=10000),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types=TreeExpansionModel.class,
+                                 position=10000)
+})
 public class VariablesTreeExpansionModel implements TreeExpansionModel {
 
     private Set expandedNodes = new WeakSet();

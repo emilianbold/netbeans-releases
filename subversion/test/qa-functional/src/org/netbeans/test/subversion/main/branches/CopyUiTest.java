@@ -93,7 +93,7 @@ public class CopyUiTest extends JellyTestCase{
             Thread.sleep(1000);
 
             FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
-            ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            ftiso.setRepositoryFolder("trunk/Import" + PROJECT_NAME);
             ftiso.setImportMessage("initial import");
             ftiso.next();
             Thread.sleep(1000);
@@ -107,6 +107,7 @@ public class CopyUiTest extends JellyTestCase{
             cto.verify();
             //only required nodes are expended - want to see all in browser
             cto.setRepositoryFolder("");
+            // needs to be fixed, repo browser is outline view
             RepositoryBrowserImpOperator rbio = cto.browseRepository();
             rbio.verify();
             rbio.selectFolder("tags");

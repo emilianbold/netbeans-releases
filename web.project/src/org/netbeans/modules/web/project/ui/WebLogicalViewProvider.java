@@ -47,9 +47,10 @@ package org.netbeans.modules.web.project.ui;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.*;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider.LogicalViewRootNode;
+import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider2;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -60,7 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * Support for creating logical views.
  */
-public class WebLogicalViewProvider extends AbstractLogicalViewProvider {
+public class WebLogicalViewProvider extends AbstractLogicalViewProvider2 {
 
     public WebLogicalViewProvider(WebProject project, UpdateHelper helper,
             PropertyEvaluator evaluator, ReferenceHelper resolver, J2eeModuleProvider j2eeModuleProvider) {

@@ -300,56 +300,86 @@ public abstract class FromEntityBase {
         StringBuffer stringKey = new StringBuffer();
         String keyType;
         String keyTypeFQN;
+        //
+        String keyBodyValue = null;
+        String keyStringBodyValue = null;
+        String keyGetterValue = "UNDEFINED";
+        String keyTypeValue = "UNDEFINED";
+        Boolean keyEmbeddedValue = Boolean.FALSE;        //
+        Boolean keyDerivedValue = Boolean.FALSE;
         if(primaryGetter != null) {
             TypeMirror idType = primaryGetter.getReturnType();
+            ExecutableElement primaryGetterDerived = null;
             if (TypeKind.DECLARED == idType.getKind()) {
                 DeclaredType declaredType = (DeclaredType) idType;
                 TypeElement idClass = (TypeElement) declaredType.asElement();
                 boolean embeddable = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
-                keyType = idClass.getSimpleName().toString();
-                keyTypeFQN = idClass.getQualifiedName().toString();
-                if (embeddable) {
-                    params.put("keyEmbedded", Boolean.TRUE);
-                    int index = 0;
-                    for (ExecutableElement method : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
-                        if (method.getSimpleName().toString().startsWith("set")) {
-                            addParam(key, stringKey, method.getSimpleName().toString(), index,
-                                    keyType, keyTypeFQN, method.getParameters().get(0).asType());
-                            index++;
+                boolean isDirevideId = false;
+                if(!embeddable && JpaControllerUtil.haveId(idClass)){//NOI18N
+                    isDirevideId = JpaControllerUtil.isRelationship(primaryGetter ,JpaControllerUtil.isFieldAccess(idClass)) != JpaControllerUtil.REL_NONE;
+                }
+                if(isDirevideId){
+                    //it may be direved id, find id field in parent entity
+                    primaryGetterDerived = findPrimaryKeyGetter(controller, idClass);
+                    if(primaryGetterDerived !=null){
+                        idType = primaryGetterDerived.getReturnType();
+                        if (TypeKind.DECLARED == idType.getKind()){
+                             declaredType = (DeclaredType) idType;
+                             idClass = (TypeElement) declaredType.asElement();
+                             embeddable = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
                         }
+                    } else {
+                        idClass = null;//clean all, can't find getter in derived id
                     }
-                    if (index == 0) {
-                         key.append(NbBundle.getMessage(FromEntityBase.class, "ERR_NO_SETTERS", new String[]{INDENT, keyTypeFQN, "Converter.getKey()"}));//NOI18N;
-                         stringKey.append(NbBundle.getMessage(FromEntityBase.class, "ERR_NO_SETTERS", new String[]{INDENT, keyTypeFQN, "Converter.getKey()"}));//NOI18N;
+                }
+                if(idClass !=null ){
+                    keyType = idClass.getSimpleName().toString();
+                    keyTypeFQN = idClass.getQualifiedName().toString();
+                    if (embeddable) {
+                        keyEmbeddedValue = Boolean.TRUE;
+                        int index = 0;
+                        for (ExecutableElement method : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
+                            if (method.getSimpleName().toString().startsWith("set")) {
+                                addParam(key, stringKey, method.getSimpleName().toString(), index,
+                                        keyType, keyTypeFQN, method.getParameters().get(0).asType());
+                                index++;
+                            }
+                        }
+                        if (index == 0) {
+                             key.append(NbBundle.getMessage(FromEntityBase.class, "ERR_NO_SETTERS", new String[]{INDENT, keyTypeFQN, "Converter.getKey()"}));//NOI18N;
+                             stringKey.append(NbBundle.getMessage(FromEntityBase.class, "ERR_NO_SETTERS", new String[]{INDENT, keyTypeFQN, "Converter.getKey()"}));//NOI18N;
+                        }
+                    } else {
+                        addParam(key, stringKey, null, -1, keyType, keyTypeFQN, idType);
                     }
                 } else {
-                    params.put("keyEmbedded", Boolean.FALSE);
-                    addParam(key, stringKey, null, -1, keyType, keyTypeFQN, idType);
+                    keyTypeFQN = null;
                 }
             } else {
-                params.put("keyEmbedded", Boolean.FALSE);
                 //keyType = getCorrespondingType(idType);
                 keyTypeFQN = keyType = idType.toString();
                 addParam(key, stringKey, null, -1, keyType, keyTypeFQN, idType);
             }
-            params.put("keyType", keyTypeFQN);
-            if (key.toString().endsWith("\n")) {
-                key.setLength(key.length()-1);
+            if(keyTypeFQN!=null){
+                keyTypeValue = keyTypeFQN;
+                if (key.toString().endsWith("\n")) {
+                    key.setLength(key.length()-1);
+                }
+                keyBodyValue = key.toString();
+                if (stringKey.toString().endsWith("\n")) {
+                    stringKey.setLength(stringKey.length()-1);
+                }
+                keyStringBodyValue = stringKey.toString();
+                keyGetterValue = primaryGetter.getSimpleName().toString() + (primaryGetterDerived != null ? "()."+primaryGetterDerived.getSimpleName().toString() : "");
             }
-            params.put("keyBody", key.toString());
-            if (stringKey.toString().endsWith("\n")) {
-                stringKey.setLength(stringKey.length()-1);
-            }
-            params.put("keyStringBody", stringKey.toString());
-            params.put("keyGetter", primaryGetter.getSimpleName().toString());
-        } else {
-            //it's required to have getter for jsf creation
-            params.put("keyBody", NbBundle.getMessage(FromEntityBase.class, "ERR_NO_GETTERS", new String[]{INDENT, bean.getQualifiedName().toString(), "Converter.getKey()"}));
-            params.put("keyStringBody", NbBundle.getMessage(FromEntityBase.class, "ERR_NO_GETTERS", new String[]{INDENT, bean.getQualifiedName().toString(), "Converter.getKey()"}));
-            params.put("keyGetter", "UNDEFINED");//NOI18N
-            params.put("keyType", "UNDEFINED");//NOI18N
-            params.put("keyEmbedded", Boolean.FALSE);
-       }
+        } 
+        //it's required to have getter for jsf creation
+        params.put("keyBody", keyBodyValue!=null ? keyBodyValue : NbBundle.getMessage(FromEntityBase.class, "ERR_NO_GETTERS", new String[]{INDENT, bean.getQualifiedName().toString(), "Converter.getKey()"}));
+        params.put("keyStringBody", keyStringBodyValue!=null ? keyStringBodyValue : NbBundle.getMessage(FromEntityBase.class, "ERR_NO_GETTERS", new String[]{INDENT, bean.getQualifiedName().toString(), "Converter.getKey()"}));
+        params.put("keyGetter", keyGetterValue);//NOI18N
+        params.put("keyType", keyTypeValue);//NOI18N
+        params.put("keyEmbedded", keyEmbeddedValue);//NOI18N
+        params.put("keyDerived", keyDerivedValue);//NOI18N
     }
 
     private static void addParam(StringBuffer key, StringBuffer stringKey, String setter,

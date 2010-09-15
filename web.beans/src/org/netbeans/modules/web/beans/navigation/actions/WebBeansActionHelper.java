@@ -52,12 +52,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.JDialog;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -75,6 +79,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -83,6 +88,14 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.navigation.EventsModel;
+import org.netbeans.modules.web.beans.navigation.EventsPanel;
+import org.netbeans.modules.web.beans.navigation.InjectablesModel;
+import org.netbeans.modules.web.beans.navigation.InjectablesPanel;
+import org.netbeans.modules.web.beans.navigation.ObserversModel;
+import org.netbeans.modules.web.beans.navigation.ObserversPanel;
+import org.netbeans.modules.web.beans.navigation.ResizablePopup;
+import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -105,6 +118,9 @@ class WebBeansActionHelper {
     
     static final String EVENT_INTERFACE = 
         "javax.enterprise.event.Event";                         // NOI18N
+    
+    static final String OBSERVES_ANNOTATION = 
+        "javax.enterprise.event.Observes";                      // NOI18N
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = 
         EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
@@ -183,6 +199,7 @@ class WebBeansActionHelper {
                                 ElementHandle.create((VariableElement)element);
                             variable[0] = handle;
                             variable[1] = element.getSimpleName().toString();
+                            variable[2] = InspectActionId.INJECTABLES;
                         }
                         else {
                             setVariablePath(variable, controller, element);
@@ -196,6 +213,66 @@ class WebBeansActionHelper {
                 log( Level.WARNING, e.getMessage(), e);
         }
         return variable[1] !=null ;
+    }
+    
+    static boolean getMethodAtDot(
+            final JTextComponent component , final Object[] subject )
+    {
+        JavaSource javaSource = JavaSource.forDocument(component.getDocument());
+        if ( javaSource == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return false;
+        }
+        try {
+            javaSource.runUserActionTask( new Task<CompilationController>(){
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
+                    int dot = component.getCaret().getDot();
+                    TreePath tp = controller.getTreeUtilities()
+                        .pathFor(dot);
+                    Element element = controller.getTrees().getElement(tp );
+                    if ( element == null ){
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(
+                                        WebBeansActionHelper.class, 
+                                "LBL_ElementNotFound"));
+                        return;
+                    }
+                    if ( element instanceof ExecutableElement ){
+                        subject[0] = ElementHandle.create(element);
+                        subject[1] =  element.getSimpleName();
+                        subject[2] = InspectActionId.EVENTS;
+                    }
+                    else if ( element instanceof VariableElement ){
+                        Element enclosingElement = element.getEnclosingElement();
+                        if ( enclosingElement instanceof ExecutableElement){
+                            List<? extends AnnotationMirror> annotations = 
+                                controller.getElements().getAllAnnotationMirrors( 
+                                    element);
+                            for (AnnotationMirror annotationMirror : annotations) {
+                                DeclaredType annotationType = 
+                                    annotationMirror.getAnnotationType();
+                                Element annotationElement = annotationType.asElement();
+                                Name annotationName = ((TypeElement)annotationElement).
+                                    getQualifiedName();
+                                if ( OBSERVES_ANNOTATION.contentEquals( annotationName)){
+                                    subject[0] = ElementHandle.create(enclosingElement);
+                                    subject[1] =  enclosingElement.getSimpleName();
+                                    subject[2] = InspectActionId.EVENTS;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }, true );
+        }
+        catch(IOException e ){
+            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
+                log( Level.WARNING, e.getMessage(), e);
+        }
+                    
+        return subject[0]!=null;
     }
     
     public static boolean getContextEventInjectionAtDot(
@@ -268,6 +345,8 @@ class WebBeansActionHelper {
                                                     ElementHandle.create(var);
                                                 variable[0]= handle;
                                                 variable[1]= varName;   
+                                                variable[2]= InspectActionId.OBSERVERS;  
+                                                return;
                                             }
                                         }
                                     }
@@ -284,16 +363,51 @@ class WebBeansActionHelper {
         return variable[1] !=null ;
     }
     
-    private static void setVariablePath( Object[] variableAtCaret,
-            CompilationController controller, Element element )
+    static void showInjectablesDialog( MetadataModel<WebBeansModel> metamodel,
+            WebBeansModel model, ElementHandle<VariableElement> variable, 
+            InjectablesModel uiModel , String name ) 
     {
-        Element parent = element.getEnclosingElement();
-        if ( parent instanceof ExecutableElement ){
-            ElementHandle<ExecutableElement> handle = ElementHandle.create( 
-                    (ExecutableElement)parent ) ;
-            variableAtCaret[0] = handle;
-            variableAtCaret[1] = element.getSimpleName().toString();
-        }
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                InjectablesModel.class, "LBL_WaitNode"));           // NOI18N
+        JDialog dialog = ResizablePopup.getDialog();
+        String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
+                "TITLE_Injectables" , name );//NOI18N
+        dialog.setTitle( title );
+        dialog.setContentPane( new InjectablesPanel(variable, metamodel, model,
+                uiModel ));
+        dialog.setVisible( true );
+    }
+    
+    static void showEventsDialog( MetadataModel<WebBeansModel> metaModel , 
+            WebBeansModel model,ElementHandle<ExecutableElement> method, 
+            EventsModel uiModel , String name ) 
+    {
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
+        JDialog dialog = ResizablePopup.getDialog();
+        String title = NbBundle.getMessage(InspectEventsAtCaretAction.class,
+                "TITLE_Events" , name );//NOI18N
+        dialog.setTitle( title );
+        dialog.setContentPane( new EventsPanel(method, metaModel, 
+                model ,uiModel ));
+        dialog.setVisible( true );
+    }
+    
+    static void showObserversDialog( List<ExecutableElement> methods , 
+            MetadataModel<WebBeansModel> metaModel , WebBeansModel model,
+            ElementHandle<VariableElement> variable, ObserversModel uiModel ,
+            String name ) 
+    {
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
+        JDialog dialog = ResizablePopup.getDialog();
+        String title = NbBundle.getMessage(InspectObserversAtCaretAction.class,
+                "TITLE_Observers" , name );//NOI18N
+        dialog.setTitle( title );
+        dialog.setContentPane( new ObserversPanel(variable, metaModel, 
+                model ,uiModel ));
+        dialog.setVisible( true );
+        
     }
     
     static VariableElement findVariable( final WebBeansModel model,
@@ -338,7 +452,7 @@ class WebBeansActionHelper {
         return var;
     }
 
-    public static int[] getIdentifierSpan(Document doc, int offset, Token<JavaTokenId>[] token) {
+    static int[] getIdentifierSpan(Document doc, int offset, Token<JavaTokenId>[] token) {
         FileObject fileObject = NbEditorUtilities.getFileObject( doc);
         if (fileObject== null) {
             //do nothing if FO is not attached to the document - the goto would not work anyway:
@@ -372,5 +486,18 @@ class WebBeansActionHelper {
             token[0] = t;
         
         return new int [] {ts.offset(), ts.offset() + t.length()};
+    }
+    
+    private static void setVariablePath( Object[] variableAtCaret,
+            CompilationController controller, Element element )
+    {
+        Element parent = element.getEnclosingElement();
+        if ( parent instanceof ExecutableElement ){
+            ElementHandle<ExecutableElement> handle = ElementHandle.create( 
+                    (ExecutableElement)parent ) ;
+            variableAtCaret[0] = handle;
+            variableAtCaret[1] = element.getSimpleName().toString();
+            variableAtCaret[2] = InspectActionId.INJECTABLES;
+        }
     }
 }

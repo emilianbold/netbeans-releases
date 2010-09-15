@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -69,6 +70,7 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/CallStackView", types=NodeModel.class)
 public class CallStackNodeModel implements NodeModel {
 
     public static final String CALL_STACK =
@@ -104,7 +106,7 @@ public class CallStackNodeModel implements NodeModel {
             // Do not call JDI in AWT
             //CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
             if (isCurrent) {
-                return BoldVariablesTableModelFilterFirst.toHTML (
+                return BoldVariablesTableModelFilter.toHTML (
                     getCSFName (session, sf, false),
                     true,
                     false,

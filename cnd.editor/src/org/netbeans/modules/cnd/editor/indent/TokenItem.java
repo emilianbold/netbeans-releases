@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.editor.indent;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 
@@ -53,18 +54,18 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 public final class TokenItem {
 
     private final int index;
-    private final CppTokenId tokenId;
-    protected final TokenSequence<CppTokenId> tokenSeq;
+    private final TokenId tokenId;
+    protected final TokenSequence<TokenId> tokenSeq;
     private final boolean skipPP;
 
-    public TokenItem(TokenSequence<CppTokenId> ts, boolean skipPP) {
+    public TokenItem(TokenSequence<TokenId> ts, boolean skipPP) {
         index = ts.index();
         tokenId = ts.token().id();
         this.tokenSeq = ts;
         this.skipPP = skipPP;
     }
 
-    public TokenSequence<CppTokenId> getTokenSequence() {
+    public TokenSequence<TokenId> getTokenSequence() {
         return tokenSeq;
     }
 
@@ -77,7 +78,7 @@ public final class TokenItem {
         tokenSeq.moveNext();
     }
 
-    public CppTokenId getTokenID() {
+    public TokenId getTokenID() {
         return tokenId;
     }
 

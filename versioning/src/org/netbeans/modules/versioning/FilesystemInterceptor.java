@@ -302,7 +302,12 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     private IOHandler getMoveHandlerIntern(File from, File to) {
         DelegatingInterceptor dic = getInterceptor(from, to, "beforeMove", "doMove"); // NOI18N
-        return dic.beforeMove() ? dic : null;
+        return dic.beforeMove() ? dic.getMoveHandler() : null;
+    }
+
+    @Override
+    public void moveSuccess(FileObject from, File to) {
+        getInterceptor(FileUtil.toFile(from), to, "afterMove").afterMove();
     }
 
     @Override
@@ -317,6 +322,32 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
          LOG.log(Level.FINE, "fileAttributeChanged {0}", fe.getFile());
         // not interested
     }
+
+    // ==================================================================================================
+    // COPY
+    // ==================================================================================================
+
+    @Override
+    public IOHandler getCopyHandler(File from, File to) {
+        LOG.log(Level.FINE, "getCopyHandler {0}, {1}", new Object[] {from, to});
+        return getCopyHandlerIntern(from, to);
+    }
+
+    private IOHandler getCopyHandlerIntern(File from, File to) {
+        DelegatingInterceptor dic = getInterceptor(from, to, "beforeCopy", "doCopy"); // NOI18N
+        return dic.beforeCopy() ? dic.getCopyHandler() : null;
+    }
+
+    @Override
+    public void beforeCopy(FileObject from, File to) { }
+
+    @Override
+    public void copySuccess(FileObject from, File to) {
+        getInterceptor(FileUtil.toFile(from), to, "afterCopy").afterCopy();
+    }
+
+    @Override
+    public void copyFailure(FileObject from, File to) { }
 
     /**
      * There is a contract that says that when a file is locked, it is expected to be changed. This is what openide/text
@@ -407,7 +438,6 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         public void beforeEdit() { }
         public void afterChange() {  }
         public void afterMove() {  }
-        public void handle() throws IOException {  }
         public boolean delete(File file) {  throw new UnsupportedOperationException();  }
     };
 
@@ -418,7 +448,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      */
     private final Set<File> deletedFiles = new HashSet<File>(5);
 
-    private class DelegatingInterceptor implements IOHandler, DeleteHandler {
+    private class DelegatingInterceptor implements DeleteHandler {
 
         final Collection<VCSInterceptor> interceptors;
         final VCSInterceptor  interceptor;
@@ -426,6 +456,8 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         final File            file;
         final File            to;
         private final boolean isDirectory;
+        private IOHandler moveHandler;
+        private IOHandler copyHandler;
 
         private DelegatingInterceptor() {
             this((VCSInterceptor) null, null, null, null, false);
@@ -488,6 +520,21 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             interceptor.afterMove(file, to);
         }
 
+        public boolean beforeCopy() {
+            lhInterceptor.beforeCopy(file, to);
+            return interceptor.beforeCopy(file, to);
+        }
+
+        public void doCopy() throws IOException {
+            lhInterceptor.doCopy(file, to);
+            interceptor.doCopy(file, to);
+        }
+
+        public void afterCopy() {
+            lhInterceptor.afterCopy(file, to);
+            interceptor.afterCopy(file, to);
+        }
+
         public boolean beforeCreate() {
             lhInterceptor.beforeCreate(file, isDirectory);
             return interceptor.beforeCreate(file, isDirectory);
@@ -518,16 +565,28 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             interceptor.beforeEdit(file);
         }
 
-        /**
-         * We are doing MOVE here, inspite of the generic name of the method.
-         *
-         * @throws IOException
-         */
+        private IOHandler getMoveHandler() {
+            if(moveHandler == null) {
+                moveHandler = new IOHandler() {
+                    @Override
         public void handle() throws IOException {
-            lhInterceptor.doMove(file, to);
-            interceptor.doMove(file, to);
-            lhInterceptor.afterMove(file, to);
-            interceptor.afterMove(file, to);
+                        doMove();
+        }
+                };
+            }
+            return moveHandler;
+        }
+
+        private IOHandler getCopyHandler() {
+            if(copyHandler == null) {
+                copyHandler = new IOHandler() {
+                    @Override
+                    public void handle() throws IOException {
+                        doCopy();
+                    }
+                };
+            }
+            return copyHandler;
         }
 
         /**

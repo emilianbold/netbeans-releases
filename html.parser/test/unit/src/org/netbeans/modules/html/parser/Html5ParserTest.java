@@ -71,13 +71,45 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite() {
+    public static Test suite() {
         AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
         TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testLogicalRangesOfUnclosedOpenTags"));
+        suite.addTest(new Html5ParserTest("testaParseErrorneousHeadContent"));
         return suite;
     }
+
+    public void testaParseErrorneousHeadContent() throws ParseException {
+        //the &lt; char after the title close tag makes the parse tree really bad
+        String code = "<!doctype html>\n"
+                + "<html>\n"
+                + "<head>\n"
+                + "<title>\n"
+                + "</title> < \n"
+                + "</head>\n"
+                + "<body>\n"
+                + "</body>\n"
+                + "</html>\n";
+
+        AstNodeTreeBuilder.DEBUG_STATES = true;
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+        assertNotNull(root);
+        AstNodeUtils.dumpTree(result.root());
+
+        Collection<ProblemDescription> problems = result.getProblems();
+        for(ProblemDescription pd : problems) {
+            System.out.println(pd);
+        }
+
+        AstNode leaf = AstNodeUtils.findDescendant(root, 48, true);
+
+        System.out.println("leaf="+leaf);
+
+    }
+
+
+
 
     public void testBasic() throws SAXException, IOException, ParseException {
         HtmlParseResult result = parse("<!doctype html><section><div></div></section>");
@@ -246,7 +278,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, HtmlTagType.OPEN_TAG);
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, true);
 
         assertTrue(!possible.isEmpty());
 
@@ -257,7 +289,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(headTag));
 
         AstNode head = AstNodeUtils.query(result.root(), "html/head");
-        possible = result.getPossibleTagsInContext(head, HtmlTagType.OPEN_TAG);
+        possible = result.getPossibleTagsInContext(head, true);
 
         assertTrue(!possible.isEmpty());
 
@@ -266,7 +298,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(headTag));
 
         AstNode html = AstNodeUtils.query(result.root(), "html");
-        possible = result.getPossibleTagsInContext(html, HtmlTagType.OPEN_TAG);
+        possible = result.getPossibleTagsInContext(html, true);
         assertTrue(!possible.isEmpty());
         assertTrue(possible.contains(divTag));
 
@@ -278,7 +310,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, HtmlTagType.END_TAG);
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, false);
 
         assertTrue(!possible.isEmpty());
 
@@ -294,7 +326,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(divTag));
 
         AstNode head = AstNodeUtils.query(result.root(), "html/head");
-        possible = result.getPossibleTagsInContext(head, HtmlTagType.OPEN_TAG);
+        possible = result.getPossibleTagsInContext(head, true);
 
         assertTrue(!possible.isEmpty());
 
@@ -317,7 +349,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode div = AstNodeUtils.query(result.root(), "html/body/div");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(div, HtmlTagType.OPEN_TAG);
+        Collection<HtmlTag> possible = result.getPossibleTagsInContext(div, true);
 
         assertTrue(!possible.isEmpty());
 
@@ -462,6 +494,33 @@ public class Html5ParserTest extends NbTestCase {
         AstNodeUtils.dumpTree(root);
     }
 
+    public void testUnclosedTitleTag() throws ParseException {
+        //this is causing all the nodes missing their logical ranges
+        //the body tag is parsed as virtual only regardless the open and end
+        //tag is present in the code.
+
+        //looks like caused by the CDATA content of the unclosed title tag
+        //which causes the parser consume everything after as unparseable code :-(
+        String code = "<!doctype html><html><head><title></head><body></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234567890123456789
+        //             0         1         2         3         4         5         6
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNode title = AstNodeUtils.query(result.root(), "html/head/title");
+        assertNotNull(title);
+
+        AstNodeUtils.dumpTree(root);
+
+        //FAILING - http://netbeans.org/bugzilla/show_bug.cgi?id=190183
+        
+//        assertTrue(title.logicalEndOffset() != -1);
+
+    }
+
     private HtmlParseResult parse(CharSequence code) throws ParseException {
         HtmlSource source = new HtmlSource(code);
         HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
@@ -529,5 +588,15 @@ public class Html5ParserTest extends NbTestCase {
         public HtmlTagAttribute getAttribute(String name) {
             return null;
         }
+
+        public HtmlTagType getTagClass() {
+            return HtmlTagType.HTML;
+        }
+
+        public Collection<HtmlTag> getChildren() {
+            return Collections.emptyList();
+        }
+
+
     }
 }

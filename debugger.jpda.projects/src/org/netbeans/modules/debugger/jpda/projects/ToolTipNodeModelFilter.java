@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.projects;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -56,6 +57,9 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author martin
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                             types=ExtendedNodeModelFilter.class,
+                             position=375)
 public class ToolTipNodeModelFilter implements ExtendedNodeModelFilter {
 
     @Override

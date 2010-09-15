@@ -87,6 +87,7 @@ import org.openide.util.Exceptions;
  *
  * @author   Jan Jancura
  */
+@LazyActionsManagerListener.Registration(path="netbeans-JPDASession/Java")
 public class BreakpointsEngineListener extends LazyActionsManagerListener 
 implements PropertyChangeListener, DebuggerManagerListener {
     

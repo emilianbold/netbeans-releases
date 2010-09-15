@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.Tag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.spi.ParseResult;
@@ -108,6 +109,10 @@ public class SyntaxAnalyzerResult {
             return found;
         }
         return detected != null ? detected : HtmlVersion.HTML41_TRANSATIONAL; //fallback if nothing can be determined
+    }
+    
+    public HtmlModel getHtmlModel() {
+        return findParser().getModel(getHtmlVersion());
     }
 
     /**
@@ -173,13 +178,19 @@ public class SyntaxAnalyzerResult {
         return htmlParseResult;
     }
 
-    private HtmlParseResult doParseHtml() throws ParseException {
+    private HtmlParser findParser() {
         HtmlVersion version = getHtmlVersion();
         HtmlParser parser = HtmlParserFactory.findParser(version);
         if (parser == null) {
             throw new IllegalStateException("Cannot find an HtmlParser implementation for "
                     + getHtmlVersion().name()); //NOI18N
         }
+        return parser;
+    }
+
+    private HtmlParseResult doParseHtml() throws ParseException {
+        HtmlVersion version = getHtmlVersion();
+        HtmlParser parser = findParser();
 
         final Collection<String> prefixes = version.getDefaultNamespace() != null
                 ? getAllDeclaredNamespaces().get(version.getDefaultNamespace())

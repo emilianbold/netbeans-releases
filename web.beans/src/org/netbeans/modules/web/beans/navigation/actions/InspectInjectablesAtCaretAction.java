@@ -43,22 +43,17 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
-import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
-import org.netbeans.modules.web.beans.navigation.InjectablesPanel;
-import org.netbeans.modules.web.beans.navigation.ResizablePopup;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -145,35 +140,25 @@ public final class InspectInjectablesAtCaretAction extends AbstractInjectableAct
         if (result.getKind() == Result.ResultKind.DEFINITION_ERROR) {
             return;
         }
-        final CompilationController controller = model
+        CompilationController controller = model
                 .getCompilationController();
-        final List<AnnotationMirror> bindings = model.getQualifiers(var);
+        final InjectablesModel uiModel = new InjectablesModel(result, controller, 
+                metaModel );
+        final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
+        final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
-            showDialog(result, bindings, controller, metaModel, var );
+            WebBeansActionHelper.showInjectablesDialog(metaModel, model, 
+                    handleVar , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    showDialog(result, bindings, controller, metaModel, var );
+                    WebBeansActionHelper.showInjectablesDialog(metaModel, 
+                            null , handleVar ,uiModel , name );
                 }
             });
         }
     }
 
-    private void showDialog( Result result , List<AnnotationMirror> bindings , 
-            CompilationController controller, MetadataModel<WebBeansModel> model,
-            VariableElement variable) 
-    {
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));           // NOI18N
-        JDialog dialog = ResizablePopup.getDialog();
-        String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
-                "TITLE_Injectables" , result.getVariable().getSimpleName().toString() );//NOI18N
-        dialog.setTitle( title );
-        dialog.setContentPane( new InjectablesPanel(variable, bindings, 
-                controller , model, new InjectablesModel(result, controller, 
-                        model)));
-        dialog.setVisible( true );
-    }
 
 }

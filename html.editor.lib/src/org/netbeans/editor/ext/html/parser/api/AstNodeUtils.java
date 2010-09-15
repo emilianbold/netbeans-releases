@@ -559,5 +559,29 @@ public class AstNodeUtils {
             visitAncestors(parent, visitor);
         }
     }
+
+    /** finds closest physical preceeding node to the offset */
+    public static AstNode getClosestNodeBackward(AstNode context, int offset, AstNode.NodeFilter filter) {
+        for (AstNode child : context.children(filter)) {
+            if (child.startOffset >= offset) {
+                return context;
+            }
+            context = getClosestNodeBackward(child, offset, filter);
+        }
+        return context;
+    }
+//
+//    /**
+//     * @return an Iterator of nodes preceeding the given node to the root.
+//     * The algorithm is to:
+//     * 1) return preceeding siblings of the given node,
+//     * 2) then its parent and all its siblings
+//     * 3) -> 1) until root node is reached
+//     */
+//
+//    public static Iterator<AstNode> getAllPredecessorsIterator() {
+//        return null;
+//    }
+
 }
     

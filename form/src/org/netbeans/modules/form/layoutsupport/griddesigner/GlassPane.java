@@ -405,10 +405,17 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             Rectangle rect = fromComponentPane(selectionResizingBounds(selComp));
             Rectangle inner = fromComponentPane(selComp.getBounds());
             g.setColor(HIGHLIGHT_COLOR);
-            g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
-            g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
-            g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
-            g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
+            if ((inner.width == 0) || (inner.height == 0)) {
+                // GridBagLayout sets location of such components
+                // to (0,0) which makes inner rectangle incorrect.
+                // Happily, we can ignore inner rectangle in this case.
+                g.fillRect(rect.x, rect.y, rect.width, rect.height);
+            } else {
+                g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
+                g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
+                g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
+                g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
+            }
             g.setColor(GridDesigner.SELECTION_COLOR);
             int x = rect.x-1;
             int y = rect.y-1;
@@ -1161,6 +1168,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                                 menu.add(menuItem);
                             }
                         }
+                        designer.updateContextMenu(context, menu);
+                        draggingStart = null;
                         menu.show(GlassPane.this, point.x, point.y);
                     }
 
@@ -1178,6 +1187,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if (draggingStart == null) {
+                draggingStart = e.getPoint();
+            }
             if (resizing) {
                 draggingRect = calculateResizingRectangle(e.getPoint(), focusedComponent);
                 calculateResizingGridLocation();
@@ -1334,8 +1346,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             int[] originalColumnBounds = info.getColumnBounds();
             int[] originalRowBounds = info.getRowBounds();
 
-            int columns = Math.max(info.getColumnCount(), newGridX+newGridWidth);
-            int rows = Math.max(info.getRowCount(), newGridY+newGridHeight);
+            int columns = info.getColumnCount();
+            int rows = info.getRowCount();
             int xDelta = newGridX - info.getGridX(focusedComponent);
             int yDelta = newGridY - info.getGridY(focusedComponent);
             int heightDelta = newGridHeight - info.getGridHeight(focusedComponent);
@@ -1354,6 +1366,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     gridManager.setGridY(selComp, gridY+yDelta);
                     gridManager.setGridWidth(selComp, width+widthDelta);
                     gridManager.setGridHeight(selComp, height+heightDelta);
+                    columns = Math.max(columns, gridX+xDelta+width+widthDelta);
+                    rows = Math.max(rows, gridY+yDelta+height+heightDelta);
                 }
             }
             GridUtils.addPaddingComponents(gridManager, columns, rows);

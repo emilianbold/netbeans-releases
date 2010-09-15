@@ -63,6 +63,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.*;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 
@@ -75,6 +76,7 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="BreakpointsView", types=NodeActionsProviderFilter.class)
 public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     
     private static final Action CUSTOMIZE_ACTION = Models.createAction (

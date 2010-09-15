@@ -305,6 +305,11 @@ public class AnimationLayer implements ActionListener {
             if (phase == 1f) {
                 timer.stop();
                 maxContDim = new Dimension();
+                for (Map.Entry<Component,Rectangle> entry : endBounds.entrySet()) {
+                    Component comp = entry.getKey();
+                    comp.setBounds(entry.getValue());
+                    comp.validate();
+                }
             }
         }
     }

@@ -47,6 +47,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 
@@ -54,7 +55,13 @@ import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
  *
  * @author Martin Entlicher
  */
-//@DebuggerServiceRegistration(path="netbeans-JPDASession", types=AsynchronousModelFilter.class)
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession",
+                                 types=AsynchronousModelFilter.class),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                                 types=AsynchronousModelFilter.class,
+                                 position=13000)
+})
 public class JPDAAsynchronousModel implements AsynchronousModelFilter {
     
     private Executor rp;

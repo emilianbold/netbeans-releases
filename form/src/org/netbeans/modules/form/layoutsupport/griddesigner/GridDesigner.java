@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -69,6 +70,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
@@ -83,14 +85,17 @@ import org.netbeans.modules.form.RADComponentNode;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
+import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DesignContainerAction;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Grid designer.
@@ -119,6 +124,7 @@ public class GridDesigner extends JPanel implements Customizer {
      * @param metaContainer designer container.
      */
     private void setDesignedContainer(RADVisualContainer metaContainer) {
+        removeAll();
         FormModel formModel = metaContainer.getFormModel();
         setLayout(new BorderLayout());
         JSplitPane splitPane = new JSplitPane();
@@ -142,6 +148,9 @@ public class GridDesigner extends JPanel implements Customizer {
         JToggleButton padButton = initPaddingButton();
         toolBar.add(Box.createRigidArea(new Dimension(10,10)));
         toolBar.add(padButton);
+        toolBar.add(Box.createRigidArea(new Dimension(10,10)));
+        initPreviewButton(toolBar, metaContainer);
+        toolBar.add(Box.createRigidArea(new Dimension(10,10)));
         toolBar.add(Box.createGlue());
         rightPanel.add(toolBar, BorderLayout.PAGE_START);
         // Estimate of the size of the header
@@ -254,6 +263,28 @@ public class GridDesigner extends JPanel implements Customizer {
             }
         });
         return button;
+    }
+    
+    /**
+     * Creates and initializes preview/test layout button.
+     * 
+     * @param toolBar toolbar where the button should be added.
+     * @param metaComp meta-component to preview.
+     */
+    private void initPreviewButton(JToolBar toolBar, final RADVisualComponent metaComp) {
+        AbstractAction action = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TestAction testAction = SystemAction.get(TestAction.class);
+                testAction.createPreview(metaComp, null);
+            }
+        };
+        TestAction testAction = SystemAction.get(TestAction.class);
+        action.putValue(Action.NAME, testAction.getName());
+        action.putValue(Action.SMALL_ICON, testAction.getValue(Action.SMALL_ICON));
+        JButton button = toolBar.add(action);
+        button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.previewLayout")); // NOI18N
+        button.setFocusPainted(false);
     }
 
     /**
@@ -408,6 +439,53 @@ public class GridDesigner extends JPanel implements Customizer {
             DesignerContext context = glassPane.currentContext();
             customizer.setContext(context);
         }
+    }
+
+    /**
+     * Updates context menu of the designer. It adds special
+     * (non-{@code GridAction}) actions like Design Parent/This Container.
+     * 
+     * @param context the current designer context.
+     * @param menu menu to update.
+     */
+    void updateContextMenu(DesignerContext context, JPopupMenu menu) {
+        if (metaSelection.isEmpty()) {
+            if ((context.getFocusedColumn() == -1) == (context.getFocusedRow() == -1)) {
+                RADVisualContainer root = (RADVisualContainer)replicator.getTopMetaComponent();
+                RADVisualContainer parent = root.getParentContainer();
+                if (haveIdenticalLayoutDelegate(root, parent)) {
+                    // Design Parent action
+                    menu.add(new DesignContainerAction(this, parent, true));
+                }
+            }
+        } else if (metaSelection.size() == 1) {
+            RADVisualContainer root = (RADVisualContainer)replicator.getTopMetaComponent();
+            RADVisualComponent comp = metaSelection.iterator().next();
+            if (comp instanceof RADVisualContainer) {
+                RADVisualContainer cont = (RADVisualContainer)comp;
+                if (haveIdenticalLayoutDelegate(root, cont)) {
+                    // Design This Container action
+                    menu.add(new DesignContainerAction(this, cont, false));
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks whether two containers have the same layout delegate.
+     * 
+     * @param cont1 the first container to check.
+     * @param cont2 the second container to check.
+     * @return {@code true} if the given containers have the same layout delegate,
+     * returns {@code false} otherwise.
+     */
+    private boolean haveIdenticalLayoutDelegate(RADVisualContainer cont1, RADVisualContainer cont2) {
+        if ((cont1 == null) || (cont2 == null)) {
+            return false;
+        }
+        String delegate1 = cont1.getLayoutSupport().getLayoutDelegate().getClass().getName();
+        String delegate2 = cont2.getLayoutSupport().getLayoutDelegate().getClass().getName();
+        return delegate1.equals(delegate2);
     }
 
     /**

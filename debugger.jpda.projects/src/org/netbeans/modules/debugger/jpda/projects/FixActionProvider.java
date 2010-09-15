@@ -71,6 +71,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.DialogDisplayer;
@@ -94,6 +95,7 @@ import org.openide.windows.TopComponent;
 *
 * @author   Jan Jancura
 */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions="fix")
 public class FixActionProvider extends ActionsProviderSupport {
 
     private JPDADebugger debugger;

@@ -72,10 +72,18 @@ public final class EncapsulateFieldUI implements RefactoringUI {
     private EncapsulateFieldPanel panel;
     private transient EncapsulateFieldsRefactoring refactoring;
     
-    /** Creates new form RenamePanelName */
-    public EncapsulateFieldUI(TreePathHandle selectedObject, CompilationInfo info) {
+    public static EncapsulateFieldUI create(TreePathHandle selectedObject, CompilationInfo info) {
+        TreePathHandle sourceType = resolveSourceType(selectedObject, info);
 
-        refactoring = new EncapsulateFieldsRefactoring(resolveSourceType(selectedObject, info));
+        if (sourceType == null) {
+            return null;
+        }
+
+        return new EncapsulateFieldUI(sourceType);
+    }
+
+    private EncapsulateFieldUI(TreePathHandle sourceType) {
+        refactoring = new EncapsulateFieldsRefactoring(sourceType);
     }
     
     public boolean isQuery() {
@@ -156,6 +164,10 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         
         // neither interface, annotation type nor annonymous declaration
         TreePath tpencloser = RetoucheUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
+
+        if (tpencloser == null) {
+            return null;
+        }
         return TreePathHandle.create(tpencloser, javac);
     }
 }

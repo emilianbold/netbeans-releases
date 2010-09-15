@@ -105,7 +105,7 @@ abstract class AbstractInjectableAction extends AbstractWebBeansAction {
          *  this list will contain variable element name and TypeElement 
          *  qualified name which contains variable element. 
          */
-        final Object[] variableAtCaret = new Object[2];
+        final Object[] variableAtCaret = new Object[3];
         if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
                 variableAtCaret , true ))
         {
@@ -123,11 +123,11 @@ abstract class AbstractInjectableAction extends AbstractWebBeansAction {
             });
         }
         catch (MetadataModelException e) {
-            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
+            Logger.getLogger( AbstractInjectableAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
         catch (IOException e) {
-            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
+            Logger.getLogger( AbstractInjectableAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
     }

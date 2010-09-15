@@ -92,7 +92,7 @@ abstract class AbstractWebBeansAction extends BaseAction {
     
     protected abstract void modelAcessAction( WebBeansModel model,
             MetadataModel<WebBeansModel> metaModel,
-            Object[] variable, JTextComponent component , 
+            Object[] subject, JTextComponent component , 
             FileObject fileObject);
     
     protected abstract String getActionCommand();

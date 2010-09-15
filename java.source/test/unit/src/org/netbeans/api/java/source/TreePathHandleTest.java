@@ -45,6 +45,7 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
@@ -70,6 +71,8 @@ public class TreePathHandleTest extends NbTestCase {
     private FileObject sourceRoot;
     
     protected void setUp() throws Exception {
+        clearWorkDir();
+        
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         
         File work = FileUtil.normalizeFile(getWorkDir());
@@ -301,6 +304,36 @@ public class TreePathHandleTest extends NbTestCase {
                 assertEquals("Object.class", file.getNameExt());
             }
         }, true);
+    }
+
+    public void test190101() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+        String code = "package test;\n" +
+                      "//public class Test {\n" +
+                      "    public static void test() {\n" +
+                      "        return Runnable() {\n" +
+                      "                new Runnable() {\n" +
+                      "        };\n" +
+                      "    }\n" +
+                      "}";
+
+        writeIntoFile(file,code);
+
+        JavaSource js = JavaSource.forFileObject(file);
+        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+
+        TreePath       tp       = info.getTreeUtilities().pathFor(code.indexOf("public static") - 1);
+
+        assertEquals(Kind.COMPILATION_UNIT, tp.getLeaf().getKind());
+
+        tp = new TreePath(tp, info.getCompilationUnit().getTypeDecls().get(0));
+        
+        TreePathHandle handle   = TreePathHandle.create(tp, info);
+        TreePath       resolved = handle.resolve(info);
+
+        assertNotNull(resolved);
+
+        assertTrue(tp.getLeaf() == resolved.getLeaf());
     }
 
     private static final class SecMan extends SecurityManager {

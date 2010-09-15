@@ -46,6 +46,7 @@ package org.openide.nodes;
 
 import java.beans.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import org.netbeans.junit.*;
 
@@ -261,6 +262,19 @@ public class SetChildrenTest extends NbTestCase {
         
         GoldenEvent.assertEvents ( nl.getEvents(), goldenEvents, PropertyChangeEvent.class );        
     }
+
+    /** Test whether Children are retrieved lazily
+     */
+    public void testUpdateChildren() {
+        UpdateChildrenFactory uchf = new UpdateChildrenFactory();
+        AbstractNode n = new AbstractNode(Children.createLazy(uchf));
+        assertNull(uchf.newChildren);
+        assertSame("Children not updated", uchf.newChildrenToReturn, n.getChildren());
+
+        uchf = new UpdateChildrenFactory();
+        n = new AbstractNode(Children.createLazy(uchf));
+        assertFalse("Children not updated, the node should not be leaf", n.isLeaf());
+    }
     
     
     /** Tests property changes on old and new nodes
@@ -290,6 +304,21 @@ public class SetChildrenTest extends NbTestCase {
         }        
     }
     
+    private static class UpdateChildrenFactory implements Callable<Children> {
+
+        Children newChildrenToReturn = new Children.Array();
+        Children newChildren;
+
+        @Override
+        public Children call() throws Exception {
+            if (newChildren == null) {
+                newChildren = newChildrenToReturn;
+            }
+            return newChildren;
+        }
+        
+    }
+
     /** Useful class for testing events.
      */
     

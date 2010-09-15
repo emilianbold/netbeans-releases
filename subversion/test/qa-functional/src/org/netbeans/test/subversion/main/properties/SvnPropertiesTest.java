@@ -155,7 +155,7 @@ public class SvnPropertiesTest extends JellyTestCase {
 
             Thread.sleep(1000);
             assertEquals("1. Wrong row count of table.", 1, spo.propertiesTable().getRowCount());
-            assertFalse("Recursively checkbox should be disabled on file! ", spo.cbRecursively().isEnabled());
+//            assertFalse("Recursively checkbox should be disabled on file! ", spo.cbRecursively().isEnabled());
             Thread.sleep(1000);
             spo.cancel();
             Thread.sleep(1000);

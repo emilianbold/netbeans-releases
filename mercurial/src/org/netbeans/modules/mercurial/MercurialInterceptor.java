@@ -60,6 +60,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
@@ -209,6 +210,55 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
         // target needs to refreshed, too
         parent = to.getParentFile();
+        // There is no point in refreshing the cache for ignored files.
+        if (parent != null && !HgUtils.isIgnored(parent, false)) {
+            reScheduleRefresh(800, to);
+        }
+    }
+
+    @Override
+    public boolean beforeCopy (File from, File to) {
+        Mercurial.LOG.fine("beforeCopy " + from + "->" + to);
+        if (from == null || to == null || to.exists()) return true;
+
+        Mercurial hg = Mercurial.getInstance();
+        return hg.isManaged(from) && hg.isManaged(to);
+    }
+
+    @Override
+    public void doCopy (final File from, final File to) throws IOException {
+        Mercurial.LOG.fine("doCopy " + from + "->" + to);
+        if (from == null || to == null || to.exists()) return;
+
+        Mercurial hg = Mercurial.getInstance();
+        File root = hg.getRepositoryRoot(from);
+        File dstRoot = hg.getRepositoryRoot(to);
+
+        if (from.isDirectory()) {
+            FileUtils.copyDirFiles(from, to);
+        } else {
+            FileUtils.copyFile(from, to);
+        }
+
+        if (root == null) return;
+        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        try {
+            if (root.equals(dstRoot)) {
+                HgCommand.doCopy(root, from, to, true, logger);
+            }
+        } catch (HgException e) {
+            Mercurial.LOG.log(Level.FINE, "Mercurial failed to copy: File: {0} {1}", new Object[] { from.getAbsolutePath(), to.getAbsolutePath() } ); // NOI18N
+        } finally {
+            logger.closeLog();
+        }
+    }
+
+    @Override
+    public void afterCopy (final File from, final File to) {
+        Mercurial.LOG.fine("afterCopy " + from + "->" + to);
+        if (to == null) return;
+
+        File parent = to.getParentFile();
         // There is no point in refreshing the cache for ignored files.
         if (parent != null && !HgUtils.isIgnored(parent, false)) {
             reScheduleRefresh(800, to);

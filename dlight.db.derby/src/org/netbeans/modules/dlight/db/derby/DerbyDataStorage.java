@@ -97,7 +97,7 @@ public class DerbyDataStorage extends SQLDataStorage {
 
         try {
             System.setProperty("derby.system.home", tmpDir.getAbsolutePath()); // NOI18N
-            Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
+            Class<?> driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
             logger.log(Level.INFO, "Driver for Derby(JavaDB) ({0}) Loaded ", driver.getName()); // NOI18N
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -153,7 +153,6 @@ public class DerbyDataStorage extends SQLDataStorage {
         dbURL = url;
         this.tableMetadatas = new ArrayList<DataTableMetadata>();
         initStorageTypes();
-        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
     }
 
     String getURL() {
@@ -171,7 +170,7 @@ public class DerbyDataStorage extends SQLDataStorage {
     }
 
     @Override
-    protected String classToType(Class clazz) {
+    protected String classToType(Class<?> clazz) {
         if (clazz == Integer.class) {
             return "integer"; // NOI18N
         }
@@ -179,8 +178,9 @@ public class DerbyDataStorage extends SQLDataStorage {
     }
 
     @Override
-    protected void connect(String dburl) throws SQLException {
-        connection = DriverManager.getConnection(dburl);
+    public void connect() throws SQLException {
+        connection = DriverManager.getConnection(getDbURL());
+        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);        
     }
 
     @Override
@@ -251,9 +251,23 @@ public class DerbyDataStorage extends SQLDataStorage {
 //        return stackStorage.getHotSpotFunctions(metric, limit);
 //    }
     @Override
-    protected String getSQLQueriesDelimeter() {
+    public String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
     }
+
+    @Override
+    public String getAutoIncrementExpresion() {
+        return "GENERATED ALWAYS AS IDENTITY"; // NOI18N
+    }
+
+    @Override
+    public String getPrimaryKeyExpression() {
+        return "PRIMARY KEY"; // NOI18N
+    }
+    
+    
+    
+    
 
 //    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
 //        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);

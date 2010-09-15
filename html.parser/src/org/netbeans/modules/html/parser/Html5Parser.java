@@ -45,9 +45,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ElementName;
@@ -61,16 +64,18 @@ import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
+import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.Validator;
 import org.netbeans.html.api.validation.ValidatorService;
+import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.ErrorHandler;
@@ -85,18 +90,10 @@ import org.xml.sax.SAXParseException;
 @ServiceProvider(service = HtmlParser.class, position = 100)
 public class Html5Parser implements HtmlParser {
 
-    private static Collection<HtmlTag> ALL_TAGS;
+    private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
 
-    private static synchronized Collection<HtmlTag> getAllTags() {
-        if (ALL_TAGS == null) {
-            ALL_TAGS = new ArrayList<HtmlTag>();
-            for (ElementName element : ElementName.ELEMENT_NAMES) {
-                ALL_TAGS.add(HtmlTagProvider.getTagForElement(element));
-            }
-        }
-        return ALL_TAGS;
-    }
-
+    private static final HtmlModel HTML5MODEL = new Html5Model();
+    
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
         try {
             String code = source.getSourceCode().toString();
@@ -176,6 +173,15 @@ public class Html5Parser implements HtmlParser {
                 || version == HtmlVersion.XHTML11;
     }
 
+    public HtmlModel getModel(HtmlVersion version) {
+        assert version == HtmlVersion.HTML5;
+        return HTML5MODEL;
+    }
+
+    public String getName() {
+        return PARSER_NAME;
+    }
+
     public static StateSnapshot makeTreeBuilderSnapshot(AstNode node) {
         int treeBuilderState = node.treeBuilderState;
         List<StackNode> stack = new ArrayList<StackNode>();
@@ -195,70 +201,120 @@ public class Html5Parser implements HtmlParser {
             super(source, root, problems, version);
         }
 
-        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, HtmlTagType type) {
-            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
-            if (type == HtmlTagType.OPEN_TAG) {
-                //open tags
-                StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
-                ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);
+        public HtmlModel model() {
+            return HTML5MODEL;
+        }
 
-                HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
-                for (ElementName element : ElementName.ELEMENT_NAMES) {
-                    int group = element.group;
-                    Boolean enabled = enabledGroups.get(group);
-
-                    if (enabled == null) {
-                        //not checked yet
-
-                        //XXX is it even correct to assume that the result
-                        //will be the same for all members of one group????
-
-//                        System.out.print("element " + element + "...");
-                        enabled = builder.canFollow(node, element);
-//                        System.out.println(enabled ? "+" : "-");
-                        enabledGroups.put(group, enabled);
-
-                        if (enabled.booleanValue()) {
-                            //add all element from the group as possible
-                            for (ElementName member : ElementNames.getElementForTreeBuilderGroup(group)) {
-                                possible.add(HtmlTagProvider.getTagForElement(member));
-                            }
-
-                        }
-
-                    }
-
-                }
-
-
-            } else {
-                //end tags
-                do {
-                    ElementName element = (ElementName) node.elementName;
-                    if (element != null) {
-                        //TODO if(element is not empty tag (end tag forbidden) {
-                        possible.add(HtmlTagProvider.getTagForElement(element));
-                        //}
-                    }
-                } while ((node = node.parent()) != null && !node.isRootNode());
-
+        public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean openTags) {
+            HtmlTag tag = model().getTag(afterNode.getNameWithoutPrefix());
+            if(tag == null) {
+                return Collections.emptyList();
             }
+            if (openTags) {
+                Collection<HtmlTag> possibleChildren = new LinkedHashSet<HtmlTag>();
+                addPossibleTags(tag, possibleChildren);
+                return possibleChildren;
+            } else {
+                return completeEndTags(afterNode);
+            }
+        }
+
+        public void addPossibleTags(HtmlTag tag, Collection<HtmlTag> possible) {
+            //1.add all children of the tag
+            //2.if a child has optional end, add its possible children
+            //3.if a child is transparent, add its possible children
+            Collection<HtmlTag> children = tag.getChildren();
+            possible.addAll(children);
+            for(HtmlTag child : children) {
+                if(child.hasOptionalOpenTag()) {
+                    addPossibleTags(child, possible);
+                }
+                //TODO add the transparent check
+            }
+        }
+
+        private Collection<HtmlTag> completeEndTags(AstNode node) {
+            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
+            //end tags
+            do {
+                ElementName element = (ElementName) node.elementName;
+                if (element != null) {
+                    //TODO if(element is not empty tag (end tag forbidden) {
+                    possible.add(HtmlTagProvider.getTagForElement(element.name));
+                    //}
+                }
+            } while ((node = node.parent()) != null && !node.isRootNode());
 
             return possible;
         }
 
-        public Collection<HtmlTag> getAllTags() {
-            return Html5Parser.getAllTags();
+
+//        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, boolean type) {
+//            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
+//            if (type) {
+//                //open tags
+//                StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
+//                ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);
+//
+//                HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
+//                for (ElementName element : ElementName.ELEMENT_NAMES) {
+//                    int group = element.group;
+//                    Boolean enabled = enabledGroups.get(group);
+//
+//                    if (enabled == null) {
+//                        //not checked yet
+//
+//                        //XXX is it even correct to assume that the result
+//                        //will be the same for all members of one group????
+//
+////                        System.out.print("element " + element + "...");
+//                        enabled = builder.canFollow(node, element);
+////                        System.out.println(enabled ? "+" : "-");
+//                        enabledGroups.put(group, enabled);
+//
+//                        if (enabled.booleanValue()) {
+//                            //add all element from the group as possible
+//                            for (ElementName member : ElementNames.getElementForTreeBuilderGroup(group)) {
+//                                possible.add(HtmlTagProvider.getTagForElement(member.name));
+//                            }
+//
+//                        }
+//
+//                    }
+//
+//                }
+//
+//            } else {
+//                possible = completeEndTags(node);
+//            }
+//
+//            return possible;
+//        }
+        
+    }
+
+    private static final class Html5Model implements HtmlModel {
+
+        private static Collection<HtmlTag> ALL_TAGS;
+
+        public synchronized Collection<HtmlTag> getAllTags() {
+            if (ALL_TAGS == null) {
+                ALL_TAGS = new ArrayList<HtmlTag>();
+                for (ElementName element : ElementName.ELEMENT_NAMES) {
+                    ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.name));
+                }
+            }
+            return ALL_TAGS;
         }
 
         public HtmlTag getTag(String tagName) {
-            ElementName element = ElementNames.forName(tagName);
-            assert element != null;
-            if(element == null) {
-                return null;
-            }
-            return HtmlTagProvider.getTagForElement(element);
+            return HtmlTagProvider.getTagForElement(tagName);
         }
-        
+
+        public Collection<? extends NamedCharRef> getNamedCharacterReferences() {
+            return EnumSet.allOf(NamedCharacterReference.class);
+        }
+
     }
+    
 }

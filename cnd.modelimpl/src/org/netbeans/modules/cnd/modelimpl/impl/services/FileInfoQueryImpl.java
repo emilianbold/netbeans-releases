@@ -425,7 +425,9 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     @Override
     public Collection<CsmInclude> getBrokenIncludes(CsmFile file) {
         if (file instanceof FileImpl) {
-            return ((FileImpl) file).getBrokenIncludes();
+            if (((FileImpl) file).hasBrokenIncludes()) {
+                return ((FileImpl) file).getBrokenIncludes();
+            }
         }
         return Collections.<CsmInclude>emptyList();
     }

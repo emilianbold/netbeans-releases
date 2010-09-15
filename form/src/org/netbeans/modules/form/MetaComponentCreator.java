@@ -71,6 +71,8 @@ import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
+import org.netbeans.modules.form.palette.BoxFillerInitializer;
+import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 
@@ -105,6 +107,23 @@ public class MetaComponentCreator {
 
     MetaComponentCreator(FormModel model) {
         formModel = model;
+    }
+
+    /** Creates and adds a new metacomponent to FormModel. The new component
+     * is added to target component (if it is ComponentContainer).
+     * @param paletteItem {@code PaletteItem} describing the component
+     * @param constraints constraints object (for visual components only)
+     * @param targetComp component into which the new component is added
+     * @return the metacomponent if it was successfully created and added (all
+     *         errors are reported immediately)
+     */
+    public RADComponent createComponent(PaletteItem paletteItem,
+                                        RADComponent targetComp,
+                                        Object constraints) {
+        RADComponent metaComp = createComponent(paletteItem.getComponentClassSource(), targetComp, constraints);
+        String initializerId = paletteItem.getInitializerId();
+        initializeNewComponent(metaComp, initializerId);
+        return metaComp;
     }
 
     /** Creates and adds a new metacomponent to FormModel. The new component
@@ -255,6 +274,23 @@ public class MetaComponentCreator {
         catch (Exception ex) { // should not happen
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
+        }
+    }
+
+    public RADVisualComponent precreateVisualComponent(PaletteItem paletteItem) {
+        RADVisualComponent metaComp = precreateVisualComponent(paletteItem.getComponentClassSource());
+        String initializerId = paletteItem.getInitializerId();
+        initializeNewComponent(metaComp, initializerId);
+        return metaComp;
+    }
+
+    private void initializeNewComponent(RADComponent metaComp, String initializerId) {
+        if (initializerId == null) {
+            return;
+        }
+        // PENDING general registration of initializers
+        if (initializerId.startsWith("Box.Filler")) { // NOI18N
+            new BoxFillerInitializer(metaComp, initializerId).initialize();
         }
     }
 

@@ -54,7 +54,9 @@ public class H2StackStorageTest extends CommonStackDataStorageTests {
     protected StackDataStorage createStorage() {
         try {
             SQLStackDataStorage result = new SQLStackDataStorage();
-            result.attachTo(new H2DataStorage());
+            H2DataStorage st = new H2DataStorage();
+            st.connect();
+            result.attachTo(st);
             return result;
         } catch (SQLException ex) {
             ex.printStackTrace();

@@ -53,6 +53,7 @@ import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
@@ -302,7 +303,7 @@ public class CCKit extends NbEditorKit {
                 boolean overwrite) throws BadLocationException {
             boolean blockCommentStart = false;
             if (dotPos > 0 && str.charAt(0) == '*') {
-                TokenItem<CppTokenId> tokenAtDot = CndTokenUtilities.getToken(doc, dotPos-1, true);
+                TokenItem<TokenId> tokenAtDot = CndTokenUtilities.getToken(doc, dotPos-1, true);
                 if (tokenAtDot.id() == CppTokenId.SLASH) {
                     // this is begin of block comment
                     blockCommentStart = true;
@@ -343,7 +344,7 @@ public class CCKit extends NbEditorKit {
                         // NOI18N
                         // XXX: vv159170 simplest hack
                         // insert "};" for "{" when in "enum", "class", "struct" and union completion
-                        TokenItem<CppTokenId> firstNonWhiteBwd = CndTokenUtilities.getFirstNonWhiteBwd(doc, end);
+                        TokenItem<TokenId> firstNonWhiteBwd = CndTokenUtilities.getFirstNonWhiteBwd(doc, end);
                         if (firstNonWhiteBwd == null || firstNonWhiteBwd.id() != CppTokenId.LBRACE) {
                             return Boolean.FALSE;
                         }
@@ -353,25 +354,28 @@ public class CCKit extends NbEditorKit {
                             lastSepOffset = 0;
                         }
                         if (lastSepOffset != -1 && lastSepOffset < dotPos) {
-                            TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lBracePos, false, false);
+                            TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lBracePos, false, false);
                             loop:
                             while (cppTokenSequence.movePrevious() && cppTokenSequence.offset() >= lastSepOffset) {
-                                switch (cppTokenSequence.token().id()) {
-                                    case RPAREN:
-                                    case RBRACKET:
-                                        break loop;
-                                    case CLASS:
-                                    case UNION:
-                                    case STRUCT:
-                                    case ENUM:
-                                        insString = "};"; // NOI18N
-                                        break loop;
+                                TokenId id = cppTokenSequence.token().id();
+                                if(id instanceof CppTokenId) {
+                                    switch ((CppTokenId)id) {
+                                        case RPAREN:
+                                        case RBRACKET:
+                                            break loop;
+                                        case CLASS:
+                                        case UNION:
+                                        case STRUCT:
+                                        case ENUM:
+                                            insString = "};"; // NOI18N
+                                            break loop;
+                                    }
                                 }
                             }
                         }
                         doc.insertString(end, "\n" + insString, null); // NOI18N
                         // Lock does not need because method is invoked from BaseKit that already lock indent.
-                        Indent.get(doc).indentNewLine(end);
+                        Indent.get(doc).reindent(end + 1);
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }

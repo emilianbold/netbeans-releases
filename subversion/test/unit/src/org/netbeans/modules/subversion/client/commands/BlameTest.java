@@ -67,15 +67,15 @@ public class BlameTest extends AbstractCommandTest {
 
     @Override
     protected void setUp() throws Exception {
-        if(getName().equals("testBlameFileNullAuthor") || 
-           getName().equals("testBlameUrlNullAuthor") ) {
-            setAnnonWriteAccess();
-            runSvnServer();
-        }
         try {
             super.setUp();
         } catch (Exception e) {
             stopSvnServer();
+        }
+        if(getName().equals("testBlameFileNullAuthor") || 
+           getName().equals("testBlameUrlNullAuthor") ) {
+            setAnnonWriteAccess();
+            runSvnServer();
         }
     }
 
@@ -131,7 +131,7 @@ public class BlameTest extends AbstractCommandTest {
         assertNotNull(e);
 
     }
-    
+
     public void testBlameFile() throws Exception {
         blame(fileAnnotator, "file");
     }
@@ -192,7 +192,6 @@ public class BlameTest extends AbstractCommandTest {
         Number rev3 = info.getRevision();
         
         ISVNAnnotations a1 = annotator.annotate(getNbClient(), file, null, null);
-        ISVNAnnotations a2 = annotator.annotate(getReferenceClient(), file, null, null);
         
         // test 
         assertEquals(3, a1.numberOfLines());
@@ -205,15 +204,13 @@ public class BlameTest extends AbstractCommandTest {
         assertEquals(author2, a1.getAuthor(1));
         assertEquals(author3, a1.getAuthor(2));
 
-//        assertEquals(date1, a1.getChanged(0));
-//        assertEquals(date2, a1.getChanged(1));
-//        assertEquals(date3, a1.getChanged(2));
+        assertEquals(date1, a1.getChanged(0));
+        assertEquals(date2, a1.getChanged(1));
+        assertEquals(date3, a1.getChanged(2));
 
         assertEquals(rev1.getNumber(), a1.getRevision(0));
         assertEquals(rev2.getNumber(), a1.getRevision(1));
         assertEquals(rev3.getNumber(), a1.getRevision(2));    
-
-        assertAnnotations(a2, a1);
     }
     
     public void testBlameCopied() throws Exception {
@@ -249,7 +246,6 @@ public class BlameTest extends AbstractCommandTest {
         ISVNClientAdapter c = getNbClient();
         copy(file, copy);
         ISVNAnnotations a1 = c.annotate(copy, null, null);
-        ISVNAnnotations a2 = getReferenceClient().annotate(copy, null, null);
 
         // test
         assertEquals(3, a1.numberOfLines());
@@ -270,9 +266,8 @@ public class BlameTest extends AbstractCommandTest {
         assertEquals(rev2.getNumber(), a1.getRevision(1));
         assertEquals(rev3.getNumber(), a1.getRevision(2));
 
-        assertAnnotations(a2, a1);
     }
-    
+
     public void testBlameFileStartRevEndRev() throws Exception {
         blameStartRevEndRev(fileAnnotator);
     }
@@ -307,7 +302,6 @@ public class BlameTest extends AbstractCommandTest {
         info = getInfo(file);                
         
         ISVNAnnotations a1 = annotator.annotate(getNbClient(), file, rev1, rev2);
-        ISVNAnnotations a2 = annotator.annotate(getReferenceClient(), file, rev1, rev2);
         
         // test 
         assertEquals(2, a1.numberOfLines());
@@ -318,22 +312,23 @@ public class BlameTest extends AbstractCommandTest {
         assertEquals(author1, a1.getAuthor(0));
         assertEquals(author2, a1.getAuthor(1));
         
-//        assertEquals(date1, a1.getChanged(0));
-//        assertEquals(date2, a1.getChanged(1));
+        assertEquals(date1, a1.getChanged(0));
+        assertEquals(date2, a1.getChanged(1));
 
         assertEquals(rev1.getNumber(), a1.getRevision(0));
         assertEquals(rev2.getNumber(), a1.getRevision(1));
 
-        assertAnnotations(a2, a1);
     }
 
-    public void testBlameFileNullAuthor() throws Exception {
-        blameNullAuthor(fileAnnotator);
-    }
-    
-    public void testBlameUrlNullAuthor() throws Exception {
-        blameNullAuthor(urlAnnotator);
-    }
+    // can't find a way how to push an null user through svnClientAdapter
+    // so skiping this!!!
+//    public void testBlameFileNullAuthor() throws Exception {
+//        blameNullAuthor(fileAnnotator);
+//    }
+//
+//    public void testBlameUrlNullAuthor() throws Exception {
+//        blameNullAuthor(urlAnnotator);
+//    }
 
     private void blameNullAuthor(Annotator annotator) throws Exception {                                
         
@@ -343,12 +338,11 @@ public class BlameTest extends AbstractCommandTest {
         
         // 1. line
         write(file, "a\n");
-        commit(file);
+        anoncommit(file);
         ISVNInfo info = getInfo(file);
         Number rev1 = info.getRevision();
 
         ISVNAnnotations a1 = annotator.annotate(getNbClient(), file, null, null);
-        ISVNAnnotations a2 = annotator.annotate(getReferenceClient(), file, null, null);
         
         // test 
         assertEquals(1, a1.numberOfLines());        
@@ -356,8 +350,6 @@ public class BlameTest extends AbstractCommandTest {
         assertNull(a1.getAuthor(0));
         // assertNull(a.getChanged(0)); is null only for svnClientAdapter
         assertEquals(rev1.getNumber(), a1.getRevision(0));
-
-        assertAnnotations(a2, a1, true); // true -> ignore date - is null only for svnClientAdapter
     }
 
     private abstract class Annotator {

@@ -129,6 +129,11 @@ public class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         return false;
     }
 
+    @Override
+    public boolean isStatic() {
+        return false;
+    }
+
     public CsmType getReturnType() {
         return TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
     }

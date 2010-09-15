@@ -99,6 +99,11 @@ public class ReinstatingTreeBuilder extends TreeBuilder<AstNode>{
 
     
     public boolean canFollow(AstNode node, ElementName element) {
+        //no open tag can follow in CDATA section
+        if(snapshot.mode == 20 /* TreeBuilder.IN_CDATA_RCDATA = 20; */) {
+            return false;
+        }
+
         try {
             //reset state
             loadSnapshot(snapshot);

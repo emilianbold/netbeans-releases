@@ -57,6 +57,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -86,6 +88,7 @@ import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
@@ -105,6 +108,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -124,6 +129,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private Color defaultVersionC;
 
     private static final RequestProcessor RP = new RequestProcessor(AddDependencyPanel.class.getName(), 5);
+    private static final RequestProcessor RPofOpenListPanel = new RequestProcessor(AddDependencyPanel.OpenListPanel.class.getName(), 1);
+    private static final RequestProcessor RPofDMListPanel = new RequestProcessor(AddDependencyPanel.DMListPanel.class.getName(), 1);
+    private static final RequestProcessor RPofQueryPanel = new RequestProcessor(AddDependencyPanel.QueryPanel.class.getName(), 10);
 
     private NotificationLineSupport nls;
     private RepositoryInfo nbRepo;
@@ -744,10 +752,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         txtVersion.setText(version);
     }
 
-    private static Node noResultsRoot, searchingRoot;
+    private static Node noResultsNode, searchingNode;
 
-    private static Node getNoResultsRoot() {
-        if (noResultsRoot == null) {
+    private static Node getNoResultsNode() {
+        if (noResultsNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
 
                 @Override
@@ -764,16 +772,14 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
             nd.setDisplayName(NbBundle.getMessage(QueryPanel.class, "LBL_Node_Empty")); //NOI18N
 
-            Children.Array array = new Children.Array();
-            array.add(new Node[]{nd});
-            noResultsRoot = new AbstractNode(array);
+            noResultsNode = nd;
         }
 
-        return noResultsRoot;
+        return new FilterNode (noResultsNode, Children.LEAF);
     }
 
-    private static Node getSearchingRoot() {
-        if (searchingRoot == null) {
+    private static Node getSearchingNode() {
+        if (searchingNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
 
                 @Override
@@ -790,21 +796,80 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
             nd.setDisplayName(NbBundle.getMessage(QueryPanel.class, "LBL_Node_Searching")); //NOI18N
 
-            Children.Array array = new Children.Array();
-            array.add(new Node[]{nd});
-            searchingRoot = new AbstractNode(array);
+            searchingNode = nd;
         }
 
-        return searchingRoot;
+        return new FilterNode (searchingNode, Children.LEAF);
+    }
+    
+    private class ResultsRootNode extends AbstractNode {
+
+        private ResultsRootChildren resultsChildren;
+
+        public ResultsRootNode() {
+            this(new InstanceContent());
+        }
+
+        private ResultsRootNode(InstanceContent content) {
+            super (new ResultsRootChildren(), new AbstractLookup(content));
+            content.add(this);
+            this.resultsChildren = (ResultsRootChildren) getChildren();
+        }
+
+        public void setOneChild(Node n) {
+            List<Node> ch = new ArrayList<Node>(1);
+            ch.add(n);
+            setNewChildren(ch);
+        }
+        
+        public void setNewChildren(List<Node> ch) {
+            resultsChildren.setNewChildren (ch);
+        }
+    }
+    
+    private class ResultsRootChildren extends Children.Keys<Node> {
+        
+        List<Node> myNodes;
+
+        public ResultsRootChildren() {
+            myNodes = Collections.EMPTY_LIST;
+        }
+
+        private void setNewChildren(List<Node> ch) {
+            myNodes = ch;
+            refreshList();
+        }
+
+        @Override
+        protected void addNotify() {
+            refreshList();
+        }
+
+        private void refreshList() {
+            List<Node> keys = new ArrayList();
+            for (Node node : myNodes) {
+                keys.add(node);
+            }
+            setKeys(keys);
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            return new Node[] { key };
+        }
+
     }
 
     private static final Object LOCK = new Object();
 
     private class QueryPanel extends JPanel implements ExplorerManager.Provider,
-            Comparator<String>, PropertyChangeListener, ChangeListener {
+            Comparator<String>, PropertyChangeListener, ChangeListener, Observer {
+        
+        private QueryRequest queryRequest;
 
         private BeanTreeView btv;
         private ExplorerManager manager;
+        private ResultsRootNode resultsRootNode;
 
         private String inProgressText, lastQueryText, curTypedText;
 
@@ -822,6 +887,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             manager.addPropertyChangeListener(this);
             AddDependencyPanel.this.resultsLabel.setLabelFor(btv);
             btv.getAccessibleContext().setAccessibleDescription(AddDependencyPanel.this.resultsLabel.getAccessibleContext().getAccessibleDescription());
+            queryRequest = null;
+            resultsRootNode = new ResultsRootNode();
+            manager.setRootContext(resultsRootNode);
         }
 
         /** delayed change of query text */
@@ -857,6 +925,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             synchronized (LOCK) {
                 if (inProgressText != null) {
                     lastQueryText = queryText;
+                    // stop waiting for results of the previous search
+                    if (null != queryRequest) {
+                        queryRequest.deleteObserver(this);
+                    }
                     return;
                 }
                 inProgressText = queryText;
@@ -865,7 +937,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    manager.setRootContext(getSearchingRoot());
+                    resultsRootNode.setOneChild(getSearchingNode());
                 }
             });
 
@@ -893,61 +965,41 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     }
                 }
             }
+            
+            queryRequest = new QueryRequest(fields,infos,this);
 
-            Task t = RP.post(new Runnable() {
+            Task t = RPofQueryPanel.post(new Runnable() {
 
                 public void run() {
-                    List<NBVersionInfo> tempInfos = null;
-                    boolean tempIsError = false;
+                    boolean isError = false;
                     //first try with classes search included,
                     try {
-                        tempInfos = RepositoryQueries.find(fields, infos);
+                        RepositoryQueries.find(queryRequest);
                     } catch (BooleanQuery.TooManyClauses exc) {
                         // if failing, then exclude classes from search..
-                        try {
-                            tempInfos = RepositoryQueries.find(fieldsNonClasses, infos);
-                            //TODO show that classes were excluded somehow?
-                        } catch (BooleanQuery.TooManyClauses exc2) {
-                            // if still failing, report to the user
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    AddDependencyPanel.this.searchField.setForeground(Color.RED);
-                                    AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral"));
-                                }
-                            });
-                            tempIsError = true;
-                        }
-                    }
+                        if (queryRequest.countObservers()>0) {
+                            try {
+                                queryRequest.changeFields(fieldsNonClasses);
+                                RepositoryQueries.find(queryRequest);
+                                //TODO show that classes were excluded somehow?
+                            } catch (BooleanQuery.TooManyClauses exc2) {
+                                // if still failing, report to the user
+                                SwingUtilities.invokeLater(new Runnable() {
 
-                    final List<NBVersionInfo> infos = tempInfos;
-                    final boolean isError = tempIsError;
-
-                    final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
-
-                    if (infos != null) {
-                        for (NBVersionInfo nbvi : infos) {
-                            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
-                            List<NBVersionInfo> get = map.get(key);
-                            if (get == null) {
-                                get = new ArrayList<NBVersionInfo>();
-                                map.put(key, get);
+                                    public void run() {
+                                        AddDependencyPanel.this.searchField.setForeground(Color.RED);
+                                        AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral"));
+                                    }
+                                });
+                                isError = true;
                             }
-                            get.add(nbvi);
                         }
                     }
-
-                    final List<String> keyList = new ArrayList<String>(map.keySet());
-                    // sort specially using our comparator, see compare method
-                    Collections.sort(keyList, QueryPanel.this);
-
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            manager.setRootContext(createResultsNode(keyList, map));
-                            if (!isError) {
+                    
+                    if (!isError) SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
                                 AddDependencyPanel.this.searchField.setForeground(defSearchC);
                                 AddDependencyPanel.this.nls.clearMessages();
-                            }
                         }
                     });
                 }
@@ -978,19 +1030,37 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         }
 
 
-        private Node createResultsNode(List<String> keyList, Map<String, List<NBVersionInfo>> map) {
-            Node node;
-            if (keyList.size() > 0) {
-                Children.Array array = new Children.Array();
-                node = new AbstractNode(array);
+        private void updateResultNodes(List<String> keyList, Map<String, List<NBVersionInfo>> map) {
 
-                for (String key : keyList) {
-                    array.add(new Node[]{createFilterWithDefaultAction(MavenNodeFactory.createArtifactNode(key, map.get(key)), false)});
+            if (keyList.size() > 0) { // some results available
+                
+                Map<String, Node> currentNodes = new HashMap<String, Node>();
+                for (Node nd : resultsRootNode.getChildren().getNodes()) {
+                    currentNodes.put(nd.getName(), nd);
                 }
-            } else {
-                node = getNoResultsRoot();
+                List<Node> newNodes = new ArrayList<Node>(keyList.size());
+
+                // still searching?
+                if (null!=queryRequest && !queryRequest.isFinished())
+                    newNodes.add(getSearchingNode());
+                
+                for (String key : keyList) {
+                    Node nd;
+                    nd = currentNodes.get(key);
+                    if (null != nd) {
+                        ((MavenNodeFactory.ArtifactNode)((FilterNodeWithDefAction)nd).getOriginal()).setVersionInfos(map.get(key));
+                    } else {
+                        nd = createFilterWithDefaultAction(MavenNodeFactory.createArtifactNode(key, map.get(key)), false);
+                    }
+                    newNodes.add(nd);
+                }
+                
+                resultsRootNode.setNewChildren(newNodes);
+            } else if (null!=queryRequest && !queryRequest.isFinished()) { // still searching, no results yet
+                resultsRootNode.setOneChild(getSearchingNode());
+            } else { // finished searching with no results
+                resultsRootNode.setOneChild(getNoResultsNode());
             }
-            return node;
         }
 
         /** Impl of comparator, sorts artifacts asfabetically with exception
@@ -1021,6 +1091,40 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
+        public void update(Observable o, Object arg) {
+
+            if (null == o || !(o instanceof QueryRequest)) {
+                return;
+            }
+
+            List<NBVersionInfo> infos = ((QueryRequest) o).getResults();
+
+            final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
+
+            if (infos != null) {
+                for (NBVersionInfo nbvi : infos) {
+                    String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
+                    List<NBVersionInfo> get = map.get(key);
+                    if (get == null) {
+                        get = new ArrayList<NBVersionInfo>();
+                        map.put(key, get);
+                    }
+                    get.add(nbvi);
+                }
+            }
+
+            final List<String> keyList = new ArrayList<String>(map.keySet());
+            // sort specially using our comparator, see compare method
+            Collections.sort(keyList, QueryPanel.this);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateResultNodes(keyList, map);
+                }
+            });
+        }
+
     } // QueryPanel
 
     private static final Object DM_DEPS_LOCK = new Object();
@@ -1049,7 +1153,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             AddDependencyPanel.this.artifactsLabel.setLabelFor(btv);
 
             // disable tab if DM section not defined
-            RP.post(this);
+            RPofDMListPanel.post(this);
         }
 
         public ExplorerManager getExplorerManager() {
@@ -1150,7 +1254,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             setLayout(new BorderLayout());
             add(btv, BorderLayout.CENTER);
 
-            RP.post(this);
+            RPofOpenListPanel.post(this);
         }
 
         public ExplorerManager getExplorerManager() {
@@ -1251,23 +1355,33 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     }
 
     private Node createFilterWithDefaultAction(final Node nd, boolean leaf) {
-        Children child = leaf ? Children.LEAF : new FilterNode.Children(nd) {
-            @Override
-            protected Node[] createNodes(Node key) {
-                return new Node[] { createFilterWithDefaultAction(key, true)};
-            }
+        return new FilterNodeWithDefAction (nd, leaf);
+    }
 
-        };
+    class FilterNodeWithDefAction extends FilterNode {
 
-        return new FilterNode(nd, child) {
-            @Override
-            public Action getPreferredAction() {
-                return new DefAction(true, nd.getLookup());
-            }
-            @Override
-            public Action[] getActions(boolean context) {
-                return new Action[0];
-            }
-        };
+        public FilterNodeWithDefAction(Node nd, boolean leaf) {
+            super(nd, leaf ? Children.LEAF : new FilterNode.Children(nd) {
+                @Override
+                protected Node[] createNodes(Node key) {
+                    return new Node[]{createFilterWithDefaultAction(key, true)};
+                }
+            });
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new DefAction(true, getOriginal().getLookup());
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+        
+        @Override
+        public Node getOriginal() {
+            return super.getOriginal();
+        }
     }
 }

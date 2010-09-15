@@ -82,6 +82,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -107,6 +109,12 @@ public final class DatasourceUIHelper {
         @Override
         public String toString() {
             return NbBundle.getMessage(DatasourceUIHelper.class, "LBL_NEW_DATASOURCE"); // NOI18N
+        }
+    };
+    static final Object SELECT_SERVER_ITEM = new Object() {
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(DatasourceUIHelper.class, "LBL_SELECT_SERVER"); // NOI18N
         }
     };
     
@@ -412,7 +420,7 @@ public final class DatasourceUIHelper {
      * @param combo combobox to manage.
      */
     public static void connect(J2eeModuleProvider provider, JComboBox combo) {
-        connect(null, provider, combo, null);
+        connect(null, provider, combo, null, false);
     }
 
     /**
@@ -424,17 +432,15 @@ public final class DatasourceUIHelper {
      * @param combo combobox to manage.
      */
     public static void connect(Project project, J2eeModuleProvider provider, JComboBox combo) {
-        connect(project, provider, combo, null);
+        boolean canServerBeSelected = false;
+        ServerStatusProvider2 serverStatusProvider = project.getLookup().lookup(ServerStatusProvider2.class);
+        if (serverStatusProvider != null && !serverStatusProvider.validServerInstancePresent()) {
+            canServerBeSelected = true;
+        }
+        connect(project, provider, combo, null, canServerBeSelected);
     }
-    
-    private static final void connect(final Project project, final J2eeModuleProvider provider, final JComboBox combo, final Datasource selectedDatasource) {
-        
-        assert(provider != null);
-        
-        combo.setEditor(new DatasourceComboBoxEditor(combo.getEditor()));
-        
-        combo.setRenderer(new DatasourceListCellRenderer());
-        
+
+    private static List<Datasource> fetchDataSources(final J2eeModuleProvider provider) {
         // fetch datasources asynchronously
         Collection<Action> actions = new ArrayList<Action>();
         final List<Datasource> datasources = new ArrayList<Datasource>();
@@ -451,10 +457,22 @@ public final class DatasourceUIHelper {
                 }
             }
         });
-        
-        ProgressSupport.invoke(actions);
 
-        populate(datasources, provider.isDatasourceCreationSupported(), combo, selectedDatasource, false);
+        ProgressSupport.invoke(actions);
+        return datasources;
+    }
+
+    private static final void connect(final Project project, final J2eeModuleProvider provider, final JComboBox combo, final Datasource selectedDatasource, boolean canServerBeSelected) {
+        
+        assert(provider != null);
+        
+        combo.setEditor(new DatasourceComboBoxEditor(combo.getEditor()));
+        
+        combo.setRenderer(new DatasourceListCellRenderer());
+        
+        final List<Datasource> datasources = fetchDataSources(provider);
+
+        populate(datasources, provider.isDatasourceCreationSupported(), combo, selectedDatasource, false, canServerBeSelected);
         Component toListenOn = (combo.isEditable() ? combo.getEditor().getEditorComponent() : combo);
             
         toListenOn.addKeyListener(new KeyAdapter() {
@@ -465,6 +483,9 @@ public final class DatasourceUIHelper {
                     Object selectedItem = combo.getSelectedItem();
                     if (selectedItem == NEW_ITEM) {
                         performCreateDatasource(provider, combo, false);
+                        e.consume();
+                    } else if (selectedItem == SELECT_SERVER_ITEM) {
+                        performServerSelection(project, provider, combo);
                         e.consume();
                     }
                 }
@@ -495,11 +516,31 @@ public final class DatasourceUIHelper {
                 } else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
                     if (selectedItem == NEW_ITEM) {
                         performCreateDatasource(provider, combo, true);
+                    } else if (selectedItem == SELECT_SERVER_ITEM) {
+                        performServerSelection(project, provider, combo);
                     }
                 }
             }
         });
 
+    }
+
+    private static boolean isContainerManaged(Project project) {
+        PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
+        return providerSupplier != null && providerSupplier.supportsDefaultProvider();
+    }
+
+    private static void performServerSelection(Project project, J2eeModuleProvider provider, final JComboBox combo) {
+        ServerStatusProvider2 serverStatusProvider = project.getLookup().lookup(ServerStatusProvider2.class);
+        if (serverStatusProvider.selectServer()) {
+            provider = project.getLookup().lookup(J2eeModuleProvider.class);
+            // if server which does not support Data Sources was chosen then
+            // do not bother populating the list
+            if (isContainerManaged(project)) {
+                final List<Datasource> datasources = fetchDataSources(provider);
+                populate(datasources, provider.isDatasourceCreationSupported(), combo, null, false, false);
+            }
+        }
     }
     
     private static void performCreateDatasource(final J2eeModuleProvider provider, final JComboBox combo, boolean selectItemLater) {
@@ -573,7 +614,7 @@ public final class DatasourceUIHelper {
                 }
             });
         } else {
-            populate(datasources, provider.isDatasourceCreationSupported(), combo, ds[0], selectItemLater);
+            populate(datasources, provider.isDatasourceCreationSupported(), combo, ds[0], selectItemLater, false);
         }
     }
     
@@ -581,7 +622,7 @@ public final class DatasourceUIHelper {
      * Returns a sorted list of all datasources (from the module and the server)
      */
     private static List<Datasource> getDatasources(final J2eeModuleProvider provider) throws ConfigurationException {
-        
+
         Set<Datasource> moduleDatasources = provider.getModuleDatasources();
         Set<Datasource> serverDatasources = provider.getServerDatasources();
         
@@ -646,7 +687,7 @@ public final class DatasourceUIHelper {
 //        return persistenceUnit;
 //    }
     
-    private static List populate(List<Datasource> datasources, boolean creationSupported, final JComboBox combo, final Datasource selectedDatasource, boolean selectItemLater) {    
+    private static List populate(List<Datasource> datasources, boolean creationSupported, final JComboBox combo, final Datasource selectedDatasource, boolean selectItemLater, boolean serverSelectionSupported) {
 
         
         List<Object> items = (datasources == null ? new LinkedList<Object>() : new LinkedList<Object>(datasources));
@@ -658,8 +699,11 @@ public final class DatasourceUIHelper {
         if (creationSupported) {
             items.add(NEW_ITEM);
         }
-        
-        
+
+        if (serverSelectionSupported) {
+            items.add(SELECT_SERVER_ITEM);
+        }
+
         DatasourceComboBoxModel model = new DatasourceComboBoxModel(datasources, items);
 
         combo.setModel(model);

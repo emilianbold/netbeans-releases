@@ -516,7 +516,12 @@ abstract class Lookup implements ContextProvider {
                 assert service != null;
                 this.service = service;
                 fillInstances(l, lr, s);
-                listenOnDisabledModules();
+                RP.post(new Runnable() {
+                    public void run() {
+                        // This may take a while...
+                        listenOnDisabledModules();
+                    }
+                });
             }
             
             private void fillInstances(List<String> l, Result<T> lr, Set<String> s) {
@@ -576,15 +581,22 @@ abstract class Lookup implements ContextProvider {
                 }
             }
 
-            private void fillServiceInstance(Item<T> li) {
+            private String getClassName(Item li) {
                 String id = li.getId();
+                int i = id.lastIndexOf("/");
+                if (i >= 0) id = id.substring(i+1);
+                return id.replace('-', '.');
+            }
+
+            private void fillServiceInstance(Item<T> li) {
+                String className = getClassName(li);
                 Object instance = null;
                 synchronized(instanceCache) {
-                    instance = instanceCache.get (id);
+                    instance = instanceCache.get (className);
                 }
                 if (instance != null) {
                     try {
-                        add(service.cast(instance), id);
+                        add(service.cast(instance), className);
                     } catch (ClassCastException cce) {
                         Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
                     }
@@ -702,10 +714,10 @@ abstract class Lookup implements ContextProvider {
                 protected T getEntry() {
                     Object instance = null;
                     if (lookupItem != null) {
-                        String id = lookupItem.getId();
+                        String cn = getClassName(lookupItem);
                         synchronized (instanceCreationLock) {
                             synchronized(instanceCache) {
-                                instance = instanceCache.get (id);
+                                instance = instanceCache.get (cn);
                             }
                             if (instance == null) {
                                 instance = lookupItem.getInstance();
@@ -717,7 +729,7 @@ abstract class Lookup implements ContextProvider {
                                     lookupItem = null;
                                 }
                                 synchronized (instanceCache) {
-                                    instanceCache.put (id, instance);
+                                    instanceCache.put (cn, instance);
                                 }
                             }
                         }

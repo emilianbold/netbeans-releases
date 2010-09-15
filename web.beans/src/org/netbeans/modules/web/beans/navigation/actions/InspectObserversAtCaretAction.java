@@ -44,19 +44,16 @@ package org.netbeans.modules.web.beans.navigation.actions;
 
 import java.util.List;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.navigation.InjectablesModel;
-import org.netbeans.modules.web.beans.navigation.InjectablesPanel;
-import org.netbeans.modules.web.beans.navigation.ResizablePopup;
+import org.netbeans.modules.web.beans.navigation.ObserversModel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -86,7 +83,7 @@ public class InspectObserversAtCaretAction extends AbstractObserversAction {
      * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
      */
     @Override
-    protected void modelAcessAction( final WebBeansModel model,
+    protected void modelAcessAction( WebBeansModel model,
             final MetadataModel<WebBeansModel> metaModel, final Object[] variable,
             final JTextComponent component, FileObject fileObject )
     {
@@ -109,16 +106,20 @@ public class InspectObserversAtCaretAction extends AbstractObserversAction {
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return;
         }
-        final List<AnnotationMirror> bindings = model.getQualifiers(var);
+        final CompilationController controller = model.getCompilationController();
+        final ObserversModel uiModel = new ObserversModel(observers,controller, 
+                metaModel);
+        final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
+        final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
-            showDialog(observers, bindings, model.getCompilationController(), 
-                    metaModel , var);
+            WebBeansActionHelper.showObserversDialog(observers,  metaModel , 
+                    model , handleVar, uiModel ,name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    showDialog(observers, bindings, model.getCompilationController(), 
-                            metaModel, var);
+                    WebBeansActionHelper.showObserversDialog(observers,  
+                            metaModel, null , handleVar, uiModel , name );
                 }
             });
         }
@@ -140,18 +141,4 @@ public class InspectObserversAtCaretAction extends AbstractObserversAction {
         return INSPECT_OBSERVERS_AT_CARET_POPUP;
     }
 
-    private void showDialog( List<ExecutableElement> methods , 
-            List<AnnotationMirror> bindings , CompilationController controller, 
-            MetadataModel<WebBeansModel> model , VariableElement variable ) 
-    {
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
-        JDialog dialog = ResizablePopup.getDialog();
-        String title = NbBundle.getMessage(InspectObserversAtCaretAction.class,
-                "TITLE_Observers" , variable.getSimpleName().toString() );//NOI18N
-        dialog.setTitle( title );
-        dialog.setContentPane( new InjectablesPanel(variable, bindings, 
-                controller , model, null ));
-        dialog.setVisible( true );
-    }
 }

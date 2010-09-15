@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -58,6 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/CallStackView", types=TableModel.class)
 public class CallStackTableModel implements TableModel, Constants {
 
 

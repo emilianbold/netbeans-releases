@@ -163,7 +163,7 @@ public class CommitDataTest extends JellyTestCase {
             end = System.currentTimeMillis();
             //print message to log file.
             TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
-            cmo.selectCommitAction("NewClass.java", "Exclude from Commit");
+            cmo.selectCommitAction("NewClass.java", "Exclude From Commit");
             TimeoutExpiredException tee = null;
             assertFalse(cmo.btCommit().isEnabled());
             cmo.cancel();
@@ -274,7 +274,7 @@ public class CommitDataTest extends JellyTestCase {
             end = System.currentTimeMillis();
             //print log message
             TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
-            cmo.selectCommitAction("xx", "Exclude from Commit");
+            cmo.selectCommitAction("xx", "Exclude From Commit");
             assertFalse(cmo.btCommit().isEnabled());
             cmo.cancel();
             nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
@@ -287,7 +287,8 @@ public class CommitDataTest extends JellyTestCase {
             log.addHandler(mh);
             nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             cmo = CommitOperator.invoke(nodePack);
-            cmo.selectCommitAction("xx", "Add Directory");
+            cmo.selectCommitAction("xx", "Exclude Recursively");
+            cmo.selectCommitAction("xx", "Include Recursively");
             start = System.currentTimeMillis();
             cmo.commit();
 
@@ -409,11 +410,11 @@ public class CommitDataTest extends JellyTestCase {
             model = table.getModel();
             actual = new String[model.getRowCount()];
             for (int i = 0; i < actual.length; i++) {
-                actual[i] = model.getValueAt(i, 0).toString();
+                actual[i] = model.getValueAt(i, 1).toString();
                 if (actual[i].endsWith(".txt")) {
-                    assertEquals("Expected text file.", "Add as Text", model.getValueAt(i, 2).toString());
+                    assertEquals("Expected text file.", "Add as Text", model.getValueAt(i, 3).toString());
                 } else {
-                    assertEquals("Expected text file.", "Add as Binary", model.getValueAt(i, 2).toString());
+                    assertEquals("Expected text file.", "Add as Binary", model.getValueAt(i, 3).toString());
                 }
             }
             result = TestKit.compareThem(expected, actual, false);

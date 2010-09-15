@@ -120,6 +120,11 @@ public final class CommandBasedDeployer {
 
     public ProgressObject directoryDeploy(final Target target, String name,
             File file, String host, String port, J2eeModule.Type type) {
+        if (deploymentManager.isWebProfile()) {
+            // FIXME DWP nostage not supported
+            return deploy(createModuleId(target, file, host, port, name, type),
+                    file, "-name", name, "-source"); // NOI18N
+        }
         return deploy(createModuleId(target, file, host, port, name, type),
                 file, "-nostage", "-name", name, "-source"); // NOI18N
     }
