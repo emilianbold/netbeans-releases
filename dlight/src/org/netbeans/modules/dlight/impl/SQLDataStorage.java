@@ -180,7 +180,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         }
     }
 
-    protected SQLDataStorage(String dburl) throws SQLException {
+    protected SQLDataStorage(String dburl) {
         insertPreparedStatments = new HashMap<String, PreparedStatement>();
         this.dburl = dburl;
         if (!enabled) {
