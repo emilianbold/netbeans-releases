@@ -72,6 +72,8 @@ public class ProjectGenerator {
         private String mainFile;
         private String hostUID;
         private CompilerSet cs;
+        private String postCreationClassName;
+        private String mainProject;
 
         /**
          *
@@ -99,6 +101,8 @@ public class ProjectGenerator {
             this.testFolders = null; 
             this.importantFileItems = null; 
             this.mainFile = "";
+            this.postCreationClassName = null;
+            this.mainProject = null;
         }
 
         public ProjectParameters setMakefileName(String makefile) {
@@ -198,6 +202,34 @@ public class ProjectGenerator {
 
         public CompilerSet getToolchain() {
             return cs;
+        }
+
+        /**
+         * @return the postCreationClassName
+         */
+        public String getPostCreationClassName() {
+            return postCreationClassName;
+        }
+
+        /**
+         * @param postCreationClassName the postCreationClassName to set
+         */
+        public void setPostCreationClassName(String postCreationClassName) {
+            this.postCreationClassName = postCreationClassName;
+        }
+
+        /**
+         * @return the mainProject
+         */
+        public String getMainProject() {
+            return mainProject;
+        }
+
+        /**
+         * @param mainProject the mainProject to set
+         */
+        public void setMainProject(String mainProject) {
+            this.mainProject = mainProject;
         }
     }
     
