@@ -84,7 +84,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @param scope variable scope
      * @param registerInProject 
      */
-    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope, boolean registerInProject, boolean global) {
+    public VariableImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean registerInProject, boolean global) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
@@ -104,7 +104,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
 
-    public VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, String name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+    public VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
         super(file, pos);
         this._static = _static;
         this._extern = _extern;
@@ -118,7 +118,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
 
-    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope,  boolean _static, boolean _extern, boolean registerInProject, boolean global) {
+    public VariableImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern, boolean registerInProject, boolean global) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         initInitialValue(ast);
         this._static = _static;
@@ -138,7 +138,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
 
-    public VariableImpl(CsmFile file, int startOffset, int endOffset, CsmType type, String name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+    public VariableImpl(CsmFile file, int startOffset, int endOffset, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
         super(file, startOffset, endOffset);
         this._static = _static;
         this._extern = _extern;

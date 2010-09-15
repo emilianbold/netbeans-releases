@@ -119,14 +119,14 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators.add(uid);
     }
     
-    private static String findName(AST ast){
-        String name = AstUtil.findId(ast, CPPTokenTypes.RCURLY);
+    private static CharSequence findName(AST ast){
+        CharSequence name = AstUtil.findId(ast, CPPTokenTypes.RCURLY);
         if (name == null || name.length()==0){
             AST token = ast.getNextSibling();
             if( token != null) {
                 if (token.getType() == CPPTokenTypes.ID) {
                     //typedef enum C { a2, b2, c2 } D;
-                    name = token.getText();
+                    name = AstUtil.getText(token);
                 }
             }
         }
@@ -173,16 +173,19 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         }
     }
     
+    @Override
     public Collection<CsmEnumerator> getEnumerators() {
         Collection<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
         return out;
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return (Collection)getEnumerators();
     }
     
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.ENUM;
     }

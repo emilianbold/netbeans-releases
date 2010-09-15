@@ -81,7 +81,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         super(ast, file);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = NameCache.getManager().getString(ast.getText());
+        name = NameCache.getManager().getString(AstUtil.getText(ast));
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -95,7 +95,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
-        CharSequence name = NameCache.getManager().getString(ast.getText()); // otherwise equals returns false
+        CharSequence name = NameCache.getManager().getString(AstUtil.getText(ast)); // otherwise equals returns false
         // #147376 Strange navigator behavior in header
         CsmOffsetableDeclaration candidate = container.findExistingDeclaration(start, end, name);
         if (CsmKindUtilities.isNamespaceDefinition(candidate)) {

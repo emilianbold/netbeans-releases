@@ -167,7 +167,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         defaultFactory.writeUID(fileUID, out);
         referencesLock.readLock().lock();
         try {
-            out.write(references.size());
+            out.writeInt(references.size());
             for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.entrySet()) {
                 defaultFactory.writeUID(entry.getValue(), out);
                 entry.getKey().write(defaultFactory, out);
