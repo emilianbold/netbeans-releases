@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
+import org.netbeans.modules.dlight.util.ui.DualPaneSupport;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -600,6 +601,14 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                                 @Override
                                 public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                                     //throw new UnsupportedOperationException("Not supported yet.");
+                                }
+
+                                @Override
+                                public Object getValue(String attributeName) {
+                                    if ("suppressCustomEditor".equals(attributeName)) {//NOI18N
+                                        return true;
+                                    }                                    
+                                    return super.getValue(attributeName);
                                 }
                             };
                             result.add(propery);

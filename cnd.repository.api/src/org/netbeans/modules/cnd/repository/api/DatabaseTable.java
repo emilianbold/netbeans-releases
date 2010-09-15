@@ -40,18 +40,11 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.cnd.repository.api;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public interface KeyDataPresentation {
-    short getUnitPresentation();
-    CharSequence getNamePresentation();
-    short getKindPresentation();
-
-    int getFilePresentation();
-    int getStartPresentation();
-    int getEndPresentation();
+public interface DatabaseTable {
 }

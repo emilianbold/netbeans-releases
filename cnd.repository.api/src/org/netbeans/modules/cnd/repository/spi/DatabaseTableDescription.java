@@ -42,16 +42,20 @@
 
 package org.netbeans.modules.cnd.repository.spi;
 
+import java.util.Collection;
+
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public interface KeyDataPresentation {
-    short getUnitPresentation();
-    CharSequence getNamePresentation();
-    short getKindPresentation();
-
-    int getFilePresentation();
-    int getStartPresentation();
-    int getEndPresentation();
+public interface DatabaseTableDescription {
+    String getTableName();
+    Class<?> getKeyClass();
+    Class<?> getDataClass();
+    Collection<Index> getIndexes();
+    public interface Index {
+        String getIndexName();
+        Class<?> getIndexClass();
+        Object createSecondaryKey(Object key, Object value);
+    }
 }

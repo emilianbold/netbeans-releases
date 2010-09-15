@@ -98,6 +98,14 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         registerInProject();
     }
 
+    /** Creates a new instance of VariableDefinitionImpl */
+    public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, String name, boolean _static, boolean _extern) {
+        super(ast, file, type, getLastname(name), null,_static, _extern, false, true);
+        templateDescriptor = createTemplateDescriptor(ast, null, null, true);
+        classOrNspNames = getClassOrNspNames(ast);
+        registerInProject();
+    }
+
     private static String getLastname(String name){
         int i = name.lastIndexOf("::"); // NOI18N
         if (i >=0){
@@ -111,6 +119,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return CsmDeclaration.Kind.VARIABLE_DEFINITION;
     }
     
+    @Override
     public CsmVariable getDeclaration() {
         CsmVariable declaration = _getDeclaration(); 
 	if( declaration == null ) {
@@ -277,14 +286,17 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return null;
     }
 
+    @Override
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
     
+    @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
     }
 
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }    
