@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Implements CsmParameter
@@ -57,8 +59,18 @@ import java.io.IOException;
  */
 public final class ParameterEllipsisImpl extends ParameterImpl {
 
-    public ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) {
-        super(ast, file, type, "...", scope, global); //NOI18N
+    private ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope) {
+        super(ast, file, type, "...", scope); //NOI18N
+    }
+
+    public static ParameterEllipsisImpl create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) {
+        ParameterEllipsisImpl parameterEllipsisImpl = new ParameterEllipsisImpl(ast, file, type, scope);
+        if (global) {
+            RepositoryUtils.put(parameterEllipsisImpl);
+        } else {
+            Utils.setSelfUID(parameterEllipsisImpl);
+        }
+        return parameterEllipsisImpl;
     }
 
     @Override

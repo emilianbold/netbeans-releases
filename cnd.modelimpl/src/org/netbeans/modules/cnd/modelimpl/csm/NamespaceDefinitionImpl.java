@@ -77,7 +77,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     private /*final*/ NamespaceImpl namespaceRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmNamespace> namespaceUID;
     
-    public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
+    private NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;

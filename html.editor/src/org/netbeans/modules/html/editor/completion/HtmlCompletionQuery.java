@@ -710,7 +710,7 @@ public class HtmlCompletionQuery extends UserTask {
     private HtmlCompletionItem item4HtmlTag(HtmlTag e, int offset, boolean possible) {
         String name = e.getName();
         name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase(Locale.ENGLISH));
-        return HtmlCompletionItem.createTag(name, offset, name, possible);
+        return HtmlCompletionItem.createTag(e, name, offset, name, possible);
     }
 
     Collection<CompletionItem> translateAttribs(int offset, Collection<HtmlTagAttribute> attribs, HtmlTag tag) {
@@ -723,7 +723,7 @@ public class HtmlCompletionQuery extends UserTask {
                     result.add(HtmlCompletionItem.createBooleanAttribute(name, offset, attrib.isRequired(), tagName + name));
                     break;
                 default:
-                    result.add(HtmlCompletionItem.createAttribute(name, offset, attrib.isRequired(), tagName + name));
+                    result.add(HtmlCompletionItem.createAttribute(attrib, name, offset, attrib.isRequired(), tagName + name));
                     break;
             }
         }

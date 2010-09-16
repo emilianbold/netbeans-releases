@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,45 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm;
+package org.netbeans.modules.java.source.usages;
 
-import org.netbeans.modules.cnd.api.model.*;
-import java.util.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.apache.lucene.index.Term;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * CsmConstructor implementation
- * @author Vladimir Kvasihn
+ *
+ * @author Tomas Zezula
  */
-public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
-
-    private ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, register, register);
-    }
-
-    public static ConstructorImpl create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        return new ConstructorImpl(ast, cls, visibility, register);
-    }
-
-    @Override
-    public Collection<CsmExpression> getInitializerList() {
-        return Collections.<CsmExpression>emptyList();
-    }
-        
-    @Override
-    public CsmType getReturnType() {
-        return NoType.instance();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // iml of SelfPersistent
+final class TermCollector {
     
-    public ConstructorImpl(DataInput input) throws IOException {
-        super(input);
-    }    
+    private final Map<Integer, Set<Term>> doc2Terms;
+    
+    TermCollector() {
+        doc2Terms = new HashMap<Integer, Set<Term>>();
+    }
+    
+    void add (final int docId, final @NonNull Term term) {
+        Set<Term> slot = doc2Terms.get(docId);
+        if (slot == null) {
+            slot = new HashSet<Term>();
+            doc2Terms.put(docId, slot);
+        }
+        slot.add(term);
+    }
+    
+    Set<Term> get(final int docId) {
+        return doc2Terms.get(docId);
+    }
+    
+    
+    static interface TermCollecting {
+        void attach (TermCollector collector);
+    }
+
 }

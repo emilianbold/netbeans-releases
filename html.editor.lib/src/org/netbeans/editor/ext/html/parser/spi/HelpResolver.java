@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,45 +34,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm;
+package org.netbeans.editor.ext.html.parser.spi;
 
-import org.netbeans.modules.cnd.api.model.*;
-import java.util.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import java.net.URL;
 
 /**
- * CsmConstructor implementation
- * @author Vladimir Kvasihn
+ *
+ * @author marekfukala
  */
-public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
+public interface HelpResolver {
 
-    private ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, register, register);
-    }
+    public URL resolveLink(String link);
 
-    public static ConstructorImpl create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        return new ConstructorImpl(ast, cls, visibility, register);
-    }
+    /** returns appropriate content of the help section addressed by the URL.
+     * It is up to the implementation what exactly is returned. The returned
+     * content might not be the same as reading from the URL directly.
+     *
+     */
+    public String getHelpContent(URL url);
 
-    @Override
-    public Collection<CsmExpression> getInitializerList() {
-        return Collections.<CsmExpression>emptyList();
-    }
-        
-    @Override
-    public CsmType getReturnType() {
-        return NoType.instance();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // iml of SelfPersistent
-    
-    public ConstructorImpl(DataInput input) throws IOException {
-        super(input);
-    }    
 }

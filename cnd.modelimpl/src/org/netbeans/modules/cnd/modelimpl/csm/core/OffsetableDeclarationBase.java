@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.openide.util.CharSequences;
 
@@ -265,5 +266,20 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     @Override
     public int hashCode() {
         return  31*super.hashCode() + getName().hashCode();
+    }
+
+    protected boolean registerInProject() {
+        //do nothing by default
+        return false;
+    }
+
+    protected static<T> void postObjectCreateRegistration(boolean register, OffsetableDeclarationBase<T> obj) {
+        if (register) {
+            if (!obj.registerInProject()) {
+                RepositoryUtils.put(obj);
+            }
+        } else {
+            Utils.setSelfUID(obj);
+        }
     }
 }

@@ -46,6 +46,8 @@ package org.netbeans.modules.html.editor.completion;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.net.URL;
@@ -212,8 +214,8 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 }
             }
             HtmlCompletionItem htmlItem = (HtmlCompletionItem) item;
-            if (htmlItem != null && htmlItem.getHelp() != null) {
-                resultSet.setDocumentation(new DocItem(htmlItem));
+            if (htmlItem != null && htmlItem.hasHelp()) {
+                resultSet.setDocumentation(createCompletionDocumentation(htmlItem));
             }
         }
     }
@@ -339,11 +341,11 @@ public class HtmlCompletionProvider implements CompletionProvider {
         Completion.get().hideDocumentation();
     }
 
-    private static class LinkDocItem implements CompletionDocumentation {
+    private static class LegacyLinkDocItem implements CompletionDocumentation {
 
         private URL url;
 
-        public LinkDocItem(URL url) {
+        public LegacyLinkDocItem(URL url) {
             this.url = url;
         }
 
@@ -366,7 +368,37 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public CompletionDocumentation resolveLink(String link) {
-            return new LinkDocItem(HelpManager.getDefault().getRelativeURL(url, link));
+            return new LegacyLinkDocItem(HelpManager.getDefault().getRelativeURL(url, link));
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+    private static class LinkDocItem implements CompletionDocumentation {
+
+        private URL url;
+        private HelpResolver resolver;
+
+        public LinkDocItem(HelpResolver resolver, URL url) {
+            this.url = url;
+            this.resolver = resolver;
+        }
+
+        @Override
+        public String getText() {
+            return null;
+        }
+
+        @Override
+        public URL getURL() {
+            return url;
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
+            return new LinkDocItem(resolver, resolver.resolveLink(link));
         }
 
         @Override
@@ -398,6 +430,56 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
+    private static CompletionDocumentation createCompletionDocumentation(HtmlCompletionItem item) {
+        //fork for the new and old help approach, legacy html4 not migrated yet
+        HelpItem helpItem  = item.getHelpItem();
+        if(helpItem != null) {
+            return new HtmlTagDocumetationItem(item);
+        }
+
+        //else legacy approach
+        return new DocItem(item);
+    }
+
+
+
+    private static class HtmlTagDocumetationItem implements CompletionDocumentation {
+
+        HtmlCompletionItem item;
+
+        public HtmlTagDocumetationItem(HtmlCompletionItem ri) {
+            this.item = ri;
+        }
+
+        private HelpItem getHelpItem() {
+            return item.getHelpItem();
+        }
+
+        @Override
+        public String getText() {
+            return getHelpItem().getHelpResolver().getHelpContent(getURL());
+        }
+
+        @Override
+        public URL getURL() {
+            return getHelpItem().getHelpURL();
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
+            URL itemUrl = getHelpItem().getHelpResolver().resolveLink(link);
+            return itemUrl != null ?
+                new LinkDocItem(getHelpItem().getHelpResolver(), itemUrl) :
+                new NoDocItem();
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+
+
     private static class DocItem implements CompletionDocumentation {
 
         HtmlCompletionItem item;
@@ -420,7 +502,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         public CompletionDocumentation resolveLink(String link) {
             URL itemUrl = HelpManager.getDefault().getHelpURL(item.getHelpId());
             return itemUrl != null ?
-                new LinkDocItem(HelpManager.getDefault().getRelativeURL(itemUrl, link)) :
+                new LegacyLinkDocItem(HelpManager.getDefault().getRelativeURL(itemUrl, link)) :
                 new NoDocItem();
         }
 
