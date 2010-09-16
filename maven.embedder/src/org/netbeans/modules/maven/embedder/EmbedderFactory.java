@@ -329,6 +329,10 @@ public final class EmbedderFactory {
             if (urls == null) {
                 urls = new ArrayList<URL>();
                 URL base = baseClass.getProtectionDomain().getCodeSource().getLocation();
+                if (FileUtil.isArchiveFile(base)) {
+                    // Perhaps running in a unit test; NB module system always uses folder URLs.
+                    base = FileUtil.getArchiveRoot(base);
+                }
                 try {
                     Manifest m = new Manifest(new URL(base, "META-INF/MANIFEST.MF").openStream());
                     String baseS = base.toString();
