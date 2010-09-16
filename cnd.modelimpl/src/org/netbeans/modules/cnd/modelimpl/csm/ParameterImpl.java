@@ -57,10 +57,11 @@ import java.io.IOException;
  */
 public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
-    public ParameterImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope, boolean global) {
+    public ParameterImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean global) {
         super(ast, file, type, name, scope, false, global);
     }
 
+    @Override
     public boolean isVarArgs() {
         return false;
     }

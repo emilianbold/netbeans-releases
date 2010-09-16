@@ -95,7 +95,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         @Override
-        protected VariableImpl<CsmField> createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern,
+        protected VariableImpl<CsmField> createVariable(AST offsetAst, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern,
                 MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility, _static, _extern, !isRenderingLocalContext());
@@ -511,7 +511,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         start = idAST;
                     }
                 }
-                FieldImpl field = new FieldImpl(start, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility, !isRenderingLocalContext());
+                CharSequence name = AstUtil.getText(idAST);
+                FieldImpl field = new FieldImpl(start, getContainingFile(), type, name, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
                 ClassImpl.this.addMember(field,!isRenderingLocalContext());
                 added = true;
             }
@@ -519,7 +520,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         @Override
-        protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
+        protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility, !isRenderingLocalContext());
         }
@@ -537,7 +538,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         private CsmVisibility visibility;
 
-        public MemberTypedef(CsmClass containingClass, AST ast, CsmType type, String name, CsmVisibility curentVisibility, boolean global) {
+        public MemberTypedef(CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility, boolean global) {
             super(ast, containingClass.getContainingFile(), containingClass, type, name, global);
             visibility = curentVisibility;
         }
@@ -714,7 +715,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 //        this.kind = CsmDeclaration.Kind.CLASS;
 //        register();
 //    }
-    protected ClassImpl(String name, AST ast, CsmFile file) {
+    protected ClassImpl(CharSequence name, AST ast, CsmFile file) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
         super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
         members = new ArrayList<CsmUID<CsmMember>>();

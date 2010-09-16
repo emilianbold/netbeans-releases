@@ -1181,6 +1181,31 @@ public class ETable extends JTable {
         int start = e.getFirstRow();
         int end = e.getLastRow();
 
+        //System.err.println("ETable.tableChanged("+e+"):\n              modelColumn = "+modelColumn+", start = "+start+", end = "+end);
+        if (start != -1) {
+            start = convertRowIndexToView(start);
+            if (start == -1) {
+                start = 0;
+            }
+        }
+        if (end != -1) {
+            end = convertRowIndexToView(end);
+            if (end == -1) {
+                end = Integer.MAX_VALUE;
+            }
+        }
+        //System.err.println("  => convert: modelColumn = "+modelColumn+", start = "+start+", end = "+end);
+        if (start == end) {
+            if (modelColumn != TableModelEvent.ALL_COLUMNS) {
+                modelColumn = convertColumnIndexToView(modelColumn);
+            }
+            final TableModelEvent tme = new TableModelEvent(
+                    (TableModel)e.getSource(),
+                    start, end, modelColumn);
+            super.tableChanged(tme);
+            return ;
+        }
+
         if (modelColumn != TableModelEvent.ALL_COLUMNS) {
             Enumeration enumeration = getColumnModel().getColumns();
             TableColumn aColumn;

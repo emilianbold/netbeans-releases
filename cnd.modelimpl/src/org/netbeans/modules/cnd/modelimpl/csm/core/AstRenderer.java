@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
@@ -616,13 +617,13 @@ public class AstRenderer {
                     if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                         TypeImpl type;
                         if (typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
-                            type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, file);
+                            type = TypeFactory.createBuiltinType(AstUtil.getText(typeToken), null, 0, typeToken, file);
                         } else {
                             type = TypeFactory.createType(typeToken, file, null, 0);
                         }
-                        String name = next.getText();
 
                         if (!fakeRegistration) {
+                            CharSequence name = AstUtil.getText(next);
                             VariableImpl var = createVariable(next, file, type, name, _static, _extern, currentNamespace, container, null);
                             if (currentNamespace != null) {
                                 currentNamespace.addDeclaration(var);
@@ -709,7 +710,7 @@ public class AstRenderer {
                     case CPPTokenTypes.CSM_ARRAY_DECLARATION: {
                         nothingBeforSemicolon = false;
                         int arrayDepth = 0;
-                        String name = null;
+                        CharSequence name = null;
                         for (AST varNode = token.getFirstChild(); varNode != null; varNode = varNode.getNextSibling()) {
                             switch (varNode.getType()) {
                                 case CPPTokenTypes.LSQUARE:
@@ -717,7 +718,7 @@ public class AstRenderer {
                                     break;
                                 case CPPTokenTypes.CSM_QUALIFIED_ID:
                                 case CPPTokenTypes.ID:
-                                    name = varNode.getText();
+                                    name = AstUtil.getText(varNode);
                                     break;
                             }
                         }
@@ -785,7 +786,7 @@ public class AstRenderer {
                     int arrayDepth = 0;
                     AST nameToken = null;
                     AST ptrOperator = null;
-                    String name = "";
+                    CharSequence name = "";
                     for (curr = curr.getNextSibling(); curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
                             case CPPTokenTypes.CSM_PTR_OPERATOR:
@@ -862,7 +863,7 @@ public class AstRenderer {
                     int arrayDepth = 0;
                     AST nameToken = null;
                     AST ptrOperator = null;
-                    String name = "";
+                    CharSequence name = "";
 
                     CsmClassForwardDeclaration cfdi = null;
 
@@ -961,7 +962,7 @@ public class AstRenderer {
         return cfdi;
     }
 
-    protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
+    protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return new TypedefImpl(ast, file, container, type, name, !isRenderingLocalContext());
     }
 
@@ -1088,7 +1089,7 @@ public class AstRenderer {
                 List<CharSequence> l = new ArrayList<CharSequence>();
                 for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(NameCache.getManager().getString(namePart.getText()));
+                        l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;
@@ -1373,7 +1374,7 @@ public class AstRenderer {
                                 if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
                                     AST typeNameToken = tokType.getFirstChild();
                                     if (typeNameToken != null) {
-                                        type = TypeFactory.createBuiltinType(typeNameToken.getText(), ptrOperator, 0, tokType, file);
+                                        type = TypeFactory.createBuiltinType(AstUtil.getText(typeNameToken), ptrOperator, 0, tokType, file);
                                     }
                                 } else {
                                     type = TypeFactory.createType(tokType, file, ptrOperator, 0);
@@ -1410,7 +1411,7 @@ public class AstRenderer {
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,
             FileImpl file, boolean _static, boolean _extern, boolean inFunctionParameters) {
         int arrayDepth = 0;
-        String name = "";
+        CharSequence name = CharSequences.empty();
         AST qn = null;
         int inParamsLevel = 0;
         for (AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling()) {
@@ -1440,7 +1441,7 @@ public class AstRenderer {
                 // no break;
                 case CPPTokenTypes.ID:
                     if (inParamsLevel == 0) {
-                        name = token.getText();
+                        name = AstUtil.getText(token);
                     }
                     break;
             }
@@ -1471,7 +1472,7 @@ public class AstRenderer {
         }
     }
 
-    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static,  boolean _extern,
+    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, CharSequence name, boolean _static,  boolean _extern,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
         type = TemplateUtils.checkTemplateType(type, scope);
         VariableImpl var = new VariableImpl(offsetAst, file, type, name, scope, _static, _extern, !isRenderingLocalContext(), !isRenderingLocalContext());
@@ -1566,7 +1567,7 @@ public class AstRenderer {
             }
 
             @Override
-            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
+            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
                 type = TemplateUtils.checkTemplateType(type, scope1);
                 ParameterImpl parameter;
                 if (offsetAst.getType() == CPPTokenTypes.ELLIPSIS) {

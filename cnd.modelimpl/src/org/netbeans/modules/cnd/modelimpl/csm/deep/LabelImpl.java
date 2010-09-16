@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -62,17 +63,20 @@ public class LabelImpl extends StatementBase implements CsmStatement, CsmLabel {
 
     public LabelImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
-        label = NameCache.getManager().getString(ast.getFirstChild().getText());
+        label = NameCache.getManager().getString(AstUtil.getText(ast.getFirstChild()));
     }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.LABEL;
     }
     
+    @Override
     public CharSequence getLabel() {
         return label;
     }
 
+    @Override
     public CharSequence getName() {
         return getLabel();
     }

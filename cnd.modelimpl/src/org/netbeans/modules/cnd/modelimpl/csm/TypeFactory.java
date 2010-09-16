@@ -50,6 +50,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -70,7 +71,7 @@ public class TypeFactory {
     
     private TypeFactory() {}
     
-    public static TypeImpl createBuiltinType(String text, AST ptrOperator, int arrayDepth, AST ast, CsmFile file) {
+    public static TypeImpl createBuiltinType(CharSequence text, AST ptrOperator, int arrayDepth, AST ast, CsmFile file) {
         CsmBuiltIn builtin = BuiltinTypes.getBuiltIn(text);
         return createType(builtin, ptrOperator, arrayDepth, ast, file);
     }
@@ -250,7 +251,7 @@ public class TypeFactory {
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
                             if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
                                 sb.append(namePart.getText());
-                                l.add(NameCache.getManager().getString(namePart.getText()));
+                                l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                                 //l.add(namePart.getText());
                             } else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
                                 // the beginning of template parameters
