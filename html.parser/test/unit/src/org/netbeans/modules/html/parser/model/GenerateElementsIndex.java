@@ -530,7 +530,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("(new Link(\"");
             out.write(attrId);
             out.write("\", \"");
-            out.write(l.getUrl().toExternalForm());
+            out.write(l.getLink());
             out.write("\")),\n");
         }
 
@@ -552,7 +552,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("\tnew Link(\"");
             out.write(e.name.getName());
             out.write("\", \"");
-            out.write(e.name.getUrl().toExternalForm());
+            out.write(e.name.getLink());
             out.write("\"),\n\t \"");
             out.write(e.getDescription());
             out.write("\", ");
@@ -585,7 +585,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("new Link(\"");
             out.write(e.interfacee.getName());
             out.write("\", \"");
-            out.write(e.interfacee.getUrl().toExternalForm());
+            out.write(e.interfacee.getLink());
             out.write("\")");
 
             out.write("\n), \n\n");
