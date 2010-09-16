@@ -40,23 +40,33 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.spi;
-
-import java.net.URL;
+package org.netbeans.modules.web.el.completion;
 
 /**
+ * Attempts to sanitize EL
  *
- * @author marekfukala
+ * @author Erno Mononen
  */
-public interface HelpResolver {
+final class ELSanitizer {
 
-    public URL resolveLink(URL base, String link);
+    static final String ADDED_SUFFIX = "x"; // NOI18N
+    private final String expression;
 
-    /** returns appropriate content of the help section addressed by the URL.
-     * It is up to the implementation what exactly is returned. The returned
-     * content might not be the same as reading from the URL directly.
-     *
-     */
-    public String getHelpContent(URL url);
+    public ELSanitizer(String expression) {
+        this.expression = expression;
+    }
+
+    public String sanitize() {
+        if (expression.endsWith(".")) {
+            return expression + ADDED_SUFFIX;
+        }
+        if (expression.endsWith("(")) {
+            return expression + ")";
+        }
+        if (expression.endsWith("[")) {
+            return expression + "]";
+        }
+        return expression;
+    }
 
 }

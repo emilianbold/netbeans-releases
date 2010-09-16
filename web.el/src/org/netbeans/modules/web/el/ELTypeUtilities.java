@@ -60,8 +60,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
@@ -134,12 +136,33 @@ public final class ELTypeUtilities {
         return info[0];
 
     }
+
+    public Element getTypeFor(Element element) {
+        TypeMirror tm;
+        if (element.getKind() == ElementKind.METHOD) {
+            tm = getReturnType((ExecutableElement) element);
+        } else {
+            tm = element.asType();
+        }
+        return info.getTypes().asElement(tm);
+    }
+    /**
+     * Resolves the element for the given {@code target}.
+     * @param elem
+     * @param target
+     * @return the element or {@code null}.
+     */
     public Element resolveElement(final ELElement elem, final Node target) {
         TypeResolverVisitor typeResolver = new TypeResolverVisitor(elem, target);
         elem.getNode().accept(typeResolver);
         return typeResolver.getResult();
     }
 
+    /**
+     * Gets the return type of the given {@code method}.
+     * @param method
+     * @return
+     */
     public TypeMirror getReturnType(ExecutableElement method) {
         TypeKind returnTypeKind = method.getReturnType().getKind();
         if (returnTypeKind.isPrimitive()) {
@@ -183,6 +206,30 @@ public final class ELTypeUtilities {
                     : method.getParameters().isEmpty();
         }
         return false;
+    }
+
+    public TypeElement getElementForType(String clazz) {
+        return info.getElements().getTypeElement(clazz);
+    }
+
+    public String getParametersAsString(ExecutableElement method) {
+        StringBuilder result = new StringBuilder();
+        for (VariableElement param : method.getParameters()) {
+            if (result.length() > 0) {
+                result.append(",");
+            }
+            String type = info.getTypeUtilities().getTypeName(param.asType()).toString();
+            result.append(type);
+            result.append(" ");
+            result.append(param.getSimpleName().toString());
+        }
+
+        if (result.length() > 0) {
+            result.insert(0, "(");
+            result.append(")");
+        }
+
+        return result.toString();
     }
 
     private boolean isValidatorMethod(ExecutableElement method) {
