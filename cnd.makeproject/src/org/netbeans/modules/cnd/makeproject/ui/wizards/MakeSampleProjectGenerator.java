@@ -106,7 +106,10 @@ public class MakeSampleProjectGenerator {
             prjParams.setMainProject(mainProject);
         }
         String subProjects = (String) template.getAttribute("subProjectLocations"); // NOI18N
-        String postCreationClassName = (String) template.getAttribute("postCreationClassName"); // NOI18N
+        if (subProjects != null && subProjects.length() > 0) {
+            prjParams.setSubProjects(subProjects);
+        }
+        String postCreationClassName = (String) template.getAttribute("postProjectCreationClassName"); // NOI18N
         if (postCreationClassName != null && postCreationClassName.length() > 0) {
             prjParams.setPostCreationClassName(postCreationClassName);
         }
