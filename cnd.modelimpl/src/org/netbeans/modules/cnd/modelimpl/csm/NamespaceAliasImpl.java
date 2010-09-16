@@ -72,7 +72,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
 
     private CsmUID<CsmScope> scopeUID = null;
     
-    public NamespaceAliasImpl(AST ast, CsmFile file, CsmScope scope, boolean global) {
+    private NamespaceAliasImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
         _setScope(scope);
         rawName = createRawName(ast);
@@ -102,9 +102,14 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
             }
             namespace = QualifiedNameCache.getManager().getString(sb.toString());
         }
+    }
+
+    public static NamespaceAliasImpl create(AST ast, CsmFile file, CsmScope scope, boolean global) {
+        NamespaceAliasImpl namespaceAliasImpl = new NamespaceAliasImpl(ast, file, scope);
         if (!global) {
-            Utils.setSelfUID(this);
+            Utils.setSelfUID(namespaceAliasImpl);
         }
+        return namespaceAliasImpl;
     }
 
     private void _setScope(CsmScope scope) {

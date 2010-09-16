@@ -109,12 +109,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     }
 
     void addEnumerator(String name, int startOffset, int endOffset, boolean register) {
-        EnumeratorImpl ei = new EnumeratorImpl(this, name, startOffset, endOffset);
-        if (register) {
-            RepositoryUtils.put(ei);
-        } else {
-            Utils.setSelfUID(ei);
-        }
+        EnumeratorImpl ei = EnumeratorImpl.create(this, name, startOffset, endOffset, register);
         CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
         enumerators.add(uid);
     }
@@ -161,12 +156,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     private void addList(AST token, boolean global){
         for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
             if( t.getType() == CPPTokenTypes.ID ) {
-                EnumeratorImpl ei = new EnumeratorImpl(t, this);
-                if (global) {
-                    RepositoryUtils.put(ei);
-                } else {
-                    Utils.setSelfUID(ei);
-                }
+                EnumeratorImpl ei = EnumeratorImpl.create(t, this, global);
                 CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
                 enumerators.add(uid);
             }

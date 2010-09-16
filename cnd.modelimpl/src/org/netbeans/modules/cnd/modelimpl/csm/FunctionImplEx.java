@@ -75,14 +75,18 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private final CharSequence[] classOrNspNames;   
     
-    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        super(ast, file, scope, false, global);
+    protected FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        super(ast, file, null, scope, false, global);
         classOrNspNames = CastUtils.isCast(ast) ?
             getClassOrNspNames(ast) :
             initClassOrNspNames(ast);
         if (register) {
             registerInProject();
         }
+    }
+
+    public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        return new FunctionImplEx<T>(ast, file, scope, register, global);
     }
 
     /** @return either class or namespace */
@@ -216,13 +220,14 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
 
     @Override
-    protected void registerInProject() {
-        super.registerInProject();
+    protected boolean registerInProject() {
+        boolean out = super.registerInProject();
         // if this funtion couldn't find it's FQN => register it as fake and
         // come back later on for registration (see fixFakeRegistration with null ast)
         if( hasFlags(FAKE_QUALIFIED_NAME) ) {
             ((FileImpl) getContainingFile()).onFakeRegisration(this, null);
         }
+        return out;
     }
     
     public final boolean fixFakeRegistration(boolean projectParsedMode, AST fixFakeRegistrationAst) {
@@ -231,19 +236,22 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             CsmObject owner = findOwner(null);
             if (CsmKindUtilities.isClass(owner)) {
                 CsmClass cls = (CsmClass) owner;
+                boolean _static = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_static);
+                boolean _extern = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_extern);
                 for (CsmMember member : cls.getMembers()) {
                     if (member.isStatic() && member.getName().equals(getName())) {
                         FileImpl aFile = (FileImpl) getContainingFile();
-                        VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
                         aFile.removeDeclaration(this);
-                        var.registerInProject();
+                        VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName(), _static, _extern);
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
                     }
                 }
             } else if (CsmKindUtilities.isNamespace(owner)) {
+                boolean _static = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_static);
+                boolean _extern = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_extern);
                 CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
                          CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.VARIABLE_DEFINITION),
                          CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
@@ -252,10 +260,9 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     CsmDeclaration decl = it.next();
                     if (CsmKindUtilities.isExternVariable(decl) && decl.getName().equals(getName())) {
                         FileImpl aFile = (FileImpl) getContainingFile();
-                        VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
                         aFile.removeDeclaration(this);
-                        var.registerInProject();
+                        VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName(), _static, _extern);
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
@@ -265,7 +272,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             if (projectParsedMode) {
                 try {
                     FileImpl aFile = (FileImpl) getContainingFile();
-                    FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
+                    FunctionImpl<?> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), null, this.getScope(), true, true);
                     fixFakeRegistrationAst = null;
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
                     aFile.removeDeclaration(this);

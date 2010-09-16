@@ -68,14 +68,18 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
-    public UsingDirectiveImpl(AST ast, CsmFile file, boolean global) {
+    private UsingDirectiveImpl(AST ast, CsmFile file) {
         super(file, ((CsmAST)ast.getFirstChild()).getOffset(), getEndOffset(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
-        
         name = NameCache.getManager().getString(AstUtil.getText(ast));
+    }
+
+    public static UsingDirectiveImpl create(AST ast, CsmFile file, boolean global) {
+        UsingDirectiveImpl usingDirectiveImpl = new UsingDirectiveImpl(ast, file);
         if (!global) {
-            Utils.setSelfUID(UsingDirectiveImpl.this);
+            Utils.setSelfUID(usingDirectiveImpl);
         }
+        return usingDirectiveImpl;
     }
     
     @Override

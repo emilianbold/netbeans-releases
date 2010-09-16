@@ -65,11 +65,16 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 public class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
     
-    public FriendFunctionDDImpl(AST ast, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
+    private FriendFunctionDDImpl(AST ast, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
         super(ast, cls.getContainingFile(), scope, global);
         friendClassUID = UIDs.get(cls);
     }
-    
+
+    public static FriendFunctionDDImpl create(AST ast, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
+        return new FriendFunctionDDImpl(ast, cls, scope, global);
+    }
+
+    @Override
     public CsmFunction getReferencedFunction() {
         CsmFunction fun = this;
         if (CsmKindUtilities.isFunctionDeclaration(this)){
@@ -81,6 +86,7 @@ public class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunction> imp
         return fun;
     }
     
+    @Override
     public CsmClass getContainingClass() {
         CsmClass cls = UIDCsmConverter.UIDtoClass(friendClassUID);
         assert (friendClassUID != null) : "null object for UID " + friendClassUID;

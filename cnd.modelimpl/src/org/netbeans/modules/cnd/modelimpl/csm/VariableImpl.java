@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -76,49 +75,22 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private final boolean _extern;
     private ExpressionBase initExpr;
 
-    /** Creates a new instance of VariableImpl 
-     * @param ast 
-     * @param file 
-     * @param type 
-     * @param name 
-     * @param scope variable scope
-     * @param registerInProject 
-     */
-    public VariableImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean registerInProject, boolean global) {
-        super(file, getStartOffset(ast), getEndOffset(ast));
-        initInitialValue(ast);
-        _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
-        _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
-        this.name = NameCache.getManager().getString(name);
-        this.type = type;
-        _setScope(scope);
-        if (registerInProject) {
-            registerInProject();
-        }
-        if (global) {
-            if (!registerInProject) {
-                RepositoryUtils.put(this);
-            }
-        } else {
-            Utils.setSelfUID(this);
-        }
-    }
-
-    public VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+    protected VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern) {
         super(file, pos);
         this._static = _static;
         this._extern = _extern;
         this.name = NameCache.getManager().getString(name);
         this.type = type;
         _setScope(scope);
-        if (registerInProject) {
-            registerInProject();
-        } else {
-            Utils.setSelfUID(this);
-        }
     }
 
-    public VariableImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern, boolean registerInProject, boolean global) {
+    public static<T> VariableImpl<T> create(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+        VariableImpl<T> variableImpl = new VariableImpl<T>(pos, file, type, name, scope, _static, _extern);
+        postObjectCreateRegistration(registerInProject, variableImpl);
+        return variableImpl;
+    }
+
+    protected VariableImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         initInitialValue(ast);
         this._static = _static;
@@ -126,30 +98,21 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.name = NameCache.getManager().getString(name);
         this.type = type;
         _setScope(scope);
-        if (registerInProject) {
-            registerInProject();
-        }
-        if (global) {
-            if (!registerInProject) {
-                RepositoryUtils.put(this);
-            }
-        } else {
-            Utils.setSelfUID(this);
-        }
     }
 
-    public VariableImpl(CsmFile file, int startOffset, int endOffset, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+    public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
+        VariableImpl<T> variableImpl = new VariableImpl<T>(ast, file, type, name, scope, _static, _extern);
+        postObjectCreateRegistration(global, variableImpl);
+        return variableImpl;
+    }
+
+    protected VariableImpl(CsmFile file, int startOffset, int endOffset, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern) {
         super(file, startOffset, endOffset);
         this._static = _static;
         this._extern = _extern;
         this.name = NameCache.getManager().getString(name);
         this.type = type;
         _setScope(scope);
-        if (registerInProject) {
-            registerInProject();
-        } else {
-            Utils.setSelfUID(this);
-        }
     }
 
     public static int getStartOffset(AST node) {
@@ -206,11 +169,13 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return endOffset;
     }
 
-    protected final void registerInProject() {
+    @Override
+    protected final boolean registerInProject() {
         CsmProject project = getContainingFile().getProject();
         if (project instanceof ProjectBase) {
-            ((ProjectBase) project).registerDeclaration(this);
+            return ((ProjectBase) project).registerDeclaration(this);
         }
+        return false;
     }
 
     private void unregisterInProject() {

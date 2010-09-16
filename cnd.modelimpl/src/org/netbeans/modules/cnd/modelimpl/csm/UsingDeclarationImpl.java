@@ -81,15 +81,20 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     private final CsmUID<CsmScope> scopeUID;
     private final CsmVisibility visibility;
     
-    public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, boolean global, CsmVisibility visibility) {
+    private UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, CsmVisibility visibility) {
         super(file, getUsingDeclarationStartOffset(ast), getEndOffset(ast));
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
         name = NameCache.getManager().getString(AstUtil.getText(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
-        if (!global) {
-            Utils.setSelfUID(this);
-        }
         this.visibility = visibility;
+    }
+
+    public static UsingDeclarationImpl create(AST ast, CsmFile file, CsmScope scope, boolean global, CsmVisibility visibility) {
+        UsingDeclarationImpl usingDeclarationImpl = new UsingDeclarationImpl(ast, file, scope, visibility);
+        if (!global) {
+            Utils.setSelfUID(usingDeclarationImpl);
+        }
+        return usingDeclarationImpl;
     }
 
     private static int getUsingDeclarationStartOffset(AST ast) {
