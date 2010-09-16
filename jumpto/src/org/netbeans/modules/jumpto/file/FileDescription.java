@@ -90,10 +90,12 @@ public class FileDescription extends FileDescriptor {
         this.project = project;
     }
 
+    @Override
     public String getFileName() {
         return fileObject.getNameExt(); // NOI18N
     }
 
+    @Override
     public synchronized Icon getIcon() {
         if ( icon == null ) {
             DataObject od = getDataObject();
@@ -103,10 +105,12 @@ public class FileDescription extends FileDescriptor {
         return icon;
     }
 
+    @Override
     public String getOwnerPath() {
         return ownerPath;
     }
 
+    @Override
     public synchronized String getProjectName() {
         if ( projectName == null ) {
             initProjectInfo();
@@ -114,6 +118,7 @@ public class FileDescription extends FileDescriptor {
         return projectName;
     }
 
+    @Override
     public synchronized Icon getProjectIcon() {
         if ( projectIcon == null ) {
             initProjectInfo();
@@ -122,6 +127,7 @@ public class FileDescription extends FileDescriptor {
     }
 
 
+    @Override
     public void open() {
         DataObject od = getDataObject();
         if ( od != null ) {
@@ -139,6 +145,7 @@ public class FileDescription extends FileDescriptor {
 
     }
 
+    @Override
     public FileObject getFileObject() {
         return fileObject;
     }
