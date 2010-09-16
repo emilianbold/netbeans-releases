@@ -40,77 +40,39 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.el;
+package org.netbeans.modules.web.el.completion;
 
-import org.netbeans.modules.web.el.completion.ELCodeCompletionHandler;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
-import org.netbeans.modules.web.el.hints.ELHintsProvider;
+import org.netbeans.modules.web.el.completion.ELSanitizer;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * CSL language for Expression Language
  *
- * @author Erno Mononen
+ * @author erno
  */
-@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
-@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
-public class ELLanguage extends DefaultLanguageConfig {
+public class ELSanitizerTest {
 
-    public static final String MIME_TYPE = "text/x-el"; //NOI18N
-
-    @Override
-    public Language getLexerLanguage() {
-        return ELTokenId.language();
+    public ELSanitizerTest() {
     }
 
-    @Override
-    public String getDisplayName() {
-        return "EL";
-    }
 
-    @Override
-    public Parser getParser() {
-        return new ELParser();
-    }
+    /**
+     * Test of sanitize method, of class ELSanitizer.
+     */
+    @Test
+    public void testSanitize() {
+        ELSanitizer sanitizer = new ELSanitizer("foo.bar.");
+        assertEquals("foo.bar." + ELSanitizer.ADDED_SUFFIX, sanitizer.sanitize());
 
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new ELIndexer.Factory();
-    }
+        sanitizer = new ELSanitizer("foo(");
+        assertEquals("foo()", sanitizer.sanitize());
 
-    @Override
-    public boolean hasHintsProvider() {
-        return true;
+        sanitizer = new ELSanitizer("foo[");
+        assertEquals("foo[]", sanitizer.sanitize());
     }
-
-    @Override
-    public HintsProvider getHintsProvider() {
-        return new ELHintsProvider();
-    }
-
-    @Override
-    public boolean hasOccurrencesFinder() {
-        return true;
-    }
-
-    @Override
-    public OccurrencesFinder getOccurrencesFinder() {
-        return new ELOccurrencesFinder();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        // return new ELCodeCompletionHandler();
-        return super.getCompletionHandler();
-    }
-
 
 }

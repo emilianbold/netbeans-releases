@@ -40,77 +40,33 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.el;
-
-import org.netbeans.modules.web.el.completion.ELCodeCompletionHandler;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
-import org.netbeans.modules.web.el.hints.ELHintsProvider;
+package org.netbeans.modules.web.el.completion;
 
 /**
- * CSL language for Expression Language
+ * Attempts to sanitize EL
  *
  * @author Erno Mononen
  */
-@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
-@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
-public class ELLanguage extends DefaultLanguageConfig {
+final class ELSanitizer {
 
-    public static final String MIME_TYPE = "text/x-el"; //NOI18N
+    static final String ADDED_SUFFIX = "x"; // NOI18N
+    private final String expression;
 
-    @Override
-    public Language getLexerLanguage() {
-        return ELTokenId.language();
+    public ELSanitizer(String expression) {
+        this.expression = expression;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "EL";
+    public String sanitize() {
+        if (expression.endsWith(".")) {
+            return expression + ADDED_SUFFIX;
+        }
+        if (expression.endsWith("(")) {
+            return expression + ")";
+        }
+        if (expression.endsWith("[")) {
+            return expression + "]";
+        }
+        return expression;
     }
-
-    @Override
-    public Parser getParser() {
-        return new ELParser();
-    }
-
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new ELIndexer.Factory();
-    }
-
-    @Override
-    public boolean hasHintsProvider() {
-        return true;
-    }
-
-    @Override
-    public HintsProvider getHintsProvider() {
-        return new ELHintsProvider();
-    }
-
-    @Override
-    public boolean hasOccurrencesFinder() {
-        return true;
-    }
-
-    @Override
-    public OccurrencesFinder getOccurrencesFinder() {
-        return new ELOccurrencesFinder();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        // return new ELCodeCompletionHandler();
-        return super.getCompletionHandler();
-    }
-
 
 }

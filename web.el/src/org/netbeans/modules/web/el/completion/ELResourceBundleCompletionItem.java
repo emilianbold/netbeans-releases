@@ -39,78 +39,54 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.el.completion;
 
-package org.netbeans.modules.web.el;
-
-import org.netbeans.modules.web.el.completion.ELCodeCompletionHandler;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
-import org.netbeans.modules.web.el.hints.ELHintsProvider;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.web.el.ELElement;
 
 /**
- * CSL language for Expression Language
  *
  * @author Erno Mononen
  */
-@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
-@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
-public class ELLanguage extends DefaultLanguageConfig {
+final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
 
-    public static final String MIME_TYPE = "text/x-el"; //NOI18N
+    private final String key;
+    private final String value;
+    private final ELElement element;
 
-    @Override
-    public Language getLexerLanguage() {
-        return ELTokenId.language();
+    public ELResourceBundleCompletionItem(String key, String value, ELElement element) {
+        this.key = key;
+        this.value = value;
+        this.element = element;
     }
 
     @Override
-    public String getDisplayName() {
-        return "EL";
+    public String getName() {
+        return key;
     }
 
     @Override
-    public Parser getParser() {
-        return new ELParser();
+    public String getRhsHtml(HtmlFormatter formatter) {
+        formatter.appendHtml("<font color='#ce7b00'>" + value + "</font>");
+        return formatter.getText();
     }
 
     @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new ELIndexer.Factory();
+    public ElementKind getKind() {
+        return ElementKind.OTHER;
     }
 
     @Override
-    public boolean hasHintsProvider() {
-        return true;
+    public int getSortPrioOverride() {
+        return 20;
     }
 
     @Override
-    public HintsProvider getHintsProvider() {
-        return new ELHintsProvider();
+    public ElementHandle getElement() {
+        return null;
     }
-
-    @Override
-    public boolean hasOccurrencesFinder() {
-        return true;
-    }
-
-    @Override
-    public OccurrencesFinder getOccurrencesFinder() {
-        return new ELOccurrencesFinder();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        // return new ELCodeCompletionHandler();
-        return super.getCompletionHandler();
-    }
-
 
 }
