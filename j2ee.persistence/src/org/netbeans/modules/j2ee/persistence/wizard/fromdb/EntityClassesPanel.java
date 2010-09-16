@@ -170,7 +170,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         if (compile == null) {
             return false;
         }
-        return compile.findResource(notNullAnnotation.replace('.', '/')+".class")!=null;
+        return compile.findResource(notNullAnnotation.replace('.', '/')+".class")!=null;//NOI18N
     }
 
     public void initialize(PersistenceGenerator persistenceGen, Project project, boolean cmp, FileObject targetFolder) {
