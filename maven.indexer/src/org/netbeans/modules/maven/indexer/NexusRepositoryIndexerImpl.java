@@ -213,9 +213,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 ContainerConfiguration config = new DefaultContainerConfiguration();
 	            //#154755 - start
 	            ClassWorld world = new ClassWorld();
-	            ClassRealm embedderRealm = world.newRealm("maven.embedder", MavenEmbedder.class.getClassLoader()); //NOI18N
-	            ClassRealm indexerRealm = world.newRealm("maven.indexer", NexusRepositoryIndexerImpl.class.getClassLoader()); //NOI18N
-	            ClassRealm plexusRealm = world.newRealm("plexus.core", NexusRepositoryIndexerImpl.class.getClassLoader()); //NOI18N
+	            ClassRealm embedderRealm = world.newRealm("maven.embedder", EmbedderFactory.guiceReadyLoader(MavenEmbedder.class)); //NOI18N
+                ClassLoader indexerLoader = EmbedderFactory.guiceReadyLoader(NexusRepositoryIndexerImpl.class, MavenEmbedder.class);
+	            ClassRealm indexerRealm = world.newRealm("maven.indexer", indexerLoader); //NOI18N
+	            ClassRealm plexusRealm = world.newRealm("plexus.core", indexerLoader); //NOI18N
 	            //need to import META-INF/plexus stuff, otherwise the items in META-INF will not be loaded,
 	            // and the Dependency Injection won't work.
 	            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/plexus"); //NOI18N
