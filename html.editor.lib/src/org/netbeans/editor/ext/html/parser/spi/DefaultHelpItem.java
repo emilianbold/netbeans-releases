@@ -40,68 +40,32 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.parser;
+package org.netbeans.editor.ext.html.parser.spi;
 
 import java.net.URL;
-import java.util.Collection;
-import nu.validator.htmlparser.impl.ElementName;
-import org.netbeans.editor.ext.html.parser.spi.HelpItem;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.parser.model.ElementDescriptor;
 
 /**
  *
  * @author marekfukala
  */
-public class HtmlTagProviderTest extends NbTestCase {
+public class DefaultHelpItem implements HelpItem {
 
-    public HtmlTagProviderTest(String name) {
-        super(name);
+    private URL helpUrl;
+    private HelpResolver helpResolver;
+
+    public DefaultHelpItem(URL helpUrl, HelpResolver helpResolver) {
+        this.helpUrl = helpUrl;
+        this.helpResolver = helpResolver;
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        DocumentationTest.setupDocumentationForUnitTests();
+    public URL getHelpURL() {
+        return helpUrl;
     }
 
-
-
-    public void testHtmlTagConversion() {
-        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.HTML.name);
-        assertNotNull(t);
-
-        assertEquals(ElementDescriptor.HTML.getName(), t.getName());
-        assertEquals(HtmlTagType.HTML, t.getTagClass());
-
-        Collection<HtmlTag> children = t.getChildren();
-        assertNotNull(children);
-        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.BODY.name)));
-        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.HEAD.name)));
-        
-        assertFalse(children.contains(HtmlTagProvider.getTagForElement(ElementName.VIDEO.name)));
-
+    @Override
+    public HelpResolver getHelpResolver() {
+        return helpResolver;
     }
 
-    public void testHelp() {
-        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.VIDEO.name);
-        assertNotNull(t);
-
-
-        HelpItem helpItem = t.getHelp();
-        assertNotNull(helpItem);
-
-        HelpResolver help = helpItem.getHelpResolver();
-        assertNotNull(help);
-
-        String helpContent = help.getHelpContent(helpItem.getHelpURL());
-        assertNotNull(helpContent);
-
-        System.out.println(helpContent);
-
-    }
-    
 }
