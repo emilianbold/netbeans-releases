@@ -109,7 +109,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     }
 
     private static CharSequence getLastname(CharSequence name){
-        int i = CharSequenceUtils.indexOf(name, "::"); // NOI18N
+        int i = CharSequenceUtils.lastIndexOf(name, "::"); // NOI18N
         if (i >=0){
             name = name.toString().substring(i+2);
         }

@@ -123,18 +123,8 @@ public final class Authentication {
         type = Type.PASSWORD;
     }
 
-    @Deprecated
-    public String getKnownHosts() {
-        return getKnownHostsFile();
-    }
-
     public String getKnownHostsFile() {
         return knownHostsFile;
-    }
-
-    @Deprecated
-    public void setSSHKey(String ssh_key) throws IllegalArgumentException {
-        setSSHKeyFile(ssh_key);
     }
 
     public void setSSHKeyFile(String filename) throws IllegalArgumentException {
@@ -144,11 +134,6 @@ public final class Authentication {
 
         type = type.SSH_KEY;
         sshKeyFile = filename;
-    }
-
-    @Deprecated
-    public static boolean isValidKey(String key) {
-        return isValidSSHKeyFile(key);
     }
 
     public static boolean isValidSSHKeyFile(String filename) {
