@@ -528,7 +528,6 @@ public class DbSchemaEjbGenerator {
             UniqueKeyElement pk = getPrimaryOrCandidateKey(table);
             ForeignKeyElement[] fkeys = table.getForeignKeys();
             //sometimes database may contain duplicating foreign keys (or it may be an issue in db schema generation)
-            //TODO: uncomment to fix issue 177341
             fkeys = removeDuplicateFK(fkeys);
 
             for (int col = 0; col < cols.length; col++) {
