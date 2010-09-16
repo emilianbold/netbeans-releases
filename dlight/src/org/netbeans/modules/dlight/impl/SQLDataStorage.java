@@ -284,7 +284,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
 
             @Override
                     public String toString(Column item) {
-                        return (item.getExpression() == null) ? item.getColumnName() : (item.getExpression() + " AS " + item.getColumnName());
+                        return (item.getExpression() == null) ? item.getColumnName() : (item.getExpression() + " AS " + item.getColumnName());//NOI18N
                     }
                 }));
         createViewQuery.append(" FROM ").append(tableName); // NOI18N
@@ -501,7 +501,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
 
                 @Override
                         public String toString(Column item) {
-                            return (item.getExpression() == null) ? item.getColumnName() : (item.getExpression() + " AS " + item.getColumnName());
+                            return (item.getExpression() == null) ? item.getColumnName() : (item.getExpression() + " AS " + item.getColumnName());//NOI18N
                         }
                     }));
 
