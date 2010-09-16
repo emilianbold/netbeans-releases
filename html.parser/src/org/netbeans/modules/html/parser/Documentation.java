@@ -65,14 +65,14 @@ import org.openide.modules.InstalledFileLocator;
  * @author marekfukala
  */
 public class Documentation implements HelpResolver {
-
-    static final Pattern SECTIONS_PATTERN = Pattern.compile("<h[\\w\\d]*\\s*id=\\\"(.*?)\\\">");
+    static final String SECTIONS_PATTERN_CODE ="<[\\w\\d]*.*?id=\\\"([\\w\\d-_]*)\\\"[^\\>]*>";
+    static final Pattern SECTIONS_PATTERN = Pattern.compile(SECTIONS_PATTERN_CODE);
     private static final String DOC_ZIP_FILE_NAME = "docs/html5doc.zip"; //NOI18N
     private static URL DOC_ZIP_URL;
 
-    private static final HelpResolver SINGLETON = new Documentation();
+    private static final Documentation SINGLETON = new Documentation();
 
-    public static HelpResolver getDefault() {
+    public static Documentation getDefault() {
         return SINGLETON;
     }
 
@@ -91,6 +91,32 @@ public class Documentation implements HelpResolver {
             }
         }
         return DOC_ZIP_URL;
+    }
+
+    public URL resolveLink(URL baseURL, String relativeLink) {
+        String link = null;
+        String base = baseURL.toExternalForm();
+
+        if(relativeLink.startsWith("#")) {
+            //link within the same file
+            int hashIdx = base.indexOf('#');
+            if(hashIdx != -1) {
+                base = base.substring(0, hashIdx);
+            }
+            link = base + relativeLink;
+        } else {
+            //link contains a filename
+            link = getZipURL() + relativeLink;
+        }
+
+        try {
+            return new URI(link).toURL();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public URL resolveLink(String relativeLink) {
@@ -143,24 +169,16 @@ public class Documentation implements HelpResolver {
         Matcher matcher = SECTIONS_PATTERN.matcher(content);
 
         int from = -1;
-        int to = -1;
         while (matcher.find()) {
-            if (from != -1) {
-                to = matcher.start();
-                break;
-            }
             if (matcher.group(1).equals(sectionName)) {
                 from = matcher.start();
+                break;
             }
         }
 
         if (from != -1) {
-            if (to == -1) {
-                to = content.length();
-            }
-            return content.substring(from, to);
+            return content.substring(from);
         } else {
-
             return null;
         }
     }

@@ -84,7 +84,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
 
-    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, CharSequence aName, boolean global) {
+    protected TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, CharSequence aName) {
 
         super(ast, file);
 
@@ -106,9 +106,14 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
             aName = fixBuiltInTypedef(ast);
         }
         this.name = QualifiedNameCache.getManager().getString(aName);
+    }
+
+    public static TypedefImpl create(AST ast, CsmFile file, CsmObject container, CsmType type, CharSequence aName, boolean global) {
+        TypedefImpl typedefImpl = new TypedefImpl(ast, file, container, type, aName);
         if (!global) {
-            Utils.setSelfUID(this);
+            Utils.setSelfUID(typedefImpl);
         }
+        return typedefImpl;
     }
 
     private CharSequence fixBuiltInTypedef(AST ast){

@@ -75,70 +75,87 @@ public class NoType implements CsmType {
     private NoType() {
     }
     
+    @Override
     public boolean isReference() {
         return false;
     }
     
+    @Override
     public boolean isPointer() {
         return false;
     }
     
+    @Override
     public boolean isConst() {
         return false;
     }
     
+    @Override
     public CharSequence getText() {
         return "";
     }
     
+    @Override
     public CharSequence getCanonicalText() {
 	return "";
     }
     
+    @Override
     public Position getStartPosition() {
         return null;
     }
 
+    @Override
     public int getStartOffset() {
         return 0;
     }
 
+    @Override
     public int getPointerDepth() {
         return 0;
     }
 
+    @Override
     public Position getEndPosition() {
         return null;
     }
 
+    @Override
     public int getEndOffset() {
         return 0;
     }
 
+    @Override
     public CsmFile getContainingFile() {
         return null;
     }
 
+    @Override
     public CsmClassifier getClassifier() {
         return null;
     }
 
+    @Override
     public List<CsmSpecializationParameter> getInstantiationParams() {
         return Collections.emptyList();
     }
 
+    @Override
     public boolean isInstantiation() {
         return false;
     }
 
+    @Override
     public boolean isTemplateBased() {
         return false;
     }
 
+    @Override
     public CharSequence getClassifierText() {
         return "";
     }
 
+    @Override
     public int getArrayDepth() {
         return 0;
     }
@@ -147,6 +164,7 @@ public class NoType implements CsmType {
         return instance;
     }
 
+    @Override
     public boolean isBuiltInBased(boolean resolveTypeChain) {
         return false;
     }

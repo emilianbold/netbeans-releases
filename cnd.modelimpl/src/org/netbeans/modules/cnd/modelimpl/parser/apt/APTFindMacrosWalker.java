@@ -308,7 +308,7 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                                 if (target instanceof Unresolved.UnresolvedFile) {
                                     refObj = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
                                 } else {
-                                    refObj = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, macroStartOffset, macroStartOffset + macroName.length()), CsmMacro.Kind.DEFINED);
+                                    refObj = MacroImpl.create(macroName, null, "", target, new OffsetableBase(target, macroStartOffset, macroStartOffset + macroName.length()), CsmMacro.Kind.DEFINED);
                                     org.netbeans.modules.cnd.modelimpl.csm.core.Utils.setSelfUID(refObj);
                                 }
                             }

@@ -67,7 +67,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     private final CsmCompoundStatement body;
     private int parseCount;
 
-    public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+    protected FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         if (body == null) {
@@ -77,6 +77,10 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         if (register) {
             registerInProject();
         }
+    }
+
+    public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        return new FunctionDefinitionImpl<T>(ast, file, scope, register, global);
     }
 
     @Override
@@ -183,11 +187,11 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         return (CsmFunction) def;
     }
 
-    private CsmFunction findByNameAndParamsNumber(Iterator declarations, CharSequence name, int paramsNumber) {
+    private CsmFunction findByNameAndParamsNumber(Iterator<?> declarations, CharSequence name, int paramsNumber) {
         CsmFunction out = null;
         CsmFunction best = null;
         CsmFunction best2 = null;
-        for (Iterator it = declarations; it.hasNext();) {
+        for (Iterator<?> it = declarations; it.hasNext();) {
             Object o = it.next();
             if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)) {
                 CsmFunction decl = (CsmFunction) o;

@@ -64,17 +64,22 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
 
     private final List<CsmExpression> initializers;
     
-    public ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+    private ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
         super(ast, cls, visibility, register, register);
         
         initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
     }
  
+    public static ConstructorDDImpl create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        return new ConstructorDDImpl(ast, cls, visibility, register);
+    }
+
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
     }
     
+    @Override
     public List<CsmExpression> getInitializerList() {
         if(initializers != null) {
             return initializers;

@@ -154,7 +154,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /*package*/final void initFields() {
-        NamespaceImpl ns = new NamespaceImpl(this, false);
+        NamespaceImpl ns = NamespaceImpl.create(this, false);
         assert ns != null;
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
         DeclarationContainerProject declarationContainer = new DeclarationContainerProject(this);
@@ -169,7 +169,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         GraphContainer graphContainer = new GraphContainer(this);
         CndUtils.assertTrue(graphStorageKey.equals(graphContainer.getKey()));
         weakGraphContainer.clear();
-        FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
+        FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
     }
 
     private void init(ModelImpl model, Object platformProject) {
@@ -341,7 +341,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             String qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
             NamespaceImpl nsp = _getNamespace(qualifiedName);
             if (nsp == null) {
-                nsp = new NamespaceImpl(this, parent, name.toString(), qualifiedName);
+                nsp = NamespaceImpl.create(this, parent, name.toString(), qualifiedName);
             }
             return nsp;
         }
@@ -2719,7 +2719,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         this.model = (ModelImpl) CsmModelAccessor.getModel();
 
-        this.FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
+        this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
     }
 
     private final WeakContainer<DeclarationContainerProject> weakDeclarationContainer;

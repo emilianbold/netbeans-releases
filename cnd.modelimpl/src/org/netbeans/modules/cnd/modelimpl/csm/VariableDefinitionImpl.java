@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -93,19 +94,17 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private final TemplateDescriptor templateDescriptor;
 
     /** Creates a new instance of VariableDefinitionImpl */
-    public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, CharSequence name) {
-        super(ast, file, type, getLastname(name), null, false, true);
+    private VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern) {
+        super(ast, file, type, getLastname(name), null,_static, _extern);
         templateDescriptor = createTemplateDescriptor(ast, null, null, true);
         classOrNspNames = getClassOrNspNames(ast);
-        registerInProject();
     }
 
-    /** Creates a new instance of VariableDefinitionImpl */
-    public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern) {
-        super(ast, file, type, getLastname(name), null,_static, _extern, false, true);
-        templateDescriptor = createTemplateDescriptor(ast, null, null, true);
-        classOrNspNames = getClassOrNspNames(ast);
-        registerInProject();
+    public static VariableDefinitionImpl create(AST ast, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern) {
+        VariableDefinitionImpl variableDefinitionImpl = new VariableDefinitionImpl(ast, file, type, name, _static, _extern);
+        variableDefinitionImpl.registerInProject();
+        RepositoryUtils.put(variableDefinitionImpl);
+        return variableDefinitionImpl;
     }
 
     private static CharSequence getLastname(CharSequence name){

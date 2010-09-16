@@ -122,10 +122,10 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         }
 
         @Override
-        protected FunctionImpl createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
-            FunctionImpl fun = null;
+        protected FunctionImpl<?> createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
+            FunctionImpl<?> fun = null;
             try {
-                fun = new FunctionImpl(ast, file, type, getScope(), !isRenderingLocalContext(), !isRenderingLocalContext());
+                fun = FunctionImpl.create(ast, file, type, getScope(), !isRenderingLocalContext(), !isRenderingLocalContext());
                 declarators.add(fun);
             } catch (AstRendererException ex) {
                 DiagnosticExceptoins.register(ex);
@@ -150,13 +150,13 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         }
                         break;
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                        declarators.add(new NamespaceAliasImpl(token, getContainingFile(), null, !isRenderingLocalContext()));
+                        declarators.add(NamespaceAliasImpl.create(token, getContainingFile(), null, !isRenderingLocalContext()));
                         break;
                     case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                        declarators.add(new UsingDirectiveImpl(token, getContainingFile(), !isRenderingLocalContext()));
+                        declarators.add(UsingDirectiveImpl.create(token, getContainingFile(), !isRenderingLocalContext()));
                         break;
                     case CPPTokenTypes.CSM_USING_DECLARATION:
-                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null, !isRenderingLocalContext(), CsmVisibility.PUBLIC));
+                        declarators.add(UsingDeclarationImpl.create(token, getContainingFile(), null, !isRenderingLocalContext(), CsmVisibility.PUBLIC));
                         break;
 
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
@@ -206,10 +206,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-            ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext());
-            if (isRenderingLocalContext()) {
-                Utils.setSelfUID(cfdi);
-            }
+            ClassForwardDeclarationImpl cfdi = ClassForwardDeclarationImpl.create(ast, file, !isRenderingLocalContext());
             ForwardClass fc = ForwardClass.create(cfdi.getName().toString(), getContainingFile(), ast, scope, !isRenderingLocalContext());
             if(fc != null) {
                 declarators.add(fc);

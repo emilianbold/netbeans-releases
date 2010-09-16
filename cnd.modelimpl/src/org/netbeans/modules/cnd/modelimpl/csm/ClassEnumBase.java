@@ -226,7 +226,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         }
     }
 
-    private boolean registerInProject() {
+    @Override
+    protected boolean registerInProject() {
         ClassImpl.ClassMemberForwardDeclaration fd = isClassDefinition();
         if (fd != null && CsmKindUtilities.isClass(this)) {
             fd.setCsmClass((CsmClass) this);

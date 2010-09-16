@@ -342,7 +342,7 @@ public class TemplateUtils {
 
         if (type instanceof NestedType) {
             NestedType nestedType = (NestedType) type;
-            type = new NestedType(checkTemplateType(nestedType.getParent(), scope), nestedType);
+            type = NestedType.create(checkTemplateType(nestedType.getParent(), scope), nestedType);
         }
         
         // Check instantiation parameters

@@ -50,7 +50,7 @@ import java.net.URL;
  */
 public interface HelpResolver {
 
-    public URL resolveLink(String link);
+    public URL resolveLink(URL base, String link);
 
     /** returns appropriate content of the help section addressed by the URL.
      * It is up to the implementation what exactly is returned. The returned

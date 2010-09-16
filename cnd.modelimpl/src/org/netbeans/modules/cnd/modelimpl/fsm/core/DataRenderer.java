@@ -110,7 +110,7 @@ public class DataRenderer {
         if (data.args != null) {
             List<CsmParameter> list = new ArrayList<CsmParameter>();
             for (String string : data.args) {
-                list.add(new DummyParameterImpl(file, data.startOffset, data.endOffset, string, null));
+                list.add(DummyParameterImpl.create(file, data.startOffset, data.endOffset, string, null));
 
             }
             return new DummyParametersListImpl(file, data.startOffset, data.endOffset, list);
