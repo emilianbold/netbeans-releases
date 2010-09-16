@@ -39,10 +39,8 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.support.ui;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -80,25 +78,9 @@ public final class SSHKeyFileChooser extends JFileChooser {
 
     private static class SSHKeyFilter extends FileFilter {
 
-        private static final JSch testJSch = new JSch();
-
         @Override
         public boolean accept(File file) {
-            if (file.isDirectory()) {
-                return true;
-            }
-
-            try {
-                testJSch.addIdentity(file.getAbsolutePath());
-                return true;
-            } catch (JSchException ex) {
-                return false;
-            } finally {
-                try {
-                    testJSch.removeAllIdentity();
-                } catch (JSchException ex) {
-                }
-            }
+            return SSHKeyFileFilter.getInstance().accept(file);
         }
 
         @Override

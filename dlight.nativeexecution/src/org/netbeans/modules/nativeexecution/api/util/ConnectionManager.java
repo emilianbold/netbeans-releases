@@ -427,7 +427,7 @@ public final class ConnectionManager {
                 switch (auth.getType()) {
                     case SSH_KEY:
                         try {
-                            jsch.addIdentity(auth.getKey());
+                            jsch.addIdentity(auth.getSSHKeyFile());
                         } catch (JSchException ex) {
                             Exceptions.printStackTrace(ex);
                         }
