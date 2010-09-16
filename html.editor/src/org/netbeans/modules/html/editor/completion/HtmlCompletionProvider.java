@@ -388,6 +388,11 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public String getText() {
+            //normally it should be enough to return null here
+            //and the documentation would be loaded from the URL.
+            //However it seems that the html5 anchor navigation doesn't
+            //properly work in the embedded swing browser so I need to
+            //strip the begginning of the file to the anchor manually
             return resolver.getHelpContent(getURL());
         }
 
@@ -457,6 +462,11 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public String getText() {
+            //normally it should be enough to return null here
+            //and the documentation would be loaded from the URL.
+            //However it seems that the html5 anchor navigation doesn't
+            //properly work in the embedded swing browser so I need to
+            //strip the begginning of the file to the anchor manually
             return getHelpItem().getHelpResolver().getHelpContent(getURL());
         }
 
