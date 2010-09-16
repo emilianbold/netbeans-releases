@@ -60,6 +60,7 @@ import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.FilteredTermEnum;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.PrefixTermEnum;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TermQuery;
@@ -164,6 +165,85 @@ class QueryUtil {
         }
     }  
     
+    static Query[] createTermCollectingQueries(
+            final @NonNull Pair<String,String> termNames,
+            final @NonNull String value,
+            final @NonNull ClassIndex.NameKind kind) {
+        Parameters.notNull("termNames", termNames);     //NOI18N
+        Parameters.notNull("termNames.first", termNames.first); //NOI18N
+        Parameters.notNull("termNames.second", termNames.second); //NOI18N
+        Parameters.notNull("value", value); //NOI18N
+        Parameters.notNull("kind", kind);   //NOI18N
+        switch (kind) {
+            case SIMPLE_NAME:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException();
+                }
+                return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new TermFilter(termNames.first,value))};
+            case PREFIX:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                else {
+                    return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new PrefixFilter(termNames.first, value))};
+                }
+            case CASE_INSENSITIVE_PREFIX:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                else {
+                    return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new PrefixFilter(termNames.second, value.toLowerCase()))};
+                }
+            case REGEXP:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.first, value, true))};
+            case CASE_INSENSITIVE_REGEXP:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.second, value.toLowerCase(), false))};
+            case CAMEL_CASE:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                } else {
+                    StringBuilder sb = new StringBuilder();
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(value, lastIndex + 1);
+                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
+                        sb.append(token);
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                        lastIndex = index;
+                    } while(index != -1);
+                    return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.first,sb.toString(),true))};
+                }
+            case CAMEL_CASE_INSENSITIVE:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                else {
+                    final Query pq = new TCFilteredQuery(new MatchAllDocsQuery(), new PrefixFilter(termNames.second, value.toLowerCase()));
+                    StringBuilder sb = new StringBuilder();
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(value, lastIndex + 1);
+                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);                        
+                        sb.append(token.toLowerCase());
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                        lastIndex = index;
+                    } while(index != -1);
+                    final Query fq = new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.second,sb.toString(),false));
+                    return new Query[]{pq,fq};
+                }
+            default:
+                throw new UnsupportedOperationException (kind.toString());
+        }
+    }
+    
     static Query createUsagesQuery(
             final @NonNull String resourceName,
             final @NonNull Set<ClassIndexImpl.UsageType> mask,
@@ -211,7 +291,7 @@ class QueryUtil {
                         final int count = termDocs.read(docs, freqs);
                         if (count != 0) {
                             for (int i = 0; i < count; i++) {
-                                visit(docs[i]);
+                                visit(term, docs[i]);
                             }
                         } else {
                             break;
@@ -223,7 +303,7 @@ class QueryUtil {
             }
         }
 
-        abstract public void visit(int doc);
+        abstract public void visit(Term term, int doc);
     }
     
     private static int findNextUpper(String text, int offset ) {
@@ -233,6 +313,68 @@ class QueryUtil {
             }
         }
         return -1;
+    }
+    
+    private static abstract class TCFilter extends Filter {
+        public abstract void attach (TermCollector collector);
+    }
+    
+    private static abstract class AbstractTCFilter extends TCFilter {
+        
+        private  TermCollector termCollector;
+                
+        @Override
+        public final BitSet bits(IndexReader reader) throws IOException {
+            final FilteredTermEnum enumerator = getTermEnum(reader);
+            try {
+                final BitSet bitSet = new BitSet(reader.maxDoc());
+                new DocumentVisitor() {
+                    @Override
+                    public void visit(Term term, int doc) {
+                        bitSet.set(doc);
+                        if (termCollector != null) {
+                            termCollector.add(doc, term);
+                        }
+                    }
+                }.generate(reader, enumerator);
+                return bitSet;
+            } finally {
+                enumerator.close();
+            }
+        }
+
+        @Override
+        public final DocIdSet getDocIdSet(IndexReader reader) throws IOException {
+            final FilteredTermEnum enumerator = getTermEnum(reader);
+            try {
+                // if current term in enum is null, the enum is empty -> shortcut
+                if (enumerator.term() == null) {
+                    return DocIdSet.EMPTY_DOCIDSET;
+                }
+                // else fill into a OpenBitSet
+                final OpenBitSet bitSet = new OpenBitSet(reader.maxDoc());
+                new DocumentVisitor() {
+                    @Override
+                    public void visit(Term term, int doc) {
+                        bitSet.set(doc);
+                        if (termCollector != null) {
+                            termCollector.add(doc, term);
+                        }
+                    }
+                }.generate(reader, enumerator);
+                return bitSet;
+            } finally {
+                enumerator.close();
+            }
+        }
+        
+        @Override
+        public final void attach(final TermCollector tc) {
+            this.termCollector = tc;
+        }
+        
+        protected abstract FilteredTermEnum getTermEnum(IndexReader reader) throws IOException;
+        
     }
     
     private static class RegexpTermEnum extends FilteredTermEnum {
@@ -277,7 +419,7 @@ class QueryUtil {
         }
     }
     
-    private static class RegexpFilter extends Filter {
+    private static class RegexpFilter extends AbstractTCFilter {
         
         private final String fieldName;
         private final String startPrefix;
@@ -287,6 +429,10 @@ class QueryUtil {
             this.fieldName = fieldName;
             this.pattern = caseSensitive ? Pattern.compile(regexp) : Pattern.compile(regexp, Pattern.CASE_INSENSITIVE);
             this.startPrefix = getStartText(regexp);
+        }
+        
+        protected FilteredTermEnum getTermEnum(final @NonNull IndexReader reader) throws IOException {
+            return new RegexpTermEnum(reader, fieldName, pattern, startPrefix);
         }
         
         private static String getStartText(final String regexp) {
@@ -303,49 +449,53 @@ class QueryUtil {
                 startBuilder.append(c);
             }
             return startBuilder.toString();
+        }                                                        
+    }
+    
+    private static class PrefixFilter extends AbstractTCFilter {
+        
+        protected final Term term;
+        
+        public PrefixFilter(final @NonNull String fieldName, final @NonNull String prefix) {
+            this.term = new Term(fieldName, prefix);
         }
+        
+        protected FilteredTermEnum getTermEnum(final @NonNull IndexReader reader) throws IOException {
+            return new PrefixTermEnum(reader, term);
+        }
+    }
+    
+    private static class TermFilter extends PrefixFilter {
                 
-        @Override
-        public BitSet bits(IndexReader reader) throws IOException {
-            RegexpTermEnum enumerator = new RegexpTermEnum(reader, fieldName, pattern, startPrefix);
-            try {
-                final BitSet bitSet = new BitSet(reader.maxDoc());
-                new DocumentVisitor() {
-
-                    @Override
-                    public void visit(int doc) {
-                        bitSet.set(doc);
-                    }
-                }.generate(reader, enumerator);
-                return bitSet;
-            } finally {
-                enumerator.close();
-            }
+        public TermFilter (final String fieldName, final String value) {
+            super(fieldName, value);
         }
 
         @Override
-        public DocIdSet getDocIdSet(IndexReader reader) throws IOException {
-            RegexpTermEnum enumerator = new RegexpTermEnum(reader, fieldName, pattern, startPrefix);
-            try {
-                // if current term in enum is null, the enum is empty -> shortcut
-                if (enumerator.term() == null) {
-                    return DocIdSet.EMPTY_DOCIDSET;
+        protected FilteredTermEnum getTermEnum(IndexReader reader) throws IOException {
+            return new PrefixTermEnum(reader, term) {
+                
+                private boolean endEnum;
+                
+                @Override
+                protected boolean termCompare(Term term) {
+                    if (term.field() == term.field() && term.text().equals(term.text())) {                                                                              
+                        return true;
+                    }
+                    endEnum = true;
+                    return false;
                 }
-                // else fill into a OpenBitSet
-                final OpenBitSet bitSet = new OpenBitSet(reader.maxDoc());
-                new DocumentVisitor() {
 
-                    @Override
-                    public void visit(int doc) {
-                        bitSet.set(doc);
-                    }
-                }.generate(reader, enumerator);
-                return bitSet;
-            } finally {
-                enumerator.close();
-            }
+                @Override
+                protected boolean endEnum() {
+                    return endEnum;
+                }
+                
+                
+                
+            };
         }
-                        
+        
     }
     
     private static class BitSetCollector extends Collector {
@@ -411,6 +561,17 @@ class QueryUtil {
             return null;
         }
         
+    }
+    
+    private static class TCFilteredQuery extends FilteredQuery implements TermCollector.TermCollecting {        
+        private TCFilteredQuery(final Query query, final TCFilter filter) {
+            super (query, filter);
+        }
+        
+        @Override
+        public void attach(TermCollector collector) {
+            ((TCFilter)getFilter()).attach(collector);
+        }
     }
     //</editor-fold>
             
