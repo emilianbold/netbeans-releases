@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.html.parser;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.parser.spi.DefaultHelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
@@ -208,7 +212,16 @@ public class HtmlTagProvider {
             }
             return children;
         }
+
+        public HelpItem getHelp() {
+            return isPureHtmlTag()
+                    ? new DefaultHelpItem(Documentation.getDefault().resolveLink(descriptor.getHelpLink()), Documentation.getDefault())
+                    : null;
+
+        }
+
     }
+
 
     private static class HtmlTagAttributeAdapter implements HtmlTagAttribute {
 
@@ -232,6 +245,10 @@ public class HtmlTagProvider {
 
         public Collection<String> getPossibleValues() {
             return Collections.emptyList();
+        }
+
+        public HelpItem getHelp() {
+            return new DefaultHelpItem(Documentation.getDefault().resolveLink(attr.getHelpLink()), Documentation.getDefault());
         }
     }
 }
