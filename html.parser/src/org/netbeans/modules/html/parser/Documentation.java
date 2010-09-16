@@ -46,19 +46,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.StringBuilder;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
@@ -66,13 +64,19 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author marekfukala
  */
-public class Documentation {
-
-    static final Pattern SECTIONS_PATTERN = Pattern.compile("<h[\\w\\d]*\\s*id=\\\"(.*?)\\\">");
+public class Documentation implements HelpResolver {
+    static final String SECTIONS_PATTERN_CODE ="<[\\w\\d]*.*?id=\\\"([\\w\\d-_]*)\\\"[^\\>]*>";
+    static final Pattern SECTIONS_PATTERN = Pattern.compile(SECTIONS_PATTERN_CODE);
     private static final String DOC_ZIP_FILE_NAME = "docs/html5doc.zip"; //NOI18N
     private static URL DOC_ZIP_URL;
 
-    public static URL getZipURL() {
+    private static final Documentation SINGLETON = new Documentation();
+
+    public static Documentation getDefault() {
+        return SINGLETON;
+    }
+
+    static URL getZipURL() {
         if (DOC_ZIP_URL == null) {
             File file = InstalledFileLocator.getDefault().locate(DOC_ZIP_FILE_NAME, null, false);
             if (file != null) {
@@ -89,7 +93,33 @@ public class Documentation {
         return DOC_ZIP_URL;
     }
 
-    static URL resolveLink(String relativeLink) {
+    public URL resolveLink(URL baseURL, String relativeLink) {
+        String link = null;
+        String base = baseURL.toExternalForm();
+
+        if(relativeLink.startsWith("#")) {
+            //link within the same file
+            int hashIdx = base.indexOf('#');
+            if(hashIdx != -1) {
+                base = base.substring(0, hashIdx);
+            }
+            link = base + relativeLink;
+        } else {
+            //link contains a filename
+            link = getZipURL() + relativeLink;
+        }
+
+        try {
+            return new URI(link).toURL();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public URL resolveLink(String relativeLink) {
         try {
             return new URI(getZipURL().toExternalForm() + relativeLink).toURL();
         } catch (URISyntaxException ex) {
@@ -98,6 +128,10 @@ public class Documentation {
             Logger.getLogger(Documentation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    public String getHelpContent(URL url) {
+        return getSectionContent(url, null);
     }
 
     static String getContentAsString(URL url, Charset charset) {
@@ -123,7 +157,7 @@ public class Documentation {
         return null;
     }
 
-    public static String getSectionContent(URL url, Charset charset) {
+    public String getSectionContent(URL url, Charset charset) {
         String surl = url.toExternalForm();
         int hashIndex = surl.indexOf('#');
         if (hashIndex == -1) {
@@ -135,24 +169,16 @@ public class Documentation {
         Matcher matcher = SECTIONS_PATTERN.matcher(content);
 
         int from = -1;
-        int to = -1;
         while (matcher.find()) {
-            if (from != -1) {
-                to = matcher.start();
-                break;
-            }
             if (matcher.group(1).equals(sectionName)) {
                 from = matcher.start();
+                break;
             }
         }
 
         if (from != -1) {
-            if (to == -1) {
-                to = content.length();
-            }
-            return content.substring(from, to);
+            return content.substring(from);
         } else {
-
             return null;
         }
     }

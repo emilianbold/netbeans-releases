@@ -416,7 +416,7 @@ public final class ConnectionManager {
                 }
 
                 try {
-                    String knownHosts = auth.getKnownHosts();
+                    String knownHosts = auth.getKnownHostsFile();
                     if (knownHosts != null) {
                         jsch.setKnownHosts(knownHosts);
                     }

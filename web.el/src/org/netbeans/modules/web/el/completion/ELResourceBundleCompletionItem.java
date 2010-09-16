@@ -39,69 +39,54 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.el.completion;
 
-package org.netbeans.modules.html.parser;
-
-import java.net.URL;
-import java.util.Collection;
-import nu.validator.htmlparser.impl.ElementName;
-import org.netbeans.editor.ext.html.parser.spi.HelpItem;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.parser.model.ElementDescriptor;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.web.el.ELElement;
 
 /**
  *
- * @author marekfukala
+ * @author Erno Mononen
  */
-public class HtmlTagProviderTest extends NbTestCase {
+final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
 
-    public HtmlTagProviderTest(String name) {
-        super(name);
+    private final String key;
+    private final String value;
+    private final ELElement element;
+
+    public ELResourceBundleCompletionItem(String key, String value, ELElement element) {
+        this.key = key;
+        this.value = value;
+        this.element = element;
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        DocumentationTest.setupDocumentationForUnitTests();
+    public String getName() {
+        return key;
     }
 
-
-
-    public void testHtmlTagConversion() {
-        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.HTML.name);
-        assertNotNull(t);
-
-        assertEquals(ElementDescriptor.HTML.getName(), t.getName());
-        assertEquals(HtmlTagType.HTML, t.getTagClass());
-
-        Collection<HtmlTag> children = t.getChildren();
-        assertNotNull(children);
-        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.BODY.name)));
-        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.HEAD.name)));
-        
-        assertFalse(children.contains(HtmlTagProvider.getTagForElement(ElementName.VIDEO.name)));
-
+    @Override
+    public String getRhsHtml(HtmlFormatter formatter) {
+        formatter.appendHtml("<font color='#ce7b00'>" + value + "</font>");
+        return formatter.getText();
     }
 
-    public void testHelp() {
-        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.VIDEO.name);
-        assertNotNull(t);
-
-
-        HelpItem helpItem = t.getHelp();
-        assertNotNull(helpItem);
-
-        HelpResolver help = helpItem.getHelpResolver();
-        assertNotNull(help);
-
-        String helpContent = help.getHelpContent(helpItem.getHelpURL());
-        assertNotNull(helpContent);
-
-        System.out.println(helpContent);
-
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.OTHER;
     }
-    
+
+    @Override
+    public int getSortPrioOverride() {
+        return 20;
+    }
+
+    @Override
+    public ElementHandle getElement() {
+        return null;
+    }
+
 }

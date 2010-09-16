@@ -40,68 +40,43 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.parser;
+package org.netbeans.modules.java.source.usages;
 
-import java.net.URL;
-import java.util.Collection;
-import nu.validator.htmlparser.impl.ElementName;
-import org.netbeans.editor.ext.html.parser.spi.HelpItem;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.parser.model.ElementDescriptor;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.apache.lucene.index.Term;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
- * @author marekfukala
+ * @author Tomas Zezula
  */
-public class HtmlTagProviderTest extends NbTestCase {
-
-    public HtmlTagProviderTest(String name) {
-        super(name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        DocumentationTest.setupDocumentationForUnitTests();
-    }
-
-
-
-    public void testHtmlTagConversion() {
-        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.HTML.name);
-        assertNotNull(t);
-
-        assertEquals(ElementDescriptor.HTML.getName(), t.getName());
-        assertEquals(HtmlTagType.HTML, t.getTagClass());
-
-        Collection<HtmlTag> children = t.getChildren();
-        assertNotNull(children);
-        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.BODY.name)));
-        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.HEAD.name)));
-        
-        assertFalse(children.contains(HtmlTagProvider.getTagForElement(ElementName.VIDEO.name)));
-
-    }
-
-    public void testHelp() {
-        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.VIDEO.name);
-        assertNotNull(t);
-
-
-        HelpItem helpItem = t.getHelp();
-        assertNotNull(helpItem);
-
-        HelpResolver help = helpItem.getHelpResolver();
-        assertNotNull(help);
-
-        String helpContent = help.getHelpContent(helpItem.getHelpURL());
-        assertNotNull(helpContent);
-
-        System.out.println(helpContent);
-
+final class TermCollector {
+    
+    private final Map<Integer, Set<Term>> doc2Terms;
+    
+    TermCollector() {
+        doc2Terms = new HashMap<Integer, Set<Term>>();
     }
     
+    void add (final int docId, final @NonNull Term term) {
+        Set<Term> slot = doc2Terms.get(docId);
+        if (slot == null) {
+            slot = new HashSet<Term>();
+            doc2Terms.put(docId, slot);
+        }
+        slot.add(term);
+    }
+    
+    Set<Term> get(final int docId) {
+        return doc2Terms.get(docId);
+    }
+    
+    
+    static interface TermCollecting {
+        void attach (TermCollector collector);
+    }
+
 }

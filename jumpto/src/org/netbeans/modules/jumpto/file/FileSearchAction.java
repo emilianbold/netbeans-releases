@@ -539,8 +539,15 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
                         if (matcher.accept(file.getNameExt())) {
                             Project project = FileOwnerQuery.getOwner(file);
-                            boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
-                            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), file);
+                            boolean preferred = false;
+                            String relativePath = null;
+                            if(project != null) { // #176495
+                               FileObject pd = project.getProjectDirectory();
+                               preferred = currentProject != null ?
+                                 pd == currentProject.getProjectDirectory() :
+                                 false;
+                                relativePath = FileUtil.getRelativePath(pd, file);
+                            }
                             if (relativePath == null)
                                 relativePath ="";
                             FileDescriptor fd = new FileDescription(
