@@ -160,6 +160,9 @@ public class Watcher extends AnnotationProvider {
      * @return a suitable {@link Notifier} implementation or <code>null</code>.
      */
     private static Notifier getNotifierForPlatform() {
+        if (Utilities.isWindows()) {
+            return new WindowsNotifier();
+        }
         if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             return new LinuxNotifier();
         }
