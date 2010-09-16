@@ -227,11 +227,11 @@ public final class ReferencesSupport {
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, FAKE, oldVersion);
+                    putReferencedObject(csmFile, key, UNRESOLVED, oldVersion);
                 } else {
                     putReferencedObject(csmFile, key, csmItem, oldVersion);
                 }
-            } else if (csmItem == FAKE) {
+            } else if (csmItem == UNRESOLVED) {
                 csmItem = null;
             }
         }
@@ -643,7 +643,7 @@ public final class ReferencesSupport {
     private final Object cacheLock = new CacheLock();
     private final static class CacheLock {};
     private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
-    private static CsmObject FAKE = new CsmObject() {
+    private static CsmObject UNRESOLVED = new CsmObject() {
 
         @Override
         public String toString() {
@@ -658,7 +658,7 @@ public final class ReferencesSupport {
             CsmObject out = null;
             if (map != null) {
                 out = map.get(offset);
-                if (out == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                if (out == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                     // we don't beleive in such fake and put null instead
                     map.put(offset, null);
                     out = null;
@@ -670,7 +670,7 @@ public final class ReferencesSupport {
 
     private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
         synchronized (cacheLock) {
-            if (object == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+            if (object == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                 // we don't beleive in such fake
 //                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
                 return;
