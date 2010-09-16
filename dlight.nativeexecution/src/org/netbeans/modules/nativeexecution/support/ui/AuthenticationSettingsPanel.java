@@ -354,7 +354,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
             String keyFile = keyFileFld.getText();
             if (keyFile.length() == 0) {
                 problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
-                        "AuthenticationSettingsPanel.validationError.emptyKey.text");
+                        "AuthenticationSettingsPanel.validationError.emptyKey.text");//NOI18N
                 return false;
             }
 
@@ -362,25 +362,25 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
 
             if (file.isDirectory()) {
                 problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
-                        "AuthenticationSettingsPanel.validationError.isDirectory.text", keyFile);
+                        "AuthenticationSettingsPanel.validationError.isDirectory.text", keyFile);//NOI18N
                 return false;
             }
 
             if (!file.exists()) {
                 problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
-                        "AuthenticationSettingsPanel.validationError.fileNotFound.text", keyFile);
+                        "AuthenticationSettingsPanel.validationError.fileNotFound.text", keyFile);//NOI18N
                 return false;
             }
 
             if (!file.canRead()) {
                 problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
-                        "AuthenticationSettingsPanel.validationError.fileNotReadable.text", keyFile);
+                        "AuthenticationSettingsPanel.validationError.fileNotReadable.text", keyFile);//NOI18N
                 return false;
             }
 
             if (!Authentication.isValidSSHKeyFile(file.getAbsolutePath())) {
                 problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
-                        "AuthenticationSettingsPanel.validationError.invalidKey.text", keyFile);
+                        "AuthenticationSettingsPanel.validationError.invalidKey.text", keyFile);//NOI18N
                 return false;
             }
 
