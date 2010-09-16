@@ -185,12 +185,6 @@ abstract class CompletionLayoutPopup implements FocusListener {
                 comp.getMaximumSize().height); //set maximum part of screen covered
         setMaxSize(comp, maxSize);
         
-        // if there is space between right CC border and right screen edge,
-        // add this gap to maximum width
-        int gap = screenWidth - (getAnchorOffsetBounds().x + comp.getPreferredSize().width);
-        if(gap > 0) maxSize.width += gap;
-
-        setMaxSize(comp, maxSize);
         return comp.getPreferredSize();
     }
     

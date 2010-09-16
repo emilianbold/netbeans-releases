@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
@@ -53,6 +54,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 /**
  * @author   Daniel Prusa
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                             types=TreeModel.class,
+                             position=15000)
 public class EvaluatorTreeModel extends LocalsTreeModel {
 
 

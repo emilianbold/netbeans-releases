@@ -55,7 +55,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Build;
@@ -69,6 +68,8 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.modules.maven.options.MavenSettings.DownloadStrategy;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -361,14 +362,19 @@ public final class NbMavenProject {
     }
 
     /**
-     * synchronously download binaries and the trigger dependency javadoc/source download (in async mode)
+     * synchronously download binaries and the trigger dependency javadoc/source download (in async mode) if download strategy is not DownloadStrategy.NEVER in options
      * Not to be called from AWT thread. The current thread will continue after downloading binaries and firing project change event.
      *
      */
     public void downloadDependencyAndJavadocSource() {
         synchronousDependencyDownload();
-        triggerSourceJavadocDownload(true);
-        triggerSourceJavadocDownload(false);
+        //see Bug 189350 : honer global  maven settings
+        if (MavenSettings.getDefault().getJavadocDownloadStrategy() != DownloadStrategy.NEVER) {
+            triggerSourceJavadocDownload(true);
+        }
+        if (MavenSettings.getDefault().getSourceDownloadStrategy() != DownloadStrategy.NEVER) {
+            triggerSourceJavadocDownload(false);
+        }
     }
 
 

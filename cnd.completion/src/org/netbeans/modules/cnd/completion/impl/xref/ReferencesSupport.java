@@ -58,6 +58,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -175,13 +176,13 @@ public final class ReferencesSupport {
         return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
-    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, TokenItem<CppTokenId> token) {
+    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, TokenItem<TokenId> token) {
         CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
         return csmOwner;
     }
 
     /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc,
-            final int offset, TokenItem<CppTokenId> jumpToken, FileReferencesContext fileReferencesContext) {
+            final int offset, TokenItem<TokenId> jumpToken, FileReferencesContext fileReferencesContext) {
         long oldVersion = CsmFileInfoQuery.getDefault().getFileVersion(csmFile);
         CsmObject csmItem = null;
         // emulate hyperlinks order
@@ -196,20 +197,23 @@ public final class ReferencesSupport {
             }
         }
         if (jumpToken != null) {
-            switch (jumpToken.id()) {
-                case PREPROCESSOR_INCLUDE:
-                case PREPROCESSOR_INCLUDE_NEXT:
-                    // look for include directive
-                    csmItem = findInclude(csmFile, offset);
-                    break;
-                case PREPROCESSOR_SYS_INCLUDE:
-                case PREPROCESSOR_USER_INCLUDE:
-                    // look for include file
-                    csmItem = findInclude(csmFile, offset);
-                    if (csmItem != null) {
-                        csmItem = ((CsmInclude)csmItem).getIncludeFile();
-                    }
-                    break;
+            final TokenId id = jumpToken.id();
+            if(id instanceof CppTokenId) {
+                switch ((CppTokenId)id) {
+                    case PREPROCESSOR_INCLUDE:
+                    case PREPROCESSOR_INCLUDE_NEXT:
+                        // look for include directive
+                        csmItem = findInclude(csmFile, offset);
+                        break;
+                    case PREPROCESSOR_SYS_INCLUDE:
+                    case PREPROCESSOR_USER_INCLUDE:
+                        // look for include file
+                        csmItem = findInclude(csmFile, offset);
+                        if (csmItem != null) {
+                            csmItem = ((CsmInclude)csmItem).getIncludeFile();
+                        }
+                        break;
+                }
             }
         }
 
@@ -223,11 +227,11 @@ public final class ReferencesSupport {
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, FAKE, oldVersion);
+                    putReferencedObject(csmFile, key, UNRESOLVED, oldVersion);
                 } else {
                     putReferencedObject(csmFile, key, csmItem, oldVersion);
                 }
-            } else if (csmItem == FAKE) {
+            } else if (csmItem == UNRESOLVED) {
                 csmItem = null;
             }
         }
@@ -240,12 +244,12 @@ public final class ReferencesSupport {
     }
 
     public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
-            TokenItem<CppTokenId> tokenUnderOffset, final int offset) {
+            TokenItem<TokenId> tokenUnderOffset, final int offset) {
         return findDeclaration(csmFile, doc, tokenUnderOffset, offset, null);
     }
 
     private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
-            TokenItem<CppTokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
+            TokenItem<TokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
 
         // fast check, if possible
         CsmObject csmItem = null;
@@ -337,7 +341,7 @@ public final class ReferencesSupport {
     }
 
     private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
-            TokenItem<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope, FileReferencesContext fileReferencesContext) {
+            TokenItem<TokenId> tokenUnderOffset, final int offset, final QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         assert csmFile != null;
         if (tokenUnderOffset == null && doc instanceof AbstractDocument) {
             ((AbstractDocument) doc).readLock();
@@ -384,7 +388,7 @@ public final class ReferencesSupport {
         ReferenceImpl ref = null;
         doc.readLock();
         try {
-            TokenItem<CppTokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset);
+            TokenItem<TokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset);
             if (isSupportedToken(token)) {
                 ref = createReferenceImpl(file, doc, offset, token, null);
             }
@@ -394,7 +398,7 @@ public final class ReferencesSupport {
         return ref;
     }
 
-    public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<CppTokenId> token, CsmReferenceKind kind) {
+    public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<TokenId> token, CsmReferenceKind kind) {
         assert token != null;
         assert file != null : "null file for document " + doc + " on offset " + offset + " " + token;
         if (token.id() == CppTokenId.THIS) {
@@ -404,7 +408,7 @@ public final class ReferencesSupport {
         }
     }
 
-    private static boolean isSupportedToken(TokenItem<CppTokenId> token) {
+    private static boolean isSupportedToken(TokenItem<TokenId> token) {
         return token != null &&
                 (CsmIncludeHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) || CsmHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION));
     }
@@ -417,7 +421,7 @@ public final class ReferencesSupport {
             int offset = getRefOffset(ref);
             BaseDocument doc = getRefDocument(ref);
             if (doc != null) {
-                TokenItem<CppTokenId> token = getRefTokenIfPossible(ref);
+                TokenItem<TokenId> token = getRefTokenIfPossible(ref);
                 target = findDeclaration(ref.getContainingFile(), doc, token, offset, QueryScope.LOCAL_QUERY, null);
                 setResolvedInfo(ref, target);
             }
@@ -446,7 +450,7 @@ public final class ReferencesSupport {
     }
 
     /*package*/
-    static TokenItem<CppTokenId> getRefTokenIfPossible(CsmReference ref) {
+    static TokenItem<TokenId> getRefTokenIfPossible(CsmReference ref) {
         if (ref instanceof ReferenceImpl) {
             return ((ReferenceImpl) ref).getToken();
         } else {
@@ -614,15 +618,18 @@ public final class ReferencesSupport {
             try {
                 int offset = ref.getStartOffset();
                 // check previous token
-                TokenItem<CppTokenId> token = CndTokenUtilities.getFirstNonWhiteBwd(doc, offset);
+                TokenItem<TokenId> token = CndTokenUtilities.getFirstNonWhiteBwd(doc, offset);
                 if (token != null) {
-                    switch (token.id()) {
-                        case DOT:
-                        case DOTMBR:
-                        case ARROW:
-                        case ARROWMBR:
-                        case SCOPE:
-                            kind = CsmReferenceKind.AFTER_DEREFERENCE_USAGE;
+                    TokenId id = token.id();
+                    if(id instanceof CppTokenId) {
+                        switch ((CppTokenId)id) {
+                            case DOT:
+                            case DOTMBR:
+                            case ARROW:
+                            case ARROWMBR:
+                            case SCOPE:
+                                kind = CsmReferenceKind.AFTER_DEREFERENCE_USAGE;
+                        }
                     }
                 }
             } finally {
@@ -636,7 +643,7 @@ public final class ReferencesSupport {
     private final Object cacheLock = new CacheLock();
     private final static class CacheLock {};
     private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
-    private static CsmObject FAKE = new CsmObject() {
+    private static CsmObject UNRESOLVED = new CsmObject() {
 
         @Override
         public String toString() {
@@ -651,7 +658,7 @@ public final class ReferencesSupport {
             CsmObject out = null;
             if (map != null) {
                 out = map.get(offset);
-                if (out == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                if (out == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                     // we don't beleive in such fake and put null instead
                     map.put(offset, null);
                     out = null;
@@ -663,7 +670,7 @@ public final class ReferencesSupport {
 
     private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
         synchronized (cacheLock) {
-            if (object == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+            if (object == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                 // we don't beleive in such fake
 //                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
                 return;

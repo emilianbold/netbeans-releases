@@ -54,7 +54,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,7 +67,6 @@ import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -173,7 +171,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             SpecificationVersion current = getModuleInfo().getDependencyVersion("org.openide.awt");
             actionProxy = current == null || current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
             actionContext = current == null || current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
-            annotations = current == null || current.compareTo(new SpecificationVersion("7.27")) >= 0; // NOI18N
+            annotations = current == null || current.compareTo(new SpecificationVersion("7.28")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, ex);
             actionProxy = false;
@@ -277,26 +275,19 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             if (globalMenuItemEnabled) {
                 refs.add(createActionReference(
                     gmiParentMenuPath,
-                    gmiSeparatorBefore,
-                    gmiSeparatorAfter, 
+                    gmiSeparatorBefore ? Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, Boolean.TRUE) : -1,
+                    gmiSeparatorAfter ? Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, Boolean.FALSE) : -1,
                     Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath),
                     null
                 ));
-                generateAnnotationSeparators(
-                    gmiParentMenuPath,
-                    dashedFqClassName,
-                    gmiSeparatorBefore,
-                    gmiSeparatorAfter,
-                    gmiPosition
-                );
             }
 
             // create layer entry for toolbar button
             if (toolbarEnabled) {
                 refs.add(createActionReference(
                     toolbar,
-                    false,
-                    false,
+                    -1,
+                    -1,
                     Position.toInteger(toolbarPosition, getProject(), toolbar),
                     null
                 ));
@@ -309,8 +300,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     refs.add(
                         createActionReference(
                             parentPath,
-                            false,
-                            false,
+                            -1,
+                            -1,
                             -1,
                             keyStroke
                         )
@@ -322,18 +313,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             if (ftContextEnabled) {
                 refs.add(createActionReference(
                     ftContextType,
-                    ftContextSeparatorBefore,
-                    ftContextSeparatorAfter,
+                    ftContextSeparatorBefore ? Position.toInteger(ftContextPosition, getProject(), toolbar, Boolean.TRUE) : -1,
+                    ftContextSeparatorAfter ? Position.toInteger(ftContextPosition, getProject(), toolbar, Boolean.FALSE) : -1,
                     Position.toInteger(ftContextPosition, getProject(), toolbar),
                     null
                 ));
-                generateAnnotationSeparators(
-                    ftContextType,
-                    dashedFqClassName,
-                    ftContextSeparatorBefore,
-                    ftContextSeparatorAfter,
-                    ftContextPosition
-                );
             }
             /*
             // create editor context menu item
@@ -478,23 +462,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
     }
     
-    private void generateAnnotationSeparators(
-        String parentPath,
-        String dashedPkgName,
-        boolean before,
-        boolean after,
-        Position bounds
-    ) {
-        if (before) {
-            String sepName = dashedPkgName + "-separatorBefore.instance"; // NOI18N
-            generateSeparator(parentPath, sepName, Position.toInteger(bounds, getProject(), parentPath, Boolean.TRUE));
-        }
-        if (after) {
-            String sepName = dashedPkgName + "-separatorAfter.instance"; // NOI18N
-            generateSeparator(parentPath, sepName, Position.toInteger(bounds, getProject(), parentPath, Boolean.FALSE));
-        }
-        
-    }
     /**
      * Just a helper convenient method for cleaner code.
      */
@@ -667,8 +634,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
 
     static ActionReference createActionReference(
         final String parentPath, 
-        boolean beforeSep, 
-        boolean afterSep, 
+        final int beforeSep, 
+        final int afterSep, 
         final int position, 
         final String name
     ) {
@@ -680,6 +647,12 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 }
                 if (method.getName().equals("position")) {
                     return position;
+                }
+                if (method.getName().equals("separatorBefore")) {
+                    return beforeSep;
+                }
+                if (method.getName().equals("separatorAfter")) {
+                    return afterSep;
                 }
                 if (method.getName().equals("name")) {
                     return name == null ? "" : name;

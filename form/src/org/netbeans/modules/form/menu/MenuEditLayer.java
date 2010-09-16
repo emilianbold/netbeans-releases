@@ -1147,7 +1147,7 @@ public class MenuEditLayer extends JPanel {
     public static boolean addComponentToEndOfMenu(RADComponent targetContainer, PaletteItem paletteItem) {
         FormModel model = targetContainer.getFormModel();
         MetaComponentCreator creator = model.getComponentCreator();
-        creator.precreateVisualComponent(paletteItem.getComponentClassSource());
+        creator.precreateVisualComponent(paletteItem);
         boolean added = creator.addPrecreatedComponent(targetContainer, null);
         return added;
     }

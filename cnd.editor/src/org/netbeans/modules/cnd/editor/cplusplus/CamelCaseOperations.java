@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -64,9 +65,9 @@ import org.netbeans.editor.Utilities;
         int offset = textComponent.getCaretPosition();
 
         // get token chain at the offset
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(textComponent, offset, true, false);
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(textComponent, offset, true, false);
         if (ts != null) {
-            Token<CppTokenId> token = ts.token();
+            Token<TokenId> token = ts.token();
             // is this an identifier or include strings,
             // btw we are sure this is not the end of token
             // due to false as last param of getCppTokenSequence call
@@ -123,9 +124,9 @@ import org.netbeans.editor.Utilities;
         if (offset == 0) {
             return 0;
         }
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(textComponent, offset, true, true);
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(textComponent, offset, true, true);
         if (ts != null) {
-            Token<CppTokenId> token = ts.token();
+            Token<TokenId> token = ts.token();
             // is this an identifier of include strings
             String category = token.id().primaryCategory();
             if (CppTokenId.IDENTIFIER_CATEGORY.equals(category)

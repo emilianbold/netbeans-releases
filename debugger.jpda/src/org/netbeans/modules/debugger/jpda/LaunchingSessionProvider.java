@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@SessionProvider.Registration(path="netbeans-jpda-LaunchingDICookie")
 public class LaunchingSessionProvider extends SessionProvider {
 
     private ContextProvider         contextProvider;

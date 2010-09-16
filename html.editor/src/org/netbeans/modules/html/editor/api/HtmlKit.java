@@ -76,6 +76,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
+import org.netbeans.modules.csl.api.GoToMarkOccurrencesAction;
 import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.SelectCodeElementAction;
@@ -151,7 +152,9 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             new ExtKit.CommentAction(""), //NOI18N
             new ExtKit.UncommentAction(""), //NOI18N
             new HtmlNextWordAction(nextWordAction),
-            new HtmlPreviousWordAction(previousWordAction)
+            new HtmlPreviousWordAction(previousWordAction),
+            new GoToMarkOccurrencesAction(false),
+            new GoToMarkOccurrencesAction(true)
         };
         return TextAction.augmentList(super.createActions(), HtmlActions);
     }

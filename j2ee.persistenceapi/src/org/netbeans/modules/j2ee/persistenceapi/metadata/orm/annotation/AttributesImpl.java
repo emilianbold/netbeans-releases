@@ -139,8 +139,16 @@ public class AttributesImpl implements Attributes, PropertyHandler {
         }
         //
         if(derivedIdAnnotation != null) {
-            derivedIdList.add(new IdImpl(propertyName, null, null, null));
-        }
+            AnnotationMirror columnAnnotation = annByType.get("javax.persistence.Column"); // NOI18N, TODO some annotations may not be valid for derived id and it may  not be requires, also need to separate from usual id later(just like embedded ids) to find if exist
+            AnnotationMirror temporalAnnotation = annByType.get("javax.persistence.Temporal"); // NOI18N
+            String temporal = temporalAnnotation != null ? EntityMappingsUtilities.getTemporalType(helper, temporalAnnotation) : null;
+            Column column = new ColumnImpl(helper, columnAnnotation, propertyName.toUpperCase()); // NOI18N
+            AnnotationMirror generatedValueAnnotation = annByType.get("javax.persistence.GeneratedValue"); // NOI18N
+            GeneratedValue genValue = generatedValueAnnotation != null ? new GeneratedValueImpl(helper, generatedValueAnnotation) : null;
+            IdImpl id = new IdImpl(propertyName, genValue, column, temporal);
+            idList.add(id);
+            derivedIdList.add(id);
+      }
     }
 
     @Override

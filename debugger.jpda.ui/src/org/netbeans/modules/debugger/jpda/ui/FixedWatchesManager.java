@@ -61,6 +61,8 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModelFilter;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.openide.util.NbPreferences;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.Mode;
@@ -74,6 +76,24 @@ import org.openide.windows.WindowManager;
  *
  * @author Jan Jancura, Maros Sandor
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types=NodeActionsProviderFilter.class,
+                                 position=600),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types=NodeActionsProviderFilter.class,
+                                 position=600),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types=NodeActionsProviderFilter.class,
+                                 position=600),
+                                 
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types={ NodeActionsProviderFilter.class,
+                                         ExtendedNodeModelFilter.class,
+                                         TableModelFilter.class,
+                                         TreeModelFilter.class },
+                                 position=600)
+})
 public class FixedWatchesManager implements TreeModelFilter, 
 NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
             

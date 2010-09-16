@@ -432,7 +432,7 @@ public class Utilities {
         ImportAnalysis2 ia = new ImportAnalysis2(c);
 
         ia.setImports(Collections.<ImportTree>emptyList());
-        fixTree.attach(c, ia, cut, null);
+        fixTree.attach(c, ia, null);
 
         return fixTree.translate(patternTree);
     }
@@ -805,7 +805,7 @@ public class Utilities {
         //but sometimes no CompilationUnitTree (e.g. during BatchApply):
         CompilationUnitTree cut = TreeFactory.instance(c).CompilationUnit(null, Collections.<ImportTree>emptyList(), Collections.<Tree>emptyList(), null);
 
-        itt.attach(c, new NoImports(c), cut, null);
+        itt.attach(c, new NoImports(c), null);
 
         return itt.translate(original.getLeaf());
     }

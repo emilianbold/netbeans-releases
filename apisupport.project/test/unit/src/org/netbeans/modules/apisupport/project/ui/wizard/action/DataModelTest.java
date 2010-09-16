@@ -77,10 +77,12 @@ public class DataModelTest extends LayerTestBase {
     }
     
     public void testActionReferenceCreate() throws Exception {
-        ActionReference res = DataModel.createActionReference("mypath/sub", true, false, 100, "myname");
+        ActionReference res = DataModel.createActionReference("mypath/sub", 30, 130, 100, "myname");
         assertEquals("mypath/sub", res.path());
         assertEquals(100, res.position());
         assertEquals("myname", res.name());
+        assertEquals("before", 30, res.separatorBefore());
+        assertEquals("after", 130, res.separatorAfter());
     }
 
     public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {
@@ -129,7 +131,7 @@ public class DataModelTest extends LayerTestBase {
             Arrays.asList(cmf.getCreatedPaths())
         );
         assertEquals(
-            Arrays.asList(new String[] {"nbproject/project.xml", "src/org/example/module1/resources/layer.xml" }),
+            Arrays.asList(new String[] {"nbproject/project.xml" }),
             Arrays.asList(cmf.getModifiedPaths())
         );
         
@@ -157,27 +159,12 @@ public class DataModelTest extends LayerTestBase {
         if (!text.contains("Loaders/text/xml/Actions")) {
             fail("Context action is generated:\n" + text);
         }
-        
-        //
-        // still using layers for separators
-        //
-        
-        FileObject layerFO = project.getSourceDirectory().getFileObject("org/example/module1/resources/layer.xml");
-        assertNotNull("Layer found", layerFO);
-        
-        XMLFileSystem layer = new XMLFileSystem(layerFO.getURL());
-        FileObject afterSep = layer.findResource("Menu/Help/Tutorials/org-example-module1-BeepAction-separatorAfter.instance");
-        FileObject beforeSep = layer.findResource("Menu/Help/Tutorials/org-example-module1-BeepAction-separatorBefore.instance");
-        
-        assertNotNull("Before sep found", beforeSep);
-        assertNotNull("After sep found", afterSep);
-        
-        assertEquals("Right position before", 125, beforeSep.getAttribute("position"));
-        assertEquals("Right position after", 175, afterSep.getAttribute("position"));
-        
-        
-        
-        //fail("OK\n" + text);
+        if (!text.contains("separatorBefore=125")) {
+            fail("separatorBefore shall be there:\n" + text);
+        }
+        if (!text.contains("separatorAfter=175")) {
+            fail("separatorAfter shall be there:\n" + text);
+        }
     }
 
 //    XXX: failing test, fix or delete

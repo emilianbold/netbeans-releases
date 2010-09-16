@@ -68,9 +68,14 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         super(findName(ast), file, ast);
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
+
+    private EnumImpl(String name, String qName, CsmFile file, int startOffset, int endOffset) {
+        super(name, qName, file, startOffset, endOffset);
+        enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
+    }
     
     private void init(CsmScope scope, AST ast, boolean register) {
-	initScope(scope, ast);
+	initScope(scope);
         initQualifiedName(scope, ast);
         if (register) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
@@ -88,15 +93,40 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
 	impl.init(scope, ast, register);
 	return impl;
     }
+
+    public static EnumImpl create(String name, String qName,CsmFile file, CsmScope scope, int startOffset, int endOffset, boolean register) {
+	EnumImpl impl = new EnumImpl(name, qName, file, startOffset, endOffset);
+	impl.initScope(scope);
+        if (register) {
+            RepositoryUtils.hang(impl); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(impl);
+        }
+        if (register) {
+            impl.register(scope, true);
+        }
+	return impl;
+    }
+
+    void addEnumerator(String name, int startOffset, int endOffset, boolean register) {
+        EnumeratorImpl ei = new EnumeratorImpl(this, name, startOffset, endOffset);
+        if (register) {
+            RepositoryUtils.put(ei);
+        } else {
+            Utils.setSelfUID(ei);
+        }
+        CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
+        enumerators.add(uid);
+    }
     
-    private static String findName(AST ast){
-        String name = AstUtil.findId(ast, CPPTokenTypes.RCURLY);
+    private static CharSequence findName(AST ast){
+        CharSequence name = AstUtil.findId(ast, CPPTokenTypes.RCURLY);
         if (name == null || name.length()==0){
             AST token = ast.getNextSibling();
             if( token != null) {
                 if (token.getType() == CPPTokenTypes.ID) {
                     //typedef enum C { a2, b2, c2 } D;
-                    name = token.getText();
+                    name = AstUtil.getText(token);
                 }
             }
         }
@@ -143,16 +173,19 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         }
     }
     
+    @Override
     public Collection<CsmEnumerator> getEnumerators() {
         Collection<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
         return out;
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return (Collection)getEnumerators();
     }
     
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.ENUM;
     }

@@ -162,6 +162,7 @@ made subject to such option by the copyright holder.
             <li><api name="nameAndExt" category="stable" group="property" type="export"> contains the name and extension of the file that is being created</api></li>
             <li><api name="date" category="stable" group="property" type="export"> contains <code>String</code> representing the current day like <code>23. 3. 2007</code></api></li>
             <li><api name="time" category="stable" group="property" type="export"> contains <code>String</code> the current time like <code>17:18:30</code></api></li>
+            <li><api name="dateTime" category="stable" group="property" type="export"> contains <code>java.util.Date</code> representing current data and time like</api></li>
             <li><api name="encoding" category="stable" group="property" type="export"> contains <code>String</code> the file encoding of the template instance</api></li>
         </ul>
         

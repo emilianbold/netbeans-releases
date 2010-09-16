@@ -44,14 +44,25 @@
 package org.netbeans.modules.refactoring.spi.impl;
 
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringBufferInputStream;
+import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.Collection;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.*;
@@ -697,6 +708,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                                 tree.addMouseListener(l);
                                 tree.addKeyListener(l);
                                 tree.setToggleClickCount(0);
+                                tree.setTransferHandler(new TransferHandlerImpl());
                                 scrollPane = new JScrollPane(tree);
                                 RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
                                 RefactoringPanel.this.validate();
@@ -981,6 +993,284 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     d.setVisible(false);
                 }
             });
+        }
+    }
+
+    private static class TransferHandlerImpl extends TransferHandler {
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            if (c instanceof JTree) {
+                JTree tree = (JTree) c;
+                TreePath[] paths = tree.getSelectionPaths();
+
+                if (paths == null || paths.length == 0) {
+                    return null;
+                }
+
+                Html2Text html2Text = new Html2Text();
+                StringBuilder plain = new StringBuilder();
+                StringBuilder html = new StringBuilder("<html><ul>"); // NOI18N
+                int depth = 1;
+                for(TreePath path: paths) {
+                    for(; depth < path.getPathCount(); depth++) {
+                        html.append("<ul>"); // NOI18N
+                    }
+                    for(; depth > path.getPathCount(); depth--) {
+                        html.append("</ul>"); // NOI18N
+                    }
+                    Object o = path.getLastPathComponent();
+                    if(o instanceof CheckNode) {
+                        CheckNode node = (CheckNode) o;
+                        String label = node.getLabel();
+                        try {
+                            html2Text.parse(new StringReader(label));
+                        } catch (IOException ex) {
+                            assert false : ex;
+                        }
+
+                        plain.append(html2Text.getText());
+                        plain.append("\n"); // NOI18N
+                        html.append("<li>"); // NOI18N
+                        html.append(label);
+                        html.append("</li>"); // NOI18N
+                    }
+                }
+                for(; depth > 1; depth--) {
+                        html.append("</ul>"); // NOI18N
+                }
+                html.append("</ul></html>"); // NOI18N
+
+                return new ResultTransferable(plain.toString(), html.toString());
+            }
+            return null;
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
+        }
+    }
+    /**
+     * Transferable implementation for ResultPanel.
+     */
+    private static class ResultTransferable implements Transferable {
+        private static DataFlavor[] stringFlavors;
+        private static DataFlavor[] plainFlavors;
+        private static DataFlavor[] htmlFlavors;
+
+        static {
+            try {
+                htmlFlavors = new DataFlavor[3];
+                htmlFlavors[0] = new DataFlavor("text/html;class=java.lang.String"); // NOI18N
+                htmlFlavors[1] = new DataFlavor("text/html;class=java.io.Reader"); // NOI18N
+                htmlFlavors[2] = new DataFlavor("text/html;charset=unicode;class=java.io.InputStream"); // NOI18N
+
+                plainFlavors = new DataFlavor[3];
+                plainFlavors[0] = new DataFlavor("text/plain;class=java.lang.String"); // NOI18N
+                plainFlavors[1] = new DataFlavor("text/plain;class=java.io.Reader"); // NOI18N
+                // XXX isn't this just DataFlavor.plainTextFlavor?
+                plainFlavors[2] = new DataFlavor("text/plain;charset=unicode;class=java.io.InputStream"); // NOI18N
+
+                stringFlavors = new DataFlavor[2];
+                stringFlavors[0] = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=java.lang.String"); // NOI18N
+                stringFlavors[1] = DataFlavor.stringFlavor;
+            } catch (ClassNotFoundException cle) {
+                assert false : cle;
+            }
+        }
+
+        protected String plainData;
+        protected String htmlData;
+
+        public ResultTransferable(String plainData, String htmlData) {
+            this.plainData = plainData;
+            this.htmlData = htmlData;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            int nHtml = (isHtmlSupported()) ? htmlFlavors.length : 0;
+            int nPlain = (isPlainSupported()) ? plainFlavors.length : 0;
+            int nString = (isPlainSupported()) ? stringFlavors.length : 0;
+            int nFlavors = nHtml + nPlain + nString;
+            DataFlavor[] flavors = new DataFlavor[nFlavors];
+
+            // fill in the array
+            int nDone = 0;
+            if (nHtml > 0) {
+                System.arraycopy(htmlFlavors, 0, flavors, nDone, nHtml);
+                nDone += nHtml;
+            }
+            if (nPlain > 0) {
+                System.arraycopy(plainFlavors, 0, flavors, nDone, nPlain);
+                nDone += nPlain;
+            }
+            if (nString > 0) {
+                System.arraycopy(stringFlavors, 0, flavors, nDone, nString);
+                nDone += nString;
+            }
+            return flavors;
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            DataFlavor[] flavors = getTransferDataFlavors();
+            for (int i = 0; i < flavors.length; i++) {
+                if (flavors[i].equals(flavor)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor)
+        throws UnsupportedFlavorException, IOException {
+            if (isHtmlFlavor(flavor)) {
+                String html = getHtmlData();
+                html = (html == null) ? "" : html;
+                if (String.class.equals(flavor.getRepresentationClass())) {
+                    return html;
+                } else if (Reader.class.equals(flavor.getRepresentationClass())) {
+                    return new StringReader(html);
+                } else if (InputStream.class.equals(flavor.getRepresentationClass())) {
+                    // XXX should this enforce UTF-8 encoding?
+                    return new StringBufferInputStream(html);
+                }
+                // fall through to unsupported
+            } else if (isPlainFlavor(flavor)) {
+                String data = getPlainData();
+                data = (data == null) ? "" : data;
+                if (String.class.equals(flavor.getRepresentationClass())) {
+                    return data;
+                } else if (Reader.class.equals(flavor.getRepresentationClass())) {
+                    return new StringReader(data);
+                } else if (InputStream.class.equals(flavor.getRepresentationClass())) {
+                    // XXX should this enforce UTF-8 encoding?
+                    return new StringBufferInputStream(data);
+                }
+                // fall through to unsupported
+            } else if (isStringFlavor(flavor)) {
+                String data = getPlainData();
+                data = (data == null) ? "" : data;
+
+                return data;
+            }
+
+            throw new UnsupportedFlavorException(flavor);
+        }
+
+        // --- plain text flavors ----------------------------------------------
+
+        /**
+         * Returns whether or not the specified data flavor is an plain flavor
+         * that is supported.
+         *
+         * @param flavor the requested flavor for the data
+         * @return boolean indicating whether or not the data flavor is supported
+         */
+        protected boolean isPlainFlavor(DataFlavor flavor) {
+            DataFlavor[] flavors = plainFlavors;
+
+            for (int i = 0; i < flavors.length; i++) {
+                if (flavors[i].equals(flavor)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Should the plain text flavors be offered?  If so, the method
+         * getPlainData should be implemented to provide something reasonable.
+         */
+        protected boolean isPlainSupported() {
+            return plainData != null;
+        }
+
+        /**
+         * Fetch the data in a text/plain format.
+         */
+        protected String getPlainData() {
+            return plainData;
+        }
+
+        // --- string flavors --------------------------------------------------
+
+        /**
+         * Returns whether or not the specified data flavor is a String flavor
+         * that is supported.
+         *
+         * @param flavor the requested flavor for the data
+         * @return boolean indicating whether or not the data flavor is supported
+         */
+        protected boolean isStringFlavor(DataFlavor flavor) {
+            DataFlavor[] flavors = stringFlavors;
+
+            for (int i = 0; i < flavors.length; i++) {
+                if (flavors[i].equals(flavor)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // --- html flavors ----------------------------------------------------
+
+        /**
+         * Returns whether or not the specified data flavor is a html flavor
+         * that is supported.
+         *
+         * @param flavor the requested flavor for the data
+         * @return boolean indicating whether or not the data flavor is supported
+         */
+        protected boolean isHtmlFlavor(DataFlavor flavor) {
+            DataFlavor[] flavors = htmlFlavors;
+
+            for (int i = 0; i < flavors.length; i++) {
+                if (flavors[i].equals(flavor)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Should the html text flavors be offered? If so, the method
+         * getHtmlData should be implemented to provide something reasonable.
+         */
+        protected boolean isHtmlSupported() {
+            return htmlData != null;
+        }
+
+        /**
+         * Fetch the data in text/html format.
+         */
+        protected String getHtmlData() {
+            return htmlData;
+        }
+    }
+
+    private static class Html2Text extends HTMLEditorKit.ParserCallback {
+        StringBuffer s;
+
+        public Html2Text() {
+        }
+
+        public void parse(Reader in) throws IOException {
+            s = new StringBuffer();
+            ParserDelegator delegator = new ParserDelegator();
+            // the third parameter is TRUE to ignore charset directive
+            delegator.parse(in, this, Boolean.TRUE);
+        }
+
+        @Override
+        public void handleText(char[] text, int pos) {
+            s.append(text);
+        }
+
+        public String getText() {
+            return s.toString();
         }
     }
 } // end Refactor Panel

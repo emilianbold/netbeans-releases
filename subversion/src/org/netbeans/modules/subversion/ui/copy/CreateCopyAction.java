@@ -126,7 +126,7 @@ public class CreateCopyAction extends ContextAction {
         }                   
         final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
 
-        final RequestProcessor rp = createRequestProcessor(nodes);
+        final RequestProcessor rp = createRequestProcessor(ctx);
         final boolean hasChanges = files.length > 0;
         final CreateCopy createCopy = new CreateCopy(repositoryFile, interestingFile, hasChanges);
 

@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.css.editor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -61,6 +64,13 @@ public class CssPreferences {
 
     private static boolean findInUnrelatedFiles;
 
+    private static String disabledErrorChecks;
+    private static final String disabledErrorChecks_key = "disabledErrorChecks"; //NOI18N
+    private static String disabledErrorChecks_default = ""; //NOI18N
+    private static String DELIMITER = ";"; //NOI18N
+
+
+
     private static AtomicBoolean initialized = new AtomicBoolean(false);
     private static Preferences preferences;
     private static final PreferenceChangeListener preferencesTracker = new PreferenceChangeListener() {
@@ -69,6 +79,9 @@ public class CssPreferences {
             String settingName = evt == null ? null : evt.getKey();
             if (settingName == null || FIND_IN_UNRELATED_FILES.equals(settingName)) {
                 findInUnrelatedFiles = preferences.getBoolean(FIND_IN_UNRELATED_FILES, FIND_IN_UNRELATED_FILES_DEFAULT);
+            }
+            if (settingName == null || disabledErrorChecks_key.equals(settingName)) {
+                disabledErrorChecks = preferences.get(disabledErrorChecks_key, disabledErrorChecks_default);
             }
         }
     };
@@ -99,5 +112,54 @@ public class CssPreferences {
         lazyIntialize();
         preferences.putBoolean(FIND_IN_UNRELATED_FILES, value);
     }
+
+    public static Collection<String> getDisabledErrorChecks() {
+        lazyIntialize();
+        return getDisabledErrorChecksAsCollection();
+    }
+
+    public static boolean isErrorCheckingDisabledForCssErrorKey(String errorKey) {
+        return getDisabledErrorChecks().contains(errorKey);
+    }
+
+    public static void setCssErrorChecking(String errorKey, boolean enabled) {
+        lazyIntialize();
+        Collection<String> mimescol = getDisabledErrorChecksAsCollection();
+
+        if(mimescol.contains(errorKey)) {
+            if(!enabled) {
+                return ; //already disabled
+            } else {
+                //already disabled, but should be enabled
+                mimescol.remove(errorKey);
+            }
+        } else {
+            if(!enabled) {
+                mimescol.add(errorKey);
+            } else {
+                return ; //already enabled
+            }
+        }
+
+        preferences.put(disabledErrorChecks_key, encodeKeys(mimescol));
+
+    }
+
+    private static String encodeKeys(Collection<String> mimes) {
+        StringBuilder b = new StringBuilder();
+        for(String m : mimes) {
+            b.append(m);
+            b.append(DELIMITER);
+        }
+        return b.toString();
+    }
+
+    private static Collection<String> getDisabledErrorChecksAsCollection() {
+        //return modifiable collection!
+        ArrayList<String> list = new ArrayList<String>();
+        list.addAll(Arrays.asList(disabledErrorChecks.split(DELIMITER)));
+        return list;
+    }
+
 
 }

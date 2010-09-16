@@ -64,7 +64,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
     }
 
     @Override
-    protected String initName(AST ast) {
+    protected CharSequence initName(AST ast) {
         return "~" + super.initName(ast); // NOI18N
     }
 

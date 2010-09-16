@@ -94,8 +94,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         enableCheckBox.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.enableCheckBox.mnemonic").toCharArray()[0]);
         offlineCheckBox.setModel(jwsProps.allowOfflineModel);
         offlineCheckBox.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.offlineCheckBox.mnemonic").toCharArray()[0]);
-        signedCheckBox.setModel(jwsProps.signedModel);
-        signedCheckBox.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.signedCheckBox.mnemonic").toCharArray()[0]);
+        refreshSigningLabel();
         iconTextField.setDocument(jwsProps.iconDocument);
         codebaseComboBox.setModel(jwsProps.codebaseModel);
         codebaseTextField.setDocument(jwsProps.codebaseURLDocument);
@@ -135,8 +134,16 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.name"),
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.value")
         };
+    }
 
-        signedChanged(null);
+    private void refreshSigningLabel() {
+        if (JWSProjectProperties.SIGNING_GENERATED.equals(jwsProps.signing)) {
+            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Generated"));
+        } else if (JWSProjectProperties.SIGNING_KEY.equals(jwsProps.signing)) {
+            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Key", jwsProps.signingKeyAlias));
+        } else {
+            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Unsigned"));
+        }
     }
 
     private static void setEnabledRunComponent(boolean enable) {
@@ -164,8 +171,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         codebaseTextField = new javax.swing.JTextField();
         offlineCheckBox = new javax.swing.JCheckBox();
         panelDescLabel = new javax.swing.JLabel();
-        signedCheckBox = new javax.swing.JCheckBox();
-        extResButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        signingInfolabel = new javax.swing.JLabel();
+        signingCustomizeButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         applicationDescRadioButton = new javax.swing.JRadioButton();
         appletClassLabel = new javax.swing.JLabel();
@@ -176,9 +184,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         jSeparator1 = new javax.swing.JSeparator();
         warningArea = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
-        mixedCodeLabel = new javax.swing.JLabel();
-        mixedCodeCombo = new javax.swing.JComboBox();
-        jPanel3 = new javax.swing.JPanel();
+        extResButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -300,33 +307,29 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         panelDescLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "ACSN_WebStartTitle_Label")); // NOI18N
         panelDescLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "ACSD_WebStartTitle_Label")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(signedCheckBox, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.signedCheckBox.text")); // NOI18N
-        signedCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                signedChanged(evt);
-            }
-        });
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(signedCheckBox, gridBagConstraints);
-        signedCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "ACSN_SelfSigned_Checkbox")); // NOI18N
-        signedCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "ACSD_SelfSigned_Checkbox")); // NOI18N
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        add(jLabel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        add(signingInfolabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(extResButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.text")); // NOI18N
-        extResButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(signingCustomizeButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.signingCustomizeButton.text")); // NOI18N
+        signingCustomizeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                extResButtonActionPerformed(evt);
+                signingCustomizeButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(extResButton, gridBagConstraints);
-        extResButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.AccessibleContext.accessibleDescription")); // NOI18N
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        add(signingCustomizeButton, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -444,34 +447,30 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(warningArea, gridBagConstraints);
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+        jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
-        mixedCodeLabel.setLabelFor(mixedCodeCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(mixedCodeLabel, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_MixedCodeLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(mixedCodeLabel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(extResButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.text")); // NOI18N
+        extResButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                extResButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(extResButton);
+        extResButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.AccessibleContext.accessibleDescription")); // NOI18N
 
-        mixedCodeCombo.setModel(jwsProps.mixedCodeModel);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(mixedCodeCombo, gridBagConstraints);
-        mixedCodeCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "AN_MixedCodeLabel")); // NOI18N
-        mixedCodeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "AD_MixedCodeLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_ResourcesButton")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageResources(evt);
+            }
+        });
+        jPanel2.add(jButton1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel2.add(jPanel3, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 0);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(jPanel2, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleName")); // NOI18N
@@ -554,11 +553,34 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
 }//GEN-LAST:event_appletParamsButtonActionPerformed
 
-private void signedChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signedChanged
-    final boolean enabled = signedCheckBox.isSelected();
-    mixedCodeLabel.setEnabled(enabled);
-    mixedCodeCombo.setEnabled(enabled);
-}//GEN-LAST:event_signedChanged
+private void signingCustomizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signingCustomizeButtonActionPerformed
+    SigningPanel panel = new SigningPanel(jwsProps);
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(SigningPanel.class, "TITLE_SigningPanel"), true, null);
+    Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+    dialog.setVisible(true);
+    if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
+        panel.store();
+        refreshSigningLabel();
+    }
+}//GEN-LAST:event_signingCustomizeButtonActionPerformed
+
+private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageResources
+
+    final ResourcesCustomizer rc = new ResourcesCustomizer(
+            jwsProps.runtimeCP,
+            jwsProps.lazyJars);
+    final DialogDescriptor dd = new DialogDescriptor(rc,
+            NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_ManageResources"),
+            true,
+            DialogDescriptor.OK_CANCEL_OPTION,
+            DialogDescriptor.OK_OPTION,
+            null);
+    if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+        jwsProps.lazyJars = rc.getResources();
+        jwsProps.lazyJarsChanged = true;
+    }
+    
+}//GEN-LAST:event_manageResources
 
     private void setEnabledAppletControls(boolean b) {
         appletClassLabel.setEnabled(b);
@@ -624,7 +646,7 @@ private void signedChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_si
         codebaseValueLabel.setEnabled(b);
         codebaseTextField.setEnabled(b);
         offlineCheckBox.setEnabled(b);
-        signedCheckBox.setEnabled(b);
+        signingCustomizeButton.setEnabled(b);
         extResButton.setEnabled(b);
         applicationDescRadioButton.setEnabled(b);
         appletDescRadioButton.setEnabled(b);
@@ -664,15 +686,15 @@ private void signedChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_si
     private javax.swing.JButton extResButton;
     private javax.swing.JLabel iconLabel;
     private javax.swing.JTextField iconTextField;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JComboBox mixedCodeCombo;
-    private javax.swing.JLabel mixedCodeLabel;
     private javax.swing.JCheckBox offlineCheckBox;
     private javax.swing.JLabel panelDescLabel;
-    private javax.swing.JCheckBox signedCheckBox;
+    private javax.swing.JButton signingCustomizeButton;
+    private javax.swing.JLabel signingInfolabel;
     private javax.swing.JTextArea warningArea;
     // End of variables declaration//GEN-END:variables
 

@@ -53,6 +53,7 @@ import java.io.ByteArrayOutputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JSeparator;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -143,8 +144,8 @@ public class ActionProcessorTest extends NbTestCase {
         @ActionRegistration(displayName="#AlwaysOn")
         @ActionID(id="my.test.AlwaysByMethod", category="Tools")
         @ActionReferences({
-            @ActionReference(path="Kuk/buk", position=1),
-            @ActionReference(path="Muk/luk", position=11)
+            @ActionReference(path="Kuk/buk", position=1, separatorAfter=2),
+            @ActionReference(path="Muk/luk", position=11, separatorBefore=10)
         })
         public static ActionListener factory() {
             created++;
@@ -178,6 +179,13 @@ public class ActionProcessorTest extends NbTestCase {
             assertNotNull("Shadow created", shad);
             assertEquals("Right position", 1, shad.getAttribute("position"));
             assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+            FileObject sep = FileUtil.getConfigFile(
+                "Kuk/buk/my-test-AlwaysByMethod-separatorAfter.instance"
+            );
+            assertNotNull("Separator generated", sep);
+            assertEquals("Position 2", 2, sep.getAttribute("position"));
+            Object instSep = sep.getAttribute("instanceCreate");
+            assertTrue("Right instance " + instSep, instSep instanceof JSeparator);
         }
         {
             FileObject shad = FileUtil.getConfigFile(
@@ -186,6 +194,13 @@ public class ActionProcessorTest extends NbTestCase {
             assertNotNull("Shadow created", shad);
             assertEquals("Right position", 11, shad.getAttribute("position"));
             assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+            FileObject sep = FileUtil.getConfigFile(
+                "Muk/luk/my-test-AlwaysByMethod-separatorBefore.instance"
+            );
+            assertNotNull("Separator generated", sep);
+            assertEquals("Position ten", 10, sep.getAttribute("position"));
+            Object instSep = sep.getAttribute("instanceCreate");
+            assertTrue("Right instance " + instSep, instSep instanceof JSeparator);
         }
         
     }
@@ -714,4 +729,48 @@ public class ActionProcessorTest extends NbTestCase {
         assertEquals(null, fo.getAttribute("position"));
     }
 
+    public void testSeparatorBeforeIsBefore() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import org.openide.util.actions.Presenter;\n" +
+            "import java.awt.event.*;\n" +
+            "import java.util.List;\n" +
+            "import javax.swing.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "@ActionReference(path=\"manka\", position=11, separatorBefore=13)" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
+    
+    public void testSeparatorAfterIsAfter() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import org.openide.util.actions.Presenter;\n" +
+            "import java.awt.event.*;\n" +
+            "import java.util.List;\n" +
+            "import javax.swing.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "@ActionReference(path=\"manka\", position=11, separatorAfter=7)" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+    }
+    
 }

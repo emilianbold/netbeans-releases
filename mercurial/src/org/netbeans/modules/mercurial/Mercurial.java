@@ -182,11 +182,14 @@ public class Mercurial {
     public void asyncInit() {
         gotVersion = false;
         RequestProcessor rp = getRequestProcessor();
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "Mercurial subsystem initialized", new Exception()); //NOI18N
+        }
         Runnable init = new Runnable() {
             @Override
             public void run() {
                 HgKenaiAccessor.getInstance().registerVCSNoficationListener();
-                synchronized(this) {
+                synchronized(Mercurial.this) {
                     checkVersionIntern();
                 }
             }
@@ -197,12 +200,12 @@ public class Mercurial {
 
     private void checkVersionIntern() {
         version = HgCommand.getHgVersion();
-        LOG.log(Level.FINE, "version: {0}", version); // NOI18N
         if (version != null) {
             goodVersion = isSupportedVersion(version);
         } else {
             goodVersion = false;
         }
+        LOG.log(goodVersion ? Level.FINE : Level.INFO, "version: {0}", version); // NOI18N
         gotVersion = true;
     }
 
@@ -241,6 +244,9 @@ public class Mercurial {
                 // version has not been scanned yet, run the version command
                 LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
                 if(forceCheck) {
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(Level.FINEST, "isAvailable performed", new Exception()); //NOI18N
+                    }
                     checkVersionIntern();
                 } else {
                     return true;

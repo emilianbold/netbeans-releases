@@ -212,6 +212,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setModified();
     }
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     public Project getProject() {
         if (project == null) {
             String location = getBaseDir();

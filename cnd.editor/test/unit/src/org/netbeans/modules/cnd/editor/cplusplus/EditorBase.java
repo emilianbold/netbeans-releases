@@ -42,6 +42,7 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
 import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.util.Exceptions;
 
 /**
@@ -145,14 +146,22 @@ public class EditorBase extends BaseDocumentUnitTestCase {
     /**
      * Perform reformatting of the whole document's text.
      */
-    protected final void reformat() {
-        Reformatter f = new Reformatter(getDocument(), CodeStyle.getDefault(getDocument()));
+    protected void reformat() {
+        Reformat f = Reformat.get(getDocument());
+        f.lock();
         try {
-            f.reformat();
+            getDocument().atomicLock();
+            try {
+                f.reformat(0, getDocument().getLength());
+            } finally {
+                getDocument().atomicUnlock();
+            }
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail(e.getMessage());
-    	}
+        } finally {
+            f.unlock();
+        }
     }
 
     // ------- help methods -------------

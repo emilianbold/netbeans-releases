@@ -82,7 +82,9 @@ import org.openide.filesystems.FileObject;
 /**
  * @author ads
  */
-public final class InjectablesModel extends DefaultTreeModel {
+public final class InjectablesModel extends DefaultTreeModel 
+    implements JavaHierarchyModel
+{
     
     private static final long serialVersionUID = -6845959436250662000L;
 
@@ -103,10 +105,6 @@ public final class InjectablesModel extends DefaultTreeModel {
             myTypeHandles= Collections.emptyList();
             myProductionHandles = Collections.emptyMap();
             return;
-        }
-        
-        if ( result instanceof Result.ResolutionResult ){
-            myResult = (Result.ResolutionResult)result;
         }
         
         Result.ApplicableResult applicableResult = (Result.ApplicableResult) result;
@@ -149,11 +147,11 @@ public final class InjectablesModel extends DefaultTreeModel {
         update( typeElements, allProductions, disabled , controller);
     }
     
-    void update() {
+    public void update() {
         update( myTypeHandles , myProductionHandles );
     }
 
-    void fireTreeNodesChanged() {
+    public void fireTreeNodesChanged() {
         super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), 
                 null, null);
     }
@@ -395,7 +393,7 @@ public final class InjectablesModel extends DefaultTreeModel {
         elementMap.put(element, node);
     }
     
-    private void insertTreeNode( Map<Element, 
+    static void insertTreeNode( Map<Element, 
             InjectableTreeNode<? extends Element>> elementMap,
             ExecutableElement element , MethodTreeNode node, 
             DefaultMutableTreeNode root , CompilationController controller)
@@ -480,5 +478,4 @@ public final class InjectablesModel extends DefaultTreeModel {
     private Map<ElementHandle<?>,List<TypeMirrorHandle<DeclaredType>>> myProductionHandles;
     private Set<ElementHandle<?>> myDisabledBeans;
     private MetadataModel<WebBeansModel> myModel;
-    private Result.ResolutionResult myResult;
 }

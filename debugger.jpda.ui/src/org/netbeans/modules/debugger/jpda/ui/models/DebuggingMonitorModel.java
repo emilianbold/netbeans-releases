@@ -76,6 +76,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
@@ -101,6 +102,9 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                             types=Model.class,
+                             position=600)
 public class DebuggingMonitorModel implements ExtendedNodeModelFilter, 
 NodeActionsProviderFilter, TableModel, Constants {
     
@@ -425,7 +429,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             if (nodesInDeadlock != null) {
                 synchronized (nodesInDeadlock) {
                     if (nodesInDeadlock.contains(v)) {
-                        monitorText = BoldVariablesTableModelFilterFirst.toHTML(
+                        monitorText = BoldVariablesTableModelFilter.toHTML(
                                 monitorText,
                                 false, false, Color.RED);
                     }
@@ -457,7 +461,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             if (nodesInDeadlock != null) {
                 synchronized (nodesInDeadlock) {
                     if (nodesInDeadlock.contains(v)) {
-                        monitorText = BoldVariablesTableModelFilterFirst.toHTML(
+                        monitorText = BoldVariablesTableModelFilter.toHTML(
                                 monitorText,
                                 false, false, Color.RED);
                     }

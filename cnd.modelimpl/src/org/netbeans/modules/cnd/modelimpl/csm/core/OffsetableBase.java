@@ -79,24 +79,28 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         // Parameters.notNull("file can not be null", file); // NOI18N
         this.fileUID = UIDCsmConverter.fileToUID(file);
         this.fileRef = null;// to prevent error with "final"
-        this.startPosition = start;
-        this.endPosition = end;
+        this.startPosition = PositionManager.createPositionID(fileUID, start, PositionManager.Position.Bias.FOWARD);
+        this.endPosition = PositionManager.createPositionID(fileUID, end, PositionManager.Position.Bias.BACKWARD);
     }
     
-    public int getStartOffset() {
-        return startPosition;
+    @Override
+    public final int getStartOffset() {
+        return PositionManager.getOffset(fileUID, startPosition);
     }
     
-    public int getEndOffset() {
-        return endPosition != 0 ? endPosition : startPosition;
+    @Override
+    public final int getEndOffset() {
+        return endPosition != 0 ? PositionManager.getOffset(fileUID, endPosition) : PositionManager.getOffset(fileUID, startPosition);
     }
 
-    public Position getStartPosition() {
-        return new LazyOffsPositionImpl((FileImpl) this.getContainingFile(), getStartOffset());
+    @Override
+    public final Position getStartPosition() {
+        return PositionManager.getPosition(fileUID, startPosition);
     }
     
-    public Position getEndPosition() {
-        return new LazyOffsPositionImpl((FileImpl) this.getContainingFile(), getEndOffset());
+    @Override
+    public final Position getEndPosition() {
+        return PositionManager.getPosition(fileUID, endPosition);
     }
     
     public static int getStartOffset(AST node) {
@@ -119,14 +123,17 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         return 0;
     }
     
+    @Override
     public CsmFile getContainingFile() {
         return _getFile();
     }
 
+    @Override
     public CharSequence getText() {
         return getContainingFile().getText(getStartOffset(), getEndOffset());
     }
 
+    @Override
     public void dispose() {
         onDispose();
     }

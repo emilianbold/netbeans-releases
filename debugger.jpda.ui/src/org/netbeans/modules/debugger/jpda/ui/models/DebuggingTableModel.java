@@ -43,6 +43,7 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -51,6 +52,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  *
  * @author martin
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                             types=TableModel.class,
+                             position=500)
 public class DebuggingTableModel implements TableModel {
 
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {

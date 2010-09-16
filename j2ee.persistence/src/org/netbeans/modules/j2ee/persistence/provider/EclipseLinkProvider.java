@@ -66,7 +66,7 @@ class EclipseLinkProvider extends Provider {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(EclipseLinkProvider.class, "LBL_EclipseLink") + (getVersion()!=null ? "(JPA "+getVersion()+")" : ""); //NOI18N
+        return NbBundle.getMessage(EclipseLinkProvider.class, "LBL_EclipseLink") + (getVersion()!=null ? " (JPA "+getVersion()+")" : ""); //NOI18N
     }
 
     @Override

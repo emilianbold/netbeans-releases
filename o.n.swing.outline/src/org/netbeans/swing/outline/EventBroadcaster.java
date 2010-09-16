@@ -402,6 +402,13 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         
         getLayout().treeStructureChanged(e);
         fireTreeChange (translateEvent(e), STRUCTURE_CHANGED);
+
+        if (!getLayout().isExpanded(e.getTreePath())) {
+            // Do not care about structural changes in collapsed nodes.
+            // But the node's leaf property could change...
+            treeNodesChanged(e);
+            return ;
+        }
         
         //If it's a structural change, we need to dump all our info about the
         //existing tree structure - it can be bogus now.  Similar to JTree,
@@ -697,7 +704,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         //TODO - does not need to be ALL_COLUMNS, but we need a way to determine
         //which column index is the tree
         result = new TableModelEvent (getModel(), first, last, 
-            TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
+            0/*TableModelEvent.ALL_COLUMNS*/, TableModelEvent.UPDATE);
         
         return result;
     }

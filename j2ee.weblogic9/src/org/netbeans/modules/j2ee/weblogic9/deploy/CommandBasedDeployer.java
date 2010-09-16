@@ -110,7 +110,7 @@ public final class CommandBasedDeployer {
 
     private static final int TIMEOUT = 300000;
 
-    private static boolean showConsole = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");
+    private static final boolean SHOW_CONSOLE = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");
 
     private final WLDeploymentManager deploymentManager;
 
@@ -120,6 +120,11 @@ public final class CommandBasedDeployer {
 
     public ProgressObject directoryDeploy(final Target target, String name,
             File file, String host, String port, J2eeModule.Type type) {
+        if (deploymentManager.isWebProfile()) {
+            // FIXME DWP nostage not supported
+            return deploy(createModuleId(target, file, host, port, name, type),
+                    file, "-name", name, "-source"); // NOI18N
+        }
         return deploy(createModuleId(target, file, host, port, name, type),
                 file, "-nostage", "-name", name, "-source"); // NOI18N
     }
@@ -652,7 +657,7 @@ public final class CommandBasedDeployer {
                 }
             });
         }
-        if (!showConsole) {
+        if (!SHOW_CONSOLE) {
             descriptor = descriptor.inputOutput(InputOutput.NULL);
         }
         return ExecutionService.newService(builder, descriptor, "weblogic.Deployer " + command);

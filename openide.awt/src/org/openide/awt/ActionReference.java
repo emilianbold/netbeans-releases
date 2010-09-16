@@ -75,4 +75,14 @@ public @interface ActionReference {
      * then it is deduced from associated {@link ActionID}.
      */
     String name() default "";
+    
+    /** Shall a separator be placed before the action?
+     * @return position that is lower than {@link #position()}
+     */
+    int separatorBefore() default -1;
+    
+    /** Shall a separator be placed after the action?
+     * @return position that is higher than {@link #position()}
+     */
+    int separatorAfter() default -1;
 }

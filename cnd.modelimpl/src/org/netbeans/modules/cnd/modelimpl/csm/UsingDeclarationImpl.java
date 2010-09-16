@@ -73,7 +73,6 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         implements CsmUsingDeclaration, CsmMember, RawNamable, Disposable {
 
     private final CharSequence name;
-    private final int startOffset;
     private final CharSequence[] rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
@@ -83,23 +82,27 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     private final CsmVisibility visibility;
     
     public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, boolean global, CsmVisibility visibility) {
-        super(ast, file);
+        super(file, getUsingDeclarationStartOffset(ast), getEndOffset(ast));
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        name = NameCache.getManager().getString(ast.getText());
+        name = NameCache.getManager().getString(AstUtil.getText(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
         if (!global) {
             Utils.setSelfUID(this);
         }
         this.visibility = visibility;
-        // TODO: here we override startOffset which is not good because startPosition is now wrong
-        AST child = ast.getFirstChild();
-        if(child instanceof CsmAST) {
-            startOffset = ((CsmAST)child).getOffset();
-        } else {
-            startOffset = getStartOffset();
-        }
     }
 
+    private static int getUsingDeclarationStartOffset(AST ast) {
+        int startOffset;
+        AST child = ast.getFirstChild();
+        if (child instanceof CsmAST) {
+            startOffset = ((CsmAST) child).getOffset();
+        } else {
+            startOffset = getStartOffset(ast);
+        }
+        return startOffset;
+    }
+    
     private CsmDeclaration renderReferencedDeclaration(Resolver resolver) {
         CsmDeclaration referencedDeclaration = null;
         if (rawName != null) {
@@ -110,7 +113,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
             } else if (rawName.length > 1) {
                 CharSequence[] partial = new CharSequence[rawName.length - 1];
                 System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
-                CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.NAMESPACE);
+                CsmObject result = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), resolver).resolve(partial, Resolver.NAMESPACE);
                 if (CsmKindUtilities.isNamespace(result)) {
                     namespace = (CsmNamespace)result;
                 }
@@ -182,7 +185,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
             if(namespace == null && rawName.length > 1) {
                 CharSequence[] partial = new CharSequence[rawName.length - 1];
                 System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
-                CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.CLASSIFIER);
+                CsmObject result = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), resolver).resolve(partial, Resolver.CLASSIFIER);
                 if (CsmKindUtilities.isClass(result)) {
                     cls = (CsmClass)result;
                 }
@@ -201,6 +204,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         return referencedDeclaration;
     }
 
+    @Override
     public CsmDeclaration getReferencedDeclaration() {
         return getReferencedDeclaration(null);
     }
@@ -248,6 +252,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         assert this.referencedDeclarationUID != null || referencedDeclaration == null;
     }
 
+    @Override
     public CsmClass getContainingClass() {
         CsmScope scope = getScope();
         if(CsmKindUtilities.isClass(scope)) {
@@ -256,35 +261,37 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         return null;
     }
 
+    @Override
     public CsmVisibility getVisibility() {
         return visibility;
     }
 
+    @Override
     public boolean isStatic() {
         return false;
     }
 
     @Override
-    public int getStartOffset() {
-        return startOffset;
-    }
-
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.USING_DECLARATION;
     }
     
+    @Override
     public CharSequence getName() {
         return name;
     }
     
+    @Override
     public CharSequence getQualifiedName() {
         return getName();
     }
     
+    @Override
     public CharSequence[] getRawName() {
         return rawName;
     }
     
+    @Override
     public CsmScope getScope() {
         return  UIDCsmConverter.UIDtoScope(this.scopeUID);
     }
@@ -306,7 +313,6 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        output.writeInt(this.startOffset);
         PersistentUtils.writeStrings(this.rawName, output);
         
         // save cached declaration
@@ -320,7 +326,6 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.startOffset = input.readInt();
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
         
         // read cached declaration

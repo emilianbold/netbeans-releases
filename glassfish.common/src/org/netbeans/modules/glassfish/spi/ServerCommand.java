@@ -68,6 +68,11 @@ public abstract class ServerCommand {
     protected final String command;
     protected String query = null;
     protected boolean retry = false;
+    private String serverMessage = "";
+
+    public String getServerMessage() {
+        return serverMessage;
+    }
 
     public ServerCommand(String command) {
         this.command = command;
@@ -209,6 +214,8 @@ public abstract class ServerCommand {
             // set the retry flag.
             if(message != null && message.contains("please wait")) {
                 retry = true;
+            } else {
+                serverMessage = message;
             }
             Logger.getLogger("glassfish").log(Level.WARNING, message);
         }

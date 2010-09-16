@@ -53,7 +53,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,7 +62,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import org.openide.util.Enumerations;
-import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 
 /** This is the base for all implementations of file objects on a filesystem.
@@ -528,7 +526,7 @@ public abstract class FileObject extends Object implements Serializable {
 
     /** Puts the dispatch event into the filesystem.
     */
-    private final void dispatchEvent(FCLSupport.Op op, Enumeration<FileChangeListener> en, FileEvent fe) {
+    private void dispatchEvent(FCLSupport.Op op, Enumeration<FileChangeListener> en, FileEvent fe) {
         try {
             FileSystem fs = getFileSystem();
             fs.dispatchEvent(new ED(op, en, fe));
@@ -780,6 +778,7 @@ public abstract class FileObject extends Object implements Serializable {
     */
     public Enumeration<? extends FileObject> getChildren(final boolean rec) {
         class WithChildren implements Enumerations.Processor<FileObject, FileObject> {
+            @Override
             public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 if (rec && fo.isFolder()) {
                     toAdd.addAll(Arrays.asList(fo.getChildren()));
@@ -883,6 +882,53 @@ public abstract class FileObject extends Object implements Serializable {
      */
     public FileObject createData(String name) throws IOException {
         return createData(name, ""); // NOI18N        
+    }
+    
+    /** 
+     * Creates new file in this folder and immediately opens it for writing.
+     * This method prevents possible race condition which can happen
+     * when using the {@link #createData(java.lang.String)} method.  
+     * Using {@link #createData(java.lang.String) that method} makes it
+     * possible for someone to read the content of the newly created
+     * file before its content is written. This method does its best to eliminate
+     * such race condition.
+     * 
+     * <p class="nonnormative">
+     * This method usually delivers both, {@link FileChangeListener#fileDataCreated(org.openide.filesystems.FileEvent) data created}
+     * and {@link FileChangeListener#fileChanged(org.openide.filesystems.FileEvent) changed} 
+     * events. Preferably it delivers them asynchronously. The assumption
+     * is that the file will be (at least partially) written before
+     * the listeners start to process the first event. The safety is additionally
+     * ensured by <q>mutual exclusion</q> between output and input streams 
+     * for the same file (any call to {@link #getInputStream()} will be blocked
+     * for at least two seconds if there is existing open output stream). 
+     * If you finish writing the content of your file in those two seconds,
+     * you can be sure, nobody will have read its content yet.
+     * </p>
+     * 
+     * @param name name of file to create with its extension
+     * @return output stream to use to write content of the file
+     * @throws IOException if the file cannot be created (e.g. already exists), or if <code>this</code> is not a folder
+     * @since 7.41
+     */
+    public OutputStream createAndOpen(final String name) throws IOException {
+        class R implements FileSystem.AsyncAtomicAction {
+            OutputStream os;
+            
+            @Override
+            public void run() throws IOException {
+                FileObject fo = createData(name);
+                os = fo.getOutputStream();
+            }
+
+            @Override
+            public boolean isAsynchronous() {
+                return true;
+            }
+        }
+        R r = new R();
+        getFileSystem().runAtomicAction(r);
+        return r.os;
     }
 
     /** Test whether this file can be written to or not.
@@ -1058,6 +1104,7 @@ public abstract class FileObject extends Object implements Serializable {
         /** @param onlyPriority if true then invokes only priority listeners
          *  else all listeners are invoked.
          */
+        @Override
         protected void dispatch(boolean onlyPriority, Collection<Runnable> postNotify) {
             if (this.op == null) {
                 this.op = fe.getFile().isFolder() ? FCLSupport.Op.FOLDER_CREATED : FCLSupport.Op.DATA_CREATED;
@@ -1124,6 +1171,7 @@ public abstract class FileObject extends Object implements Serializable {
             }
         }
 
+        @Override
         protected void setAtomicActionLink(EventControl.AtomicActionLink propID) {
             fe.setAtomicActionLink(propID);
         }
@@ -1138,6 +1186,7 @@ public abstract class FileObject extends Object implements Serializable {
             this.folders = folders;
         }
 
+        @Override
         public FileObject process(FileObject obj, Collection<FileObject> coll) {
             FileObject fo = obj;
 

@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.EmbeddedPkSupport;
 import org.openide.ErrorManager;
@@ -130,7 +131,7 @@ public class JpaControllerGenerator {
                 for (ExecutableElement method : JpaControllerUtil.getEntityMethods(jc)) {
                     String methodName = method.getSimpleName().toString();
                     if (methodName.startsWith("get")) {
-                        Element f = fieldAccess[0] ? JpaControllerUtil.guessField(controller, method) : method;
+                        Element f = fieldAccess[0] ? JpaControllerUtil.guessField(method) : method;
                         if (f != null) {
                             if (JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.Id") ||
                                     JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.EmbeddedId")) {
@@ -253,8 +254,11 @@ public class JpaControllerGenerator {
             final String version) throws IOException {
         
             final String[] idPropertyType = new String[1];
+            final String[] derivedIdPropertyType = new String[1];
             final String[] idGetterName = new String[1];
+            final String[] derivedIdGetterName = new String[1];
             final boolean[] embeddable = new boolean[] { false };
+            final boolean[] derived = new boolean[] {false};
             
             JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
             controllerJavaSource.runModificationTask(new Task<WorkingCopy>() {
@@ -271,6 +275,21 @@ public class JpaControllerGenerator {
                         idClass = (TypeElement) declaredType.asElement();
                         embeddable[0] = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
                         idPropertyType[0] = idClass.getQualifiedName().toString();
+                        if(!embeddable[0] && JpaControllerUtil.haveId(idClass)){//NOI18N
+                            //handle derived id, case entity/relationship without composite keys
+                             derived[0] =  JpaControllerUtil.isRelationship(idGetterElement ,JpaControllerUtil.isFieldAccess(idClass)) != JpaControllerUtil.REL_NONE;
+                             if(derived[0]){
+                                ExecutableElement derivedIdGetterElement  = findPrimaryKeyGetter(workingCopy, idClass);
+                                derivedIdGetterName[0] = derivedIdGetterElement.getSimpleName().toString();
+                                TypeMirror derivedIdType = derivedIdGetterElement.getReturnType();
+                                TypeElement derivedIdClass = null;
+                                if (TypeKind.DECLARED == idType.getKind()) {
+                                    DeclaredType derivedDeclaredType = (DeclaredType) derivedIdType;
+                                    derivedIdClass = (TypeElement) derivedDeclaredType.asElement();
+                                    derivedIdPropertyType[0] = derivedIdClass.getQualifiedName().toString();
+                                 }
+                            }
+                        }
                     } else if (TypeKind.BOOLEAN == idType.getKind()) {
                         idPropertyType[0] = "boolean";
                     } else if (TypeKind.BYTE == idType.getKind()) {
@@ -305,7 +324,8 @@ public class JpaControllerGenerator {
                     List<String> parameterTypes = new ArrayList<String>();
                     List<String> parameterNames = new ArrayList<String>();
                     String body = "";   //NOI18N
-                    if (isInjection) {
+                    boolean isUserTransaction = workingCopy.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE).findResource("javax/transaction/UserTransaction.class")!=null;  //NOI18N
+                    if (isUserTransaction) {
                         modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "utx", "javax.transaction.UserTransaction", privateModifier, null, null);   //NOI18N
                         parameterTypes.add("javax.transaction.UserTransaction");   //NOI18N
                         parameterNames.add("utx");   //NOI18N
@@ -356,13 +376,13 @@ public class JpaControllerGenerator {
                     for(Iterator<ElementHandle<ExecutableElement>> it = allRelMethods.iterator(); it.hasNext();) {
                         ElementHandle<ExecutableElement> handle = it.next();
                         ExecutableElement m = handle.resolve(workingCopy);
-                        int multiplicity = JpaControllerUtil.isRelationship(workingCopy, m, isFieldAccess);
+                        int multiplicity = JpaControllerUtil.isRelationship(m, isFieldAccess);
                         ExecutableElement otherSide = JpaControllerUtil.getOtherSideOfRelation(workingCopy, m, isFieldAccess);
 
                         if (otherSide != null) {
                             TypeElement relClass = (TypeElement)otherSide.getEnclosingElement();
                             boolean isRelFieldAccess = JpaControllerUtil.isFieldAccess(relClass);
-                            int otherSideMultiplicity = JpaControllerUtil.isRelationship(workingCopy, otherSide, isRelFieldAccess);
+                            int otherSideMultiplicity = JpaControllerUtil.isRelationship(otherSide, isRelFieldAccess);
                             TypeMirror t = m.getReturnType();
                             Types types = workingCopy.getTypes();
                             TypeMirror tstripped = JpaControllerUtil.stripCollection(t, types);
@@ -396,8 +416,8 @@ public class JpaControllerGenerator {
                             String relFieldName = JpaControllerUtil.getPropNameFromMethod(mName);
                             String otherFieldName = JpaControllerUtil.getPropNameFromMethod(otherName);
                             
-                            boolean columnNullable = JpaControllerUtil.isFieldOptionalAndNullable(workingCopy, m, isFieldAccess);
-                            boolean relColumnNullable = JpaControllerUtil.isFieldOptionalAndNullable(workingCopy, otherSide, isFieldAccess);
+                            boolean columnNullable = JpaControllerUtil.isFieldOptionalAndNullable(m, isFieldAccess);
+                            boolean relColumnNullable = JpaControllerUtil.isFieldOptionalAndNullable(otherSide, isFieldAccess);
                             
                             String relFieldToAttach = isCollection ? relFieldName + relTypeReference + "ToAttach" : relFieldName;
                             String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;
@@ -410,7 +430,7 @@ public class JpaControllerGenerator {
                                 modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, relType);
                             }
                             
-                            ExecutableElement relIdGetterElement = JpaControllerUtil.getIdGetter(workingCopy, isFieldAccess, relClass);
+                            ExecutableElement relIdGetterElement = JpaControllerUtil.getIdGetter(isFieldAccess, relClass);
                             String refOrMergeString = null;
                             
                             if (isCollection) {
@@ -655,15 +675,15 @@ public class JpaControllerGenerator {
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
                     if (embeddable[0]) {
-                        for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType)) {
-                            if (embeddedPkSupport.isRedundantWithRelationshipField(workingCopy, entityType, pkMethod)) {
+                        for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(entityType)) {
+                            if (embeddedPkSupport.isRedundantWithRelationshipField(entityType, pkMethod)) {
                                 codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
-                                    fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(workingCopy, entityType, pkMethod) + ");\n");
+                                    fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(entityType, pkMethod) + ");\n");
                             }
                         }
                     }
                     
-                    boolean isGenerated = JpaControllerUtil.isGenerated(workingCopy, idGetterElement, isFieldAccess);
+                    boolean isGenerated = JpaControllerUtil.isGenerated(idGetterElement, isFieldAccess);
                     bodyText = (embeddable[0] ? "if (" + fieldName + "." + idGetterName[0] + "() == null) {\n" +
                             fieldName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" + 
                             "}\n" : "") +
@@ -772,8 +792,17 @@ public class JpaControllerGenerator {
                         methodExceptionTypeList.add("java.lang.Exception");
                     }
                     String[] destroyExceptionTypes = methodExceptionTypeList.toArray(new String[methodExceptionTypeList.size()]);
-                    methodInfo = new MethodInfo("destroy", publicModifier, "void", destroyExceptionTypes, idPropertyType, new String[]{"id"}, bodyText, null, null);
-                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
+                    String[] findDestroyType = derived[0] && derivedIdPropertyType[0]!=null ? derivedIdPropertyType : idPropertyType;
+                    methodInfo = new MethodInfo("destroy", publicModifier, "void", destroyExceptionTypes, findDestroyType, new String[]{"id"}, bodyText, null, null);
+                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+
+                    //secondary destroy with derived type (entity type id)
+                    if(derived[0] && derivedIdPropertyType[0]!=null && !derivedIdPropertyType[0].equals(idPropertyType[0])){
+                        bodyText = "destroy( id." + derivedIdGetterName[0] + "() );";
+                        methodInfo = new MethodInfo("destroy", publicModifier, "void", destroyExceptionTypes, idPropertyType, new String[]{"id"}, bodyText, null, null);
+                        modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+                    }
+                    //
                     
                     TypeInfo listOfEntityType = new TypeInfo("java.util.List", new String[]{entityClass});
                     
@@ -809,9 +838,16 @@ public class JpaControllerGenerator {
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
                         "return em.find(" + simpleEntityName + ".class, id);\n" + 
                         "} finally {\n em.close();\n}\n";
-                    methodInfo = new MethodInfo("find" + simpleEntityName, publicModifier, entityClass, null, idPropertyType, new String[]{"id"}, bodyText, null, null);
-                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
-                    
+                    methodInfo = new MethodInfo("find" + simpleEntityName, publicModifier, entityClass, null, findDestroyType, new String[]{"id"}, bodyText, null, null);
+                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+
+                    //secondary find with derived type (entity type id), first one above is with derived (i.e. column) type.
+                    if(derived[0] && derivedIdPropertyType[0]!=null && !derivedIdPropertyType[0].equals(idPropertyType[0])){
+                        bodyText = "return find" + simpleEntityName + "( id." + derivedIdGetterName[0] + "() );";
+                        methodInfo = new MethodInfo("find" + simpleEntityName, publicModifier, entityClass, null, idPropertyType, new String[]{"id"}, bodyText, null, null);
+                        modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
+                    }
+
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
                         (
                         Persistence.VERSION_2_0.equals(version) ?
@@ -843,6 +879,27 @@ public class JpaControllerGenerator {
             refOrMergeString = "em.getReference(" + relFieldToAttach + ".getClass(), " + relFieldToAttach + "." + relIdGetter + "());\n";
         }
         return refOrMergeString;
+    }
+    private static ExecutableElement findPrimaryKeyGetter(CompilationController controller, TypeElement bean) {
+        ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(bean);
+        boolean isField = JpaControllerUtil.isFieldAccess(bean);
+        for (ExecutableElement method : methods) {
+            if (method.getSimpleName().toString().startsWith("get")) {//NOI18N
+                if (isId(method, isField)) {
+                    return method;
+                }
+            }
+        }
+        return null;
+    }
+    static boolean isId(ExecutableElement method, boolean isFieldAccess) {
+        Element element = isFieldAccess ? JpaControllerUtil.guessField(method) : method;
+        if (element != null) {
+            if (JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.Id") || JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.EmbeddedId")) { // NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -69,6 +69,7 @@ import org.openide.util.NbBundle;
  * @see JPDABreakpoint#setPrintText(java.lang.String)
  * @author Maros Sandor
  */
+@LazyActionsManagerListener.Registration(path="netbeans-JPDASession/Java")
 public class BreakpointOutput extends LazyActionsManagerListener
 implements DebuggerManagerListener, JPDABreakpointListener,
 PropertyChangeListener {

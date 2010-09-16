@@ -115,7 +115,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         }
 
         @Override
-        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
+        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
             VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, _extern, container1, container2, getScope());
             declarators.add(var);
             return var;

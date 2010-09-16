@@ -32,6 +32,7 @@ import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.test.subversion.utils.MessageHandler;
 
 /**
@@ -65,6 +66,7 @@ public class SearchHistoryUITest extends JellyTestCase{
         } else {
             TestKit.removeHandlers(log);
         }
+        SvnModuleConfig.getDefault().setShowFileAllInfo(true);
     }
     
     public static Test suite() {

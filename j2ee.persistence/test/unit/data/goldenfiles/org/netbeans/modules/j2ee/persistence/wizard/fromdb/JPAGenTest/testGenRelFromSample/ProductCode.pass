@@ -92,6 +92,6 @@ public class ProductCode implements Serializable {
 
     @Override
     public String toString() {
-        return "generated.ProductCode[prodCode=" + prodCode + "]";
+        return "generated.ProductCode[ prodCode=" + prodCode + " ]";
     }
 }

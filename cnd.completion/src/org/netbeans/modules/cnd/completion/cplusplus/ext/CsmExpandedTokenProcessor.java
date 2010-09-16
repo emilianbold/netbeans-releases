@@ -46,6 +46,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
@@ -62,9 +63,9 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  *
  * @author Nick Krasilnikov
  */
-public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<CppTokenId>>, MacroCallback {
+public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<TokenId>>, MacroCallback {
 
-    private final CndTokenProcessor<Token<CppTokenId>> tp;
+    private final CndTokenProcessor<Token<TokenId>> tp;
     private final Document doc;
     private final int lastOffset;
     private boolean inMacro;
@@ -72,7 +73,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
     private final CsmFile file;
     private List<CsmReference> macros;
 
-    private CsmExpandedTokenProcessor(Document doc, CsmFile file, CndTokenProcessor<Token<CppTokenId>> tp, int offset, List<CsmReference> macros) {
+    private CsmExpandedTokenProcessor(Document doc, CsmFile file, CndTokenProcessor<Token<TokenId>> tp, int offset, List<CsmReference> macros) {
         this.tp = tp;
         this.doc = doc;
         this.lastOffset = offset;
@@ -80,7 +81,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         this.macros = macros;
     }
 
-    public static CndTokenProcessor<Token<CppTokenId>> create(Document doc, CndTokenProcessor<Token<CppTokenId>> tp, int offset) {
+    public static CndTokenProcessor<Token<TokenId>> create(Document doc, CndTokenProcessor<Token<TokenId>> tp, int offset) {
         if (doc != null) {
             CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
             if (file != null) {
@@ -93,7 +94,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         return tp;
     }
 
-    private static CndTokenProcessor<Token<CppTokenId>> create(Document doc, CsmFile file, CndTokenProcessor<Token<CppTokenId>> tp, int offset, List<CsmReference> macros) {
+    private static CndTokenProcessor<Token<TokenId>> create(Document doc, CsmFile file, CndTokenProcessor<Token<TokenId>> tp, int offset, List<CsmReference> macros) {
         CsmMacroExpansion.expand(doc, file, 0, 0);
         return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
     }
@@ -114,17 +115,17 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         return inMacro;
     }
 
-    public boolean isMacro(Token token, int tokenOffset) {
+    public boolean isMacro(Token<TokenId> token, int tokenOffset) {
         return CndLexerUtilities.isCppIdentifierStart(token.text().charAt(0)) && ReferencesSupport.findMacro(macros, tokenOffset) != null;
     }
 
-    public boolean token(Token<CppTokenId> token, int tokenOffset) {
+    public boolean token(Token<TokenId> token, int tokenOffset) {
         // Additional logic only for macros
         if (skipTill <= tokenOffset) {
             skipTill = -1;
         }
         if (skipTill < 0 && (isMacro(token, tokenOffset) || inMacro)) {
-            TokenSequence<CppTokenId> expTS = null;
+            TokenSequence<TokenId> expTS = null;
             String expansion = CsmMacroExpansion.expand(doc, file, tokenOffset, tokenOffset + token.length());
             if (expansion != null) {
                 if (expansion.equals("")) { // NOI18N
@@ -150,7 +151,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
                         final Language<?> lang = ts.languagePath().innerLanguage();
                         if (CndLexerUtilities.isCppLanguage(lang, false)) {
                             @SuppressWarnings("unchecked") // NOI18N
-                            TokenSequence<CppTokenId> uts = (TokenSequence<CppTokenId>) ts;
+                            TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
                             expTS = uts;
                         }
                     }
@@ -158,7 +159,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
                         expTS.moveStart();
                         if (expTS.moveNext()) {
                             boolean res;
-                            Token<CppTokenId> expToken = expTS.token();
+                            Token<TokenId> expToken = expTS.token();
                             if (!expTS.moveNext()) {
                                 if (expToken.text().toString().equals(token.text().toString()) &&
                                         expToken.id().equals(token.id())) {
@@ -185,15 +186,17 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         return tp.token(token, tokenOffset);
     }
 
-    private boolean isWhitespace(Token<CppTokenId> docToken) {
-        switch (docToken.id()) {
-            case NEW_LINE:
-            case WHITESPACE:
-            case ESCAPED_WHITESPACE:
-            case ESCAPED_LINE:
-                return true;
-            default:
-                return false;
+    private boolean isWhitespace(Token<TokenId> docToken) {
+        final TokenId id = docToken.id();
+        if(id instanceof CppTokenId) {
+            switch ((CppTokenId)id) {
+                case NEW_LINE:
+                case WHITESPACE:
+                case ESCAPED_WHITESPACE:
+                case ESCAPED_LINE:
+                    return true;
+            }
         }
+        return false;
     }
 }

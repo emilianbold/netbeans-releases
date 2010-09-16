@@ -85,6 +85,7 @@ public class ExeLauncher extends CommonLauncher {
     /**
      * See <code>ShLauncher#MIN_JAVA_VERSION_UNIX</code> for details.
      */
+    public static final String MIN_JAVA_VERSION_WINDOWS_ALL   = "1.6.0";
     public static final String MIN_JAVA_VERSION_WINDOWS       = "1.5.0_03";
     public static final String MIN_JAVA_VERSION_WINDOWS_VISTA = "1.5.0_11";
     public static final String MIN_JAVA_VERSION_WINDOWS_2K8   = "1.5.0_17";
@@ -93,6 +94,7 @@ public class ExeLauncher extends CommonLauncher {
     /* IBM does not report the update number so allow to work even on 1.5.0 */
     public static final String MIN_IBM_JAVA_VERSION = "1.5.0";
 
+    public static final String OSNAME_WINDOWS    = "Windows";
     public static final String OSNAME_WINDOWS_XP = "XP";
     public static final String OSNAME_WINDOWS_VISTA = "Vista";
     public static final String OSNAME_WINDOWS_2K = "2000";
@@ -223,7 +225,9 @@ public class ExeLauncher extends CommonLauncher {
             list.add(new JavaCompatibleProperties(
                     MIN_JAVA_VERSION_WINDOWS_7, null, null, OSNAME_WINDOWS_7, null));
             list.add(new JavaCompatibleProperties(
-                MIN_IBM_JAVA_VERSION, null, "IBM Corporation", null, null));
+                    MIN_IBM_JAVA_VERSION, null, "IBM Corporation", null, null));
+            list.add(new JavaCompatibleProperties(
+                    MIN_JAVA_VERSION_WINDOWS_ALL, null, null, OSNAME_WINDOWS, null));
             return list;
         } else {
             return super.getDefaultCompatibleJava(version);            

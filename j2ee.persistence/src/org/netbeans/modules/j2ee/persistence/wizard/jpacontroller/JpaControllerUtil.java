@@ -310,8 +310,8 @@ public class JpaControllerUtil {
         return false;
     }
     
-    public static int isRelationship(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
-        Element element = isFieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+    public static int isRelationship(ExecutableElement method, boolean isFieldAccess) {
+        Element element = isFieldAccess ? JpaControllerUtil.guessField(method) : method;
         if (element != null) {
             if (JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.OneToOne") || JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.ManyToOne")) {
                 return REL_TO_ONE;
@@ -336,7 +336,7 @@ public class JpaControllerUtil {
         TypeElement passedReturnTypeStrippedElement = (TypeElement) types.asElement(passedReturnTypeStripped);
         
         //try to find a mappedBy annotation element on the possiblyAnnotatedElement
-        Element possiblyAnnotatedElement = isFieldAccess ? JpaControllerUtil.guessField(controller, executableElement) : executableElement;
+        Element possiblyAnnotatedElement = isFieldAccess ? JpaControllerUtil.guessField(executableElement) : executableElement;
         String mappedBy = null;
         AnnotationMirror persistenceAnnotation = JpaControllerUtil.findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToOne");  //NOI18N"
         if (persistenceAnnotation == null) {
@@ -397,10 +397,10 @@ public class JpaControllerUtil {
         return passedType;
     }
     
-    public static boolean isFieldOptionalAndNullable(CompilationController controller, ExecutableElement method, boolean fieldAccess) {
+    public static boolean isFieldOptionalAndNullable(ExecutableElement method, boolean fieldAccess) {
         boolean isFieldOptional = true;
         Boolean isFieldNullable = null;
-        Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+        Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(method) : method;
         if (fieldElement == null) {
             fieldElement = method;
         }
@@ -460,12 +460,37 @@ public class JpaControllerUtil {
         return isFieldXable;
     }
     
-    public static ExecutableElement getIdGetter(CompilationController controller, final boolean isFieldAccess, final TypeElement typeElement) {
+    /**
+     * check if there is id in the entity
+     * @param typeElement
+     * @return true if id is present
+     */
+    public static boolean haveId(final TypeElement clazz) {
+        boolean idDetected = false;
+        TypeElement typeElement = clazz;
+        while (typeElement != null && !idDetected) {
+            if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
+                for (Element element : typeElement.getEnclosedElements()) {
+                    if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
+                        idDetected = true;
+                    }
+                }
+            }
+            typeElement = getSuperclassTypeElement(typeElement);
+        }
+        if (!idDetected) {
+            return false;//
+        } else {
+            return true;
+        }
+    }
+
+    public static ExecutableElement getIdGetter(final boolean isFieldAccess, final TypeElement typeElement) {
         ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(typeElement);
         for (ExecutableElement method : methods) {
             String methodName = method.getSimpleName().toString();
             if (methodName.startsWith("get")) {
-                Element element = isFieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+                Element element = isFieldAccess ? JpaControllerUtil.guessField(method) : method;
                 if (element != null) {
                     if (JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.Id") || JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
                         return method;
@@ -477,8 +502,8 @@ public class JpaControllerUtil {
         return null;
     }
     
-    public static boolean isGenerated(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
-        Element element = isFieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+    public static boolean isGenerated(ExecutableElement method, boolean isFieldAccess) {
+        Element element = isFieldAccess ? JpaControllerUtil.guessField(method) : method;
         if (element != null) {
             if (JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.GeneratedValue")) { // NOI18N
                 return true;
@@ -552,7 +577,7 @@ public class JpaControllerUtil {
         return result.toArray(new ExecutableElement[result.size()]);
     }
     
-    public static VariableElement guessField(CompilationController controller, ExecutableElement getter) {
+    public static VariableElement guessField(ExecutableElement getter) {
         String name = getter.getSimpleName().toString().substring(3);
         String guessFieldName = name.substring(0,1).toLowerCase() + name.substring(1);
         TypeElement typeElement = (TypeElement) getter.getEnclosingElement();
@@ -565,7 +590,7 @@ public class JpaControllerUtil {
         return null;
     }
 
-    public static VariableElement guessGetter(CompilationController controller, ExecutableElement setter) {
+    public static VariableElement guessGetter(ExecutableElement setter) {
         String name = setter.getSimpleName().toString().substring(3);
         String guessGetterName = "set" + name;
         TypeElement typeElement = (TypeElement) setter.getEnclosingElement();
@@ -583,19 +608,19 @@ public class JpaControllerUtil {
     public static class EmbeddedPkSupport {
         private Map<TypeElement,EmbeddedPkSupportInfo> typeToInfo = new HashMap<TypeElement,EmbeddedPkSupportInfo>();
         
-        public Set<ExecutableElement> getPkAccessorMethods(CompilationController controller, TypeElement type) {
-            EmbeddedPkSupportInfo info = getInfo(controller, type);
+        public Set<ExecutableElement> getPkAccessorMethods(TypeElement type) {
+            EmbeddedPkSupportInfo info = getInfo(type);
             return info.getPkAccessorMethods();
         }
         
-       public boolean getPkSetterMethodExist(CompilationController controller, TypeElement type, ExecutableElement getter) {
-            EmbeddedPkSupportInfo info = getInfo(controller, type);
+       public boolean getPkSetterMethodExist(TypeElement type, ExecutableElement getter) {
+            EmbeddedPkSupportInfo info = getInfo(type);
             String column = info.getReferencedColumnName(getter);
             return info.getSetterString(column) != null;
        }
 
-       public String getCodeToPopulatePkField(CompilationController controller, TypeElement type, ExecutableElement pkAccessorMethod) {
-            EmbeddedPkSupportInfo info = getInfo(controller, type);
+       public String getCodeToPopulatePkField(TypeElement type, ExecutableElement pkAccessorMethod) {
+            EmbeddedPkSupportInfo info = getInfo(type);
             String code = info.getCodeToPopulatePkField(pkAccessorMethod);
             if (code != null) {
                 return code;
@@ -617,7 +642,7 @@ public class JpaControllerUtil {
             DeclaredType declaredType = (DeclaredType) relationshipTypeMirror;
             TypeElement relationshipType = (TypeElement) declaredType.asElement();
             
-            EmbeddedPkSupportInfo relatedInfo = getInfo(controller, relationshipType);
+            EmbeddedPkSupportInfo relatedInfo = getInfo(relationshipType);
             String accessorString = relatedInfo.getAccessorString(referencedColumnName);
             if (accessorString == null) {
                 info.putCodeToPopulatePkField(pkAccessorMethod, code);
@@ -629,19 +654,19 @@ public class JpaControllerUtil {
             return code;
         }
         
-        public boolean isRedundantWithRelationshipField(CompilationController controller, TypeElement type, ExecutableElement pkAccessorMethod) {
-            return getCodeToPopulatePkField(controller, type, pkAccessorMethod).length() > 0;
+        public boolean isRedundantWithRelationshipField(TypeElement type, ExecutableElement pkAccessorMethod) {
+            return getCodeToPopulatePkField(type, pkAccessorMethod).length() > 0;
         }
         
-        public boolean isRedundantWithPkFields(CompilationController controller, TypeElement type, ExecutableElement relationshipMethod) {
-            EmbeddedPkSupportInfo info = getInfo(controller, type);
+        public boolean isRedundantWithPkFields(TypeElement type, ExecutableElement relationshipMethod) {
+            EmbeddedPkSupportInfo info = getInfo(type);
             return info.isRedundantWithPkFields(relationshipMethod);
         }
         
-        private EmbeddedPkSupportInfo getInfo(CompilationController controller, TypeElement type) {
+        private EmbeddedPkSupportInfo getInfo(TypeElement type) {
             EmbeddedPkSupportInfo info = typeToInfo.get(type);
             if (info == null) {
-                info = new EmbeddedPkSupportInfo(controller, type);
+                info = new EmbeddedPkSupportInfo(type);
                 typeToInfo.put(type, info);
             }
             return info;
@@ -710,13 +735,13 @@ public class JpaControllerUtil {
             return true;
         }
         
-        EmbeddedPkSupportInfo(CompilationController controller, TypeElement type) {
+        EmbeddedPkSupportInfo(TypeElement type) {
             this.type = type;
             isFieldAccess = isFieldAccess(type);
             for (ExecutableElement method : getEntityMethods(type)) {
                 String methodName = method.getSimpleName().toString();
                 if (methodName.startsWith("get")) {
-                    Element f = isFieldAccess ? guessField(controller, method) : method;
+                    Element f = isFieldAccess ? guessField(method) : method;
                     if (f != null) {
                         int a = -1;
                         AnnotationMirror columnAnnotation = null;
@@ -732,7 +757,7 @@ public class JpaControllerUtil {
                         }
                         if (a == 0) {
                             //populate pkAccessorMethodToColumnName and columnNameToAccessorString
-                            populateMapsForEmbedded(controller, method);
+                            populateMapsForEmbedded(method);
                         } else if ( (a == 1 || a == 2) && 
                                 (isAnnotatedWith(f, "javax.persistence.OneToOne") ||
                                 isAnnotatedWith(f, "javax.persistence.ManyToOne")) )  {
@@ -751,7 +776,7 @@ public class JpaControllerUtil {
             }
         }
         
-        private void populateMapsForEmbedded(CompilationController controller, ExecutableElement idGetterElement) {
+        private void populateMapsForEmbedded(ExecutableElement idGetterElement) {
             TypeMirror idType = idGetterElement.getReturnType();
             if (TypeKind.DECLARED != idType.getKind()) {
                 return;
@@ -762,7 +787,7 @@ public class JpaControllerUtil {
             for (ExecutableElement pkMethod : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
                 String pkMethodName = pkMethod.getSimpleName().toString();
                 if (pkMethodName.startsWith("get")) {
-                    Element pkFieldElement = isFieldAccess ? guessField(controller, pkMethod) : pkMethod;
+                    Element pkFieldElement = isFieldAccess ? guessField(pkMethod) : pkMethod;
                     AnnotationMirror columnAnnotation = findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N
                     if (columnAnnotation != null) {
                         String columnName = findAnnotationValueAsString(columnAnnotation, "name"); //NOI18N
@@ -776,7 +801,7 @@ public class JpaControllerUtil {
                 }
                 else if(pkMethodName.startsWith("set"))
                 {
-                    Element pkFieldElement = isFieldAccess ? guessField(controller, pkMethod) : guessGetter(controller, pkMethod);
+                    Element pkFieldElement = isFieldAccess ? guessField(pkMethod) : guessGetter(pkMethod);
                     if(pkFieldElement != null) {//we do not need setters not associated with fields/properties
                         AnnotationMirror columnAnnotation = findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N
                         if (columnAnnotation != null) {
@@ -865,7 +890,7 @@ public class JpaControllerUtil {
                     MethodTree mtree = (MethodTree)tree;
                     List<? extends VariableTree> mTreeParameters = mtree.getParameters();
                     if(mtree.getName().toString().equals("<init>") &&
-                            (mTreeParameters == null || mTreeParameters.size() == 0) &&
+                            (mTreeParameters == null || mTreeParameters.isEmpty()) &&
                             !wc.getTreeUtilities().isSynthetic(wc.getTrees().getPath(wc.getCompilationUnit(), classTree))) {
                             constructor = mtree;
                             break;

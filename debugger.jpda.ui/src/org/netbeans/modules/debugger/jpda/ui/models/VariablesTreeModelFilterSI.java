@@ -54,6 +54,8 @@ import javax.swing.Action;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -70,6 +72,32 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types={ TreeModelFilter.class,
+                                         NodeActionsProvider.class,
+                                         NodeModel.class,
+                                         TableModel.class },
+                                 position=700),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types={ TreeModelFilter.class,
+                                         NodeActionsProvider.class,
+                                         NodeModel.class,
+                                         TableModel.class },
+                                 position=700),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types={ TreeModelFilter.class,
+                                         NodeActionsProvider.class,
+                                         NodeModel.class,
+                                         TableModel.class },
+                                 position=700),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types={ TreeModelFilter.class,
+                                         NodeActionsProvider.class,
+                                         NodeModel.class,
+                                         TableModel.class },
+                                 position=700)
+})
 public class VariablesTreeModelFilterSI implements TreeModelFilter, 
 NodeModel, TableModel, NodeActionsProvider {
 
@@ -236,19 +264,19 @@ NodeModel, TableModel, NodeActionsProvider {
     
     // NodeModelFilter
     
-    public String getDisplayName (Object node) 
+    public String getDisplayName (Object node)
     throws UnknownTypeException {
         if (node instanceof SpecialNode) return ((SpecialNode) node).getDisplayName();
         throw new UnknownTypeException (node);
     }
     
-    public String getIconBase (Object node) 
+    public String getIconBase (Object node)
     throws UnknownTypeException {
         if (node instanceof SpecialNode) return ((SpecialNode) node).getIconBase();
         throw new UnknownTypeException (node);
     }
     
-    public String getShortDescription (Object node) 
+    public String getShortDescription (Object node)
     throws UnknownTypeException {
         if (node instanceof SpecialNode) return null;
         throw new UnknownTypeException (node);

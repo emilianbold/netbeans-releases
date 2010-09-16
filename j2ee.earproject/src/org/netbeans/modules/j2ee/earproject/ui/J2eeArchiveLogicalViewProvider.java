@@ -45,8 +45,8 @@
 package org.netbeans.modules.j2ee.earproject.ui;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider;
 import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider.LogicalViewRootNode;
+import org.netbeans.modules.j2ee.common.project.ui.AbstractLogicalViewProvider2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -60,16 +60,16 @@ import org.openide.util.NbBundle;
 /**
  * Support for creating logical views.
  */
-public class J2eeArchiveLogicalViewProvider extends AbstractLogicalViewProvider {
+public class J2eeArchiveLogicalViewProvider extends AbstractLogicalViewProvider2 {
     
     private final EarProject project;
-    
+
     public J2eeArchiveLogicalViewProvider(EarProject project, UpdateHelper helper,
             PropertyEvaluator evaluator, ReferenceHelper resolver, J2eeModuleProvider provider) {
         super(project, helper, evaluator, resolver, provider);
         this.project = project;
     }
-    
+
     @Override
     public Node createLogicalView() {
         return new LogicalViewRootNode("Projects/org-netbeans-modules-j2ee-earproject/Nodes",

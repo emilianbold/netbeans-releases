@@ -76,7 +76,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         super(ast, file);
         _setScope(scope);
         rawName = createRawName(ast);
-        alias = NameCache.getManager().getString(ast.getText());
+        alias = NameCache.getManager().getString(AstUtil.getText(ast));
         AST token = ast.getFirstChild();
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
             token = token.getNextSibling();
@@ -118,6 +118,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return scope;
     }
 
+    @Override
     public CsmNamespace getReferencedNamespace() {
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver2"))
         //assert ResolverFactory.resolver != 2;
@@ -134,18 +135,22 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return res;
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.NAMESPACE_ALIAS;
     }
 
+    @Override
     public CharSequence getAlias() {
         return alias;
     }
 
+    @Override
     public CharSequence getName() {
         return getAlias();
     }
     
+    @Override
     public CharSequence getQualifiedName() {
         CsmScope scope = getScope();
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmNamespaceDefinition) ) {
@@ -171,6 +176,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return new CharSequence[0];
     }
 
+    @Override
     public CharSequence[] getRawName() {
         return rawName;
     }
@@ -180,6 +186,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return "" + getKind() + ' ' + alias + '=' + namespace /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
     }
     
+    @Override
     public CsmScope getScope() {
         return _getScope();
     }

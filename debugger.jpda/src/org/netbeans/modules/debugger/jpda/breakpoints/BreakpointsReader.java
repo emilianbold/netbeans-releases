@@ -58,12 +58,14 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 
 /**
  *
  * @author Jan Jancura
  */
+@DebuggerServiceRegistration(types={Properties.Reader.class})
 public class BreakpointsReader implements Properties.Reader, PropertyChangeListener {
     
     private Map<JPDABreakpoint, String> cachedClassNames = new WeakHashMap<JPDABreakpoint, String>();

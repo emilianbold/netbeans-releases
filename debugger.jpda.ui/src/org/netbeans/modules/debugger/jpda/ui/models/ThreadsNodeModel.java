@@ -63,6 +63,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -74,6 +75,7 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ThreadsView", types=NodeModel.class)
 public class ThreadsNodeModel implements NodeModel {
     
     public static final String CURRENT_THREAD =
@@ -110,7 +112,7 @@ public class ThreadsNodeModel implements NodeModel {
                 synchronized(currentNodes) {
                     currentNodes.add(o);
                 }
-                return BoldVariablesTableModelFilterFirst.toHTML (
+                return BoldVariablesTableModelFilter.toHTML (
                     ((JPDAThread) o).getName (),
                     true,
                     false,
@@ -128,7 +130,7 @@ public class ThreadsNodeModel implements NodeModel {
                 synchronized(currentNodes) {
                     currentNodes.add(o);
                 }
-                return BoldVariablesTableModelFilterFirst.toHTML (
+                return BoldVariablesTableModelFilter.toHTML (
                     ((JPDAThreadGroup) o).getName (),
                     true,
                     false,

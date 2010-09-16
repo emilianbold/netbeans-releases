@@ -412,7 +412,7 @@ public class WorkingCopy extends CompilationController {
         }
         
         List<Diff> diffs = new ArrayList<Diff>();
-        ImportAnalysis2 ia = new ImportAnalysis2(getContext());
+        ImportAnalysis2 ia = new ImportAnalysis2(this);
         
         boolean importsFilled = false;
 
@@ -440,9 +440,7 @@ public class WorkingCopy extends CompilationController {
                 ia.classEntered(ct);
             }
 
-            translator.attach(getContext(), ia, getCompilationUnit(), tree2Tag);
-
-            Tree brandNew = translator.translate(path.getLeaf(), parent2Rewrites.get(path));
+            Tree brandNew = getTreeUtilities().translate(path.getLeaf(), parent2Rewrites.get(path), ia, tree2Tag);
 
             //tagging debug
             //System.err.println("brandNew=" + brandNew);
@@ -490,11 +488,7 @@ public class WorkingCopy extends CompilationController {
         List<Difference> result = new LinkedList<Difference>();
         
         for (CompilationUnitTree t : externalChanges.values()) {
-            Translator translator = new Translator();
-            
-            translator.attach(getContext(), new ImportAnalysis2(getContext()), t, tree2Tag);
-            
-            CompilationUnitTree nue = (CompilationUnitTree) translator.translate(t, changes);
+            CompilationUnitTree nue = (CompilationUnitTree) getTreeUtilities().translate(t, changes, new ImportAnalysis2(this), tree2Tag);
             
             VeryPretty printer = new VeryPretty(this, VeryPretty.getCodeStyle(this));
             printer.print((JCTree.JCCompilationUnit) nue);

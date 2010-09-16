@@ -465,6 +465,12 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * whether children are of the right subclass
      */
     void updateChildren() {
+        Children ch = hierarchy;
+        if (ch instanceof Children.LazyChildren) {
+            // Replace the children with the ones provided lazily:
+            ch = ((Children.LazyChildren) ch).getOriginal();
+            setChildren(ch);
+        }
     }
 
     /** Allows to change Children of the node. Call to this method aquires

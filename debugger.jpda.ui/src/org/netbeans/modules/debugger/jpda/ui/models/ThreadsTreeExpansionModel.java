@@ -47,6 +47,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.util.Set;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.WeakSet;
@@ -55,6 +56,7 @@ import org.openide.util.WeakSet;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ThreadsView", types=TreeExpansionModel.class)
 public class ThreadsTreeExpansionModel implements TreeExpansionModel {
 
     private Set expandedNodes = new WeakSet();

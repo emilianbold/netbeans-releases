@@ -56,8 +56,8 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderExt {
 
-    private TokenItem<CppTokenId> jumpToken = null;
+    private TokenItem<TokenId> jumpToken = null;
     private Cancellable hyperLinkTask;
 
     protected CsmAbstractHyperlinkProvider() {
@@ -128,15 +128,15 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
     @Override
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
-        TokenItem<CppTokenId> token = getToken(doc, offset);
+        TokenItem<TokenId> token = getToken(doc, offset);
         return isValidToken(token, type);
     }
 
-    protected abstract boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type);
+    protected abstract boolean isValidToken(TokenItem<TokenId> token, HyperlinkType type);
 
     @Override
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
-        TokenItem<CppTokenId> token = getToken(doc, offset);
+        TokenItem<TokenId> token = getToken(doc, offset);
         if (type == HyperlinkType.ALT_HYPERLINK) {
             int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset, false);
             if (span != null && span[0] != span[1]) {
@@ -196,11 +196,11 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         return true;
     }
 
-    protected TokenItem<CppTokenId> getJumpToken() {
+    protected TokenItem<TokenId> getJumpToken() {
         return this.jumpToken;
     }
 
-    static TokenItem<CppTokenId> getToken(final Document doc, final int offset) {
+    static TokenItem<TokenId> getToken(final Document doc, final int offset) {
         if (doc instanceof AbstractDocument) {
             ((AbstractDocument) doc).readLock();
         }
@@ -225,7 +225,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
                 return getMacroExpandedText(doc, span[0], span[1]);
             }
         }
-        TokenItem<CppTokenId> token = jumpToken;
+        TokenItem<TokenId> token = jumpToken;
         if (token == null || token.offset() > offset ||
                 (token.offset() + token.length()) < offset) {
             token = getToken(doc, offset);
@@ -236,7 +236,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         return getTooltipText(doc, token, offset, type);
     }
 
-    protected abstract String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type);
+    protected abstract String getTooltipText(Document doc, TokenItem<TokenId> token, int offset, HyperlinkType type);
 
     private String getMacroExpandedText(final Document doc, final int start, final int end) {
         String expandedText = CsmMacroExpansion.expand(doc, start, end);

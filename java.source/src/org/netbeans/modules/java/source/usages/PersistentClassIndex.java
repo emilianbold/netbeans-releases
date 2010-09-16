@@ -69,6 +69,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.usages.ResultConvertor.Stop;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -208,8 +209,23 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<? super Document, T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+            @Override
             public Void run () throws IOException, InterruptedException {
-                index.getDeclaredElements(ident, kind, convertor, result);
+                final Query[] queries = QueryUtil.createTermCollectingQueries(
+                        Pair.of(DocumentUtil.FIELD_FEATURE_IDENTS,DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS),
+                        ident,
+                        kind);
+                index.queryDocTerms(
+                        queries,
+                        DocumentUtil.declaredTypesFieldSelector(),
+                        convertor,
+                        new ResultConvertor<Term, String>(){
+                            @Override
+                            public String convert(Term p) throws Stop {
+                                return p.text();
+                            }
+                        },
+                        result);
                 return null;
             }
         });                            

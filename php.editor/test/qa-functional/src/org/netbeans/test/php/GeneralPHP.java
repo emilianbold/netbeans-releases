@@ -57,8 +57,6 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import java.awt.event.KeyEvent;
 import javax.swing.JEditorPane;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.event.InputEvent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -70,9 +68,9 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -723,7 +721,7 @@ public class GeneralPHP extends JellyTestCase {
 
     }
     
-    protected  String getPlatform() {
-        return System.getProperty("os.name").toLowerCase(); 
+    protected int getPlatform() {
+       return Utilities.getOperatingSystem();
     }
 }

@@ -50,10 +50,10 @@ import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
-import org.netbeans.modules.cnd.dwarfdump.DwarfRenderer;
-import org.netbeans.modules.cnd.dwarfdump.DwarfRenderer.Declaration;
+import org.netbeans.modules.cnd.dwarfdiscovery.litemodel.DwarfRenderer;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.litemodel.api.Declaration;
 
 /**
  *
@@ -80,26 +80,26 @@ public class LiteWeightModelTest extends NbTestCase {
         DwarfRenderer dwarfRenderer = LWM(objFileName);
         dwarfRenderer.dumpModel(System.out);
         Map<String, Map<String, Declaration>> map = dwarfRenderer.getLWM();
-///export/home/av202691/NetBeansProjects/Quote_1/cpu.cc
-//        Cpu::ComputeSupportMetric() (DW_TAG_subprogram) :17
-//        Cpu::Cpu(int, int, int) (DW_TAG_subprogram) :6
-//        Cpu::GetCategory() (DW_TAG_subprogram) const char :46
-//        Cpu::GetType() (DW_TAG_subprogram) const char :33
         Map<String, Declaration> cpuC = getFilename(map, "/cpu.cc");
+///export/home/av202691/NetBeansProjects/Quote_1/cpu.cc
+//        Cpu::ComputeSupportMetric() (subprogram) :17
+//        Cpu::Cpu(int, int, int) (subprogram) :6
+//        Cpu::GetCategory() (subprogram) const char :46
+//        Cpu::GetType() (subprogram) const char :33
         assertNotNull(cpuC);
-///export/home/av202691/NetBeansProjects/Quote_1/cpu.h
-//        Cpu (DW_TAG_class_type) :35
-//        Cpu::Cpu(const Cpu&) (DW_TAG_subprogram) :35
-//        Cpu::CpuArch (DW_TAG_enumeration_type) :38
-//        Cpu::CpuArch::INTEL (DW_TAG_enumerator) :38
-//        Cpu::CpuArch::OPTERON (DW_TAG_enumerator) :38
-//        Cpu::CpuArch::SPARC (DW_TAG_enumerator) :38
-//        Cpu::CpuType (DW_TAG_enumeration_type) :37
-//        Cpu::CpuType::HIGH (DW_TAG_enumerator) :37
-//        Cpu::CpuType::MEDIUM (DW_TAG_enumerator) :37
-//        Cpu::~Cpu() (DW_TAG_subprogram) :35
-//        Module (DW_TAG_inheritance) :35
         Map<String, Declaration> cpuH = getFilename(map, "/cpu.h");
+///export/home/av202691/NetBeansProjects/Quote_1/cpu.h
+//        Cpu (class_type) :35
+//        Cpu::Cpu(const Cpu&) (subprogram) :35
+//        Cpu::CpuArch (enumeration_type) :38
+//        Cpu::CpuArch::INTEL (enumerator) :38
+//        Cpu::CpuArch::OPTERON (enumerator) :38
+//        Cpu::CpuArch::SPARC (enumerator) :38
+//        Cpu::CpuType (enumeration_type) :37
+//        Cpu::CpuType::HIGH (enumerator) :37
+//        Cpu::CpuType::MEDIUM (enumerator) :37
+//        Cpu::~Cpu() (subprogram) :35
+//        Module (inheritance) :35
         assertNotNull(cpuH);
     }
 
@@ -143,10 +143,13 @@ public class LiteWeightModelTest extends NbTestCase {
                 }
             }
         } catch (FileNotFoundException ex) {
-            // Skip Exception
+            ex.printStackTrace();
         } catch (WrongFileFormatException ex) {
+            ex.printStackTrace();
         } catch (IOException ex) {
+            ex.printStackTrace();
         } catch (Exception ex) {
+            ex.printStackTrace();
         } finally {
             if (dump != null) {
                 dump.dispose();

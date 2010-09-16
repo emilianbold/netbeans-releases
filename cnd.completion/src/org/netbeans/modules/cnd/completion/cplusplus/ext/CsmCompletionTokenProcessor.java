@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
+import org.netbeans.api.lexer.TokenId;
 import java.util.List;
 import java.util.ArrayList;
 import org.netbeans.api.lexer.Token;
@@ -57,7 +58,7 @@ import static org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExp
  * @author Vladimir Voskresensky
  * @version 1.00
  */
-final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
+final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<TokenId>> {
 
     private static final int NO_EXP = -1;
     /** Buffer that is scanned */
@@ -643,7 +644,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 
     @SuppressWarnings("fallthrough")
     @Override
-    public boolean token(Token<CppTokenId> token, int tokenOffset) {
+    public boolean token(Token<TokenId> token, int tokenOffset) {
+        if(!(token.id() instanceof CppTokenId)) {
+            return false;
+        }
         if (inPP == null) { // not yet initialized
             inPP = (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE);
         }
@@ -652,7 +656,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         }
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
-        CppTokenId tokenID = token.id();
+        CppTokenId tokenID = (CppTokenId)token.id();
         if (!isMacroExpansion() && tokenID != null) {
             String category = tokenID.primaryCategory();
             if (CppTokenId.KEYWORD_CATEGORY.equals(category)) {
@@ -2171,7 +2175,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 case METHOD_OPEN:
                 case GENERIC_TYPE_OPEN: {
                     int expType = TYPE;
-                    switch (token.id()) {
+                    switch (tokenID) {
                         case CONST:
                         case VOLATILE:
                             expType = TYPE_PREFIX;
@@ -2184,7 +2188,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 }
                 case TYPE_PREFIX: {
                     int expType = TYPE;
-                    switch (token.id()) {
+                    switch (tokenID) {
                         case CONST:
                         case VOLATILE:
                             expType = TYPE_PREFIX;

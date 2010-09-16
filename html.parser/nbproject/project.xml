@@ -59,6 +59,22 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.39</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util.lookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -84,10 +100,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-                <package>nu.validator.htmlparser.common</package>
-                <package>org.netbeans.modules.html.parser</package>
-            </public-packages>
+            <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/html5-parser.jar</runtime-relative-path>
                 <binary-origin>external/htmlparser-1.2.1.jar</binary-origin>

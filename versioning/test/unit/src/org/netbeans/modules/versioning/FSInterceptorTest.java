@@ -59,6 +59,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -224,7 +225,7 @@ public class FSInterceptorTest extends NbTestCase {
                 }
             }
         };
-        w.test(new String[] {"doMove", "afterMove"});
+        w.test(new String[] {"beforeMove", "doMove"});
 
         // afterMove
         w = new W() {
@@ -232,7 +233,45 @@ public class FSInterceptorTest extends NbTestCase {
                 fi.fileRenamed(new FileRenameEvent(FileUtil.toFileObject(wFile), "wFile", null));
             }
         };
+        w.test(new String[] {"afterMove"});
+        w = new W() {
+            void callInterceptorMethod(FilesystemInterceptor fi) {
+                fi.moveSuccess(FileUtil.toFileObject(wFile), wFile);
+            }
+        };
+        w.test(new String[] {"afterMove"});
+
+        // beforeCopy
+        w = new W() {
+            void callInterceptorMethod(FilesystemInterceptor fi) {
+                try {
+                    fi.getCopyHandler(wFile, wFile).handle();
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        };
         w.test();
+
+        // doCopy
+        w = new W() {
+            void callInterceptorMethod(FilesystemInterceptor fi) {
+                try {
+                    fi.getCopyHandler(wFile, wFile).handle();
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        };
+        w.test(new String[] {"doCopy", "beforeCopy"});
+
+        // afterCopy
+        w = new W() {
+            void callInterceptorMethod(FilesystemInterceptor fi) {
+                fi.copySuccess(FileUtil.toFileObject(wFile), wFile);
+            }
+        };
+        w.test(new String[] {"afterCopy"});
 
         // fileLocked
         w = new W() {
@@ -354,6 +393,12 @@ public class FSInterceptorTest extends NbTestCase {
         }
 
         @Override
+        public void afterCopy(File from, File to) {
+            storeMethodName();
+            super.afterCopy(from, to);
+        }
+
+        @Override
         public void afterMove(File from, File to) {
             storeMethodName();
             super.afterMove(from, to);
@@ -384,6 +429,12 @@ public class FSInterceptorTest extends NbTestCase {
         }
 
         @Override
+        public boolean beforeCopy(File from, File to) {
+            storeMethodName();
+            return true;
+        }
+
+        @Override
         public boolean beforeMove(File from, File to) {
             storeMethodName();
             return true;
@@ -399,6 +450,12 @@ public class FSInterceptorTest extends NbTestCase {
         public void doDelete(File file) throws IOException {
             storeMethodName();
             super.doDelete(file);
+        }
+
+        @Override
+        public void doCopy(File from, File to) throws IOException {
+            storeMethodName();
+            super.doMove(from, to);
         }
 
         @Override

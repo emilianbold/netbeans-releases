@@ -174,6 +174,16 @@ public abstract class ActionsProvider {
 
     }
 
+    /**
+     * Allows registration of multiple {@link Registration} annotations.
+     * @since 1.28
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public @interface Registrations {
+        Registration[] value();
+    }
+
     static class ContextAware extends ActionsProvider implements ContextAwareService<ActionsProvider> {
 
         private static final String ERROR = "error in getting MIMEType";    // NOI18N

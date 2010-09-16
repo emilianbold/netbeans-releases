@@ -47,19 +47,24 @@ package org.netbeans.modules.maven.j2ee;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.j2ee.ejb.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
-import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.openide.util.ChangeSupport;
 
 /**
  * An implementation of the <code>JPAModuleInfo, JPADataSourcePopulator, JPADataSourceProvider, ServerStatusProvider</code>
@@ -67,15 +72,17 @@ import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
  * 
  * @author Milos Kleint
  */
-class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator, 
-        JPADataSourceProvider, ServerStatusProvider {
+class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
+        JPADataSourceProvider, ServerStatusProvider2 {
     
     private final Project project;
+    private ChangeSupport support = new ChangeSupport(this);
     
     JPAStuffImpl(Project project) {
         this.project = project;
     }
     
+    @Override
     public ModuleType getType() {
         EjbModuleProviderImpl im = project.getLookup().lookup(EjbModuleProviderImpl.class);
         if (im != null) {
@@ -88,6 +95,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         throw new IllegalStateException("Wrong placement of JPAModuleInfo in maven project " + project.getProjectDirectory());
     }
 
+    @Override
     public String getVersion() {
         EjbModuleProviderImpl im = project.getLookup().lookup(EjbModuleProviderImpl.class);
         if (im != null) {
@@ -100,12 +108,24 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         throw new IllegalStateException("Wrong placement of JPAModuleInfo in maven project " + project.getProjectDirectory());
     }
 
+    @Override
+    public Boolean isJPAVersionSupported(String version) {
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
 
-    public void connect(JComboBox comboBox) {
-        J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
-        DatasourceUIHelper.connect(prvd, comboBox);
+        if (platform == null){
+            return null;
+        }
+        return platform.isToolSupported(JPAModuleInfo.JPACHECKSUPPORTED) ? platform.isToolSupported(JPAModuleInfo.JPAVERSIONPREFIX+version) : null;//NOI18N
     }
 
+    @Override
+    public void connect(JComboBox comboBox) {
+        J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
+        DatasourceUIHelper.connect(project, prvd, comboBox);
+    }
+
+    @Override
     public List<JPADataSource> getDataSources() {
 
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
@@ -128,6 +148,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         return result;
     }
 
+    @Override
     public JPADataSource toJPADataSource(Object dataSource) {
         if (dataSource instanceof JPADataSource){
             return (JPADataSource) dataSource;
@@ -140,9 +161,35 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
     @Override
     public boolean validServerInstancePresent() {
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
-        return Util.isValidServerInstance(prvd);
+        return prvd != null && Util.isValidServerInstance(prvd);
     }
 
+    @Override
+    public boolean selectServer() {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        boolean res = ExecutionChecker.showServerSelectionDialog(project, provider, null);
+        if (res) {
+            // notify other parties that a server was selected
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    support.fireChange();
+                }
+            });
+        }
+        return res;
+    }
+
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        support.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        support.removeChangeListener(listener);
+    }
 
     /**
      * Provides <code>JPADataSource</code> interface for <code>Datasource</code>s.
@@ -154,26 +201,32 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
             this.delegate = datasource;
         }
 
+        @Override
         public String getJndiName() {
             return delegate.getJndiName();
         }
 
+        @Override
         public String getUrl() {
             return delegate.getUrl();
         }
 
+        @Override
         public String getUsername() {
             return delegate.getUsername();
         }
 
+        @Override
         public String getPassword() {
             return delegate.getPassword();
         }
 
+        @Override
         public String getDriverClassName() {
             return delegate.getDriverClassName();
         }
 
+        @Override
         public String getDisplayName() {
             return delegate.getDisplayName();
         }

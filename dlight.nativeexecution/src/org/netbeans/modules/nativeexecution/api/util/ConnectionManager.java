@@ -416,7 +416,7 @@ public final class ConnectionManager {
                 }
 
                 try {
-                    String knownHosts = auth.getKnownHosts();
+                    String knownHosts = auth.getKnownHostsFile();
                     if (knownHosts != null) {
                         jsch.setKnownHosts(knownHosts);
                     }
@@ -427,7 +427,7 @@ public final class ConnectionManager {
                 switch (auth.getType()) {
                     case SSH_KEY:
                         try {
-                            jsch.addIdentity(auth.getKey());
+                            jsch.addIdentity(auth.getSSHKeyFile());
                         } catch (JSchException ex) {
                             Exceptions.printStackTrace(ex);
                         }

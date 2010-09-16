@@ -79,6 +79,7 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.api.wadl</package>
                 <package>com.sun.jersey.client.urlconnection</package>
                 <package>com.sun.jersey.core.util</package>
+                <package>com.sun.jersey.multipart</package>
                 <package>com.sun.jersey.oauth.client</package>
                 <package>com.sun.jersey.oauth.signature</package>
                 <package>com.sun.jersey.spi</package>
@@ -90,7 +91,6 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.spi.service</package>
                 <package>com.sun.jersey.spi.template</package>
                 <package>com.sun.jersey.spi.uri.rules</package>
-
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsr311-api-1.1.1.jar</runtime-relative-path>
@@ -102,28 +102,34 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/jackson-core-asl-1.1.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-client-1.1.5.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-client-1.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-core-1.1.5.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-core-1.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-json-1.1.5.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-json-1.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-server-1.1.5.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-multipart-1.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-spring-1.1.5.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-server-1.3.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-spring-1.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jettison-1.1.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/oauth-client-1.1.5.1.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/rest/mimepull-1.4.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/oauth-signature-1.1.5.1.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/rest/oauth-client-1.3.jar/</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/oauth-signature-1.3.jar/</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

@@ -53,6 +53,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -68,6 +69,8 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PostProjectCreationProcessor;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -76,6 +79,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -98,7 +102,14 @@ public class MakeSampleProjectGenerator {
 
     /*package*/ static Set<DataObject> createProjectFromTemplate(final FileObject template, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         String mainProject = (String) template.getAttribute("mainProjectLocation"); // NOI18N
+        if (mainProject != null && mainProject.length() > 0) {
+            prjParams.setMainProject(mainProject);
+        }
         String subProjects = (String) template.getAttribute("subProjectLocations"); // NOI18N
+        String postCreationClassName = (String) template.getAttribute("postCreationClassName"); // NOI18N
+        if (postCreationClassName != null && postCreationClassName.length() > 0) {
+            prjParams.setPostCreationClassName(postCreationClassName);
+        }
         if (mainProject != null) {
             File parentFolderLocation = prjParams.getProjectFolder();
             File mainProjectLocation = new File(parentFolderLocation, mainProject);
@@ -140,65 +151,85 @@ public class MakeSampleProjectGenerator {
             // Change working dir and default conf in 'projectDescriptor.xml'
             //String workingDir = projectLocation.getPath();
 //            String systemOs = getCurrentSystemOs();
-            projXml = FileUtil.toFile(prjLoc.getFileObject(PROJECT_CONFIGURATION_FILE));
-            doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
-            //changeXmlFileByTagName(doc, "buildCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
-            //changeXmlFileByTagName(doc, "cleanCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
-            //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
-            //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
-//            changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
-            String hostUID = prjParams.getHostUID();
-            ExecutionEnvironment env = null;
-            if (hostUID != null) {
-                env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            FileObject pfo = prjLoc.getFileObject(PROJECT_CONFIGURATION_FILE);
+            if (pfo != null) {
+                projXml = FileUtil.toFile(prjLoc.getFileObject(PROJECT_CONFIGURATION_FILE));
+                doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
+                //changeXmlFileByTagName(doc, "buildCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
+                //changeXmlFileByTagName(doc, "cleanCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
+                //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
+                //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
+    //            changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
+                String hostUID = prjParams.getHostUID();
+                ExecutionEnvironment env = null;
+                if (hostUID != null) {
+                    env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+                }
+                env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
+                String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
+                CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
+                int platform = compilerSetManager.getPlatform();
+                CompilerSet compilerSet = prjParams.getToolchain();
+                compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
+                String variant = null;
+                String csVariant = "GNU|GNU"; // NOI18N
+                if (compilerSet != null) {
+                    variant = MakeConfiguration.getVariant(compilerSet, platform);
+                    csVariant = compilerSet.getName();
+                    if (compilerSet.getCompilerFlavor() != null) {
+                        csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
+                    }
+                }
+                changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+                changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
+                changeXmlFileByTagName(doc, "platform", "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
+                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
+                    if (variant != null) {
+                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                    }
+                }
+                if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dylib", "X-LIBSUFFIX-X"); // NOI18N
+                    if (variant != null) {
+                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                    }
+                } else {
+                    changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "so", "X-LIBSUFFIX-X"); // NOI18N
+                    if (variant != null) {
+                        changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                    }
+                }
+                //saveXml(doc, prjLoc, "nbproject/projectDescriptor.xml"); // NOI18N
+                saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
+                recordCreateSampleProject(env);
             }
-            env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
-            String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
-            CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
-            int platform = compilerSetManager.getPlatform();
-            CompilerSet compilerSet = prjParams.getToolchain();
-            compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
-            String variant = null;
-            String csVariant = "GNU|GNU"; // NOI18N
-            if (compilerSet != null) {
-                variant = MakeConfiguration.getVariant(compilerSet, platform);
-                csVariant = compilerSet.getName();
-                if (compilerSet.getCompilerFlavor() != null) {
-                    csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
+
+            // Custom post-creation process
+            PostProjectCreationProcessor ppcp = null;
+            String postCreationClassName = prjParams.getPostCreationClassName();
+            if (postCreationClassName != null && postCreationClassName.length() > 0) {
+                Collection<? extends PostProjectCreationProcessor> col = Lookup.getDefault().lookupAll(PostProjectCreationProcessor.class);
+                for (PostProjectCreationProcessor instance : col) {
+                    if (postCreationClassName.equals(instance.getClass().getName())) {
+                        ppcp = instance;
+                        break;
+                    }
+                }
+                if (ppcp != null) {
+                    ppcp.postProcess(prjLoc, prjParams);
                 }
             }
-            changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
-            changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
-            changeXmlFileByTagName(doc, "platform", "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
-            if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
-                changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
-                if (variant != null) {
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
-                }
-            }
-            if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dylib", "X-LIBSUFFIX-X"); // NOI18N
-                if (variant != null) {
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
-                }
-            } else {
-                changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "so", "X-LIBSUFFIX-X"); // NOI18N
-                if (variant != null) {
-                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
-                }
-            }
-            //saveXml(doc, prjLoc, "nbproject/projectDescriptor.xml"); // NOI18N
-            saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
-            recordCreateSampleProject(env);
+
         } catch (Exception e) {
             IOException ex = new IOException(e);
             throw ex;

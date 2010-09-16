@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -71,6 +72,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Jancura
  */
+@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     
     private static final int ANNOTATION_SCHEDULE_TIME = 100;

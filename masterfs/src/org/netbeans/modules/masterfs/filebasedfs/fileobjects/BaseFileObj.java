@@ -214,10 +214,43 @@ public abstract class BaseFileObj extends FileObject {
     }
      
     @Override
+    public FileObject copy(FileObject target, String name, String ext) throws IOException {
+        ProvidedExtensions extensions = getProvidedExtensions();
+
+        File to = getToFile(target, name, ext);
+
+        extensions.beforeCopy(target, to);
+        FileObject result = null;
+        try {
+            final IOHandler copyHandler = extensions.getCopyHandler(getFileName().getFile(), to);
+            if (copyHandler != null) {
+                if (target instanceof FolderObj) {
+                    result = handleMoveCopy((FolderObj)target, name, ext, copyHandler);
+                } else {
+                    copyHandler.handle();
+                    refresh(true);
+                    //perfromance bottleneck to call refresh on folder
+                    //(especially for many files to be copied)
+                    target.refresh(true); // XXX ?
+                    result = target.getFileObject(name, ext); // XXX ?
+                    assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                }
+                FileUtil.copyAttributes(this, result);
+            } else {
+                result = super.copy(target, name, ext);
+            }
+        } catch (IOException ioe) {
+            extensions.copyFailure(this, to);
+            throw ioe;
+        }
+        extensions.copySuccess(this, to);
+        return result;
+    }
+
+    @Override
     public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
         ProvidedExtensions extensions = getProvidedExtensions();
-        File to = (target instanceof FolderObj) ? new File(((BaseFileObj) target).getFileName().getFile(), FileInfo.composeName(name, ext)) :
-            new File(FileUtil.toFile(target), FileInfo.composeName(name, ext));
+        File to = getToFile(target, name, ext);
 
         extensions.beforeMove(this, to);
         FileObject result = null;
@@ -253,8 +286,17 @@ public abstract class BaseFileObj extends FileObject {
     }
     
     public BaseFileObj move(FileLock lock, FolderObj target, String name, String ext, ProvidedExtensions.IOHandler moveHandler) throws IOException {
-        moveHandler.handle();
-        String nameExt = FileInfo.composeName(name,ext);
+        return handleMoveCopy(target, name, ext, moveHandler);
+    }
+
+    private File getToFile(FileObject target, String name, String ext) {
+        File to = (target instanceof FolderObj) ? new File(((BaseFileObj) target).getFileName().getFile(), FileInfo.composeName(name, ext)) : new File(FileUtil.toFile(target), FileInfo.composeName(name, ext));
+        return to;
+    }
+
+    private BaseFileObj handleMoveCopy(FolderObj target, String name, String ext, IOHandler handler) throws IOException {
+        handler.handle();
+        String nameExt = FileInfo.composeName(name, ext);
         target.getChildrenCache().getChild(nameExt, true);
         //TODO: review
         BaseFileObj result = null;
@@ -287,7 +329,6 @@ public abstract class BaseFileObj extends FileObject {
         //fireFileDeletedEvent(false);
         return result;
     }
-
 
     void rename(final FileLock lock, final String name, final String ext, final ProvidedExtensions.IOHandler handler) throws IOException {
         if (!checkLock(lock)) {

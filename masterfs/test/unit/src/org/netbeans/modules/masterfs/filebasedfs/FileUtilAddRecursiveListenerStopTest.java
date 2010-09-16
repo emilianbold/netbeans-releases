@@ -74,7 +74,7 @@ implements Callable<Boolean>, FileChangeListener {
 
     @Override
     protected Level logLevel() {
-        return Level.INFO;
+        return Level.FINEST;
     }
 
     @Override
@@ -127,7 +127,7 @@ implements Callable<Boolean>, FileChangeListener {
 
     @Override
     public Boolean call() throws Exception {
-        LOG.info("callback " + cnt);
+        LOG.log(Level.INFO, "callback {0}", cnt);
         if (--cnt == 0) {
             LOG.info("Returning true to stop invocations");
             return Boolean.TRUE;

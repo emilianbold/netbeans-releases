@@ -41,9 +41,13 @@ package org.netbeans.modules.javaee.beanvalidation;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.javaee.beanvalidation.api.BeanValidationConfig;
+import org.netbeans.modules.javaee.beanvalidation.spi.BeanValidationConfigProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -62,7 +66,8 @@ public class ValidationMappingIterator extends AbstractIterator{
 
         FileObject fo = DDHelper.createConstraintXml(Profile.JAVA_EE_6_FULL, targetDir, targetName);
         if (fo != null) {
-            registerConstraint(fo);
+            Project project = Templates.getProject(wizard);
+            registerConstraint(project, fo);
             return Collections.singleton(DataObject.find(fo));
         } else {
             return Collections.<DataObject>emptySet();
@@ -78,8 +83,15 @@ public class ValidationMappingIterator extends AbstractIterator{
      * Register constraint in the validation.xml
      * @param fo
      */
-    private void registerConstraint(FileObject fo) {
-        //TODO XXX
+    private void registerConstraint(Project project, FileObject fo) {
+        BeanValidationConfigProvider provider = BeanValidationConfigProvider.getDefault();
+        if (provider != null) {
+            List<BeanValidationConfig> configList = provider.getConfigs(project);
+            if (!configList.isEmpty()) {
+                BeanValidationConfig config = configList.get(0);
+                config.addConstraintMapping(fo);
+            }
+        }
     }
 
 }

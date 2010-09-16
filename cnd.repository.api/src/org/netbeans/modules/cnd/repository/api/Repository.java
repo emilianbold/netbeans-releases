@@ -147,4 +147,5 @@ public interface Repository {
      */
     void unregisterRepositoryListener(final RepositoryListener aListener);
 
+    DatabaseTable getDatabaseTable(Key unitKey, String tableID);
 }

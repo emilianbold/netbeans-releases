@@ -44,9 +44,13 @@
 
 package org.openide.util;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.TestCase;
 import org.netbeans.junit.Log;
 
@@ -107,6 +111,42 @@ public class ExceptionsTest extends TestCase {
         }
 
         assertCleanStackTrace(e);
+    }
+    
+    public void testLogLevel() {
+        Exception e = new IOException("Help");
+        
+        Exception result = Exceptions.attachSeverity(e, Level.FINE);
+        assertSame(e, result);
+
+        class H extends Handler {
+            int cnt;
+            
+            @Override
+            public void publish(LogRecord record) {
+                assertEquals("Fine is the level", Level.FINE, record.getLevel());
+                cnt++;
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+            
+        }
+        
+        H h = new H();
+        h.setLevel(Level.ALL);
+        Logger L = Logger.getLogger("");
+        L.setLevel(Level.ALL);
+        L.addHandler(h);
+        
+        Exceptions.printStackTrace(e);
+        L.removeHandler(h);
+        assertEquals("Called once", 1, h.cnt);
     }
 
     public void testAttachLocalizedMessage() {

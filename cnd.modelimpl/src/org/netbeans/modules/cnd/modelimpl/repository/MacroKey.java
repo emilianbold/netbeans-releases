@@ -51,22 +51,27 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 
 /**
- * A key for CsmMacro obejcts
+ * A key for CsmMacro objects
  */
 
 /*package*/
 final class MacroKey extends OffsetableKey {
     
-    public MacroKey(CsmMacro obj) {
+    MacroKey(CsmMacro obj) {
 	super(obj, Utils.getCsmDeclarationKindkey(Kind.MACRO), NameCache.getManager().getString(obj.getName())); // NOI18N
     }
     
     /*package*/ MacroKey(DataInput aStream) throws IOException {
 	super(aStream);
+    }
+
+    MacroKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
     
     

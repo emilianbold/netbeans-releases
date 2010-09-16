@@ -831,7 +831,19 @@ public class Reformatter implements ReformatTask {
                     }
                 } else if (afterAnnotation) {
                     if (parent.getKind() == Tree.Kind.CLASS || parent.getKind() == Tree.Kind.BLOCK) {
-                        blankLines();
+                        switch (cs.wrapAnnotations()) {
+                            case WRAP_ALWAYS:
+                                newline();
+                                break;
+                            case WRAP_IF_LONG:
+                                if (col >= rightMargin)
+                                    newline();
+                                else
+                                    spaces(1, true);
+                                break;
+                            case WRAP_NEVER:
+                                spaces(1, true);
+                        }
                     } else {
                         space();
                     }

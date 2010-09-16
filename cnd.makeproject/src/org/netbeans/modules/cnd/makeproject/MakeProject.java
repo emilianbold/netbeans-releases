@@ -181,7 +181,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
-        projectDescriptorProvider = new ConfigurationDescriptorProvider(helper.getProjectDirectory());
+        projectDescriptorProvider = new ConfigurationDescriptorProvider(this, helper.getProjectDirectory());
         LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
         genFilesHelper = new GeneratedFilesHelper(helper);
         sources = new MakeSources(this, helper);

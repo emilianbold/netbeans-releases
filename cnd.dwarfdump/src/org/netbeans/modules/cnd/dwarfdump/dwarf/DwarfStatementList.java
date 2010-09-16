@@ -87,7 +87,7 @@ public class DwarfStatementList {
     }
 
     public List<String> getFilePaths() {
-        ArrayList<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<String>();
         
         for (int idx = 1; idx <= fileEntries.size(); idx++) {
             String filepath = getFilePath(idx);
@@ -212,7 +212,7 @@ public class DwarfStatementList {
         if (set == null){
             return Collections.<String>emptyList();
         }
-        ArrayList<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<String>();
         String suffix = File.separator + fname;
         StringBuilder buf = new StringBuilder(100);
         for (FileEntry fileEntry : set) {

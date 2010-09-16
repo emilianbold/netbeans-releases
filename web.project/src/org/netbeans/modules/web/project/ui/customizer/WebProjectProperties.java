@@ -90,6 +90,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -571,6 +572,13 @@ final public class WebProjectProperties {
     }
 
     private boolean shouldCreateWebXml() {
+        J2eeModuleProvider provider = getProject().getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            if (provider.getConfigSupport().isDescriptorRequired()) {
+                return true;
+            }
+        }
+
         boolean res = false;
         if (addedFrameworkNames != null) {
             for (String fName : addedFrameworkNames) {

@@ -53,6 +53,7 @@ import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -122,8 +123,9 @@ public final class FolderObj extends BaseFileObj {
     }
 
   
+    @Override
     public final FileObject[] getChildren() {
-        final Collection<FileObject> results = new LinkedHashSet<FileObject>();
+        final Map<FileNaming,FileObject> results = new LinkedHashMap<FileNaming,FileObject>();
 
         final ChildrenCache childrenCache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
@@ -144,10 +146,14 @@ public final class FolderObj extends BaseFileObj {
             
             final FileObject fo = lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
             if (fo != null) {
-                results.add(fo);
+                assert fileName == ((BaseFileObj)fo).getFileName() : 
+                    "FileName: " + fileName + "@" +  // NOI18N
+                    Integer.toHexString(System.identityHashCode(fileName)) + 
+                    " fo: " + fo; // NOI18N
+                results.put(fileName, fo);
             }
         }
-        return results.toArray(new FileObject[0]);
+        return results.values().toArray(new FileObject[0]);
     }
 
     public final FileObject createFolderImpl(final String name) throws java.io.IOException {
@@ -241,7 +247,7 @@ public final class FolderObj extends BaseFileObj {
     
     public final FileObject createDataImpl(final String name, final String ext) throws java.io.IOException {
         if (name.indexOf('\\') != -1 || name.indexOf('/') != -1) {//NOI18N
-            throw new IllegalArgumentException(name);
+            throw new IOException("Requested name contains invalid characters: " + name); // NOI18N
         }
         
         final ChildrenCache childrenCache = getChildrenCache();        

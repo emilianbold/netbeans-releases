@@ -55,7 +55,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -116,6 +115,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
@@ -716,7 +716,7 @@ public final class WebProject implements Project {
                         WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                     String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                     String classpath = J2EEProjectProperties.toClasspathString(
-                            Util.getJ2eePlatformClasspathEntries(WebProject.this), root);
+                            Util.getJ2eePlatformClasspathEntries(WebProject.this, null), root);
                     ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                 }
                 helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -810,6 +810,11 @@ public final class WebProject implements Project {
         ProjectOpenedHookImpl() {}
 
         protected void projectOpened() {
+            WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
+            if (logicalViewProvider != null) {
+                logicalViewProvider.initialize();
+            }
+
             try {
                 getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
                     public void run() throws IOException {
@@ -823,8 +828,14 @@ public final class WebProject implements Project {
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
-            
+
             try {
+                
+                if (webModule.getDeploymentDescriptor() == null
+                        && webModule.getConfigSupport().isDescriptorRequired()) {
+                    DDHelper.createWebXml(webModule.getJ2eeProfile(), webModule.getWebInf());
+                }
+
                 //DDDataObject initialization to be ready to listen on changes (#45771)
 
                 // web.xml
@@ -919,7 +930,7 @@ public final class WebProject implements Project {
                 }
                 
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
 
             webModule.getConfigSupport().addLibraryChangeListener(new ChangeListener() {
@@ -982,8 +993,7 @@ public final class WebProject implements Project {
                 // TODO: dongmei Anything for EJBs??????
             }
             artifactSupport.enableArtifactSynchronization(true);
-            
-            WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
+
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }

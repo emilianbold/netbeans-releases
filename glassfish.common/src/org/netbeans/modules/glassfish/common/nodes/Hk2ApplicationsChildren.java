@@ -52,7 +52,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.spi.AppDesc;
-import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;

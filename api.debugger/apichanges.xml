@@ -424,6 +424,27 @@ made subject to such option by the copyright holder.
         <issue number="179759"/>
     </change>
 
+    <change id="DebuggerServiceRegistrations">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Allow multiple debugger service registrations and position order</summary>
+        <version major="1" minor="28"/>
+        <date day="10" month="9" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             Allow to specify the order of the debugger service registry.
+             For the need of being able to define multiple different
+             registrations for a single instance, @DebuggerServiceRegistrations
+             and ActionsProvider.Registrations annotations are introduced.
+             </p>
+        </description>
+        <class package="org.netbeans.spi.debugger" name="DebuggerServiceRegistration" />
+        <class package="org.netbeans.spi.debugger" name="DebuggerServiceRegistrations" />
+        <class package="org.netbeans.spi.debugger" name="ActionsProvider" />
+        <issue number="190080"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

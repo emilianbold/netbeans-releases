@@ -56,7 +56,9 @@ public class DerbyStackStorageTest extends CommonStackDataStorageTests {
     protected StackDataStorage createStorage() {
         try {
             SQLStackDataStorage result = new SQLStackDataStorage();
-            result.attachTo(new DerbyDataStorage());
+            DerbyDataStorage st = new DerbyDataStorage();
+            st.connect();
+            result.attachTo(st);
             return result;
         } catch (SQLException ex) {
             ex.printStackTrace();

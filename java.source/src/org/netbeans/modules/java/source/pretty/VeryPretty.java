@@ -351,17 +351,21 @@ public final class VeryPretty extends JCTree.Visitor {
         if (text.contains("\n")) {
             int i = from - 1;
             int originalColumn = 0;
+            int originalIndent = 0;
             boolean originalIndented = true;
 
             while (i >= 0) {
                 if (origText.charAt(i) == ' ') {
                     originalColumn++;
+                    originalIndent++;
                 } else if (origText.charAt(i) == '\t') {
                     originalColumn += cs.getTabSize();
+                    originalIndent += cs.getTabSize();
                 } else if (origText.charAt(i) == '\n') {
                     break;
                 } else {
                     originalColumn++;
+                    originalIndent = 0;
                     originalIndented= false;
                 }
                 i--;
@@ -370,7 +374,11 @@ public final class VeryPretty extends JCTree.Visitor {
             int oldIndent = getIndent();
             int relativeIndent;
 
-            if (originalIndented) {
+            if (text.charAt(0) == '{') {
+                relativeIndent = oldIndent - originalIndent;
+                print(text.substring(0, text.indexOf("\n") + 1));
+                text = text.substring(text.indexOf("\n") + 1);
+            } else if (originalIndented) {
                 if (out.isWhitespaceLine()) {
                     text = origText.substring(from - originalColumn, from) + text;
                     relativeIndent = getIndent() - originalColumn;

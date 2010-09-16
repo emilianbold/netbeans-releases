@@ -66,7 +66,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
     }
 
     @Override
-    protected String initName(AST node) {
+    protected CharSequence initName(AST node) {
         AST token = node.getFirstChild();
         if (token != null) {
             token = AstUtil.findSiblingOfType(token, CPPTokenTypes.CSM_QUALIFIED_ID);

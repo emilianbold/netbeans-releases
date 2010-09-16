@@ -52,8 +52,11 @@ import javax.swing.text.JTextComponent;
  */
 public class ScreenBoundsProvider {
     
+    /** Relative width of screen covered by CC */
+    static final double COMPL_COVERAGE = 0.4;
+    
     /** Relative maximum width of screen covered by CC */
-    static final double MAX_COMPL_COVERAGE = 0.4;
+    static final double MAX_COMPL_COVERAGE = 0.9;
     
     private static Rectangle screenBounds;
     

@@ -169,7 +169,7 @@ public class ProxySettingsDialog extends NbiDialog {
                 Proxy proxy = null;
                 
                 if (useProxyCheckBox.isSelected()) {
-                    proxy = new Proxy(Type.HTTP, new InetSocketAddress(
+                    proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress(
                             proxyHostField.getText(),
                             Integer.parseInt(proxyPortField.getText())));
                     
