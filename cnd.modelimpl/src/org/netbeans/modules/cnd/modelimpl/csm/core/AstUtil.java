@@ -191,9 +191,7 @@ public class AstUtil {
     }
 
     public static CharSequence getText(AST ast) {
-        if (ast instanceof APTToken) {
-            return ((APTToken)ast).getTextID();
-        } else if (ast instanceof FakeAST) {
+        if (ast instanceof FakeAST) {
             return ((FakeAST)ast).getTextID();
         } else if (ast instanceof CsmAST) {
             return ((CsmAST)ast).getTextID();

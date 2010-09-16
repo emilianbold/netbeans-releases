@@ -74,6 +74,7 @@ public class ProjectGenerator {
         private CompilerSet cs;
         private String postCreationClassName;
         private String mainProject;
+        private String subProjects;
 
         /**
          *
@@ -230,6 +231,20 @@ public class ProjectGenerator {
          */
         public void setMainProject(String mainProject) {
             this.mainProject = mainProject;
+        }
+
+        /**
+         * @return the subProjects
+         */
+        public String getSubProjects() {
+            return subProjects;
+        }
+
+        /**
+         * @param subProjects the subProjects to set
+         */
+        public void setSubProjects(String subProjects) {
+            this.subProjects = subProjects;
         }
     }
     

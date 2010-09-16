@@ -193,7 +193,7 @@ public class TypeFactory {
         TypeImpl type;
 
         if (parent != null) {
-            type = new NestedType(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
+            type = NestedType.create(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
             type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
             ((TypeFunPtrImpl)type).init(ast, inFunctionParameters, inTypedef);
@@ -241,7 +241,7 @@ public class TypeFactory {
                     } else {
                         //Check for global type
                         if (tokFirstId.getType() ==  CPPTokenTypes.SCOPE) {
-                            type = new NestedType(null, file, type.getPointerDepth(), type.isReference(), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                            type = NestedType.create(null, file, type.getPointerDepth(), type.isReference(), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
                             tokFirstId = tokFirstId.getNextSibling();
                         }
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here

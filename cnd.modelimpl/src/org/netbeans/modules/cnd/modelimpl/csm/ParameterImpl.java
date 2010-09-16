@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Implements CsmParameter
@@ -57,8 +59,18 @@ import java.io.IOException;
  */
 public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
-    public ParameterImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean global) {
-        super(ast, file, type, name, scope, false, global);
+    protected ParameterImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope) {
+        super(ast, file, type, name, scope, false, false);
+    }
+
+    public static ParameterImpl create(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean global) {
+        ParameterImpl parameterImpl = new ParameterImpl(ast, file, type, name, scope);
+        if (global) {
+            RepositoryUtils.put(parameterImpl);
+        } else {
+            Utils.setSelfUID(parameterImpl);
+        }
+        return parameterImpl;
     }
 
     @Override

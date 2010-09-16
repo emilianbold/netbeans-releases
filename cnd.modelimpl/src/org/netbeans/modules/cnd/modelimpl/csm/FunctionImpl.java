@@ -104,12 +104,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private static final boolean CHECK_SCOPE = false;
 
-    public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        this(ast, file, null, scope, register, global);
-    }
-
-    public FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-
+    protected FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
 
@@ -185,7 +180,15 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
-    public FunctionImpl(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, boolean global, int startOffset, int endOffset) {
+    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        return new FunctionImpl<T>(ast, file, type, scope, register, global);
+    }
+
+    public static<T> FunctionImpl<T> create(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, boolean global, int startOffset, int endOffset) {
+        return new FunctionImpl<T>(file, type, scope, name, parameterList, isStatic, isConst, register, global, startOffset, endOffset);
+    }
+
+    private FunctionImpl(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, boolean global, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         assert !CHECK_SCOPE || (scope != null);
 
@@ -432,16 +435,18 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return isStatic() && CsmKindUtilities.isFile(getScope());
     }
 
-    protected void registerInProject() {
+    @Override
+    protected boolean registerInProject() {
         if (isCStyleStatic()) {
             // do NOT register in project C-style static funcions!
-            return;
+            return false;
         }
         CsmProject project = getContainingFile().getProject();
         if( project instanceof ProjectBase ) {
 	    // implicitely calls RepositoryUtils.put()
-            ((ProjectBase) project).registerDeclaration(this);
+            return ((ProjectBase) project).registerDeclaration(this);
         }
+        return false;
     }
 
     private void unregisterInProject() {

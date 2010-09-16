@@ -268,7 +268,7 @@ class QueryUtil {
     static Pair<ResultConvertor<Term,String>,Term> createPackageFilter(
             final @NullAllowed String prefix,
             final boolean directOnly) {
-        final Term startTerm = DocumentUtil.packageNameTerm(prefix);
+        final Term startTerm = new Term (DocumentUtil.FIELD_PACKAGE_NAME, prefix);
         final ResultConvertor<Term,String> filter = new PackageFilter(startTerm, directOnly);
         return Pair.of(filter,startTerm);
     }

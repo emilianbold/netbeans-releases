@@ -77,8 +77,8 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
     private final CsmCompoundStatement body;
 
-    public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
-        super(ast, file, scope, false, global);
+    protected FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+        super(ast, file, null, scope, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         if (body == null) {
             throw new AstRendererException((FileImpl)file, getStartOffset(),
@@ -88,6 +88,11 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             registerInProject();
         }
     }
+
+    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+        return new FunctionDDImpl<T>(ast, file, scope, global);
+    }
+
 
     @Override
     public void dispose() {

@@ -73,14 +73,22 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 public class NestedType extends TypeImpl {
     private final CsmType parentType;
 
-    public NestedType(CsmType parent, CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+    private NestedType(CsmType parent, CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         this.parentType = parent;
     }
+
+    public static NestedType create(CsmType parent, CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+        return new NestedType(parent, file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+    }
     
-    public NestedType(CsmType parent, CsmType type) {
+    private NestedType(CsmType parent, CsmType type) {
         super(type);
         this.parentType = parent;
+    }
+
+    public static NestedType create(CsmType parent, CsmType type) {
+        return new NestedType(parent, type);
     }
 
     // package-local - for facory only
