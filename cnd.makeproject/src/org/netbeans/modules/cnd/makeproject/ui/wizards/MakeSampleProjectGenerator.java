@@ -106,7 +106,10 @@ public class MakeSampleProjectGenerator {
             prjParams.setMainProject(mainProject);
         }
         String subProjects = (String) template.getAttribute("subProjectLocations"); // NOI18N
-        String postCreationClassName = (String) template.getAttribute("postCreationClassName"); // NOI18N
+        if (subProjects != null && subProjects.length() > 0) {
+            prjParams.setSubProjects(subProjects);
+        }
+        String postCreationClassName = (String) template.getAttribute("postProjectCreationClassName"); // NOI18N
         if (postCreationClassName != null && postCreationClassName.length() > 0) {
             prjParams.setPostCreationClassName(postCreationClassName);
         }
@@ -214,25 +217,43 @@ public class MakeSampleProjectGenerator {
                 recordCreateSampleProject(env);
             }
 
-            // Custom post-creation process
-            PostProjectCreationProcessor ppcp = null;
-            String postCreationClassName = prjParams.getPostCreationClassName();
-            if (postCreationClassName != null && postCreationClassName.length() > 0) {
-                Collection<? extends PostProjectCreationProcessor> col = Lookup.getDefault().lookupAll(PostProjectCreationProcessor.class);
-                for (PostProjectCreationProcessor instance : col) {
-                    if (postCreationClassName.equals(instance.getClass().getName())) {
-                        ppcp = instance;
-                        break;
-                    }
-                }
-                if (ppcp != null) {
-                    ppcp.postProcess(prjLoc, prjParams);
-                }
-            }
+//            // Custom post-creation process
+//            PostProjectCreationProcessor ppcp = null;
+//            String postCreationClassName = prjParams.getPostCreationClassName();
+//            if (postCreationClassName != null && postCreationClassName.length() > 0) {
+//                Collection<? extends PostProjectCreationProcessor> col = Lookup.getDefault().lookupAll(PostProjectCreationProcessor.class);
+//                for (PostProjectCreationProcessor instance : col) {
+//                    if (postCreationClassName.equals(instance.getClass().getName())) {
+//                        ppcp = instance;
+//                        break;
+//                    }
+//                }
+//                if (ppcp != null) {
+//                    ppcp.postProcess(prjLoc, prjParams);
+//                }
+//            }
 
         } catch (Exception e) {
             IOException ex = new IOException(e);
             throw ex;
+        }
+    }
+
+    private static void customPostProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) {
+        // Custom post-creation process
+        PostProjectCreationProcessor ppcp = null;
+        String postCreationClassName = prjParams.getPostCreationClassName();
+        if (postCreationClassName != null && postCreationClassName.length() > 0) {
+            Collection<? extends PostProjectCreationProcessor> col = Lookup.getDefault().lookupAll(PostProjectCreationProcessor.class);
+            for (PostProjectCreationProcessor instance : col) {
+                if (postCreationClassName.equals(instance.getClass().getName())) {
+                    ppcp = instance;
+                    break;
+                }
+            }
+            if (ppcp != null) {
+                ppcp.postProcess(prjLoc, prjParams);
+            }
         }
     }
 
@@ -284,6 +305,7 @@ public class MakeSampleProjectGenerator {
         prjLoc = FileUtil.toFileObject(prjParams.getProjectFolder());
 
         postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
+        customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
 
         prjLoc.refresh(false);
 
@@ -312,6 +334,8 @@ public class MakeSampleProjectGenerator {
                 addToSet(set, subProjectLocations[i], prjParams);
             }
         }
+        FileObject prjLoc = FileUtil.toFileObject(prjParams.getProjectFolder());
+        customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
         return new LinkedHashSet<DataObject>(set);
     }
 
