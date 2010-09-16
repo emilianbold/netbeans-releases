@@ -74,7 +74,7 @@ public class FileDescription extends FileDescriptor {
      * The icon used if unknown project, i.e. {@code project == null}.
      * In such case, we use {@code find.png} - "a file belongs to the find".
      */
-    public static Icon UNKNOWN_PROJECT_ICON = ImageUtilities.loadImageIcon(
+    public static ImageIcon UNKNOWN_PROJECT_ICON = ImageUtilities.loadImageIcon(
              "org/netbeans/modules/jumpto/resources/find.gif", false); // NOI18N
     private final FileObject fileObject;
     private final String ownerPath;
@@ -99,7 +99,9 @@ public class FileDescription extends FileDescriptor {
     public synchronized Icon getIcon() {
         if ( icon == null ) {
             DataObject od = getDataObject();
-            Image i = od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
+            Image i = od == null ? // #187973
+                UNKNOWN_PROJECT_ICON.getImage() :
+                od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
             icon = new ImageIcon( i );
         }
         return icon;
