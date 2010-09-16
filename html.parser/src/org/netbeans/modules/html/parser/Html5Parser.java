@@ -47,10 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ElementName;
@@ -64,6 +62,7 @@ import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
@@ -313,6 +312,10 @@ public class Html5Parser implements HtmlParser {
 
         public Collection<? extends NamedCharRef> getNamedCharacterReferences() {
             return EnumSet.allOf(NamedCharacterReference.class);
+        }
+
+        public HelpResolver getHelpResolver() {
+            return Documentation.getDefault();
         }
 
     }
