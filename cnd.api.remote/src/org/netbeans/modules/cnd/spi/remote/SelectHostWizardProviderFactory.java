@@ -37,28 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.cnd.spi.remote;
 
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 
 /**
  *
- *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public interface RemoteProject {
-
-    /** A temporary flag for development #190299 -  Tie synchronization to project instead of host  */
-    static final boolean SYNC_PER_PROJECT = Boolean.getBoolean("cnd.remote.sync.per.project");
-
-    /** A temporary flag for development #188813 -  Full remote */
-    static final boolean FULL_REMOTE = Boolean.getBoolean("cnd.full.remote");
-
-    // FIXUP. Think over how to get correct factory
-    static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
-    
-    ExecutionEnvironment getDevelopmentHost();
+public interface SelectHostWizardProviderFactory {
+    SelectHostWizardProvider createHostWizardProvider(boolean allowLocal, ChangeListener changeListener);
 }
