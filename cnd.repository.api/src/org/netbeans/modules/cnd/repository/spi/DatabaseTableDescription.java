@@ -37,50 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.visualizers.support;
 
-import javax.swing.AbstractSpinnerModel;
+package org.netbeans.modules.cnd.repository.spi;
+
+import java.util.Collection;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author Alexander Simon
  */
-public class SpinnerTimeModel extends AbstractSpinnerModel {
-
-    private static final long NANOS_PER_SECOND = 1000000000L;
-    private long nanos;
-
-    public Object getValue() {
-        return Math.max(0, nanos);
-    }
-
-    public void setValue(Object value) {
-        if (value instanceof Long) {
-            nanos = ((Long) value).longValue();
-            fireStateChanged();
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public Object getNextValue() {
-        if (nanos == Long.MAX_VALUE) {
-            return null;
-        } else if (Long.MAX_VALUE - NANOS_PER_SECOND <= nanos) {
-            return Long.MAX_VALUE;
-        } else {
-            return nanos + NANOS_PER_SECOND;
-        }
-    }
-
-    public Object getPreviousValue() {
-        if (nanos <= 0) {
-            return null;
-        } else if (nanos <= NANOS_PER_SECOND) {
-            return 0L;
-        } else {
-            return nanos - NANOS_PER_SECOND;
-        }
+public interface DatabaseTableDescription {
+    String getTableName();
+    Class<?> getKeyClass();
+    Class<?> getDataClass();
+    Collection<Index> getIndexes();
+    public interface Index {
+        String getIndexName();
+        Class<?> getIndexClass();
+        Object createSecondaryKey(Object key, Object value);
     }
 }

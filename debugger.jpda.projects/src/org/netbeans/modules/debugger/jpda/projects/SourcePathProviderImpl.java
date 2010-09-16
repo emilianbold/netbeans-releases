@@ -107,6 +107,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Jan Jancura
  */
+@SourcePathProvider.Registration(path="netbeans-JPDASession")
 public class SourcePathProviderImpl extends SourcePathProvider {
     
     private static boolean          verbose = 

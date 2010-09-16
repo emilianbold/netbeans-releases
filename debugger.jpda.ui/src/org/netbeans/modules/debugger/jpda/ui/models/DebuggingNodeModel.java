@@ -183,12 +183,12 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             JPDAThread currentThread = debugger.getCurrentThread();
             if (t == currentThread && (!DebuggingTreeExpansionModelFilter.isExpanded(debugger, node) ||
                     !t.isSuspended())) {
-                return BoldVariablesTableModelFilterFirst.toHTML(
+                return BoldVariablesTableModelFilter.toHTML(
                         getDisplayName(t, showPackageNames, this),
                         true, false, c);
             } else {
                 if (c != null) {
-                    return BoldVariablesTableModelFilterFirst.toHTML(
+                    return BoldVariablesTableModelFilter.toHTML(
                         getDisplayName(t, showPackageNames, this),
                         false, false, c);
                 } else {
@@ -198,7 +198,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof JPDAThreadGroup) {
             if (isCurrent((JPDAThreadGroup) node) && !DebuggingTreeExpansionModelFilter.isExpanded(debugger, node)) {
-                return BoldVariablesTableModelFilterFirst.toHTML (
+                return BoldVariablesTableModelFilter.toHTML (
                     ((JPDAThreadGroup) node).getName (),
                     true,
                     false,
@@ -221,12 +221,12 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             //CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
             //if (f.equals(currentFrame)) {
             if (isCurrent) {
-                return BoldVariablesTableModelFilterFirst.toHTML(
+                return BoldVariablesTableModelFilter.toHTML(
                         CallStackNodeModel.getCSFName(null, f, showPackageNames),
                         true, false, c);
             } else {
                 if (c != null) {
-                    return BoldVariablesTableModelFilterFirst.toHTML(
+                    return BoldVariablesTableModelFilter.toHTML(
                             CallStackNodeModel.getCSFName(null, f, showPackageNames),
                             false, false, c);
                 } else {

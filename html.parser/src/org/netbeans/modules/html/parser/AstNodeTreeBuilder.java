@@ -416,9 +416,15 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         to.addChildren(children);
     }
 
+    //http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#foster-parenting
     @Override
-    protected void insertFosterParentedChild(AstNode t, AstNode t1, AstNode t2) throws SAXException {
-        assert false : "lets see when this is called";
+    protected void insertFosterParentedChild(AstNode child, AstNode table, AstNode stackParent) throws SAXException {
+        AstNode parent = table.parent();
+        if (parent != null) { // always an element if not null
+            parent.insertBefore(child, table);
+        } else {
+            stackParent.addChild(child);
+        }
     }
 
     @Override

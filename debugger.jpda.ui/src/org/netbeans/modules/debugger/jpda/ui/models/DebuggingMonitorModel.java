@@ -429,7 +429,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             if (nodesInDeadlock != null) {
                 synchronized (nodesInDeadlock) {
                     if (nodesInDeadlock.contains(v)) {
-                        monitorText = BoldVariablesTableModelFilterFirst.toHTML(
+                        monitorText = BoldVariablesTableModelFilter.toHTML(
                                 monitorText,
                                 false, false, Color.RED);
                     }
@@ -461,7 +461,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             if (nodesInDeadlock != null) {
                 synchronized (nodesInDeadlock) {
                     if (nodesInDeadlock.contains(v)) {
-                        monitorText = BoldVariablesTableModelFilterFirst.toHTML(
+                        monitorText = BoldVariablesTableModelFilter.toHTML(
                                 monitorText,
                                 false, false, Color.RED);
                     }

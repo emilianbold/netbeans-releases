@@ -71,7 +71,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
 
     public EnumeratorImpl(AST ast, EnumImpl enumeration) {
         super(ast, enumeration.getContainingFile());
-        this.name = NameCache.getManager().getString(ast.getText());
+        this.name = NameCache.getManager().getString(AstUtil.getText(ast));
         // set parent enum, do it in constructor to have final fields
         this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
         this.enumerationRef = null;
@@ -85,26 +85,32 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         this.enumerationRef = null;
     }
     
+    @Override
     public CharSequence getName() {
         return name;
     }
 
+    @Override
     public CsmExpression getExplicitValue() {
         return null;
     }
 
+    @Override
     public CsmEnum getEnumeration() {
         return _getEnumeration();
     }
     
+    @Override
     public CsmScope getScope() {
         return getEnumeration();
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.ENUMERATOR;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
 	return CharSequences.create(_getEnumeration().getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
     }

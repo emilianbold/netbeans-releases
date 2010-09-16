@@ -155,12 +155,16 @@ public class GenerateElementsIndex extends NbTestCase {
         "onwaiting"
     };
     private static final String WHATWG_SPEC_HTML5_ELEMENTS_INDEX_URL = Constants.HTML5_MULTIPAGE_SPEC_BASE_URL + "section-index.html#elements-1";
+    private static final String WHATWG_SPEC_HTML5_NAMED_REFS_INDEX_URL = Constants.HTML5_MULTIPAGE_SPEC_BASE_URL + "named-character-references.html";
+
     private boolean parse = true;
-    private boolean intbody, intr, inth_or_td, ina;
+    private boolean intbody, intr, inth_or_td, ina, incode;
     private int column;
     private String href;
     private String attr_code;
-    private final Collection<Element> elements = new LinkedList<Element>();
+    private Collection<Element> elements;
+    private final Collection<NamedCharRef> refs = new LinkedList<NamedCharRef>();
+    private NamedCharRef currentRef;
     private Stack<Element> currents = new Stack<Element>();
     private String LINK_URL_BASE; //if the spec contains full urls its empty
     private StringBuilder textBuffer;
@@ -171,7 +175,9 @@ public class GenerateElementsIndex extends NbTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new GenerateElementsIndex("test_GenerateElementsIndex"));
+        suite.addTest(new GenerateElementsIndex("test_GenerateNamedCharacterReferencesIndex"));
+
+//        suite.addTest(new GenerateElementsIndex("test_GenerateElementsIndex"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateGlobalAndEventAttributesEnumMembers"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateAttributesIndex"));
         return suite;
@@ -180,10 +186,14 @@ public class GenerateElementsIndex extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        parseSpecification();
     }
     
     private void parseSpecification() throws URISyntaxException, MalformedURLException, IOException, SAXException {
+        if(elements != null) {
+            return ; //already parsed
+        }
+        
+        elements = new LinkedList<Element>();
         InputStream spec = getSpec();
         assertNotNull(spec);
 
@@ -263,7 +273,7 @@ public class GenerateElementsIndex extends NbTestCase {
                 textBuffer.append(ch, start, length);
             }
 
-            private void handleWholeText() {
+           private void handleWholeText() {
                 if(textBuffer == null) {
                     return ;
                 }
@@ -283,7 +293,7 @@ public class GenerateElementsIndex extends NbTestCase {
                         text = text.substring(0, wsIndex);
                     }
                 }
-                
+
                 switch (column) {
                     case 0:
                         //name
@@ -331,6 +341,7 @@ public class GenerateElementsIndex extends NbTestCase {
 
                 }
             }
+
         });
 
         InputSource input = new InputSource(spec);
@@ -340,8 +351,130 @@ public class GenerateElementsIndex extends NbTestCase {
 
     }
 
+    public  void test_GenerateNamedCharacterReferencesIndex() throws URISyntaxException, MalformedURLException, IOException, SAXException {
+        InputStream spec = getNamedCharacterReferencesSpec();
+        assertNotNull(spec);
+
+        HtmlParser parser = new HtmlParser();
+        parser.setContentHandler(new ContentHandlerAdapter() {
+
+            @Override
+            public void endElement(String uri, String localName, String qName) throws SAXException {
+                handleWholeText();
+                element(localName, false, null);
+            }
+
+            @Override
+            public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+                handleWholeText();
+                element(localName, true, atts);
+            }
+
+            private void element(String localName, boolean open, Attributes atts) throws SAXException {
+                if (!parse) {
+                    return; //parsing already stopped
+                }
+                if (localName.equals("tbody")) {
+                    intbody = open;
+                    if (!intbody) {
+                        parse = false;
+                    }
+                } else if (localName.equals("tr")) {
+                    if (intbody) {
+                        intr = open;
+                        if (open) {
+                            column = -1;
+                        } else {
+                            refs.add(currentRef);
+                            currentRef = null;
+                        }
+                    }
+                } else if (localName.equals("th") || localName.equals("td")) {
+                    if (intr) {
+                        inth_or_td = open;
+                        if (open) {
+                            column++;
+                        }
+                    }
+                } else if(localName.equals("code")) {
+                    if(inth_or_td) {
+                        incode = open;
+                    } 
+                }
+            }
+
+            @Override
+            public void characters(char[] ch, int start, int length) throws SAXException {
+                if(textBuffer == null) {
+                    textBuffer = new StringBuilder();
+                }
+                textBuffer.append(ch, start, length);
+            }
+
+             private void handleWholeText() {
+                if(textBuffer == null) {
+                    return ;
+                }
+                String text = textBuffer.toString().trim();
+                if(text.length() == 0) {
+                    return ; //ignore ws
+                }
+
+                textBuffer = null;
+
+                switch (column) {
+                    case 0:
+                        //name 
+                        if (incode) {
+                            currentRef = new NamedCharRef();
+                            currentRef.name = text;
+                        }
+                        break;
+                    case 1:
+                        //code
+                        currentRef.code = text;
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        assert false;
+
+                }
+            }
+
+            
+        });
+
+        InputSource input = new InputSource(spec);
+        parser.parse(input);
+
+        System.out.println("Found " + refs.size() + " named char refs");
+
+        Writer out = new StringWriter();
+        for(NamedCharRef ref : refs) {
+            if(ref.name.endsWith(";")) {
+                String name = ref.name.substring(0, ref.name.length() -1);
+                String enumName = name;
+                if(enumName.equals("int")) {
+                    enumName = "INT";
+                }
+                out.write(enumName);
+                out.write("(\"");
+                out.write(name);
+                out.write("\",0x");
+                out.write(ref.code.substring(2));
+                out.write("),\n");
+            }
+           
+        }
+
+        System.out.println(out);
+
+    }
+
     //generates a list of global and event attributes - members of the Attribute enum
-    public void test_GenerateGlobalAndEventAttributesEnumMembers() throws IOException {
+    public void test_GenerateGlobalAndEventAttributesEnumMembers() throws IOException, URISyntaxException, MalformedURLException, SAXException {
+        parseSpecification();
         Writer out = new StringWriter();
         out.write("//global attributes\n");
         for (int i = 0; i < GLOBAL.length; i++) {
@@ -376,6 +509,7 @@ public class GenerateElementsIndex extends NbTestCase {
 
     public void test_GenerateAttributesIndex() throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
         //generate the part of the Attributes enum class for elements specific attributes
+        parseSpecification();
         Writer out = new StringWriter();
         out.write("\n//properietary attributes\n");
         
@@ -404,6 +538,7 @@ public class GenerateElementsIndex extends NbTestCase {
     }
 
     public void test_GenerateElementsIndex() throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
+        parseSpecification();
         //generate the ElementDescriptor enum class
         Writer out = new StringWriter();
         Map<String, Element> elementsMap = new HashMap<String, Element>();
@@ -596,11 +731,21 @@ public class GenerateElementsIndex extends NbTestCase {
         }
     }
 
+    private InputStream getNamedCharacterReferencesSpec() throws URISyntaxException, MalformedURLException, IOException {
+        URL u = new URL(WHATWG_SPEC_HTML5_NAMED_REFS_INDEX_URL);
+        URLConnection con = u.openConnection();
+        return con.getInputStream();
+    }
+
     private class LLink extends Link {
 
         public LLink(String name, String url) {
             super(name, LINK_URL_BASE + url);
         }
+    }
+
+    private static class NamedCharRef {
+        public String name, code;
     }
 
     private static class Element {

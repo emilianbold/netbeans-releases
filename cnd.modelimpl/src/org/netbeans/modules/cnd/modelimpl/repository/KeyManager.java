@@ -96,7 +96,7 @@ public class KeyManager {
         }
         Key outKey = null;
         synchronized (lock) {
-            outKey = storage.getSharedUID(key);
+            outKey = storage.getShared(key);
         }
         assert (outKey != null);
         assert (outKey.equals(key));
@@ -134,8 +134,9 @@ public class KeyManager {
             return instances[index];
         }
 
-        public final Key getSharedUID(Key key) {
-            return getDelegate(key).putIfAbsent(key);
+        public final Key getShared(Key key) {
+            Key out = getDelegate(key).putIfAbsent(key);
+            return out;
         }
 
         public final void dispose() {

@@ -69,11 +69,11 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     private final CharSequence name;
     private final CsmType type;
-    private boolean _static = false;
+    private final boolean _static;
     // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
-    private boolean _extern;
+    private final boolean _extern;
     private ExpressionBase initExpr;
 
     /** Creates a new instance of VariableImpl 
@@ -84,7 +84,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @param scope variable scope
      * @param registerInProject 
      */
-    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope, boolean registerInProject, boolean global) {
+    public VariableImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean registerInProject, boolean global) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
@@ -104,7 +104,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
 
-    public VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, String name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+    public VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
         super(file, pos);
         this._static = _static;
         this._extern = _extern;
@@ -118,7 +118,27 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
 
-    public VariableImpl(CsmFile file, int startOffset, int endOffset, CsmType type, String name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+    public VariableImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern, boolean registerInProject, boolean global) {
+        super(file, getStartOffset(ast), getEndOffset(ast));
+        initInitialValue(ast);
+        this._static = _static;
+        this._extern = _extern;
+        this.name = NameCache.getManager().getString(name);
+        this.type = type;
+        _setScope(scope);
+        if (registerInProject) {
+            registerInProject();
+        }
+        if (global) {
+            if (!registerInProject) {
+                RepositoryUtils.put(this);
+            }
+        } else {
+            Utils.setSelfUID(this);
+        }
+    }
+
+    public VariableImpl(CsmFile file, int startOffset, int endOffset, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
         super(file, startOffset, endOffset);
         this._static = _static;
         this._extern = _extern;
@@ -204,10 +224,12 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     /** Gets this element name 
      * @return 
      */
+    @Override
     public CharSequence getName() {
         return name;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         CsmScope scope = getScope();
         if ((scope instanceof CsmNamespace) || (scope instanceof CsmClass)) {
@@ -229,11 +251,12 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @return 
      */
     // TODO: fix it
+    @Override
     public CsmType getType() {
         return type;
     }
 
-    private final void initInitialValue(AST node) {
+    private void initInitialValue(AST node) {
         if (node != null) {
             int start = 0;
             int end = 0;
@@ -295,15 +318,18 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     /** Gets this variable initial value 
      * @return 
      */
+    @Override
     public CsmExpression getInitialValue() {
         return initExpr;
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.VARIABLE;
     }
 
     //TODO: create an interface to place getDeclarationText() in
+    @Override
     public String getDeclarationText() {
         return "";
     }
@@ -320,16 +346,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return _static;
     }
 
-    public void setStatic(boolean _static) {
-        this._static = _static;
-    }
-
+    @Override
     public boolean isExtern() {
         return _extern;
-    }
-
-    public void setExtern(boolean _extern) {
-        this._extern = _extern;
     }
 
     public boolean isConst() {
@@ -362,13 +381,20 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
 
     public void setScope(CsmScope scope, boolean register) {
-        unregisterInProject();
+        setScopeImpl(scope, true, register);
+    }
+
+    protected final void setScopeImpl(CsmScope scope, boolean unregister, boolean register) {
+        if (unregister) {
+            unregisterInProject();
+        }
         this._setScope(scope);
         if (register) {
             registerInProject();
         }
     }
 
+    @Override
     public synchronized CsmScope getScope() {
         return _getScope();
     }
@@ -395,6 +421,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
 
+    @Override
     public CsmVariableDefinition getDefinition() {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE_DEFINITION) + UNIQUE_NAME_SEPARATOR + getQualifiedName();
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
@@ -420,6 +447,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
 
+    @Override
     public CharSequence getDisplayText() {
         StringBuilder sb = new StringBuilder();
         CsmType _type = getType();

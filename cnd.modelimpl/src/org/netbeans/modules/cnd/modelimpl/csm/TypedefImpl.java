@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
@@ -83,7 +84,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
 
-    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name, boolean global) {
+    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, CharSequence aName, boolean global) {
 
         super(ast, file);
 
@@ -101,16 +102,16 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         } else {
             this.type = type;
         }
-        if (name.length()==0) {
-            name = fixBuiltInTypedef(ast);
+        if (aName.length()==0) {
+            aName = fixBuiltInTypedef(ast);
         }
-        this.name = QualifiedNameCache.getManager().getString(name);
+        this.name = QualifiedNameCache.getManager().getString(aName);
         if (!global) {
             Utils.setSelfUID(this);
         }
     }
 
-    private String fixBuiltInTypedef(AST ast){
+    private CharSequence fixBuiltInTypedef(AST ast){
         // typedef cannot be unnamed
         AST first = ast.getFirstChild();
         if (first != null) {
@@ -125,16 +126,18 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
             if (last != null) {
                 first = last.getFirstChild();
                 while(first != null) {
-                    if (first.getText() != null && first.getText().length()>0) {
-                        if (Character.isJavaIdentifierStart(first.getText().charAt(0))){
+                    CharSequence text = AstUtil.getText(first);
+                    if (text != null && text.length()>0) {
+                        if (Character.isJavaIdentifierStart(text.charAt(0))){
                             last = first;
                         }
                     }
                     first = first.getNextSibling();
                 }
-                if (last.getText() != null && last.getText().length()>0) {
-                   if (Character.isJavaIdentifierStart(last.getText().charAt(0))){
-                        return last.getText();
+                CharSequence text = AstUtil.getText(last);
+                if (text != null && text.length()>0) {
+                   if (Character.isJavaIdentifierStart(text.charAt(0))){
+                        return text;
                     }
                 }
             }
@@ -142,6 +145,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         return "";
     }
 
+    @Override
     public boolean isTypeUnnamed() {
         return typeUnnamed;
     }
@@ -154,6 +158,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
 //    public String getUniqueName() {
 //        return getQualifiedName();
 //    }
+    @Override
     public CsmScope getScope() {
         // TODO: ???
         //return getContainingFile();
@@ -190,6 +195,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         }
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         CsmObject container = _getContainer();
         if (CsmKindUtilities.isClass(container)) {
@@ -203,6 +209,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         return getName();
     }
 
+    @Override
     public CharSequence getName() {
         /*if( name == null ) {
         AST tokId = null;
@@ -221,11 +228,12 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         return name;
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.TYPEDEF;
     }
 
-    private final CsmType createType(AST node) {
+    private CsmType createType(AST node) {
         //
         // TODO: replace this horrible code with correct one
         //
@@ -263,6 +271,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         return null;
     }
 
+    @Override
     public CsmType getType() {
         return type;
     }

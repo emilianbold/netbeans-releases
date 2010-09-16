@@ -89,7 +89,7 @@ public class StepIntoNextMethodActionProvider extends JPDADebuggerActionProvider
     
     @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
-        doLazyAction(new Runnable() {
+        doLazyAction(action, new Runnable() {
             public void run() {
                 try {
                     stepInto.runAction();

@@ -51,6 +51,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
+import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 
@@ -73,6 +74,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -90,6 +92,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.SingleThreadWatcher;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
@@ -988,6 +991,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     private List<PropertyChangeEvent> notifyToBeRunning(boolean clearVars, boolean resumed) {
+        if (resumed) {
+            // Reset the pending action when the thread is resumed.
+            setPendingAction(null);
+        }
         Boolean suspendedToFire = null;
         accessLock.writeLock().lock();
         try {
@@ -1904,7 +1911,46 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return "'"+getName()+"' ("+Integer.toHexString(System.identityHashCode(this))+") from DBG("+Integer.toHexString(debugger.hashCode())+")";
     }
 
+    private final Object pendingActionsLock = new Object();
+    private Object pendingAction;
+    private Variable pendingVariable;
 
+    public void setPendingAction(Object action) {
+        synchronized (pendingActionsLock) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "{0} setPendingAction({1})", new Object[]{threadName, action});
+            }
+            this.pendingAction = action;
+            this.pendingVariable = null;
+        }
+    }
+
+    public Object getPendingAction() {
+        synchronized (pendingActionsLock) {
+            return pendingAction;
+        }
+    }
+
+    public String getPendingString(Object action) {
+        return NbBundle.getMessage(JPDAThreadImpl.class, "MSG_PendingAction", action);
+    }
+
+    public Variable getPendingVariable(Object action) {
+        Variable var;
+        synchronized (pendingActionsLock) {
+            var = (action == pendingAction) ? pendingVariable : null;
+        }
+        if (var == null) {
+            StringReference sr = threadReference.virtualMachine().mirrorOf(getPendingString(action));
+            var = new AbstractObjectVariable (debugger, sr, null);
+        }
+        synchronized (pendingActionsLock) {
+            if (action == pendingAction) {
+                pendingVariable = var;
+            }
+        }
+        return var;
+    }
 
     private static class ThreadListDelegate extends AbstractList<JPDAThread> {
 

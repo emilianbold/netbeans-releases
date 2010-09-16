@@ -798,7 +798,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
 
         JPDAThread frameThread = csf.getThread();
-        Lock lock = ((JPDAThreadImpl) frameThread).accessLock.writeLock();
+        JPDAThreadImpl frameThreadImpl = (JPDAThreadImpl) frameThread;
+        //Object pendingAction = frameThreadImpl.getPendingAction();
+        //if (pendingAction != null) { For the case that evaluation should be blocked by pending action
+        //    //return frameThreadImpl.getPendingVariable(pendingActions);
+        //    throw new InvalidExpressionException(frameThreadImpl.getPendingString(pendingAction));
+        //}
+        Lock lock = frameThreadImpl.accessLock.writeLock();
         lock.lock();
         Variable vr;
         try {

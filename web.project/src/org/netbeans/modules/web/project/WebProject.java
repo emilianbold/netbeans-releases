@@ -716,7 +716,7 @@ public final class WebProject implements Project {
                         WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                     String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                     String classpath = J2EEProjectProperties.toClasspathString(
-                            Util.getJ2eePlatformClasspathEntries(WebProject.this), root);
+                            Util.getJ2eePlatformClasspathEntries(WebProject.this, null), root);
                     ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                 }
                 helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

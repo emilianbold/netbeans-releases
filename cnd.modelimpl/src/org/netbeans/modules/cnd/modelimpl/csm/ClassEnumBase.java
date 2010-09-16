@@ -87,13 +87,13 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     // keep enclosing typeds and enclosing variables in one collection
     private final List<CsmUID<CsmOffsetableDeclaration>> enclosingElements;
 
-    protected ClassEnumBase(String name, CsmFile file, AST ast) {
+    protected ClassEnumBase(CharSequence name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
         this.name = (name == null) ? CharSequences.empty() : NameCache.getManager().getString(name);
     }
 
-    protected ClassEnumBase(String name, String qName, CsmFile file, int startOffset, int endOffset) {
+    protected ClassEnumBase(CharSequence name, String qName, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
         this.name = NameCache.getManager().getString(name);

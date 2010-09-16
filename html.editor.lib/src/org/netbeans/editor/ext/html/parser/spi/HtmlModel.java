@@ -43,7 +43,6 @@
 package org.netbeans.editor.ext.html.parser.spi;
 
 import java.util.Collection;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 
 /**
  *
@@ -55,5 +54,6 @@ public interface HtmlModel {
 
     public HtmlTag getTag(String tagName);
 
-
+    public Collection<? extends NamedCharRef> getNamedCharacterReferences();
+    
 }
