@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
  * Implements CsmParameter
@@ -57,10 +58,17 @@ import java.io.IOException;
  */
 public class DummyParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
-    public DummyParameterImpl(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
-        super(file, startOffset, endOffset, null, name, scope, false, false, false);
+    private DummyParameterImpl(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
+        super(file, startOffset, endOffset, null, name, scope, false, false);
     }
 
+    public static DummyParameterImpl create(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
+        DummyParameterImpl dummyParameterImpl = new DummyParameterImpl(file, startOffset, endOffset, name, scope);
+        Utils.setSelfUID(dummyParameterImpl);
+        return dummyParameterImpl;
+    }
+    
+    @Override
     public boolean isVarArgs() {
         return false;
     }
