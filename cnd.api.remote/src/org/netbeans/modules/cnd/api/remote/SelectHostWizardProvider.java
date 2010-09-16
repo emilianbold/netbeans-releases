@@ -37,28 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.api.remote;
 
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.spi.remote.SelectHostWizardProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.WizardDescriptor;
+import org.openide.util.Lookup;
 
 /**
+ * Creates a wizard panel that allows to
+ * either select an existent host
+ * or setup a new one.
  *
- *
- * @author Sergey Grinev
+ * In the case user decided to set up a new host,
+ * it returns a set of additional panels and notifies PropertyChangeListener
+ * 
+ * @author Vladimir Kvashin
  */
-public interface RemoteProject {
+public abstract class SelectHostWizardProvider {
 
-    /** A temporary flag for development #190299 -  Tie synchronization to project instead of host  */
-    static final boolean SYNC_PER_PROJECT = Boolean.getBoolean("cnd.remote.sync.per.project");
+    public static SelectHostWizardProvider createInstance(boolean allowLocal, ChangeListener changeListener) {
+        SelectHostWizardProviderFactory factory = Lookup.getDefault().lookup(SelectHostWizardProviderFactory.class);
+        return (factory == null) ? null : factory.createHostWizardProvider(allowLocal, changeListener);
+    }
 
-    /** A temporary flag for development #188813 -  Full remote */
-    static final boolean FULL_REMOTE = Boolean.getBoolean("cnd.full.remote");
+    /**
+     * Gets first panel - the one that allows to choose an existent host
+     * or alternatively to choose an option of creating a new one.
+     *
+     * @param allowLocal determines whether to allow choosing local host
+     * @param propertyChangeListener listener to be notified if user choice changed
+     * @return
+     */
+    public abstract WizardDescriptor.Panel getSelectHostPanel();
 
-    // FIXUP. Think over how to get correct factory
-    static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
-    
-    ExecutionEnvironment getDevelopmentHost();
+    /**
+     * Gets additional panels
+     * (in the case user decided to add a new host)
+     * @return
+     */
+    public abstract WizardDescriptor.Panel[] getAdditionalPanels();
+
+    public abstract boolean isNewHost();
+    public abstract ExecutionEnvironment getSelectedHost();
+    public abstract void apply();
 }
