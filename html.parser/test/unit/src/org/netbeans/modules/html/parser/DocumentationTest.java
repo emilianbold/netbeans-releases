@@ -93,13 +93,28 @@ public class DocumentationTest extends NbTestCase {
     }
 
     public void testSectioningPattern() {
+        System.out.println(Documentation.SECTIONS_PATTERN_CODE);
+
+
         String code = "w<h1 id=\"mojeid\">xxx<h1 id=\"jeho\">sew";
         Matcher m = Documentation.SECTIONS_PATTERN.matcher(code);
         int i = 0;
         while(m.find()) {
             i++;
+            System.out.println(m.group(1));
         }
         assertEquals(2, i);
+
+        code = "<h4 id=\"the-article-element\" id=\"ddd\">";
+        m = Documentation.SECTIONS_PATTERN.matcher(code);
+        i = 0;
+        while(m.find()) {
+            i++;
+            System.out.println(m.group(1));
+        }
+        assertEquals(1, i);
+
+
     }
     
     public void testSectionContent() throws IOException {

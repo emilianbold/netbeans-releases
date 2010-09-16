@@ -388,7 +388,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public String getText() {
-            return null;
+            return resolver.getHelpContent(getURL());
         }
 
         @Override
@@ -398,7 +398,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public CompletionDocumentation resolveLink(String link) {
-            return new LinkDocItem(resolver, resolver.resolveLink(link));
+            return new LinkDocItem(resolver, resolver.resolveLink(getURL(), link));
         }
 
         @Override
@@ -467,7 +467,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public CompletionDocumentation resolveLink(String link) {
-            URL itemUrl = getHelpItem().getHelpResolver().resolveLink(link);
+            URL itemUrl = getHelpItem().getHelpResolver().resolveLink(getURL(), link);
             return itemUrl != null ?
                 new LinkDocItem(getHelpItem().getHelpResolver(), itemUrl) :
                 new NoDocItem();
