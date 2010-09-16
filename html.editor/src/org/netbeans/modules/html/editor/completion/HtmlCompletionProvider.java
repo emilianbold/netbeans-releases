@@ -388,7 +388,12 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public String getText() {
-            return null;
+            //normally it should be enough to return null here
+            //and the documentation would be loaded from the URL.
+            //However it seems that the html5 anchor navigation doesn't
+            //properly work in the embedded swing browser so I need to
+            //strip the begginning of the file to the anchor manually
+            return resolver.getHelpContent(getURL());
         }
 
         @Override
@@ -398,7 +403,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public CompletionDocumentation resolveLink(String link) {
-            return new LinkDocItem(resolver, resolver.resolveLink(link));
+            return new LinkDocItem(resolver, resolver.resolveLink(getURL(), link));
         }
 
         @Override
@@ -457,6 +462,11 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public String getText() {
+            //normally it should be enough to return null here
+            //and the documentation would be loaded from the URL.
+            //However it seems that the html5 anchor navigation doesn't
+            //properly work in the embedded swing browser so I need to
+            //strip the begginning of the file to the anchor manually
             return getHelpItem().getHelpResolver().getHelpContent(getURL());
         }
 
@@ -467,7 +477,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         @Override
         public CompletionDocumentation resolveLink(String link) {
-            URL itemUrl = getHelpItem().getHelpResolver().resolveLink(link);
+            URL itemUrl = getHelpItem().getHelpResolver().resolveLink(getURL(), link);
             return itemUrl != null ?
                 new LinkDocItem(getHelpItem().getHelpResolver(), itemUrl) :
                 new NoDocItem();

@@ -39,24 +39,54 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.el.completion;
 
-package org.netbeans.editor.ext.html.parser.spi;
-
-import java.net.URL;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.web.el.ELElement;
 
 /**
  *
- * @author marekfukala
+ * @author Erno Mononen
  */
-public interface HelpResolver {
+final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
 
-    public URL resolveLink(URL base, String link);
+    private final String key;
+    private final String value;
+    private final ELElement element;
 
-    /** returns appropriate content of the help section addressed by the URL.
-     * It is up to the implementation what exactly is returned. The returned
-     * content might not be the same as reading from the URL directly.
-     *
-     */
-    public String getHelpContent(URL url);
+    public ELResourceBundleCompletionItem(String key, String value, ELElement element) {
+        this.key = key;
+        this.value = value;
+        this.element = element;
+    }
+
+    @Override
+    public String getName() {
+        return key;
+    }
+
+    @Override
+    public String getRhsHtml(HtmlFormatter formatter) {
+        formatter.appendHtml("<font color='#ce7b00'>" + value + "</font>");
+        return formatter.getText();
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.OTHER;
+    }
+
+    @Override
+    public int getSortPrioOverride() {
+        return 20;
+    }
+
+    @Override
+    public ElementHandle getElement() {
+        return null;
+    }
 
 }

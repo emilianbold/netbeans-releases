@@ -40,23 +40,39 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.spi;
+package org.netbeans.modules.web.el.completion;
 
-import java.net.URL;
+import org.netbeans.modules.web.el.completion.ELSanitizer;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author marekfukala
+ * @author erno
  */
-public interface HelpResolver {
+public class ELSanitizerTest {
 
-    public URL resolveLink(URL base, String link);
+    public ELSanitizerTest() {
+    }
 
-    /** returns appropriate content of the help section addressed by the URL.
-     * It is up to the implementation what exactly is returned. The returned
-     * content might not be the same as reading from the URL directly.
-     *
+
+    /**
+     * Test of sanitize method, of class ELSanitizer.
      */
-    public String getHelpContent(URL url);
+    @Test
+    public void testSanitize() {
+        ELSanitizer sanitizer = new ELSanitizer("foo.bar.");
+        assertEquals("foo.bar." + ELSanitizer.ADDED_SUFFIX, sanitizer.sanitize());
+
+        sanitizer = new ELSanitizer("foo(");
+        assertEquals("foo()", sanitizer.sanitize());
+
+        sanitizer = new ELSanitizer("foo[");
+        assertEquals("foo[]", sanitizer.sanitize());
+    }
 
 }
