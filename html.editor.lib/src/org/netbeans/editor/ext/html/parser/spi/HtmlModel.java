@@ -55,5 +55,5 @@ public interface HtmlModel {
     public HtmlTag getTag(String tagName);
 
     public Collection<? extends NamedCharRef> getNamedCharacterReferences();
-    
+
 }

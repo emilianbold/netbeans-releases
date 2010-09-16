@@ -40,68 +40,18 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.parser;
+package org.netbeans.editor.ext.html.parser.spi;
 
 import java.net.URL;
-import java.util.Collection;
-import nu.validator.htmlparser.impl.ElementName;
-import org.netbeans.editor.ext.html.parser.spi.HelpItem;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.parser.model.ElementDescriptor;
 
 /**
  *
  * @author marekfukala
  */
-public class HtmlTagProviderTest extends NbTestCase {
+public interface HelpItem {
 
-    public HtmlTagProviderTest(String name) {
-        super(name);
-    }
+    public URL getHelpURL();
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        DocumentationTest.setupDocumentationForUnitTests();
-    }
-
-
-
-    public void testHtmlTagConversion() {
-        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.HTML.name);
-        assertNotNull(t);
-
-        assertEquals(ElementDescriptor.HTML.getName(), t.getName());
-        assertEquals(HtmlTagType.HTML, t.getTagClass());
-
-        Collection<HtmlTag> children = t.getChildren();
-        assertNotNull(children);
-        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.BODY.name)));
-        assertTrue(children.contains(HtmlTagProvider.getTagForElement(ElementName.HEAD.name)));
-        
-        assertFalse(children.contains(HtmlTagProvider.getTagForElement(ElementName.VIDEO.name)));
-
-    }
-
-    public void testHelp() {
-        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.VIDEO.name);
-        assertNotNull(t);
-
-
-        HelpItem helpItem = t.getHelp();
-        assertNotNull(helpItem);
-
-        HelpResolver help = helpItem.getHelpResolver();
-        assertNotNull(help);
-
-        String helpContent = help.getHelpContent(helpItem.getHelpURL());
-        assertNotNull(helpContent);
-
-        System.out.println(helpContent);
-
-    }
+    public HelpResolver getHelpResolver();
     
 }
