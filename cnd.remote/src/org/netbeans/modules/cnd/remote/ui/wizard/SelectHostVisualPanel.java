@@ -50,13 +50,15 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -89,6 +91,29 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         model = new DefaultListModel();
         initServerList();
         modeChanged();
+        rbNew.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+//                newHostPane.requestFocus();
+                requestFocusInEDT(newHostPane);
+            }
+        });
+        rbExistent.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+//                lstDevHosts.requestFocus();
+                requestFocusInEDT(lstDevHosts);
+            }
+        });
+    }
+
+    private void requestFocusInEDT(final Component c) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                c.requestFocus();
+            }
+        });
     }
 
     private void initServerList() {
@@ -151,6 +176,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         buttonGroup.add(rbExistent);
+        rbExistent.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/wizard/Bundle").getString("SelectHostVisualPanel.rbExistent.mnemonic").charAt(0));
         rbExistent.setText(org.openide.util.NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.rbExistent.text")); // NOI18N
         rbExistent.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -166,6 +192,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         add(rbExistent, gridBagConstraints);
 
         buttonGroup.add(rbNew);
+        rbNew.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/wizard/Bundle").getString("SelectHostVisualPanel.rbNew.mnemonic").charAt(0));
         rbNew.setText(org.openide.util.NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.rbNew.text")); // NOI18N
         rbNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
