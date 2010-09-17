@@ -62,7 +62,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
 
     private final CsmCompoundStatement body;
     
-    public MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
+    protected MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
         super(ast, cls, visibility, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         if (body == null) {
@@ -72,6 +72,10 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         if (register) {
             registerInProject();
         }
+    }
+
+    public static<T> MethodDDImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
+        return new MethodDDImpl<T>(ast, cls, visibility, register, global);
     }
 
     @Override

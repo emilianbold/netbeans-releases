@@ -590,6 +590,20 @@ public class TreeFactory {
         
         return result;
     }
+
+    public ExpressionTree QualIdent(String name) {
+        int lastDot = name.lastIndexOf('.');
+
+        if (lastDot == (-1)) {
+            return Identifier(name);
+        }
+
+        QualIdentTree result = new QualIdentTree(((JCExpression) QualIdent(name.substring(0, lastDot))).setPos(NOPOS), (Name) elements.getName(name.substring(lastDot + 1)), name);
+
+        result.setPos(NOPOS);
+
+        return result;
+    }
     
     public ReturnTree Return(ExpressionTree expression) {
         return make.at(NOPOS).Return((JCExpression)expression);

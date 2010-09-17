@@ -69,7 +69,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     }
 
     protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
-        super(ast, cls.getContainingFile(), cls, false, global);
+        super(ast, cls.getContainingFile(), null, cls, false, global);
         this.visibility = visibility;
         //this(cls, visibility, AstUtil.findId(ast), 0, 0);
         //setAst(ast);
@@ -91,14 +91,17 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         }
     }
 
+    @Override
     public CsmClass getContainingClass() {
         return (CsmClass) getScope();
     }
 
+    @Override
     public CsmVisibility getVisibility() {
         return visibility;
     }
 
+    @Override
     public boolean isAbstract() {
         return hasFlags(ABSTRACT);
     }
@@ -115,10 +118,12 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         setFlags(EXPLICIT, _explicit);
     }
 
+    @Override
     public boolean isExplicit() {
         return hasFlags(EXPLICIT);
     }
 
+    @Override
     public boolean isVirtual() {
         //TODO: implement!
         // returns direct "virtual" keyword presence

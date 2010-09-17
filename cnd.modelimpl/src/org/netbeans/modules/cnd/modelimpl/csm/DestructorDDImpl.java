@@ -54,8 +54,12 @@ import java.io.IOException;
  */
 public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
-    public DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+    private DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
         super(ast, cls, visibility, register, register);
+    }
+
+    public static DestructorDDImpl create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        return new DestructorDDImpl(ast, cls, visibility, register);
     }
 
     @Override
