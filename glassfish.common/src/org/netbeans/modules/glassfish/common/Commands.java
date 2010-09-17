@@ -641,6 +641,8 @@ public class Commands {
                     continue;
                 if (k.contains("address:/wsat-wsat")) // NOI18N
                     continue;
+                if (k.contains("address:/__wstx-services")) // NOI18N
+                    continue;
                 String a = k.replaceFirst(".* address:/", "").replaceFirst("\\. .*", ""); // NOI18N
                 if (filter.containsKey(a))
                     continue;
