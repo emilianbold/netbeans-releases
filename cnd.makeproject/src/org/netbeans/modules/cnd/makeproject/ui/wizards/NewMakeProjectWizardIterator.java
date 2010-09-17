@@ -444,7 +444,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     private boolean isSimple() {
-        return wizardtype == TYPE_MAKEFILE && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
+        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
     }
 
     @Override
