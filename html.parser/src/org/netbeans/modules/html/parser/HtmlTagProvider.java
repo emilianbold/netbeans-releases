@@ -109,18 +109,7 @@ public class HtmlTagProvider {
         }
 
         private HtmlTagType findType() {
-            if (isPureHtmlTag()) {
-                //descriptor is available only for html tags
-                return HtmlTagType.HTML;
-            } else {
-                if (ElementDescriptorRules.MATHML_TAG_NAMES.contains(getName())) {
-                    return HtmlTagType.MATHML;
-                } else if (ElementDescriptorRules.SVG_TAG_NAMES.contains(getName())) {
-                    return HtmlTagType.SVG;
-                } else {
-                    return HtmlTagType.UNKNOWN;
-                }
-            }
+            return isPureHtmlTag() ? descriptor.getTagType() : HtmlTagType.UNKNOWN;
         }
 
         private Map<String, HtmlTagAttribute> wrap(Collection<Attribute> attrNames) {
@@ -214,7 +203,7 @@ public class HtmlTagProvider {
         }
 
         public HelpItem getHelp() {
-            return isPureHtmlTag()
+            return isPureHtmlTag() && descriptor.getHelpLink() != null
                     ? new DefaultHelpItem(Documentation.getDefault().resolveLink(descriptor.getHelpLink()), Documentation.getDefault())
                     : null;
 
