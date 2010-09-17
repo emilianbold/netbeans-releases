@@ -64,12 +64,13 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmF
 
     private List<CsmExpression> initializers;
     
-    private ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
-        super(ast, file, scope, global);
+    private ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, file, scope, nameHolder, global);
     }
 
     public static ConstructorDefinitionImpl create(AST ast, CsmFile file, boolean register) throws AstRendererException {
-        ConstructorDefinitionImpl res =  new ConstructorDefinitionImpl(ast, file, null, register);
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        ConstructorDefinitionImpl res =  new ConstructorDefinitionImpl(ast, file, null, nameHolder, register);
         res.initializers = AstRenderer.renderConstructorInitializersList(ast, res, res.getContainingFile());
         postObjectCreateRegistration(register, res);
         return res;
