@@ -76,15 +76,16 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private final CharSequence[] classOrNspNames;   
     
-    protected FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
-        super(ast, file, null, scope, global);
+    protected FunctionImplEx(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, file, null, scope, nameHolder, global);
         classOrNspNames = CastUtils.isCast(ast) ?
             getClassOrNspNames(ast) :
             initClassOrNspNames(ast);
     }
 
     public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        FunctionImplEx<T> functionImplEx = new FunctionImplEx<T>(ast, file, scope, global);
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        FunctionImplEx<T> functionImplEx = new FunctionImplEx<T>(ast, file, scope, nameHolder, global);
         if (register) {
             postObjectCreateRegistration(register, functionImplEx);
         } else {

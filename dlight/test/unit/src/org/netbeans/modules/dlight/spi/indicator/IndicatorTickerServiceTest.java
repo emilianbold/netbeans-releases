@@ -127,7 +127,8 @@ public class IndicatorTickerServiceTest {
     /**
      * Test of subsribe method, of class IndicatorTickerService.
      */
-    @Test
+    //@Test
+    // Disabled, see IZ 190414
     public void testService() {
         final AtomicInteger count1 = new AtomicInteger(0);
         final AtomicInteger count2 = new AtomicInteger(0);
