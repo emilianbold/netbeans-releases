@@ -43,6 +43,8 @@
 package org.netbeans.modules.html.parser.model;
 
 import java.util.Collection;
+import nu.validator.htmlparser.impl.ElementName;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -123,6 +125,40 @@ public class ElementDescriptorTest extends NbTestCase {
         ElementDescriptor title = ElementDescriptor.forName("title");
         assertNotNull(title);
         assertFalse(title.isEmpty());
+    }
+
+    public void testMathML() {
+        ElementDescriptor math = ElementDescriptor.forName("math");
+        assertNotNull(math);
+
+        assertEquals("math", math.getName());
+        Collection<ContentType> cats = math.getCategoryTypes();
+
+        assertTrue(cats.contains(ContentType.EMBEDDED));
+        assertTrue(cats.contains(ContentType.FLOW));
+        assertTrue(cats.contains(ContentType.PHRASING));
+    }
+
+    public void testSVG() {
+        ElementDescriptor math = ElementDescriptor.forName("ellipse");
+        assertNotNull(math);
+
+        assertEquals("ellipse", math.getName());
+        Collection<ContentType> cats = math.getCategoryTypes();
+
+        assertTrue(cats.contains(ContentType.EMBEDDED));
+        assertTrue(cats.contains(ContentType.FLOW));
+        assertTrue(cats.contains(ContentType.PHRASING));
+
+    }
+
+    public void testAnnotation_XML() {
+        ElementDescriptor e = ElementDescriptor.forName("annotation_xml");
+        assertNotNull(e);
+
+        assertEquals("annotation-xml", e.getName());
+        assertSame(HtmlTagType.MATHML, e.getTagType());
+
     }
 
 }

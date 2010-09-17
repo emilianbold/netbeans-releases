@@ -290,7 +290,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             changeListener = WeakListeners.change(this, chF);
             chF.addChangeListener( changeListener );
         }
-        // #159628: do not block EQ loading this folder's children.
+        // #159628, #189979: do not block EQ loading this folder's children.
         refreshChildren(RefreshMode.SHALLOW);
         err.fine("addNotify end");
     }

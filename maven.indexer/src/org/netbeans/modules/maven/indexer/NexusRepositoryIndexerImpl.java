@@ -185,7 +185,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     private static final int MAX_RESULT_COUNT = 512;
     private static final int DEFAULT_MAX_CLAUSE = 1024;
-    private static final int MAX_MAX_CLAUSE = 8192;
+    private static final int MAX_MAX_CLAUSE = 2048;
 
     //#138102
     public static String createLocalRepositoryPath(FileObject fo) {

@@ -320,7 +320,15 @@ public class HtmlCompletionQuery extends UserTask {
             if(node == null) {
                 return null;
             }
+            //an element being typed is parsed as normal element end then
+            //returned as a leaf node for the position, which is clearly wrong
+            //since we need its parent to be able to complete the typed element
+            if(node.getNameWithoutPrefix().equals(preText)) {
+                node = node.parent();
+            }
+            
         }
+
 
         //find a leaf node for undeclared tags
         AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();

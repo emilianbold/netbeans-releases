@@ -72,6 +72,10 @@ public class Documentation implements HelpResolver {
 
     private static final Documentation SINGLETON = new Documentation();
 
+    public static void setupDocumentationForUnitTests() {
+         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));
+    }
+
     public static Documentation getDefault() {
         return SINGLETON;
     }
@@ -120,6 +124,9 @@ public class Documentation implements HelpResolver {
     }
 
     public URL resolveLink(String relativeLink) {
+        if(relativeLink == null) {
+            return null;
+        }
         try {
             return new URI(getZipURL().toExternalForm() + relativeLink).toURL();
         } catch (URISyntaxException ex) {

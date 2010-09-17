@@ -66,14 +66,10 @@ public class DocumentationTest extends NbTestCase {
         return suite;
     }
 
-     public static void setupDocumentationForUnitTests() {
-         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));
-     }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        setupDocumentationForUnitTests();
+        Documentation.setupDocumentationForUnitTests();
     }
 
     public void testDocZipPresence() throws IOException {
