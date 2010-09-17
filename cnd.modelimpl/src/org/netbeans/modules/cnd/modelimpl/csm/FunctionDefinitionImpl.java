@@ -67,8 +67,8 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     private final CsmCompoundStatement body;
     private int parseCount;
 
-    protected FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
-        super(ast, file, scope, global);
+    protected FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, file, scope, nameHolder, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         if (body == null) {
             throw new AstRendererException((FileImpl) file, getStartOffset(),
@@ -77,7 +77,8 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
-        FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<T>(ast, file, scope, register);
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<T>(ast, file, scope, nameHolder, register);
         postObjectCreateRegistration(register, functionDefinitionImpl);
         return functionDefinitionImpl;
     }

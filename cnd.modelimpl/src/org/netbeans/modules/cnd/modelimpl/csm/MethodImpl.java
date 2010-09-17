@@ -64,8 +64,8 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     private static final byte VIRTUAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
     private static final byte EXPLICIT = (byte)(1 << (FunctionImpl.LAST_USED_FLAG_INDEX+3));
 
-    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
-        super(ast, cls.getContainingFile(), null, cls, global);
+    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, cls.getContainingFile(), null, cls, nameHolder, global);
         this.visibility = visibility;
         //this(cls, visibility, AstUtil.findId(ast), 0, 0);
         //setAst(ast);
@@ -85,7 +85,8 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     }
 
     public static<T> MethodImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        MethodImpl<T> methodImpl = new MethodImpl<T>(ast, cls, visibility, register);
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        MethodImpl<T> methodImpl = new MethodImpl<T>(ast, cls, visibility, nameHolder, register);
         postObjectCreateRegistration(register, methodImpl);
         return methodImpl;
     }

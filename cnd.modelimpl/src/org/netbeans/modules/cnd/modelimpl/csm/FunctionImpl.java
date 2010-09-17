@@ -103,11 +103,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private static final boolean CHECK_SCOPE = false;
 
-    protected FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) throws AstRendererException {
+    protected FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
 
-        name = QualifiedNameCache.getManager().getString(initName(ast));
+        name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length()==0) {
             throw new AstRendererException((FileImpl)file, this.getStartOffset(), "Empty function name."); // NOI18N
         }
@@ -174,7 +174,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register) throws AstRendererException {
-        FunctionImpl<T> functionImpl = new FunctionImpl<T>(ast, file, type, scope, register);
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        FunctionImpl<T> functionImpl = new FunctionImpl<T>(ast, file, type, scope, nameHolder, register);
         postObjectCreateRegistration(register, functionImpl);
         return functionImpl;
     }
@@ -292,10 +293,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return classTemplateSuffix != null ? classTemplateSuffix : CharSequences.empty();
     }
 
-    protected CharSequence initName(AST node) {
-        return findFunctionName(node);
-    }
-
     protected final CharSequence[] initRawName(AST node) {
         return findFunctionRawName(node);
     }
@@ -345,73 +342,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     public boolean isVoidParameterList(){
         return hasFlags(FLAGS_VOID_PARMLIST);
-    }
-
-    private static CharSequence extractName(AST token){
-        int type = token.getType();
-        if( type == CPPTokenTypes.ID ) {
-            return AstUtil.getText(token);
-        } else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-            AST last = AstUtil.getLastChild(token);
-            if( last != null) {
-                if (last.getType() == CPPTokenTypes.GREATERTHAN) {
-                    AST lastId = null;
-                    int level = 0;
-                    for (AST token2 = token.getFirstChild(); token2 != null; token2 = token2.getNextSibling()) {
-                        int type2 = token2.getType();
-                        switch (type2) {
-                            case CPPTokenTypes.ID:
-                                lastId = token2;
-                                break;
-                            case CPPTokenTypes.GREATERTHAN:
-                                level--;
-                                break;
-                            case CPPTokenTypes.LESSTHAN:
-                                level++;
-                                break;
-                            default:
-                                if (level == 0) {
-                                    lastId = null;
-                                }
-                        }
-                    }
-                    if (lastId != null) {
-                        last = lastId;
-                    }
-                }
-                if( last.getType() == CPPTokenTypes.ID ) {
-                    return AstUtil.getText(last);
-                } else {
-//		    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
-                    AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
-                    if( operator != null ) {
-                        StringBuilder sb = new StringBuilder(operator.getText());
-                        sb.append(' ');
-                        for( AST next = operator.getNextSibling(); next != null; next = next.getNextSibling() ) {
-                            sb.append(next.getText());
-                        }
-                        return sb.toString();
-                    } else {
-                        AST first = token.getFirstChild();
-                        if (first.getType() == CPPTokenTypes.ID) {
-                            return AstUtil.getText(first);
-                        }
-                    }
-                }
-            }
-        }
-        return "";
-    }
-
-    private static CharSequence findFunctionName(AST ast) {
-        if( CastUtils.isCast(ast) ) {
-            return CastUtils.getFunctionName(ast);
-        }
-        AST token = AstUtil.findMethodName(ast);
-        if (token != null){
-            return extractName(token);
-        }
-        return "";
     }
 
     private static CharSequence[] findFunctionRawName(AST ast) {
