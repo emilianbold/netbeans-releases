@@ -37,28 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.cnd.remote.sync;
 
+import java.io.File;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
  *
- *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public interface RemoteProject {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=200)
+public class FullRemoteSyncFactory extends BaseSyncFactory {
 
-    /** A temporary flag for development #190299 -  Tie synchronization to project instead of host  */
-    static final boolean SYNC_PER_PROJECT = Boolean.getBoolean("cnd.remote.sync.per.project");
+    /** this factory ID -  public for test purposes */
+    public static final String ID = "full"; //NOI18N
 
-    /** A temporary flag for development #188813 -  Full remote */
-    static final boolean FULL_REMOTE = Boolean.getBoolean("cnd.full.remote");
+    @Override
+    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+        return new SharedSyncWorker(executionEnvironment, out, err, files);
+    }
 
-    // FIXUP. Think over how to get correct factory
-    static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
-    
-    ExecutionEnvironment getDevelopmentHost();
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(getClass(), "FULL_Factory_Name");
+    }
+
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(getClass(), "FULL_Factory_Description");
+    }
+
+
+    @Override
+    public String getID() {
+        return ID;
+    }
+
+    @Override
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        // return RemoteProject.FULL_REMOTE && ! RemoteUtil.isForeign(execEnv);
+        return false; // never show it in the list
+    }
+
+    @Override
+    public boolean isPathMappingCustomizable() {
+        return false;
+    }
 }

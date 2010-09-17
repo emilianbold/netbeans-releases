@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker.Result;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
@@ -234,30 +235,41 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         }
 
         HostSetupWorker.Result result = worker.getResult();
+        return finishHostSetup(result);
+    }
 
+    private static ServerRecord finishHostSetup(HostSetupWorker.Result result) {
         if (result == null) {
             return null;
         }
-
         Runnable r = result.getRunOnFinish();
         CndUtils.assertFalse(r == null);
-
         if (r != null) {
             r.run();
         }
-
         ExecutionEnvironment execEnv = result.getExecutionEnvironment();
         String displayName = result.getDisplayName();
-
         if (displayName == null) {
             displayName = execEnv.getDisplayName();
         }
-
         final RemoteSyncFactory syncFactory = result.getSyncFactory();
         final ServerRecord record = ServerList.get(execEnv);
         RemoteServerRecord rsr = (RemoteServerRecord) record;
         rsr.setSyncFactory(syncFactory);
         rsr.setDisplayName(displayName);
         return record;
+    }
+
+    public static void applyHostSetup(ToolsCacheManager cacheManager, HostSetupWorker.Result createHostData) {
+        ServerRecord newServerRecord = CreateHostWizardIterator.finishHostSetup(createHostData);
+        if (newServerRecord != null) {
+            List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
+            if (!hosts.contains(newServerRecord)) {
+                hosts.add(newServerRecord);
+                cacheManager.setHosts(hosts);
+                cacheManager.setDefaultRecord(ServerList.getDefaultRecord());
+                cacheManager.applyChanges();
+            }
+        }
     }
 }
