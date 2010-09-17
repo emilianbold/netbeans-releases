@@ -146,7 +146,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         };
 
 
-        importPanel = new SelectModeDescriptorPanel();
+        importPanel = new SelectModeDescriptorPanel(fullRemote);
         importPanel.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -421,6 +421,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
+        wiz.putProperty("fullRemote", Boolean.valueOf(fullRemote));
         index = 0;
         setupPanelsAndStepsIfNeed();
     }
@@ -444,7 +445,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     private boolean isSimple() {
-        return wizardtype == TYPE_MAKEFILE && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
+        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
     }
 
     @Override

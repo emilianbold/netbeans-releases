@@ -146,7 +146,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         toolchainComboBox.setRenderer(new MyToolchainListCellRenderer(FAKE_ITEM));
     }
 
-    /*package*/static void updateToolchainsComponents(JComboBox hostComboBox, JComboBox toolchainComboBox, Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
+    /*package*/static void updateToolchainsComponents(JComboBox hostComboBox, JComboBox toolchainComboBox, 
+            Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enableHost, boolean enableToolchain) {
+
         hostComboBox.removeAllItems();
         toolchainComboBox.removeAllItems();
         if (records != null) {
@@ -156,8 +158,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             hostComboBox.setSelectedItem(srToSelect);
             updateToolchains(toolchainComboBox, srToSelect);
             toolchainComboBox.setSelectedItem(csToSelect);
-            hostComboBox.setEnabled(enabled);
-            toolchainComboBox.setEnabled(enabled);
+            hostComboBox.setEnabled(enableHost);
+            toolchainComboBox.setEnabled(enableToolchain);
         }
     }
 
@@ -654,7 +656,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, readOnlyToolchain) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
-                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, enabled);
+                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, enabled, enabled);
                 initialized = true;
                 panel.fireChangeEvent(); // Notify that the panel changed
             }
