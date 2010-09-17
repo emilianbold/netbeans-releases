@@ -42,6 +42,10 @@
 
 package org.netbeans.libs.git;
 
+import java.io.File;
+import java.util.Map;
+import org.netbeans.libs.git.progress.StatusProgressMonitor;
+
 /**
  *
  * @author ondra
@@ -51,4 +55,7 @@ public abstract class GitClient {
     protected GitClient () {
         
     }
+
+    public abstract Map<File, GitStatus> getStatus (File[] roots, StatusProgressMonitor monitor) throws GitException;
+    public abstract void init () throws GitException;
 }

@@ -42,17 +42,75 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.jgit.commands.StatusCommand;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.dircache.DirCacheIterator;
+import org.eclipse.jgit.errors.CorruptObjectException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.EmptyTreeIterator;
+import org.eclipse.jgit.treewalk.FileTreeIterator;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.util.FS;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
 /**
  *
  * @author ondra
  */
 public class JGitClient extends GitClient {
-    private final JGitRepository repository;
+    private final JGitRepository gitRepository;
 
-    public JGitClient (JGitRepository repository) {
-        this.repository = repository;
+    public JGitClient (JGitRepository gitRepository) {
+        this.gitRepository = gitRepository;
     }
 
+    @Override
+    /**
+     * Returns an array of statuses for files under given roots
+     * @param roots root folders or files
+     * @return status array
+     * @throws GitException when an error occurs
+     */
+    public Map<File, GitStatus> getStatus (File[] roots, StatusProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        StatusCommand cmd = new StatusCommand(repository, roots, monitor);
+        cmd.execute();
+        return cmd.getStatuses();
+    }
+
+    @Override
+    /**
+     * Returns an instance of {@link GitRepository} related to the given <code>workDir</code>
+     * @param workDir local folder where the git repository is located or where it will be created
+     * @param forceCreate if set to true, a new non-bare repository will be created inside the given workDir
+     * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
+     */
+    public void init () throws GitException {
+        try {
+            Repository repository = gitRepository.getRepository();
+            File workDir = repository.getWorkDir();
+            if (!(workDir.exists() || workDir.mkdirs())) {
+                throw new GitException("Cannot create local folder at " + workDir.getAbsolutePath());
+            }
+            repository.create();
+        } catch (IllegalStateException ex) {
+            throw new GitException(ex);
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+    }
 }

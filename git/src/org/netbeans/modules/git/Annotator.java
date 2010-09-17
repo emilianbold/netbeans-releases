@@ -50,7 +50,8 @@ import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
- *
+ * TODO: handle annotations
+ * TODO: implement {@link org.netbeans.modules.versioning.util.OptionsPanelColorProvider}
  * @author ondra
  */
 class Annotator extends VCSAnnotator {

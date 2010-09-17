@@ -67,4 +67,8 @@ public final class JGitRepository {
             throw new GitException(ex);
         }
     }
+
+    Repository getRepository () {
+        return repository;
+    }
 }

@@ -45,7 +45,8 @@ package org.netbeans.modules.git;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 /**
- *
+ * TODO: handle initial git scan
+ * TODO: handle FS events
  * @author ondra
  */
 class FilesystemInterceptor extends VCSInterceptor {

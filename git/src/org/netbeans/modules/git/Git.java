@@ -43,9 +43,22 @@
 package org.netbeans.modules.git;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitClientFactory;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -57,6 +70,8 @@ public final class Git {
     private Annotator annotator;
     private FilesystemInterceptor interceptor;
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.git"); //NOI18N
+    private GitVCS gitVCS;
+    private FileStatusCache fileStatusCache;
 
     public Git () {
     }
@@ -70,8 +85,10 @@ public final class Git {
     }
 
     private void init() {
+        fileStatusCache = new FileStatusCache();
         annotator = new Annotator();
         interceptor = new FilesystemInterceptor();
+        gitVCS = Lookup.getDefault().lookup(GitVCS.class);
     }
 
     VCSAnnotator getVCSAnnotator() {
@@ -86,5 +103,122 @@ public final class Git {
         
     }
 
+    /**
+     * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status.
+
+     * @param file a file or directory
+     * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
+     */
+    public boolean isManaged(File file) {
+        return VersioningSupport.getOwner(file) instanceof GitVCS && !GitUtils.isPartOfGitMetadata(file);
+    }
+
+    public FileStatusCache getFileStatusCache() {
+        return fileStatusCache;
+    }
+
+    //XXX move to versioning utils
+    private final RootsToFile rootsToFile = new RootsToFile();
+    public File getRepositoryRoot(File file) {
+        File oFile = file;
+
+        rootsToFile.logStatistics();
+        File root = rootsToFile.get(file, true);
+        if(root != null) {
+            return root;
+        }
+
+        root = gitVCS.getTopmostManagedAncestor(file);
+        if(root != null) {
+            if(file.isFile()) file = file.getParentFile();
+            List<File> folders = new ArrayList<File>();
+            for (; file != null && !file.getAbsolutePath().equals(root.getAbsolutePath()) ; file = file.getParentFile()) {
+                File knownRoot = rootsToFile.get(file);
+                if(knownRoot != null) {
+                    rootsToFile.put(folders, knownRoot);
+                    rootsToFile.put(oFile, knownRoot);
+                    return knownRoot;
+                }
+                folders.add(file);
+                if(GitUtils.repositoryExistsFor(file)) {
+                    rootsToFile.put(folders, file);
+                    rootsToFile.put(oFile, file);
+                    return file;
+                }
+            }
+            folders.add(root);
+            rootsToFile.put(folders, root);
+            rootsToFile.put(oFile, root);
+            return root;
+        }
+        return null;
+    }
+
+    public GitClient getClient (File repository) throws GitException {
+        return GitClientFactory.getInstance(null).getClient(repository);
+    }
+
+    private static class RootsToFile {
+        private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.RootsToFile"); // NOI18N
+        private LinkedList<File> order = new LinkedList<File>();
+        private Map<File, File> files = new HashMap<File, File>();
+        private long cachedAccesCount = 0;
+        private long accesCount = 0;
+        private int statisticsFrequency = 0;
+
+        public RootsToFile() {
+            String s = System.getProperty("git.root.stat.frequency", "0"); // NOI18N
+            statisticsFrequency = Integer.parseInt(s);
+        }
+        synchronized void put(Collection<File> files, File root) {
+            for (File file : files) {
+                put(file, root);
+            }
+        }
+        synchronized void put(File file, File root) {
+            if(order.size() > 1500) {
+                for (int i = 0; i < 150; i++) {
+                    files.remove(order.getFirst());
+                    order.removeFirst();
+                }
+            }
+            order.addLast(file);
+            files.put(file, root);
+        }
+        synchronized File get(File file) {
+            return get(file, false);
+        }
+        synchronized File get(File file, boolean statistics) {
+            File root = files.get(file);
+            if(statistics && LOG.isLoggable(Level.FINEST)) {
+               cachedAccesCount += root != null ? 1 : 0;
+               accesCount++;
+            }
+            return root;
+        }
+        synchronized int size() {
+            return order.size();
+        }
+        synchronized void logStatistics() {
+            if(!LOG.isLoggable(Level.FINEST) ||
+               (statisticsFrequency > 0 && (accesCount % statisticsFrequency != 0)))
+            {
+                return;
+            }
+
+            LOG.finest("Git Repository roots cache statistics:\n" +                                 // NOI18N
+                     "  cached roots size       = " + order.size() + "\n" +                         // NOI18N
+                     "  access count            = " + accesCount + "\n" +                           // NOI18N
+                     "  cached access count     = " + cachedAccesCount + "\n" +                     // NOI18N
+                     "  not cached access count = " + (accesCount - cachedAccesCount) + "\n");      // NOI18N
+        }
+
+        synchronized void clear () {
+            order.clear();
+            files.clear();
+            cachedAccesCount = 0;
+            accesCount = 0;
+        }
+    }
 
 }

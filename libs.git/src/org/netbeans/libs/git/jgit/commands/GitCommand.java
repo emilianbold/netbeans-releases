@@ -40,62 +40,47 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
+package org.netbeans.libs.git.jgit.commands;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public final class Utils {
-    private Utils () {
+public abstract class GitCommand {
+    private final Repository repository;
+    private final ProgressMonitor monitor;
 
+    protected GitCommand (Repository repository, ProgressMonitor monitor) {
+        this.repository = repository;
+        this.monitor = monitor;
     }
 
-    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
-         return new Repository(getMetadataFolder(workDir), workDir);
-    }
-
-    public static File getMetadataFolder (File workDir) {
-        return new File(workDir, Constants.DOT_GIT);
-    }
-
-    public static boolean checkExecutable (Repository repository) {
-        return repository.getConfig().getBoolean("core", null, "filemode", true); //NOI18N
-    }
-    
-    public static Collection<String> getRelativePaths (File workDir, File[] roots) {
-        Collection<String> paths = new ArrayList<String>(roots.length);
-        for (File root : roots) {
-            if (workDir.equals(root)) {
-                paths.clear();
-                break;
-            } else {
-                paths.add(getRelativePath(workDir, root));
+    public final void execute () throws GitException {
+        monitor.started();
+        try {
+            if (prepareCommand()) {
+                run();
             }
+        } finally {
+            monitor.finished();
         }
-        return paths;
     }
 
-    public static String getRelativePath (File repo, final File file) {
-        StringBuilder relativePath = new StringBuilder("");
-        File parent = file;
-        if (!parent.equals(repo)) {
-            while (parent != null && !parent.equals(repo)) {
-                relativePath.insert(0, "/").insert(0, parent.getName()); //NOI18N
-                parent = parent.getParentFile();
-            }
-            if (parent == null) {
-                throw new IllegalArgumentException(file.getAbsolutePath() + " is not under " + repo.getAbsolutePath());
-            }
-            relativePath.deleteCharAt(relativePath.length() - 1);
+    protected abstract void run () throws GitException;
+
+    protected boolean prepareCommand () {
+        boolean repositoryExists = repository.getConfig().getFile().exists();
+        if (!repositoryExists) {
+            monitor.preparationsFailed("Git repository does not exist at " + repository.getWorkDir());
         }
-        return relativePath.toString();
+        return repositoryExists;
+    }
+
+    protected Repository getRepository () {
+        return repository;
     }
 }

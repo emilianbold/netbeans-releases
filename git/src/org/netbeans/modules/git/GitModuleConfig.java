@@ -40,62 +40,29 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
+package org.netbeans.modules.git;
 
 /**
  *
  * @author ondra
  */
-public final class Utils {
-    private Utils () {
-
-    }
-
-    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
-         return new Repository(getMetadataFolder(workDir), workDir);
-    }
-
-    public static File getMetadataFolder (File workDir) {
-        return new File(workDir, Constants.DOT_GIT);
-    }
-
-    public static boolean checkExecutable (Repository repository) {
-        return repository.getConfig().getBoolean("core", null, "filemode", true); //NOI18N
+public final class GitModuleConfig {
+    
+    private static GitModuleConfig instance;
+    
+    public static GitModuleConfig getDefault () {
+        if (instance == null) {
+            instance = new GitModuleConfig();
+        }
+        return instance;
     }
     
-    public static Collection<String> getRelativePaths (File workDir, File[] roots) {
-        Collection<String> paths = new ArrayList<String>(roots.length);
-        for (File root : roots) {
-            if (workDir.equals(root)) {
-                paths.clear();
-                break;
-            } else {
-                paths.add(getRelativePath(workDir, root));
-            }
-        }
-        return paths;
+    private GitModuleConfig() {
+        
     }
 
-    public static String getRelativePath (File repo, final File file) {
-        StringBuilder relativePath = new StringBuilder("");
-        File parent = file;
-        if (!parent.equals(repo)) {
-            while (parent != null && !parent.equals(repo)) {
-                relativePath.insert(0, "/").insert(0, parent.getName()); //NOI18N
-                parent = parent.getParentFile();
-            }
-            if (parent == null) {
-                throw new IllegalArgumentException(file.getAbsolutePath() + " is not under " + repo.getAbsolutePath());
-            }
-            relativePath.deleteCharAt(relativePath.length() - 1);
-        }
-        return relativePath.toString();
+    boolean isExcludedFromCommit(String absolutePath) {
+        return false;
     }
+
 }

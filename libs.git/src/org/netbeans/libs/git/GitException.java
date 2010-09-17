@@ -42,16 +42,18 @@
 
 package org.netbeans.libs.git;
 
-import java.io.IOException;
-
 /**
  *
  * @author ondra
  */
 public class GitException extends Exception {
 
-    public GitException (IOException ex) {
-        super(ex);
+    public GitException (Throwable t) {
+        super(t);
+    }
+
+    public GitException (String message) {
+        super(message);
     }
 
 }

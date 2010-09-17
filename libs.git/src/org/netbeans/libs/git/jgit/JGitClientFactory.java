@@ -43,59 +43,48 @@
 package org.netbeans.libs.git.jgit;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitClientFactory;
+import org.netbeans.libs.git.GitException;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author ondra
  */
-public final class Utils {
-    private Utils () {
+@ServiceProviders(value = { @ServiceProvider(service=GitClientFactory.class), @ServiceProvider(service=JGitClientFactory.class) })
+public final class JGitClientFactory extends GitClientFactory {
 
+    private static JGitClientFactory instance;
+    private final Map<File, JGitRepository> repositoryPool;
+
+    public JGitClientFactory () {
+        repositoryPool = new HashMap<File, JGitRepository>(5);
     }
 
-    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
-         return new Repository(getMetadataFolder(workDir), workDir);
-    }
-
-    public static File getMetadataFolder (File workDir) {
-        return new File(workDir, Constants.DOT_GIT);
-    }
-
-    public static boolean checkExecutable (Repository repository) {
-        return repository.getConfig().getBoolean("core", null, "filemode", true); //NOI18N
-    }
-    
-    public static Collection<String> getRelativePaths (File workDir, File[] roots) {
-        Collection<String> paths = new ArrayList<String>(roots.length);
-        for (File root : roots) {
-            if (workDir.equals(root)) {
-                paths.clear();
-                break;
-            } else {
-                paths.add(getRelativePath(workDir, root));
-            }
+    static synchronized JGitClientFactory getInstance () {
+        if (instance == null) {
+            instance = Lookup.getDefault().lookup(JGitClientFactory.class);
         }
-        return paths;
+        return instance;
     }
 
-    public static String getRelativePath (File repo, final File file) {
-        StringBuilder relativePath = new StringBuilder("");
-        File parent = file;
-        if (!parent.equals(repo)) {
-            while (parent != null && !parent.equals(repo)) {
-                relativePath.insert(0, "/").insert(0, parent.getName()); //NOI18N
-                parent = parent.getParentFile();
+    @Override
+    public GitClient getClient (File repositoryLocation) throws GitException {
+        synchronized (repositoryPool) {
+            JGitRepository repository = repositoryPool.get(repositoryLocation);
+            if (repository == null) {
+                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
             }
-            if (parent == null) {
-                throw new IllegalArgumentException(file.getAbsolutePath() + " is not under " + repo.getAbsolutePath());
-            }
-            relativePath.deleteCharAt(relativePath.length() - 1);
+            return createClient(repository);
         }
-        return relativePath.toString();
+    }
+
+    private GitClient createClient (JGitRepository repository) {
+        return new JGitClient(repository);
     }
 }

@@ -1,0 +1,190 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.git;
+
+import java.util.EnumSet;
+import java.util.Set;
+import org.netbeans.libs.git.GitStatus;
+
+/**
+ *
+ * @author ondra
+ */
+public class FileInformation {
+    private final EnumSet<Status> status;
+    private boolean seenInUI;
+    private final boolean directory;
+
+    FileInformation (EnumSet<Status> status, boolean isDirectory) {
+        this.status = status;
+        this.directory = isDirectory;
+    }
+
+    FileInformation (GitStatus status) {
+        directory = false;
+        seenInUI = true;
+        if (!status.isTracked()) {
+            this.status = EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+        } else if (status.isConflict()) {
+            this.status = EnumSet.of(Status.STATUS_VERSIONED_CONFLICT);
+        } else {
+            GitStatus.Status statusHeadIndex = status.getStatusHeadIndex();
+            GitStatus.Status statusIndexWC = status.getStatusIndexWC();
+            EnumSet<Status> s = EnumSet.noneOf(Status.class);
+            if (GitStatus.Status.STATUS_ADDED.equals(statusHeadIndex)) {
+                s.add(Status.STATUS_VERSIONED_ADDED_TO_INDEX);
+            } else if (GitStatus.Status.STATUS_MODIFIED.equals(statusHeadIndex)) {
+                s.add(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX);
+            } else if (GitStatus.Status.STATUS_REMOVED.equals(statusHeadIndex)) {
+                s.add(Status.STATUS_VERSIONED_REMOVED_IN_INDEX);
+            }
+            if (GitStatus.Status.STATUS_ADDED.equals(statusIndexWC)) {
+                s.add(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+            } else if (GitStatus.Status.STATUS_MODIFIED.equals(statusIndexWC)) {
+                s.add(Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+            } else if (GitStatus.Status.STATUS_REMOVED.equals(statusIndexWC)) {
+                s.add(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE);
+            }
+            if (s.isEmpty()) {
+                s.add(Status.STATUS_VERSIONED_UPTODATE);
+            }
+            this.status = s;
+        }
+    }
+
+    boolean containsStatus (Set<Status> includeStatus) {
+        EnumSet<Status> intersection = status.clone();
+        intersection.retainAll(includeStatus);
+        return !intersection.isEmpty();
+    }
+
+    boolean containsStatus (Status includeStatus) {
+        return containsStatus(EnumSet.of(includeStatus));
+    }
+
+    void setSeenInUI (boolean flag) {
+        this.seenInUI = flag;
+    }
+
+    boolean seenInUI () {
+        return seenInUI;
+    }
+
+    Set<Status> getStatus() {
+        return status;
+    }
+    public boolean isDirectory () {
+        return this.directory;
+    }
+
+    public static enum Status {
+
+        /**
+         * There is nothing known about the file, it may not even exist.
+         */
+        STATUS_UNKNOWN,
+        /**
+         * The file is not managed by the module, i.e. the user does not wish it to be under control of this
+         * versioning system module. All files except files under versioned roots have this status.
+         */
+        STATUS_NOTVERSIONED_NOTMANAGED,
+        /**
+         * The file exists locally but is NOT under version control because it should not be (i.e. is ignored or resides under an excluded folder).
+         * The file itself IS under a versioned root.
+         */
+        STATUS_NOTVERSIONED_EXCLUDED,
+        /**
+         * The file has been added to index but does not exist in repository yet.
+         */
+        STATUS_VERSIONED_ADDED_TO_INDEX,
+        /**
+         * The file exists locally but is NOT under version control, mostly because it has not been added
+         * to the repository yet.
+         */
+        STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
+        /**
+         * The file is under version control and is in sync with repository.
+         */
+        STATUS_VERSIONED_UPTODATE,
+        /**
+         * There's a modification between HEAD and index versions of the file
+         */
+        STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
+        /**
+         * There's a modification between HEAD and working tree versions of the file
+         */
+        STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
+        /**
+         * There's a modification between index and working tree versions of the file
+         */
+        STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE,
+        /**
+         * Merging during update resulted in merge conflict. Conflicts in the local copy must be resolved before the file can be commited.
+         */
+        STATUS_VERSIONED_CONFLICT,
+        /**
+         * The file does NOT exist in index but does in HEAD, it has beed removed from index, waits for commit.
+         */
+        STATUS_VERSIONED_REMOVED_IN_INDEX,
+        /**
+         * The file has been removed in the working tree
+         */
+        STATUS_VERSIONED_REMOVED_IN_WORKING_TREE,
+    }
+    public static final EnumSet<Status> STATUS_ALL = EnumSet.allOf(Status.class);
+    public static final EnumSet<Status> STATUS_MANAGED = EnumSet.complementOf(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED));
+    public static final EnumSet<Status> STATUS_VERSIONED = EnumSet.complementOf(EnumSet.of(Status.STATUS_UNKNOWN,
+            Status.STATUS_NOTVERSIONED_NOTMANAGED,
+            Status.STATUS_NOTVERSIONED_EXCLUDED,
+            Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+    public static final EnumSet<Status> STATUS_MODIFIED = EnumSet.of(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
+            Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
+            Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_LOCAL_CHANGES = EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX,
+            Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
+            Status.STATUS_VERSIONED_CONFLICT,
+            Status.STATUS_VERSIONED_REMOVED_IN_INDEX,
+            Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE,
+            Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
+            Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
+            Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+}

@@ -42,43 +42,51 @@
 
 package org.netbeans.libs.git;
 
-import org.netbeans.libs.git.jgit.JGitRepository;
-import org.netbeans.libs.git.jgit.JGitClient;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author ondra
  */
-public final class GitClientFactory {
+public abstract class GitClientFactory {
 
     private static GitClientFactory instance;
-    private final Map<File, JGitRepository> repositoryPool;
 
-    private GitClientFactory () {
-        repositoryPool = new HashMap<File, JGitRepository>(5);
-    }
+    /**
+     * Returns a git client bound to a given git repository
+     * @param repositoryLocation repository root location
+     * @return git client
+     * @throws GitException
+     */
+    public abstract GitClient getClient (File repositoryLocation) throws GitException;
 
-    public static synchronized GitClientFactory getInstance () {
-        if (instance == null) {
-            instance = new GitClientFactory();
-        }
-        return instance;
-    }
-
-    public GitClient getClient (File repositoryLocation) throws GitException {
-        synchronized (repositoryPool) {
-            JGitRepository repository = repositoryPool.get(repositoryLocation);
-            if (repository == null) {
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
+    /**
+     * Returns a preferred instance of {@link GitClientFactory} or the most suitable one if the preferred is unavailable.
+     * @param preferredFactory class name of the preferred instance. If such instance is unavailable this is treated as being <code>null</code>. Can be <code>null</node> and
+     * thus any available instance is returned.
+     * @return instance of <code>GitClientFactory</code>
+     */
+    public static synchronized GitClientFactory getInstance (String preferredFactory) {
+        GitClientFactory selectedFactory = instance;
+        if (instance == null || !instance.getClass().getName().equals(preferredFactory)) {
+            Collection<? extends GitClientFactory> factories = Lookup.getDefault().lookupAll(GitClientFactory.class);
+            // at least one should always be returned
+            if (!factories.isEmpty()) {
+                selectedFactory = factories.iterator().next();
             }
-            return createClient(repository);
+            // find the preferred one
+            for (GitClientFactory fact : factories) {
+                if (fact.getClass().getName().equals(preferredFactory)) {
+                    selectedFactory = fact;
+                    break;
+                }
+            }
+            if (instance == null) {
+                instance = selectedFactory;
+            }
         }
-    }
-
-    private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
+        return selectedFactory;
     }
 }

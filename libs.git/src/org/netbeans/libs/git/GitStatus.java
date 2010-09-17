@@ -40,62 +40,56 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
+package org.netbeans.libs.git;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
 
 /**
  *
  * @author ondra
  */
-public final class Utils {
-    private Utils () {
-
+public class GitStatus {
+    public enum Status {
+        STATUS_ADDED, STATUS_REMOVED, STATUS_NORMAL, STATUS_MODIFIED, STATUS_IGNORED
     }
 
-    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
-         return new Repository(getMetadataFolder(workDir), workDir);
+    private final boolean tracked;
+    private final String relativePath;
+    private final File correspondingFile;
+    private final Status statusHeadIndex;
+    private final Status statusIndexWC;
+    private final boolean conflict;
+
+    public GitStatus (boolean tracked, String relativePath, File correspondingFile, Status statusHeadIndex, Status statusIndexWC, boolean conflict) {
+        this.tracked = tracked;
+        this.relativePath = relativePath;
+        this.correspondingFile = correspondingFile;
+        this.statusHeadIndex = statusHeadIndex;
+        this.statusIndexWC = statusIndexWC;
+        this.conflict = conflict;
     }
 
-    public static File getMetadataFolder (File workDir) {
-        return new File(workDir, Constants.DOT_GIT);
+    public File getFile() {
+        return correspondingFile;
     }
 
-    public static boolean checkExecutable (Repository repository) {
-        return repository.getConfig().getBoolean("core", null, "filemode", true); //NOI18N
-    }
-    
-    public static Collection<String> getRelativePaths (File workDir, File[] roots) {
-        Collection<String> paths = new ArrayList<String>(roots.length);
-        for (File root : roots) {
-            if (workDir.equals(root)) {
-                paths.clear();
-                break;
-            } else {
-                paths.add(getRelativePath(workDir, root));
-            }
-        }
-        return paths;
+    public String getRelativePath() {
+        return relativePath;
     }
 
-    public static String getRelativePath (File repo, final File file) {
-        StringBuilder relativePath = new StringBuilder("");
-        File parent = file;
-        if (!parent.equals(repo)) {
-            while (parent != null && !parent.equals(repo)) {
-                relativePath.insert(0, "/").insert(0, parent.getName()); //NOI18N
-                parent = parent.getParentFile();
-            }
-            if (parent == null) {
-                throw new IllegalArgumentException(file.getAbsolutePath() + " is not under " + repo.getAbsolutePath());
-            }
-            relativePath.deleteCharAt(relativePath.length() - 1);
-        }
-        return relativePath.toString();
+    public Status getStatusHeadIndex() {
+        return statusHeadIndex;
+    }
+
+    public Status getStatusIndexWC() {
+        return statusIndexWC;
+    }
+
+    public boolean isTracked() {
+        return tracked;
+    }
+
+    public boolean isConflict() {
+        return conflict;
     }
 }
