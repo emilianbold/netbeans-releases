@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import nu.validator.htmlparser.impl.ElementName;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 
 /**
  *
@@ -60,7 +61,8 @@ public enum ElementDescriptor {
     //
     //>>>>>>>>>>>>>>>>>>>>>>>>
 
-A(
+    A(
+        HtmlTagType.HTML,
         new Link("a", "text-level-semantics.html#the-a-element"),
          "Hyperlink",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.INTERACTIVE),
@@ -74,6 +76,7 @@ A(
 ),
 
 ABBR(
+        HtmlTagType.HTML,
         new Link("abbr", "text-level-semantics.html#the-abbr-element"),
          "Abbreviation",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -87,6 +90,7 @@ ABBR(
 ),
 
 ADDRESS(
+        HtmlTagType.HTML,
         new Link("address", "sections.html#the-address-element"),
          "Contact information for a page or section",
         EnumSet.of(ContentType.FLOW),
@@ -100,6 +104,7 @@ ADDRESS(
 ),
 
 AREA(
+        HtmlTagType.HTML,
         new Link("area", "the-map-element.html#the-area-element"),
          "Hyperlink or dead area on an image map",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -113,6 +118,7 @@ AREA(
 ),
 
 ARTICLE(
+        HtmlTagType.HTML,
         new Link("article", "sections.html#the-article-element"),
          "Self-contained syndicatable or reusable composition",
         EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
@@ -126,6 +132,7 @@ ARTICLE(
 ),
 
 ASIDE(
+        HtmlTagType.HTML,
         new Link("aside", "sections.html#the-aside-element"),
          "Sidebar for tangentially related content",
         EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
@@ -139,6 +146,7 @@ ASIDE(
 ),
 
 AUDIO(
+        HtmlTagType.HTML,
         new Link("audio", "video.html#audio"),
          "Audio player",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED, ContentType.INTERACTIVE),
@@ -152,6 +160,7 @@ AUDIO(
 ),
 
 B(
+        HtmlTagType.HTML,
         new Link("b", "text-level-semantics.html#the-b-element"),
          "Keywords",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -165,6 +174,7 @@ B(
 ),
 
 BASE(
+        HtmlTagType.HTML,
         new Link("base", "semantics.html#the-base-element"),
          "Base URL and default target browsing context for hyperlinks and forms",
         EnumSet.of(ContentType.METADATA),
@@ -178,6 +188,7 @@ BASE(
 ),
 
 BDO(
+        HtmlTagType.HTML,
         new Link("bdo", "text-level-semantics.html#the-bdo-element"),
          "Text directionality formatting",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -191,6 +202,7 @@ BDO(
 ),
 
 BLOCKQUOTE(
+        HtmlTagType.HTML,
         new Link("blockquote", "grouping-content.html#the-blockquote-element"),
          "A section quoted from another source",
         EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
@@ -204,6 +216,7 @@ BLOCKQUOTE(
 ),
 
 BODY(
+        HtmlTagType.HTML,
         new Link("body", "sections.html#the-body-element-0"),
          "Document body",
         EnumSet.of(ContentType.SECTIONING),
@@ -217,6 +230,7 @@ BODY(
 ),
 
 BR(
+        HtmlTagType.HTML,
         new Link("br", "text-level-semantics.html#the-br-element"),
          "Line break, e.g. in poem or postal address",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -230,6 +244,7 @@ BR(
 ),
 
 BUTTON(
+        HtmlTagType.HTML,
         new Link("button", "the-button-element.html#the-button-element"),
          "Button control",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.INTERACTIVE),
@@ -243,6 +258,7 @@ BUTTON(
 ),
 
 CANVAS(
+        HtmlTagType.HTML,
         new Link("canvas", "the-canvas-element.html#the-canvas-element"),
          "Scriptable bitmap canvas",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
@@ -256,6 +272,7 @@ CANVAS(
 ),
 
 CAPTION(
+        HtmlTagType.HTML,
         new Link("caption", "tabular-data.html#the-caption-element"),
          "Table caption",
         EnumSet.noneOf(ContentType.class),
@@ -269,6 +286,7 @@ CAPTION(
 ),
 
 CITE(
+        HtmlTagType.HTML,
         new Link("cite", "text-level-semantics.html#the-cite-element"),
          "Title of a work",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -282,6 +300,7 @@ CITE(
 ),
 
 CODE(
+        HtmlTagType.HTML,
         new Link("code", "text-level-semantics.html#the-code-element"),
          "Computer code",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -295,6 +314,7 @@ CODE(
 ),
 
 COL(
+        HtmlTagType.HTML,
         new Link("col", "tabular-data.html#the-col-element"),
          "Table column",
         EnumSet.noneOf(ContentType.class),
@@ -308,6 +328,7 @@ COL(
 ),
 
 COLGROUP(
+        HtmlTagType.HTML,
         new Link("colgroup", "tabular-data.html#the-colgroup-element"),
          "Group of columns in a table",
         EnumSet.noneOf(ContentType.class),
@@ -321,6 +342,7 @@ COLGROUP(
 ),
 
 COMMAND(
+        HtmlTagType.HTML,
         new Link("command", "interactive-elements.html#the-command"),
          "Menu command",
         EnumSet.of(ContentType.METADATA, ContentType.FLOW, ContentType.PHRASING),
@@ -334,6 +356,7 @@ COMMAND(
 ),
 
 DATALIST(
+        HtmlTagType.HTML,
         new Link("datalist", "the-button-element.html#the-datalist-element"),
          "Container for options for combo box control",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -347,6 +370,7 @@ DATALIST(
 ),
 
 DD(
+        HtmlTagType.HTML,
         new Link("dd", "grouping-content.html#the-dd-element"),
          "Content for corresponding dt element(s)",
         EnumSet.noneOf(ContentType.class),
@@ -360,6 +384,7 @@ DD(
 ),
 
 DEL(
+        HtmlTagType.HTML,
         new Link("del", "edits.html#the-del-element"),
          "A removal from the document",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -373,6 +398,7 @@ DEL(
 ),
 
 DETAILS(
+        HtmlTagType.HTML,
         new Link("details", "interactive-elements.html#the-details-element"),
          "Disclosure control for hiding details",
         EnumSet.of(ContentType.FLOW, ContentType.SECTIONING, ContentType.INTERACTIVE),
@@ -386,6 +412,7 @@ DETAILS(
 ),
 
 DFN(
+        HtmlTagType.HTML,
         new Link("dfn", "text-level-semantics.html#the-dfn-element"),
          "Defining instance",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -399,6 +426,7 @@ DFN(
 ),
 
 DIV(
+        HtmlTagType.HTML,
         new Link("div", "grouping-content.html#the-div-element"),
          "Generic flow container",
         EnumSet.of(ContentType.FLOW),
@@ -412,6 +440,7 @@ DIV(
 ),
 
 DL(
+        HtmlTagType.HTML,
         new Link("dl", "grouping-content.html#the-dl-element"),
          "Association list consisting of zero or more name-value groups",
         EnumSet.of(ContentType.FLOW),
@@ -425,6 +454,7 @@ DL(
 ),
 
 DT(
+        HtmlTagType.HTML,
         new Link("dt", "grouping-content.html#the-dt-element"),
          "Legend for corresponding dd element(s)",
         EnumSet.noneOf(ContentType.class),
@@ -438,6 +468,7 @@ DT(
 ),
 
 EM(
+        HtmlTagType.HTML,
         new Link("em", "text-level-semantics.html#the-em-element"),
          "Stress emphasis",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -451,6 +482,7 @@ EM(
 ),
 
 EMBED(
+        HtmlTagType.HTML,
         new Link("embed", "the-iframe-element.html#the-embed-element"),
          "Plugin",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED, ContentType.INTERACTIVE),
@@ -464,6 +496,7 @@ EMBED(
 ),
 
 FIELDSET(
+        HtmlTagType.HTML,
         new Link("fieldset", "forms.html#the-fieldset-element"),
          "Group of form controls",
         EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
@@ -477,6 +510,7 @@ FIELDSET(
 ),
 
 FIGCAPTION(
+        HtmlTagType.HTML,
         new Link("figcaption", "grouping-content.html#the-figcaption-element"),
          "Caption for figure",
         EnumSet.noneOf(ContentType.class),
@@ -490,6 +524,7 @@ FIGCAPTION(
 ),
 
 FIGURE(
+        HtmlTagType.HTML,
         new Link("figure", "grouping-content.html#the-figure-element"),
          "Figure with optional caption",
         EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
@@ -503,6 +538,7 @@ FIGURE(
 ),
 
 FOOTER(
+        HtmlTagType.HTML,
         new Link("footer", "sections.html#the-footer-element"),
          "Footer for a page or section",
         EnumSet.of(ContentType.FLOW),
@@ -516,6 +552,7 @@ FOOTER(
 ),
 
 FORM(
+        HtmlTagType.HTML,
         new Link("form", "forms.html#the-form-element"),
          "User-submittable form",
         EnumSet.of(ContentType.FLOW),
@@ -529,6 +566,7 @@ FORM(
 ),
 
 H1(
+        HtmlTagType.HTML,
         new Link("h1", "sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
          "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
@@ -542,6 +580,7 @@ H1(
 ),
 
 H2(
+        HtmlTagType.HTML,
         new Link("h2", "sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
          "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
@@ -555,6 +594,7 @@ H2(
 ),
 
 H3(
+        HtmlTagType.HTML,
         new Link("h3", "sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
          "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
@@ -568,6 +608,7 @@ H3(
 ),
 
 H4(
+        HtmlTagType.HTML,
         new Link("h4", "sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
          "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
@@ -581,6 +622,7 @@ H4(
 ),
 
 H5(
+        HtmlTagType.HTML,
         new Link("h5", "sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
          "",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
@@ -594,6 +636,7 @@ H5(
 ),
 
 H6(
+        HtmlTagType.HTML,
         new Link("h6", "sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"),
          "Section heading",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
@@ -607,6 +650,7 @@ H6(
 ),
 
 HEAD(
+        HtmlTagType.HTML,
         new Link("head", "semantics.html#the-head-element-0"),
          "Container for document metadata",
         EnumSet.noneOf(ContentType.class),
@@ -620,6 +664,7 @@ HEAD(
 ),
 
 HEADER(
+        HtmlTagType.HTML,
         new Link("header", "sections.html#the-header-element"),
          "Introductory or navigational aids for a page or section",
         EnumSet.of(ContentType.FLOW),
@@ -633,6 +678,7 @@ HEADER(
 ),
 
 HGROUP(
+        HtmlTagType.HTML,
         new Link("hgroup", "sections.html#the-hgroup-element"),
          "heading group",
         EnumSet.of(ContentType.FLOW, ContentType.HEADING),
@@ -646,6 +692,7 @@ HGROUP(
 ),
 
 HR(
+        HtmlTagType.HTML,
         new Link("hr", "grouping-content.html#the-hr-element"),
          "Thematic break",
         EnumSet.of(ContentType.FLOW),
@@ -659,6 +706,7 @@ HR(
 ),
 
 HTML(
+        HtmlTagType.HTML,
         new Link("html", "semantics.html#the-html-element-0"),
          "Root element",
         EnumSet.noneOf(ContentType.class),
@@ -672,6 +720,7 @@ HTML(
 ),
 
 I(
+        HtmlTagType.HTML,
         new Link("i", "text-level-semantics.html#the-i-element"),
          "Alternate voice",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -685,6 +734,7 @@ I(
 ),
 
 IFRAME(
+        HtmlTagType.HTML,
         new Link("iframe", "the-iframe-element.html#the-iframe-element"),
          "Nested browsing context",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED, ContentType.INTERACTIVE),
@@ -698,6 +748,7 @@ IFRAME(
 ),
 
 IMG(
+        HtmlTagType.HTML,
         new Link("img", "embedded-content-1.html#the-img-element"),
          "Image",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED, ContentType.INTERACTIVE),
@@ -711,6 +762,7 @@ IMG(
 ),
 
 INPUT(
+        HtmlTagType.HTML,
         new Link("input", "the-input-element.html#the-input-element"),
          "Form control",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.INTERACTIVE),
@@ -724,6 +776,7 @@ INPUT(
 ),
 
 INS(
+        HtmlTagType.HTML,
         new Link("ins", "edits.html#the-ins-element"),
          "An addition to the document",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -737,6 +790,7 @@ INS(
 ),
 
 KBD(
+        HtmlTagType.HTML,
         new Link("kbd", "text-level-semantics.html#the-kbd-element"),
          "User input",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -750,6 +804,7 @@ KBD(
 ),
 
 KEYGEN(
+        HtmlTagType.HTML,
         new Link("keygen", "the-button-element.html#the-keygen-element"),
          "Cryptographic key-pair generator form control",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.INTERACTIVE),
@@ -763,6 +818,7 @@ KEYGEN(
 ),
 
 LABEL(
+        HtmlTagType.HTML,
         new Link("label", "forms.html#the-label-element"),
          "Caption for a form control",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.INTERACTIVE),
@@ -776,6 +832,7 @@ LABEL(
 ),
 
 LEGEND(
+        HtmlTagType.HTML,
         new Link("legend", "forms.html#the-legend-element"),
          "Caption for fieldset",
         EnumSet.noneOf(ContentType.class),
@@ -789,6 +846,7 @@ LEGEND(
 ),
 
 LI(
+        HtmlTagType.HTML,
         new Link("li", "grouping-content.html#the-li-element"),
          "List item",
         EnumSet.noneOf(ContentType.class),
@@ -802,6 +860,7 @@ LI(
 ),
 
 LINK(
+        HtmlTagType.HTML,
         new Link("link", "semantics.html#the-link-element"),
          "Link metadata",
         EnumSet.of(ContentType.METADATA, ContentType.FLOW, ContentType.PHRASING),
@@ -815,6 +874,7 @@ LINK(
 ),
 
 MAP(
+        HtmlTagType.HTML,
         new Link("map", "the-map-element.html#the-map-element"),
          "Image map",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -828,6 +888,7 @@ MAP(
 ),
 
 MARK(
+        HtmlTagType.HTML,
         new Link("mark", "text-level-semantics.html#the-mark-element"),
          "Highlight",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -841,6 +902,7 @@ MARK(
 ),
 
 MENU(
+        HtmlTagType.HTML,
         new Link("menu", "interactive-elements.html#menus"),
          "Menu of commands",
         EnumSet.of(ContentType.FLOW, ContentType.INTERACTIVE),
@@ -854,6 +916,7 @@ MENU(
 ),
 
 META(
+        HtmlTagType.HTML,
         new Link("meta", "semantics.html#meta"),
          "Text metadata",
         EnumSet.of(ContentType.METADATA, ContentType.FLOW, ContentType.PHRASING),
@@ -867,6 +930,7 @@ META(
 ),
 
 METER(
+        HtmlTagType.HTML,
         new Link("meter", "the-button-element.html#the-meter-element"),
          "Gauge",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -880,6 +944,7 @@ METER(
 ),
 
 NAV(
+        HtmlTagType.HTML,
         new Link("nav", "sections.html#the-nav-element"),
          "Section with navigational links",
         EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
@@ -893,6 +958,7 @@ NAV(
 ),
 
 NOSCRIPT(
+        HtmlTagType.HTML,
         new Link("noscript", "scripting-1.html#the-noscript-element"),
          "Fallback content for script",
         EnumSet.of(ContentType.METADATA, ContentType.FLOW, ContentType.PHRASING),
@@ -906,6 +972,7 @@ NOSCRIPT(
 ),
 
 OBJECT(
+        HtmlTagType.HTML,
         new Link("object", "the-iframe-element.html#the-object-element"),
          "Image, nested browsing context, or plugin",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED, ContentType.INTERACTIVE),
@@ -919,6 +986,7 @@ OBJECT(
 ),
 
 OL(
+        HtmlTagType.HTML,
         new Link("ol", "grouping-content.html#the-ol-element"),
          "Ordered list",
         EnumSet.of(ContentType.FLOW),
@@ -932,6 +1000,7 @@ OL(
 ),
 
 OPTGROUP(
+        HtmlTagType.HTML,
         new Link("optgroup", "the-button-element.html#the-optgroup-element"),
          "Group of options in a list box",
         EnumSet.noneOf(ContentType.class),
@@ -945,6 +1014,7 @@ OPTGROUP(
 ),
 
 OPTION(
+        HtmlTagType.HTML,
         new Link("option", "the-button-element.html#the-option-element"),
          "Option in a list box or combo box control",
         EnumSet.noneOf(ContentType.class),
@@ -958,6 +1028,7 @@ OPTION(
 ),
 
 OUTPUT(
+        HtmlTagType.HTML,
         new Link("output", "the-button-element.html#the-output-element"),
          "Calculated output value",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -971,6 +1042,7 @@ OUTPUT(
 ),
 
 P(
+        HtmlTagType.HTML,
         new Link("p", "grouping-content.html#the-p-element"),
          "Paragraph",
         EnumSet.of(ContentType.FLOW),
@@ -984,6 +1056,7 @@ P(
 ),
 
 PARAM(
+        HtmlTagType.HTML,
         new Link("param", "the-iframe-element.html#the-param-element"),
          "Parameter for object",
         EnumSet.noneOf(ContentType.class),
@@ -997,6 +1070,7 @@ PARAM(
 ),
 
 PRE(
+        HtmlTagType.HTML,
         new Link("pre", "grouping-content.html#the-pre-element"),
          "Block of preformatted text",
         EnumSet.of(ContentType.FLOW),
@@ -1010,6 +1084,7 @@ PRE(
 ),
 
 PROGRESS(
+        HtmlTagType.HTML,
         new Link("progress", "the-button-element.html#the-progress-element"),
          "Progress bar",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1023,6 +1098,7 @@ PROGRESS(
 ),
 
 Q(
+        HtmlTagType.HTML,
         new Link("q", "text-level-semantics.html#the-q-element"),
          "Quotation",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1036,6 +1112,7 @@ Q(
 ),
 
 RP(
+        HtmlTagType.HTML,
         new Link("rp", "text-level-semantics.html#the-rp-element"),
          "Parenthesis for ruby annotation text",
         EnumSet.noneOf(ContentType.class),
@@ -1049,6 +1126,7 @@ RP(
 ),
 
 RT(
+        HtmlTagType.HTML,
         new Link("rt", "text-level-semantics.html#the-rt-element"),
          "Ruby annotation text",
         EnumSet.noneOf(ContentType.class),
@@ -1062,6 +1140,7 @@ RT(
 ),
 
 RUBY(
+        HtmlTagType.HTML,
         new Link("ruby", "text-level-semantics.html#the-ruby-element"),
          "Ruby annotation(s)",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1075,6 +1154,7 @@ RUBY(
 ),
 
 SAMP(
+        HtmlTagType.HTML,
         new Link("samp", "text-level-semantics.html#the-samp-element"),
          "Computer output",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1088,6 +1168,7 @@ SAMP(
 ),
 
 SCRIPT(
+        HtmlTagType.HTML,
         new Link("script", "scripting-1.html#script"),
          "Embedded script",
         EnumSet.of(ContentType.METADATA, ContentType.FLOW, ContentType.PHRASING),
@@ -1101,6 +1182,7 @@ SCRIPT(
 ),
 
 SECTION(
+        HtmlTagType.HTML,
         new Link("section", "sections.html#the-section-element"),
          "Generic document or application section",
         EnumSet.of(ContentType.FLOW, ContentType.SECTIONING),
@@ -1114,6 +1196,7 @@ SECTION(
 ),
 
 SELECT(
+        HtmlTagType.HTML,
         new Link("select", "the-button-element.html#the-select-element"),
          "List box control",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.INTERACTIVE),
@@ -1127,6 +1210,7 @@ SELECT(
 ),
 
 SMALL(
+        HtmlTagType.HTML,
         new Link("small", "text-level-semantics.html#the-small-element"),
          "Side comment",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1140,6 +1224,7 @@ SMALL(
 ),
 
 SOURCE(
+        HtmlTagType.HTML,
         new Link("source", "video.html#the-source-element"),
          "Media source for video or audio",
         EnumSet.noneOf(ContentType.class),
@@ -1153,6 +1238,7 @@ SOURCE(
 ),
 
 SPAN(
+        HtmlTagType.HTML,
         new Link("span", "text-level-semantics.html#the-span-element"),
          "Generic phrasing container",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1166,6 +1252,7 @@ SPAN(
 ),
 
 STRONG(
+        HtmlTagType.HTML,
         new Link("strong", "text-level-semantics.html#the-strong-element"),
          "Importance",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1179,6 +1266,7 @@ STRONG(
 ),
 
 STYLE(
+        HtmlTagType.HTML,
         new Link("style", "semantics.html#the-style-element"),
          "Embedded styling information",
         EnumSet.of(ContentType.METADATA, ContentType.FLOW),
@@ -1192,6 +1280,7 @@ STYLE(
 ),
 
 SUB(
+        HtmlTagType.HTML,
         new Link("sub", "text-level-semantics.html#the-sub-and-sup-elements"),
          "Subscript",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1205,6 +1294,7 @@ SUB(
 ),
 
 SUMMARY(
+        HtmlTagType.HTML,
         new Link("summary", "interactive-elements.html#the-summary-element"),
          "Caption for details",
         EnumSet.noneOf(ContentType.class),
@@ -1218,6 +1308,7 @@ SUMMARY(
 ),
 
 SUP(
+        HtmlTagType.HTML,
         new Link("sup", "text-level-semantics.html#the-sub-and-sup-elements"),
          "Superscript",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1231,6 +1322,7 @@ SUP(
 ),
 
 TABLE(
+        HtmlTagType.HTML,
         new Link("table", "tabular-data.html#the-table-element"),
          "Table",
         EnumSet.of(ContentType.FLOW),
@@ -1244,6 +1336,7 @@ TABLE(
 ),
 
 TBODY(
+        HtmlTagType.HTML,
         new Link("tbody", "tabular-data.html#the-tbody-element"),
          "Group of rows in a table",
         EnumSet.noneOf(ContentType.class),
@@ -1257,6 +1350,7 @@ TBODY(
 ),
 
 TD(
+        HtmlTagType.HTML,
         new Link("td", "tabular-data.html#the-td-element"),
          "Table cell",
         EnumSet.of(ContentType.SECTIONING),
@@ -1270,6 +1364,7 @@ TD(
 ),
 
 TEXTAREA(
+        HtmlTagType.HTML,
         new Link("textarea", "the-button-element.html#the-textarea-element"),
          "Multiline text field",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.INTERACTIVE),
@@ -1283,6 +1378,7 @@ TEXTAREA(
 ),
 
 TFOOT(
+        HtmlTagType.HTML,
         new Link("tfoot", "tabular-data.html#the-tfoot-element"),
          "Group of footer rows in a table",
         EnumSet.noneOf(ContentType.class),
@@ -1296,6 +1392,7 @@ TFOOT(
 ),
 
 TH(
+        HtmlTagType.HTML,
         new Link("th", "tabular-data.html#the-th-element"),
          "Table header cell",
         EnumSet.noneOf(ContentType.class),
@@ -1309,6 +1406,7 @@ TH(
 ),
 
 THEAD(
+        HtmlTagType.HTML,
         new Link("thead", "tabular-data.html#the-thead-element"),
          "Group of heading rows in a table",
         EnumSet.noneOf(ContentType.class),
@@ -1322,6 +1420,7 @@ THEAD(
 ),
 
 TIME(
+        HtmlTagType.HTML,
         new Link("time", "text-level-semantics.html#the-time-element"),
          "Date and/or time",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1335,6 +1434,7 @@ TIME(
 ),
 
 TITLE(
+        HtmlTagType.HTML,
         new Link("title", "semantics.html#the-title-element-0"),
          "Document title",
         EnumSet.of(ContentType.METADATA),
@@ -1348,6 +1448,7 @@ TITLE(
 ),
 
 TR(
+        HtmlTagType.HTML,
         new Link("tr", "tabular-data.html#the-tr-element"),
          "Table row",
         EnumSet.noneOf(ContentType.class),
@@ -1361,6 +1462,7 @@ TR(
 ),
 
 TRACK(
+        HtmlTagType.HTML,
         new Link("track", "video.html#the-track-element"),
          "Timed track",
         EnumSet.noneOf(ContentType.class),
@@ -1374,6 +1476,7 @@ TRACK(
 ),
 
 UL(
+        HtmlTagType.HTML,
         new Link("ul", "grouping-content.html#the-ul-element"),
          "List",
         EnumSet.of(ContentType.FLOW),
@@ -1387,6 +1490,7 @@ UL(
 ),
 
 VAR(
+        HtmlTagType.HTML,
         new Link("var", "text-level-semantics.html#the-var-element"),
          "Variable",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1400,6 +1504,7 @@ VAR(
 ),
 
 VIDEO(
+        HtmlTagType.HTML,
         new Link("video", "video.html#video"),
          "Video player",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED, ContentType.INTERACTIVE),
@@ -1413,6 +1518,7 @@ VIDEO(
 ),
 
 WBR(
+        HtmlTagType.HTML,
         new Link("wbr", "text-level-semantics.html#the-wbr-element"),
          "Line breaking opportunity",
         EnumSet.of(ContentType.FLOW, ContentType.PHRASING),
@@ -1423,8 +1529,3058 @@ WBR(
         new String[]{},
         EnumSet.noneOf(Attribute.class),
         new Link("HTMLElement", "elements.html#htmlelement")
-);
+),
 
+
+//MATHML elements:
+//-----------------------
+
+DIVERGENCE(
+        HtmlTagType.MATHML,
+        new Link("divergence", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCCOS(
+        HtmlTagType.MATHML,
+        new Link("arccos", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DIFF(
+        HtmlTagType.MATHML,
+        new Link("diff", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CURL(
+        HtmlTagType.MATHML,
+        new Link("curl", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCCOT(
+        HtmlTagType.MATHML,
+        new Link("arccot", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+OTHERWISE(
+        HtmlTagType.MATHML,
+        new Link("otherwise", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LAPLACIAN(
+        HtmlTagType.MATHML,
+        new Link("laplacian", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+REALS(
+        HtmlTagType.MATHML,
+        new Link("reals", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ANNOTATION(
+        HtmlTagType.MATHML,
+        new Link("annotation", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+NOTANUMBER(
+        HtmlTagType.MATHML,
+        new Link("notanumber", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LAMBDA(
+        HtmlTagType.MATHML,
+        new Link("lambda", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARG(
+        HtmlTagType.MATHML,
+        new Link("arg", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+NATURALNUMBERS(
+        HtmlTagType.MATHML,
+        new Link("naturalnumbers", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ABS(
+        HtmlTagType.MATHML,
+        new Link("abs", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SEMANTICS(
+        HtmlTagType.MATHML,
+        new Link("semantics", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MTEXT(
+        HtmlTagType.MATHML,
+        new Link("mtext", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CODOMAIN(
+        HtmlTagType.MATHML,
+        new Link("codomain", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+NOTSUBSET(
+        HtmlTagType.MATHML,
+        new Link("notsubset", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FALSE(
+        HtmlTagType.MATHML,
+        new Link("false", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+COMPOSE(
+        HtmlTagType.MATHML,
+        new Link("compose", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PIECEWISE(
+        HtmlTagType.MATHML,
+        new Link("piecewise", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MFRAC(
+        HtmlTagType.MATHML,
+        new Link("mfrac", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FN(
+        HtmlTagType.MATHML,
+        new Link("fn", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PIECE(
+        HtmlTagType.MATHML,
+        new Link("piece", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MFRACTION(
+        HtmlTagType.MATHML,
+        new Link("mfraction", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LIMIT(
+        HtmlTagType.MATHML,
+        new Link("limit", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PLUS(
+        HtmlTagType.MATHML,
+        new Link("plus", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MATRIXROW(
+        HtmlTagType.MATHML,
+        new Link("matrixrow", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SECH(
+        HtmlTagType.MATHML,
+        new Link("sech", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+OR(
+        HtmlTagType.MATHML,
+        new Link("or", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MSUBSUP(
+        HtmlTagType.MATHML,
+        new Link("msubsup", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCCSCH(
+        HtmlTagType.MATHML,
+        new Link("arccsch", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PRSUBSET(
+        HtmlTagType.MATHML,
+        new Link("prsubset", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MROOT(
+        HtmlTagType.MATHML,
+        new Link("mroot", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+IMAGE(
+        HtmlTagType.MATHML,
+        new Link("image", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCTANH(
+        HtmlTagType.MATHML,
+        new Link("arctanh", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TENDSTO(
+        HtmlTagType.MATHML,
+        new Link("tendsto", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LOG(
+        HtmlTagType.MATHML,
+        new Link("log", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DECLARE(
+        HtmlTagType.MATHML,
+        new Link("declare", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+NOT(
+        HtmlTagType.MATHML,
+        new Link("not", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MEDIAN(
+        HtmlTagType.MATHML,
+        new Link("median", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FLOOR(
+        HtmlTagType.MATHML,
+        new Link("floor", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LOWLIMIT(
+        HtmlTagType.MATHML,
+        new Link("lowlimit", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+GT(
+        HtmlTagType.MATHML,
+        new Link("gt", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PI(
+        HtmlTagType.MATHML,
+        new Link("pi", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TAN(
+        HtmlTagType.MATHML,
+        new Link("tan", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LN(
+        HtmlTagType.MATHML,
+        new Link("ln", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MTABLE(
+        HtmlTagType.MATHML,
+        new Link("mtable", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MERROR(
+        HtmlTagType.MATHML,
+        new Link("merror", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MACTION(
+        HtmlTagType.MATHML,
+        new Link("maction", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TRANSPOSE(
+        HtmlTagType.MATHML,
+        new Link("transpose", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PIECEWICE(
+        HtmlTagType.MATHML,
+        new Link("piecewice", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+INTERVAL(
+        HtmlTagType.MATHML,
+        new Link("interval", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+VECTORPRODUCT(
+        HtmlTagType.MATHML,
+        new Link("vectorproduct", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MPADDED(
+        HtmlTagType.MATHML,
+        new Link("mpadded", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MOMENT(
+        HtmlTagType.MATHML,
+        new Link("moment", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DOMAINOFAPPLICATION(
+        HtmlTagType.MATHML,
+        new Link("domainofapplication", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+IMAGINARY(
+        HtmlTagType.MATHML,
+        new Link("imaginary", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+NEQ(
+        HtmlTagType.MATHML,
+        new Link("neq", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LT(
+        HtmlTagType.MATHML,
+        new Link("lt", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MODE(
+        HtmlTagType.MATHML,
+        new Link("mode", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DETERMINANT(
+        HtmlTagType.MATHML,
+        new Link("determinant", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+INVERSE(
+        HtmlTagType.MATHML,
+        new Link("inverse", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TIMES(
+        HtmlTagType.MATHML,
+        new Link("times", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+UNION(
+        HtmlTagType.MATHML,
+        new Link("union", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ENCODING(
+        HtmlTagType.MATHML,
+        new Link("encoding", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DOMAIN(
+        HtmlTagType.MATHML,
+        new Link("domain", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MI(
+        HtmlTagType.MATHML,
+        new Link("mi", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MN(
+        HtmlTagType.MATHML,
+        new Link("mn", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MIN(
+        HtmlTagType.MATHML,
+        new Link("min", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+UPLIMIT(
+        HtmlTagType.MATHML,
+        new Link("uplimit", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MLABELEDTR(
+        HtmlTagType.MATHML,
+        new Link("mlabeledtr", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SETDIFF(
+        HtmlTagType.MATHML,
+        new Link("setdiff", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MO(
+        HtmlTagType.MATHML,
+        new Link("mo", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MAX(
+        HtmlTagType.MATHML,
+        new Link("max", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LEQ(
+        HtmlTagType.MATHML,
+        new Link("leq", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCTAN(
+        HtmlTagType.MATHML,
+        new Link("arctan", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MS(
+        HtmlTagType.MATHML,
+        new Link("ms", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MATRIX(
+        HtmlTagType.MATHML,
+        new Link("matrix", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TRUE(
+        HtmlTagType.MATHML,
+        new Link("true", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DIVIDE(
+        HtmlTagType.MATHML,
+        new Link("divide", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PRODUCT(
+        HtmlTagType.MATHML,
+        new Link("product", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MATH(
+        HtmlTagType.MATHML,
+        new Link("math", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCSIN(
+        HtmlTagType.MATHML,
+        new Link("arcsin", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DEGREE(
+        HtmlTagType.MATHML,
+        new Link("degree", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SIN(
+        HtmlTagType.MATHML,
+        new Link("sin", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MFENCED(
+        HtmlTagType.MATHML,
+        new Link("mfenced", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+REM(
+        HtmlTagType.MATHML,
+        new Link("rem", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+EXISTS(
+        HtmlTagType.MATHML,
+        new Link("exists", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+EMPTYSET(
+        HtmlTagType.MATHML,
+        new Link("emptyset", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FACTORIAL(
+        HtmlTagType.MATHML,
+        new Link("factorial", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ANNOTATION_XML(
+        HtmlTagType.MATHML,
+        new Link("annotation-xml", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+IMAGINARYI(
+        HtmlTagType.MATHML,
+        new Link("imaginaryi", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+EQ(
+        HtmlTagType.MATHML,
+        new Link("eq", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SELECTOR(
+        HtmlTagType.MATHML,
+        new Link("selector", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+QUOTIENT(
+        HtmlTagType.MATHML,
+        new Link("quotient", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCSINH(
+        HtmlTagType.MATHML,
+        new Link("arcsinh", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+APPLY(
+        HtmlTagType.MATHML,
+        new Link("apply", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+INTEGERS(
+        HtmlTagType.MATHML,
+        new Link("integers", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+COTH(
+        HtmlTagType.MATHML,
+        new Link("coth", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MALIGN(
+        HtmlTagType.MATHML,
+        new Link("malign", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+COMPLEXES(
+        HtmlTagType.MATHML,
+        new Link("complexes", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MOVER(
+        HtmlTagType.MATHML,
+        new Link("mover", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ROOT(
+        HtmlTagType.MATHML,
+        new Link("root", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MTR(
+        HtmlTagType.MATHML,
+        new Link("mtr", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+COS(
+        HtmlTagType.MATHML,
+        new Link("cos", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+RELN(
+        HtmlTagType.MATHML,
+        new Link("reln", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+COT(
+        HtmlTagType.MATHML,
+        new Link("cot", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MSUB(
+        HtmlTagType.MATHML,
+        new Link("msub", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FUNCTION(
+        HtmlTagType.MATHML,
+        new Link("function", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TANH(
+        HtmlTagType.MATHML,
+        new Link("tanh", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MUNDEROVER(
+        HtmlTagType.MATHML,
+        new Link("munderover", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LCM(
+        HtmlTagType.MATHML,
+        new Link("lcm", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCSEC(
+        HtmlTagType.MATHML,
+        new Link("arcsec", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SDEV(
+        HtmlTagType.MATHML,
+        new Link("sdev", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+POWER(
+        HtmlTagType.MATHML,
+        new Link("power", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+NOTIN(
+        HtmlTagType.MATHML,
+        new Link("notin", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+NONE(
+        HtmlTagType.MATHML,
+        new Link("none", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CARD(
+        HtmlTagType.MATHML,
+        new Link("card", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MOMENTABOUT(
+        HtmlTagType.MATHML,
+        new Link("momentabout", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+EULERGAMMA(
+        HtmlTagType.MATHML,
+        new Link("eulergamma", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PARTIALDIFF(
+        HtmlTagType.MATHML,
+        new Link("partialdiff", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+GEQ(
+        HtmlTagType.MATHML,
+        new Link("geq", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+COSH(
+        HtmlTagType.MATHML,
+        new Link("cosh", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MINUS(
+        HtmlTagType.MATHML,
+        new Link("minus", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CSCH(
+        HtmlTagType.MATHML,
+        new Link("csch", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MALIGNSCOPE(
+        HtmlTagType.MATHML,
+        new Link("malignscope", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CONDITION(
+        HtmlTagType.MATHML,
+        new Link("condition", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+INT(
+        HtmlTagType.MATHML,
+        new Link("int", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MROW(
+        HtmlTagType.MATHML,
+        new Link("mrow", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SINH(
+        HtmlTagType.MATHML,
+        new Link("sinh", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FORALL(
+        HtmlTagType.MATHML,
+        new Link("forall", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CONJUGATE(
+        HtmlTagType.MATHML,
+        new Link("conjugate", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCCSC(
+        HtmlTagType.MATHML,
+        new Link("arccsc", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MMULTISCRIPTS(
+        HtmlTagType.MATHML,
+        new Link("mmultiscripts", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FACTOROF(
+        HtmlTagType.MATHML,
+        new Link("factorof", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+EXPONENTIALE(
+        HtmlTagType.MATHML,
+        new Link("exponentiale", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+AND(
+        HtmlTagType.MATHML,
+        new Link("and", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MTD(
+        HtmlTagType.MATHML,
+        new Link("mtd", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+EXP(
+        HtmlTagType.MATHML,
+        new Link("exp", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MGLYPH(
+        HtmlTagType.MATHML,
+        new Link("mglyph", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+RATIONALS(
+        HtmlTagType.MATHML,
+        new Link("rationals", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CN(
+        HtmlTagType.MATHML,
+        new Link("cn", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CEILING(
+        HtmlTagType.MATHML,
+        new Link("ceiling", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CSYMBOL(
+        HtmlTagType.MATHML,
+        new Link("csymbol", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+INTERSECT(
+        HtmlTagType.MATHML,
+        new Link("intersect", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CI(
+        HtmlTagType.MATHML,
+        new Link("ci", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LOGBASE(
+        HtmlTagType.MATHML,
+        new Link("logbase", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MUNDER(
+        HtmlTagType.MATHML,
+        new Link("munder", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MPHANTOM(
+        HtmlTagType.MATHML,
+        new Link("mphantom", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MSTYLE(
+        HtmlTagType.MATHML,
+        new Link("mstyle", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+EQUIVALENT(
+        HtmlTagType.MATHML,
+        new Link("equivalent", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+GRAD(
+        HtmlTagType.MATHML,
+        new Link("grad", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+NOTPRSUBSET(
+        HtmlTagType.MATHML,
+        new Link("notprsubset", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SET(
+        HtmlTagType.MATHML,
+        new Link("set", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+IMPLIES(
+        HtmlTagType.MATHML,
+        new Link("implies", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SUM(
+        HtmlTagType.MATHML,
+        new Link("sum", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MSQRT(
+        HtmlTagType.MATHML,
+        new Link("msqrt", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCSECH(
+        HtmlTagType.MATHML,
+        new Link("arcsech", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+INFINITY(
+        HtmlTagType.MATHML,
+        new Link("infinity", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SUBSET(
+        HtmlTagType.MATHML,
+        new Link("subset", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SCALARPRODUCT(
+        HtmlTagType.MATHML,
+        new Link("scalarproduct", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+REAL(
+        HtmlTagType.MATHML,
+        new Link("real", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+APPROX(
+        HtmlTagType.MATHML,
+        new Link("approx", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+IDENT(
+        HtmlTagType.MATHML,
+        new Link("ident", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+VECTOR(
+        HtmlTagType.MATHML,
+        new Link("vector", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+BVAR(
+        HtmlTagType.MATHML,
+        new Link("bvar", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MEAN(
+        HtmlTagType.MATHML,
+        new Link("mean", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+OUTERPRODUCT(
+        HtmlTagType.MATHML,
+        new Link("outerproduct", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCCOTH(
+        HtmlTagType.MATHML,
+        new Link("arccoth", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+XOR(
+        HtmlTagType.MATHML,
+        new Link("xor", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MENCLOSE(
+        HtmlTagType.MATHML,
+        new Link("menclose", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+VARIANCE(
+        HtmlTagType.MATHML,
+        new Link("variance", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LIST(
+        HtmlTagType.MATHML,
+        new Link("list", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MALIGNGROUP(
+        HtmlTagType.MATHML,
+        new Link("maligngroup", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+IN(
+        HtmlTagType.MATHML,
+        new Link("in", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MSPACE(
+        HtmlTagType.MATHML,
+        new Link("mspace", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CARTESIANPRODUCT(
+        HtmlTagType.MATHML,
+        new Link("cartesianproduct", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SEC(
+        HtmlTagType.MATHML,
+        new Link("sec", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MALIGNMARK(
+        HtmlTagType.MATHML,
+        new Link("malignmark", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CSC(
+        HtmlTagType.MATHML,
+        new Link("csc", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SEP(
+        HtmlTagType.MATHML,
+        new Link("sep", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MSUP(
+        HtmlTagType.MATHML,
+        new Link("msup", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PRIMES(
+        HtmlTagType.MATHML,
+        new Link("primes", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MPRESCRIPTS(
+        HtmlTagType.MATHML,
+        new Link("mprescripts", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ARCCOSH(
+        HtmlTagType.MATHML,
+        new Link("arccosh", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+GCD(
+        HtmlTagType.MATHML,
+        new Link("gcd", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+
+//SVG elements:
+//-----------------------
+
+STOP(
+        HtmlTagType.SVG,
+        new Link("stop", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DESC(
+        HtmlTagType.SVG,
+        new Link("desc", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ANIMATE(
+        HtmlTagType.SVG,
+        new Link("animate", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FONT_FACE_SRC(
+        HtmlTagType.SVG,
+        new Link("font-face-src", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TBREAK(
+        HtmlTagType.SVG,
+        new Link("tbreak", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG_SET(
+        HtmlTagType.SVG,
+        new Link("set", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+USE(
+        HtmlTagType.SVG,
+        new Link("use", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LINE(
+        HtmlTagType.SVG,
+        new Link("line", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SWITCH(
+        HtmlTagType.SVG,
+        new Link("switch", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+CIRCLE(
+        HtmlTagType.SVG,
+        new Link("circle", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DISCARD(
+        HtmlTagType.SVG,
+        new Link("discard", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+POLYGON(
+        HtmlTagType.SVG,
+        new Link("polygon", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG_TITLE(
+        HtmlTagType.SVG,
+        new Link("title", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ANIMATETRANSFORM(
+        HtmlTagType.SVG,
+        new Link("animateTransform", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG_TEXTAREA(
+        HtmlTagType.SVG,
+        new Link("textArea", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+POLYLINE(
+        HtmlTagType.SVG,
+        new Link("polyline", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MISSING_GLYPH(
+        HtmlTagType.SVG,
+        new Link("missing-glyph", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PATH(
+        HtmlTagType.SVG,
+        new Link("path", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LISTENER(
+        HtmlTagType.SVG,
+        new Link("listener", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG_VIDEO(
+        HtmlTagType.SVG,
+        new Link("video", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+METADATA(
+        HtmlTagType.SVG,
+        new Link("metadata", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+G(
+        HtmlTagType.SVG,
+        new Link("g", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TEXT(
+        HtmlTagType.SVG,
+        new Link("text", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FONT_FACE_URI(
+        HtmlTagType.SVG,
+        new Link("font-face-uri", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+DEFS(
+        HtmlTagType.SVG,
+        new Link("defs", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+PREFETCH(
+        HtmlTagType.SVG,
+        new Link("prefetch", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ELLIPSE(
+        HtmlTagType.SVG,
+        new Link("ellipse", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG(
+        HtmlTagType.SVG,
+        new Link("svg", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+LINEARGRADIENT(
+        HtmlTagType.SVG,
+        new Link("linearGradient", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG_AUDIO(
+        HtmlTagType.SVG,
+        new Link("audio", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ANIMATION(
+        HtmlTagType.SVG,
+        new Link("animation", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FOREIGNOBJECT(
+        HtmlTagType.SVG,
+        new Link("foreignObject", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+RADIALGRADIENT(
+        HtmlTagType.SVG,
+        new Link("radialGradient", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FONT(
+        HtmlTagType.SVG,
+        new Link("font", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+GLYPH(
+        HtmlTagType.SVG,
+        new Link("glyph", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG_A(
+        HtmlTagType.SVG,
+        new Link("a", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG_IMAGE(
+        HtmlTagType.SVG,
+        new Link("image", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SVG_SCRIPT(
+        HtmlTagType.SVG,
+        new Link("script", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+RECT(
+        HtmlTagType.SVG,
+        new Link("rect", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+HKERN(
+        HtmlTagType.SVG,
+        new Link("hkern", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+MPATH(
+        HtmlTagType.SVG,
+        new Link("mpath", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ANIMATEMOTION(
+        HtmlTagType.SVG,
+        new Link("animateMotion", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+TSPAN(
+        HtmlTagType.SVG,
+        new Link("tspan", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+ANIMATECOLOR(
+        HtmlTagType.SVG,
+        new Link("animateColor", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+FONT_FACE(
+        HtmlTagType.SVG,
+        new Link("font-face", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+SOLIDCOLOR(
+        HtmlTagType.SVG,
+        new Link("solidColor", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+),
+HANDLER(
+        HtmlTagType.SVG,
+        new Link("handler", null),
+        null,
+        EnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(ContentType.class),
+        new String[]{},
+        EnumSet.noneOf(Attribute.class),
+        null
+);
 
     //<<<<<<<<<<<<<<<<<<<<<<<<
     //end of the generated section
@@ -1452,10 +4608,13 @@ WBR(
 
     private Link domInterface;
 
+    private HtmlTagType type;
+
     private ElementDescriptor() {
     }
 
-    private ElementDescriptor(Link name,
+    private ElementDescriptor(HtmlTagType type,
+            Link name,
             String description,
             Collection<ContentType> categories,
             Collection<FormAssociatedElementsCategory> formCategories,
@@ -1465,6 +4624,7 @@ WBR(
             String[] childrenElements, //due to cyclic dependencies ElementDescription cannot be used
             Collection<Attribute> attributes,
             Link domInterface) {
+        this.type = type;
         this.name = name;
         this.description = description;
         this.categories = categories;
@@ -1479,7 +4639,7 @@ WBR(
 
     public static ElementDescriptor forName(String name) {
         try {
-            return valueOf(name.toUpperCase());
+            return valueOf(elementName2EnumName(name));
         } catch (IllegalArgumentException iae) {
             //no such enum member
             return null;
@@ -1495,6 +4655,10 @@ WBR(
         withGlobal.addAll(Attribute.GLOBAL_ATTRIBUTES);
         withGlobal.addAll(Attribute.EVENT_ATTRIBUTES);
         return withGlobal;
+    }
+
+    public HtmlTagType getTagType() {
+        return type;
     }
 
     public Collection<ContentType> getCategoryTypes() {
@@ -1566,5 +4730,9 @@ WBR(
     public boolean isEmpty() {
         return children.isEmpty() && getChildrenElements().isEmpty(); //empty content model
     }
-    
+
+    public static String elementName2EnumName(String elementName) {
+        return elementName.replace('-', '_').toUpperCase();
+    }
+
 }

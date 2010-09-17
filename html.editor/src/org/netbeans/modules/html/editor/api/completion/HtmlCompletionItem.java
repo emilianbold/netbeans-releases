@@ -67,6 +67,7 @@ import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -344,6 +345,15 @@ public class HtmlCompletionItem implements CompletionItem {
      */
     public static class Tag extends HtmlCompletionItem {
 
+        private static final ImageIcon HTML_TAG_ICON =
+            ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/html_element.png", false); // NOI18N
+
+        private static final ImageIcon SVG_TAG_ICON =
+            ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/class.png", false); // NOI18N
+
+        private static final ImageIcon MATHML_TAG_ICON =
+            ImageUtilities.loadImageIcon("org/netbeans/modules/html/editor/resources/mathml.png", false); // NOI18N
+
         private String GRAY_COLOR_CODE = hexColorCode(Color.GRAY);
         private boolean possible;
         private HtmlTag tag;
@@ -382,26 +392,27 @@ public class HtmlCompletionItem implements CompletionItem {
                 "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>"; //NOI18N
         }
 
+        @Override
         protected String getRightHtmlText() {
-            if (tag == null) {
+            return null;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            if (tag != null) {
+                switch (tag.getTagClass()) {
+                    case HTML:
+                        return HTML_TAG_ICON;
+                    case SVG:
+                        return SVG_TAG_ICON;
+                    case MATHML:
+                        return MATHML_TAG_ICON;
+                    default:
+                        return null;
+                }
+            } else {
                 return null;
             }
-            String rightText = null;
-            switch (tag.getTagClass()) {
-                case HTML:
-                case UNKNOWN:
-                    break;
-                case ARIA:
-                    rightText = HtmlTagType.ARIA.name();
-                    break;
-                case MATHML:
-                    rightText = HtmlTagType.MATHML.name();
-                    break;
-                case SVG:
-                    rightText = HtmlTagType.SVG.name();
-                    break;
-            }
-            return rightText;
         }
     }
 

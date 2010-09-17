@@ -69,11 +69,13 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.Validator;
 import org.netbeans.html.api.validation.ValidatorService;
+import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -299,8 +301,8 @@ public class Html5Parser implements HtmlParser {
         public synchronized Collection<HtmlTag> getAllTags() {
             if (ALL_TAGS == null) {
                 ALL_TAGS = new ArrayList<HtmlTag>();
-                for (ElementName element : ElementName.ELEMENT_NAMES) {
-                    ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.name));
+                for (ElementDescriptor element : ElementDescriptor.values()) {
+                    ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.getName()));
                 }
             }
             return ALL_TAGS;

@@ -120,6 +120,9 @@ public class Documentation implements HelpResolver {
     }
 
     public URL resolveLink(String relativeLink) {
+        if(relativeLink == null) {
+            return null;
+        }
         try {
             return new URI(getZipURL().toExternalForm() + relativeLink).toURL();
         } catch (URISyntaxException ex) {
