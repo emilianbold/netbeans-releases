@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.io.IOException;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
@@ -90,13 +92,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         CodeCompletionResult result = new DefaultCompletionResult(proposals, false);
         ELElement element = getElementAt(context.getParserResult(), context.getCaretOffset());
         final String prefix = context.getPrefix() != null ? context.getPrefix() : "";
-        if (element == null) {
-            return result;
+        if (element == null || !element.isValid()) {
+            return CodeCompletionResult.NONE;
         }
-        if (!element.isValid()) {
-            // XXX sanitize
-            return result;
-        }
+
         Node target = element.findNodeAt(context.getCaretOffset());
         AstPath path = new AstPath(element.getNode());
         List<Node> rootToNode = path.rootToNode(target);
@@ -115,7 +114,12 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
         ELTypeUtilities typeUtilities = ELTypeUtilities.create(getFileObject(context));
         Node previous = rootToNode.get(rootToNode.size() - 1);
-        Element resolved = typeUtilities.resolveElement(element, previous);
+
+        // due to the ast structure in the case of identifiers we need to try to
+        // resolve the type of the identifier, otherwise the type of the preceding
+        // node.
+        Node nodeToResolve = target instanceof AstIdentifier ? target : previous;
+        Element resolved = typeUtilities.resolveElement(element, nodeToResolve);
 
         if (resolved == null) {
             proposeManagedBeans(context, prefix, element, typeUtilities, proposals);
@@ -127,9 +131,15 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
     }
 
-    private ELElement getElementAt(ParserResult result, int offset) {
-        ELParserResult parserResult = (ELParserResult) result;
-        return parserResult.getElementAt(offset);
+    private ELElement getElementAt(ParserResult parserResult, int offset) {
+        ELParserResult elParserResult = (ELParserResult) parserResult;
+        ELElement result = elParserResult.getElementAt(offset);
+        if (result == null || result.isValid()) {
+            return result;
+        }
+        // try to sanitize
+        ELSanitizer sanitizer = new ELSanitizer(result);
+        return sanitizer.sanitized();
     }
 
     private FileObject getFileObject(CodeCompletionContext context) {
@@ -140,7 +150,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
         resolved = typeUtilities.getTypeFor(resolved);
-        if (resolved == null) {
+        if (resolved == null || resolved.getKind() == ElementKind.TYPE_PARAMETER) {
             return;
         }
         for (ExecutableElement enclosed : ElementFilter.methodsIn(resolved.getEnclosedElements())) {
@@ -251,6 +261,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             return null;
         }
         Node node = element.findNodeAt(caretOffset);
+        // get the prefix for bundle keys
         if (node instanceof AstString) {
             int startOffset = element.getOriginalOffset(node).getStart();
             int end = caretOffset - startOffset;
