@@ -77,7 +77,7 @@ public class Html5ParserTest extends NbTestCase {
         AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
         TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testaParseErrorneousHeadContent"));
+        suite.addTest(new Html5ParserTest("testOnlyDivInFile"));
         return suite;
     }
 
@@ -515,12 +515,22 @@ public class Html5ParserTest extends NbTestCase {
         AstNode title = AstNodeUtils.query(result.root(), "html/head/title");
         assertNotNull(title);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         //FAILING - http://netbeans.org/bugzilla/show_bug.cgi?id=190183
         
 //        assertTrue(title.logicalEndOffset() != -1);
 
+    }
+
+    public void testOnlyDivInFile() throws ParseException {
+        String code = "<!doctype html><html><head><title>x</title></head><body><di </body></html>";
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+
+        AstNodeUtils.dumpTree(root);
     }
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
