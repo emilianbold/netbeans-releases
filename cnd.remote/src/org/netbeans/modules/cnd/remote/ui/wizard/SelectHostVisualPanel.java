@@ -50,13 +50,15 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -89,6 +91,29 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         model = new DefaultListModel();
         initServerList();
         modeChanged();
+        rbNew.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+//                newHostPane.requestFocus();
+                requestFocusInEDT(newHostPane);
+            }
+        });
+        rbExistent.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+//                lstDevHosts.requestFocus();
+                requestFocusInEDT(lstDevHosts);
+            }
+        });
+    }
+
+    private void requestFocusInEDT(final Component c) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                c.requestFocus();
+            }
+        });
     }
 
     private void initServerList() {
@@ -98,10 +123,13 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
             }
         }
         boolean fire = false;
-        if (model.isEmpty() && ! rbNew.isSelected()) {
-            rbNew.setSelected(true);
-            rbExistent.setSelected(false);
-            fire = true;
+        if (model.isEmpty()) {
+            if (! rbNew.isSelected()) {
+                rbNew.setSelected(true);
+                rbExistent.setSelected(false);
+                fire = true;
+            }
+            rbExistent.setEnabled(false);
         }
         lstDevHosts.setModel(model);
         lstDevHosts.setCellRenderer(new HostListCellRenderer());
@@ -148,6 +176,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         buttonGroup.add(rbExistent);
+        rbExistent.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/wizard/Bundle").getString("SelectHostVisualPanel.rbExistent.mnemonic").charAt(0));
         rbExistent.setText(org.openide.util.NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.rbExistent.text")); // NOI18N
         rbExistent.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -163,6 +192,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         add(rbExistent, gridBagConstraints);
 
         buttonGroup.add(rbNew);
+        rbNew.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/wizard/Bundle").getString("SelectHostVisualPanel.rbNew.mnemonic").charAt(0));
         rbNew.setText(org.openide.util.NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.rbNew.text")); // NOI18N
         rbNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -175,6 +205,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(rbNew, gridBagConstraints);
 
         newHostPane.setLayout(new java.awt.BorderLayout());
@@ -185,7 +216,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.7;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(newHostPane, gridBagConstraints);
 
         lstDevHosts.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -198,7 +229,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(existentHostScroller, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
