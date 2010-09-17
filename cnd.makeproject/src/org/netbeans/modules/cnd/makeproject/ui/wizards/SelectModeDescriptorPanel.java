@@ -66,10 +66,16 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     private SelectModePanel component;
     private String name;
     private WizardStorage wizardStorage= new WizardStorage();
-    private boolean isValid = false;;
+    private boolean isValid = false;
+    private final boolean fullRemote;
 
-    public SelectModeDescriptorPanel(){
+    public SelectModeDescriptorPanel(boolean fullRemote) {
         name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
+        this.fullRemote = fullRemote;
+    }
+
+    public boolean isFullRemote() {
+        return fullRemote;
     }
     
     // Get the visual component for the panel. In this template, the component

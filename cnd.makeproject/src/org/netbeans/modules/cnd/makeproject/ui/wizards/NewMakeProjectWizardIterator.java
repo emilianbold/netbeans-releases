@@ -146,7 +146,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         };
 
 
-        importPanel = new SelectModeDescriptorPanel();
+        importPanel = new SelectModeDescriptorPanel(fullRemote);
         importPanel.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -421,6 +421,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
+        wiz.putProperty("fullRemote", Boolean.valueOf(fullRemote));
         index = 0;
         setupPanelsAndStepsIfNeed();
     }

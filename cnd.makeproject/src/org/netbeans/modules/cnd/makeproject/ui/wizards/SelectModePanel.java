@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -314,13 +315,24 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         String seed = projectFolder.getText();
-        JFileChooser fileChooser = new FileChooser(
-                getString("PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
-                getString("PROJECT_DIR_BUTTON_TXT"), // NOI18N
-                JFileChooser.DIRECTORIES_ONLY, 
-                null,
-                seed,
-                false);
+        JFileChooser fileChooser;
+        String approveButtonText = getString("PROJECT_DIR_BUTTON_TXT"); // NOI18N
+        if (controller.isFullRemote()) {
+            WizardDescriptor wd = controller.getWizardDescriptor();
+            String hostUID = (String) wd.getProperty("hostUID");
+            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(seed);
+            fileChooser.setApproveButtonText(approveButtonText);
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        } else {
+            fileChooser = new FileChooser(
+                    getString("PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
+                    approveButtonText,
+                    JFileChooser.DIRECTORIES_ONLY,
+                    null,
+                    seed,
+                    false);
+        }
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
@@ -348,7 +360,11 @@ public class SelectModePanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, false) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
-                enableHostSensitiveComponents(records, srToSelect, csToSelect, enabled);
+                boolean enableHost = enabled;
+                if (controller.isFullRemote()) {
+                    enableHost = false;
+                }
+                enableHostSensitiveComponents(records, srToSelect, csToSelect, enableHost, enabled);
             }
         });
     }
@@ -481,8 +497,10 @@ public class SelectModePanel extends javax.swing.JPanel {
         this.simpleMode.setEnabled(false);
     }
 
-    private void enableHostSensitiveComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
-        PanelProjectLocationVisual.updateToolchainsComponents(SelectModePanel.this.hostComboBox, SelectModePanel.this.toolchainComboBox, records, srToSelect, csToSelect, enabled);
+    private void enableHostSensitiveComponents(Collection<ServerRecord> records, 
+            ServerRecord srToSelect, CompilerSet csToSelect, boolean enableHost, boolean enableToolchain) {
+        PanelProjectLocationVisual.updateToolchainsComponents(SelectModePanel.this.hostComboBox, SelectModePanel.this.toolchainComboBox, 
+                records, srToSelect, csToSelect, enableHost, enableToolchain);
         this.advancedMode.setEnabled(true);
         this.simpleMode.setEnabled(true);
         updateInstruction();
