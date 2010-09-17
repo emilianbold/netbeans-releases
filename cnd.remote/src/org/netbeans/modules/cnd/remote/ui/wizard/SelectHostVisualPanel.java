@@ -98,10 +98,13 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
             }
         }
         boolean fire = false;
-        if (model.isEmpty() && ! rbNew.isSelected()) {
-            rbNew.setSelected(true);
-            rbExistent.setSelected(false);
-            fire = true;
+        if (model.isEmpty()) {
+            if (! rbNew.isSelected()) {
+                rbNew.setSelected(true);
+                rbExistent.setSelected(false);
+                fire = true;
+            }
+            rbExistent.setEnabled(false);
         }
         lstDevHosts.setModel(model);
         lstDevHosts.setCellRenderer(new HostListCellRenderer());
@@ -175,6 +178,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(rbNew, gridBagConstraints);
 
         newHostPane.setLayout(new java.awt.BorderLayout());
@@ -185,7 +189,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.7;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(newHostPane, gridBagConstraints);
 
         lstDevHosts.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -198,7 +202,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(existentHostScroller, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 

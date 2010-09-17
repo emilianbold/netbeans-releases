@@ -42,12 +42,21 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.NbBundle;
 
@@ -125,10 +134,6 @@ import org.openide.util.NbBundle;
         lblNeighbouthood.setEnabled(enabled);
         lblPort.setEnabled(enabled);
         tableHostsList.setEnabled(enabled);
-        tableHostsList.setForeground(textPort.getForeground());
-        tableHostsList.setBackground(textPort.getBackground());
-        tableHostsList.invalidate();
-        tableHostsList.repaint();
     }
 
     public Integer getPort() {
@@ -156,7 +161,7 @@ import org.openide.util.NbBundle;
         textHostname = new javax.swing.JTextField();
         lblNeighbouthood = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        tableHostsList = new javax.swing.JTable();
+        tableHostsList = new HostTable();
         pbarStatusPanel = new javax.swing.JPanel();
         lblPort = new javax.swing.JLabel();
         textPort = new org.netbeans.modules.cnd.remote.ui.wizard.PortTextField();
@@ -244,5 +249,40 @@ import org.openide.util.NbBundle;
     private javax.swing.JTextField textHostname;
     private org.netbeans.modules.cnd.remote.ui.wizard.PortTextField textPort;
     // End of variables declaration//GEN-END:variables
+
+    private class HostTable extends JTable {
+
+        private final Color stdBackground;
+        private final Color stdForeground;
+        private final Color stdGrid;
+        private final Color stdHeader;
+
+        public HostTable() {
+            stdBackground = getBackground();
+            stdForeground = getForeground();
+            stdGrid = getGridColor();
+            stdHeader = getTableHeader().getForeground();
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            if (enabled) {
+                setForeground(stdForeground);
+                setBackground(stdBackground);
+                setGridColor(stdGrid);
+                getTableHeader().setForeground(stdHeader);
+            } else {
+                Color back = textPort.getBackground();
+                Color fore = Color.lightGray; // textPort.getForeground();
+                setBackground(back);
+                setForeground(fore);
+                setGridColor(fore);
+                getTableHeader().setForeground(fore);
+            }
+            invalidate();
+            repaint();
+        }
     }
+}
 
