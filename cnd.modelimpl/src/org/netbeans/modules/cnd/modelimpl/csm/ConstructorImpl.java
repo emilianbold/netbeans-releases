@@ -58,11 +58,13 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
 
     private ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, register, register);
+        super(ast, cls, visibility, register);
     }
 
-    public static ConstructorImpl create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        return new ConstructorImpl(ast, cls, visibility, register);
+    public static ConstructorImpl createConstructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        ConstructorImpl constructorImpl = new ConstructorImpl(ast, cls, visibility, register);
+        postObjectCreateRegistration(register, constructorImpl);
+        return constructorImpl;
     }
 
     @Override

@@ -150,7 +150,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (decl instanceof VariableImpl<?>) {
             VariableImpl<?> v = (VariableImpl<?>) decl;
             if (!NamespaceImpl.isNamespaceScope(v, false)) {
-                v.setScope(this, true);
+                v.setScope(this);
             }
         }
         if (decl instanceof FunctionImpl<?>) {

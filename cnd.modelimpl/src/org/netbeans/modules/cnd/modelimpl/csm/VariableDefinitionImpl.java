@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -102,8 +101,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 
     public static VariableDefinitionImpl create(AST ast, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern) {
         VariableDefinitionImpl variableDefinitionImpl = new VariableDefinitionImpl(ast, file, type, name, _static, _extern);
-        variableDefinitionImpl.registerInProject();
-        RepositoryUtils.put(variableDefinitionImpl);
+        postObjectCreateRegistration(true, variableDefinitionImpl);
         return variableDefinitionImpl;
     }
 

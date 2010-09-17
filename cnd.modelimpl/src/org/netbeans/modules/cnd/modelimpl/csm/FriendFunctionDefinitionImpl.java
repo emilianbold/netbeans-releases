@@ -65,13 +65,15 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 public class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
     
-    private FriendFunctionDefinitionImpl(AST ast, CsmClass cls, CsmScope scope, boolean register) throws AstRendererException {
-        super(ast, cls.getContainingFile(), scope, register, register);
+    private FriendFunctionDefinitionImpl(AST ast, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
+        super(ast, cls.getContainingFile(), scope, global);
         friendClassUID = UIDs.get(cls);
     }
 
     public static FriendFunctionDefinitionImpl create(AST ast, CsmClass cls, CsmScope scope, boolean register) throws AstRendererException {
-        return new FriendFunctionDefinitionImpl(ast, cls, scope, register);
+        FriendFunctionDefinitionImpl friendFunctionDefinitionImpl = new FriendFunctionDefinitionImpl(ast, cls, scope, register);
+        postObjectCreateRegistration(register, friendFunctionDefinitionImpl);
+        return friendFunctionDefinitionImpl;
     }
     
     @Override

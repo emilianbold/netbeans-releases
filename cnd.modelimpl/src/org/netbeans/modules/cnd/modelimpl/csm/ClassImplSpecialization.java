@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -79,11 +78,7 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
         // after rendering, but before calling initQualifiedName() and register()
 
         initScope(scope);
-        if (register) {
-            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        } else {
-            Utils.setSelfUID(this);
-        }
+        temporaryRepositoryRegistration(register, this);
         render(ast, !register);
 
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);

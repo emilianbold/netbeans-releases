@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.openide.util.CharSequences;
@@ -70,7 +69,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     private /*final*/ CsmEnum enumerationRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmEnum> enumerationUID;
 
-    private EnumeratorImpl(AST ast, EnumImpl enumeration, boolean global) {
+    private EnumeratorImpl(AST ast, EnumImpl enumeration) {
         super(ast, enumeration.getContainingFile());
         this.name = NameCache.getManager().getString(AstUtil.getText(ast));
         // set parent enum, do it in constructor to have final fields
@@ -79,12 +78,8 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     }
 
     public static EnumeratorImpl create(AST ast, EnumImpl enumeration, boolean global) {
-        EnumeratorImpl ei = new EnumeratorImpl(ast, enumeration, global);
-        if (global) {
-            RepositoryUtils.put(ei);
-        } else {
-            Utils.setSelfUID(ei);
-        }
+        EnumeratorImpl ei = new EnumeratorImpl(ast, enumeration);
+        postObjectCreateRegistration(global, ei);
         return ei;
     }
 
@@ -98,11 +93,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     
     public static EnumeratorImpl create(EnumImpl enumeration, String name, int startOffset, int endOffset, boolean global) {
         EnumeratorImpl ei = new EnumeratorImpl(enumeration, name, startOffset, endOffset);
-        if (global) {
-            RepositoryUtils.put(ei);
-        } else {
-            Utils.setSelfUID(ei);
-        }
+        postObjectCreateRegistration(global, ei);
         return ei;
     }
 

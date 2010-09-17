@@ -89,7 +89,7 @@ public final class ForwardClass extends ClassImpl {
         }
         return null;
     }
-    
+
     @Override
     public boolean shouldBeReplaced(CsmClassifier another) {
         if (another == null) {

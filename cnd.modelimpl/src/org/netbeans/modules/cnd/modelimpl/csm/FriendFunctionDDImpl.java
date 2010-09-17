@@ -71,7 +71,9 @@ public class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunction> imp
     }
 
     public static FriendFunctionDDImpl create(AST ast, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
-        return new FriendFunctionDDImpl(ast, cls, scope, global);
+        FriendFunctionDDImpl friendFunctionDDImpl = new FriendFunctionDDImpl(ast, cls, scope, global);
+        postObjectCreateRegistration(global, friendFunctionDDImpl);
+        return friendFunctionDDImpl;
     }
 
     @Override
