@@ -69,6 +69,7 @@ public class EntityClass {
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
     private boolean usePkField;
+    private boolean derivedIdCandidate;//derived id should be used in jpa2.0+
     private String pkFieldName;
     private CMPMappingModel mappingModel;
     
@@ -187,5 +188,19 @@ public class EntityClass {
     
     public void setPkFieldName(String pkFieldName) {
         this.pkFieldName = pkFieldName;
+    }
+
+    /**
+     * @return the derivedIdCandidate
+     */
+    public boolean isDerivedIdCandidate() {
+        return derivedIdCandidate;
+    }
+
+    /**
+     * @param derivedIdCandidate the derivedIdCandidate to set
+     */
+    public void setDerivedIdCandidate(boolean derivedIdCandidate) {
+        this.derivedIdCandidate = derivedIdCandidate;
     }
 }
