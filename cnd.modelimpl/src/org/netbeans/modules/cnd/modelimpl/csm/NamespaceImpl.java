@@ -456,7 +456,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if( (declaration instanceof VariableImpl<?>) ) {
             VariableImpl<?> v = (VariableImpl<?>) declaration;
             if( isNamespaceScope(v, isGlobal()) ) {
-                v.setScope(this, true);
+                v.setScope(this);
             } else {
                 return;
             }

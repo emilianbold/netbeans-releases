@@ -170,7 +170,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
 
     @Override
-    protected final boolean registerInProject() {
+    protected boolean registerInProject() {
         CsmProject project = getContainingFile().getProject();
         if (project instanceof ProjectBase) {
             return ((ProjectBase) project).registerDeclaration(this);
@@ -345,18 +345,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return false;
     }
 
-    public void setScope(CsmScope scope, boolean register) {
-        setScopeImpl(scope, true, register);
-    }
-
-    protected final void setScopeImpl(CsmScope scope, boolean unregister, boolean register) {
-        if (unregister) {
-            unregisterInProject();
-        }
-        this._setScope(scope);
-        if (register) {
-            registerInProject();
-        }
+    public void setScope(CsmScope scope) {
+        unregisterInProject();
+        _setScope(scope);
+        registerInProject();
     }
 
     @Override

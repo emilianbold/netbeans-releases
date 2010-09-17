@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -75,18 +76,21 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private final CharSequence[] classOrNspNames;   
     
-    protected FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        super(ast, file, null, scope, false, global);
+    protected FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+        super(ast, file, null, scope, global);
         classOrNspNames = CastUtils.isCast(ast) ?
             getClassOrNspNames(ast) :
             initClassOrNspNames(ast);
-        if (register) {
-            registerInProject();
-        }
     }
 
     public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        return new FunctionImplEx<T>(ast, file, scope, register, global);
+        FunctionImplEx<T> functionImplEx = new FunctionImplEx<T>(ast, file, scope, global);
+        if (register) {
+            postObjectCreateRegistration(register, functionImplEx);
+        } else {
+            RepositoryUtils.put(functionImplEx);
+        }
+        return functionImplEx;
     }
 
     /** @return either class or namespace */
@@ -163,7 +167,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     case CPPTokenTypes.LESSTHAN:
                         // getTemplateParameters does not work for constructors and destructors...
                         if(!CsmKindUtilities.isConstructor(this) && !CsmKindUtilities.isDestructor(this)) {
-                            TemplateUtils.addSpecializationSuffix(token, id, getInheritedTemplateParameters().size() != 0 ? getInheritedTemplateParameters() : getTemplateParameters(), true);
+                            TemplateUtils.addSpecializationSuffix(token, id, !getInheritedTemplateParameters().isEmpty() ? getInheritedTemplateParameters() : getTemplateParameters(), true);
                         }
                         level++;
                         break;
@@ -272,7 +276,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             if (projectParsedMode) {
                 try {
                     FileImpl aFile = (FileImpl) getContainingFile();
-                    FunctionImpl<?> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), null, this.getScope(), true, true);
+                    FunctionImpl<?> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), null, this.getScope(),true);
                     fixFakeRegistrationAst = null;
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
                     aFile.removeDeclaration(this);
@@ -325,7 +329,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }    
     
     public static boolean isFakeFunction(CsmObject declaration) {
-        if (declaration instanceof FunctionImplEx) {
+        if (declaration instanceof FunctionImplEx<?>) {
             return FunctionImplEx.class.equals(declaration.getClass());
         } else {
             return false;

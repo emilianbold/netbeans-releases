@@ -54,12 +54,14 @@ import java.io.IOException;
  */
 public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
-    private DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, register, register);
+    private DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+        super(ast, cls, visibility, global);
     }
 
-    public static DestructorDDImpl create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        return new DestructorDDImpl(ast, cls, visibility, register);
+    public static DestructorDDImpl createDestructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        DestructorDDImpl destructorDDImpl = new DestructorDDImpl(ast, cls, visibility, register);
+        postObjectCreateRegistration(register, destructorDDImpl);
+        return destructorDDImpl;
     }
 
     @Override

@@ -77,11 +77,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     private void init(CsmScope scope, AST ast, boolean register) {
 	initScope(scope);
         initQualifiedName(scope, ast);
-        if (register) {
-            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        } else {
-            Utils.setSelfUID(this);
-        }
+        temporaryRepositoryRegistration(register, this);
         initEnumeratorList(ast, register);
         if (register) {
             register(scope, true);
@@ -97,11 +93,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     public static EnumImpl create(String name, String qName,CsmFile file, CsmScope scope, int startOffset, int endOffset, boolean register) {
 	EnumImpl impl = new EnumImpl(name, qName, file, startOffset, endOffset);
 	impl.initScope(scope);
-        if (register) {
-            RepositoryUtils.hang(impl); // "hang" now and then "put" in "register()"
-        } else {
-            Utils.setSelfUID(impl);
-        }
+        temporaryRepositoryRegistration(register, impl);
         if (register) {
             impl.register(scope, true);
         }

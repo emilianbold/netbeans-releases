@@ -55,7 +55,6 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -63,22 +62,16 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  */
 public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> implements CsmInitializerListContainer {
 
-    private final List<CsmExpression> initializers;
+    private List<CsmExpression> initializers;
     
-    private ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
-        super(ast, file, scope, register, register);
-        
-        initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
+    private ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+        super(ast, file, scope, global);
     }
 
-    public static ConstructorDefinitionImpl create(AST ast, CsmFile file, MutableDeclarationsContainer container, boolean register) {
-        ConstructorDefinitionImpl res = null;
-        try {
-            res = new ConstructorDefinitionImpl(ast, file, null, register);
-            container.addDeclaration(res);
-        } catch (AstRendererException ex) {
-            DiagnosticExceptoins.register(ex);
-        }
+    public static ConstructorDefinitionImpl create(AST ast, CsmFile file, boolean register) throws AstRendererException {
+        ConstructorDefinitionImpl res =  new ConstructorDefinitionImpl(ast, file, null, register);
+        res.initializers = AstRenderer.renderConstructorInitializersList(ast, res, res.getContainingFile());
+        postObjectCreateRegistration(register, res);
         return res;
     }
     
