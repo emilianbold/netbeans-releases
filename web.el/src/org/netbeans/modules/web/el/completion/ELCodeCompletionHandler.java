@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.el.completion;
 
 import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstMethodSuffix;
+import com.sun.el.parser.AstPropertySuffix;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.io.IOException;
@@ -118,7 +120,16 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         // due to the ast structure in the case of identifiers we need to try to
         // resolve the type of the identifier, otherwise the type of the preceding
         // node.
-        Node nodeToResolve = target instanceof AstIdentifier ? target : previous;
+        Node nodeToResolve;
+        if (target instanceof AstIdentifier &&
+                (previous instanceof AstIdentifier
+                || previous instanceof AstPropertySuffix
+                || previous instanceof AstMethodSuffix)) {
+            nodeToResolve = target;
+        } else {
+            nodeToResolve = previous;
+        }
+
         Element resolved = typeUtilities.resolveElement(element, nodeToResolve);
 
         if (resolved == null) {
