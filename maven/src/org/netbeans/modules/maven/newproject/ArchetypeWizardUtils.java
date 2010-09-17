@@ -132,7 +132,7 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("webapp-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/releases/");
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
@@ -152,7 +152,7 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ejb-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/releases/");
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
@@ -172,21 +172,21 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/releases/");
         EAR_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-jee5"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/releases/");
         EAR_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-j2ee14"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/releases/");
         EAR_ARCHS[2] = arch;
 
         EA_ARCH = new Archetype();
