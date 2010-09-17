@@ -46,7 +46,9 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -72,6 +74,7 @@ public class ProjectGenerator {
         private String mainFile;
         private String hostUID;
         private CompilerSet cs;
+        private Map<String, Object> templateParams;
 
         /**
          *
@@ -99,6 +102,7 @@ public class ProjectGenerator {
             this.testFolders = null; 
             this.importantFileItems = null; 
             this.mainFile = "";
+            this.templateParams = Collections.<String, Object>emptyMap();
         }
 
         public ProjectParameters setMakefileName(String makefile) {
@@ -152,6 +156,11 @@ public class ProjectGenerator {
             return this;
         }
 
+        public ProjectParameters setTemplateParams(Map<String, Object> params) {
+            this.templateParams = params;
+            return this;
+        }
+
         public File getProjectFolder() {
             return projectFolder;
         }
@@ -198,6 +207,10 @@ public class ProjectGenerator {
 
         public CompilerSet getToolchain() {
             return cs;
+        }
+
+        public Map<String, Object> getTemplateParams() {
+            return templateParams;
         }
     }
     
