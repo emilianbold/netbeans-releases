@@ -37,38 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.embedder;
+package org.netbeans.modules.cnd.spi.remote;
 
-import java.util.Properties;
-import org.apache.maven.execution.DefaultMavenExecutionRequestPopulator;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionRequestPopulationException;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 
 /**
  *
- * @author mkleint
+ * @author Vladimir Kvashin
  */
-public class NbExecutionRequestPopulator extends DefaultMavenExecutionRequestPopulator {
-//    private Properties props;
-
-    @Override
-    public MavenExecutionRequest populateDefaults(MavenExecutionRequest request) throws MavenExecutionRequestPopulationException {
-        MavenExecutionRequest toRet =  super.populateDefaults(request);
-        if (toRet.getSystemProperties().size() == 0) {
-            toRet.setSystemProperties(getSysProps());
-        }
-        return toRet;
-    }
-
-    private Properties getSysProps() {
-        Properties props = new Properties();
-        props.putAll(System.getProperties());
-        props = EmbedderFactory.fillEnvVars(props);
-        return props;
-    }
-
-
+public interface SelectHostWizardProviderFactory {
+    SelectHostWizardProvider createHostWizardProvider(boolean allowLocal, ChangeListener changeListener);
 }

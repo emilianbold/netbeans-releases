@@ -37,28 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.cnd.remote.ui.wizard;
 
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
+import org.netbeans.modules.cnd.spi.remote.SelectHostWizardProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.WizardDescriptor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public interface RemoteProject {
+@ServiceProvider(service=SelectHostWizardProviderFactory.class)
+public class SelectHostWizardProviderFactoryImpl implements SelectHostWizardProviderFactory {
 
-    /** A temporary flag for development #190299 -  Tie synchronization to project instead of host  */
-    static final boolean SYNC_PER_PROJECT = Boolean.getBoolean("cnd.remote.sync.per.project");
+    public SelectHostWizardProviderFactoryImpl() {
+    }
 
-    /** A temporary flag for development #188813 -  Full remote */
-    static final boolean FULL_REMOTE = Boolean.getBoolean("cnd.full.remote");
+    @Override
+    public SelectHostWizardProvider createHostWizardProvider(boolean allowLocal, ChangeListener changeListener) {
+        return new SelectHostWizardProviderImpl(allowLocal, changeListener);
+    }
 
-    // FIXUP. Think over how to get correct factory
-    static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
-    
-    ExecutionEnvironment getDevelopmentHost();
+
+    private static class SelectHostWizardProviderImpl extends SelectHostWizardProvider {
+
+        private SelectHostWizardPanel panel;
+
+        public SelectHostWizardProviderImpl(boolean allowLocal, ChangeListener changeListener) {
+            panel = new SelectHostWizardPanel(allowLocal, changeListener);
+        }
+
+        @Override
+        public WizardDescriptor.Panel getSelectHostPanel() {
+            return panel;
+        }
+
+        @Override
+        public WizardDescriptor.Panel[] getAdditionalPanels() {
+            return panel.getAdditionalPanels();
+        }
+
+        @Override
+        public boolean isNewHost() {
+            return panel.isNewHost();
+        }
+
+        @Override
+        public ExecutionEnvironment getSelectedHost() {
+            return panel.getSelectedHost();
+        }
+
+        @Override
+        public void apply() {
+            panel.apply();
+        }
+    }
 }

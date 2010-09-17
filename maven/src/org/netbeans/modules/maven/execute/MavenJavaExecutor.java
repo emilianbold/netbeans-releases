@@ -175,7 +175,8 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
 
             MavenEmbedder embedder;
             ProgressTransferListener.setAggregateHandle(handle);
-            req.setTransferListener(new ProgressTransferListener());
+            //TODO : pass ArtifactTransferListener to embedder.execute(req)
+            //req.setTransferListener(new ProgressTransferListener());
             out = new JavaOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
             IOBridge.pushSystemInOutErr(out);
 
@@ -294,7 +295,8 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
                 req.setPom(pom);
             }
             req.setExecutionListener(out);
-            req.setTransferListener(new ProgressTransferListener());
+            //TODO : pass ArtifactTransferListener to embedder.execute(req)
+            //req.setTransferListener(new ProgressTransferListener());
             //            req.setReactorActive(true);
             if (reactorFailure != null) {
                 req.setReactorFailureBehavior(reactorFailure);

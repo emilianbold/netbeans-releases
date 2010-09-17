@@ -80,7 +80,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
     }
 
     @Override
-    public Component getComponent() {
+    public PanelConfigureProjectVisual getComponent() {
         if (component == null) {
             component = new PanelConfigureProjectVisual(this, this.name, this.wizardTitle, this.wizardACSD, showMakefileTextField, type);
         }
@@ -109,8 +109,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+        return getComponent().valid(wizardDescriptor);
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
@@ -145,11 +144,11 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
             return;
         }
         wizardDescriptor = settings;
-        component.read(wizardDescriptor);
+        getComponent().read(wizardDescriptor);
 
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewProjectWizard to modify the title
-        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
+        Object substitute = getComponent().getClientProperty("NewProjectWizard_Title"); // NOI18N
         if (substitute != null) {
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
         }
@@ -158,8 +157,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        WizardDescriptor d = settings;
-        component.store(d);
+        getComponent().store(settings);
         initialized = false;
     }
 

@@ -123,6 +123,12 @@ public class CndUtils {
         }
     }
 
+    public static void assertNull(Object object, String message) {
+        if (isDebugMode()) {
+            assertTrue(object == null, message); //NOI18N
+        }
+    }
+
     public static int getNumberCndWorkerThreads() {
         int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
                 Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N

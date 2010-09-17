@@ -37,28 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.cnd.remote.sync;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public interface RemoteProject {
+/*package-local*/ class FullRemoteSyncWorker implements RemoteSyncWorker {
 
-    /** A temporary flag for development #190299 -  Tie synchronization to project instead of host  */
-    static final boolean SYNC_PER_PROJECT = Boolean.getBoolean("cnd.remote.sync.per.project");
+    private final File[] files;
+    private final ExecutionEnvironment executionEnvironment;
 
-    /** A temporary flag for development #188813 -  Full remote */
-    static final boolean FULL_REMOTE = Boolean.getBoolean("cnd.full.remote");
-
-    // FIXUP. Think over how to get correct factory
-    static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
+    public FullRemoteSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File... files) {
+        this.files = files;
+        this.executionEnvironment = executionEnvironment;
+    }
     
-    ExecutionEnvironment getDevelopmentHost();
+    @Override
+    public boolean startup(Map<String, String> env2add) {
+        return true;
+    }
+
+    @Override
+    public void shutdown() {
+    }
+
+    @Override
+    public boolean cancel() {
+        return false;
+    }
 }
