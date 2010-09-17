@@ -56,6 +56,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -337,8 +338,11 @@ public class SelectModePanel extends javax.swing.JPanel {
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
-        String path = fileChooser.getSelectedFile().getPath();
-        projectFolder.setText(path);
+        File selectedFile = fileChooser.getSelectedFile();
+        if (selectedFile != null) { // seems paranoidal, but once I've seen NPE otherwise 8-()
+            String path = selectedFile.getPath();
+            projectFolder.setText(path);
+        }
 }//GEN-LAST:event_browseButtonActionPerformed
 
     private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboBoxItemStateChanged
@@ -357,7 +361,8 @@ public class SelectModePanel extends javax.swing.JPanel {
         updateControls();
         String hostUID = (String) wizardDescriptor.getProperty("hostUID");
         CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty("toolchain");
-        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, false) {
+        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, false,
+                (ToolsCacheManager) wizardDescriptor.getProperty("ToolsCacheManager")) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
                 boolean enableHost = enabled;

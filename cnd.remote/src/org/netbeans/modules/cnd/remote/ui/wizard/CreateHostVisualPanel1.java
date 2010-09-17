@@ -43,20 +43,16 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import javax.swing.JLabel;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.NbBundle;
 
@@ -106,6 +102,17 @@ import org.openide.util.NbBundle;
             }
             @Override
             public void ancestorMoved(AncestorEvent event) {
+            }
+        });
+        addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        textHostname.requestFocus();
+                    }
+                });
             }
         });
     }
