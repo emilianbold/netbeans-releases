@@ -76,6 +76,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new SelectModePanel(this);
@@ -84,10 +85,12 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewMakeWizardP0"); // NOI18N
     }
     
+    @Override
     public boolean isValid() {
         return isValid;
     }
@@ -107,11 +110,13 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     }
 
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -132,6 +137,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         return wizardDescriptor;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
@@ -145,6 +151,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
       	fireChangeEvent();
     }
 
+    @Override
     public boolean isFinishPanel() {
         return  Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode")); // NOI18N
     }
@@ -153,6 +160,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;
         if (wizardDescriptor.getProperty("simpleMode") == null) {
@@ -161,6 +169,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         component.read(wizardDescriptor);
     }
     
+    @Override
     public void storeSettings(Object settings) {
         component.store((WizardDescriptor)settings);
     }
