@@ -127,26 +127,23 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
                 try {
                     RepositoryQueries.find(queryRequest);
                 } catch (BooleanQuery.TooManyClauses exc) {
-                    List<QueryField> withoutClasses = new ArrayList<QueryField>(fields);
-                    Iterator<QueryField> it = withoutClasses.iterator();
-                    while (it.hasNext()) {
-                        QueryField qf = it.next();
-                        if (qf.getField().equals(QueryField.FIELD_CLASSES)) {
-                            it.remove();
-                            break;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            resultsRootNode.setOneChild(getTooGeneralNode());
                         }
-                    }
-                    try {
-                        queryRequest.changeFields(withoutClasses);
-                        RepositoryQueries.find(queryRequest);
-                    } catch (BooleanQuery.TooManyClauses exc2) {
-                        //TODO report as a problem  here...
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                resultsRootNode.setOneChild(getNoResultsNode());
-                            }
-                        });
-                    }
+                    });
+                } catch (final OutOfMemoryError oome) {
+                    // running into OOME may still happen in Lucene despite the fact that
+                    // we are trying hard to prevent it in NexusRepositoryIndexerImpl
+                    // (see #190265)
+                    // in the bad circumstances theoretically any thread may encounter OOME
+                    // but most probably this thread will be it
+                    // trying to indicate the condition to the user here
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            resultsRootNode.setOneChild(getTooGeneralNode());
+                        }
+                    });
                 }
             }
         });
@@ -343,7 +340,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
     }
 
-    private static Node noResultsNode, searchingNode;
+    private static Node noResultsNode, searchingNode, tooGeneralNode;
 
     private static Node getNoResultsNode() {
         if (noResultsNode == null) {
@@ -391,6 +388,30 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
 
         return new FilterNode (searchingNode, Children.LEAF);
+    }
+
+    private static Node getTooGeneralNode() {
+        if (tooGeneralNode == null) {
+            AbstractNode nd = new AbstractNode(Children.LEAF) {
+
+                @Override
+                public Image getIcon(int arg0) {
+                    return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
+                    }
+
+                @Override
+                public Image getOpenedIcon(int arg0) {
+                    return getIcon(arg0);
+                }
+            };
+            nd.setName("Too General"); //NOI18N
+
+            nd.setDisplayName(NbBundle.getMessage(FindResultsPanel.class, "LBL_Node_TooGeneral")); //NOI18N
+
+            tooGeneralNode = nd;
+        }
+
+        return new FilterNode (tooGeneralNode, Children.LEAF);
     }
 
     private class ResultsRootNode extends AbstractNode {
