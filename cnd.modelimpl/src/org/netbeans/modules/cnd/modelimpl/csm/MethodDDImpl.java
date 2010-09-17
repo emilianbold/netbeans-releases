@@ -62,20 +62,19 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
 
     private final CsmCompoundStatement body;
     
-    protected MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
-        super(ast, cls, visibility, false, global);
+    protected MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+        super(ast, cls, visibility, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         if (body == null) {
             throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
                     "Null body in method definition."); // NOI18N
         }
-        if (register) {
-            registerInProject();
-        }
     }
 
-    public static<T> MethodDDImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
-        return new MethodDDImpl<T>(ast, cls, visibility, register, global);
+    public static<T> MethodDDImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<T>(ast, cls, visibility, register);
+        postObjectCreateRegistration(register, methodDDImpl);
+        return methodDDImpl;
     }
 
     @Override

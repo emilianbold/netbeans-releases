@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -104,7 +103,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private static final boolean CHECK_SCOPE = false;
 
-    protected FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+    protected FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) throws AstRendererException {
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
 
@@ -143,14 +142,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
 
         _setScope(scope);
-
-        if (global){
-            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        } else {
-            Utils.setSelfUID(this);
-        }
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
+
+        if (name.toString().startsWith(OPERATOR) &&
+                (name.length() > OPERATOR.length()) &&
+                !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
+            setFlags(FLAGS_OPERATOR, true);
+        }
+
+        temporaryRepositoryRegistration(global, this);
         StringBuilder clsTemplateSuffix = new StringBuilder();
         templateDescriptor = createTemplateDescriptor(ast, this, clsTemplateSuffix, global);
         classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
@@ -167,28 +168,24 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         } else {
             setFlags(FLAGS_VOID_PARMLIST, false);
         }
-        if (name.toString().startsWith(OPERATOR) &&
-                (name.length() > OPERATOR.length()) &&
-                !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
-            setFlags(FLAGS_OPERATOR, true);
-        }
-        if (register) {
-            registerInProject();
-        }
         if (this.parameterList == null) {
             System.err.println("NO PARAM LIST FOR FUNC:" + name + " at " + AstUtil.getOffsetString(ast) + " in " + file.getAbsolutePath());
         }
     }
 
-    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        return new FunctionImpl<T>(ast, file, type, scope, register, global);
+    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register) throws AstRendererException {
+        FunctionImpl<T> functionImpl = new FunctionImpl<T>(ast, file, type, scope, register);
+        postObjectCreateRegistration(register, functionImpl);
+        return functionImpl;
     }
 
-    public static<T> FunctionImpl<T> create(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, boolean global, int startOffset, int endOffset) {
-        return new FunctionImpl<T>(file, type, scope, name, parameterList, isStatic, isConst, register, global, startOffset, endOffset);
+    public static<T> FunctionImpl<T> create(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, int startOffset, int endOffset) {
+        FunctionImpl<T> functionImpl = new FunctionImpl<T>(file, type, scope, name, parameterList, isStatic, isConst, register, startOffset, endOffset);
+        postObjectCreateRegistration(register, functionImpl);
+        return functionImpl;
     }
 
-    private FunctionImpl(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, boolean global, int startOffset, int endOffset) {
+    private FunctionImpl(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean global, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         assert !CHECK_SCOPE || (scope != null);
 
@@ -205,13 +202,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
 
         _setScope(scope);
-
-        if (global){
-            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        } else {
-            Utils.setSelfUID(this);
-        }
         setFlags(FLAGS_CONST, isConst);
+        if (name.toString().startsWith(OPERATOR) &&
+                (name.length() > OPERATOR.length()) &&
+                !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
+            setFlags(FLAGS_OPERATOR, true);
+        }
+
+        temporaryRepositoryRegistration(global, this);
         // TODO
         templateDescriptor = null;
         // TODO
@@ -226,19 +224,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         } else {
             setFlags(FLAGS_VOID_PARMLIST, false);
         }
-        if (name.toString().startsWith(OPERATOR) &&
-                (name.length() > OPERATOR.length()) &&
-                !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
-            setFlags(FLAGS_OPERATOR, true);
-        }
-        if (register) {
-            registerInProject();
-        }
     }
 
     public void setScope(CsmScope scope) {
         unregisterInProject();
-        this._setScope(scope);
+        _setScope(scope);
         registerInProject();
     }
 

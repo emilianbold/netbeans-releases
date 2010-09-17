@@ -78,19 +78,18 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     private final CsmCompoundStatement body;
 
     protected FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
-        super(ast, file, null, scope, false, global);
+        super(ast, file, null, scope, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         if (body == null) {
             throw new AstRendererException((FileImpl)file, getStartOffset(),
                     "Null body in function definition."); // NOI18N
         }
-        if (global) {
-            registerInProject();
-        }
     }
 
-    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
-        return new FunctionDDImpl<T>(ast, file, scope, global);
+    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+        FunctionDDImpl<T> functionDDImpl = new FunctionDDImpl<T>(ast, file, scope, register);
+        postObjectCreateRegistration(register, functionDDImpl);
+        return functionDDImpl;
     }
 
 
