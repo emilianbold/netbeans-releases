@@ -95,7 +95,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
             @Override
             public void focusGained(FocusEvent e) {
 //                newHostPane.requestFocus();
-                requestFocusInEDT(newHostPane);
+                requestFocusInEDT(SelectHostVisualPanel.this.createHostPanel);
             }
         });
         rbExistent.addFocusListener(new FocusAdapter() {

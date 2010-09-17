@@ -154,6 +154,7 @@ public class SelectHostWizardPanel implements WizardDescriptor.Panel<WizardDescr
         delegate.storeSettings(settings);
         ExecutionEnvironment env = getComponent().isExistent() ? getComponent().getSelectedHost() : null;
         settings.putProperty("hostUID", (env == null) ? null : ExecutionEnvironmentFactory.toUniqueID(env)); // NOI18N
+        settings.putProperty("ToolsCacheManager", createHostData.getCacheManager());
     }
 
     ExecutionEnvironment getSelectedHost() {
