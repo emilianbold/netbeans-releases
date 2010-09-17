@@ -86,83 +86,12 @@ class QueryUtil {
             final @NonNull Pair<String,String> termNames,
             final @NonNull String value,
             final @NonNull ClassIndex.NameKind kind) {
-        Parameters.notNull("termNames", termNames);
-        Parameters.notNull("termNames.first", termNames.first);
-        Parameters.notNull("termNames.second", termNames.second);
-        Parameters.notNull("value", value);
-        Parameters.notNull("kind", kind);
-        switch (kind) {
-            case SIMPLE_NAME:
-                    return new Query[] {new TermQuery(new Term (termNames.first, value))};
-            case PREFIX:
-                if (value.length() == 0) {
-                    return new Query[] {new MatchAllDocsQuery()};
-                }
-                else {
-                    final PrefixQuery pq = new PrefixQuery(new Term(termNames.first, value));
-                    pq.setRewriteMethod(PrefixQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return new Query[] {pq};
-                }
-            case CASE_INSENSITIVE_PREFIX:
-                if (value.length() == 0) {
-                    return new Query[] {new MatchAllDocsQuery()};
-                }
-                else {
-                    final PrefixQuery pq = new PrefixQuery(new Term(termNames.second, value.toLowerCase()));
-                    pq.setRewriteMethod(PrefixQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return new Query[] {pq};
-                }
-            case CAMEL_CASE:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
-                } else {
-                    StringBuilder sb = new StringBuilder();
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(value, lastIndex + 1);
-                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    } while(index != -1);
-                    return new Query[] {new FilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.first,sb.toString(),true))};
-                }
-            case CASE_INSENSITIVE_REGEXP:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                return new Query[] {new FilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.second, value.toLowerCase(), false))};
-            case REGEXP:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                return new Query[] {new FilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.first, value, true))};
-            case CAMEL_CASE_INSENSITIVE:
-                if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    return new Query[] {new MatchAllDocsQuery()};
-                }
-                else {
-                    final PrefixQuery pq = new PrefixQuery(new Term(termNames.second, value.toLowerCase()));
-                    pq.setRewriteMethod(PrefixQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                                        
-                    StringBuilder sb = new StringBuilder();
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(value, lastIndex + 1);
-                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);                        
-                        sb.append(token.toLowerCase());
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    } while(index != -1);
-                    final Query fq = new FilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.second,sb.toString(),false));                    
-                    return new Query[]{pq,fq};
-                }
-            default:
-                throw new UnsupportedOperationException (kind.toString());
-        }
+        Parameters.notNull("termNames", termNames);     //NOI18N
+        Parameters.notNull("termNames.first", termNames.first); //NOI18N
+        Parameters.notNull("termNames.second", termNames.second);   //NOI18N
+        Parameters.notNull("value", value); //NOI18N
+        Parameters.notNull("kind", kind);   //NOI18N
+        return createQueriesImpl(termNames, value, kind, new StandardQueryFactory());
     }  
     
     static Query[] createTermCollectingQueries(
@@ -174,69 +103,57 @@ class QueryUtil {
         Parameters.notNull("termNames.second", termNames.second); //NOI18N
         Parameters.notNull("value", value); //NOI18N
         Parameters.notNull("kind", kind);   //NOI18N
+        return createQueriesImpl(termNames, value, kind, new TCQueryFactory());
+    }
+    
+    private static Query[] createQueriesImpl(
+            final @NonNull Pair<String,String> termNames,
+            final @NonNull String value,
+            final @NonNull ClassIndex.NameKind kind,
+            final @NonNull QueryFactory f) {
         switch (kind) {
             case SIMPLE_NAME:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException();
-                }
-                return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new TermFilter(termNames.first,value))};
+                    return new Query[] {f.createTermQuery(termNames.first, value)};
             case PREFIX:
                 if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
+                    return new Query[] {f.createAllDocsQuery()};
                 }
                 else {
-                    return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new PrefixFilter(termNames.first, value))};
+                    return new Query[] {f.createPrefixQuery(termNames.first, value)};
                 }
             case CASE_INSENSITIVE_PREFIX:
                 if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
+                    return new Query[] {f.createAllDocsQuery()};
                 }
                 else {
-                    return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new PrefixFilter(termNames.second, value.toLowerCase()))};
+                    return new Query[] {f.createPrefixQuery(termNames.second, value.toLowerCase())};
                 }
-            case REGEXP:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.first, value, true))};
-            case CASE_INSENSITIVE_REGEXP:
-                if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.second, value.toLowerCase(), false))};
             case CAMEL_CASE:
                 if (value.length() == 0) {
                     throw new IllegalArgumentException ();
                 } else {
-                    StringBuilder sb = new StringBuilder();
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(value, lastIndex + 1);
-                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    } while(index != -1);
-                    return new Query[] {new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.first,sb.toString(),true))};
+                    return new Query[] {f.createRegExpQuery(termNames.first,createCamelCaseRegExp(value, true), true)};
+                }
+            case CASE_INSENSITIVE_REGEXP:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                } else {
+                    return new Query[] {f.createRegExpQuery(termNames.second, value.toLowerCase(), false)};
+                }
+            case REGEXP:
+                if (value.length() == 0) {
+                    throw new IllegalArgumentException ();
+                } else {
+                    return new Query[] {f.createRegExpQuery(termNames.first, value, true)};
                 }
             case CAMEL_CASE_INSENSITIVE:
                 if (value.length() == 0) {
-                    throw new IllegalArgumentException ();
+                    //Special case (all) handle in different way
+                    return new Query[] {f.createAllDocsQuery()};
                 }
                 else {
-                    final Query pq = new TCFilteredQuery(new MatchAllDocsQuery(), new PrefixFilter(termNames.second, value.toLowerCase()));
-                    StringBuilder sb = new StringBuilder();
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(value, lastIndex + 1);
-                        String token = value.substring(lastIndex, index == -1 ? value.length(): index);                        
-                        sb.append(token.toLowerCase());
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    } while(index != -1);
-                    final Query fq = new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(termNames.second,sb.toString(),false));
+                    final Query pq = f.createPrefixQuery(termNames.second, value.toLowerCase());
+                    final Query fq = f.createRegExpQuery(termNames.second, createCamelCaseRegExp(value, false), false);
                     return new Query[]{pq,fq};
                 }
             default:
@@ -274,6 +191,30 @@ class QueryUtil {
     }
     
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
+    
+    private static String createCamelCaseRegExp(final String camel, final boolean caseSensitive) {
+        final StringBuilder sb = new StringBuilder();
+        int lastIndex = 0;
+        int index;
+        do {
+            index = findNextUpper(camel, lastIndex + 1);
+            String token = camel.substring(lastIndex, index == -1 ? camel.length(): index);
+            sb.append(caseSensitive ? token : token.toLowerCase());
+            sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+            lastIndex = index;
+        } while(index != -1);
+        return sb.toString();
+    }
+    
+    private static int findNextUpper(String text, int offset ) {
+        for( int i = offset; i < text.length(); i++ ) {
+            if ( Character.isUpperCase(text.charAt(i)) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     private static abstract class DocumentVisitor {
 
         public void generate(IndexReader reader, TermEnum enumerator) throws IOException {
@@ -304,16 +245,7 @@ class QueryUtil {
         }
 
         abstract public void visit(Term term, int doc);
-    }
-    
-    private static int findNextUpper(String text, int offset ) {
-        for( int i = offset; i < text.length(); i++ ) {
-            if ( Character.isUpperCase(text.charAt(i)) ) {
-                return i;
-            }
-        }
-        return -1;
-    }
+    }    
     
     private static abstract class TCFilter extends Filter {
         public abstract void attach (TermCollector collector);
@@ -571,6 +503,61 @@ class QueryUtil {
         @Override
         public void attach(TermCollector collector) {
             ((TCFilter)getFilter()).attach(collector);
+        }
+    }
+    
+    private static interface QueryFactory {
+        Query createTermQuery(@NonNull String name, @NonNull String value);
+        Query createPrefixQuery(@NonNull String name, @NonNull String value);
+        Query createRegExpQuery(@NonNull String name, @NonNull String value, boolean caseSensitive);
+        Query createAllDocsQuery();
+    }
+    
+    private static class StandardQueryFactory implements QueryFactory {
+        
+        @Override
+        public Query createTermQuery(final @NonNull String name, final @NonNull String value) {
+            return new TermQuery(new Term (name, value));
+        }
+        
+        @Override
+        public Query createPrefixQuery(final @NonNull String name, final @NonNull String value) {
+            final PrefixQuery pq = new PrefixQuery(new Term(name, value));
+            pq.setRewriteMethod(PrefixQuery.CONSTANT_SCORE_FILTER_REWRITE);
+            return pq;
+        }
+        
+        @Override
+        public Query createRegExpQuery(final @NonNull String name, final @NonNull String value, final boolean caseSensitive) {
+            return new FilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(name, value, caseSensitive));
+        }
+        
+        @Override
+        public Query createAllDocsQuery() {
+            return new MatchAllDocsQuery();
+        }
+    }
+    
+    private static class TCQueryFactory implements QueryFactory {
+        
+        @Override
+        public Query createTermQuery(final @NonNull String name, final @NonNull String value) {
+            return new TCFilteredQuery(new MatchAllDocsQuery(), new TermFilter(name,value));
+        }
+        
+        @Override
+        public Query createPrefixQuery(final @NonNull String name, final @NonNull String value) {
+            return new TCFilteredQuery(new MatchAllDocsQuery(), new PrefixFilter(name, value));
+        }
+        
+        @Override
+        public Query createRegExpQuery(final @NonNull String name, final @NonNull String value, final boolean caseSensitive) {
+            return new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(name, value, caseSensitive));
+        }
+        
+        @Override
+        public Query createAllDocsQuery() {
+            throw new IllegalArgumentException ();
         }
     }
     //</editor-fold>
