@@ -67,15 +67,18 @@ public class CommandLineOutputHandlerTest {
 
     @Test
     public void testRegExp() throws Exception {
-        Matcher m = CommandLineOutputHandler.startPattern.matcher("[INFO] [surefire:test]");
+        Matcher m = CommandLineOutputHandler.startPatternM2.matcher("[INFO] [surefire:test]");
         assertTrue(m.matches());
         assertEquals("surefire", m.group(1));
         assertEquals("test", m.group(2));
-        m = CommandLineOutputHandler.startPattern.matcher("[INFO] [compiler:testCompile {execution: default-testCompile}]");
+        m = CommandLineOutputHandler.startPatternM2.matcher("[INFO] [compiler:testCompile {execution: default-testCompile}]");
         assertTrue(m.matches());
         assertEquals("compiler", m.group(1));
         assertEquals("testCompile", m.group(2));
-
+        m = CommandLineOutputHandler.startPatternM3.matcher("[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ mavenproject3 ---");
+        assertTrue(m.matches());
+        assertEquals("maven-compiler-plugin", m.group(1));
+        assertEquals("compile", m.group(2));
     }
 
 }
