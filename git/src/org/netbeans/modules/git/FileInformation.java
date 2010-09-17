@@ -69,6 +69,7 @@ public class FileInformation {
         } else {
             GitStatus.Status statusHeadIndex = status.getStatusHeadIndex();
             GitStatus.Status statusIndexWC = status.getStatusIndexWC();
+            GitStatus.Status statusHeadWC = status.getStatusHeadWC();
             EnumSet<Status> s = EnumSet.noneOf(Status.class);
             if (GitStatus.Status.STATUS_ADDED.equals(statusHeadIndex)) {
                 s.add(Status.STATUS_VERSIONED_ADDED_TO_INDEX);
@@ -83,6 +84,9 @@ public class FileInformation {
                 s.add(Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
             } else if (GitStatus.Status.STATUS_REMOVED.equals(statusIndexWC)) {
                 s.add(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE);
+            }
+            if (GitStatus.Status.STATUS_MODIFIED.equals(statusHeadWC)) {
+                s.add(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE);
             }
             if (s.isEmpty()) {
                 s.add(Status.STATUS_VERSIONED_UPTODATE);

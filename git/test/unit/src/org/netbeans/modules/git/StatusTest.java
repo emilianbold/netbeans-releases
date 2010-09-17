@@ -135,6 +135,7 @@ public class StatusTest extends AbstractGitTest {
     // TODO add more tests when remove is implemented
     // TODO add more tests when commit is implemented
     // TODO add more tests when exclusions are supported
+    // TODO test statuses between HEAD-WC: when commit is implemented
 
     private void assertSameStatus(Set<File> files, Status status) {
         for (File f : files) {

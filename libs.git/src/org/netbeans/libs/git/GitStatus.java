@@ -49,6 +49,7 @@ import java.io.File;
  * @author ondra
  */
 public class GitStatus {
+    private final Status statusHeadWC;
     public enum Status {
         STATUS_ADDED, STATUS_REMOVED, STATUS_NORMAL, STATUS_MODIFIED, STATUS_IGNORED
     }
@@ -60,12 +61,13 @@ public class GitStatus {
     private final Status statusIndexWC;
     private final boolean conflict;
 
-    public GitStatus (boolean tracked, String relativePath, File correspondingFile, Status statusHeadIndex, Status statusIndexWC, boolean conflict) {
+    public GitStatus (boolean tracked, String relativePath, File correspondingFile, Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, boolean conflict) {
         this.tracked = tracked;
         this.relativePath = relativePath;
         this.correspondingFile = correspondingFile;
         this.statusHeadIndex = statusHeadIndex;
         this.statusIndexWC = statusIndexWC;
+        this.statusHeadWC = statusHeadWC;
         this.conflict = conflict;
     }
 
@@ -83,6 +85,10 @@ public class GitStatus {
 
     public Status getStatusIndexWC() {
         return statusIndexWC;
+    }
+
+    public Status getStatusHeadWC() {
+        return statusHeadWC;
     }
 
     public boolean isTracked() {
