@@ -42,27 +42,32 @@
 
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
-import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class SelectHostWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+public class SelectHostWizardPanel implements
+        WizardDescriptor.Panel<WizardDescriptor>,
+        WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>,
+        ChangeListener {
     
     private final ChangeListener changeListener;
     private final boolean allowLocal;
@@ -112,6 +117,28 @@ public class SelectHostWizardPanel implements WizardDescriptor.Panel<WizardDescr
     @Override
     public HelpCtx getHelp() {
         return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    public void prepareValidation() {
+        getComponent().enableControls(false);
+    }
+
+    @Override
+    public void validate() throws WizardValidationException {
+        ExecutionEnvironment execEnv = getComponent().getSelectedHost();
+        try {
+            if (execEnv != null) {
+                ConnectionManager.getInstance().connectTo(execEnv);
+            }
+        } catch (IOException ex) {
+            String message = NbBundle.getMessage(getClass(), "CannotConnectMessage");
+            throw new WizardValidationException(getComponent(), message, message);
+        } catch (CancellationException ex) {
+            // nothing
+        } finally {
+            getComponent().enableControls(true);
+        }
     }
 
     @Override
