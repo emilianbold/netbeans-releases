@@ -72,7 +72,8 @@ public class Watcher extends AnnotationProvider {
         ext = notifier == null ? null : new Ext(notifier);
 
         if (notifier != null) { // turn off the recursive refresh on focus
-            // XXX
+            // it would be better to move the refresh infrastructure here
+            System.getProperties().put("netbeans.indexing.noFileRefresh", "true");
         }
     }
 
@@ -143,7 +144,9 @@ public class Watcher extends AnnotationProvider {
                         FileObject fo = FileObjectFactory.getInstance(file).getCachedOnly(file);
 
                         // may be null
-                        if (map.containsKey(fo)) fo.refresh();
+                        if (map.containsKey(fo)) {
+                            fo.refresh();
+                        }
                     }
                 } catch (ThreadDeath td) {
                     throw td;
