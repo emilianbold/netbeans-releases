@@ -49,6 +49,7 @@ import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -63,6 +64,11 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         super(name);
     }
 
+    @Override
+    protected HtmlVersion getExpectedVersion() {
+        return HtmlVersion.HTML41_TRANSATIONAL;
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -302,7 +308,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     public void testEndTagAutocompletion() throws BadLocationException, ParseException {
         assertItems("<div>|", arr("div"), Match.EXACT, 5);
         //test end tag ac for unknown tags
-        assertItems("<div><bla>|", arr(), Match.EMPTY, 0);
+        assertItems("<div><bla>|", arr(), Match.EMPTY);
     }
 
     public void testJustBeforeTag() throws BadLocationException, ParseException {
@@ -311,7 +317,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     }
 
     public void testNoCompletionInDoctype() throws BadLocationException, ParseException {
-        assertItems("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" |  \"http://www.w3.org/TR/html40/strict.dtd\">", arr(), Match.EMPTY);
+        assertItems("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" |  \"http://www.w3.org/TR/html40/strict.dtd\">", arr(), Match.EMPTY);
     }
 
     public void testEndTagsAutoCompletionOfUndeclaredTags() throws BadLocationException, ParseException {

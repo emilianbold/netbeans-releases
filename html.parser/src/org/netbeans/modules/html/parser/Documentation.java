@@ -72,6 +72,10 @@ public class Documentation implements HelpResolver {
 
     private static final Documentation SINGLETON = new Documentation();
 
+    public static void setupDocumentationForUnitTests() {
+         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));
+    }
+
     public static Documentation getDefault() {
         return SINGLETON;
     }
