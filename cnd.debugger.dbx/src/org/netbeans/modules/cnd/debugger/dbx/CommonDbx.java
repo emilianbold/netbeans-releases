@@ -476,7 +476,10 @@ public abstract class CommonDbx extends GPDbxSurrogate {
         private void updateDbxPath(Host host) {
             final DbxPathProvider pathProvider = Lookup.getDefault().lookup(DbxPathProvider.class);
             if (pathProvider != null) {
-                dbxname = pathProvider.getDbxPath(host);
+                String newPath = pathProvider.getDbxPath(host);
+                if (newPath != null) {
+                    dbxname = newPath;
+                }
             }
         }
 
