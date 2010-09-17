@@ -62,16 +62,17 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  */
 public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implements CsmConstructor {
 
-    private final List<CsmExpression> initializers;
+    private List<CsmExpression> initializers;
     
-    private ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, register, register);
-        
-        initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
+    private ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+        super(ast, cls, visibility, global);
     }
  
-    public static ConstructorDDImpl create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        return new ConstructorDDImpl(ast, cls, visibility, register);
+    public static ConstructorDDImpl createConstructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        ConstructorDDImpl constructorDDImpl = new ConstructorDDImpl(ast, cls, visibility, register);
+        constructorDDImpl.initializers = AstRenderer.renderConstructorInitializersList(ast, constructorDDImpl, constructorDDImpl.getContainingFile());
+        postObjectCreateRegistration(register, constructorDDImpl);
+        return constructorDDImpl;
     }
 
     @Override

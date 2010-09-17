@@ -80,6 +80,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         super(containingFile, pos);
     }
     
+    @Override
     public CharSequence getUniqueName() {
         return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
     }
@@ -111,6 +112,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return UIDUtilities.<CsmOffsetableDeclaration>createDeclarationUID(this);
     }
 
+    @Override
     public boolean isValid() {
         return CsmBaseUtilities.isValid(getContainingFile());
     }
@@ -278,6 +280,14 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             if (!obj.registerInProject()) {
                 RepositoryUtils.put(obj);
             }
+        } else {
+            Utils.setSelfUID(obj);
+        }
+    }
+
+    protected static<T> void temporaryRepositoryRegistration(boolean global, OffsetableDeclarationBase<T> obj) {
+        if (global) {
+            RepositoryUtils.hang(obj); // "hang" now and then "put" in "register()"
         } else {
             Utils.setSelfUID(obj);
         }

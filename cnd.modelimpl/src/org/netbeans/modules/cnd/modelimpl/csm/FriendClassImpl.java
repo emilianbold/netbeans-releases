@@ -95,11 +95,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
 
     public static FriendClassImpl create(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
         FriendClassImpl friendClassImpl = new FriendClassImpl(ast, qid, cfd, file, parent, register);
-        if (register) {
-            friendClassImpl.registerInProject();
-        } else {
-            Utils.setSelfUID(friendClassImpl);
-        }
+        postObjectCreateRegistration(register, friendClassImpl);
         return friendClassImpl;
     }
 

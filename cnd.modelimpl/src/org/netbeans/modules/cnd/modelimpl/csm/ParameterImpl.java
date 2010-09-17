@@ -50,8 +50,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Implements CsmParameter
@@ -65,12 +63,13 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
 
     public static ParameterImpl create(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean global) {
         ParameterImpl parameterImpl = new ParameterImpl(ast, file, type, name, scope);
-        if (global) {
-            RepositoryUtils.put(parameterImpl);
-        } else {
-            Utils.setSelfUID(parameterImpl);
-        }
+        postObjectCreateRegistration(global, parameterImpl);
         return parameterImpl;
+    }
+
+    @Override
+    protected boolean registerInProject() {
+        return false;
     }
 
     @Override

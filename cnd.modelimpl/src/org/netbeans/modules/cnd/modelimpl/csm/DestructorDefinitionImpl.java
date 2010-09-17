@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -57,18 +56,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> {
 
-    private DestructorDefinitionImpl(AST ast, CsmFile file, boolean register) throws AstRendererException {
-        super(ast, file, null, register, register);
+    private DestructorDefinitionImpl(AST ast, CsmFile file, boolean global) throws AstRendererException {
+        super(ast, file, null, global);
     }
     
-    public static DestructorDefinitionImpl create(AST ast, CsmFile file, MutableDeclarationsContainer container, boolean register){
-        DestructorDefinitionImpl res = null;
-        try {
-            res = new DestructorDefinitionImpl(ast, file, register);
-            container.addDeclaration(res);
-        } catch (AstRendererException ex) {
-            DiagnosticExceptoins.register(ex);
-        }
+    public static DestructorDefinitionImpl create(AST ast, CsmFile file, boolean register) throws AstRendererException{
+        DestructorDefinitionImpl res = new DestructorDefinitionImpl(ast, file, register);
+        postObjectCreateRegistration(register, res);
         return res;
     }
 

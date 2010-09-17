@@ -64,8 +64,13 @@ public class DummyParameterImpl extends VariableImpl<CsmParameter> implements Cs
 
     public static DummyParameterImpl create(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
         DummyParameterImpl dummyParameterImpl = new DummyParameterImpl(file, startOffset, endOffset, name, scope);
-        Utils.setSelfUID(dummyParameterImpl);
+        postObjectCreateRegistration(false, dummyParameterImpl);
         return dummyParameterImpl;
+    }
+
+    @Override
+    protected boolean registerInProject() {
+        return false;
     }
     
     @Override
