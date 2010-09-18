@@ -228,7 +228,7 @@ public final class ConnectionManager {
 
             fireConnected(env);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            // don't report interrupted exception
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         } finally {

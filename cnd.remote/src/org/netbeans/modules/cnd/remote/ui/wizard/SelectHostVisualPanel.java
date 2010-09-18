@@ -92,7 +92,6 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         rbExistent.setSelected(!setupNewHost.get());
         model = new DefaultListModel();
         initServerList();
-        modeChanged();
         rbNew.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -105,6 +104,13 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
             public void focusGained(FocusEvent e) {
 //                lstDevHosts.requestFocus();
                 requestFocusInEDT(lstDevHosts);
+            }
+        });
+        // modeChanged() called right from here doesn't work on Mac if called
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                modeChanged();
             }
         });
     }
@@ -285,7 +291,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
     private javax.swing.JPanel newHostPane;
     private javax.swing.JRadioButton rbExistent;
     private javax.swing.JRadioButton rbNew;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration                   
 
     void enableControls(boolean enable) {
         rbExistent.setEnabled(enable);

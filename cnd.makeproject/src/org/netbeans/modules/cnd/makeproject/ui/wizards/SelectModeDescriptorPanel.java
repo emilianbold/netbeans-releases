@@ -191,6 +191,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         private boolean buildProject = true;
         private CompilerSet cs;
         private ExecutionEnvironment env;
+        private boolean fullRemote = false;
         public WizardStorage(){
         }
 
@@ -199,6 +200,14 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
          */
         public void setMode(boolean isSimple) {
             SelectModeDescriptorPanel.this.setMode(isSimple);
+        }
+
+        public boolean isFullRemote() {
+            return fullRemote;
+        }
+
+        public void setFullRemote(boolean fullRemote) {
+            this.fullRemote = fullRemote;
         }
 
         /**
@@ -324,6 +333,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 return ExecutionEnvironmentFactory.toUniqueID(storage.env);
             } else if ("toolchain".equals(name)) { // NOI18N
                 return storage.cs;
+            } else if ("fullRemote".equals(name)) { // NOI18N
+                return storage.fullRemote;
             }
             return super.getProperty(name);
         }

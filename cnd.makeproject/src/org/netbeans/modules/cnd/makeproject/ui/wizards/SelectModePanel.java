@@ -404,6 +404,8 @@ public class SelectModePanel extends javax.swing.JPanel {
             wizardDescriptor.putProperty("toolchain", tc); // NOI18N
             controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
         }
+        Boolean b = (Boolean) wizardDescriptor.getProperty("fullRemote");
+        controller.getWizardStorage().setFullRemote(b != null && b.booleanValue());
         initialized = false;
     }
 
