@@ -44,6 +44,7 @@ package org.netbeans.spi.quicksearch;
 
 import java.util.List;
 import javax.swing.KeyStroke;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.modules.quicksearch.CategoryResult;
 import org.netbeans.modules.quicksearch.ResultsModel;
     
@@ -88,9 +89,9 @@ public final class SearchResponse {
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.
      * {@link SearchProvider} implementors should stop computing and leave
-     * SearchProvider.evaluate(...) immediatelly if false is returned.
+     * SearchProvider.evaluate(...) immediately if false is returned.
      */
-    public boolean addResult (Runnable action, String htmlDisplayName) {
+    @CheckReturnValue public boolean addResult(Runnable action, String htmlDisplayName) {
         return addResult(action, htmlDisplayName, null, null);
     }
     
@@ -113,14 +114,14 @@ public final class SearchResponse {
      * 
      * @param displayHint Localized display hint of this result item or null if not available<p></p>
      * 
-     * @param shortcut Shortcut of this result item or null if shorcut isn't available<p></p>
+     * @param shortcut Shortcut of this result item or null if shortcut isn't available<p></p>
      * 
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.
      * {@link SearchProvider} implementors should stop computing and leave
-     * SearchProvider.evaluate(...) immediatelly if false is returned.
+     * SearchProvider.evaluate(...) immediately if false is returned.
      */
-    public boolean addResult (Runnable action, String htmlDisplayName,
+    @CheckReturnValue public boolean addResult(Runnable action, String htmlDisplayName,
                             String displayHint, List <? extends KeyStroke> shortcut) {
         return catResult.addItem(
                 new ResultsModel.ItemResult(catResult, sRequest, action,

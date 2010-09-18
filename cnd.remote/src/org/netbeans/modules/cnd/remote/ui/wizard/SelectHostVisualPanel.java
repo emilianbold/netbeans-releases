@@ -59,6 +59,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -95,7 +97,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
             @Override
             public void focusGained(FocusEvent e) {
 //                newHostPane.requestFocus();
-                requestFocusInEDT(newHostPane);
+                requestFocusInEDT(SelectHostVisualPanel.this.createHostPanel);
             }
         });
         rbExistent.addFocusListener(new FocusAdapter() {
@@ -133,10 +135,19 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         }
         lstDevHosts.setModel(model);
         lstDevHosts.setCellRenderer(new HostListCellRenderer());
-        if (model.size() > 0) {
-            lstDevHosts.setSelectedIndex(0);
-            fire = true;
-        }
+// FIXUP: otherwise asynchroneous validation is called when first displaying the page. Root cause TBD
+//        if (model.size() > 0) {
+//            lstDevHosts.setSelectedIndex(0);
+//            fire = true;
+//        }
+        lstDevHosts.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    fireChange();
+                }
+            }
+        });
         if (fire) {
             fireChange();
         }
@@ -274,6 +285,14 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
     private javax.swing.JPanel newHostPane;
     private javax.swing.JRadioButton rbExistent;
     private javax.swing.JRadioButton rbNew;
+    // End of variables declaration//GEN-END:variables
+
+    void enableControls(boolean enable) {
+        rbExistent.setEnabled(enable);
+        rbExistent.setEnabled(enable);
+        lstDevHosts.setEnabled(enable);
+        createHostPanel.setEnabled(enable);
+    }
     // End of variables declaration//GEN-END:variables
 
     private final class HostListCellRenderer extends DefaultListCellRenderer {
