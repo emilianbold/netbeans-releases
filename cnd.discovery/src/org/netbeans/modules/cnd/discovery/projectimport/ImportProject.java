@@ -148,6 +148,7 @@ public class ImportProject implements PropertyChangeListener {
     private boolean buildArifactWasAnalyzed = false;
     private boolean setAsMain;
     private String hostUID;
+    private final boolean fullRemote;
     private CompilerSet toolchain;
     private String workingDir;
     private String buildCommand = "$(MAKE) -f Makefile";  // NOI18N
@@ -174,6 +175,8 @@ public class ImportProject implements PropertyChangeListener {
         } else {
             customSetup(wizard);
         }
+        Boolean b = (Boolean) wizard.getProperty("fullRemote");
+        fullRemote = (b == null) ? false : b.booleanValue();
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
@@ -350,6 +353,8 @@ public class ImportProject implements PropertyChangeListener {
         prjParams.setSourceFolders(sources).setSourceFoldersFilter(sourceFoldersFilter);
         prjParams.setTestFolders(tests);
         prjParams.setImportantFiles(importantItemsIterator);
+        prjParams.setFullRemote(fullRemote);
+
         makeProject = ProjectGenerator.createProject(prjParams);
         FileObject dir = FileUtil.toFileObject(projectFolder);
         importResult.put(Step.Project, State.Successful);

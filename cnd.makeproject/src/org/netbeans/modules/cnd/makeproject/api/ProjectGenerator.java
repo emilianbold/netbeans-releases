@@ -71,6 +71,7 @@ public class ProjectGenerator {
         private Iterator<SourceFolderInfo> testFolders;
         private String mainFile;
         private String hostUID;
+        private boolean fullRemote;
         private CompilerSet cs;
         private String postCreationClassName;
         private String mainProject;
@@ -155,6 +156,14 @@ public class ProjectGenerator {
             this.hostUID = hostUID;
             this.cs = cs;
             return this;
+        }
+
+        public void setFullRemote(boolean fullRemote) {
+            this.fullRemote = fullRemote;
+        }
+
+        public boolean getFullRemote() {
+            return fullRemote;
         }
 
         public File getProjectFolder() {

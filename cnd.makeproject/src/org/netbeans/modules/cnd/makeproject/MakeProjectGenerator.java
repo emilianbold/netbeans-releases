@@ -215,6 +215,13 @@ public class MakeProjectGenerator {
         Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "make-project-type"); // NOI18N
         nativeProjectType.appendChild(doc.createTextNode("" + 0)); // NOI18N
         data.appendChild(nativeProjectType);
+
+        if (prjParams.getFullRemote()) {
+            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.FULL_REMOTE_TAG); // NOI18N
+            fullRemoteNode.appendChild(doc.createTextNode("" + prjParams.getFullRemote())); // NOI18N
+            data.appendChild(fullRemoteNode);
+        }
+
         h.putPrimaryConfigurationData(data, true);
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

@@ -146,6 +146,8 @@ import org.w3c.dom.Text;
 )
 public final class MakeProject implements Project, AntProjectListener, Runnable {
 
+    public static final String FULL_REMOTE_TAG = "full_remote";
+
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
@@ -173,6 +175,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MakeSources sources;
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
+    private final boolean fullRemote;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
@@ -198,6 +201,16 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             projectType = new Integer(typeTxt).intValue();
         }
 
+        NodeList fullRemoteNodeList = data.getElementsByTagName(FULL_REMOTE_TAG);
+        if (fullRemoteNodeList.getLength() == 1) {
+            fullRemoteNodeList = fullRemoteNodeList.item(0).getChildNodes();
+            String t = fullRemoteNodeList.item(0).getNodeValue();
+            fullRemote = Boolean.parseBoolean(t);
+        } else {
+            fullRemote = false;
+        }
+
+
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
         readProjectExtension(data, C_EXTENSIONS, cExtensions);
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
@@ -218,6 +231,10 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 set.addAll(Arrays.asList(extensions.split(","))); // NOI18N
             }
         }
+    }
+
+    public boolean isFullRemote() {
+        return fullRemote;
     }
 
     @Override
