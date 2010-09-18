@@ -397,7 +397,8 @@ public class Commands {
      */
     public static final class RedeployCommand extends ServerCommand {
 
-        public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions, File[] libraries) {
+        public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions, 
+                final File[] libraries, final boolean resourcesChanged) {
             super("redeploy"); // NOI18N
 
             StringBuilder cmd = new StringBuilder(128);
@@ -410,15 +411,23 @@ public class Commands {
             if (libraries.length > 0) {
                 appendLibraries(cmd, libraries);
             }
-            addKeepSessions(cmd, preserveSessions);
+            addProperties(cmd, preserveSessions, resourcesChanged);
             query = cmd.toString();
         }
     }
 
-    private static void addKeepSessions(StringBuilder cmd, Boolean preserveSessions) {
-        if(Boolean.TRUE.equals(preserveSessions)) {
+    private static void addProperties(StringBuilder cmd, Boolean preserveSessions, boolean resourcesChanged) {
+        if(Boolean.TRUE.equals(preserveSessions) || resourcesChanged) {
             cmd.append(ServerCommand.PARAM_SEPARATOR).append("properties="); // NOI18N
+        }
+        if(Boolean.TRUE.equals(preserveSessions)) {
             cmd.append("keepSessions=true");  // NOI18N
+            if (!resourcesChanged) {
+                cmd.append(":"); // NOI18N
+            }
+        }
+        if (!resourcesChanged) {
+            cmd.append("preserveAppScopedResources=true"); // NOI18N
         }
     }
 

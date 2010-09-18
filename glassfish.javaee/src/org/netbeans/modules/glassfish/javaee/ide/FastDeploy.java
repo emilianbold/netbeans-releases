@@ -141,6 +141,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         ResourceRegistrationHelper.deployResources(dir,dm);
         if (restart) {
             restartProgress.addProgressListener(new ProgressListener() {
+                @Override
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                         if (commonSupport2 != null && requiredLibraries.length > 0) {
@@ -206,11 +207,13 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
             Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
                     ex);
         }
+        final boolean resourcesChanged = containsFileWithName("glassfish-resources.xml",appChangeDescriptor.getChangedFiles()); // NOI18N
         final boolean hasChanges = appChangeDescriptor.classesChanged() ||
                 appChangeDescriptor.descriptorChanged() ||
                 appChangeDescriptor.ejbsChanged() ||
                 appChangeDescriptor.manifestChanged() ||
-                appChangeDescriptor.serverDescriptorChanged();
+                appChangeDescriptor.serverDescriptorChanged() ||
+                resourcesChanged;
 
         if(appChangeDescriptor instanceof DeploymentChangeDescriptor) {
             DeploymentChangeDescriptor dcd = (DeploymentChangeDescriptor)appChangeDescriptor;
@@ -225,13 +228,14 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 
+                @Override
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                         if (hasChanges) {
                             if (commonSupport2 != null && requiredLibraries.length > 0) {
-                                commonSupport2.redeploy(progressObject, targetModuleID.getModuleID(), null, requiredLibraries);
+                                commonSupport2.redeploy(progressObject, targetModuleID.getModuleID(), null, requiredLibraries,resourcesChanged);
                             } else {
-                                commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+                                commonSupport.redeploy(progressObject, targetModuleID.getModuleID(),resourcesChanged);
                             }
                         } else {
                             progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
@@ -246,9 +250,9 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         } else {
             if (hasChanges) {
                 if (commonSupport2 != null && requiredLibraries.length > 0) {
-                    commonSupport2.redeploy(progressObject, targetModuleID.getModuleID(), null, requiredLibraries);
+                    commonSupport2.redeploy(progressObject, targetModuleID.getModuleID(), null, requiredLibraries, resourcesChanged);
                 } else {
-                    commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+                    commonSupport.redeploy(progressObject, targetModuleID.getModuleID(), resourcesChanged);
                 }
             } else {
                 progressObject.operationStateChanged(GlassfishModule.OperationState.COMPLETED,
@@ -264,6 +268,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
      * @param deployable 
      * @return 
      */
+    @Override
     public boolean canFileDeploy(Target target, J2eeModule deployable) {
         if (null == deployable){
             return false;
@@ -280,6 +285,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
      * @return Absolute path root directory for the specified app or null if
      *   server can accept the deployment from an arbitrary directory.
      */
+    @Override
     public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
         File dest = null;
         if (app.getType() == J2eeModule.Type.EAR) {
@@ -320,6 +326,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
      * @param configuration 
      * @return 
      */
+    @Override
     public File getDirectoryForNewModule(File file, String string, J2eeModule app, ModuleConfiguration configuration) {
         return new File(file, transform(removeLeadSlash(string)));
     }
@@ -340,7 +347,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
     static String transform(String s) {
         int len = s.length();
         if (len > 4) {
-            StringBuffer sb = new StringBuffer(s);
+            StringBuilder sb = new StringBuilder(s);
             char tmp = sb.charAt(len - 4);
             if (tmp == '.') {
                 sb.setCharAt(len-4, '_');
@@ -355,6 +362,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
      * @param targetModuleID 
      * @return 
      */
+    @Override
     public File getDirectoryForModule(TargetModuleID targetModuleID) {
         return new File(((Hk2TargetModuleID) targetModuleID).getLocation());
     }
@@ -402,5 +410,16 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         Hk2TargetModuleID self = (Hk2TargetModuleID) module;
         String retVal = self.getModuleID();
         return retVal.startsWith("/") ? retVal : "/"+retVal;
+    }
+
+    private boolean containsFileWithName(String name, File[] changedFiles) {
+        if (null == changedFiles || null == name)
+            return false;
+        for (File f : changedFiles) {
+            String fp = null != f ? f.getAbsolutePath() : null;
+            if (null != fp && fp.contains(name))
+                return true;
+        }
+        return false;
     }
 }
