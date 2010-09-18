@@ -173,15 +173,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         } else {
             records.addAll(ServerList.getRecords());
         }
-        ServerRecord r = ServerList.get(ee);
-        if (r.isSetUp()) {
-            records.add(r);
+        if (ee != null) {
+            ServerRecord r = ServerList.get(ee);
+            if (r.isSetUp()) {
+                records.add(r);
+            }
         }
 
         for (ServerRecord serverRecord : records) {
             if (serverRecord.isSetUp() && !serverRecord.isDeleted()) {
                 CompilerSetManager csm;
-                if (toolsCacheManager != null) {
+                if (toolsCacheManager != null && ee != null) {
                     csm = toolsCacheManager.getCompilerSetManagerCopy(ee, false);
                 } else {
                     csm = CompilerSetManager.get(serverRecord.getExecutionEnvironment());
