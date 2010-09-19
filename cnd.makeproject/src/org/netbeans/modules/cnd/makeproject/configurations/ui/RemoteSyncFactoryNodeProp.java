@@ -49,6 +49,7 @@ import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.nodes.Node;
@@ -62,10 +63,10 @@ public class RemoteSyncFactoryNodeProp extends Node.Property<String> implements 
 
     private RemoteSyncFactory factory;
 
-    public RemoteSyncFactoryNodeProp(DevelopmentHostConfiguration dhc) {
+    public RemoteSyncFactoryNodeProp(MakeConfiguration makeConfiguration) {
         super(String.class);
-        factory = getFactory(dhc.getExecutionEnvironment());
-        dhc.addPropertyChangeListener(this);
+        factory = makeConfiguration.getRemoteSyncFactory();
+        makeConfiguration.getDevelopmentHost().addPropertyChangeListener(this);
     }
 
     private static RemoteSyncFactory getFactory(ExecutionEnvironment execEnv) {

@@ -49,6 +49,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -56,7 +57,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -130,6 +130,7 @@ public class SelectHostWizardPanel implements
         try {
             if (execEnv != null) {
                 ConnectionManager.getInstance().connectTo(execEnv);
+                RemoteUtil.checkSetupAfterConnection(execEnv);
             }
         } catch (IOException ex) {
             String message = NbBundle.getMessage(getClass(), "CannotConnectMessage");

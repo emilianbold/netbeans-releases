@@ -57,6 +57,7 @@ import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -73,6 +74,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
@@ -122,7 +125,7 @@ public class MakeProjectGenerator {
             profile.setBuildFirst(false);
         }
 
-        FileObject dirFO = createProjectDir(projectFolder);
+        FileObject dirFO = createProjectDir(prjParams);
         prjParams.setConfigurations(copyConfs);
         createProject(dirFO, prjParams, true);
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
@@ -144,7 +147,7 @@ public class MakeProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static MakeProject createProject(ProjectParameters prjParams) throws IOException {
-        FileObject dirFO = createProjectDir(prjParams.getProjectFolder());
+        FileObject dirFO = createProjectDir(prjParams);
         AntProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
@@ -198,6 +201,13 @@ public class MakeProjectGenerator {
         String name = prjParams.getProjectName();
         String makefileName = prjParams.getMakefileName();
         Configuration[] confs = prjParams.getConfigurations();
+        if (prjParams.getFullRemote()) {
+            RemoteSyncFactory factory = RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
+            CndUtils.assertNotNull(factory, "Can not find sync factory for full remote"); //NOI18N
+            for (Configuration conf : confs) {
+                ((MakeConfiguration) conf).setFixedRemoteSyncFactory(factory);
+            }
+        }
         final Iterator<SourceFolderInfo> sourceFolders = prjParams.getSourceFolders();
         final String sourceFoldersFilter = prjParams.getSourceFoldersFilter();
         final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
@@ -306,8 +316,9 @@ public class MakeProjectGenerator {
         bw.flush();
     }
 
-    private static FileObject createProjectDir(File dir) throws IOException {
+    private static FileObject createProjectDir(ProjectParameters prjParams) throws IOException {
         FileObject dirFO;
+        File dir = prjParams.getProjectFolder();
         if (!dir.exists()) {
             //Refresh before mkdir not to depend on window focus
             // refreshFileSystem (dir); // See 136445

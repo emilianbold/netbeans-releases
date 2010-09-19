@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
@@ -224,6 +225,7 @@ public abstract class CommonConfigurationXMLCodec
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     protected final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
+    protected final static String FIXED_SYNC_FACTORY = "remoteSyncFactory"; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
     protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N
     protected final static String CPP_REQUIRED_ELEMENT = "cppRequired"; // NOI18N
@@ -438,6 +440,10 @@ public abstract class CommonConfigurationXMLCodec
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
         xes.elementOpen(TOOLS_SET_ELEMENT);
         xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getHostKey());
+        RemoteSyncFactory fixedSyncFactory = makeConfiguration.getFixedRemoteSyncFactory();
+        if (fixedSyncFactory != null) {
+            xes.element(FIXED_SYNC_FACTORY, fixedSyncFactory.getID());
+        }
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault()) {
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());

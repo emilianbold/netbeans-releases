@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -411,6 +410,7 @@ public class MakeConfiguration extends Configuration {
         setBaseDir(makeConf.getBaseDir());
         getConfigurationType().assign(makeConf.getConfigurationType());
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
+        fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;
         getCompilerSet().assign(makeConf.getCompilerSet());
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
@@ -547,6 +547,7 @@ public class MakeConfiguration extends Configuration {
 
         DevelopmentHostConfiguration dhconf = getDevelopmentHost().clone();
         clone.setDevelopmentHost(dhconf);
+        clone.fixedRemoteSyncFactory = this.fixedRemoteSyncFactory;
         CompilerSet2Configuration csconf = getCompilerSet().clone();
         csconf.setDevelopmentHostConfiguration(dhconf);
         clone.setCompilerSet(csconf);
@@ -594,10 +595,8 @@ public class MakeConfiguration extends Configuration {
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
         set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), true, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
-        if (RemoteProject.SYNC_PER_PROJECT) {
-            RemoteSyncFactoryNodeProp rsfNodeProp = new RemoteSyncFactoryNodeProp(getDevelopmentHost());
-            set.put(rsfNodeProp);
-        }
+        RemoteSyncFactoryNodeProp rsfNodeProp = new RemoteSyncFactoryNodeProp(this);
+        set.put(rsfNodeProp);
 //        set.put(new BuildPlatformNodeProp(getDevelopmentHost().getBuildPlatformConfiguration(), developmentHost, makeCustomizer, getDevelopmentHost().isLocalhost(), "builtPlatform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new CompilerSetNodeProp(getCompilerSet(), getDevelopmentHost(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
 //        set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
@@ -626,6 +625,14 @@ public class MakeConfiguration extends Configuration {
         }
         ExecutionEnvironment execEnv = getDevelopmentHost().getExecutionEnvironment();
         return (execEnv.isLocal()) ? null : ServerList.get(execEnv).getSyncFactory(); // FIXUP: temporary solution
+    }
+
+    public RemoteSyncFactory getFixedRemoteSyncFactory() {
+        return fixedRemoteSyncFactory;
+    }
+
+    public void setFixedRemoteSyncFactory(RemoteSyncFactory fixedRemoteSyncFactory) {
+        this.fixedRemoteSyncFactory = fixedRemoteSyncFactory;
     }
 
     public Sheet getRequiredProjectsSheet(Project project, MakeConfiguration conf) {
