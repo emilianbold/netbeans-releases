@@ -116,7 +116,7 @@ public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
          *   uint32_t len;   // Size of name field
          *   char     name[];// Optional null-terminated name
          */
-        while (buff.remaining() < 16 || buff.remaining() < 16 + buff.getInt(12)){
+        while (buff.remaining() < 16 || buff.remaining() < 16 + buff.getInt(buff.position() + 12)) {
             buff.compact();
             int len = IMPL.read(fd, buff, buff.remaining());
 
