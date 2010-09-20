@@ -411,7 +411,7 @@ class QueryUtil {
                 
                 @Override
                 protected boolean termCompare(Term term) {
-                    if (term.field() == term.field() && term.text().equals(term.text())) {                                                                              
+                    if (TermFilter.this.term.field() == term.field() && TermFilter.this.term.text().equals(term.text())) {                                                                              
                         return true;
                     }
                     endEnum = true;
