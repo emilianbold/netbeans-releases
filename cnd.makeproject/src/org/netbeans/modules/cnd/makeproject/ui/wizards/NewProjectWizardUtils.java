@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import java.io.File;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -72,5 +73,12 @@ import org.openide.filesystems.FileUtil;
         } else {
             return FileUtil.toFileObject(new File(path));
         }
+    }
+
+    public static ExecutionEnvironment getExecutionEnvironment(WizardDescriptor wizardDescriptor) {
+        String hostUID = (String) wizardDescriptor.getProperty("hostUID");  //NOI18N
+        return (hostUID == null) ?
+            ServerList.getDefaultRecord().getExecutionEnvironment() :
+            ExecutionEnvironmentFactory.fromUniqueID(hostUID);
     }
 }

@@ -68,13 +68,14 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     private WizardDescriptor wizardDescriptor;
     private SelectModePanel component;
     private String name;
-    private WizardStorage wizardStorage= new WizardStorage();
+    private final WizardStorage wizardStorage;
     private boolean isValid = false;
     private final boolean fullRemote;
 
     public SelectModeDescriptorPanel(boolean fullRemote) {
         name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
         this.fullRemote = fullRemote;
+        wizardStorage = new WizardStorage(fullRemote);
     }
 
     public boolean isFullRemote() {
@@ -195,9 +196,11 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         private boolean buildProject = true;
         private CompilerSet cs;
         private ExecutionEnvironment env;
-        private boolean fullRemote = false;
+        private final boolean fullRemote;
+        private FileObject makefileFO;
 
-        public WizardStorage(){
+        public WizardStorage(boolean fullRemote) {
+            this.fullRemote = fullRemote;
             env = ServerList.getDefaultRecord().getExecutionEnvironment();
         }
 
@@ -210,10 +213,6 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
         public boolean isFullRemote() {
             return fullRemote;
-        }
-
-        public void setFullRemote(boolean fullRemote) {
-            this.fullRemote = fullRemote;
         }
 
         /**
@@ -248,10 +247,11 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         }
 
         public String getMake(){
-            if (path.length() == 0) {
-                return null;
-            }
-            return ConfigureUtils.findMakefile(path);
+            return (makefileFO == null) ? null : makefileFO.getPath();
+        }
+
+        public void setMake(FileObject makefileFO) {
+            this.makefileFO = makefileFO;
         }
 
         /**

@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -135,7 +136,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
             if (path != null) {
                 boolean selected = false;
-                String makeFile = ConfigureUtils.findMakefile(path);
+                String makeFile = ConfigureUtils.findMakefile((FileObject) wizardDescriptor.getProperty("nativeProjFO")).getPath();
                 if (makeFile != null) {
                     makefileNameTextField.setText(makeFile);
                     makefileRadioButton.setSelected(true);
