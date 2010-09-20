@@ -146,7 +146,7 @@ import org.w3c.dom.Text;
 )
 public final class MakeProject implements Project, AntProjectListener, Runnable {
 
-    public static final String FULL_REMOTE_TAG = "full_remote";
+    public static final String FULL_REMOTE_TAG = "full_remote"; // NOI18N
 
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
@@ -1063,6 +1063,11 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
+        }
+
+        @Override
+        public Mode getRemoteMode() {
+            return fullRemote ? Mode.REMOTE_SOURCES : Mode.LOCAL_SOURCES;
         }
     }
     

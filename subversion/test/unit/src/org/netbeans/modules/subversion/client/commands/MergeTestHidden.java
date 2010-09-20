@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
@@ -52,9 +52,9 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  *
  * @author tomas
  */
-public class MergeTest extends AbstractCommandTest {
+public class MergeTestHidden extends AbstractCommandTestCase {
     
-    public MergeTest(String testName) throws Exception {
+    public MergeTestHidden(String testName) throws Exception {
         super(testName);
     }
     

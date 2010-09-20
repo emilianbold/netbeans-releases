@@ -45,7 +45,7 @@ package org.netbeans.modules.subversion.client.commands;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -55,9 +55,9 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  *
  * @author tomas
  */
-public class CancelTest extends AbstractCommandTest {
+public class CancelTestHidden extends AbstractCommandTestCase {
 
-    public CancelTest(String testName) throws Exception {
+    public CancelTestHidden(String testName) throws Exception {
         super(testName);
     }
             

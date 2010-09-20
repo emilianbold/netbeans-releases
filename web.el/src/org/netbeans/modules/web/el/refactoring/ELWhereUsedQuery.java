@@ -109,7 +109,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             return null;
         }
         this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
-        this.typeUtilities = ELTypeUtilities.create(info);
+        this.typeUtilities = ELTypeUtilities.create(refactoring.getContext().lookup(ClasspathInfo.class));
         Element element = resolveElement(handle);
         if (element == null) {
             LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
@@ -133,7 +133,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                 @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.RESOLVED);
-                    result[0] = handle.resolveElement(info);
+                    result[0] = handle.resolveElement(cc);
                 }
             }, true);
         } catch (IOException ex) {

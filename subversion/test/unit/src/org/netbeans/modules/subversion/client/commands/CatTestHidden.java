@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -56,9 +56,9 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  *
  * @author tomas
  */
-public class CatTest extends AbstractCommandTest {
+public class CatTestHidden extends AbstractCommandTestCase {
     
-    public CatTest(String testName) throws Exception {
+    public CatTestHidden(String testName) throws Exception {
         super(testName);
     }
              

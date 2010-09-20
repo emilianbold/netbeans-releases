@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -53,9 +53,9 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  * @author tomas
  */
 // XXX add referenceclient
-public class InfoTest extends AbstractCommandTest {
+public class InfoTestHidden extends AbstractCommandTestCase {
     
-    public InfoTest(String testName) throws Exception {
+    public InfoTestHidden(String testName) throws Exception {
         super(testName);
     }
 

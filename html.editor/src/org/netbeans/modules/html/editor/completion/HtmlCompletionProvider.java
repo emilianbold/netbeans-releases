@@ -467,7 +467,17 @@ public class HtmlCompletionProvider implements CompletionProvider {
             //However it seems that the html5 anchor navigation doesn't
             //properly work in the embedded swing browser so I need to
             //strip the begginning of the file to the anchor manually
-            return getHelpItem().getHelpResolver().getHelpContent(getURL());
+
+            //now the statement above is not fully true since I need to add
+            //the header before the URL content
+            StringBuilder sb = new StringBuilder();
+            String header = getHelpItem().getHelpHeader();
+            if(header != null) {
+                sb.append(header);
+            }
+            sb.append(getHelpItem().getHelpResolver().getHelpContent(getURL()));
+
+            return sb.toString();
         }
 
         @Override

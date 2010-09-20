@@ -58,8 +58,15 @@ public class RemoteFileUtil {
 
     private RemoteFileUtil() {}
     
-    public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv, boolean fullRemote) {
-        return getFileObject(absolutePath, fullRemote ? execEnv : ExecutionEnvironmentFactory.getLocal());
+    public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv, RemoteProject.Mode remoteMode) {
+        switch (remoteMode) {
+            case LOCAL_SOURCES:
+                return getFileObject(absolutePath, ExecutionEnvironmentFactory.getLocal());
+            case REMOTE_SOURCES:
+                return getFileObject(absolutePath, execEnv);
+            default:
+                throw new IllegalArgumentException("Unexpected remote mode: " + remoteMode); //NOI18N
+        }
     }
 
     public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv) {

@@ -182,7 +182,7 @@ public class SelectHostWizardPanel implements
         delegate.storeSettings(settings);
         ExecutionEnvironment env = getComponent().isExistent() ? getComponent().getSelectedHost() : null;
         settings.putProperty("hostUID", (env == null) ? null : ExecutionEnvironmentFactory.toUniqueID(env)); // NOI18N
-        settings.putProperty("ToolsCacheManager", createHostData.getCacheManager());
+        settings.putProperty("ToolsCacheManager", createHostData.getCacheManager()); // NOI18N
     }
 
     ExecutionEnvironment getSelectedHost() {
