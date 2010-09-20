@@ -40,49 +40,33 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.cnd.utils.ui;
 
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
- *
+ * Catches a very common pattern, when all the three DocumentListener methods
+ * call a single one that performs all work
+ * 
  * @author Vladimir Kvashin
  */
-public class RemoteFileUtil {
+public abstract class DocumentAdapter implements DocumentListener {
 
-    private RemoteFileUtil() {}
-    
-    public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv, RemoteProject.Mode remoteMode) {
-        switch (remoteMode) {
-            case LOCAL_SOURCES:
-                return getFileObject(absolutePath, ExecutionEnvironmentFactory.getLocal());
-            case REMOTE_SOURCES:
-                return getFileObject(absolutePath, execEnv);
-            default:
-                throw new IllegalArgumentException("Unexpected remote mode: " + remoteMode); //NOI18N
-        }
+    protected abstract void update(DocumentEvent e);
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        update(e);
     }
 
-    public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv) {
-        if (execEnv.isRemote()) {
-            return FileSystemProvider.getFileSystem(execEnv, absolutePath).findResource(absolutePath);
-        } else {
-            return FileUtil.toFileObject(new File(absolutePath));
-        }
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        update(e);
     }
 
-    public static String getAbsolutePath(FileObject fileObject) {
-        return fileObject.getPath();
-    }
-
-    public static String getCanonicalPath(FileObject fo) throws IOException {
-        //XXX:fullRemote
-        return FileUtil.toFile(fo).getCanonicalPath();
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        update(e);
     }
 }

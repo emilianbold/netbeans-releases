@@ -238,8 +238,6 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                         return path;
                     } else if ("nativeProjFO".equals(name)) {
                         return FileUtil.toFileObject(new File(path));
-                    } else if ("path".equals(name)) {
-                        return path;
                     } else if ("projdir".equals(name)) {
                         return new File(path);
                     } else if ("configureName".equals(name)) {
