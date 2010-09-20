@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
@@ -55,6 +56,8 @@ import org.openide.filesystems.FileUtil;
  */
 public class RemoteFileUtil {
 
+    private RemoteFileUtil() {}
+    
     public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv, boolean fullRemote) {
         return getFileObject(absolutePath, fullRemote ? execEnv : ExecutionEnvironmentFactory.getLocal());
     }
@@ -65,5 +68,14 @@ public class RemoteFileUtil {
         } else {
             return FileUtil.toFileObject(new File(absolutePath));
         }
+    }
+
+    public static String getAbsolutePath(FileObject fileObject) {
+        return fileObject.getPath();
+    }
+
+    public static String getCanonicalPath(FileObject fo) throws IOException {
+        //XXX:fullRemote
+        return FileUtil.toFile(fo).getCanonicalPath();
     }
 }
