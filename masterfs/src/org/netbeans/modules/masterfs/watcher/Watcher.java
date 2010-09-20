@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
@@ -65,6 +67,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=AnnotationProvider.class)
 public class Watcher extends AnnotationProvider {
+
+    private static final Logger LOG = Logger.getLogger(Watcher.class.getName());
 
     private final Ext ext;
 
@@ -194,14 +198,18 @@ public class Watcher extends AnnotationProvider {
      * @return a suitable {@link Notifier} implementation or <code>null</code>.
      */
     private static Notifier getNotifierForPlatform() {
-        if (Utilities.isWindows()) {
-            return new WindowsNotifier();
-        }
-        if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            return new LinuxNotifier();
-        }
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            return new OSXNotifier();
+        try {
+            if (Utilities.isWindows()) {
+                return new WindowsNotifier();
+            }
+            if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+                return new LinuxNotifier();
+            }
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                return new OSXNotifier();
+            }
+        } catch (LinkageError x) {
+            LOG.log(Level.INFO, null, x);
         }
         return null;
     }
