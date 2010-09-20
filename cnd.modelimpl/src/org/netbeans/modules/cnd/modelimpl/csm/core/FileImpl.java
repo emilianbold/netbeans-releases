@@ -75,9 +75,7 @@ import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -1365,12 +1363,20 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getFileDeclarations().getDeclarations(offset);
     }
 
-    public Iterator<CsmReference> getReferences(Collection<CsmObject> objects) {
+    public Collection<CsmReference> getReferences() {
+        return getFileReferences().getReferences();
+    }
+
+    public Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
         return getFileReferences().getReferences(objects);
     }
 
     public void addReference(CsmReference ref, CsmObject referencedObject) {
         getFileReferences().addReference(ref, referencedObject);
+    }
+
+    public CsmReference getReference(int offset) {
+        return getFileReferences().getReference(offset);
     }
 
     public void addMacro(CsmMacro macro) {

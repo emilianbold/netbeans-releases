@@ -53,6 +53,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -75,20 +76,10 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         initComponents();
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         this.buildActionsDescriptorPanel = buildActionsDescriptorPanel;
-        documentListener = new DocumentListener() {
+        documentListener = new DocumentAdapter() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
-                update(e);
-            }
-            
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                update(e);
-            }
-            
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                update(e);
+            protected void update(DocumentEvent e) {
+                BuildActionsPanel.this.update();
             }
         };
         
@@ -154,7 +145,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         return new HelpCtx(BuildActionsPanel.class);
     }
     
-    private void update(DocumentEvent e) {
+    private void update() {
         buildActionsDescriptorPanel.stateChanged(null);
     }
     

@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
@@ -116,6 +117,13 @@ public class NameHolder {
         return new NameHolder(ast, ENUM);
     }
 
+    public static NameHolder createSimpleName(AST ast) {
+        NameHolder nameHolder = new NameHolder(AstUtil.getText(ast));
+        nameHolder.start = OffsetableBase.getStartOffset(ast);
+        nameHolder.end = OffsetableBase.getEndOffset(ast);
+        return nameHolder;
+    }
+
     public CharSequence getName(){
         if (name == null || name.length() == 0) {
             return CharSequences.empty();
@@ -135,11 +143,18 @@ public class NameHolder {
         if (file instanceof FileImpl) {
             if (start > 0) {
                 final FileImpl fileImpl = (FileImpl) file;
+                final CsmReferenceKind kind;
+                if (CsmKindUtilities.isFunctionDefinition(decl) ||
+                        CsmKindUtilities.isVariableDefinition(decl)) {
+                    kind = CsmReferenceKind.DEFINITION;
+                } else {
+                    kind = CsmReferenceKind.DECLARATION;
+                }
                 CsmReference ref = new CsmReference() {
 
                     @Override
                     public CsmReferenceKind getKind() {
-                        return CsmReferenceKind.DECLARATION;
+                        return kind;
                     }
 
                     @Override
@@ -200,7 +215,7 @@ public class NameHolder {
                 end = OffsetableBase.getEndOffset(token);
                 token = token.getNextSibling();
                 if (token != null && token.getType() == CPPTokenTypes.ID) {
-                    end = OffsetableBase.getEndOffset(node);
+                    end = OffsetableBase.getEndOffset(token);
                     return "~" + token.getText(); // NOI18N
                 }
             }

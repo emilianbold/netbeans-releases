@@ -60,25 +60,27 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
 
     private final CsmVisibility visibility;
 
-    private FieldImpl(AST ast, CsmFile file, CsmType type, CharSequence name, ClassImpl cls, CsmVisibility visibility) {
+    private FieldImpl(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility) {
         super(ast, file, type, name, cls, AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static), AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern));
         this.visibility = visibility;
     }
 
-    public static FieldImpl create(AST ast, CsmFile file, CsmType type, CharSequence name, ClassImpl cls, CsmVisibility visibility, boolean register) {
+    public static FieldImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean register) {
         FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility);
         postObjectCreateRegistration(register, fieldImpl);
+        name.addReference(file, fieldImpl);
         return fieldImpl;
     }
 
-    private FieldImpl(AST ast, CsmFile file, CsmType type, CharSequence name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern) {
+    private FieldImpl(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern) {
         super(ast, file, type, name, cls, _static, _extern);
         this.visibility = visibility;
     }
 
-    public static FieldImpl create(AST ast, CsmFile file, CsmType type, CharSequence name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern, boolean register) {
+    public static FieldImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern, boolean register) {
         FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility, _static, _extern);
         postObjectCreateRegistration(register, fieldImpl);
+        name.addReference(file, fieldImpl);
         return fieldImpl;
     }
 

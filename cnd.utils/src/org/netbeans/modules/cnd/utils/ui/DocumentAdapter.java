@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,57 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.cnd.utils.ui;
 
-package org.netbeans.modules.cnd.modelimpl.csm;
-
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
- * Implements CsmParameter
+ * Catches a very common pattern, when all the three DocumentListener methods
+ * call a single one that performs all work
+ * 
  * @author Vladimir Kvashin
  */
-public final class ParameterEllipsisImpl extends ParameterImpl {
+public abstract class DocumentAdapter implements DocumentListener {
 
-    private ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope) {
-        super(ast, file, type, NameHolder.createName("..."), scope); //NOI18N
-    }
+    protected abstract void update(DocumentEvent e);
 
-    public static ParameterEllipsisImpl create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) {
-        ParameterEllipsisImpl parameterEllipsisImpl = new ParameterEllipsisImpl(ast, file, type, scope);
-        postObjectCreateRegistration(global, parameterEllipsisImpl);
-        return parameterEllipsisImpl;
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        update(e);
     }
 
     @Override
-    protected boolean registerInProject() {
-        return false;
+    public void insertUpdate(DocumentEvent e) {
+        update(e);
     }
-    
+
     @Override
-    public boolean isVarArgs() {
-        return true;
+    public void removeUpdate(DocumentEvent e) {
+        update(e);
     }
-    
-    @Override
-    public CharSequence getDisplayText() {
-        return "..."; //NOI18N
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // impl of SelfPersistent
-    
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);      
-    }  
-    
-    public ParameterEllipsisImpl(DataInput input) throws IOException {
-        super(input);
-    } 
 }

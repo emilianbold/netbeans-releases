@@ -50,8 +50,6 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -66,7 +64,7 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
-    
+
     private WizardDescriptor wizardDescriptor;
     private SelectModePanel component;
     private String name;
@@ -82,7 +80,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     public boolean isFullRemote() {
         return fullRemote;
     }
-    
+
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
@@ -95,12 +93,12 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         }
         return component;
     }
-    
+
     @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewMakeWizardP0"); // NOI18N
     }
-    
+
     @Override
     public boolean isValid() {
         return isValid;
@@ -143,7 +141,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             it.next().stateChanged(ev);
         }
     }
-    
+
     WizardDescriptor getWizardDescriptor(){
         return wizardDescriptor;
     }
@@ -179,7 +177,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         }
         component.read(wizardDescriptor);
     }
-    
+
     @Override
     public void storeSettings(Object settings) {
         component.store((WizardDescriptor)settings);
@@ -198,7 +196,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         private CompilerSet cs;
         private ExecutionEnvironment env;
         private boolean fullRemote = false;
-        
+
         public WizardStorage(){
             env = ServerList.getDefaultRecord().getExecutionEnvironment();
         }
@@ -221,21 +219,24 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @return the path
          */
-        public String getPath() {
+        public String getProjectPath() {
             return path;
         }
 
-        public FileObject getFileObject() {
+        public FileObject getSourcesFileObject() {
             return fileObject;
         }
 
         /**
          * @param path the path to set
          */
-        public void setPath(String path) {
+        public void setProjectPath(String path) {
             this.path = path.trim();
-            fileObject = RemoteFileUtil.getFileObject(path, env,
-                    fullRemote ? RemoteProject.Mode.REMOTE_SOURCES : RemoteProject.Mode.LOCAL_SOURCES);
+            validate();
+        }
+
+        public void setSourcesFileObject(FileObject fileObject) {
+            this.fileObject = fileObject;
             validate();
         }
 
@@ -321,9 +322,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         }
         @Override
         public synchronized Object getProperty(String name) {
-            if ("path".equals(name)) { // NOI18N
-                return storage.getPath();
-            } else if ("realFlags".equals(name)) { // NOI18N
+            if ("realFlags".equals(name)) { // NOI18N
                 return storage.getRealFlags();
             } else if ("buildProject".equals(name)) { // NOI18N
                 if (storage.isBuildProject()) {
@@ -350,12 +349,12 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             } else if (/*XXX Define somewhere*/"fullRemote".equals(name)) { // NOI18N
                 return storage.fullRemote;
             } else if (/*XXX Define somewhere*/"nativeProjDir".equals(name)) { // NOI18N
-                return storage.getPath();
+                return storage.getProjectPath();
             } else if (/*XXX Define somewhere*/"nativeProjFO".equals(name)) { // NOI18N
-                return storage.getFileObject();
+                return storage.getSourcesFileObject();
             } else if (/*XXX Define somewhere*/"projdir".equals(name)) { // NOI18N
                 //Object o = super.getProperty(name);
-                return new File(storage.getPath());
+                return new File(storage.getProjectPath());
             }
             return super.getProperty(name);
         }

@@ -88,7 +88,11 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         }
         dataPath += "Xxx";
         File fileDataPath = new File(dataPath);
-        return FileUtil.normalizeFile(fileDataPath);
+        fileDataPath = FileUtil.normalizeFile(fileDataPath);
+        if (!fileDataPath.exists()) {
+            fileDataPath.mkdirs();
+        }
+        return fileDataPath;
     }
 
     private void testAppWithLibraries(String testName, String flavorName, int platform, String golden) {
