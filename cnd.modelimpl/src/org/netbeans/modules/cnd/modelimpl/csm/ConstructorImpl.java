@@ -65,6 +65,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         ConstructorImpl constructorImpl = new ConstructorImpl(ast, cls, visibility, nameHolder, register);
         postObjectCreateRegistration(register, constructorImpl);
+        nameHolder.addReference(cls.getContainingFile(), constructorImpl);
         return constructorImpl;
     }
 

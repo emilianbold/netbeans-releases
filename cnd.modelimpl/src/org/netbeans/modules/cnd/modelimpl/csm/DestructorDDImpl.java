@@ -62,6 +62,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         NameHolder nameHolder = NameHolder.createDestructorName(ast);
         DestructorDDImpl destructorDDImpl = new DestructorDDImpl(ast, cls, visibility, nameHolder, register);
         postObjectCreateRegistration(register, destructorDDImpl);
+        nameHolder.addReference(cls.getContainingFile(), destructorDDImpl);
         return destructorDDImpl;
     }
 
