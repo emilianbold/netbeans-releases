@@ -62,7 +62,6 @@ import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -146,22 +145,27 @@ public class HtmlCompletionItem implements CompletionItem {
         return text;
     }
 
+    @Override
     public int getSortPriority() {
         return DEFAULT_SORT_PRIORITY;
     }
 
+    @Override
     public CharSequence getSortText() {
         return getItemText();
     }
 
+    @Override
     public CharSequence getInsertPrefix() {
         return getItemText();
     }
 
+    @Override
     public void processKeyEvent(KeyEvent e) {
         shift = (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED && e.isShiftDown());
     }
 
+    @Override
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             if (!shift) {
@@ -201,6 +205,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         doc.runAtomic(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     //test whether we are trying to insert sg. what is already present in the text
@@ -240,6 +245,7 @@ public class HtmlCompletionItem implements CompletionItem {
         try {
             doc.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         int startOffset = Utilities.getRowStart(doc, dotPos);
@@ -256,6 +262,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
     }
 
+    @Override
     public boolean instantSubstitution(JTextComponent component) {
         if (component != null) {
             try {
@@ -273,10 +280,12 @@ public class HtmlCompletionItem implements CompletionItem {
         return true;
     }
 
+    @Override
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
     }
 
+    @Override
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
     }
@@ -414,6 +423,13 @@ public class HtmlCompletionItem implements CompletionItem {
                 return null;
             }
         }
+
+        @Override
+        public boolean hasHelp() {
+            return tag != null && tag.getHelp() != null || tag == null && super.hasHelp();
+        }
+
+
     }
 
     /**
@@ -487,6 +503,12 @@ public class HtmlCompletionItem implements CompletionItem {
                     "<font color=#" + type.colorCode + ">&lt;/" + getItemText() + "&gt;</font>" + //NOI18N
                     (type.bold ? "</b>" : ""); //NOI18N
         }
+
+        @Override
+        public boolean hasHelp() {
+            return tag != null && tag.getHelp() != null || tag == null && super.hasHelp();
+        }
+
     }
 
     public static class AutocompleteEndTag extends EndTag {
@@ -603,6 +625,12 @@ public class HtmlCompletionItem implements CompletionItem {
                     "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
                     (required ? "</b>" : ""); //NOI18N
         }
+        
+        @Override
+        public boolean hasHelp() {
+            return attr != null && attr.getHelp() != null || attr == null && super.hasHelp();
+        }
+
     }
 
     public static class BooleanAttribute extends HtmlCompletionItem {
@@ -659,7 +687,7 @@ public class HtmlCompletionItem implements CompletionItem {
         }
     }
 
-    public static final String hexColorCode(Color c) {
+    public static String hexColorCode(Color c) {
         return Integer.toHexString(c.getRGB()).substring(2);
     }
 
