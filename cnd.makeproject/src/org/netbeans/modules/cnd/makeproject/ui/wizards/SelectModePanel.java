@@ -124,7 +124,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                     //fileObject = RemoteFileUtil.getFileObject(path, env,
                     ExecutionEnvironment env = getSelectedExecutionEnvironment();
                     fileObject = RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
-                    projectName = fileObject.getName();
+                    projectName = (fileObject == null) ? null : fileObject.getName();
                 }
                 controller.getWizardStorage().setSourcesFileObject(fileObject);
                 if (projectFolder.getText().isEmpty()) {
@@ -493,8 +493,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             wizardDescriptor.putProperty("toolchain", tc); // NOI18N
             controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
         }
-        Boolean b = (Boolean) wizardDescriptor.getProperty("fullRemote");
-        controller.getWizardStorage().setFullRemote(b != null && b.booleanValue());
+        wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject());
         initialized = false;
     }
 
@@ -555,7 +554,9 @@ public class SelectModePanel extends javax.swing.JPanel {
             if (ConfigureUtils.findConfigureScript(path) != null){ //XXX:fullRemote
                 return true;
             }
-            if (ConfigureUtils.findMakefile(path) != null){ //XXX:fullRemote
+            FileObject makeFO = ConfigureUtils.findMakefile(controller.getWizardStorage().getSourcesFileObject());
+            if (makeFO != null){
+                controller.getWizardStorage().setMake(makeFO);
                 return true;
             }
             if (simpleMode.isSelected()) {
