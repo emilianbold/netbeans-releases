@@ -80,6 +80,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<T>(ast, file, scope, nameHolder, register);
         postObjectCreateRegistration(register, functionDefinitionImpl);
+        nameHolder.addReference(file, functionDefinitionImpl);
         return functionDefinitionImpl;
     }
 

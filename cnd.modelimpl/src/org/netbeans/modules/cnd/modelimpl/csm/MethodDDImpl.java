@@ -75,6 +75,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         MethodDDImpl<T> methodDDImpl = new MethodDDImpl<T>(ast, cls, visibility, nameHolder, register);
         postObjectCreateRegistration(register, methodDDImpl);
+        nameHolder.addReference(cls.getContainingFile(), methodDDImpl);
         return methodDDImpl;
     }
 

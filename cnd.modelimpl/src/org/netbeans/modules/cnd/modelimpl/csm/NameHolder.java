@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.openide.util.CharSequences;
 
 
 /**
@@ -61,15 +62,27 @@ public class NameHolder {
     private final CharSequence name;
     private int start = 0;
     private int end = 0;
+    private static final int FUNCTION = 0;
+    private static final int DESTRUCTOR = 1;
+    private static final int DESTRUCTOR_DEFINITION = 2;
+    private static final int CLASS = 3;
+    private static final int ENUM = 4;
 
     private NameHolder(AST ast, int kind) {
         switch (kind) {
-            case 1:
+            case DESTRUCTOR:
                 name = "~"+findFunctionName(ast); // NOI18N
                 break;
-            case 2:
+            case DESTRUCTOR_DEFINITION:
                 name =findDestructorDefinitionName(ast);
                 break;
+            case CLASS:
+                name =findClassName(ast);
+                break;
+            case ENUM:
+                name =findEnumName(ast);
+                break;
+            case FUNCTION:
             default:
                 name = findFunctionName(ast);
         }
@@ -84,18 +97,29 @@ public class NameHolder {
     }
 
     public static NameHolder createFunctionName(AST ast) {
-        return new NameHolder(ast, 0);
+        return new NameHolder(ast, FUNCTION);
     }
 
     public static NameHolder createDestructorName(AST ast) {
-        return new NameHolder(ast, 1);
+        return new NameHolder(ast, DESTRUCTOR);
     }
 
     public static NameHolder createDestructorDefinitionName(AST ast) {
-        return new NameHolder(ast, 2);
+        return new NameHolder(ast, DESTRUCTOR_DEFINITION);
+    }
+
+    public static NameHolder createClassName(AST ast) {
+        return new NameHolder(ast, CLASS);
+    }
+
+    public static NameHolder createEnumName(AST ast) {
+        return new NameHolder(ast, ENUM);
     }
 
     public CharSequence getName(){
+        if (name == null || name.length() == 0) {
+            return CharSequences.empty();
+        }
         return name;
     }
 
@@ -125,7 +149,7 @@ public class NameHolder {
 
                     @Override
                     public CsmObject getOwner() {
-                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+                        return decl;
                     }
 
                     @Override
@@ -192,7 +216,7 @@ public class NameHolder {
         if (token != null){
             return extractName(token);
         }
-        return "";
+        return ""; // NOI18N
     }
 
     private String getFunctionName(AST ast) {
@@ -314,6 +338,87 @@ public class NameHolder {
                     } else {
                         AST first = token.getFirstChild();
                         if (first.getType() == CPPTokenTypes.ID) {
+                            start = OffsetableBase.getStartOffset(first);
+                            end = OffsetableBase.getEndOffset(first);
+                            return AstUtil.getText(first);
+                        }
+                    }
+                }
+            }
+        }
+        return ""; // NOI18N
+    }
+
+    private CharSequence findClassName(AST ast) {
+        return findId(ast, CPPTokenTypes.RCURLY, true);
+    }
+
+    private CharSequence findEnumName(AST ast){
+        CharSequence aName = findId(ast, CPPTokenTypes.RCURLY, false);
+        if (aName == null || aName.length()==0){
+            AST token = ast.getNextSibling();
+            if( token != null) {
+                if (token.getType() == CPPTokenTypes.ID) {
+                    //typedef enum C { a2, b2, c2 } D;
+                    start = OffsetableBase.getStartOffset(token);
+                    end = OffsetableBase.getEndOffset(token);
+                    aName = AstUtil.getText(token);
+                }
+            }
+        }
+        return aName;
+    }
+
+    /**
+     * Finds ID (either CPPTokenTypes.CSM_QUALIFIED_ID or CPPTokenTypes.ID)
+     * in direct children of the given AST tree
+     *
+     * @param ast tree to search ID in
+     *
+     * @param limitingTokenType type of token that, if being found, stops search
+     *        -1 means that there is no such token.
+     *        This parameter allows, for example, searching until "}" is encountered
+     * @param qualified flag indicating if full qualified id is needed
+     * @return id
+     */
+    private CharSequence findId(AST ast, int limitingTokenType, boolean qualified) {
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            int type = token.getType();
+            if( type == limitingTokenType && limitingTokenType >= 0 ) {
+                return null;
+            }
+            else if( type == CPPTokenTypes.ID ) {
+                start = OffsetableBase.getStartOffset(token);
+                end = OffsetableBase.getEndOffset(token);
+                return AstUtil.getText(token);
+            }
+            else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+		if( qualified ) {
+                    start = OffsetableBase.getStartOffset(token);
+                    end = OffsetableBase.getEndOffset(token);
+		    return AstUtil.getText(token);
+		}
+                AST last = AstUtil.getLastChild(token);
+                if( last != null) {
+                    if( last.getType() == CPPTokenTypes.ID ) {
+                        start = OffsetableBase.getStartOffset(last);
+                        end = OffsetableBase.getEndOffset(last);
+                        return AstUtil.getText(last);
+                    }
+                    else {
+                        AST first = token.getFirstChild();
+                        if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
+                            start = OffsetableBase.getStartOffset(first);
+                            end = OffsetableBase.getEndOffset(first);
+                            StringBuilder sb = new StringBuilder(first.getText());
+                            sb.append(' ');
+                            AST next = first.getNextSibling();
+                            if( next != null ) {
+                                end = OffsetableBase.getEndOffset(next);
+                                sb.append(next.getText());
+                            }
+                            return sb.toString();
+                        } else if (first.getType() == CPPTokenTypes.ID){
                             start = OffsetableBase.getStartOffset(first);
                             end = OffsetableBase.getEndOffset(first);
                             return AstUtil.getText(first);

@@ -73,6 +73,7 @@ public class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> implemen
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         FriendFunctionImpl friendFunctionImpl = new FriendFunctionImpl(ast, cls, scope, nameHolder, register);
         postObjectCreateRegistration(register, friendFunctionImpl);
+        nameHolder.addReference(cls.getContainingFile(), friendFunctionImpl);
         return friendFunctionImpl;
     }
     

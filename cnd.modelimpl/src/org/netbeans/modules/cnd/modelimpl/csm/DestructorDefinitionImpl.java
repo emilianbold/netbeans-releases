@@ -62,6 +62,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         NameHolder nameHolder = NameHolder.createDestructorDefinitionName(ast);
         DestructorDefinitionImpl res = new DestructorDefinitionImpl(ast, file, nameHolder, register);
         postObjectCreateRegistration(register, res);
+        nameHolder.addReference(file, res);
         return res;
     }
 

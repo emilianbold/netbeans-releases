@@ -292,7 +292,7 @@ public class ProjectCreator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk
-        MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
+        MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
         projectDescriptor.setState(State.READY);
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);

@@ -90,6 +90,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         FunctionDDImpl<T> functionDDImpl = new FunctionDDImpl<T>(ast, file, scope, nameHolder, register);
         postObjectCreateRegistration(register, functionDDImpl);
+        nameHolder.addReference(file, functionDDImpl);
         return functionDDImpl;
     }
 

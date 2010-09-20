@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,49 +34,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.snaptracer.impl;
 
-package org.netbeans.modules.cnd.modelimpl.csm;
-
-import org.netbeans.modules.cnd.api.model.*;
-import java.util.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
+import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
- * CsmConstructor implementation
- * @author Vladimir Kvasihn
+ *
+ * @author Tomas Hurka
  */
-public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
+public class NpssDataObject extends MultiDataObject implements OpenCookie {
 
-    private ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, nameHolder, register);
-    }
+    public NpssDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
 
-    public static ConstructorImpl createConstructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        ConstructorImpl constructorImpl = new ConstructorImpl(ast, cls, visibility, nameHolder, register);
-        postObjectCreateRegistration(register, constructorImpl);
-        nameHolder.addReference(cls.getContainingFile(), constructorImpl);
-        return constructorImpl;
     }
 
     @Override
-    public Collection<CsmExpression> getInitializerList() {
-        return Collections.<CsmExpression>emptyList();
-    }
-        
-    @Override
-    public CsmType getReturnType() {
-        return NoType.instance();
+    protected Node createNodeDelegate() {
+        return new DataNode(this, Children.LEAF, getLookup());
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // iml of SelfPersistent
-    
-    public ConstructorImpl(DataInput input) throws IOException {
-        super(input);
-    }    
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+
+    @Override
+    public void open() {
+        File file = FileUtil.toFile(getPrimaryFile());
+        IdeSnapshot snapshot;
+        try {
+            snapshot = new IdeSnapshot(file, new File(file.getCanonicalPath() + ".xml"));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
+        }
+        IdeSnapshotAction.openSnapshot(snapshot);
+    }
 }

@@ -88,6 +88,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         MethodImpl<T> methodImpl = new MethodImpl<T>(ast, cls, visibility, nameHolder, register);
         postObjectCreateRegistration(register, methodImpl);
+        nameHolder.addReference(cls.getContainingFile(), methodImpl);
         return methodImpl;
     }
 

@@ -77,7 +77,7 @@ import org.openide.util.RequestProcessor;
 public class SelectModePanel extends javax.swing.JPanel {
     private final SelectModeDescriptorPanel controller;
     private volatile boolean initialized = false;
-    
+
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeDescriptorPanel wizard) {
         this.controller = wizard;
