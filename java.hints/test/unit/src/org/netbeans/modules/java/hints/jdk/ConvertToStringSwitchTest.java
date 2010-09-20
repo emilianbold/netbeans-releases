@@ -126,6 +126,30 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "}").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testOr() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     public void test() {" +
+                       "         String g = null;" +
+                       "         if (g == \"j\" || g == \"m\") {" +
+                       "             System.err.println(1);" +
+                       "         } else if (g == \"k\") {" +
+                       "             System.err.println(2);" +
+                       "         } else if (g == \"l\" || g == \"n\") {" +
+                       "             System.err.println(3);" +
+                       "         } else {" +
+                       "             System.err.println(4);" +
+                       "             return;" +
+                       "         }" +
+                       "     }" +
+                       "}",
+                       "0:91-0:93:verifier:Convert to switch",
+                       "FixImpl",
+                       "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";
