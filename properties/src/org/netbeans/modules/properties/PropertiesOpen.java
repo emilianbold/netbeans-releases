@@ -324,10 +324,14 @@ public class PropertiesOpen extends CloneableOpenSupport
     @Override
     protected String messageOpening() {
         bundleStructure.updateEntries();
-        return NbBundle.getMessage(PropertiesOpen.class, "LBL_ObjectOpen", // NOI18N
-            bundleStructure.getNthEntry(0).getName(),
-            bundleStructure.getNthEntry(0).getFile().toString()
-        );
+        PropertiesFileEntry primaryEntry = bundleStructure.getNthEntry(0);
+        String primaryEntryName = primaryEntry.getName();
+        FileObject fo = primaryEntry.getFile();
+        String primaryEntryFile = fo != null ? fo.toString() : "" ; // #190125
+        return NbBundle.getMessage(PropertiesOpen.class,
+                                   "LBL_ObjectOpen", // NOI18N
+                                   primaryEntryName,
+                                   primaryEntryFile);
     }
 
     /** 
