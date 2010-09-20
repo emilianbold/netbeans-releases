@@ -158,42 +158,42 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     private CsmFunction findDeclaration(Resolver parent) {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-        Collection<? extends CsmDeclaration> defs = getContainingFile().getProject().findDeclarations(uname);
-        if (defs.isEmpty()) {
+        Collection<? extends CsmDeclaration> decls = getContainingFile().getProject().findDeclarations(uname);
+        if (decls.isEmpty()) {
             uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-            defs = getContainingFile().getProject().findDeclarations(uname);
+            decls = getContainingFile().getProject().findDeclarations(uname);
         }
         CsmDeclaration def = null;
-        if (defs.isEmpty()) {
+        if (decls.isEmpty()) {
             CsmObject owner = findOwner(parent);
             if(owner == null) {
                 owner = CsmBaseUtilities.getFunctionClassByQualifiedName(this);
             }
-            if (owner instanceof CsmClass) {
+            if (CsmKindUtilities.isClass(owner)) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
                 def = findByNameAndParamsNumber(it, getName(), getParameters().size());
                 if (def == null && isOperator()) {
                     def = fixCastOperator((CsmClass)owner);
                 }
-            } else if (owner instanceof CsmNamespace) {
+            } else if (CsmKindUtilities.isNamespace(owner)) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace) owner),
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
                 def = findByNameAndParamsNumber(it, getName(), getParameters().size());
             }
         } else {
-            def = findByNameAndParamsNumber(defs.iterator(), getName(), getParameters().size());
+            def = findByNameAndParamsNumber(decls.iterator(), getName(), getParameters().size());
         }
         return (CsmFunction) def;
     }
 
-    private CsmFunction findByNameAndParamsNumber(Iterator<?> declarations, CharSequence name, int paramsNumber) {
+    private CsmFunction findByNameAndParamsNumber(Iterator<? extends CsmObject> declarations, CharSequence name, int paramsNumber) {
         CsmFunction out = null;
         CsmFunction best = null;
         CsmFunction best2 = null;
-        for (Iterator<?> it = declarations; it.hasNext();) {
-            Object o = it.next();
-            if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)) {
+        for (Iterator<? extends CsmObject> it = declarations; it.hasNext();) {
+            CsmObject o = it.next();
+            if (CsmKindUtilities.isFunction(o)) {
                 CsmFunction decl = (CsmFunction) o;
                 if (decl.getName().equals(name)) {
                     if (decl.getParameters().size() == paramsNumber) {
