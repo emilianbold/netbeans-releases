@@ -226,19 +226,7 @@ public class ConvertToStringSwitch {
                     return ;
                 }
 
-                List<StatementTree> statements = new LinkedList<StatementTree>();
-                Tree then = s.getLeaf();
-
-                if (then.getKind() == Kind.BLOCK) {
-                    //XXX: should verify declarations inside the blocks
-                    statements.addAll(((BlockTree) then).getStatements());
-                } else {
-                    statements.add((StatementTree) then);
-                }
-
-                statements.add(make.Break(null));
-
-                cases.add(make.Case((ExpressionTree) l.getLeaf(), statements));
+                addCase(copy, s, cases, (ExpressionTree) l.getLeaf());
             }
 
             if (defaultStatement != null) {
@@ -248,19 +236,7 @@ public class ConvertToStringSwitch {
                     return ;
                 }
 
-                List<StatementTree> statements = new LinkedList<StatementTree>();
-                Tree then = s.getLeaf();
-
-                if (then.getKind() == Kind.BLOCK) {
-                    //XXX: should verify declarations inside the blocks
-                    statements.addAll(((BlockTree) then).getStatements());
-                } else {
-                    statements.add((StatementTree) then);
-                }
-
-                statements.add(make.Break(null));
-
-                cases.add(make.Case(null, statements));
+                addCase(copy, s, cases, null);
             }
 
             TreePath value = ConvertToSwitch.this.value.resolve(copy);
@@ -268,6 +244,31 @@ public class ConvertToStringSwitch {
             SwitchTree s = make.Switch((ExpressionTree) value.getLeaf(), cases);
 
             copy.rewrite(it.getLeaf(), s); //XXX
+        }
+
+        private void addCase(WorkingCopy copy, TreePath s, List<CaseTree> cases, ExpressionTree value) {
+            TreeMaker make = copy.getTreeMaker();
+            List<StatementTree> statements = new LinkedList<StatementTree>();
+            Tree then = s.getLeaf();
+            boolean exitsFromAllBranches = false;
+
+            if (then.getKind() == Kind.BLOCK) {
+                //XXX: should verify declarations inside the blocks
+                statements.addAll(((BlockTree) then).getStatements());
+
+                for (Tree st : ((BlockTree) then).getStatements()) {
+                    exitsFromAllBranches |= Utilities.exitsFromAllBranchers(copy, new TreePath(s, st));
+                }
+            } else {
+                statements.add((StatementTree) then);
+                exitsFromAllBranches = Utilities.exitsFromAllBranchers(copy, s);
+            }
+
+            if (!exitsFromAllBranches) {
+                statements.add(make.Break(null));
+            }
+
+            cases.add(make.Case(value, statements));
         }
 
     }

@@ -571,9 +571,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             index++;
         }
 
-        ExitsFromAllBranches efab = new ExitsFromAllBranches(info);
-
-        boolean exitsFromAllBranches = efab.scan(new TreePath(block, statementsToWrap.get(statementsToWrap.size() - 1)), null) == Boolean.TRUE;
+        boolean exitsFromAllBranches = Utilities.exitsFromAllBranchers(info, new TreePath(block, statementsToWrap.get(statementsToWrap.size() - 1)));
 
         String exitsError = scanner.verifyExits(exitsFromAllBranches);
 
@@ -1318,48 +1316,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
             return null;
         }
-    }
-
-    private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
-
-        private CompilationInfo info;
-        private Set<Tree> seenTrees = new HashSet<Tree>();
-
-        public ExitsFromAllBranches(CompilationInfo info) {
-            this.info = info;
-        }
-
-        @Override
-        public Boolean scan(Tree tree, Void p) {
-            seenTrees.add(tree);
-            return super.scan(tree, p);
-        }
-
-        @Override
-        public Boolean visitIf(IfTree node, Void p) {
-            return scan(node.getThenStatement(), null) == Boolean.TRUE && scan(node.getElseStatement(), null) == Boolean.TRUE;
-        }
-
-        @Override
-        public Boolean visitReturn(ReturnTree node, Void p) {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBreak(BreakTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
-        }
-
-        @Override
-        public Boolean visitContinue(ContinueTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
-        }
-
-        @Override
-        public Boolean visitClass(ClassTree node, Void p) {
-            return false;
-        }
-
     }
 
     private static final class IntroduceFix implements Fix {

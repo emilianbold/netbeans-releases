@@ -43,6 +43,11 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.util.TreePathScanner;
 import java.util.HashSet;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import com.sun.source.tree.ArrayAccessTree;
@@ -824,6 +829,54 @@ public class Utilities {
             default:
                 return false;
         }
+    }
+
+    public static boolean exitsFromAllBranchers(CompilationInfo info, TreePath from) {
+        ExitsFromAllBranches efab = new ExitsFromAllBranches(info);
+
+        return efab.scan(from, null) == Boolean.TRUE;
+    }
+
+    private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
+
+        private CompilationInfo info;
+        private Set<Tree> seenTrees = new HashSet<Tree>();
+
+        public ExitsFromAllBranches(CompilationInfo info) {
+            this.info = info;
+        }
+
+        @Override
+        public Boolean scan(Tree tree, Void p) {
+            seenTrees.add(tree);
+            return super.scan(tree, p);
+        }
+
+        @Override
+        public Boolean visitIf(IfTree node, Void p) {
+            return scan(node.getThenStatement(), null) == Boolean.TRUE && scan(node.getElseStatement(), null) == Boolean.TRUE;
+        }
+
+        @Override
+        public Boolean visitReturn(ReturnTree node, Void p) {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBreak(BreakTree node, Void p) {
+            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
+        }
+
+        @Override
+        public Boolean visitContinue(ContinueTree node, Void p) {
+            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
+        }
+
+        @Override
+        public Boolean visitClass(ClassTree node, Void p) {
+            return false;
+        }
+
     }
 
 }
