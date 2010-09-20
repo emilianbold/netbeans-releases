@@ -108,9 +108,7 @@ public class ELLanguage extends DefaultLanguageConfig {
 
     @Override
     public CodeCompletionHandler getCompletionHandler() {
-        // return new ELCodeCompletionHandler();
-        return super.getCompletionHandler();
+        return new ELCodeCompletionHandler();
     }
-
 
 }

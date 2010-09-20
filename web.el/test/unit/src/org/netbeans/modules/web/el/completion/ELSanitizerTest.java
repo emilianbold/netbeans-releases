@@ -42,11 +42,6 @@
 
 package org.netbeans.modules.web.el.completion;
 
-import org.netbeans.modules.web.el.completion.ELSanitizer;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -60,19 +55,79 @@ public class ELSanitizerTest {
     }
 
 
-    /**
-     * Test of sanitize method, of class ELSanitizer.
-     */
     @Test
-    public void testSanitize() {
-        ELSanitizer sanitizer = new ELSanitizer("foo.bar.");
-        assertEquals("foo.bar." + ELSanitizer.ADDED_SUFFIX, sanitizer.sanitize());
+    public void testSanitizeDots() {
+        String sanitized = ELSanitizer.sanitize("#{foo.}");
+        assertEquals("#{foo.x}", sanitized);
 
-        sanitizer = new ELSanitizer("foo(");
-        assertEquals("foo()", sanitizer.sanitize());
+        sanitized = ELSanitizer.sanitize("#{foo.bar.}");
+        assertEquals("#{foo.bar.x}", sanitized);
 
-        sanitizer = new ELSanitizer("foo[");
-        assertEquals("foo[]", sanitizer.sanitize());
+        sanitized = ELSanitizer.sanitize("#{foo[}");
+        assertEquals("#{foo[]}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo(}");
+        assertEquals("#{foo()}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{just[");
+        assertEquals("#{just[]}", sanitized);
     }
 
+
+    @Test
+    public void testSanitizeBrackets() {
+        String sanitized = ELSanitizer.sanitize("#{foo[}");
+        assertEquals("#{foo[]}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo");
+        assertEquals("#{foo}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo(}");
+        assertEquals("#{foo()}", sanitized);
+    }
+
+    @Test
+    public void testSanitizeOperators() {
+        String sanitized = ELSanitizer.sanitize("#{foo +}");
+        assertEquals("#{foo +x}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo -}");
+        assertEquals("#{foo -x}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo /}");
+        assertEquals("#{foo /x}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo +");
+        assertEquals("#{foo +x}", sanitized);
+    }
+
+    @Test
+    public void testSanitizeTrailingSpaces() {
+        String sanitized = ELSanitizer.sanitize("#{ }");
+        assertEquals("#{ x}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{ ");
+        assertEquals("#{ x}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{a + }");
+        assertEquals("#{a + x}", sanitized);
+    }
+
+    @Test
+    public void testSanitizeKeywords() {
+        String sanitized = ELSanitizer.sanitize("#{a and}");
+        assertEquals("#{a and x}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo.bar gt");
+        assertEquals("#{foo.bar gt x}", sanitized);
+    }
+
+    @Test
+    public void testSanitizeEmpty() {
+        String sanitized = ELSanitizer.sanitize("#{}");
+        assertEquals("#{x}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{");
+        assertEquals("#{x}", sanitized);
+    }
 }
