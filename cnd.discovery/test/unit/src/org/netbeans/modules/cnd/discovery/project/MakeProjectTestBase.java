@@ -233,8 +233,12 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 public synchronized Object getProperty(String name) {
                     if ("simpleMode".equals(name)) {
                         return Boolean.TRUE;
+                    } else if ("nativeProjDir".equals(name)) {
+                        return path;
                     } else if ("path".equals(name)) {
                         return path;
+                    } else if ("projdir".equals(name)) {
+                        return new File(path);
                     } else if ("configureName".equals(name)) {
                         if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:
