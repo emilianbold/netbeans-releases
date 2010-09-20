@@ -340,7 +340,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             }
             Element enclosing = e.getEnclosingElement();
 
-            if (enclosing == SourceUtils.getEnclosingTypeElement(e)) {
+            if (enclosing == info.getElementUtilities().enclosingTypeElement(e)) {
                 result.append(((TypeElement) enclosing).getQualifiedName());
                 result.append('.');
                 boldStartCheck(highlightName);
