@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -62,7 +61,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
@@ -140,7 +142,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         return excludePatternTextField.getText();
     }
 
-    public FileFilter getFileFilter() {
+    public FileObjectFilter getFileFilter() {
         Pattern excludePattern = null;
 
         String excludeStr = excludePatternTextField.getText().trim();
@@ -207,7 +209,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         validateSelection();
     }
 
-    private static final class RegexpExcludeFileFilter implements FileFilter {
+    private static final class RegexpExcludeFileFilter implements FileObjectFilter {
 
         private final Pattern excludePattern;
 
@@ -216,7 +218,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         }
 
         @Override
-        public boolean accept(File pathname) {
+        public boolean accept(FileObject pathname) {
             return !excludePattern.matcher(pathname.getName()).find();
         }
     }
@@ -418,7 +420,8 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             // FIXUP: error message
             return;
         }
-        data.add(new FolderEntry(fileChooser.getSelectedFile(), CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
+        FileObject fo = /*XXX:fullRemote*/ FileUtil.toFileObject(fileChooser.getSelectedFile());
+        data.add(new FolderEntry(fo, CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
         refresh();
     }
 

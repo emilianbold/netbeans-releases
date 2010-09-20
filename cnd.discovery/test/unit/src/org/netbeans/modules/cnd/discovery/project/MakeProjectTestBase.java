@@ -77,6 +77,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
@@ -235,6 +236,8 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                         return Boolean.TRUE;
                     } else if ("nativeProjDir".equals(name)) {
                         return path;
+                    } else if ("nativeProjFO".equals(name)) {
+                        return FileUtil.toFileObject(new File(path));
                     } else if ("path".equals(name)) {
                         return path;
                     } else if ("projdir".equals(name)) {

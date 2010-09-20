@@ -50,10 +50,13 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -187,12 +190,14 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     public class WizardStorage {
         private String path = ""; // NOI18N
+        private FileObject fileObject;
         private String flags = ""; // NOI18N
         private boolean setMain = true;
         private boolean buildProject = true;
         private CompilerSet cs;
         private ExecutionEnvironment env;
         private boolean fullRemote = false;
+        
         public WizardStorage(){
         }
 
@@ -218,11 +223,16 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             return path;
         }
 
+        public FileObject getFileObject() {
+            return fileObject;
+        }
+
         /**
          * @param path the path to set
          */
         public void setPath(String path) {
             this.path = path.trim();
+            fileObject = RemoteFileUtil.getFileObject(path, env, fullRemote);
             validate();
         }
 
@@ -338,6 +348,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 return storage.fullRemote;
             } else if (/*XXX Define somewhere*/"nativeProjDir".equals(name)) { // NOI18N
                 return storage.getPath();
+            } else if (/*XXX Define somewhere*/"nativeProjFO".equals(name)) { // NOI18N
+                return storage.getFileObject();
             } else if (/*XXX Define somewhere*/"projdir".equals(name)) { // NOI18N
                 //Object o = super.getProperty(name);
                 return new File(storage.getPath());
