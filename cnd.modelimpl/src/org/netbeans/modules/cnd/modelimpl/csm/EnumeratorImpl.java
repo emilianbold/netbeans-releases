@@ -69,17 +69,19 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     private /*final*/ CsmEnum enumerationRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmEnum> enumerationUID;
 
-    private EnumeratorImpl(AST ast, EnumImpl enumeration) {
+    private EnumeratorImpl(AST ast, NameHolder name, EnumImpl enumeration) {
         super(ast, enumeration.getContainingFile());
-        this.name = NameCache.getManager().getString(AstUtil.getText(ast));
+        this.name = NameCache.getManager().getString(name.getName());
         // set parent enum, do it in constructor to have final fields
         this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
         this.enumerationRef = null;
     }
 
     public static EnumeratorImpl create(AST ast, EnumImpl enumeration, boolean global) {
-        EnumeratorImpl ei = new EnumeratorImpl(ast, enumeration);
+        NameHolder holder = NameHolder.createSimpleName(ast);
+        EnumeratorImpl ei = new EnumeratorImpl(ast, holder, enumeration);
         postObjectCreateRegistration(global, ei);
+        holder.addReference(enumeration.getContainingFile(), ei);
         return ei;
     }
 

@@ -108,6 +108,8 @@ public final class CsmReferenceSupport {
     public static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
         if (checkDecl.equals(targetDecl)) {
             return true;
+        } else if (CsmKindUtilities.isConstructor(checkDecl)) {
+            return false;
         } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
             CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
             CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();

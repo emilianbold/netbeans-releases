@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +56,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -74,6 +74,10 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author Alexander Simon
  */
 public class FileComponentReferences extends FileComponent implements Persistent, SelfPersistent {
+
+    public static boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds) {
+        return ref instanceof FileComponentReferences.ReferenceImpl && kinds.contains(ref.getKind());
+    }
 
     private final Map<ReferenceImpl, CsmUID<CsmObject>> references;
     private final ReadWriteLock referencesLock = new ReentrantReadWriteLock();
@@ -128,7 +132,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         put();
     }
 
-    Iterator<CsmReference> getReferences(Collection<CsmObject> objects) {
+    Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
         Set<CsmUID<CsmObject>> searchFor = new HashSet<CsmUID<CsmObject>>(objects.size());
         for(CsmObject obj : objects) {
             CsmUID<CsmObject> uid = UIDs.get(obj);
@@ -145,7 +149,37 @@ public class FileComponentReferences extends FileComponent implements Persistent
         } finally {
             referencesLock.readLock().unlock();
         }
-        return res.iterator();
+        return res;
+    }
+
+    Collection<CsmReference> getReferences() {
+        List<CsmReference> res = new ArrayList<CsmReference>();
+        referencesLock.readLock().lock();
+        try {
+            for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.entrySet()) {
+                res.add(entry.getKey());
+            }
+        } finally {
+            referencesLock.readLock().unlock();
+        }
+        return res;
+    }
+
+
+    CsmReference getReference(int offset) {
+        if (true) {
+            referencesLock.readLock().lock();
+            try {
+                for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.entrySet()) {
+                    if (entry.getKey().start <= offset && offset < entry.getKey().end) {
+                        return entry.getKey();
+                    }
+                }
+            } finally {
+                referencesLock.readLock().unlock();
+            }
+        }
+        return null;
     }
 
     void addReference(CsmReference ref, CsmObject referencedObject) {

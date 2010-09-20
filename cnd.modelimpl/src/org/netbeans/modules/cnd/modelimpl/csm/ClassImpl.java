@@ -445,7 +445,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         @Override
-        protected VariableImpl<CsmField> createVariable(AST offsetAst, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern,
+        protected VariableImpl<CsmField> createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern,
                 MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             FieldImpl field = FieldImpl.create(offsetAst, file, type, name, ClassImpl.this, curentVisibility, _static, _extern, !isRenderingLocalContext());
@@ -861,8 +861,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         start = idAST;
                     }
                 }
-                CharSequence name = AstUtil.getText(idAST);
-                FieldImpl field = FieldImpl.create(start, getContainingFile(), type, name, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
+                NameHolder nameHolder = NameHolder.createSimpleName(idAST);
+                FieldImpl field = FieldImpl.create(start, getContainingFile(), type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
                 ClassImpl.this.addMember(field,!isRenderingLocalContext());
                 added = true;
             }
