@@ -50,6 +50,8 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /*package*/ final class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider {
@@ -82,7 +84,8 @@ import org.openide.util.NbBundle;
             String workingdir = (String) settings.getProperty("buildCommandWorkingDirTextField"); // NOI18N
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             File wd = new File(workingdir);
-            sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
+            FileObject fo = /*XXX:fullRemote*/ FileUtil.toFileObject(wd);
+            sourceFilesPanel.getSourceListData().add(new FolderEntry(fo, wd.getPath()));
 //            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N
 //                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // NOI18N // FIXUP: scan for actual 'test' or 'tests' folders...
 //            }
