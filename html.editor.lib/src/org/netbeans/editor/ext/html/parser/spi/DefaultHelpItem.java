@@ -50,12 +50,14 @@ import java.net.URL;
  */
 public class DefaultHelpItem implements HelpItem {
 
+    private String header;
     private URL helpUrl;
     private HelpResolver helpResolver;
 
-    public DefaultHelpItem(URL helpUrl, HelpResolver helpResolver) {
+    public DefaultHelpItem(URL helpUrl, HelpResolver helpResolver, String header) {
         this.helpUrl = helpUrl;
         this.helpResolver = helpResolver;
+        this.header = header;
     }
 
     @Override
@@ -66,6 +68,11 @@ public class DefaultHelpItem implements HelpItem {
     @Override
     public HelpResolver getHelpResolver() {
         return helpResolver;
+    }
+
+    @Override
+    public String getHelpHeader() {
+        return header;
     }
 
 }
