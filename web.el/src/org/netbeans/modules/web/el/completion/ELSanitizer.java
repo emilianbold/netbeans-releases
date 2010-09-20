@@ -39,11 +39,19 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.el.completion;
 
+import com.sun.el.parser.Node;
+import java.util.HashSet;
+import java.util.Set;
+import javax.el.ELException;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
+import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELParser;
+import org.netbeans.modules.web.el.Pair;
+
 /**
- * Attempts to sanitize EL
+ * Attempts to sanitize EL statements.
  *
  * @author Erno Mononen
  */
@@ -51,22 +59,111 @@ final class ELSanitizer {
 
     static final String ADDED_SUFFIX = "x"; // NOI18N
     private final String expression;
+    private final ELElement element;
+    private static final Set<Pair<ELTokenId, ELTokenId>> BRACKETS;
 
-    public ELSanitizer(String expression) {
-        this.expression = expression;
+    static {
+        BRACKETS = new HashSet<Pair<ELTokenId, ELTokenId>>();
+        BRACKETS.add(Pair.of(ELTokenId.LBRACKET, ELTokenId.RBRACKET));
+        BRACKETS.add(Pair.of(ELTokenId.LPAREN, ELTokenId.RPAREN));
     }
 
-    public String sanitize() {
-        if (expression.endsWith(".")) {
-            return expression + ADDED_SUFFIX;
-        }
-        if (expression.endsWith("(")) {
-            return expression + ")";
-        }
-        if (expression.endsWith("[")) {
-            return expression + "]";
-        }
-        return expression;
+    public ELSanitizer(ELElement element) {
+        this.element = element;
+        this.expression = element.getExpression();
+
     }
 
+    /**
+     * @return
+     */
+    public ELElement sanitized() {
+        try {
+            String sanitizedExpression = sanitize(expression);
+            Node sanitizedNode = ELParser.parse(sanitizedExpression);
+            return element.makeValidCopy(sanitizedNode, sanitizedExpression);
+        } catch (ELException ex) {
+            return element;
+        }
+    }
+
+    // package private for unit tests
+    static String sanitize(final String expression) {
+        String copy = expression;
+        if (!expression.endsWith("}")) {
+            copy += "}";
+        }
+        CleanExpression cleanExpression = CleanExpression.getCleanExression(copy);
+        if (cleanExpression == null) {
+            return expression;
+        }
+        String result = cleanExpression.clean;
+        if (result.trim().isEmpty()) {
+            result += ADDED_SUFFIX;
+        }
+        result = secondPass(result);
+        return cleanExpression.prefix + result + cleanExpression.suffix;
+    }
+
+    private static String secondPass(String expression) {
+        String spaces = "";
+        if (expression.endsWith(" ")) {
+            int lastNonWhiteSpace = -1;
+            for (int i = expression.length() - 1; i >= 0; i--) {
+                if (!Character.isWhitespace(expression.charAt(i))) {
+                    lastNonWhiteSpace = i;
+                    break;
+                }
+            }
+            if (lastNonWhiteSpace > 0) {
+                spaces = expression.substring(lastNonWhiteSpace + 1);
+                expression = expression.substring(0, lastNonWhiteSpace + 1);
+            }
+        }
+        for (ELTokenId elToken : ELTokenId.values()) {
+            if (elToken.fixedText() == null || !expression.endsWith(elToken.fixedText())) {
+                continue;
+            }
+            // special handling for brackets
+            for (Pair<ELTokenId, ELTokenId> bracket : BRACKETS) {
+                if (expression.endsWith(bracket.first.fixedText())) {
+                    return expression + bracket.second.fixedText();
+                } else if (expression.endsWith(bracket.second.fixedText())) {
+                    return expression;
+                }
+            }
+            // for operators
+            if (ELTokenId.ELTokenCategories.OPERATORS.hasCategory(elToken)) {
+                return expression + spaces + ADDED_SUFFIX;
+            }
+            if (ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elToken)) {
+                return expression + " " + spaces + ADDED_SUFFIX;
+            }
+        }
+        return expression + spaces;
+
+    }
+
+    private static class CleanExpression {
+
+        private final String clean, prefix, suffix;
+
+        public CleanExpression(String clean, String prefix, String suffix) {
+            this.clean = clean;
+            this.prefix = prefix;
+            this.suffix = suffix;
+        }
+
+        private static CleanExpression getCleanExression(String expression) {
+            if ((expression.startsWith("#{") || expression.startsWith("${"))
+                    && expression.endsWith("}")) {
+
+                String prefix = expression.substring(0, 2);
+                String clean = expression.substring(2, expression.length() - 1);
+                String suffix = expression.substring(expression.length() - 1);
+                return new CleanExpression(clean, prefix, suffix);
+            }
+            return null;
+        }
+    }
 }
