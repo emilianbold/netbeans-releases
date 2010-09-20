@@ -641,6 +641,9 @@ public final class AntProjectHelper {
                         throw e;
                     }
                 }
+                if (pendingHookCount == 0) {
+                    pendingHook = null;
+                }
             }
         } finally {
             // #57791: release locks outside synchronized block.
