@@ -199,7 +199,7 @@ class QueryUtil {
         do {
             index = findNextUpper(camel, lastIndex + 1);
             String token = camel.substring(lastIndex, index == -1 ? camel.length(): index);
-            sb.append(caseSensitive ? token : token.toLowerCase());
+            sb.append(Pattern.quote(caseSensitive ? token : token.toLowerCase()));
             sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
             lastIndex = index;
         } while(index != -1);
