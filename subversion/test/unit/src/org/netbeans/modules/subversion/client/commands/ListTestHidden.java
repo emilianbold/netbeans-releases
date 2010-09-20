@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -53,9 +53,9 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  *
  * @author tomas
  */
-public class ListTest extends AbstractCommandTest {
+public class ListTestHidden extends AbstractCommandTestCase {
     
-    public ListTest(String testName) throws Exception {
+    public ListTestHidden(String testName) throws Exception {
         super(testName);
     }
 

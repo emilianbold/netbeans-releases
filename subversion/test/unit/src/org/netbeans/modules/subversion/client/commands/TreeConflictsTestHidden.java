@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -55,7 +55,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author tomas
  */
-public class TreeConflictsTest extends AbstractCommandTest {
+public class TreeConflictsTestHidden extends AbstractCommandTestCase {
     private File wc1, wc2;
     private File f1, f2;
     private File fcopy1, fcopy2;
@@ -68,7 +68,7 @@ public class TreeConflictsTest extends AbstractCommandTest {
         file
     }
     
-    public TreeConflictsTest(String testName) throws Exception {
+    public TreeConflictsTestHidden(String testName) throws Exception {
         super(testName);
     }
 

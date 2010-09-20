@@ -64,7 +64,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.netbeans.modules.subversion.AbstractSvnTest;
+import org.netbeans.modules.subversion.AbstractSvnTestCase;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
@@ -84,14 +84,14 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author tomas
  */
-public abstract class AbstractCommandTest extends AbstractSvnTest {
+public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
     
     protected boolean importWC;
     protected String CI_FOLDER = "cifolder";    
     protected FileNotifyListener fileNotifyListener;
     private Process server;
 
-    public AbstractCommandTest(String testName) throws Exception {
+    public AbstractCommandTestCase(String testName) throws Exception {
         super(testName);
     }
 
