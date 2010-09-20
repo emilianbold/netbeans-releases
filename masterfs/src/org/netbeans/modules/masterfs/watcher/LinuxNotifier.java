@@ -135,6 +135,10 @@ public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
         String name = getString(len); // ignore
 
         LKey key = map.get(wd);
+        if (key == null) { /* wd == -1 -> Queue overflow */
+            return null;
+        }
+        
         return key.path;
     }
 
