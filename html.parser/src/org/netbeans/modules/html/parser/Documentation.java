@@ -165,14 +165,16 @@ public class Documentation implements HelpResolver {
     }
 
     public String getSectionContent(URL url, Charset charset) {
+        String content = getContentAsString(url, charset);
         String surl = url.toExternalForm();
         int hashIndex = surl.indexOf('#');
         if (hashIndex == -1) {
-            throw new IllegalArgumentException();
+            //no anchor, return whole content
+            return content;
         }
-        String sectionName = surl.substring(hashIndex + 1);
 
-        String content = getContentAsString(url, charset);
+        //anchor
+        String sectionName = surl.substring(hashIndex + 1);
         Matcher matcher = SECTIONS_PATTERN.matcher(content);
 
         int from = -1;
@@ -184,7 +186,11 @@ public class Documentation implements HelpResolver {
         }
 
         if (from != -1) {
-            return content.substring(from);
+            String stripped = content.substring(from);
+            //"fix" the stripped content a bit by adding html content prefix
+            return new StringBuilder().
+                    append("<html><head><title>help</title></head><body>").
+                    append(stripped).toString(); //NOI18N
         } else {
             return null;
         }

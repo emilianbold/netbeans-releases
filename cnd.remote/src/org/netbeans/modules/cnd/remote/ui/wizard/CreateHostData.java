@@ -82,6 +82,6 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 
     @Override
     public String toString() {
-        return "CreateHostData " + hostName + ':' + port;
+        return "CreateHostData " + hostName + ':' + port; // NOI18N
     }
 }

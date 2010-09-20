@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  */
 public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondition {
     
-    private VariableImpl declaration;
+    private VariableImpl<?> declaration;
     
     public ConditionDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
@@ -75,7 +75,7 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
     private void initDeclaration(AST node, final CsmScope scope) {
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
             @Override
-            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern,
+            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern,
 		    MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope passedScope) {
 		
                 ConditionDeclarationImpl.this.declaration = super.createVariable(offsetAst, file, type, name, _static, _extern,

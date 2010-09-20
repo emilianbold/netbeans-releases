@@ -42,7 +42,15 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import java.io.File;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Misc utility functions used when creating new project
@@ -53,5 +61,16 @@ import org.openide.WizardDescriptor;
     public static boolean isFullRemote(WizardDescriptor wizardDescriptor) {
         Boolean b = (Boolean) wizardDescriptor.getProperty("fullRemote");
         return b != null && b.booleanValue();
+    }
+
+    public static FileObject getFileObject(String path, WizardDescriptor wizardDescriptor) {
+        if (isFullRemote(wizardDescriptor)) {
+            String hostUID = (String) wizardDescriptor.getProperty("hostUID");  //NOI18N
+            CndUtils.assertNotNull(hostUID, "Null host UID"); //NOI18N
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            return RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
+        } else {
+            return FileUtil.toFileObject(new File(path));
+        }
     }
 }

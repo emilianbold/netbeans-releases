@@ -249,7 +249,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
                         aFile.removeDeclaration(this);
-                        VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName(), _static, _extern);
+                        NameHolder nameHolder = NameHolder.createFunctionName(fixFakeRegistrationAst);
+                        VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, _static, _extern);
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
@@ -268,7 +269,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
                         aFile.removeDeclaration(this);
-                        VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName(), _static, _extern);
+                        NameHolder nameHolder = NameHolder.createFunctionName(fixFakeRegistrationAst);
+                        VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, _static, _extern);
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;

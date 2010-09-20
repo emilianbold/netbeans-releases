@@ -238,6 +238,7 @@ public class ImportProject implements PropertyChangeListener {
     private void customSetup(WizardDescriptor wizard) {
         projectFolder = (File) wizard.getProperty("projdir");  // NOI18N;
         nativeProjectPath = (String) wizard.getProperty("nativeProjDir");  // NOI18N
+        nativeProjectFO = (FileObject) wizard.getProperty("nativeProjFO");  // NOI18N
         projectFolder = (File) wizard.getProperty("projdir"); // NOI18N
         projectName = (String) wizard.getProperty("name"); // NOI18N
         makefileName = (String) wizard.getProperty("makefilename"); // NOI18N

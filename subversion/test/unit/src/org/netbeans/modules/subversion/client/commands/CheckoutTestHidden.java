@@ -42,7 +42,7 @@
 // XXX add referenceclient
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +57,9 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author tomas
  */
-public class CheckoutTest extends AbstractCommandTest {
+public class CheckoutTestHidden extends AbstractCommandTestCase {
     
-    public CheckoutTest(String testName) throws Exception {
+    public CheckoutTestHidden(String testName) throws Exception {
         super(testName);
     }
 

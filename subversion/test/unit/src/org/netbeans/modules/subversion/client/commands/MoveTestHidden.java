@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.io.InputStream;
 import org.netbeans.modules.subversion.utils.TestUtilities;
@@ -57,9 +57,9 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
  *
  * @author tomas
  */
-public class MoveTest extends AbstractCommandTest {
+public class MoveTestHidden extends AbstractCommandTestCase {
     
-    public MoveTest(String testName) throws Exception {
+    public MoveTestHidden(String testName) throws Exception {
         super(testName);
     }
     

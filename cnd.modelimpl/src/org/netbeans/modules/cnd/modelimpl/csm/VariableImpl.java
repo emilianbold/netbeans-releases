@@ -90,17 +90,17 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return variableImpl;
     }
 
-    protected VariableImpl(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern) {
+    protected VariableImpl(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         initInitialValue(ast);
         this._static = _static;
         this._extern = _extern;
-        this.name = NameCache.getManager().getString(name);
+        this.name = NameCache.getManager().getString(name.getName());
         this.type = type;
         _setScope(scope);
     }
 
-    public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
+    public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
         VariableImpl<T> variableImpl = new VariableImpl<T>(ast, file, type, name, scope, _static, _extern);
         postObjectCreateRegistration(global, variableImpl);
         return variableImpl;
