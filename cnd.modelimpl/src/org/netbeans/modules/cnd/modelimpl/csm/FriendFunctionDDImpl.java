@@ -74,6 +74,7 @@ public class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunction> imp
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         FriendFunctionDDImpl friendFunctionDDImpl = new FriendFunctionDDImpl(ast, cls, scope, nameHolder, global);
         postObjectCreateRegistration(global, friendFunctionDDImpl);
+        nameHolder.addReference(cls.getContainingFile(), friendFunctionDDImpl);
         return friendFunctionDDImpl;
     }
 

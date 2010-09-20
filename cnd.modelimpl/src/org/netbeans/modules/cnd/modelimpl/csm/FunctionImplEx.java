@@ -91,6 +91,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         } else {
             RepositoryUtils.put(functionImplEx);
         }
+        nameHolder.addReference(file, functionImplEx);
         return functionImplEx;
     }
 

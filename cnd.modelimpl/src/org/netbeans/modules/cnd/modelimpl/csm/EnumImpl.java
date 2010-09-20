@@ -64,8 +64,8 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
     private final List<CsmUID<CsmEnumerator>> enumerators;
     
-    private EnumImpl(AST ast, CsmFile file) {
-        super(findName(ast), file, ast);
+    private EnumImpl(AST ast, NameHolder name, CsmFile file) {
+        super(name, file, ast);
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
 
@@ -85,8 +85,10 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     }
     
     public static EnumImpl create(AST ast, CsmScope scope, CsmFile file, boolean register) {
-	EnumImpl impl = new EnumImpl(ast, file);
+        NameHolder nameHolder = NameHolder.createEnumName(ast);
+	EnumImpl impl = new EnumImpl(ast, nameHolder, file);
 	impl.init(scope, ast, register);
+        nameHolder.addReference(file, impl);
 	return impl;
     }
 
@@ -104,20 +106,6 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         EnumeratorImpl ei = EnumeratorImpl.create(this, name, startOffset, endOffset, register);
         CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
         enumerators.add(uid);
-    }
-    
-    private static CharSequence findName(AST ast){
-        CharSequence name = AstUtil.findId(ast, CPPTokenTypes.RCURLY);
-        if (name == null || name.length()==0){
-            AST token = ast.getNextSibling();
-            if( token != null) {
-                if (token.getType() == CPPTokenTypes.ID) {
-                    //typedef enum C { a2, b2, c2 } D;
-                    name = AstUtil.getText(token);
-                }
-            }
-        }
-        return name;
     }
     
     private void initEnumeratorList(AST ast, boolean global){

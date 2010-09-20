@@ -74,6 +74,7 @@ public class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFrie
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         FriendFunctionDefinitionImpl friendFunctionDefinitionImpl = new FriendFunctionDefinitionImpl(ast, cls, scope, nameHolder, register);
         postObjectCreateRegistration(register, friendFunctionDefinitionImpl);
+        nameHolder.addReference(cls.getContainingFile(), friendFunctionDefinitionImpl);
         return friendFunctionDefinitionImpl;
     }
     
