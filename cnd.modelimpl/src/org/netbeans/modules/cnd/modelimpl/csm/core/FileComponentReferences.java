@@ -150,14 +150,19 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
     void addReference(CsmReference ref, CsmObject referencedObject) {
         CsmUID<CsmObject> referencedUID = UIDs.get(referencedObject);
-        ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID);
-        referencesLock.writeLock().lock();
-        try {
-            references.put(refImpl, referencedUID);
-        } finally {
-            referencesLock.writeLock().unlock();
+        if (!(referencedUID == null || referencedUID instanceof SelfPersistent)) {
+            // ignore local references
+            //new Exception("Ignore reference to local object "+referencedObject).printStackTrace();
+        } else {
+            ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID);
+            referencesLock.writeLock().lock();
+            try {
+                references.put(refImpl, referencedUID);
+            } finally {
+                referencesLock.writeLock().unlock();
+            }
+            put();
         }
-        put();
     }
 
     @Override
@@ -203,7 +208,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.refObj = refObj;
             this.start = PositionManager.createPositionID(fileUID, delegate.getStartOffset(), PositionManager.Position.Bias.FOWARD);
             this.end = PositionManager.createPositionID(fileUID, delegate.getEndOffset(), PositionManager.Position.Bias.BACKWARD);
-            this.identifier = delegate.getText();
+            this.identifier = NameCache.getManager().getString(delegate.getText());
             this.ownerUID = UIDs.get(delegate.getOwner());
         }
 

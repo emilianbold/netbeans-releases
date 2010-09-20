@@ -73,6 +73,7 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmF
         ConstructorDefinitionImpl res =  new ConstructorDefinitionImpl(ast, file, null, nameHolder, register);
         res.initializers = AstRenderer.renderConstructorInitializersList(ast, res, res.getContainingFile());
         postObjectCreateRegistration(register, res);
+        nameHolder.addReference(file, res);
         return res;
     }
     

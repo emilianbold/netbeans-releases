@@ -177,6 +177,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         FunctionImpl<T> functionImpl = new FunctionImpl<T>(ast, file, type, scope, nameHolder, register);
         postObjectCreateRegistration(register, functionImpl);
+        nameHolder.addReference(file, functionImpl);
         return functionImpl;
     }
 

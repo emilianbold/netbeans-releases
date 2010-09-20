@@ -89,9 +89,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 //        this.kind = CsmDeclaration.Kind.CLASS;
 //        register();
 //    }
-    protected ClassImpl(CharSequence name, AST ast, CsmFile file) {
+    protected ClassImpl(NameHolder name, AST ast, CsmFile file) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
-        super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
+        super(name, file, ast);
         members = new ArrayList<CsmUID<CsmMember>>();
         friends = new ArrayList<CsmUID<CsmFriend>>(0);
         inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
@@ -161,10 +161,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             // not our instance
             impl = null;
         }
+        NameHolder nameHolder = null;
         if (impl == null) {
-            impl = new ClassImpl(null, ast, file);
+            nameHolder = NameHolder.createClassName(ast);
+            impl = new ClassImpl(nameHolder, ast, file);
         }
         impl.init(scope, ast, register);
+        if (nameHolder != null) {
+            nameHolder.addReference(file, impl);
+        }
         return impl;
     }
 

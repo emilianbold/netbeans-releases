@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
@@ -56,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -91,6 +93,7 @@ import org.openide.util.Exceptions;
     public File createFileObject(String path) {
         FileObject fo = fs.findResource(path);
         if (fo == null) {
+            RemoteLogger.getInstance().log(Level.INFO, "Null file object for {0}", path);
             return new FileObjectBasedFile(env, path);
         } else {
             return new FileObjectBasedFile(env, fo);
