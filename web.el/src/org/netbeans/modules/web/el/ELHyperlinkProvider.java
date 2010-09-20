@@ -175,7 +175,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             Exceptions.printStackTrace(ex);
         }
 
-        return null;
+        return result[0];
     }
     
     private String getTooltipTextForBundleKey(Pair<Node, ELElement> pair) {
