@@ -104,7 +104,7 @@ public class AnnotationsNotRuntimeTest extends TestBase {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {\n" +
-                            "    private void test(Annotation ann) {\n" +
+                            "    private void test(java.lang.annotation.Annotation ann) {\n" +
                             "        if (ann instanceof SuppressWarnings);\n" +
                             "    }\n" +
                             "}\n",
