@@ -55,12 +55,9 @@ import org.openide.util.NbBundle;
 public class EditTestDependencyPanel extends javax.swing.JPanel {
     private TestModuleDependency tmd ;
     
-    /** Creates new form EditTestDependencyPanel */
     public EditTestDependencyPanel(final TestModuleDependency originalDep) {
         tmd = originalDep;
         initComponents();
-        // #114356: dependency can be set as runtime only in project.xml
-        compile.setVisible(false);
         fillOriginal();
     }
     

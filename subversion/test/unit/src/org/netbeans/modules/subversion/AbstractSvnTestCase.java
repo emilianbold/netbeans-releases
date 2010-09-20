@@ -75,7 +75,7 @@ import org.tigris.subversion.svnclientadapter.utils.Depth;
  *
  * @author Tomas Stupka
  */
-public abstract class AbstractSvnTest extends NbTestCase {
+public abstract class AbstractSvnTestCase extends NbTestCase {
    
     private File workDir;
     private FileStatusCache cache;
@@ -88,13 +88,13 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected String clientVersion;
     private final static String JAVAHL = "javahl";
         
-    public AbstractSvnTest(String testName) throws MalformedURLException, SVNClientException {
+    public AbstractSvnTestCase(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
         clientVersion = SUBVERSION_1_6;
         System.setProperty("work.dir", getWorkDirPath());
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
-        repoDir = new File(System.getProperty("work.dir") + "/repo");
+        repoDir = new File(getDataDir().getAbsolutePath() + "/repo");
         repoPath = repoDir.getAbsolutePath();
         if(repoPath.startsWith("/")) {
             //repoPath = repoPath.substring(1, repoPath.length());

@@ -22,8 +22,8 @@ public final class ELElement {
     private ELElement(Node node, ELException error, String expression, OffsetRange embeddedOffset, ELParserResult parserResult) {
         assert node == null || error == null;
         if (node != null) {
-            assert embeddedOffset.getLength() == node.endOffset() - node.startOffset()
-                    : "Offsets don't match: " + embeddedOffset + ", node: " + node.startOffset() + "-" + node.endOffset();
+//            assert embeddedOffset.getLength() == node.endOffset() - node.startOffset()
+//                    : "Offsets don't match: " + embeddedOffset + ", node: " + node.startOffset() + "-" + node.endOffset();
         }
         this.node = node;
         this.embeddedOffset = embeddedOffset;
@@ -42,6 +42,11 @@ public final class ELElement {
 
     static ELElement error(ELException error, String expression, OffsetRange embeddedOffset, ELParserResult parserResult) {
         return new ELElement(null, error, expression, embeddedOffset, parserResult);
+    }
+
+    public ELElement makeValidCopy(Node node, String expression) {
+        assert !isValid();
+        return valid(node, expression, embeddedOffset, parserResult);
     }
 
     /**
@@ -109,7 +114,7 @@ public final class ELElement {
             public void visit(Node node) throws ELException {
                 int nodeLength = node.endOffset() - node.startOffset();
                 if (originalOffset.getStart() + node.startOffset() <= offset
-                        && originalOffset.getStart() + node.startOffset() + nodeLength >= offset) {
+                        && originalOffset.getStart() + node.startOffset() + nodeLength > offset) {
                     result[0] = node;
                 }
 

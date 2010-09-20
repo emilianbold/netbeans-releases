@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -58,14 +58,14 @@ import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
  *
  * @author tomas
  */
-public class LogTest extends AbstractCommandTest {
+public class LogTestHidden extends AbstractCommandTestCase {
 
     private enum Log {
         file,
         url
     }
     
-    public LogTest(String testName) throws Exception {
+    public LogTestHidden(String testName) throws Exception {
         super(testName);
     }
 

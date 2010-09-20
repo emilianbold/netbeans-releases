@@ -44,6 +44,7 @@ package org.netbeans.modules.web.el;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -66,8 +67,11 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -151,17 +155,27 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
 
     private String getTooltipTextForElement(Pair<Node, ELElement> pair) {
         FileObject context = pair.second.getParserResult().getFileObject();
-        Element resolvedElement = ELTypeUtilities.create(context).resolveElement(pair.second, pair.first);
+        final Element resolvedElement = ELTypeUtilities.create(context).resolveElement(pair.second, pair.first);
         if (resolvedElement == null) {
             return null;
         }
-        CompilationInfo info = ELTypeUtilities.getCompilationInfo(pair.second.getParserResult().getFileObject());
-        if (info != null) {
-            DisplayNameElementVisitor dnev = new DisplayNameElementVisitor(info);
-            dnev.visit(resolvedElement, Boolean.TRUE);
-            return "<html><body>" + dnev.result.toString(); //NOI18N
+        final String[] result = new String[1];
+        ClasspathInfo cp = ClasspathInfo.create(pair.second.getParserResult().getFileObject());
+        try {
+            JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController cc) throws Exception {
+                    DisplayNameElementVisitor dnev = new DisplayNameElementVisitor(cc);
+                    dnev.visit(resolvedElement, Boolean.TRUE);
+                    result[0] = "<html><body>" + dnev.result.toString(); //NOI18N
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return null;
+
+        return result[0];
     }
     
     private String getTooltipTextForBundleKey(Pair<Node, ELElement> pair) {
@@ -326,7 +340,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             }
             Element enclosing = e.getEnclosingElement();
 
-            if (enclosing == SourceUtils.getEnclosingTypeElement(e)) {
+            if (enclosing == info.getElementUtilities().enclosingTypeElement(e)) {
                 result.append(((TypeElement) enclosing).getQualifiedName());
                 result.append('.');
                 boldStartCheck(highlightName);
