@@ -49,10 +49,14 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.versioning.Utils;
 
 /**
  *
@@ -62,6 +66,12 @@ public class StatusTest extends AbstractGitTestCase {
 
     public StatusTest (String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Git.STATUS_LOG.setLevel(Level.ALL);
     }
 
     public void testStatusOnNoRepository () throws Exception {
@@ -130,7 +140,92 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals(4, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
     }
-    
+
+    public void testPingRepository_Refresh () throws Exception {
+        // give some time to bg tasks to finish
+        Thread.sleep(10000);
+
+        File folderA = new File(repositoryLocation, "folderA");
+        File fileA1 = new File(folderA, "file1");
+        File fileA2 = new File(folderA, "file2");
+        folderA.mkdirs();
+        fileA1.createNewFile();
+        fileA2.createNewFile();
+        File folderB = new File(repositoryLocation, "folderB");
+        File fileB1 = new File(folderB, "file1");
+        File fileB2 = new File(folderB, "file2");
+        folderB.mkdirs();
+        fileB1.createNewFile();
+        fileB2.createNewFile();
+        File folderC = new File(repositoryLocation, "folderC");
+        File fileC1 = new File(folderC, "file1");
+        File fileC2 = new File(folderC, "file2");
+        folderC.mkdirs();
+        fileC1.createNewFile();
+        fileC2.createNewFile();
+
+        LogHandler handler = new LogHandler();
+        Git.STATUS_LOG.addHandler(handler);
+        handler.setFilesToRefresh(Collections.singleton(folderA));
+        FileInformation status = getCache().getCachedStatus(folderA);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(fileA1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        status = getCache().getCachedStatus(fileA2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+
+        handler.setFilesToRefresh(Collections.singleton(fileA2));
+        status = getCache().getCachedStatus(fileA2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertFalse(handler.waitForFilesToRefresh());
+        assertFalse(handler.filesRefreshed);
+
+        handler.setFilesToRefresh(Collections.singleton(fileB1));
+        status = getCache().getCachedStatus(fileB1);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(fileB1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+
+        handler.setFilesToRefresh(Collections.singleton(fileB2));
+        status = getCache().getCachedStatus(fileB2);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(fileB1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        status = getCache().getCachedStatus(fileB2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+
+        handler.setFilesToRefresh(Collections.singleton(folderC));
+        status = getCache().getCachedStatus(folderC);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(folderC);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        status = getCache().getCachedStatus(fileC1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        status = getCache().getCachedStatus(fileC2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+
+        handler.setFilesToRefresh(Collections.singleton(folderB));
+        status = getCache().getCachedStatus(folderB);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(fileB1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        status = getCache().getCachedStatus(fileB2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+
+        handler.setFilesToRefresh(Collections.singleton(folderB));
+        status = getCache().getCachedStatus(folderB);
+        assertFalse(handler.waitForFilesToRefresh());
+
+        handler.setFilesToRefresh(Collections.singleton(repositoryLocation));
+        status = getCache().getCachedStatus(repositoryLocation);
+        assertTrue(handler.waitForFilesToRefresh());
+    }
+
     // TODO add more tests when add is implemented
     // TODO add more tests when remove is implemented
     // TODO add more tests when commit is implemented
@@ -141,5 +236,53 @@ public class StatusTest extends AbstractGitTestCase {
         for (File f : files) {
             assertTrue(getCache().getCachedStatus(f).getStatus().equals(EnumSet.of(status)));
         }
+    }
+
+    private class LogHandler extends Handler {
+        private Set<File> filesToRefresh;
+        private boolean filesRefreshed;
+        private final HashSet<File> refreshedFiles = new HashSet<File>();
+
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().contains("refreshAllRoots() roots: finished")) {
+                synchronized (this) {
+                    filesRefreshed = true;
+                    notifyAll();
+                }
+            } else if (record.getMessage().contains("refreshAllRoots() roots: ")) {
+                synchronized (this) {
+                    refreshedFiles.addAll((Set<File>) record.getParameters()[0]);
+                    notifyAll();
+                }
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        private void setFilesToRefresh (Set<File> files) {
+            filesToRefresh = files;
+            refreshedFiles.clear();
+            filesRefreshed = false;
+        }
+
+        private boolean waitForFilesToRefresh () throws InterruptedException {
+            for (int i = 0; i < 20; ++i) {
+                synchronized (this) {
+                    if (filesRefreshed && refreshedFiles.equals(filesToRefresh)) {
+                        return true;
+                    }
+                    wait(500);
+                }
+            }
+            return false;
+        }
+
     }
 }

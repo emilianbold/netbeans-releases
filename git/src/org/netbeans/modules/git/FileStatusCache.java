@@ -63,6 +63,7 @@ import org.netbeans.modules.turbo.CacheIndex;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
@@ -75,7 +76,7 @@ public class FileStatusCache {
     public static final String PROP_FILE_STATUS_CHANGED = "status.changed"; // NOI18N
 
     private final CacheIndex conflictedFiles, modifiedFiles;
-    private static final Logger LOG = Logger.getLogger(FileStatusCache.class.getName());
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.status.cache"); //NOI18N
     private int MAX_COUNT_UPTODATE_FILES = 1024;
     private static final int CACHE_SIZE_WARNING_THRESHOLD = 50000; // log when cache gets too big and steps over this threshold
     private boolean hugeCacheWarningLogged;
@@ -86,16 +87,13 @@ public class FileStatusCache {
      */
     private final Map<File, FileInformation> cachedFiles;
     private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<File>(MAX_COUNT_UPTODATE_FILES);
-    private final RequestProcessor rp = new RequestProcessor("Mercurial.cacheNG", 1, true);
+    private final RequestProcessor rp = new RequestProcessor("Git.cacheNG", 1, true);
     private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
 
     private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), false);
-    private static final FileInformation FILE_INFORMATION_UPTODATE_FOLDER = new FileInformation(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), true);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED), false);
-    private static final FileInformation FILE_INFORMATION_NOTMANAGED_FOLDER = new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED), true);
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), false);
-    private static final FileInformation FILE_INFORMATION_EXCLUDED_FOLDER = new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true);
     private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), false);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(EnumSet.of(Status.STATUS_UNKNOWN), false);
 
@@ -120,6 +118,48 @@ public class FileStatusCache {
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         listenerSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
+     * @param files roots to refresh
+     */
+    public void refreshAllRoots (final Set<File> files) {
+        long startTime = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            startTime = System.currentTimeMillis();
+            LOG.fine("refreshAll: starting for " + files.size() + " files."); //NOI18N
+        }
+        if (files.isEmpty()) {
+            return;
+        }
+        HashMap<File, Set<File>> rootFiles = new HashMap<File, Set<File>>(5);
+
+        for (File file : files) {
+            // go through all files and sort them under repository roots
+            file = FileUtil.normalizeFile(file);
+            File repository = Git.getInstance().getRepositoryRoot(file);
+            if (repository == null) {
+                // we have an unversioned root, maybe the whole subtree should be removed from cache (VCS owners might have changed)
+                continue;
+            }
+            Set<File> filesUnderRoot = rootFiles.get(repository);
+            if (filesUnderRoot == null) {
+                filesUnderRoot = new HashSet<File>();
+                rootFiles.put(repository, filesUnderRoot);
+            }
+            GitUtils.prepareRootFiles(repository, filesUnderRoot, file);
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("refreshAll: starting status scan for " + rootFiles.values() + " after " + (System.currentTimeMillis() - startTime)); //NOI18N
+            startTime = System.currentTimeMillis();
+        }
+        if (!rootFiles.isEmpty()) {
+            refreshAllRoots(rootFiles);
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("refreshAll: finishes status scan after " + (System.currentTimeMillis() - startTime)); //NOI18N
+        }
     }
 
     /**
@@ -155,7 +195,7 @@ public class FileStatusCache {
                         boolean correctRepository = true;
                         if (!interestingFiles.containsKey(file) // file no longer has an interesting status
                                 && (fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED) && !exists || // file was ignored and is now deleted
-                                !fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED) && (!exists || file.isFile())) // file is now up-to-date or also ignored by .hgignore
+                                !fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED) && (!exists || file.isFile())) // file is now up-to-date or also ignored by .gitignore
                                 && (correctRepository = repository.equals(filesOwner = Git.getInstance().getRepositoryRoot(file)))) { // do not remove info for nested repositories
                             LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
                             refreshFileStatus(file, FILE_INFORMATION_UNKNOWN); // remove the file from cache
@@ -169,6 +209,10 @@ public class FileStatusCache {
                 }
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "refreshAll() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
+            } finally {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "refreshAllRoots() roots: finished repositoryRoot: {0} ", new Object[] { repository.getAbsolutePath() } ); // NOI18N
+                }
             }
         }
     }
@@ -317,22 +361,22 @@ public class FileStatusCache {
      * TODO: handle initial scan, not implemented either
      * Fast version of {@link #getStatus(java.io.File)}.
      * @param file
-     * @param seenInUI false value means the file/folder is not visible in UI and thus cannot trigger initial hg status scan
+     * @param seenInUI false value means the file/folder is not visible in UI and thus cannot trigger initial git status scan
      * @return always returns a not null value
      */
     private FileInformation getCachedStatus (final File file, boolean seenInUI) {
         FileInformation info = getInfo(file); // cached value
         LOG.log(Level.FINER, "getCachedStatus for file {0}: {1}", new Object[] {file, info}); //NOI18N
-        boolean triggerHgScan = false;
+        boolean triggerGitScan = false;
         if (info == null) {
             if (Git.getInstance().isManaged(file)) {
                 // ping repository scan, this means it has not yet been scanned
                 // but scan only files/folders visible in IDE
-                triggerHgScan = seenInUI;
+                triggerGitScan = seenInUI;
                 // fast ignore-test
 //                info = checkForIgnoredFile(file);
                 if (file.isDirectory()) {
-                    setInfo(file, info = info == null ? FILE_INFORMATION_UPTODATE_FOLDER : FILE_INFORMATION_EXCLUDED_FOLDER);
+                    setInfo(file, info = info == null ? new FileInformation(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), true) : new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true));
                 } else {
                     if (info == null) {
                         info = FILE_INFORMATION_UPTODATE;
@@ -358,15 +402,15 @@ public class FileStatusCache {
                 }
             } else {
                 // unmanaged files
-                info = file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_FOLDER : FILE_INFORMATION_NOTMANAGED;
+                info = file.isDirectory() ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED), true) : FILE_INFORMATION_NOTMANAGED;
             }
             LOG.log(Level.FINER, "getCachedStatus: default for file {0}: {1}", new Object[] {file, info}); //NOI18N
         } else {
-            triggerHgScan = seenInUI && !info.seenInUI();
+            triggerGitScan = seenInUI && !info.seenInUI();
         }
-        if (triggerHgScan) {
-            info.setSeenInUI(true); // next time this file/folder will not trigger the hg scan
-//            Git.getInstance().getVCSInterceptor().pingRepositoryRootFor(file);
+        if (triggerGitScan) {
+            info.setSeenInUI(true); // next time this file/folder will not trigger the git scan
+            Git.getInstance().getVCSInterceptor().pingRepositoryRootFor(file);
         }
         return info;
     }
@@ -392,10 +436,10 @@ public class FileStatusCache {
         if(file == null || fi == null) return;
         FileInformation current;
         synchronized (this) {
-            if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi) && getCachedStatus(file.getParentFile()).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi) && getCachedStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
                 // Sharebility query recognized this file as ignored
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
-                fi = file.isDirectory() ? FILE_INFORMATION_EXCLUDED_FOLDER : FILE_INFORMATION_EXCLUDED;
+                fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
             }
             file = FileUtil.normalizeFile(file);
             current = getInfo(file);

@@ -44,6 +44,7 @@ package org.netbeans.modules.git;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.util.EnumSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -55,8 +56,15 @@ import org.netbeans.modules.versioning.spi.VCSContext;
  * @author ondra
  */
 class Annotator extends VCSAnnotator {
+    private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(FileInformation.Status.class);
+    static {
+        STATUS_IS_IMPORTANT.addAll(FileInformation.STATUS_LOCAL_CHANGES);
+        STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.STATUS_VERSIONED_UPTODATE, FileInformation.Status.STATUS_NOTVERSIONED_EXCLUDED));
+    }
+    private final FileStatusCache cache;
 
     public Annotator() {
+        cache = Git.getInstance().getFileStatusCache();
     }
 
     @Override
@@ -78,6 +86,6 @@ class Annotator extends VCSAnnotator {
 
     @Override
     public String annotateName(String name, VCSContext context) {
-        return name + " [Git is the best]";
+        return name + " [Tomasi, implement us]";
     }
 }

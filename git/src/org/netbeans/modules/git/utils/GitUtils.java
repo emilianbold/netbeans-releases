@@ -43,10 +43,14 @@
 package org.netbeans.modules.git.utils;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
 
 /**
- *
+ *s
  * @author ondra
  */
 public final class GitUtils {
@@ -78,6 +82,62 @@ public final class GitUtils {
 
     public static boolean repositoryExistsFor (File file) {
         return new File(file, DOT_GIT).exists();
+    }
+
+    /**
+     * Returns the administrative git folder for the given repository and normalizes the file
+     * @param repositoryRoot root of the repository
+     * @return administrative git folder
+     */
+    public static File getGitFolderForRoot (File repositoryRoot) {
+        return FileUtil.normalizeFile(new File(repositoryRoot, DOT_GIT));
+    }
+
+    /**
+     * Adds the given file into filesUnderRoot:
+     * <ul>
+     * <li>if the file was already in the set, does nothing and returns true</li>
+     * <li>if the file lies under a folder already present in the set, does nothing and returns true</li>
+     * <li>if the file and none of it's ancestors is not in the set yet, this adds the file into the set,
+     * removes all it's children and returns false</li>
+     * @param repository repository root
+     * @param filesUnderRoot set of repository roots
+     * @param file file to add
+     * @return false if the file was added or true if it was already contained
+     */
+    public static boolean prepareRootFiles (File repository, Set<File> filesUnderRoot, File file) {
+        boolean added = false;
+        Set<File> filesToRemove = new HashSet<File>();
+        for (File fileUnderRoot : filesUnderRoot) {
+            if (file.equals(fileUnderRoot) || fileUnderRoot.equals(repository)) {
+                // file has already been inserted or scan is planned for the whole repository root
+                added = true;
+                break;
+            }
+            if (file.equals(repository)) {
+                // plan the scan for the whole repository root
+                // adding the repository, there's no need to leave all other files
+                filesUnderRoot.clear();
+                break;
+            } else {
+                if (file.getAbsolutePath().length() < fileUnderRoot.getAbsolutePath().length()) {
+                    if (Utils.isAncestorOrEqual(file, fileUnderRoot)) {
+                        filesToRemove.add(fileUnderRoot);
+                    }
+                } else {
+                    if (Utils.isAncestorOrEqual(fileUnderRoot, file)) {
+                        added = true;
+                        break;
+                    }
+                }
+            }
+        }
+        filesUnderRoot.removeAll(filesToRemove);
+        if (!added) {
+            // not added yet
+            filesUnderRoot.add(file);
+        }
+        return added;
     }
 
     public GitUtils() {

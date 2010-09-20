@@ -56,7 +56,6 @@ import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.util.Lookup;
 
@@ -70,6 +69,7 @@ public final class Git {
     private Annotator annotator;
     private FilesystemInterceptor interceptor;
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.git"); //NOI18N
+    public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.git.status"); //NOI18N;
     private GitVCS gitVCS;
     private FileStatusCache fileStatusCache;
 
@@ -95,7 +95,7 @@ public final class Git {
         return annotator;
     }
 
-    VCSInterceptor getVCSInterceptor() {
+    FilesystemInterceptor getVCSInterceptor() {
         return interceptor;
     }
 
