@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -232,7 +233,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
          */
         public void setPath(String path) {
             this.path = path.trim();
-            fileObject = RemoteFileUtil.getFileObject(path, env, fullRemote);
+            fileObject = RemoteFileUtil.getFileObject(path, env,
+                    fullRemote ? RemoteProject.Mode.REMOTE_SOURCES : RemoteProject.Mode.LOCAL_SOURCES);
             validate();
         }
 

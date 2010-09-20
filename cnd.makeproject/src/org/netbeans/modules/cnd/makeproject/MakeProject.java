@@ -1064,6 +1064,11 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
         }
+
+        @Override
+        public Mode getRemoteMode() {
+            return fullRemote ? Mode.REMOTE_SOURCES : Mode.LOCAL_SOURCES;
+        }
     }
     
     private class ToolchainProjectImpl implements ToolchainProject {
