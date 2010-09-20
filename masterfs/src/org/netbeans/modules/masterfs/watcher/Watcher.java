@@ -55,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -94,7 +95,7 @@ public class Watcher extends AnnotationProvider {
         return ext;
     }
 
-    private static class Ext<KEY> extends ProvidedExtensions implements Runnable {
+    private class Ext<KEY> extends ProvidedExtensions implements Runnable {
         private final Notifier<KEY> impl;
         private final Map<FileObject, KEY> map = new WeakHashMap<FileObject, KEY>();
 
@@ -145,7 +146,7 @@ public class Watcher extends AnnotationProvider {
 
                         // may be null
                         if (map.containsKey(fo)) {
-                            fo.refresh();
+                            enqueue(fo);
                         }
                     }
                 } catch (ThreadDeath td) {
@@ -154,6 +155,36 @@ public class Watcher extends AnnotationProvider {
                     Exceptions.printStackTrace(t);
                 }
             }
+        }
+    }
+
+    private final Object lock = new Object();
+    private Set<FileObject> pending; // guarded by lock
+    private static RequestProcessor RP = new RequestProcessor("Pending refresh", 1);
+
+
+    private RequestProcessor.Task refreshTask = RP.create(new Runnable() {
+        public @Override void run() {
+            Set<FileObject> toRefresh;
+            synchronized(lock) {
+                toRefresh = pending;
+                pending = null;
+            }
+
+            for (FileObject fileObject : toRefresh) {
+                fileObject.refresh();
+            }
+        }
+    });
+
+
+    private void enqueue(FileObject fo) {
+        synchronized(lock) {
+            if (pending == null) {
+                refreshTask.schedule(1500);
+                pending = new HashSet();
+            }
+            pending.add(fo);
         }
     }
 
