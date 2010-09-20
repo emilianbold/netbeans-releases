@@ -67,8 +67,8 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
 
     private SpecializationDescriptor specializationDesctiptor;
 
-    private ClassImplSpecialization(AST ast, CsmFile file) {
-        super(null, ast, file);
+    private ClassImplSpecialization(AST ast, NameHolder name, CsmFile file) {
+        super(name, ast, file);
     }
 
     @Override
@@ -99,10 +99,15 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
             // not our instance
             impl = (ClassImplSpecialization) clsImpl;
         }
+        NameHolder nameHolder = null;
         if (impl == null) {
-            impl = new ClassImplSpecialization(ast, file);
+            nameHolder = NameHolder.createClassName(ast);
+            impl = new ClassImplSpecialization(ast, nameHolder, file);
         }
         impl.init(scope, ast, register);
+        if (nameHolder != null) {
+            nameHolder.addReference(file, impl);
+        }
         return impl;
     }
 

@@ -131,6 +131,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
     
     /**
      */
+    @Override
     protected ClassTree composeNewTestClass(WorkingCopy workingCopy,
                                             String name,
                                             List<? extends Tree> members) {
@@ -148,6 +149,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
     
     /**
      */
+    @Override
     protected List<? extends Tree> generateInitMembers(WorkingCopy workingCopy) {
         if (!setup.isGenerateBefore() && !setup.isGenerateAfter()
                 && !setup.isGenerateBeforeClass() && !setup.isGenerateAfterClass()) {
@@ -176,6 +178,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
 
     /**
      */
+    @Override
     protected ClassTree generateMissingInitMembers(ClassTree tstClass,
                                                    TreePath tstClassTreePath,
                                                    WorkingCopy workingCopy) {
@@ -214,6 +217,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
     
     /**
      */
+    @Override
     protected boolean generateMissingInitMembers(List<Tree> tstMembers,
                                                ClassMap clsMap,
                                                WorkingCopy workingCopy) {
@@ -396,6 +400,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
     
     /**
      */
+    @Override
     protected void generateMissingPostInitMethods(TreePath tstClassTreePath,
                                                   List<Tree> tstMembers,
                                                   ClassMap clsMap,
@@ -405,6 +410,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
     
     /**
      */
+    @Override
     protected MethodTree composeNewTestMethod(String testMethodName,
                                               BlockTree testMethodBody,
                                               List<ExpressionTree> throwsList,
@@ -425,6 +431,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
     
     /**
      */
+    @Override
     protected ClassTree finishSuiteClass(ClassTree tstClass,
                                          TreePath tstClassTreePath,
                                          List<Tree> tstMembers,

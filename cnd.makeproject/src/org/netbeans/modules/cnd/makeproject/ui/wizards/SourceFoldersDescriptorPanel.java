@@ -60,7 +60,7 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewM
 
     private WizardDescriptor wizardDescriptor;
     private SourceFoldersPanel component;
-    private String name;
+    private final String name;
 
     /** Create the wizard panel descriptor. */
     public SourceFoldersDescriptorPanel() {

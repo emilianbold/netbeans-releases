@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
@@ -173,6 +174,9 @@ public class CndPathUtilitities {
         }
     }
 
+    public static String toAbsolutePath(FileObject base, String path) {
+        return toAbsolutePath(base.getPath(), path);
+    }
     /*
      * From PicklistUtils
      */
@@ -200,6 +204,9 @@ public class CndPathUtilitities {
         return newPath;
     }
 
+    public static String toRelativePath(FileObject base, String path) {
+        return toRelativePath(base.getPath(), path);
+    }
     /*
      * From PicklistUtils
      */
@@ -219,6 +226,10 @@ public class CndPathUtilitities {
             }
         }
         return relPath;
+    }
+
+    public static String toAbsoluteOrRelativePath(FileObject base, String path) {
+        return toAbsoluteOrRelativePath(base.getPath(), path);
     }
 
     public static String toAbsoluteOrRelativePath(String base, String path) {
