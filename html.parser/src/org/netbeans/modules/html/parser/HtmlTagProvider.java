@@ -203,8 +203,16 @@ public class HtmlTagProvider {
         }
 
         public HelpItem getHelp() {
+            StringBuilder header = new StringBuilder();
+            header.append("<h2>Element '");
+            header.append(descriptor.getName());
+            header.append("'</h2>");
+
             return isPureHtmlTag() && descriptor.getHelpLink() != null
-                    ? new DefaultHelpItem(Documentation.getDefault().resolveLink(descriptor.getHelpLink()), Documentation.getDefault())
+                    ? new DefaultHelpItem(
+                    Documentation.getDefault().resolveLink(descriptor.getHelpLink()),
+                    Documentation.getDefault(),
+                    header.toString())
                     : null;
 
         }
@@ -237,7 +245,15 @@ public class HtmlTagProvider {
         }
 
         public HelpItem getHelp() {
-            return new DefaultHelpItem(Documentation.getDefault().resolveLink(attr.getHelpLink()), Documentation.getDefault());
+            StringBuilder header = new StringBuilder();
+            header.append("<h2>Attribute '");
+            header.append(attr.getName());
+            header.append("'</h2>");
+
+            return new DefaultHelpItem(
+                    Documentation.getDefault().resolveLink(attr.getHelpLink()),
+                    Documentation.getDefault(),
+                    header.toString());
         }
     }
 }
