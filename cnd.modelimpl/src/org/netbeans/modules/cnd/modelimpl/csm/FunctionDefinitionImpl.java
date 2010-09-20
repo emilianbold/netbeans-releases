@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.openide.util.CharSequences;
 
 /**
  * @author Vladimir Kvasihn
@@ -158,13 +159,13 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     private CsmFunction findDeclaration(Resolver parent) {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-        Collection<? extends CsmDeclaration> decls = getContainingFile().getProject().findDeclarations(uname);
-        if (decls.isEmpty()) {
+        Collection<? extends CsmDeclaration> prjDecls = getContainingFile().getProject().findDeclarations(uname);
+        if (prjDecls.isEmpty()) {
             uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-            decls = getContainingFile().getProject().findDeclarations(uname);
+            prjDecls = getContainingFile().getProject().findDeclarations(uname);
         }
-        CsmDeclaration def = null;
-        if (decls.isEmpty()) {
+        Collection<CsmDeclaration> decls = new ArrayList<CsmDeclaration>(1);
+        if (prjDecls.isEmpty()) {
             CsmObject owner = findOwner(parent);
             if(owner == null) {
                 owner = CsmBaseUtilities.getFunctionClassByQualifiedName(this);
@@ -172,56 +173,57 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             if (CsmKindUtilities.isClass(owner)) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
-                def = findByNameAndParamsNumber(it, getName(), getParameters().size());
-                if (def == null && isOperator()) {
-                    def = fixCastOperator((CsmClass)owner);
+                decls = findByNameAndParamsNumber(it, getName(), getParameters().size());
+                if (decls.isEmpty() && isOperator()) {
+                    CsmDeclaration cast = fixCastOperator((CsmClass)owner);
+                    if (cast != null) {
+                        decls.add(cast);
+                    }
                 }
             } else if (CsmKindUtilities.isNamespace(owner)) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace) owner),
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
-                def = findByNameAndParamsNumber(it, getName(), getParameters().size());
+                decls = findByNameAndParamsNumber(it, getName(), getParameters().size());
             }
         } else {
-            def = findByNameAndParamsNumber(decls.iterator(), getName(), getParameters().size());
+            decls = findByNameAndParamsNumber(prjDecls.iterator(), getName(), getParameters().size());
         }
-        return (CsmFunction) def;
+        CsmFunction decl = chooseDecl(decls);
+        return decl;
     }
 
-    private CsmFunction findByNameAndParamsNumber(Iterator<? extends CsmObject> declarations, CharSequence name, int paramsNumber) {
-        CsmFunction out = null;
-        CsmFunction best = null;
-        CsmFunction best2 = null;
+    private Collection<CsmDeclaration> findByNameAndParamsNumber(Iterator<? extends CsmObject> declarations, CharSequence name, int paramsNumber) {
+        Collection<CsmDeclaration> out = new ArrayList<CsmDeclaration>(1);
+        Collection<CsmDeclaration> best = new ArrayList<CsmDeclaration>(1);
+        Collection<CsmDeclaration> otherVisible = new ArrayList<CsmDeclaration>(1);
         for (Iterator<? extends CsmObject> it = declarations; it.hasNext();) {
             CsmObject o = it.next();
             if (CsmKindUtilities.isFunction(o)) {
                 CsmFunction decl = (CsmFunction) o;
                 if (decl.getName().equals(name)) {
                     if (decl.getParameters().size() == paramsNumber) {
-                        out = decl;
                         if (!FunctionImplEx.isFakeFunction(decl)) {
                             if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), decl)) {
-                                best = decl;
-                                break;
+                                best.add(decl);
+                                continue;
                             }
                         }
+                        out.add(decl);
                     } else {
                         if (!FunctionImplEx.isFakeFunction(decl)) {
                             if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), decl)) {
-                                best2 = decl;
+                                otherVisible.add(decl);
                             }
-                            if (out == null) {
-                                out = decl;
-                            }
+                            out.add(decl);
                         }
                     }
                 }
             }
         }
-        if (best != null) {
-            return best;
-        }
-        if (best2 != null) {
-            return best2;
+        if (!best.isEmpty()) {
+            out = best;
+        } else if (!otherVisible.isEmpty()) {
+            out = otherVisible;
         }
         return out;
     }
@@ -274,5 +276,27 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         // read cached declaration
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+    }
+
+    private CsmFunction chooseDecl(Collection<CsmDeclaration> decls) {
+        CsmFunction out = null;
+        if (decls.size() == 1) {
+            out = (CsmFunction) decls.iterator().next();
+        } else {
+            // choose declaration based on file name
+            CsmFile sortFile = null;
+            for (CsmDeclaration decl : decls) {
+                CsmFunction fun = (CsmFunction) decl;
+                CsmFile containingFile = fun.getContainingFile();
+                if (sortFile == null) {
+                    sortFile = containingFile;
+                    out = fun;
+                } else if (CharSequences.comparator().compare(sortFile.getAbsolutePath(), containingFile.getAbsolutePath()) < 0) {
+                    sortFile = containingFile;
+                    out = fun;
+                }
+            }
+        }
+        return out;
     }
 }
