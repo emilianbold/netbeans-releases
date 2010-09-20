@@ -190,11 +190,11 @@ final class MatchingObject
     public void propertyChange(PropertyChangeEvent e) {
         if (DataObject.PROP_VALID.equals(e.getPropertyName())
                 && Boolean.FALSE.equals(e.getNewValue())) {
-            assert e.getSource() == (DataObject) getDataObject();
-            
-            final DataObject dataObj = (DataObject) getDataObject();
-            dataObj.removePropertyChangeListener(this);
-            
+            final DataObject dataObject = (DataObject) getDataObject();
+            if(dataObject != null) {
+                assert e.getSource() == dataObject;
+                dataObject.removePropertyChangeListener(this);
+            }
             resultModel.objectBecameInvalid(this);
         }
     }
@@ -207,7 +207,7 @@ final class MatchingObject
      * @see  DataObject#isValid
      */
     boolean isObjectValid() {
-        return ((DataObject) getDataObject()).isValid();
+        return valid ? getDataObject().isValid() : false;
     }
     
     FileObject getFileObject() {
@@ -465,7 +465,7 @@ final class MatchingObject
             throw new IOException("Unknown object in search: " +
                                   object);// NOI18N
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            valid = false;
             return null;
         }
     }
