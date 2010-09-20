@@ -56,11 +56,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author ondra
  */
-public abstract class AbstractGitTest extends NbTestCase {
+public abstract class AbstractGitTestCase extends NbTestCase {
 
     protected File repositoryLocation;
 
-    public AbstractGitTest (String name) {
+    public AbstractGitTestCase (String name) {
         super(name);
     }
 

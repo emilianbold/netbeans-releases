@@ -58,7 +58,7 @@ import org.netbeans.modules.git.FileInformation.Status;
  *
  * @author ondra
  */
-public class StatusTest extends AbstractGitTest {
+public class StatusTest extends AbstractGitTestCase {
 
     public StatusTest (String name) {
         super(name);
