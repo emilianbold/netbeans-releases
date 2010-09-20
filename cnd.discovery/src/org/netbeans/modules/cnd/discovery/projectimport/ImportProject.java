@@ -66,7 +66,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.actions.CMakeAction;
@@ -88,7 +87,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
@@ -137,6 +135,7 @@ public class ImportProject implements PropertyChangeListener {
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
     private String nativeProjectPath;
+    private FileObject nativeProjectFO;
     private File projectFolder;
     private String projectName;
     private String makefileName = "Makefile";  // NOI18N
@@ -147,7 +146,8 @@ public class ImportProject implements PropertyChangeListener {
     private boolean manualCA = false;
     private boolean buildArifactWasAnalyzed = false;
     private boolean setAsMain;
-    private String hostUID;
+    private final String hostUID;
+    private final ExecutionEnvironment executionEnvironment;
     private final boolean fullRemote;
     private CompilerSet toolchain;
     private String workingDir;
@@ -177,11 +177,18 @@ public class ImportProject implements PropertyChangeListener {
         }
         Boolean b = (Boolean) wizard.getProperty("fullRemote");
         fullRemote = (b == null) ? false : b.booleanValue();
+        hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
+        if (hostUID == null) {
+            executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
+        } else {
+            executionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+        }
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
         projectFolder = (File) wizard.getProperty("projdir");  // NOI18N;
         nativeProjectPath = (String) wizard.getProperty("nativeProjDir");  // NOI18N
+        nativeProjectFO = (FileObject) wizard.getProperty("nativeProjFO");  // NOI18N
         projectName = projectFolder.getName();
         makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
         workingDir = nativeProjectPath;
@@ -200,20 +207,19 @@ public class ImportProject implements PropertyChangeListener {
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
-        hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
         toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
         
         List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
         list.add(new SourceFolderInfo() {
 
             @Override
-            public File getFile() {
-                return projectFolder;
+            public FileObject getFileObject() {
+                return nativeProjectFO;
             }
 
             @Override
             public String getFolderName() {
-                return projectFolder.getName();
+                return nativeProjectFO.getName();
             }
 
             @Override
@@ -221,10 +227,10 @@ public class ImportProject implements PropertyChangeListener {
                 return true;
             }
 
-            @Override
-            public FileFilter getFileFilter() {
-                return FileFilterFactory.getAllSourceFileFilter();
-            }
+//            @Override
+//            public FileFilter getFileFilter() {
+//                return FileFilterFactory.getAllSourceFileFilter();
+//            }
         });
         sources = list.iterator();
     }
@@ -261,7 +267,6 @@ public class ImportProject implements PropertyChangeListener {
         }
         manualCA = "true".equals(wizard.getProperty("manualCA")); // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setAsMain"));  // NOI18N
-        hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
         toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
     }
 
@@ -565,15 +570,11 @@ public class ImportProject implements PropertyChangeListener {
     private void downloadRemoteFile(File file){
         if (file != null && !file.exists()) {
             ExecutionEnvironment env = null;
-            if (hostUID != null) {
-                env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-            }
-            ExecutionEnvironment developmentHost = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
-            if (developmentHost.isRemote()) {
-                String remoteFile = HostInfoProvider.getMapper(developmentHost).getRemotePath(file.getAbsolutePath());
+            if (executionEnvironment.isRemote()) {
+                String remoteFile = HostInfoProvider.getMapper(executionEnvironment).getRemotePath(file.getAbsolutePath());
                 try {
-                    if (HostInfoUtils.fileExists(developmentHost, remoteFile)){
-                        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, developmentHost, file.getAbsolutePath(), null);
+                    if (HostInfoUtils.fileExists(executionEnvironment, remoteFile)){
+                        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, executionEnvironment, file.getAbsolutePath(), null);
                         if (TRACE) {
                             logger.log(Level.INFO, "#download file {0}", file.getAbsolutePath()); // NOI18N
                         }

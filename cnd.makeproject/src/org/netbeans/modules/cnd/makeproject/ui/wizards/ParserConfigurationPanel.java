@@ -45,13 +45,13 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -60,6 +60,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 public class ParserConfigurationPanel extends javax.swing.JPanel implements HelpCtx.Provider {
@@ -103,17 +104,17 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                     if (buf.length()>0) {
                         buf.append(';');
                     }
-                    File dir = folder.getFile();
+                    FileObject dir = folder.getFileObject();
                     if (dir != null) {
-                        buf.append(dir.getAbsolutePath());
-                        if (dir.isDirectory()) {
-                            final File[] listFiles = dir.listFiles();
+                        buf.append(RemoteFileUtil.getAbsolutePath(dir));
+                        if (dir.isFolder()) {
+                            final FileObject[] listFiles = dir.getChildren();
                             if (listFiles != null) {
-                                for (File sub : listFiles){
-                                    if (sub.isDirectory()) {
+                                for (FileObject sub : listFiles){
+                                    if (sub.isFolder()) {
                                         if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
                                             buf.append(';');
-                                            buf.append(sub.getAbsolutePath());
+                                            buf.append(RemoteFileUtil.getAbsolutePath(sub));
                                         }
                                     }
                                 }
@@ -455,7 +456,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         @Override
         public String copyAction(String o) {
-            return new String(o);
+            return o; // new String(o); ???
         }
 
         @Override
