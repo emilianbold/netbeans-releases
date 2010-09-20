@@ -51,14 +51,15 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public interface RemoteProject {
 
-    /** A temporary flag for development #190299 -  Tie synchronization to project instead of host  */
-    static final boolean SYNC_PER_PROJECT = Boolean.getBoolean("cnd.remote.sync.per.project");
-
-    /** A temporary flag for development #188813 -  Full remote */
-    static final boolean FULL_REMOTE = Boolean.getBoolean("cnd.full.remote");
+    public enum Mode {
+        LOCAL_SOURCES, // shared as well
+        REMOTE_SOURCES
+    }
 
     // FIXUP. Think over how to get correct factory
     static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
     
     ExecutionEnvironment getDevelopmentHost();
+
+    Mode getRemoteMode();
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,57 +34,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.subversion.client.commands;
 
-package org.netbeans.modules.cnd.modelimpl.csm;
-
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
+import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.subversion.Subversion;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- * Implements CsmParameter
- * @author Vladimir Kvashin
+ *
+ * @author tomas
  */
-public final class ParameterEllipsisImpl extends ParameterImpl {
-
-    private ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope) {
-        super(ast, file, type, NameHolder.createName("..."), scope); //NOI18N
+public class ParsedStatusTestHidden extends AbstractCommandTestCase {
+    
+    // XXX terst remote change
+    
+    private enum StatusCall {
+        filearray,
+        file
+    }
+    
+    public ParsedStatusTestHidden(String testName) throws Exception {
+        super(testName);
     }
 
-    public static ParameterEllipsisImpl create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) {
-        ParameterEllipsisImpl parameterEllipsisImpl = new ParameterEllipsisImpl(ast, file, type, scope);
-        postObjectCreateRegistration(global, parameterEllipsisImpl);
-        return parameterEllipsisImpl;
-    }
+    // XXX check with javahl
+    public void testGetStatusWrongAmount() throws Exception {                                
+        File folder = createFolder("folder");        
+        File folder1 = createFolder(folder, "folder1");        
+        File folder2 = createFolder(folder, "folder2");        
+        File file1 = createFolder(folder2, "file1");        
+        
+        add(folder);
+        add(folder1);
+        add(folder2);
+        add(file1);
+        commit(getWC());
+                
+        ISVNStatus[] s1 = getNbClient().getStatus(folder, true, false);
 
-    @Override
-    protected boolean registerInProject() {
-        return false;
+        // returns crap (4 entries) only for the cli which was intentionaly implemted that way
+        // to stay compatible with svnClientAdapter's commandline client.
+        // javahl and svnkit should return a zero length array
+        if(isCommandLine()) {
+            assertEquals(4, s1.length);
+        } else {
+            assertEquals(0, s1.length);
+        }
     }
     
-    @Override
-    public boolean isVarArgs() {
-        return true;
-    }
     
-    @Override
-    public CharSequence getDisplayText() {
-        return "..."; //NOI18N
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // impl of SelfPersistent
-    
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);      
-    }  
-    
-    public ParameterEllipsisImpl(DataInput input) throws IOException {
-        super(input);
-    } 
 }

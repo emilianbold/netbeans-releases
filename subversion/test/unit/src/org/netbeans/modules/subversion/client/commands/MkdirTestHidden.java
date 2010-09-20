@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -54,9 +54,9 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author tomas
  */
-public class MkdirTest extends AbstractCommandTest {
+public class MkdirTestHidden extends AbstractCommandTestCase {
     
-    public MkdirTest(String testName) throws Exception {
+    public MkdirTestHidden(String testName) throws Exception {
         super(testName);
     }
             

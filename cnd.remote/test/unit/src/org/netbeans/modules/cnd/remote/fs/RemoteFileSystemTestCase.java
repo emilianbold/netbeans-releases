@@ -164,7 +164,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
 
     //@ForAllEnvironments
     // Disabled, see IZ 190453
-    public void testRemoteStdioH() throws Exception {
+    public void DISABLEDtestRemoteStdioH() throws Exception {
         String absPath = "/usr/include/stdio.h";
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
@@ -177,7 +177,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
 
     //@ForAllEnvironments
     // Disabled, see IZ 190453
-    public void testMultipleRead() throws Exception {
+    public void DISABLEDtestMultipleRead() throws Exception {
         removeDirectory(fs.getCache());
         final String absPath = "/usr/include/errno.h";
         long firstTime = -1;

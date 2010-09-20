@@ -50,6 +50,8 @@ import java.net.URL;
  */
 public interface HelpItem {
 
+    public String getHelpHeader();
+
     public URL getHelpURL();
 
     public HelpResolver getHelpResolver();

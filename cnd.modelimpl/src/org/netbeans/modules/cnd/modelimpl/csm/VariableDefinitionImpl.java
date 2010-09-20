@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -93,24 +92,16 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private final TemplateDescriptor templateDescriptor;
 
     /** Creates a new instance of VariableDefinitionImpl */
-    private VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern) {
-        super(ast, file, type, getLastname(name), null,_static, _extern);
+    private VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern) {
+        super(ast, file, type, name, null,_static, _extern);
         templateDescriptor = createTemplateDescriptor(ast, null, null, true);
         classOrNspNames = getClassOrNspNames(ast);
     }
 
-    public static VariableDefinitionImpl create(AST ast, CsmFile file, CsmType type, CharSequence name, boolean _static, boolean _extern) {
+    public static VariableDefinitionImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern) {
         VariableDefinitionImpl variableDefinitionImpl = new VariableDefinitionImpl(ast, file, type, name, _static, _extern);
         postObjectCreateRegistration(true, variableDefinitionImpl);
         return variableDefinitionImpl;
-    }
-
-    private static CharSequence getLastname(CharSequence name){
-        int i = CharSequenceUtils.lastIndexOf(name, "::"); // NOI18N
-        if (i >=0){
-            name = name.toString().substring(i+2);
-        }
-        return name;
     }
 
     @Override

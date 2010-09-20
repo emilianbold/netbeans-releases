@@ -422,7 +422,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        wiz.putProperty("fullRemote", Boolean.valueOf(fullRemote));
+        wiz.putProperty("fullRemote", Boolean.valueOf(fullRemote)); // NOI18N
         index = 0;
         setupPanelsAndStepsIfNeed();
     }
