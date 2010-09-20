@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import java.util.Collection;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -71,8 +72,11 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -333,15 +337,21 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         //XXX: should reasonably consider all the found type candidates, not only the one:
-        TypeMirror type = types.get(0);
+        TypeMirror type = Utilities.resolveCapturedType(info, types.get(0));
 
         if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.EXECUTABLE) {
             return result;
         }
 
-        //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
-        if (Utilities.containsErrorsOrTypevarsRecursively(type)) {
+        //currently, we cannot handle error types:
+        if (Utilities.containsErrorsRecursively(type)) {
             return result;
+        }
+
+        Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(type);
+
+        if (!Utilities.allTypeVarsAccessible(typeVars, target)) {
+            fixTypes.remove(ElementKind.FIELD);
         }
 
         if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
@@ -396,14 +406,20 @@ public final class CreateElement implements ErrorRule<Void> {
 
     private static List<Fix> prepareCreateMethodFix(CompilationInfo info, TreePath invocation, Set<Modifier> modifiers, TypeElement target, String simpleName, List<? extends ExpressionTree> arguments, List<? extends TypeMirror> returnTypes) {
         //create method:
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = Utilities.resolveArguments(info, invocation, arguments);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = Utilities.resolveArguments(info, invocation, arguments, target);
 
         //return type:
         //XXX: should reasonably consider all the found type candidates, not only the one:
-        TypeMirror returnType = returnTypes != null ? returnTypes.get(0) : null;
+        TypeMirror returnType = returnTypes != null ? Utilities.resolveCapturedType(info, returnTypes.get(0)) : null;
 
         //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
-        if (formalArguments == null || returnType != null && Utilities.containsErrorsOrTypevarsRecursively(returnType)) {
+        if (formalArguments == null || returnType != null && Utilities.containsErrorsRecursively(returnType)) {
+            return Collections.<Fix>emptyList();
+        }
+
+        Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(returnType);
+
+        if (!Utilities.allTypeVarsAccessible(typeVars, target)) {
             return Collections.<Fix>emptyList();
         }
 
@@ -419,7 +435,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, TypeElement source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, null) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
 
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
@@ -439,7 +455,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     private static List<Fix> prepareCreateInnerClassFix(CompilationInfo info, TreePath invocation, TypeElement target, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, target) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
 
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
