@@ -52,7 +52,6 @@ import com.sun.el.parser.AstTrue;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -90,10 +89,9 @@ public final class ELTypeUtilities {
 
     private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext"; //NOI18N
     private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";//NOI18N
-    private final CompilationInfo info;
     private final ClasspathInfo cpInfo;
-    private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<Class<? extends Node>, Set<TypeKind>>();
 
+    private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<Class<? extends Node>, Set<TypeKind>>();
     static {
         put(AstFloatingPoint.class, TypeKind.FLOAT, TypeKind.DOUBLE);
         put(AstTrue.class, TypeKind.BOOLEAN);
@@ -107,42 +105,18 @@ public final class ELTypeUtilities {
         TYPES.put(node, kindSet);
     }
 
-    private ELTypeUtilities(CompilationInfo info, ClasspathInfo cpInfo) {
+    private ELTypeUtilities(ClasspathInfo cpInfo) {
         assert cpInfo != null;
-        assert info != null;
-        this.info = info;
         this.cpInfo = cpInfo;
     }
 
     public static ELTypeUtilities create(ClasspathInfo cpInfo) {
-        return new ELTypeUtilities(getCompilationInfo(cpInfo), cpInfo);
+        return new ELTypeUtilities(cpInfo);
     }
 
     public static ELTypeUtilities create(FileObject context) {
         ClasspathInfo cp = ClasspathInfo.create(context);
         return create(cp);
-    }
-
-    public static CompilationInfo getCompilationInfo(FileObject file) {
-        ClasspathInfo cp = ClasspathInfo.create(file);
-        return getCompilationInfo(cp);
-    }
-
-    private static CompilationInfo getCompilationInfo(ClasspathInfo cp) {
-        final CompilationInfo[] info = new CompilationInfo[1];
-        JavaSource source = JavaSource.create(cp);
-        try {
-            source.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController co) throws Exception {
-                    co.toPhase(JavaSource.Phase.RESOLVED);
-                    info[0] = co;
-                }
-            }, false);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return info[0];
     }
 
     public Element getTypeFor(Element element) {
@@ -156,8 +130,8 @@ public final class ELTypeUtilities {
         SourceTask<Element> task = new SourceTask<Element>() {
 
             @Override
-            public void run(CompilationController cc) throws Exception {
-                setResult(cc.getTypes().asElement(tm));
+            public void run(CompilationController info) throws Exception {
+                setResult(info.getTypes().asElement(tm));
             }
         };
         runTask(task);
@@ -184,10 +158,10 @@ public final class ELTypeUtilities {
     public TypeMirror getReturnType(final ExecutableElement method) {
         SourceTask<TypeMirror> task = new SourceTask<TypeMirror>() {
             @Override
-            public void run(CompilationController cc) throws Exception {
+            public void run(CompilationController info) throws Exception {
                 TypeKind returnTypeKind = method.getReturnType().getKind();
                 if (returnTypeKind.isPrimitive()) {
-                    setResult(cc.getTypes().getPrimitiveType(returnTypeKind));
+                    setResult(info.getTypes().getPrimitiveType(returnTypeKind));
                 } else {
                     setResult(method.getReturnType());
                 }
@@ -233,21 +207,30 @@ public final class ELTypeUtilities {
         return false;
     }
 
-    public TypeElement getElementForType(String clazz) {
-        return info.getElements().getTypeElement(clazz);
+    public TypeElement getElementForType(final String clazz) {
+        SourceTask<TypeElement> task = new SourceTask<TypeElement>() {
+            @Override
+            public void run(CompilationController info) throws Exception {
+                TypeElement typeElement = info.getElements().getTypeElement(clazz);
+                setResult(typeElement);
+            }
+        };
+
+        runTask(task);
+        return task.getResult();
     }
 
     public String getParametersAsString(final ExecutableElement method) {
         SourceTask<String> task = new SourceTask<String>() {
 
             @Override
-            public void run(CompilationController cc) throws Exception {
+            public void run(CompilationController info) throws Exception {
                 StringBuilder result = new StringBuilder();
                 for (VariableElement param : method.getParameters()) {
                     if (result.length() > 0) {
                         result.append(",");
                     }
-                    String type = cc.getTypeUtilities().getTypeName(param.asType()).toString();
+                    String type = info.getTypeUtilities().getTypeName(param.asType()).toString();
                     result.append(type);
                     result.append(" ");
                     result.append(param.getSimpleName().toString());
@@ -279,9 +262,21 @@ public final class ELTypeUtilities {
         }
         VariableElement param1 = method.getParameters().get(0);
         VariableElement param2 = method.getParameters().get(1);
-        CharSequence param1Type = info.getTypeUtilities().getTypeName(param1.asType(), TypeNameOptions.PRINT_FQN);
-        CharSequence param2Type = info.getTypeUtilities().getTypeName(param2.asType(), TypeNameOptions.PRINT_FQN);
+        CharSequence param1Type = getTypeName(param1.asType());
+        CharSequence param2Type = getTypeName(param2.asType());
         return FACES_CONTEXT_CLASS.equals(param1Type) && UI_COMPONENT_CLASS.equals(param2Type);
+    }
+
+    private CharSequence getTypeName(final TypeMirror type) {
+        SourceTask<CharSequence> task = new SourceTask<CharSequence>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                setResult(info.getTypeUtilities().getTypeName(type, TypeNameOptions.PRINT_FQN));
+            }
+        };
+        runTask(task);
+        return task.getResult();
     }
 
     private boolean haveSameParameters(AstMethodSuffix methodNode, ExecutableElement method) {
@@ -294,28 +289,36 @@ public final class ELTypeUtilities {
         return true;
     }
 
-    private boolean isSameType(Node paramNode, VariableElement param) {
-        TypeKind paramKind = param.asType().getKind();
-        if (!paramKind.isPrimitive()) {
-            // try unboxing
-            try {
-                PrimitiveType unboxedType = info.getTypes().unboxedType(param.asType());
-                paramKind = unboxedType.getKind();
-            } catch (IllegalArgumentException iae) {
-                // not unboxable (isn't there a way to check this before trying to unbox??)
-            }
+    private boolean isSameType(final Node paramNode, final VariableElement param) {
+        SourceTask<Boolean> task = new SourceTask<Boolean>() {
 
-        }
-        if (TYPES.containsKey(paramNode.getClass())) {
-            return TYPES.get(paramNode.getClass()).contains(paramKind);
-        }
-        if (paramNode instanceof AstString) {
-            CharSequence typeName = info.getTypeUtilities().getTypeName(param.asType(), TypeNameOptions.PRINT_FQN);
-            return String.class.getName().contentEquals(typeName);//NOI18N
-        }
-        // the ast param is an object whose real type we don't know
-        // would need to further type inference for more exact matching
-        return true;
+            @Override
+            public void run(CompilationController info) throws Exception {
+                TypeKind paramKind = param.asType().getKind();
+                if (!paramKind.isPrimitive()) {
+                    // try unboxing
+                    try {
+                        PrimitiveType unboxedType = info.getTypes().unboxedType(param.asType());
+                        paramKind = unboxedType.getKind();
+                    } catch (IllegalArgumentException iae) {
+                        // not unboxable (isn't there a way to check this before trying to unbox??)
+                    }
+
+                }
+                if (TYPES.containsKey(paramNode.getClass())) {
+                    setResult(TYPES.get(paramNode.getClass()).contains(paramKind));
+                }
+                if (paramNode instanceof AstString) {
+                    CharSequence typeName = info.getTypeUtilities().getTypeName(param.asType(), TypeNameOptions.PRINT_FQN);
+                    setResult(String.class.getName().contentEquals(typeName));
+                }
+                // the ast param is an object whose real type we don't know
+                // would need to further type inference for more exact matching
+                setResult(true);
+            }
+        };
+        runTask(task);
+        return task.getResult();
     }
 
     /**
@@ -337,25 +340,32 @@ public final class ELTypeUtilities {
         return null;
     }
 
-    private Element getIdentifierType(AstIdentifier identifier, ELElement element) {
-        String beanClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getParserResult().getFileObject());
-        if (beanClass != null) {
-            return info.getElements().getTypeElement(beanClass);
-        }
-        // probably a variable
-        int offset = element.getOriginalOffset().getStart() + identifier.startOffset();
-        Node expressionNode = ELVariableResolvers.getReferredExpression(element.getParserResult().getSnapshot(), offset);
-        if (expressionNode != null) {
-            return getReferredType(expressionNode, element.getParserResult().getFileObject());
-        }
-        return null;
+    private Element getIdentifierType(final AstIdentifier identifier, final ELElement element) {
+        final String beanClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getParserResult().getFileObject());
+        SourceTask<Element> task = new SourceTask<Element>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                if (beanClass != null) {
+                    setResult(info.getElements().getTypeElement(beanClass));
+                }
+                // probably a variable
+                int offset = element.getOriginalOffset().getStart() + identifier.startOffset();
+                Node expressionNode = ELVariableResolvers.getReferredExpression(element.getParserResult().getSnapshot(), offset);
+                if (expressionNode != null) {
+                    setResult(getReferredType(expressionNode, element.getParserResult().getFileObject(), info));
+                }
+            }
+        };
+        runTask(task);
+        return task.getResult();
     }
 
     /**
      * @return the element for the type that that given {@code expression} refers to, i.e.
      * the return type of the last method in the expression.
      */
-    private Element getReferredType(Node expression, final FileObject context) {
+    private Element getReferredType(Node expression, final FileObject context, final CompilationController info) {
 
         final Element[] result = new Element[1];
         expression.accept(new NodeVisitor() {
@@ -430,7 +440,7 @@ public final class ELTypeUtilities {
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
                         if (child instanceof AstPropertySuffix || child instanceof AstMethodSuffix) {
-                            ExecutableElement propertyType = getElementForProperty(child, enclosing);
+                            final ExecutableElement propertyType = getElementForProperty(child, enclosing);
                             if (propertyType == null) {
                                 // give up
                                 return;
@@ -438,7 +448,15 @@ public final class ELTypeUtilities {
                             if (child.equals(target)) {
                                 result = propertyType;
                             } else {
-                                enclosing = info.getTypes().asElement(getReturnType(propertyType));
+                                SourceTask<Element> task = new SourceTask<Element>() {
+
+                                    @Override
+                                    public void run(CompilationController info) throws Exception {
+                                        setResult(info.getTypes().asElement(getReturnType(propertyType)));
+                                    }
+                                };
+                                runTask(task);
+                                enclosing = task.getResult();
                             }
                         }
                     }
