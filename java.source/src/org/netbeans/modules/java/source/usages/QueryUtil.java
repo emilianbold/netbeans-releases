@@ -199,7 +199,7 @@ class QueryUtil {
         do {
             index = findNextUpper(camel, lastIndex + 1);
             String token = camel.substring(lastIndex, index == -1 ? camel.length(): index);
-            sb.append(caseSensitive ? token : token.toLowerCase());
+            sb.append(Pattern.quote(caseSensitive ? token : token.toLowerCase()));
             sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
             lastIndex = index;
         } while(index != -1);
@@ -411,7 +411,7 @@ class QueryUtil {
                 
                 @Override
                 protected boolean termCompare(Term term) {
-                    if (term.field() == term.field() && term.text().equals(term.text())) {                                                                              
+                    if (TermFilter.this.term.field() == term.field() && TermFilter.this.term.text().equals(term.text())) {                                                                              
                         return true;
                     }
                     endEnum = true;

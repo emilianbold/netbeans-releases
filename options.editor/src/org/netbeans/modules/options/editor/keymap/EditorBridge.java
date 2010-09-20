@@ -182,7 +182,9 @@ public final class EditorBridge extends KeymapManager {
             
             EditorAction editorAction = (EditorAction) action;
             Set<String> mimeTypes = getMimeTypes(editorAction);
-            
+
+            assert mimeTypes != null : "Cannot find MIME types for action " + editorAction; // NOI18N
+
             for (String shortcut : shortcuts) {
                 MultiKeyBinding mkb = new MultiKeyBinding(stringToKeyStrokes2(shortcut), editorAction.getId());
                 for (String mimeType : mimeTypes) {
