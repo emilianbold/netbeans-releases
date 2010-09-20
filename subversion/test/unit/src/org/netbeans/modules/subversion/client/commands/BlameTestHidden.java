@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -59,9 +59,9 @@ import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
  *
  * @author tomas
  */
-public class BlameTest extends AbstractCommandTest {
+public class BlameTestHidden extends AbstractCommandTestCase {
     
-    public BlameTest(String testName) throws Exception {
+    public BlameTestHidden(String testName) throws Exception {
         super(testName);
     }
 

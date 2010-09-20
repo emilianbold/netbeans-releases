@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,11 +56,11 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author tomas
  */
-public class PropertyTest extends AbstractCommandTest {
+public class PropertyTestHidden extends AbstractCommandTestCase {
     
     // XXX test ignored patterns
     
-    public PropertyTest(String testName) throws Exception {
+    public PropertyTestHidden(String testName) throws Exception {
         super(testName);
     }
             

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client.commands;
 
-import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.Subversion;
@@ -56,7 +56,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author tomas
  */
-public class ParsedStatusTest extends AbstractCommandTest {
+public class ParsedStatusTestHidden extends AbstractCommandTestCase {
     
     // XXX terst remote change
     
@@ -65,7 +65,7 @@ public class ParsedStatusTest extends AbstractCommandTest {
         file
     }
     
-    public ParsedStatusTest(String testName) throws Exception {
+    public ParsedStatusTestHidden(String testName) throws Exception {
         super(testName);
     }
 

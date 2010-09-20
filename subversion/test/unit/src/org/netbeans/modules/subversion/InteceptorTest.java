@@ -3786,6 +3786,10 @@ public class InteceptorTest extends NbTestCase {
     }
     
     private void renameFO(File from, File to) throws DataObjectNotFoundException, IOException {
+        // ensure parent is known by filesystems
+        // otherwise no event will be thrown
+        FileObject parent = FileUtil.toFileObject(from.getParentFile());
+
         FileObject foFrom = FileUtil.toFileObject(from);
         FileLock lock = foFrom.lock();
         try {
