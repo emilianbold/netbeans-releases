@@ -136,7 +136,7 @@ public class ImportProject implements PropertyChangeListener {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
-    private File nativeProjectFolder;
+    private String nativeProjectPath;
     private File projectFolder;
     private String projectName;
     private String makefileName = "Makefile";  // NOI18N
@@ -180,12 +180,11 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
-        String path = (String) wizard.getProperty("path");  // NOI18N
-        projectFolder = new File(path);
-        nativeProjectFolder = projectFolder;
+        projectFolder = (File) wizard.getProperty("projdir");  // NOI18N;
+        nativeProjectPath = (String) wizard.getProperty("nativeProjDir");  // NOI18N
         projectName = projectFolder.getName();
         makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
-        workingDir = path;
+        workingDir = nativeProjectPath;
         configurePath = (String) wizard.getProperty("configureName");  // NOI18N
         if (configurePath != null) {
             configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
@@ -193,7 +192,7 @@ public class ImportProject implements PropertyChangeListener {
             // the best guess
             makefilePath = (String) wizard.getProperty("makefileName");  // NOI18N
             if (makefilePath == null) {
-                File file = new File(path + "/Makefile"); // NOI18N
+                File file = new File(nativeProjectPath + "/Makefile"); // NOI18N
                 makefilePath = file.getAbsolutePath();
             }
         } else {
@@ -231,8 +230,8 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void customSetup(WizardDescriptor wizard) {
-        String path = (String) wizard.getProperty("simpleModeFolder");  // NOI18N
-        nativeProjectFolder = new File(path);
+        projectFolder = (File) wizard.getProperty("projdir");  // NOI18N;
+        nativeProjectPath = (String) wizard.getProperty("nativeProjDir");  // NOI18N
         projectFolder = (File) wizard.getProperty("projdir"); // NOI18N
         projectName = (String) wizard.getProperty("name"); // NOI18N
         makefileName = (String) wizard.getProperty("makefilename"); // NOI18N
@@ -646,7 +645,7 @@ public class ImportProject implements PropertyChangeListener {
                 isFinished = true;
             }
         } else {
-            String path = nativeProjectFolder.getAbsolutePath();
+            String path = nativeProjectPath;
             File file = new File(path + "/Makefile"); // NOI18N
             if (file.exists() && file.isFile() && file.canRead()) {
                 makefilePath = file.getAbsolutePath();
@@ -810,7 +809,7 @@ public class ImportProject implements PropertyChangeListener {
             if (rc == 0) {
                 if (extension != null) {
                     final Map<String, Object> map = new HashMap<String, Object>();
-                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
                         DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
@@ -845,7 +844,7 @@ public class ImportProject implements PropertyChangeListener {
             if (!done && makeLog != null) {
                 if (extension != null) {
                     final Map<String, Object> map = new HashMap<String, Object>();
-                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
                     map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
@@ -871,7 +870,7 @@ public class ImportProject implements PropertyChangeListener {
                 }
                 if (extension != null) {
                     final Map<String, Object> map = new HashMap<String, Object>();
-                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
                     map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
@@ -1100,7 +1099,7 @@ public class ImportProject implements PropertyChangeListener {
             return;
         }
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
         map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
         boolean does = false;
@@ -1133,9 +1132,9 @@ public class ImportProject implements PropertyChangeListener {
             if (TRACE) {
                 logger.log(Level.INFO, "#start discovery by model"); // NOI18N
             }
-            map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+            map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
-            provider.getProperty("folder").setValue(nativeProjectFolder.getAbsolutePath()); // NOI18N
+            provider.getProperty("folder").setValue(nativeProjectPath); // NOI18N
             if (manualCA) {
                 provider.getProperty("prefer-local").setValue(Boolean.TRUE); // NOI18N
             }

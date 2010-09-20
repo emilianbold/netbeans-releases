@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -333,8 +334,13 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 return ExecutionEnvironmentFactory.toUniqueID(storage.env);
             } else if ("toolchain".equals(name)) { // NOI18N
                 return storage.cs;
-            } else if ("fullRemote".equals(name)) { // NOI18N
+            } else if (/*XXX Define somewhere*/"fullRemote".equals(name)) { // NOI18N
                 return storage.fullRemote;
+            } else if (/*XXX Define somewhere*/"nativeProjDir".equals(name)) { // NOI18N
+                return storage.getPath();
+            } else if (/*XXX Define somewhere*/"projdir".equals(name)) { // NOI18N
+                //Object o = super.getProperty(name);
+                return new File(storage.getPath());
             }
             return super.getProperty(name);
         }
