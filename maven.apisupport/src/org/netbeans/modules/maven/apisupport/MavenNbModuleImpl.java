@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
@@ -394,24 +395,30 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     public SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
         String artifactId = codenamebase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-        Set set = watch.getMavenProject().getDependencyArtifacts();
-        if (set != null) {
-            Iterator it = set.iterator();
-            while (it.hasNext()) {
-                Artifact art = (Artifact)it.next();
-                if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { //NOI18N
-                    ExamineManifest exa = new ExamineManifest();
-                    exa.setJarFile(art.getFile());
-                    if (exa.getSpecVersion() != null) {
-                        return new SpecificationVersion(exa.getSpecVersion());
-                    }
+        for (Artifact art : watch.getMavenProject().getArtifacts()) {
+            if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { //NOI18N
+                ExamineManifest exa = new ExamineManifest();
+                exa.setJarFile(art.getFile());
+                try {
+                    exa.checkFile();
+                } catch (MojoExecutionException x) {
+                    throw new IOException(x);
+                }
+                if (exa.getSpecVersion() != null) {
+                    return new SpecificationVersion(exa.getSpecVersion());
                 }
             }
         }
+        // XXX #190149: as in addDependency, look up artifact in repo with same version as some existing org.netbeans.api:* dep
         File fil = lookForModuleInPlatform(artifactId);
         if (fil != null) {
             ExamineManifest exa = new ExamineManifest();
             exa.setJarFile(fil);
+            try {
+                exa.checkFile();
+            } catch (MojoExecutionException x) {
+                throw new IOException(x);
+            }
             if (exa.getSpecVersion() != null) {
                 return new SpecificationVersion(exa.getSpecVersion());
             }
