@@ -493,7 +493,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             wizardDescriptor.putProperty("toolchain", tc); // NOI18N
             controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
         }
-        wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject());
+        wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject()); // NOI18N
         initialized = false;
     }
 
