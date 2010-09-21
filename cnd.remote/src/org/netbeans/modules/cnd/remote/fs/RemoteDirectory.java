@@ -107,7 +107,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             boolean resultIsDirectory = file.isDirectory();
 
             StringBuilder remoteAbsPath = new StringBuilder(remotePath);
-            File cacheFile = remotePath.isEmpty()? cache : new File(cache.getPath() + '/' + remotePath);
+//            File cacheFile = remotePath.isEmpty()? cache : new File(cache.getPath() + '/' + remotePath);
+            File cacheFile = cache;
             FileObject resultFileObject = this;
             StringTokenizer pathTokenizer = new StringTokenizer(relativePath, "/"); // NOI18N
             while (pathTokenizer.hasMoreTokens()) {

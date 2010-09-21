@@ -67,7 +67,7 @@ import org.openide.util.CharSequences;
  *
  * @author Vladimir Kvasihn
  */
-public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> implements CsmFriendClass, CsmTemplate {
+public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> implements CsmFriendClass, CsmTemplate {
     private final CharSequence name;
     private final CharSequence[] nameParts;
     private final CsmUID<CsmClass> parentUID;

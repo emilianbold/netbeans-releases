@@ -57,13 +57,17 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  * Implements condition of kind CsmCondition.Kind.DECLARATION
  * @author Vladimir Kvashin
  */
-public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondition {
+public final class ConditionDeclarationImpl extends OffsetableBase implements CsmCondition {
     
     private VariableImpl<?> declaration;
     
-    public ConditionDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
+    private ConditionDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
         initDeclaration(ast, scope);
+    }
+
+    public static ConditionDeclarationImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new ConditionDeclarationImpl(ast, file, scope);
     }
 
     @Override

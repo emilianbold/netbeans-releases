@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -56,10 +57,14 @@ public interface RemoteProject {
         REMOTE_SOURCES
     }
 
+    public static Mode DEFAULT_MODE = Mode.LOCAL_SOURCES;
+
     // FIXUP. Think over how to get correct factory
     static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
     
     ExecutionEnvironment getDevelopmentHost();
 
     Mode getRemoteMode();
+
+    RemoteSyncFactory getSyncFactory();
 }

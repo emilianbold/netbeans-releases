@@ -317,7 +317,7 @@ public class TemplateUtils {
                         type = child;
                         break;
                     case CPPTokenTypes.CSM_EXPRESSION:
-                        res.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(child, file, scope),
+                        res.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(child, file, scope),
                                 file, OffsetableBase.getStartOffset(child), OffsetableBase.getEndOffset(child)));
                         break;
                     case CPPTokenTypes.COMMA:

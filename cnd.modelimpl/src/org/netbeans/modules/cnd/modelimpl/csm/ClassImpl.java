@@ -884,11 +884,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    public static class MemberTypedef extends TypedefImpl implements CsmMember {
+    public static final class MemberTypedef extends TypedefImpl implements CsmMember {
 
-        private CsmVisibility visibility;
+        private final CsmVisibility visibility;
 
-        public MemberTypedef(CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility) {
+        private MemberTypedef(CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility) {
             super(ast, containingClass.getContainingFile(), containingClass, type, name);
             visibility = curentVisibility;
         }
@@ -932,10 +932,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    public static class ClassMemberForwardDeclaration extends ClassForwardDeclarationImpl
+    public static final class ClassMemberForwardDeclaration extends ClassForwardDeclarationImpl
             implements CsmMember, CsmClassifier {
 
-        private CsmVisibility visibility;
+        private final CsmVisibility visibility;
         private CsmUID<CsmClass> classDefinition;
         private final CsmUID<CsmClass> containerUID;
         private CsmClass containerRef;

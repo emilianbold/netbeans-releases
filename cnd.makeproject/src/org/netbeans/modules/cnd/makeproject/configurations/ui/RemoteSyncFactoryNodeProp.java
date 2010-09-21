@@ -69,10 +69,6 @@ public class RemoteSyncFactoryNodeProp extends Node.Property<String> implements 
         makeConfiguration.getDevelopmentHost().addPropertyChangeListener(this);
     }
 
-    private static RemoteSyncFactory getFactory(ExecutionEnvironment execEnv) {
-        return (execEnv.isLocal()) ? null : ServerList.get(execEnv).getSyncFactory();
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getNewValue() instanceof  DevelopmentHostConfiguration) {

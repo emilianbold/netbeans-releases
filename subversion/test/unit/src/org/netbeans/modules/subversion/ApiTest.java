@@ -67,7 +67,6 @@ public class ApiTest extends NbTestCase {
     private String username;
     private String password;
     private File workDir;
-//    private File dataRootDir;
     private File repoDir;
           
     public ApiTest(String testName) {
@@ -77,10 +76,10 @@ public class ApiTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();
-        BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-        username = br.readLine();
-        password = br.readLine();
-        br.close();
+//        BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+//        username = br.readLine();
+//        password = br.readLine();
+//        br.close();
         workDir = FileUtils.createTmpFolder("svncoapi");
 
         File dataRootDir = new File(getWorkDirPath()); ;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,60 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.deep;
+package org.netbeans.modules.cnd.remote.fs;
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
- * empty compound statement. Used for incorrect/uncompleted code 
- * to present i.e. functions body
- * @author Vladimir Voskresensky
+ * @author Vladimir Kvashin
  */
-public final class EmptyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
-    
-    private EmptyCompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file, scope);
-        ast.setFirstChild(null);
+public class RemoteFileTestSuite extends CndBaseTestSuite {
+
+   public RemoteFileTestSuite() {
+       this("Remote File System test Suite", // NOI18N
+           RemoteFileSupportTestCase.class,
+           RemoteFileSystemTestCase.class,
+           RemotePathTestCase.class
+       );
+   }
+
+    public RemoteFileTestSuite(Class testClass) {
+        this(testClass.getName(), testClass);
     }
 
-    public static EmptyCompoundStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        return new EmptyCompoundStatementImpl(ast, file, scope);
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RemoteFileTestSuite(String name, Test... tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
     }
-    
-    @Override
-    public List<CsmStatement> getStatements() {
-        return Collections.<CsmStatement>emptyList();
+
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RemoteFileTestSuite(String name, Collection<Test> tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
     }
-    
-    @Override
-    public CsmStatement.Kind getKind() {
-        return Kind.COMPOUND;
+
+    private RemoteFileTestSuite(String name, Class... testClasses) {
+        super(name, RemoteDevelopmentTest.PLATFORMS_SECTION, testClasses);
     }
-    
-    @Override
-    public Collection<CsmScopeElement> getScopeElements() {
-        return Collections.<CsmScopeElement>emptyList();
+
+    public static Test suite() {
+        TestSuite suite = new RemoteFileTestSuite();
+        return suite;
     }
-    
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);
-    }
-    
-    public EmptyCompoundStatementImpl(DataInput input) throws IOException {
-        super(input);
-    }     
 }
